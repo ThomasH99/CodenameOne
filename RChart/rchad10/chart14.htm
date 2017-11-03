@@ -1,0 +1,90 @@
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
+<TITLE>
+HTML Test Page
+</TITLE>
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<BR>
+<APPLET
+  CODEBASE = "."
+  CODE     = "com.java4less.rchart.ChartApplet.class"
+  NAME     = "TestApplet"
+  ARCHIVE  = "rchart.jar"
+  WIDTH    = 500
+  HEIGHT   = 300
+  HSPACE   = 0
+  VSPACE   = 0
+  ALIGN    = middle
+>
+<PARAM NAME = "TITLECHART" VALUE = "Event Chart">
+<PARAM NAME = "LEGEND" VALUE = "TRUE">
+<PARAM NAME = "YLABEL" VALUE = "Activity">
+<PARAM NAME = "XLABEL" VALUE = "Time">
+
+<-- dates in axis -->
+<PARAM NAME = "XAXIS_INITIAL_DATE" VALUE = "10-10-2001">
+<PARAM NAME = "XAXIS_DATE_STEP" VALUE = "d">
+<PARAM NAME = "XAXIS_DATE_FORMAT" VALUE = "dd-MMM">
+
+
+<PARAM NAME = "SERIE_1" VALUE = "Act. A">
+<PARAM NAME = "SERIE_TYPE_1" VALUE = "BAR">
+<PARAM NAME = "SERIE_STYLE_1" VALUE = "GREEN">
+<PARAM NAME = "SERIE_FONT_1" VALUE = "Arial|PLAIN|8">
+<-- position of bar -->
+<PARAM NAME = "SERIE_DATAX_1" VALUE = "0|0|0">
+<-- end of bar  -->
+<PARAM NAME = "SERIE_DATA_1" VALUE = "5|27|44">
+<-- starting point of bar -->
+<PARAM NAME = "SERIE_BARS_START_1" VALUE = "0|15|30">
+
+
+<PARAM NAME = "SERIE_2" VALUE = "Act. B">
+<PARAM NAME = "SERIE_TYPE_2" VALUE = "BAR">
+<PARAM NAME = "SERIE_STYLE_2" VALUE = "BLUE">
+<PARAM NAME = "SERIE_FONT_2" VALUE = "Arial|PLAIN|8">
+<-- position of bar -->
+<PARAM NAME = "SERIE_DATAX_2" VALUE = "1|1|1">
+<-- end of bar  -->
+<PARAM NAME = "SERIE_DATA_2" VALUE = "7|15|24">
+<-- starting point of bar -->
+<PARAM NAME = "SERIE_BARS_START_2" VALUE = "5|10|20">
+
+<PARAM NAME = "CHART_BORDER" VALUE = "0.2|BLACK|LINE">
+<PARAM NAME = "CHART_FILL" VALUE = "LIGHTGRAY">
+<PARAM NAME = "BIG_TICK_INTERVALX" VALUE = "5">
+<PARAM NAME = "TICK_INTERVALX" VALUE = "2">
+<PARAM NAME = "BIG_TICK_INTERVALY" VALUE = "1">
+
+<PARAM NAME = "YSCALE_MAX" VALUE = "3">
+<PARAM NAME = "YSCALE_MIN" VALUE = "0">
+<PARAM NAME = "XSCALE_MIN" VALUE = "0">
+<PARAM NAME = "XSCALE_Max" VALUE = "50">
+<-- deactivate auto scale -->
+<PARAM NAME = "XSCALE_EXACT_MAX" VALUE = "true">
+
+<PARAM NAME = "XAXIS_START_WITH_BIG_TICK" VALUE = "true">
+
+<PARAM NAME = "YAXIS_LABELS" VALUE = "Act. A|Act. B">
+
+<PARAM NAME = "LEGEND_BORDER" VALUE = "0.2|BLACK|LINE">
+<PARAM NAME = "LEGEND_FILL" VALUE = "WHITE">
+<PARAM NAME = "LEFT_MARGIN" VALUE = "0.15">
+<PARAM NAME = "BARCHART_VERTICAL" VALUE = "false">
+<PARAM NAME = "SERIE_BORDER_TYPE_1" VALUE = "RAISED">
+<PARAM NAME = "SERIE_BORDER_TYPE_2" VALUE = "RAISED">
+<PARAM NAME = "BACK_IMAGE" VALUE = "back16.gif">
+
+
+<PARAM NAME = "BARCHART_BARWIDTH" VALUE = "20">
+
+<-- this is necesary to have bars centered on the ticks ->
+<PARAM NAME = "BARCHART_EVENTCHART" VALUE = "true">
+
+
+</APPLET>
+</BODY>
+</HTML>
+

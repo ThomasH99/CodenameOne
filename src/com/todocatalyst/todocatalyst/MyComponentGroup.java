@@ -1,0 +1,245 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.todocatalyst.todocatalyst;
+
+import com.codename1.ui.ButtonGroup;
+import com.codename1.ui.ComponentGroup;
+import com.codename1.ui.RadioButton;
+import java.util.Map;
+
+/**
+ *
+ * @author Thomas
+ */
+/**
+ * stores the index of the string array in Parse. E.g. ["str1", "str2", "str3"]
+ * and str2 selected will store 1, str1 will store 0.
+ */
+/**
+ * 
+ * @author Thomas
+ */
+class MyComponentGroup extends ComponentGroup {
+
+    /**
+     * 
+     * @param values either an array of String or an array of Objects for which toString() will be used
+     * @param selectedString
+     * @param unselectAllowed 
+     */
+    MyComponentGroup(Object[] values, String selectedString, boolean unselectAllowed) {
+        super();
+        this.setHorizontal(true);
+        ButtonGroup buttonGroup = new ButtonGroup();
+//        ButtonGroup buttonGroup = new ButtonGroup() {
+//            @Override
+//            public void setSelected(RadioButton rb) {
+//                //if radionbutton is pressed when it is already selected then unselect (clearSelection)
+//                if (isSelected() && rb.isSelected()) {
+//                    clearSelection();
+//                } else {
+//                    super.setSelected(rb); //else handle it normally
+//                }
+//            }
+//        };
+        RadioButton radioButton;
+//            RadioButton[] radioButtonArray = new RadioButton[values.length];
+        for (int i = 0; i < values.length; i++) {
+//            radioButton = new RadioButton(values[i]);
+            radioButton = new RadioButton(values[i] instanceof String?(String)values[i]:values[i].toString());
+            radioButton = new RadioButton(values[i] instanceof String?(String)values[i]:values[i].toString());
+            radioButton.setToggle(true); //allow to de-select a selected button
+            radioButton.setUnselectAllowed(unselectAllowed); //allow to de-select a selected button
+            buttonGroup.add(radioButton);
+            this.add(radioButton);
+//                radioButtonArray[i] = radioButton;
+//            if (selectedString != null && values[i].equals(selectedString)) {
+//            if (selectedString != null && (values[i] instanceof String?(String)values[i]:values[i].toString()).equals(selectedString)) {
+            if (selectedString != null && values[i].toString().equals(selectedString)) {
+                radioButton.setSelected(true);
+            }
+        }
+    }
+
+    MyComponentGroup(String[] values, int selectedStringIndex, boolean unselectAllowed) {
+        this(values, values[selectedStringIndex], unselectAllowed);
+    }
+
+    MyComponentGroup(Object[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {
+        this(values, get.get(), unselectAllowed);
+        parseIdMap.put(this, () -> {
+            int size = this.getComponentCount();
+            for (int i = 0; i < size; i++) {
+                if (((RadioButton) this.getComponentAt(i)).isSelected()) {
+                    set.accept(((RadioButton) this.getComponentAt(i)).getText()); //store the index of the selected string
+                    return;
+                }
+            }
+            set.accept("");
+        });
+    }
+
+    MyComponentGroup(Object[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString get, MyForm.PutString set) {
+        this(values, parseIdMap, get, set, true);
+    }
+
+////<editor-fold defaultstate="collapsed" desc="comment">
+//    MyComponentGroup(boolean NOT_USED, String[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, boolean unselectAllowed) {
+//        this(values, values[get.get()], unselectAllowed);
+//        parseIdMap.put(this, () -> {
+//            int size = this.getComponentCount();
+//            for (int i = 0; i < size; i++) {
+//                if (((RadioButton) this.getComponentAt(i)).isSelected()) {
+//                    set.accept(i); //store the index of the selected string
+//                    return;
+//                }
+//            }
+//            //if nothing was selected (possible??), set String to empty
+//            set.accept(-1); //TODO!!!! ????
+////                    parseObject.remove(parseId); //if nothing's selected, remove the field
+//        });
+//    }
+//
+//    MyComponentGroup(int OLD, String[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, boolean unselectAllowed) {
+//        super();
+//        this.setHorizontal(true);
+//        ButtonGroup buttonGroup = new ButtonGroup() {
+//            public void setSelected(RadioButton rb) {
+//                //if radionbutton is pressed when it is already selected then unselect (clearSelection)
+//                if (rb.isSelected()) {
+//                    clearSelection();
+//                } else {
+//                    super.setSelected(rb); //else handle it normally
+//                }
+//            }
+//        };
+////            String selected = parseObject.getString(parseId);
+////                String selectedString = parseObject.getString(parseId);
+//        String selectedString = values[get.get()];
+//        RadioButton radioButton;
+////            RadioButton[] radioButtonArray = new RadioButton[values.length];
+//        for (int i = 0; i < values.length; i++) {
+//            radioButton = new RadioButton(values[i]);
+//            radioButton.setToggle(true); //allow to de-select a selected button
+//            radioButton.setUnselectAllowed(unselectAllowed); //allow to de-select a selected button
+//            buttonGroup.add(radioButton);
+//            this.add(radioButton);
+////                radioButtonArray[i] = radioButton;
+//            if (selectedString != null && values[i].equals(selectedString)) {
+//                radioButton.setSelected(true);
+//            }
+//        }
+////            this.encloseHorizontal(radioButtonArray);
+//        parseIdMap.put(this, () -> {
+//            int size = this.getComponentCount();
+//            for (int i = 0; i < size; i++) {
+//                if (((RadioButton) this.getComponentAt(i)).isSelected()) {
+////                        parseObject.put(parseId, (((RadioButton) this.getComponentAt(i)).getText())); //store the selected string
+////                            parseObject.put(parseId, i); //store the index of the selected string
+//                    set.accept(i); //store the index of the selected string
+//                    return;
+//                }
+//            }
+//            //if nothing was selected (possible??), set String to empty
+////                    parseObject.remove(parseId); //if nothing's selected, remove the field
+//        });
+//    }
+//
+////    MyComponentGroup(String[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
+////        this(values, parseIdMap, get, set, true);
+////    }
+//    MyComponentGroup(boolean OLD, String[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {
+//        super();
+//        this.setHorizontal(true);
+//        ButtonGroup buttonGroup = new ButtonGroup();
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            {
+////                public void clearSelection() {
+////        if(selectedIndex!=-1) {
+////            if(selectedIndex < buttons.size()) {
+////                ((RadioButton)buttons.elementAt(selectedIndex)).setSelected(false);
+////            }
+////            selectedIndex=-1;
+////        }
+////
+////    }
+////};
+////            {
+////                public void setSelected(RadioButton rb) {
+////                    //if radionbutton is pressed when it is already selected then unselect (clearSelection)
+////                    if (rb.isSelected()) {
+////                        clearSelection();
+////                    } else {
+////                        super.setSelected(rb); //else handle it normally
+////                    }
+////                }
+////            };
+////            String selected = parseObject.getString(parseId);
+////                String selectedString = parseObject.getString(parseId);
+////            String selectedString = values[get.get()];
+////</editor-fold>
+//        String selectedString = get.get();
+//        RadioButton radioButton;
+////            RadioButton[] radioButtonArray = new RadioButton[values.length];
+//        for (int i = 0; i < values.length; i++) {
+//            radioButton = new RadioButton(values[i]);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                {
+////                    @Override
+////                    public void released(int x, int y) {
+////                        // prevent the radio button from being "turned off"
+//////        if(!isSelected()) {
+//////            setSelected(true);
+//////        }
+////                        setSelected(!isSelected());
+////                        super.released(x, y);
+//////                        Button.this.released(x, y);
+//////                        super.repaint();
+//////                                super.fireActionEvent(x, y);
+////
+////                    }
+////
+////                    @Override
+////                    public void setSelected(boolean selected) {
+////                        if (selected != isSelected()) { //
+////                            if (!selected && isSelected()) { //unselect
+////                                super.setSelected(false); //need to unselect before calling clearSelection
+////                                buttonGroup.clearSelection(); //clearSelections will also unselect the button so no need to call super.setSelected(false);
+////                            } //else {
+////                            super.setSelected(selected);
+//////                        }
+////                        }
+////                    }
+////                };
+////</editor-fold>
+//            radioButton.setToggle(true); //allow to de-select a selected button
+//            radioButton.setUnselectAllowed(unselectAllowed); //allow to de-select a selected button
+//            buttonGroup.add(radioButton);
+//            this.add(radioButton);
+////                radioButtonArray[i] = radioButton;
+//            if (selectedString != null && values[i].equals(selectedString)) {
+//                radioButton.setSelected(true);
+//            }
+//        }
+////            this.encloseHorizontal(radioButtonArray);
+//        parseIdMap.put(this, () -> {
+//            int size = this.getComponentCount();
+//            for (int i = 0; i < size; i++) {
+//                if (((RadioButton) this.getComponentAt(i)).isSelected()) {
+////                        parseObject.put(parseId, (((RadioButton) this.getComponentAt(i)).getText())); //store the selected string
+////                            parseObject.put(parseId, i); //store the index of the selected string
+////                        set.accept(i); //store the index of the selected string
+//                    set.accept(((RadioButton) this.getComponentAt(i)).getText()); //store the index of the selected string
+//                    return;
+//                }
+//            }
+//            //if nothing was selected (possible??), set String to empty
+//            set.accept("");
+//        });
+//    }
+//</editor-fold>
+
+}

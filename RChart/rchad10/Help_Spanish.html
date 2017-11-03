@@ -1,0 +1,541 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>  Class com.java4less.rchart.ChartApplet
+</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.04Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+<p>(<a href="Help_English.html">pulse aqu&iacute;</a> para ver la versi&oacute;n 
+  actualizada en ingl&eacute;s) </p>
+<H1>Clase com.java4less.rchart.ChartApplet (y RChartServlet)</H1>
+<h3><font color="#FF0000">No olvide visitar nuestro</font> <a href="http://www.java4less.com/tutorials/chart/tutorialcontents.html">tutorial 
+  on-line</a>.</h3>
+
+<P>
+<HR>
+<p></P>
+
+<P>Puede usar la clase ChartApplet para mostrar los gr&aacute;ficos en
+su p&aacute;gina web.&nbsp;</P>
+
+<P>Algunos par&aacute;metros del applet tienen un formato especial:</P>
+
+<UL>
+<LI>Colores: los valores validos son: RED,BLUE,GREEN,BLACK,GRAY,LIGHTGRAY,WHITE,DARKGRAY,YELLOW,ORANGE,CYAN
+y MAGENTA. Tambi&eacute;n puede user el n&uacute;mero entero correspondiente
+a un color.&nbsp;</LI>
+
+<LI>Los estilos de las l&iacute;neas tienen el formato&nbsp; &lt;anchura&gt;|&lt;color&gt;|&lt;estilo&gt;.
+Estilo puede ser LINE, DASHED (l&iacute;nea discontinua) o DOTS (puntos).
+Ejemplop: &quot;0.2|RED|LINE&quot;</LI>
+
+<LI>Los tipos de letra tienen el formato&nbsp; &lt;tipo de letra&gt;|&lt;estilo&gt;|&lt;tama<FONT SIZE=-1>&ntilde;o</FONT>&gt;.
+El estilo puede ser&nbsp; PLAIN, ITALIC (cursiva) o BOLD (negrita). Ejemplo:
+&quot;Arial|BOLD|12&quot;</LI>
+
+<LI>Estilo de relleno: como el color.</LI>
+
+<LI>Lista de valores. Las listas de valores son elementos separados por
+&quot;|&quot;&nbsp;</LI>
+</UL>
+
+<P>&nbsp;</P>
+
+<P>Los parametros del applet son:</P>
+
+<P><B>T&iacute;tulo</B></P>
+
+<UL>
+<LI>TITLECHART. Texto del t&iacute;tulo.</LI>
+
+<LI>TITLE_FONT. tipo de letra.</LI>
+
+<LI>TITLE_COLOR. Color.</LI>
+</UL>
+
+<P><B>Etiqueta del eje</B></P>
+
+<UL>
+<LI>XLABEL. Texto de la etiqueta.</LI>
+
+<LI>XLABEL_FONT. tipo de letra.</LI>
+
+<LI>XLABEL_COLOR. Color.</LI>
+
+<LI>XLABEL_VERTICAL. Si &quot;true&quot; la etiqueta se dibujar&aacute;
+con una rotaci&oacute;n de 90 grados.</LI>
+
+<LI>YLABEL_VERTICAL</LI>
+
+<LI>YLABEL</LI>
+
+<LI>YLABEL_FONT</LI>
+
+<LI>YLABEL_COLOR</LI>
+
+<LI>Y2LABEL_VERTICAL. Par&aacute;metros para el segundo eje Y.</LI>
+
+<LI>Y2LABEL</LI>
+
+<LI>Y2LABEL_FONT</LI>
+
+<LI>Y2LABEL_COLOR</LI>
+</UL>
+
+<P><B>Scale</B></P>
+
+<UL>
+<LI>XSCALE_MIN</LI>
+
+<LI>YSCALE_MIN</LI>
+
+<LI>XSCALE_MAX</LI>
+
+<LI>YSCALE_MAX</LI>
+
+<LI>Y2SCALE_MAX. Par&aacute;metros para el segundo eje Y.</LI>
+
+<LI>Y2SCALE_MIN</LI>
+</UL>
+
+<P><B>Axis</B></P>
+
+<UL>
+  <LI>XAXIS: &quot;true&quot; o &quot;False&quot;. Para indicar si se debe dibujar 
+    el eje.</LI>
+  <LI>YAXIS</LI>
+  <LI>Y2AXIS</LI>
+  <LI>XAXIS_GRID. estilo de la l&iacute;nea de la rejilla.</LI>
+  <LI>YAXIS_GRID</LI>
+  <LI>Y2AXIS_GRID</LI>
+  <LI>GRIDX, GRIDY, GRIDY2: si &quot;true&quot;, la rejilla se ajustar&aacute; 
+    a los ticks grandes.</LI>
+  <LI>TICK_INTERVALX. defecto 1.</LI>
+  <LI>TICK_INTERVALY</LI>
+  <LI>TICK_INTERVALY2</LI>
+  <LI>BIG_TICK_INTERVALX. defecto 5.</LI>
+  <LI>BIG_TICK_INTERVALY</LI>
+  <LI>BIG_TICK_INTERVALY2</LI>
+  <LI>XAXIS_LABELS. Lista de etiquetas para los ticks.</LI>
+  <LI>YAXIS_LABELS</LI>
+  <LI>Y2AXIS_LABELS</LI>
+  <li>XAXIS_START_WITH_BIG_TICK: si &quot;true&quot; el primer tick ser&aacute; 
+    uno grande, con etiqueta.</li>
+  <li>YAXIS_START_WITH_BIG_TICK</li>
+  <li>Y2AXIS_START_WITH_BIG_TICK</li>
+  <LI>CERO_XAXIS : valores v&aacute;lidos son NO,LINE y SCALE.</LI>
+  <LI>CERO_YAXIS.</LI>
+  <LI>CERO_Y2AXIS.</LI>
+  <LI>XAXIS_STYLE. estilo de la l&iacute;nea del eje.</LI>
+  <LI>YAXIS_STYLE.</LI>
+  <LI>Y2AXIS_STYLE.</LI>
+  <LI>XAXIS_FONT. tipo de letra de las etiquetas de los ticks.</LI>
+  <LI>YAXIS_FONT</LI>
+  <LI>Y2AXIS_FONT</LI>
+  <LI>XAXIS_FONT_COLOR. Color.</LI>
+  <LI>YAXIS_FONT_COLOR</LI>
+  <LI>Y2AXIS_FONT_COLOR</LI>
+  <LI>XAXIS_INTEGER. &quot;True&quot; or &quot;false&quot;. If true the value 
+    2.0 will be displayed as &quot;2&quot;.</LI>
+  <LI>YAXIS_INTEGER</LI>
+  <LI>Y2AXIS_INTEGER</LI>
+  <LI>XAXIS_LABEL_FORMAT. Si XAXIS_INTEGER es falso, el formato se usar&aacute; 
+    para dibujar las etiquetas. Por ejemplo &quot;#####.00&quot; siempre dibujar&aacute; 
+    2 digitos decimales. El formato usa los siguientes s&iacute;mbolos: </LI>
+  <UL>
+    <LI>0 un d&iacute;gito, </LI>
+    <LI># d&iacute;gito o blanco</LI>
+    <LI>. separador decimal</LI>
+    <LI>, separador de grupos</LI>
+    <LI>- caracter de signo. </LI>
+  </UL>
+  <LI>YAXIS_LABEL_FORMAT</LI>
+  <LI>Y2AXIS_LABEL_FORMAT</LI>
+  <LI>XAXIS_VERTICAL_LABELS. Si &quot;true&quot; las etiquetas se dibujar&aacute;n 
+    con una rotaci&oacute;n de 90 grados.</LI>
+  <LI>XAXIS_TICKATBASE . &quot;True&quot; or &quot;false&quot;.</LI>
+  <LI>YAXIS_TICKATBASE</LI>
+  <LI>Y2AXIS_TICKATBASE</LI>
+</UL>
+
+<P><B>Legend</B></P>
+
+<UL>
+  <LI>LEGEND_FILL. Estilo de relleno de la leyenda. Este es el estilo de fondo.</LI>
+  <LI>LEGEND_COLOR. Color del texto de la leyenda.</LI>
+  <LI>LEGEND_FONT. tipo de letra.</LI>
+  <LI>LEGEND_VERTICAL. &quot;True&quot; o &quot;false&quot;. Disposici&oacute;n 
+    de los elementos de la leyenda.</LI>
+  <LI>LEGEND_BORDER: Estilo de la l&iacute;nea del borde de la leyenda.</LI>
+  <LI>LINECHART3D_SEPARATOR: n&uacute;mero de pixels entre l&iacute;nes de distintas 
+    series (por defecto 0).</LI>
+</UL>
+
+<P><B>Series de datos (SERIE_1,SERIE_2, ...)</B></P>
+
+<UL>
+  <LI>SERIE_1. Nombre de la&nbsp; serie.</LI>
+  <li>SERIE_BARS_COLORS_1: lista de colores usada para las barras o columnas. 
+    Esto permite tener diferente colores de barras en la misma serie. Por ejemplo: 
+    &quot;RED|WHITE|BLUE&quot;</li>
+  <LI>SERIE_DATA_1. Datos de la serie (valores Y). Ejemplo: &quot;0|23|76|4&quot;</LI>
+  <LI>SERIE_DATAX_1. (opcional) uselo si necesita especificar los valores de X. 
+    Ejemplo: &quot;0|2|4|6&quot;</LI>
+  <LI>SERIE_DATA_LABELS_1: (opcional) uselo si necesite especificar sus propias 
+    etiquetas para los puntos/barras. Es un array que debe tener tantos elementos 
+    como SERIE_DATA_1. Ejemplo: &quot;cero|two|four|six&quot;</LI>
+  <LI>SERIE_STYLE_1. estilo de las l&iacute;neas (para series de tipo LINE) o 
+    estilo de relleno para barras (para series de tipo BAR).</LI>
+  <LI>SERIE_TYPE_1: Tipo de la serie (LINE, LINE2D ,BAR, BAR3D o PIE). Para dibujar 
+    curvas debe usar los valores: &quot;CURVE&quot; (curva que pasa por los puntos), 
+    B-SPLINES (curva aproximada que pasa cerca de los puntos, es m&aacute;s suave) 
+    o LINE_LEAST_SQUARES (para crear un l&iacute;nea aproximada).</LI>
+  <LI>SERIE_FILL_1: estilo de relleno para series de tipo LINE.</LI>
+  <LI>SERIE_FONT_1: Tipo de letra para los valores de la serie. Poner NULL&nbsp;para 
+    suprimir las etiquetas.</LI>
+  <LI>SERIE_COLOR_1: color.</LI>
+  <LI>SERIE_POINT_1: &quot;True&quot; o &quot;false&quot; (para series de tipo 
+    LINE). Indica si hay que dibujar un punto junto al valor.</LI>
+  <LI>SERIE_POINT_COLOR_1: color del punto (para series de tipo LINE).</LI>
+  <LI>SERIE_POINT_IMAGE_1: fichero que contiene la imagen para los puntos (gif 
+    o jpg). El fichero debe ser relativo a la posici&oacute;n del applet ( por 
+    ejemplo &quot;point.gif&quot; o &quot;..\images\point.gif&quot;) o absoluto 
+    (por ejemplo &quot;http://www.mysite.com/images/point.gif&quot;).</LI>
+  <LI>SERIE_BORDE_TYPE_1: estilo del borde de la barra (para series de tipo BAR). 
+    NORMAL, RAISED (efecto de elevaci&oacute;n) o LOWERED (efecto de barra hundida).</LI>
+  <LI>SERIE_BORDER_1:estilo de la l&iacute;nea del borde de la barra (para series 
+    de tipo BAR).</LI>
+  <LI>SERIE_DRAW_LINE_1: Dibujar una l&iacute;nea entre los valores? Y o N.</LI>
+  <LI>SERIE_FORMAT: indica el formato de los valores del gr&aacute;fico. El defecto 
+    es &quot;#####.##&quot; ( use 0 para d&iacute;gitos, + para d&iacute;gitos 
+    or blancos y . para separador decimal)</LI>
+  <LI>SERIE_SECONDYAXIS: si &quot;true&quot; esta serie usar&aacute; el segundo 
+    eje Y. Este eje se dibuja a la derecha del gr&aacute;fico.</LI>
+</UL>
+
+<P><B>Gr&aacute;ficos circulares (&quot;tartas&quot;)</B></P>
+
+<UL>
+  <LI>PIE_LABEL_FORMAT: formato de las etiquetas del gr&aacute;fico. Se pueden 
+    usar las siguiente variables: #VALUE#, #PERCENTAGE# y #LABEL#. Por ejemplo, 
+    el siguiente format: &quot;#LABEL# = #PERCENTAGE#&quot; producir&iacute;a 
+    una salida como: &quot;<i>ItemA </i>= <i>35%</i>&quot;. Ver el par&aacute;metro 
+    SERIE_LABELS.</LI>
+  <LI>PIE_STYLE_1: Estilo de relleno del primer elemento en SERIE_1 si es de tipo 
+    PIE. El segundo necesitar&aacute; el parametro PIE_STYLE_2. ...</LI>
+  <LI>PIE_NAME_1: texto para la leyenda. El segundo elemento necesitar&aacute; 
+    el par&aacute;metro PIE_NAME_2 ...</LI>
+  <LI>SERIE_PERCENTAGES_1: &quot;True&quot; o &quot;False&quot;. Para mostrar 
+    el valor absoluto o el porcentaje en las etiquetas. S&oacute;lo aplicable 
+    si no se usa el par&aacute;metro PIE_LABEL_FORMAT.</LI>
+  <LI>SERIE_DISTCENTER_1: Valor entre 0-1. Indica la distancia al centro de los 
+    valores.</LI>
+  <LI>SERIE_LABELS_1: etiquetas a usar si la variable #LABEL# est&aacute; incluida 
+    en PIE_LABEL_FORMAT. Por ejemplo, si el gr&aacute;fico tiene 3 items, las 
+    etiquetas podr&iacute;an ser: &quot;Product|Services|Other&quot;</LI>
+  <LI>SERIE_TOGETHER_1: Lista de valores boleanos que indica que partes del gr&aacute;fico 
+    circular deben mostrarse resaltadas. Por ejemplo: &quot;TRUE|FALSE|TRUE&quot; 
+    mostrar&aacute; resaltado el segundo valor del gr&aacute;fico.</LI>
+  <LI>PIECHART_RADIUS: Radio del c&iacute;rculo. Valor entre&nbsp; 0 y 1.</LI>
+  <LI>PIECHART_3D: &quot;True&quot; o &quot;False&quot;.</LI>
+  <LI>PIE_BORDER: estilo de la l&iacute;nea usada como border.</LI>
+</UL>
+<p>&nbsp;</p>
+<P>&nbsp;<B>RadarChart</B></P>
+
+<UL>
+<LI>RADARCHART_BACK: estilo de fondo del diagrama.</LI>
+
+<LI>RADARCHART_BORDER: estilo de las l&iacute;neas del border y las lines
+de factores.</LI>
+
+<LI>RADARCHART_CIRCLE: dibujar un c&iacute;rculo entorno al gr&aacute;fico
+(true o false).</LI>
+
+<LI>RADARCHART_FAKTOR_COLOR: color de los nombres de los factores.</LI>
+
+<LI>RADARCHART_FAKTOR_FONT: tipo de letra para los nombre de los factores.</LI>
+
+<LI>RADARCHART_FAKTOR_MAX: lista de valores m&aacute;ximos para cada factor.
+Por ejemplo &lt;PARAM NAME = &quot;RADARCHART_FAKTOR_MAX&quot; VALUE =
+&quot;100|100|100|100&quot;&gt;.</LI>
+
+<LI>RADARCHART_FAKTOR_MIN: lista de valores m&iacute;nimos para cada factor.
+Por ejemplo &lt;PARAM NAME = &quot;RADARCHART_FAKTOR_MIN&quot; VALUE =
+&quot;0|0|0|0&quot;&gt;.</LI>
+
+<LI>RADARCHART_FAKTOR_NAMES: nombre de los factores.</LI>
+
+<LI>RADARCHART_TICKS: n&uacute;mero de ticks en la rejilla.</LI>
+
+<LI>RADARCHART_GRID: estilo de la rejilla.</LI>
+
+<LI>RADARCHART_GRID_FONT: tipo de letra usada para dibujar los valores
+de los ticks.</LI>
+
+<LI>RADARCHART_GRID_FONT_COLOR: color de los valores de los ticks.</LI>
+
+<LI>RADARCHART_RADIUS: Controla el radio del diagrama. El valor por defecto
+es 0.9. Valores v&aacute;lidos son de 0 a 1.</LI>
+</UL>
+
+<P><B>Gr&aacute;ficos de barras</B></P>
+
+<UL>
+  <LI>BARCHART_VERTICAL: &quot;True&quot; o &quot;False&quot;. Columnas verticales 
+    o barras horizontales.</LI>
+  <LI>BARCHART_CUMULATIVE: &quot;True&quot; o &quot;False&quot;. True para gr&aacute;ficos 
+    de barras apiladas.</LI>
+  <LI>BARCHART_CUMULATIVE_BACK_COMPATIBLE: si &quot;true&quot;, el gr&aacute;fico 
+    de barras apiladas se dibujar&aacute; como en versiones anteriores de RChart. 
+    If &quot;false&quot;, los valores se sumar&aacute;n automaticamente para crear 
+    las barras apiladas.</LI>
+  <LI>BARCHART_BARWIDTH</LI>
+  <LI>BARCHART_BARSPACE</LI>
+  <LI>BARCHART_GROUPSPACE</LI>
+  <LI>BARCHART_BACK: estilo de fondo del gr&aacute;fico.</LI>
+  <LI>BARCHART3D_DEPTH (s&oacute;lo para BarChart3D): longitud del eje Z (profundidad 
+    del gr&aacute;fico). </LI>
+  <LI>BARCHART3D_FULL_DEPTH (s&oacute;lo para BarChart3D): Si es TRUE la profundidad 
+    de las barras/columnas ser&aacute; la misma que la del gr&aacute;fico. Si 
+    es FALSE ser&aacute; la mitad de su anchura.</LI>
+  <LI>BARCHART3D_BACK (s&oacute;lo para BarChart3D): estilo de fondo del gr&aacute;fico.</LI>
+</UL>
+<p><b>Gr&aacute;fico de l&iacute;neas</b></p>
+<ul>
+  <li>LINECHART_BACK: estilo de fondo del gr&aacute;fico.</li>
+  <li>LINECHART3D_DEPTH (s&oacute;lo para LineChart3D): length of the Z axis (depth 
+    of the chart). </li>
+  <li>LINECHART3D_BACK (s&oacute;lo para LineChart3D): estilo de fondo del gr&aacute;fico.</li>
+  <li>LINECHART3D_BORDER (s&oacute;lo para LineChart3D): estilo del border de 
+    las l&iacute;neas. El defecto es null (sin borde).</li>
+</ul>
+<p></p>
+<P>&nbsp;</P>
+
+<P><B>Gr&aacute;ficos de m&aacute;ximos y m&iacute;nimos (Burbujas, OHLC
+y Candlestick)</B></P>
+
+<UL>
+<LI>SERIE_BUBBLE_1: si es verdadero (TRUE), los valores m&aacute;ximos
+se usar&aacute;n como radio para dibujar burbujas. En este caso los valores
+m&iacute;nimos no se usan.</LI>
+
+<LI>SERIE_FILL_BUBBLE_1: si es verdadero las burbujas ser&aacute;n s&oacute;lidas.</LI>
+
+<LI>SERIE_MAX_DATA_1: valores m&aacute;ximos. Ejemplo: &quot;0|23|76|4&quot;</LI>
+
+<LI>SERIE_MIN_DATA_1: valores m&iacute;nimo. Ejemplo: &quot;0|23|76|4&quot;</LI>
+
+<LI>SERIE_CLOSE_DATA_1:&nbsp; valores&nbsp; de cierre. Ejemplo: &quot;0|23|76|4&quot;</LI>
+
+<LI>SERIE_LINE_TYPE_1: tipo de gr&aacute;fico (NORMAL, OHLC o CANDLESTICK).
+El tipo NORMAL no necesita valores de cierre.</LI>
+
+<LI>SERIE_LINE_END_1: dibujar un terminador de l&iacute;nea? Y or N&nbsp;</LI>
+
+<LI>SERIE_CANDLE_POSITIVE_COLOR_1: (s&oacute;lo CANDLESTICK) Color cuando
+el valor de cierre &gt; valor de apertura.</LI>
+
+<LI>SERIE_CANDLE_NEGATIVE_COLOR_1:(s&oacute;lo CANDLESTICK) Color cuando
+el valor de cierre &lt; valor de apertura.</LI>
+
+<LI>SERIE_MAXMIN_STYLE_1: estilo de la l&iacute;nea vertical.</LI>
+
+<LI>SERIE_OPENCLOSE_WIDTH_1: anchura de la l&iacute;nea horizontal para
+los valores de apertura y cierre.</LI>
+</UL>
+
+<P>&nbsp;</P>
+
+<P><B>Gr&aacute;fico</B></P>
+
+<UL>
+<LI>LEGEND_POSITION: posici&oacute;n de la leyenda. Valores v&aacute;lidos
+son RIGHT, TOP o BOTTOM</LI>
+
+<LI>LEFT_MARGIN. (defecto 0.1, 10%). Espacio reservado para el eje Y.</LI>
+
+<LI>TOP_MARGIN.&nbsp; (defecto 0.1, 10%). Espacio reservado para el t&iacute;tulo.</LI>
+
+<LI>BOTTOM_MARGIN.&nbsp; (defecto 0.1, 10%). Espacio reservado para el
+eje X.</LI>
+
+<LI>LEGEND_MARGIN.&nbsp; (defecto 0.2, 20%). Espacio reservado para la
+leyenda.</LI>
+
+<LI>CHART_BORDER: estilo de l&iacute;na del borde.</LI>
+
+<LI>CHART_FILL:&nbsp; estilo de relleno del fondo del gr&aacute;fico.</LI>
+
+<LI>BACK_IMAGE: fichero que contiene la imagen de fondo (gif o jpg). El
+fichero debe ser relativo a la posici&oacute;n del applet ( por ejemplo
+&quot;back.gif&quot; o &quot;..\images\back.gif&quot;) o absoluto (por
+ejemplo &quot;http://www.mysite.com/images/back.gif&quot;).</LI>
+
+<LI>DATAFILE: specifiica el fichero (URL) que contiene la definici&oacute;n
+del gr&aacute;fico.</LI>
+</UL>
+
+<P>&nbsp;&nbsp;<B>Caracter&iacute;sticas interactivas</B></P>
+
+<P>Estos par&aacute;metros s&oacute;lo se pueden usar en la version interactiva.</P>
+
+<UL>
+<LI>CHART_WIDTH: anchura del gr&aacute;fico (en pixels). La barra de scroll
+horizontal se activar&aacute; si el gr&aacute;fico es m&aacute;s ancho
+que el espacio disponible.</LI>
+
+<LI>CHART_HEIGHT: altura del gr&aacute;fico (en pixels). La barra de scroll
+vertical se activar&aacute; si el gr&aacute;fico es m&aacute;s alto que
+el espacio disponible.</LI>
+
+<LI>CHART_ALLOW_ZOOM: si TRUE los botones +/- del zoom estar&aacute;n visibles.</LI>
+
+<LI>CHART_MAX_ZOOM: zoom m&aacute;ximo en %. El defecto es 200.</LI>
+
+<LI>CHART_MIN_ZOOM: zoom m&iacute;nimo en %. El defecto es 50.</LI>
+
+<LI>CHART_ZOOM_INC: incremento del zoom en % para los botones +/-. El defecto
+es 25.</LI>
+</UL>
+
+<P><B><FONT SIZE=+2>Usar 2 ejes Y.</FONT></B></P>
+
+<P>Es posible dibujar m&aacute;s de un eje Y en el gr&aacute;fico. Por
+defecto el eje Y se dibuja a la izquierda del gr&aacute;fico, sin embargo
+es posible dibujar un segundo eje a la derecha. Para ello debe usar los
+par&aacute;metros Y2*.</P>
+
+<P><B><FONT SIZE=+2>Cargar la definici&oacute;n de un fichero</FONT></B></P>
+
+<P>Tal vez desea crear el gr&aacute;fico mediante un CGI, un servlet o
+simplemete un fichero en el servidor. RChart le permite:</P>
+
+<UL>
+<LI>leer la definici&oacute;n de los par&aacute;metros del applet (ya explicado).</LI>
+
+<LI>leer la definici&oacute;n de un fichero.</LI>
+
+<LI>combinar las dos</LI>
+</UL>
+
+<P>los par&aacute;metros de un applet tienen la forma::</P>
+
+<P>&lt;PARAM NAME = &quot;<I>parameter name1</I>&quot; VALUE = &quot;<I>parameter
+value1</I>&quot;&gt;<BR>
+&lt;PARAM NAME = &quot;<I>parameter name2</I>&quot; VALUE = &quot;<I>parameter
+value2</I>&quot;&gt;<BR>
+...</P>
+
+<P>el fichero de definici&oacute;n de RChart una syntaxis muy parecida:</P>
+
+<P><I>parameter name1=parameter value1<BR>
+parameter name2=parameter value2<BR>
+...</I></P>
+
+<P>Puede usar todos los par&aacute;metros explicados en este documento
+como par&aacute;metros del applet o dentro de un fichero de definici&oacute;n.
+Para que RChart lea la definici&oacute;n de un fichero debe incluir en
+el applet el siguiente par&aacute;metro:</P>
+
+<P>&lt;PARAM NAME = &quot;DATAFILE&quot; VALUE = &quot;definition.txt&quot;&gt;</P>
+
+<P>Vea los ejemplos en los ficheros AppletData.html y AppletData2.html.</P>
+
+<P><B><FONT SIZE=+2>Integraci&oacute;n con JavaScript</FONT></B></P>
+
+<P>Tambi&eacute;n puede usar javascript para modificar la apariencia del
+applet. Los siguientes m&eacute;todos est&aacute;n disponibles:</P>
+
+<UL>
+<LI>setParameter(String param,String value): cambian un par&aacute;metro.
+Ejecute <I>rebuild </I>para applicar los camnios.</LI>
+
+<LI>loadFromFile(String psFile,String Clear):&nbsp;carga un fichero de
+definici&oacute;n.<I> Clear</I> puede valer 'N' o 'Y'. Si vale 'N' los
+nuevos par&aacute;metros se a&ntilde;adir&aacute;n a los ya existentes.
+Si vale 'Y' el gr&aacute;fico se reinicializar&aacute;.</LI>
+
+<LI>rebuild(String Clear,String reReadFile): Reconstruyer el gr&aacute;fic.
+<I>Clear </I>puede valer 'N' o 'Y'. Si vale 'N' los nuevos par&aacute;metros
+se a&ntilde;adir&aacute;n a los ya existentes. Si vale 'Y' el gr&aacute;fico
+se reinicializar&aacute;. <I>reReadFile</I> puede valer 'N' or 'Y'. Especifica
+si el fichero en el par&aacute;metro DATAFILE se debe releer.</LI>
+</UL>
+
+<P>Por ejemplo, la siguiente funci&oacute;n cambia el estilo de la segunde
+serie de un gr&aacute;fico:</P>
+
+<UL>
+<P><I>function changeStyle() { <BR>
+document.TestApplet.setParameter('SERIE_STYLE_2','2|GREEN|DASHED'); <BR>
+document.TestApplet.rebuild('N','N'); <BR>
+}</I></P>
+</UL>
+
+<P>Vea un ejemplo en el fichero chart1.html</P>
+
+<P><B><FONT SIZE=+2>Servlets</FONT></B></P>
+
+<P>RChartServlet le permite usar RChart como servlet sin necesidad de programar 
+  en lenguaje Java[TM]. El Servlet tiene la ventaja de que no debe descargar classes 
+  desde el servidor al navegador, ahorrando asi tiempo. Por lo tanto el Servlet 
+  crea graficos m&aacute;s rapidamente. Tiene sin embargo la desventaja de que 
+  necesita que el servidor Web pueda ejecutar Servlets.</P>
+<p>En el caso de los servlets, los gr&aacute;ficos se crean en el servidor y se 
+  env&iacute;an al navegador en forma de imagen GIF, PNG o JPEG. Esto tiene la 
+  ventaja adem&aacute;s de que puede usar RChart en navegadores que no soporten 
+  el lenguaje Java[TM].</p>
+<p>Puede usar RChartServlet de forma muy sencilla. Los par&aacute;metros son los 
+  mismos que los del Applet. Los par&aacute;metros se pueden enviar usando POST 
+  o GET. Adem&aacute;s existen los siguiente par&aacute;metros adicionales:</p>
+<ul>
+  <li>WIDTH: anchura en pixels de la imagen resultante. (el defecto es 500).</li>
+  <li>HEIGHT: altura en pixels de la imagen resultante. (el defecto es 500).</li>
+  <li> FORMAT: formato de la imagen resultante, &quot;gif&quot;, &quot;png&quot; 
+    or &quot;jpeg&quot;. (el defecto e JPEG).</li>
+  <li>use el par&aacute;metro DATAFILE si desea leer la definici&oacute;n del 
+    gr&aacute;fico de un fichero.</li>
+</ul>
+<p>Notar que:</p>
+<ul>
+  <li> RChartServlet necesita Java Development Kit 1.2 o superior. Es sin embargo 
+    posible crear una version compatible con 1.1</li>
+  <li> El codificador GIF debe descargarse de esta dirección: http://www.acme.com/resources/classes/Acme.tar.gz 
+  </li>
+  <li>El codificador PNG debe descargarse de esta dirección: http://users.boone.net/wbrameld/pngencoder/ 
+  </li>
+</ul>
+<p>Para ejecutar el servlet usando JSWDK 1.0 debe hacer lo siguiente:</p>
+<ol>
+  <li>copie las clases de RChart a <i>/jswdk-1.0.1/examples/Web-inf/servlets</i></li>
+  <li>Agrege la siguiente l&iacute;nea <i>/jswdk-1.0.1/examples/Web-inf/servlets.properties</i> 
+    : 
+    <p><font size="-1">RChartServlet.code= RChartServlet</font></p>
+  </li>
+  <li>Copie los ficheros de datos (<font size="-1"><i>ChartData1.htm, ChartData2.htm 
+    ...</i></font>. ) a 
+    <p><i>/jswdk-1.0.1/examples</i></p>
+  </li>
+  <li>Ejecute el servidor de servlet e introduzca la siguiente URL: 
+    <p><font size="-1">http://localhost:8080/examples/servlet/RChartServlet?DATAFILE=http://localhost:8080/examples/ChartData1.htm<br>
+      </font><font size="-1">http://localhost:8080/examples/servlet/RChartServlet?DATAFILE=http://localhost:8080/examples/ChartData2.htm<br>
+      .. ...</font></p>
+  </li>
+  <li>Con los par&aacute;metros adicionales puede modificar el formato de la imagen: 
+    <p><font size="-1">http://localhost:8080/examples/servlet/RChartServlet?DATAFILE=http://localhost:8080/examples/ChartData2.htm&amp;FORMAT=gif&amp;WIDTH=600&amp;HEIGHT=600</font></p>
+  </li>
+</ol>
+<P>
+<hr>
+<div align="center"> 
+  <blockquote><b><font face="Arial, Helvetica, sans-serif"><font size=-1>Java, 
+    JSP, JDBC, JDK and all Java-based marks are trademarks or registered trademarks 
+    of Sun Microsystems, Inc. in the U.S. and other countries. J4L Components 
+    is independent of Sun Microsystems, Inc.</font></font></b> </blockquote>
+</div>
+<PRE>&nbsp;</PRE>
+</BODY>
+</HTML>

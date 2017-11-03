@@ -1,0 +1,838 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>  Class com.java4less.rchart.ChartApplet
+</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.04Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P>&nbsp;</P>
+<p></P>
+<H1>Class com.java4less.rchart.ChartApplet (and RChartServlet)</H1>
+<h3><font color="#FF0000">Visit also our new <a href="http://www.java4less.com/tutorials/chart/tutorialcontents.html">on-line 
+  tutorial</a></font></h3>
+<HR>
+<ul>
+  <li><a href="#intro"><b>Introduction </b></a></li>
+  <li><a href="#Parameters"><b>Parameters</b></a> 
+    <ul>
+      <li>Title</li>
+      <li>Axis Label</li>
+      <li>Scale</li>
+      <li>Logarithmic Scale</li>
+      <li>Axis</li>
+      <li>Legend</li>
+      <li>Data Serie</li>
+      <li>BarChart</li>
+      <li>LineChart</li>
+      <li>RadarChart</li>
+      <li>Max/Min Chart</li>
+      <li>Chart</li>
+      <li>Interactive features</li>
+      <li>Tips</li>
+    </ul>
+  </li>
+  <li><a href="#2Axis"><b>How to use 2 Y axis</b></a></li>
+  <li><b><a href="#URL">Loading the applet definition from a URL</a></b></li>
+  <li><a href="#JS"><b>JavaScript integration</b></a></li>
+  <li><a href="#events"><b>JavaScript event OnClickRChart</b></a></li>
+  <li><a href="#realtime"><b>Update the chart with realtime data</b></a></li>
+  <li><a href="#links"><b>HTML Links</b></a></li>
+  <li><b><a href="#jdbc">Database (JDBC[TM] drivers) data population</a></b></li>
+  <li><a href="#servlet"><b>Servlet (images and interactive maps)</b></a></li>
+</ul>
+<p>&nbsp;</p>
+<P><b><font size=+2><a name="intro"><!-- --></a>Introduction</font></b></P>
+<P>RChart is a Java[TM] charting package that can used as:</P>
+<ul>
+  <li>Applet.</li>
+  <li>Servlet and in JSP[TM]pages.</li>
+  <li>java.awt.Canvas in AWT applications.</li>
+  <li>JPanel in Swing applications.</li>
+  <li>Bean in your development environment.</li>
+</ul>
+<P>Charts can be created in two ways:</P>
+<ul>
+  <li>using parameters. The parameters can be created using any text editor or 
+    using RChart Visual Builder.</li>
+  <li>using the Java[TM] api (see <a href="javadoc/index.html">Javadoc[TM]</a> 
+    files)</li>
+</ul>
+<p>We provide examples of all types of charts (see examples.htm), we recommend 
+  you to use the examples for learning and use this document as reference. In 
+  the same way, we recommend you to use the example we provide as starting point 
+  for your charts, instead of starting from scracht.</p>
+<p>&nbsp;</p>
+<P><b><font size=+2><a name="parameters"><!-- --></a>Parameters</font></b></P>
+<P>This section describes the parameters you can use in order to create a chart 
+  using the applet, the servlet or RChart Visual Builder. If you want to create 
+  the chart using our API please refer to the Javadoc[TM] files.</P>
+<P>There are some parameters that have a special format:</P>
+<UL>
+  <LI>Colors: valid values are: RED,BLUE,GREEN,BLACK,GRAY,LIGHTGRAY,WHITE,DARKGRAY,YELLOW,ORANGE,CYAN 
+    and MAGENTA. You can also use the numerical value of a color as parameter. 
+    For example &quot;0xFF0000&quot; is red (RGB format), &quot;00x00FF00&quot; 
+    is green and so on.</LI>
+  <LI>Line styles have the format&nbsp; &lt;width&gt;|&lt;color&gt;|&lt;style&gt;. 
+    Style can be LINE, DASHED or DOTS. Example: &quot;0.2|RED|LINE&quot;</LI>
+  <LI>Fonts have the format&nbsp; &lt;font name&gt;|&lt;style&gt;|&lt;size&gt;. 
+    Style can be PLAIN, ITALIC or BOLD. Example: &quot;Arial|BOLD|12&quot;</LI>
+  <LI>Fill style: like color.</LI>
+  <LI>List of values. List of values a separated by &quot;|&quot;&nbsp;</LI>
+</UL>
+<P>You can define transparency in Fill and line styles using an additional parameter:</P>
+<ul>
+  <li><b>Line styles</b> have the format &lt;width&gt;|&lt;color&gt;|&lt;style&gt;|&lt;transparency&gt;</li>
+  <li><b>Fill style</b>: &lt;color&gt;|&lt;transparency&gt;</li>
+</ul>
+<p>where &lt;transparency&gt; is a value between 0 (full transparent) and 1 (opaque). 
+  We recommend 0.5.</p>
+<p>Note 1: transparency will only work with the Java Development Kit 1.2 or later 
+  (previous versions will ignore it).</p>
+<p>&nbsp;</p>
+<P>The parameters of the chart are:</P>
+<P><B>Title</B></P>
+<UL>
+  <LI>TITLECHART. Text of the title. Insert &quot;\n&quot; to create a new line 
+    in the title.</LI>
+  <LI>TITLE_FONT. Font of the title.</LI>
+  <LI>TITLE_COLOR. Color of the title</LI>
+</UL>
+<P><B>Axis Label</B></P>
+<UL>
+  <LI>XLABEL. Text of the label</LI>
+  <LI>XLABEL_FONT. Font of the label</LI>
+  <LI>XLABEL_COLOR. Color of the label</LI>
+  <LI>XLABEL_VERTICAL. If &quot;true&quot; the label will be painted with a 90 
+    degrees rotation.</LI>
+  <LI>YLABEL_VERTICAL.</LI>
+  <LI>YLABEL</LI>
+  <LI>YLABEL_FONT</LI>
+  <LI>YLABEL_COLOR</LI>
+  <LI>Y2LABEL_VERTICAL. Parameters for the second Y Axis.</LI>
+  <LI>Y2LABEL</LI>
+  <LI>Y2LABEL_FONT</LI>
+  <LI>Y2LABEL_COLOR</LI>
+</UL>
+<P><B>Scale</B></P>
+<UL>
+  <LI>XSCALE_MIN. minimum value for the scale. The default vaue is the minimum 
+    value you provide in the data series.</LI>
+  <LI>YSCALE_MIN. minimum value for the scale. The default vaue is the minimum 
+    value you provide in the data series.</LI>
+  <LI>XSCALE_MAX. maximum value for the scale. The default vaue is the maximum 
+    value you provide in the data series.</LI>
+  <LI>YSCALE_MAX. maximum value for the scale. The default vaue is the maximum 
+    value you provide in the data series.</LI>
+  <LI>Y2SCALE_MAX. Parameters for the second Y Axis.</LI>
+  <LI>Y2SCALE_MIN.</LI>
+</UL>
+<p>if you don't specify the max and min values, Rchart will calculate the values 
+  automatically, using the maximum and minimum values provided in the data series. 
+  You can tune this behaviour with the following parameters:</p>
+<ul>
+  <li>XSCALE_EXACT_MAX (also YSCALE_* and Y2SCALE_*): if true, RChart will calculate 
+    the max value of the scale using the preferred min/max values list default 
+    value is true for Y axis and false for X axis</li>
+  <li> XSCALE_EXACT_MIN: if true, RChart will calculate the min value of the scale 
+    using the preferred max values list default value is true for Y axis and false 
+    for X axis</li>
+  <li> XSCALE_PREF_MAXMIN: <b>sorted</b> list of preferred values for minimum 
+    and maximum values. It is used together with XSCALE_EXACT_MAX and XSCALE_EXACT_MIN 
+    to calculate the min/max values of the scale. The default value is:<br>
+    <br>
+    <font size="2">VALUE=&quot;-1000000|-500000|-100000|-50000|-10000|-5000|-1000|-500|-250|-100|-50|-25-10|-5|-1|-0.5|-|0.1|0|0.1|0.5|1|5|10|25|50|100|250|500|1000|5000|10000|50000|100000|500000|1000000&quot;</font><br>
+  </li>
+</ul>
+<p>&nbsp;</p>
+<p><b>Logarithmic Scales</b></p>
+<p>the following additional parameters are needed for logarithmic scales:</p>
+<ul>
+  <li>XSCALE_LOG, YSCALE_LOG and Y2SCALE_LOG. if &quot;true&quot; the scale will 
+    be logarithmic.</li>
+  <li>XSCALE_LOG_BASE, YSCALE_LOG_BASE and Y2SCALE_LOG_BASE. Base of the logarithm 
+    for the scale. 
+    <ul>
+      <li>The default is 2. This means, the distance between 1 and 2 will be the 
+        same as the distance between 2 and 4, 4 and 8... </li>
+      <li>A base of 10 means that the distance between 1 and 10 will be the same 
+        as the distance between 10 and 100, 100 and 1000 ... </li>
+    </ul>
+  </li>
+  <li>TICK_LOG_INTERVALY,TICK_LOG_INTERVALX and TICK_LOG_INTERVALY2. If &quot;true&quot; 
+    the ticks will be printed at logarithmic intervals (which is fixed intervals 
+    <b>in the screen</b>). If false the TICK_INTERVAL will be used to draw the 
+    ticks at fixed <b>value</b> intervals (not screen intervals).</li>
+</ul>
+<p>Examples:</p>
+<ul>
+  <li>YSCALE_LOG=true, YSCALE_LOG_BASE=10, YSCALEMIN=0, YSCALE_MAX=1000 and TICK_LOG_INTERVALY=true. 
+    Will draw the the ticks at position <b>10, 100 and 1000 at fixed intervals 
+    in the screen</b>.</li>
+  <li>YSCALE_LOG=true, YSCALE_LOG_BASE=2, TICK_INTERVALY=1, YSCALEMIN=0, YSCALE_MAX=8 
+    and TICK_LOG_INTERVALY=false. Will draw the the ticks at position <b>1,2,4,6,8 
+    at logarithmic intervals in the screen</b>.</li>
+</ul>
+<p>Note: logarithmic scales do not admit negative values.</p>
+<P><B>Axis</B></P>
+<P>RChart supports 3 axis, a horizontal axis (X) at the bottom of the chart, and 
+  2 vertical axis to the left (Y) and the right (Y2) of the chart.</P>
+<P>&nbsp;</P>
+<UL>
+  <LI>XAXIS: &quot;true&quot; or &quot;False&quot; to enable or disable the axis 
+    (default is true)</LI>
+  <LI>YAXIS</LI>
+  <LI>Y2AXIS</LI>
+  <LI>XAXIS_GRID. Line style of the grid.</LI>
+  <LI>YAXIS_GRID</LI>
+  <LI>Y2AXIS_GRID</LI>
+  <LI>GRIDX, GRIDY, GRIDY2: if &quot;true&quot;,the grid will be display for big 
+    ticks only.</LI>
+  <LI>TICK_INTERVALX. default 1. This means, draw a small tick for <b>each unit</b>.</LI>
+  <LI>TICK_INTERVALY</LI>
+  <LI>TICK_INTERVALY2</LI>
+  <LI>BIG_TICK_INTERVALX. default 5. This means. Draw one big tick (with label) 
+    after 5 <b>small ticks</b>. Please note, the parameter is related to TICK_INTERVALX, 
+    it counts small ticks, not units.</LI>
+  <LI>BIG_TICK_INTERVALY</LI>
+  <LI>BIG_TICK_INTERVALY2</LI>
+  <LI>BIG_TICK_INTERVAL_LIST_X. This is an alternative to BIG_TICK_INTERVALX. 
+    BIG_TICK_INTERVALX will allow you to draw big tick at regular intervals. BIG_TICK_INTERVAL_LIST_X 
+    will allow you to specify the position of the big tiks. For example: Example: 
+    &quot;0|10|12|14&quot; will draw big ticks after 0, 10,l2 and 14 small ticks.</LI>
+  <LI>BIG_TICK_INTERVAL_LIST_Y</LI>
+  <LI>BIG_TICK_INTERVAL_LIST_Y2</LI>
+  <LI>XAXIS_LABELS. List of labels</LI>
+  <LI>YAXIS_LABELS</LI>
+  <LI>Y2AXIS_LABELS</LI>
+  <LI>XAXIS_START_WITH_BIG_TICK: if &quot;true&quot; the first tick in the axis 
+    will be a big ticks (with label).</LI>
+  <LI>YAXIS_START_WITH_BIG_TICK</LI>
+  <LI>Y2AXIS_START_WITH_BIG_TICK</LI>
+  <LI>CERO_XAXIS : valid values are NO,LINE and SCALE. If value is LINE or SCALE, 
+    a additional line (axis) will be painted at the 0 position.</LI>
+  <LI>CERO_YAXIS.</LI>
+  <LI>CERO_Y2AXIS.</LI>
+  <LI>XAXIS_STYLE. Line style of the axis.</LI>
+  <LI>YAXIS_STYLE.</LI>
+  <LI>Y2AXIS_STYLE.</LI>
+  <LI> XAXIS_CLOSED (YAXIS_CLOSED), if true a line on the top (or right) of the 
+    chart will be paint. The result will be a frame around the chart.</LI>
+  <LI>XAXIS_FONT. Font of the labels.</LI>
+  <LI>YAXIS_FONT</LI>
+  <LI>Y2AXIS_FONT</LI>
+  <LI>XAXIS_FONT_COLOR. Color of the labels</LI>
+  <LI>YAXIS_FONT_COLOR</LI>
+  <LI>Y2AXIS_FONT_COLOR</LI>
+  <LI>XAXIS_INTEGER. &quot;True&quot; or &quot;false&quot;. If &quot;True&quot;, 
+    the value 2.0 will be painted as &quot;2&quot;.</LI>
+  <LI>YAXIS_INTEGER</LI>
+  <LI>Y2AXIS_INTEGER</LI>
+  <LI>XAXIS_LABEL_FORMAT. If XAXIS_INTEGER is false, this format will be used 
+    to draw the label. For example &quot;#####.00&quot; will always display 2 
+    decimal digits. The format uses the following symbols: </LI>
+  <UL>
+    <LI>0 a digit, </LI>
+    <LI># a digit, zero shows as absent </LI>
+    <LI>. placeholder for decimal separator </LI>
+    <LI>, placeholder for grouping separator. </LI>
+    <LI>- default negative prefix. </LI>
+  </UL>
+  <LI>YAXIS_LABEL_FORMAT</LI>
+  <LI>Y2AXIS_LABEL_FORMAT</LI>
+  <LI>XAXIS_VERTICAL_LABELS. If &quot;true&quot; the labels will be painted with 
+    a 90 degrees rotation.</LI>
+  <LI>XAXIS_TICKATBASE . &quot;True&quot; or &quot;false&quot;</LI>
+  <LI>YAXIS_TICKATBASE</LI>
+  <LI>Y2AXIS_TICKATBASE</LI>
+</UL>
+<p>you can also let RChart calculate the value for the tick interval using the 
+  following parameters:</p>
+<ul>
+  <li>XAXIS_AUTO_TICKS (also Y2AXIS_* and YAXIS_*): if true, Rchar will calculate 
+    the tick interval for the X axis.</li>
+  <li>XAXIS_PREF_TICK_INTERVAL: Only used if AXIS_AUTO_TICKS is true. RChart will 
+    use the interval in this list which is more appropiate to get the desired 
+    amount of ticks. The default is:<br>
+    <br>
+    <font size="2">VALUE=&quot;0.1|0.5|1|5|10|25|50|100|250|500|1000|5000|10000|50000|100000|500000|1000000&quot; 
+    </font><br>
+    <br>
+    For example, if your values range from 0 till 300 and the desired number of 
+    ticks is 10. RChart will select tick_interval=25 which will result in 12 ticks.</li>
+</ul>
+<p>You can also use dates as labels for the ticks with the following parameters:</p>
+<ul>
+  <li>XAXIS_DATE_FORMAT (default is dd-MMM-yyyy): format of the label. Use &quot;MMM&quot; 
+    to display only the month's name.</li>
+  <li>XAXIS_DATE_STEP: date step for consecutive (small) ticks. The default is 
+    "d" which means 1 step/tick is 1 day. Other values are "m" (months), "w" (week) 
+    , "y" (year). You can also use "d3" ( 3 days), &quot;m2&quot; (2 months) ....</li>
+  <li>XAXIS_INITIAL_DATE: this date will be used as base (first tick) if you want 
+    to calculate dates for the tick labels. Incompatible with logarithmic scales.</li>
+</ul>
+<p>For example:</p>
+<blockquote>
+  <p><font size="2" face="Arial, Helvetica, sans-serif">BIG_TICK_INTERVALX=2<br>
+    </font><font size="2" face="Arial, Helvetica, sans-serif">TICK_INTERVALX=1<br>
+    </font><font size="2" face="Arial, Helvetica, sans-serif">XAXIS_DATE_STEP=d<br>
+    </font><font size="2" face="Arial, Helvetica, sans-serif">XAXIS_INITIAL_DATE=01-01-2001</font></p>
+</blockquote>
+<p>will result in the following secuence of ticks/labels</p>
+<blockquote> 
+  <p>- big tick, label &quot;01-Jan-01&quot;<br>
+    - small tick, no label<br>
+    - big tick, label &quot;03-Jan-01&quot;<br>
+    - small tick, no label<br>
+    - big tick, label &quot;05-Jan-01&quot;<br>
+    - ..... </p>
+</blockquote>
+<p>&nbsp;</p>
+<p><B>Legend</B></p>
+<UL>
+  <LI>LEGEND_FILL. Fill style of the legend. This is the background.</LI>
+  <LI>LEGEND_COLOR. Color of the legend.</LI>
+  <LI>LEGEND_FONT. Font of the legend.</LI>
+  <LI>LEGEND_VERTICAL. &quot;True&quot; or &quot;false&quot;. Layout of the elements 
+    in the legend.</LI>
+  <LI>LEGEND_BORDER: Line style of the legend's border.</LI>
+</UL>
+<P><B>DataSerie (SERIE_1,SERIE_2, ...)</B></P>
+<UL>
+  <LI>SERIE_1. Name of the serie.</LI>
+  <LI>SERIE_BARS_COLORS_1: list of colors used for the bars in the barchart. This 
+    wil allow you to have different colors in the bars in the same serie. For 
+    example: &quot;RED|WHITE|BLUE&quot;</LI>
+  <LI>SERIE_BARS_START_1: list of values that specify the starting position of 
+    the bars. The default is 0 for all bars (i.e. all bars start at position 0). 
+    This parameter is used to create &quot;Event charts&quot;.</LI>
+  <LI>SERIE_DATA_1. Data of the serie (Y Values). Example: &quot;0|23|76|4&quot;</LI>
+  <LI>SERIE_DATAX_1. (optional) use it if you want to specify the X values. Example: 
+    &quot;0|2|4|6&quot;. You will need this parameter in order to create scatter 
+    charts.</LI>
+  <LI>SERIE_DATA_LABELS_1: (optional) use it if you want to specify your own labels 
+    for the points/bars in the chart. It is an array, you must put as many labels 
+    as values in SERIE_DATA_1. Example: &quot;cero|two|four|six&quot;</LI>
+  <LI>SERIE_STYLE_1. Line style of the lines (for LINE type) or fill style of 
+    the bars (for BAR type).</LI>
+  <LI>SERIE_TYPE_1: Type of the serie (LINE, LINE3D, BAR, BAR3D ,PIE or GAUGE). 
+    In order to draw curves you must use the values: &quot;CURVE&quot; (cubic 
+    curve that interpolates the points, B-SPLINES (curve that approximates the 
+    points, is very smooth) or LINE_LEAST_SQUARES (for a approximate line).</LI>
+  <LI>SERIE_FILL_1: Fill style for LINE charts.</LI>
+  <LI>SERIE_FONT_1: font of the values. Use NULL&nbsp;to suppress the labels.</LI>
+  <LI>SERIE_COLOR_1: color of the values.</LI>
+  <LI>SERIE_POINT_1: &quot;True&quot; or &quot;false&quot; (only LINE type).</LI>
+  <LI>SERIE_DRAW_LINE_1: Draw line between points? Y or N.</LI>
+  <LI>SERIE_POINT_COLOR_1: color of the point (only LINE type).</LI>
+  <LI>SERIE_POINT_IMAGE_1: Name of the image file used for the points (gif or 
+    jpg). The file must be either relative to the Java classes (e.g. &quot;point.gif&quot; 
+    or &quot;..\images\point.gif&quot;) or absolute (e.g. &quot;http://www.mysite.com/images/point.gif&quot;).</LI>
+  <LI>SERIE_BORDE_TYPE_1: type of the border of the bar (only BAR type). NORMAL, 
+    RAISED or LOWERED.</LI>
+  <LI>SERIE_BORDER_1:line style of the border of the bar (only BAR type).</LI>
+  <LI>SERIE_FORMAT: indicates the format of the values in the chart. The default 
+    is: &quot;#####.##&quot;. (use 0 to indicate a digit, # to indicate a digit 
+    or empty and . for the decimal separator)</LI>
+  <LI>SERIE_SECONDYAXIS: if &quot;true&quot; this data serie will use the second 
+    Y axis. The second YAxis is painted on the right side of the chart.</LI>
+  <LI>GAUGE_NEEDLE_1: Text for the legend of the gauge. </LI>
+  <LI>GAUGE_NEEDLE_STYLE_1: Color of the needle.</LI>
+  <LI>SERIE_NEEDLE_STYLE_1: Line style for the needle of the gauge.</LI>
+  <LI>SERIE_NEEDLE_LENTGH_1: Length of the needle (in % fo the radius). Default 
+    is 80.</LI>
+</UL>
+<p><B>PieChart</B></p>
+<UL>
+  <LI>PIE_LABEL_FORMAT: label format for items in the pie. The following variables 
+    can be use: #VALUE#, #PERCENTAGE# and #LABEL#. For example, the following 
+    format: &quot;#LABEL# = #PERCENTAGE#&quot; would produce this output: &quot;<i>ItemA 
+    </i>= <i>35%</i>&quot;. See SERIE_LABELS parameter.</LI>
+  <LI>PIE_STYLE_1: fill styles of the elements in SERIE_1 if it is PIE type. The 
+    second element will need the parameter PIE_STYLE_2. ...</LI>
+  <LI>PIE_NAME_1: text for the legend of the pie. The second element will need 
+    the parameter PIE_NAME_2 ...</LI>
+  <LI>SERIE_LABELS_1: labels to be used if #LABEL# is included in the LABEL_FORMAT. 
+    For example, if the pie has 3 items, the labels could be: &quot;Product|Services|Other&quot;</LI>
+  <LI>SERIE_PERCENTAGES_1: &quot;True&quot; or &quot;False&quot;. If true the 
+    labels will be displayed as percentage, if false as absilute value.Only used 
+    if the PIE_LABEL_FORMAT parameter is empty.</LI>
+  <LI>SERIE_DISTCENTER_1: Value between 0-1. Indicantes distance to center of 
+    the values.</LI>
+  <LI>SERIE_TOGETHER_1: This list of booleans indicates which items of the pie 
+    will be displayes separated from the others. For example, in a pie with 3 
+    items: &quot;TRUE|FALSE|TRUE&quot;. The second item will be displayed separated 
+    from the other 2.</LI>
+  <LI>PIECHART_RADIUS: Size of the pie. Value between 0 and 1.</LI>
+  <LI>PIECHART_3D: &quot;True&quot; or &quot;False&quot;.</LI>
+  <LI>PIE_BORDER: Line style of the border of the pie.</LI>
+  <LI>PIE_LABEL_LINE: this is the line style (e.g. &quot;2|BLACK|NORMAL&quot;) 
+    used to draw the lines that link the labels with the pie. The default is null. 
+  </LI>
+</UL>
+<P>&nbsp;</P>
+<P><B>BarChart</B></P>
+<UL>
+  <LI>BARCHART_VERTICAL: &quot;True&quot; or &quot;False&quot;. Vertical columns 
+    or horizontal bars.</LI>
+  <LI>BARCHART_CUMULATIVE: &quot;True&quot; or &quot;False&quot;. True for stackbarChart.</LI>
+  <LI>BARCHART_CUMULATIVE_BACK_COMPATIBLE: if &quot;true&quot;, the stacked chart 
+    will be draw as previous versions of Rchart. If false, the values will be 
+    automatically acumulated.</LI>
+  <LI>BARCHART_BARWIDTH</LI>
+  <LI>BARCHART_BARSPACE</LI>
+  <LI>BARCHART_GROUPSPACE</LI>
+  <LI>BARCHART_BASE: starting point of the bars, default is 0.</LI>
+  <LI>BARCHART_BACK: background style.</LI>
+  <LI>BARCHART3D_DEPTH (only for BarChart3D): length of the Z axis (depth of the 
+    chart). </LI>
+  <LI>BARCHART3D_FULL_DEPTH (only for BarChart3D): if TRUE the depth of the bars 
+    will be the same as the depth of the charts. If FALSE the depth of the bars 
+    will be half of the width.</LI>
+  <LI>BARCHART3D_BACK (only for BarChart3D): background style.</LI>
+</UL>
+<p><b>LineChart</b></p>
+<ul>
+  <li>LINECHART_BACK: background style.</li>
+  <li>LINECHART_POINT_SIZE: size of the squares used to paint points.</li>
+  <li>LINECHART3D_DEPTH (only for LineChart3D): length of the Z axis (depth of 
+    the chart). </li>
+  <li>LINECHART3D_BACK (only for LineChart3D): background style.</li>
+  <li>LINECHART3D_BORDER (only for LineChart3D): style of the lines' border. The 
+    default is null (no border).</li>
+  <li>LINECHART3D_SEPARATOR: number of pixels between lines of different series 
+    (default is 0, lines are together).</li>
+</ul>
+<p><b>ScatterChart</b></p>
+<p>A scatterchart is a normal linechart where you have suppressed the lines using:</p>
+<blockquote>
+  <p>SERIE_DRAW_LINE_1=N</p>
+</blockquote>
+<p>for example, in order two plot 2 points at coordinates (x=1,y=1) and (x=3,Y=2) 
+  you would use</p>
+<blockquote>
+  <p>SERIE_DATA_1=1|2<br>
+    SERIE_DATAX_1=1|3<br>
+    SERIE_DRAW_LINE_1=N<br>
+    SERIE_POINT_1=Y </p>
+</blockquote>
+<p>&nbsp;</p>
+<P><B>RadarChart</B></P>
+<UL>
+  <LI>RADARCHART_BACK: background fill style of the diagram.</LI>
+  <LI>RADARCHART_BORDER: style of the border and faktor lines.</LI>
+  <LI>RADARCHART_CIRCLE: draw a circle around the diagram (true or false).</LI>
+  <LI>RADARCHART_FAKTOR_COLOR: color of the faktor's names.</LI>
+  <LI>RADARCHART_FAKTOR_FONT: font used to draw the faktors' names.</LI>
+  <LI>RADARCHART_FAKTOR_MAX: list of maximum values for each faktor. For example 
+    &lt;PARAM NAME = &quot;RADARCHART_FAKTOR_MAX&quot; VALUE = &quot;100|100|100|100&quot;&gt;.</LI>
+  <LI>RADARCHART_FAKTOR_MIN: list of maximum values for each faktor. For example 
+    &lt;PARAM NAME = &quot;RADARCHART_FAKTOR_MIN&quot; VALUE = &quot;0|0|0|0&quot;&gt;.</LI>
+  <LI>RADARCHART_FAKTOR_NAMES: faktors' names.</LI>
+  <LI>RADARCHART_TICKS: number of ticks in the grid.</LI>
+  <LI>RADARCHART_GRID: style of the grid.</LI>
+  <LI>RADARCHART_GRID_FONT: font used to draw grid ticks.</LI>
+  <LI>RADARCHART_GRID_FONT_COLOR: color of the ticks' values.</LI>
+  <LI>RADARCHART_RADIUS: Controls the size of the diagram. The default value is 
+    0.9. Valid values are 0 to 1.</LI>
+</UL>
+<P><B>MaxMin charts (OHLC and Candlestick)</B></P>
+<UL>
+  <LI>SERIE_BUBBLE_1: if TRUE the max values will be used as radius to draw a 
+    bubble chart. The Min values are not used in this case.</LI>
+  <LI>SERIE_FILL_BUBBLE_1: if true the bubbles will be solid.</LI>
+  <LI>SERIE_MAX_DATA_1: maximum values of the data of the serie. Example: &quot;0|23|76|4&quot;</LI>
+  <LI>SERIE_MIN_DATA_1: minimum values of the data of the serie. Example: &quot;0|23|76|4&quot;</LI>
+  <LI>SERIE_CLOSE_DATA_1:&nbsp; close values of the data of the serie. Example: 
+    &quot;0|23|76|4&quot;</LI>
+  <LI>SERIE_LINE_TYPE_1: type of chart (NORMAL, OHLC or CANDLESTICK). The NORMAL 
+    type doesn't need close values.</LI>
+  <LI>SERIE_LINE_END_1: draw line ending horizontal line? Y or N&nbsp;</LI>
+  <LI>SERIE_CANDLE_POSITIVE_COLOR_1: (only CANDLESTICK) Color of when close value 
+    &gt; open value.</LI>
+  <LI>SERIE_CANDLE_NEGATIVE_COLOR_1:(only CANDLESTICK) Color of when close value 
+    &lt; open value.</LI>
+  <LI>SERIE_MAXMIN_STYLE_1: style of the vertical line.</LI>
+  <LI>SERIE_OPENCLOSE_WIDTH_1: width of the horizontal line for open and close 
+    values.</LI>
+</UL>
+<P><b>Gauge</b></P>
+<ul>
+  <li>GAUGE_RADIUS: Size of the radius gauge, Value between > 0 and < 2. Default 
+    is 1.</li>
+  <li>GAUGE_BORDER (*): Line style of the border of the pie.</li>
+  <li>GAUGE_BASE (*): Size of the circle painted as needle base (% of the radius). 
+    Default is 6 which mean 6% of the size of the gauge</li>
+  <li>GAUGE_AXIS1_MARGIN (*): Margin of the main scale (in pixels). Distance in 
+    pixels between border and ticks, the default is 5.</li>
+  <li>GAUGE_AXIS2_MARGIN (*): Margin of the second scale (in pixels). Distance 
+    in pixels between border and ticks of the second scale, the default is 40.</li>
+  <li>GAUGE_AXIS1_LABEL_MARGIN(*). Labels margin (in pixels) of the main scale. 
+    Use positive/negative to place the labels outside/inside the circle.Default 
+    value is 10 (pixels outside the gauge).</li>
+  <li>GAUGE_AXIS2_LABEL_MARGIN(*): Labels margin (in pixels) of the second scale. 
+    Use positive/negative to place the labels outside/inside the circle. Default 
+    value is -20</li>
+  <li>GAUGE_MAX_ZONE(*): Zone above this value will be coloured using MAX_ZONE_COLOR. 
+  </li>
+  <li>GAUGE_MAX_ZONE_COLOR(*): Color used to mark the area near to the maximum 
+    in the scale. Default is red.</li>
+  <li>GAUGE_MIN_ZONE(*): Zone under this value will be coloured using MIN_ZONE_COLOR.</li>
+  <li>GAUGE_MIN_ZONE_COLOR(*): Color used to mark the area near to the minimum 
+    in the scale. Default is green.</li>
+  <li>GAUGE_MAXMIN_ZONE_WIDTH(*): Width in pixels of the ring for the max and 
+    min zones. Default is 50.</li>
+  <li>GAUGE_MAXMIN_ZONE_MARGIN(*):Margin, in pixels (distance to border) of the 
+    min/max area. Default is 5.</li>
+  <li>GAUGE_START_ANGLE: Start angle of the scale of the gauge (default is -20). 
+    In order to draw a semicircular gauge you must use 0 as start angle and 180 
+    as end angle. </li>
+  <li>GAUGE_END_ANGLE(*): End angle of the scale of the gauge (default is 200). 
+  </li>
+  <li>GAUGE_SUBGAUGE_SIZE: Size of the subgauges in % of the size of the main 
+    gauge. Default value is 30.</li>
+  <li>GAUGE_BACK(*): Background color. Default is blue.</li>
+</ul>
+<p>A gauge can contain up to 2 subgauges. In order to activate the subgauges you 
+  must set:</p>
+<ul>
+  <li>GAUGE1_ENABLE to true.</li>
+  <li>GAUGE2_ENABLE to true.</li>
+</ul>
+<p>the last (or last two) value of the SERIE_DATA_1 parameter will be used plotter 
+  in the subgauge1 (and/or subgauge2).</p>
+<p>paramterers of the gauge marked with (*) can be used to defined the subgauges 
+  by adding &quot;1&quot; or &quot;2&quot; to the &quot;GAUGE&quot; word in the 
+  parameter's name. For example: GAUGE1_BORDER,GAUGE1_BASE,GAUGE2_BORDER,GAUGE2_BASE 
+  and so on.</p>
+<p>Gaugechart needs at least 1 scale, defined using the XAXIS* parameters. You 
+  can define a second scale for the gauge using the YAXIS* parameters. However, 
+  if you have defined subgauges, the YAXIS* scale will be used for subgauge1 and 
+  the Y2AXIS* scale parameters will be used for subgauge2.</p>
+<p>&nbsp;</p>
+<P><B>Chart</B></P>
+<UL>
+  <LI>LEGEND_POSITION: position of the legend. Valid values are RIGHT, TOP or 
+    BOTTOM</LI>
+  <LI>LEFT_MARGIN. (default 0.1, 10%). Reserverd space for the Y Axis.</LI>
+  <LI>RIGHT_MARGIN. (default 0.1, 10%). Only used if legend position is TOP or 
+    BOTTOM. This margin is the blank space left to the right of the chart.</LI>
+  <LI>TOP_MARGIN. (default 0.1, 10%). Reserverd space for the title.</LI>
+  <LI>BOTTOM_MARGIN. (default 0.1, 10%). Reserverd space for the X Axis.</LI>
+  <LI>LEGEND_MARGIN. (default 0.2, 20%). Reserverd space for the legend.</LI>
+  <LI>CHART_BORDER: Line style of the border of the chart.</LI>
+  <LI>CHART_FILL:&nbsp; Background of the chart (Fill style).</LI>
+  <LI>BACK_IMAGE: Name of the image file used as backgroung (gif or jpg). The 
+    file must be either relative to the Java classes (e.g. &quot;back.gif&quot; 
+    or &quot;..\images\back.gif&quot;) or absolute (e.g. &quot;http://www.mysite.com/images/back.gif&quot;).</LI>
+  <LI>DATAFILE: specifies data file that contains chart definition.</LI>
+</UL>
+<P><B>Interactive features</B></P>
+<P>This parameters can only be used in the interactive version.</P>
+<UL>
+  <LI>CHART_WIDTH: width of the chart (in pixels). The horizontal scroll bar will 
+    be activated if the chart is wider than the available space.</LI>
+  <LI>CHART_HEIGHT: height of the chart (in pixels). The vertical scroll bar will 
+    be activated if the chart is higher than the available space.</LI>
+  <LI>CHART_ALLOW_ZOOM: if TRUE the +/- zoom buttons will be made visible.</LI>
+  <LI>CHART_MAX_ZOOM: maximum zoom in %. The default is 200.</LI>
+  <LI>CHART_MIN_ZOOM: minimum zoom in %. The default is 50.</LI>
+  <LI>CHART_ZOOM_INC: zoom increment in % for the +/- buttons. The default is 
+    25.</LI>
+</UL>
+<P><b>Tips</b></P>
+<P>If you want to display <i>tips </i>when the mouse is placed over a bar, point 
+  or item you can use these parameters:</P>
+<ul>
+  <li>CHART_SHOW_TIPS. Set it to &quot;true&quot; in order to activate tips.</li>
+  <li>SERIE_TIPS_*: list of tips for the values of the serie. For example, if 
+    serie 1 has 3 bars: </li>
+</ul>
+<blockquote>
+  <p><font size="2">&lt; PARAM NAME=&quot;SERIE_TIPS_1&quot; VALUE=&quot;tip for 
+    first bar|tip for second bar| tip for third bar&quot;&gt;</font></p>
+</blockquote>
+<p>you can use &quot;\n&quot; in order to create multiline tips.</p>
+<p>Use the following parameters to change the aspect of the tips:</p>
+<ul>
+  <li>CHART_TIPS_COLOR: background color of the tips.</li>
+  <li>CHART_TIPS_FONT_COLOR : font color.</li>
+  <li>CHART_TIPS_FONT: font of the tips.</li>
+</ul>
+<p>if you also want to display the current position (Y axis value) of the cursor 
+  you can use:</p>
+<blockquote> 
+  <p><font size="2">&lt; PARAM NAME=&quot;CHART_SHOW_POSITION&quot; VALUE=&quot;true&quot;&gt;</font></p>
+</blockquote>
+<P>&nbsp;</P>
+<P><a name="2Axis"><!-- --></a>&nbsp;<B><FONT SIZE=+2>How to use 2 Y axis.</FONT></B></P>
+<P>It is possible to draw more than one Y axis. The default Y axis is painted 
+  on the left side of the chart, however a second axis can be painted on the right 
+  side. In this case you must use the Y2* parameter. The SERIE_SECONDYAXIS parameter 
+  of the data serie spacifies which scale a data serie is using (scale of the 
+  first Y axis or scale of the second Y axis).</P>
+<P>&nbsp;</P>
+<P><B><FONT SIZE=+2><a name="URL"><!-- --></a>Loading the applet definition from 
+  a URL</FONT></B></P>
+<P>You may also want to create the chart definition/data with a CGI, servlet or 
+  file in you server. RChart let's you:</P>
+<UL>
+  <LI>read data from applet parameters (already explained)</LI>
+  <LI>read the parameters form a URL (file)</LI>
+  <LI>combine both (parameters set with javacript or read from a file have priority 
+    over applet parameters)</LI>
+</UL>
+<P>normal applet's parameters look like this:</P>
+<P>&lt;PARAM NAME = &quot;<I>parameter name1</I>&quot; VALUE = &quot;<I>parameter 
+  value1</I>&quot;&gt;<BR>
+  &lt;PARAM NAME = &quot;<I>parameter name2</I>&quot; VALUE = &quot;<I>parameter 
+  value2</I>&quot;&gt;<BR>
+  ...</P>
+<P>the definition file for RChart looks like this:</P>
+<P><I>parameter name1=parameter value1<BR>
+  parameter name2=parameter value2<BR>
+  ...</I></P>
+<P>You can use<B> all parameters explained in this document as applet parameters 
+  or within a definition file</B>. In order to instruct RChart to read from a 
+  file you must include an applet parameter like this one:</P>
+<P>&lt;PARAM NAME = &quot;DATAFILE&quot; VALUE = &quot;definition.txt&quot;&gt;</P>
+<P>See the files AppletData.html and AppletData2.html for an example.</P>
+<P><B><FONT SIZE=+2><a name="JS"><!-- --></a>JavaScript integration</FONT></B></P>
+<P>You may also use javascript to change the chart displayed in the applet. The 
+  applet has the following methods:</P>
+<UL>
+  <LI>setParameter(String param,String value): sets a parameter. Call rebuild 
+    to apply changes.</LI>
+  <LI>loadFromFile(String psFile,String Clear):&nbsp;load a definition file. Clear 
+    can be 'N' or 'Y'. If 'N', the new parameters will be added to the previous 
+    set parameters. If 'Y' the chart will be completelly reset.</LI>
+  <LI>rebuild(String Clear,String reReadFile): Repaints the chart . Clear can 
+    be 'N' or 'Y'. If 'N', the new parameters will be added to the previous set 
+    parameters. If 'Y' the chart will be completelly reset. reReadFile can be 
+    'N' or 'Y'. It specifies wheter the file in the DATAFILE parameter should 
+    be reread.</LI>
+</UL>
+<P>For example, to change the line's style of the second serie of a chart you 
+  can use the following JavaScript function:</P>
+<UL>
+  <P><I>function changeStyle() { <BR>
+    document.TestApplet.setParameter('SERIE_STYLE_2','2|GREEN|DASHED'); <BR>
+    document.TestApplet.rebuild('N','N'); <BR>
+    }</I></P>
+</UL>
+<P>See file chart1.hml for an example.</P>
+<P>&nbsp;</P>
+<P><b><font size=+2><a name="events"><!-- --></a>JavaScript event </font></b><font size=+2><i>OnClickRChart</i></font></P>
+<P>RChart (only the applet) will trigger the<i> OnClickRChart</i> event when the 
+  user clicks on bar (barchart), point (linechart) or item (piechart). In order 
+  to activate this feature you must set the parameter</P>
+<P><font size="2">&lt;PARAM NAME=&quot;CHART_JAVASCRIPT_EVENTS&quot; VALUE=&quot;True&quot;&gt;</font></P>
+<P>This event will receive two parameters:</P>
+<ul>
+  <li>name of the serie the user clicked on.</li>
+  <li>secuence of the point/bar/item the user cliked on (starting at 0).</li>
+</ul>
+<P>&nbsp;</P>
+<P>For example:</P>
+<P><i>&lt;SCRIPT&gt;<br>
+  function OnClickRChart(serieName, valuePosition) { </i></P>
+<P><i>}<br>
+  &lt;/SCRIPT&gt; </i></P>
+<P>&nbsp;</P>
+<P>Note that you must also include the word MAYSCRIPT in the applet parameters.</P>
+<P>&nbsp;</P>
+<P><b><font size=+2><a name="realtime"><!-- --></a>Update the chart with realtime 
+  data </font></b></P>
+<P>If you want to update the chart (the applet) every X seconds with new data 
+  from your server you must configure the applet like this:</P>
+<ol>
+  <li>Set the following parameter to set the update frecuency (the default is 
+    2000= 2 seconds): REALTIME_MSECS=2000.</li>
+  <li>If you want RChart to read new data (parameters) from a Url (for example, 
+    a servlet, ASP, Php program ...) set the parameter REALTIME_DATAFILE=http://myserver.com/updateData.asp<br>
+    <br>
+    where the program &quot;updateData.asp&quot; (can also be php, JSP ...) must 
+    return the parameters in the usual format (see <b><a href="#URL">Loading the 
+    applet definition from a URL</a></b>). For example it might return this information: 
+    &quot;SERIE_DATA_1= 12|34|46|56&quot; in order to update the values for serie 
+    1.<br>
+    <br>
+  </li>
+  <li>RChart will also trigger a Javascript function called &quot;onRChart()&quot; 
+    if you set REALTIME_JS=true.</li>
+</ol>
+<p>&nbsp;</p>
+<P><b><font size=+2><a name="links"><!-- --></a>HTML Links</font></b></P>
+<P>&nbsp;</P>
+<P>RChart (only the applet) will open an HTML when the user clicks on bar (barchart), 
+  point (linechart) or item (piechart). In order to activate this feature you 
+  must set the parameter: SERIE_LINKS_*.</P>
+<P>For example, if your data serie 1 has 3 values, you can set the parameter like 
+  this:</P>
+<blockquote>
+  <p><font size="2">&lt; PARAM NAME=&quot;SERIE_LINKS_1&quot; VALUE=&quot;value1.html|value2.html|value3.html&quot;&gt;</font></p>
+</blockquote>
+<P>Furthermore you can specify the frame where the HTML page will be displayed:</P>
+<blockquote>
+  <p><font size="2">&lt;PARAM NAME=&quot;CHART_LINKS_TARGET&quot; VALUE=&quot;_new&quot;&gt;</font></p>
+</blockquote>
+<P>Valid values are: &quot;_new&quot; (new browser's window) , &quot;_top&quot; 
+  (current window) and &quot;&lt;frame name&gt;&quot; (if you ise frames).</P>
+<P><b><font size=+2><a name="jdbc"><!-- --></a>Database (JDBC[TM] drivers) data 
+  population</font></b></P>
+<P>&nbsp;</P>
+<P>If you use RChart as a servlet or in your Java or JSP application (not as applet) 
+  you can use Rchart's JDBC[TM features in order to read data from a database. 
+  First of all you must specify how to connect to the database using the following 
+  parameters:</P>
+<ul>
+  <li>JDBC_DATABASE. Database to connect to. For example: <i>jdbc:odbc:ODBCNAME</i>. 
+    If you want to use a jdbc native driver please check your driver's documentation 
+    to learn the format of the connection string.</li>
+  <li>JDBC_DRIVER. JDBC driver, if empty, the odbc bridge will be used.</li>
+  <li>JDBC_USER.</li>
+  <li>JDBC_PASSWORD.</li>
+</ul>
+<P>when RChart is connected to your database you can put a SQL Select command 
+  in any RChart parameter. SQL Queries must have the &quot;<i>JDBC:</i>&quot; 
+  prefix. For example:</P>
+<P>SERIE_DATA_1=JDBC:Select soldQty from SalesMonth Order by salesMonth DESC</P>
+<P>note that rchart <b>will only read the first field</b> in the select statement, 
+  for this reason it is useless to use more than 1 field in the query. If the 
+  query returns more than 1 record, rchart will return the values as a list separated 
+  by | , just like parameters are expected.</P>
+<P><b>Parameters</b></P>
+<P>The SQL queries you define in RChart can also contain parameters. For example:</P>
+<P>SERIE_DATA_1=JDBC:Select soldQty from SalesMonth where ProductId='[%product]' 
+  Order by salesMonth DESC</P>
+<P>contains a parameter called &quot;product&quot;. Before you try to create a 
+  chart containing this query you must provide a value for all parameters. This 
+  is done in the following way:</P>
+<P>chart.setSQLParameter(&quot;product&quot;,&quot;1&quot;);</P>
+<P>where the first parameter of <i>setSQLParameter</i> is the parameter name and 
+  the second is the value.</P>
+<P>&nbsp;</P>
+<P><B><FONT SIZE=+2><a name="servlet"><!-- --></a>Servlets</FONT></B></P>
+<P>RChartServlet will allow you to use RChart as Servlet without any Java programming. 
+  The servlet has the advantage that the Java classes must not be downloaded to 
+  the client's browser. This means your chart will be displayed faster. It has 
+  however the disadvantage that you need to have a web server able to execute 
+  servlets.</P>
+<P>In the case of servlets, the charts are created in the server and the output 
+  in GIF, PNG or JPEG format is sent to the browser. This also means that you 
+  can use RChart to display charts in browser that do not support Java.</P>
+<P>You can very easily use RChartServlet. The parameters are the same as those 
+  for the applet. You can send the parameters to the Servlet using the POST or 
+  GET methods. Furthermore there are some additional parameters:</P>
+<ul>
+  <li>WIDTH: width in pixels of the output image. (default is 500).</li>
+  <li>HEIGHT: height in pixels of the output image. (default is 500).</li>
+  <li> FORMAT: format of output image, &quot;gif&quot;, &quot;png&quot; or &quot;jpeg&quot;. 
+    (default is JPEG).</li>
+  <li>use the parameter DATAFILE if you want to read the chart definition from 
+    a file.</li>
+</ul>
+<p>Note:</p>
+<ul>
+  <li> that RChartServlet requires the Java Development Kit 1.2 or newer. It is 
+    however possible to make a 1.1 compatible version.</li>
+  <li>The GIF encoder must previously be downloaded and included in your classpath: 
+    http://www.acme.com/resources/classes/Acme.tar.gz </li>
+  <li>The PNG encoder must previously be downloaded and included in your classpath: 
+    http://users.boone.net/wbrameld/pngencoder/ </li>
+</ul>
+<p><b>Servlet installation on JSWDK 1.0</b></p>
+<p>In order to run the servlet using JSWDK 1.0 you must do the following:</p>
+<ol>
+  <li>copy the RChart classes to <i>/jswdk-1.0.1/examples/Web-inf/servlets</i></li>
+  <li>Add the following line to the file <i>/jswdk-1.0.1/examples/Web-inf/servlets.properties</i> 
+    : 
+    <p><font size="-1">RChartServlet.code= RChartServlet</font></p>
+  </li>
+  <li>Copy the data files (<font size="-1"><i>ChartData1.htm, ChartData2.htm ...</i></font>. 
+    ) to 
+    <p><i>/jswdk-1.0.1/examples</i></p>
+  </li>
+  <li>Start the server an test the servlet entering the following address and 
+    parameters in your browser: 
+    <p><font size="-1">http://localhost:8080/examples/servlet/RChartServlet?DATAFILE=http://localhost:8080/examples/ChartData1.htm<br>
+      </font><font size="-1">http://localhost:8080/examples/servlet/RChartServlet?DATAFILE=http://localhost:8080/examples/ChartData2.htm<br>
+      .. ...</font></p>
+  </li>
+  <li>You can use the servlet with the POST or GET method.</li>
+  <li>You can put additional parameters to modify the image format and the size: 
+    <p><font size="-1">http://localhost:8080/examples/servlet/RChartServlet?DATAFILE=http://localhost:8080/examples/ChartData2.htm&amp;FORMAT=gif&amp;WIDTH=600&amp;HEIGHT=600</font></p>
+  </li>
+</ol>
+<p>&nbsp;</p>
+<p><b>Servlet installation on Tomcat 3.2.3</b></p>
+<p>In order to run the servlet using Tomcat 3.2.3 you must follow these steps:</p>
+<ol>
+  <li>create a new web application. directory <i>"tomcat_home</i>/webapps/rchart"</li>
+  <li>modify the file &quot;<i>tomcat_home</i>/conf/server.xml&quot; and add the 
+    following line <br>
+    <br>
+    <i><font size="-1">&lt;Context path=&quot;/rchart&quot; <br>
+    docBase=&quot;webapps/rchart&quot; <br>
+    crossContext=&quot;false&quot;<br>
+    debug=&quot;0&quot; <br>
+    reloadable=&quot;true&quot; &gt; <br>
+    &lt;/Context&gt;</font></i><br>
+    <br>
+    so that Tomcat can find your new application. For tomcat 4.0 you must use:<br>
+    <br>
+    <context path="/rchart" docbase="rchart" debug="0" reloadable="true"><context path="/rchart" docbase="rchart" debug="0" reloadable="true"><context path="/rchart" docbase="rchart" debug="0" reloadable="true"><context path="/rchart" docbase="rchart" debug="0" reloadable="true"><font size="-1"><i>&lt;Context 
+    path=&quot;/rchart&quot; docBase=&quot;rchart&quot; debug=&quot;0&quot; reloadable=&quot;true&quot;&gt; 
+    </i></font><br>
+    <br>
+  </li>
+  <li>copy Rchart classes to &quot;webapps/rchart/web-inf/classes&quot;<br>
+  </li>
+  <li>copy RChart sample data files (<font size="-1"><i>ChartData1.htm, ChartData2.htm 
+    ...</i></font>. ) to "webapps/rchart/data"</li>
+  <li>start Tomcat</li>
+  <li>start your browser and enter the link:<br>
+    <br>
+    <font size="-1">http://localhost:8080/rchart/servlet/RChartServlet?DATAFILE=http://localhost:8080/rchart/data/chartData1.htm</font> 
+  </li>
+</ol>
+<p><b>Note about the servlet on Linux</b>: if texts are not displayed while running 
+  the servlet on <b>Linux </b>you should change default the font. RChart uses 
+  &quot;Arial&quot; as default font. This may be missing on Linux, for this reason 
+  texts could be missing. In this case you should use another font, for example: 
+  &quot;TITLE_FONT=DIALOG|PLAIN|12&quot;</p>
+<p><b>Image maps (interactive servlets)</b></p>
+<p>RChart comes with a servlet called <i>RChartMapServlet</i> that will create 
+  a HTML image map. This can be used together with <i>RChartServlet </i>in order 
+  to create interactive servlets that will display tooltips labels (SERIE_TIPS_* 
+  parameter) and html links (SERIE_LINKS_* parameter).</p>
+<p>The following JSP code would produce a interactive chart image:</p>
+<blockquote> 
+  <p><jsp:include page="servlet/RChartMapServlet" flush="true"> <jsp:param name="DATAFILE" value="http://localhost:8080/rchart/data/dataFile.html"/> 
+    </jsp:include> &lt;jsp:include page=&quot;servlet/RChartMapServlet&quot; flush=&quot;true&quot;&gt;<br>
+    &lt;jsp:param name=&quot;DATAFILE&quot; value=&quot;http://localhost:8080/rchart/data/dataFile.html&quot;/&gt;<br>
+    &lt;/jsp:include&gt;</p>
+  <p>&lt;img src=&quot;http://localhost:8080/rchart/servlet/RChartServlet?DATAFILE=http://localhost:8080/rchart/data/dataFile.html&quot; 
+    BORDER=0 ISMAP USEMAP=&quot;#CHARTMAP&quot;&gt;</p>
+</blockquote>
+<p>this JSP code uses boths servlets:</p>
+<ol>
+  <li>RChartMapServlet calculates the HTML image map</li>
+  <li>RChartServlet returns the image (gif, png ...)</li>
+</ol>
+<p>see example chartServletMap.jsp included in the product.</p>
+<p>&nbsp;</p>
+<hr>
+<div align="center"> 
+  <blockquote><b><font face="Arial, Helvetica, sans-serif"><font size=-1>Java, 
+    JSP, JDBC, JDK and all Java-based marks are trademarks or registered trademarks 
+    of Sun Microsystems, Inc. in the U.S. and other countries. J4L Components 
+    is independent of Sun Microsystems, Inc.</font></font></b> </blockquote>
+</div>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</BODY>
+</HTML>

@@ -1,0 +1,99 @@
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
+<TITLE>
+HTML Test Page
+</TITLE>
+<SCRIPT>
+function changeParameter(p,v) {
+  document.TestApplet.setParameter(p,v);
+  document.TestApplet.rebuild('N','N');
+}
+function loadData() {
+  document.TestApplet.loadFromFile('AppletData.html','N');
+  document.TestApplet.rebuild('N','N');
+}
+function loadData2() {
+  document.TestApplet.loadFromFile('AppletData2.html','N');
+  document.TestApplet.rebuild('N','N');
+}
+function resetChart() {
+   document.TestApplet.rebuild('Y','N');
+}
+</SCRIPT>
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<BR>
+<APPLET
+  CODEBASE = "./"
+  CODE     = "com.java4less.rchart.ChartApplet.class"
+  NAME     = "TestApplet"
+  ARCHIVE  = "rchart.jar"
+  WIDTH    = 500
+  HEIGHT   = 500
+  HSPACE   = 0
+  VSPACE   = 0
+  ALIGN    = middle
+>
+<PARAM NAME = "TITLECHART" VALUE = "Sales 1999">
+<PARAM NAME = "LEGEND" VALUE = "TRUE">
+<PARAM NAME = "XLABEL" VALUE = "Month">
+<PARAM NAME = "YLABEL" VALUE = "Million $">
+<PARAM NAME = "XAXIS_LABELS" VALUE = "June|July|Aug.|Sept.|Oct.|Nov.|Dec.">
+<PARAM NAME = "SERIE_1" VALUE = "Products">
+<PARAM NAME = "SERIE_2" VALUE = "Services">
+<PARAM NAME = "SERIE_STYLE_1" VALUE = "0.2|RED|LINE">
+<PARAM NAME = "SERIE_FONT_1" VALUE = "Arial|PLAIN|8">
+<PARAM NAME = "SERIE_FONT_2" VALUE = "Arial|PLAIN|8">
+<PARAM NAME = "SERIE_COLOR_1" VALUE = "RED">
+<PARAM NAME = "SERIE_COLOR_2" VALUE = "BLUE">
+<PARAM NAME = "SERIE_POINT_COLOR_1" VALUE = "RED">
+<PARAM NAME = "SERIE_POINT_COLOR_2" VALUE = "BLUE">
+<PARAM NAME = "SERIE_POINT_1" VALUE = "true">
+<PARAM NAME = "SERIE_POINT_2" VALUE = "true">
+<PARAM NAME = "SERIE_STYLE_2" VALUE = "0.2|BLUE|LINE">
+<PARAM NAME = "SERIE_DATA_1" VALUE = "12|43|50|45|30|32|42">
+<PARAM NAME = "SERIE_DATA_2" VALUE = "20|41|48|39|36|34|50">
+<PARAM NAME = "SERIE_TYPE_1" VALUE = "LINE">
+<PARAM NAME = "SERIE_TYPE_2" VALUE = "LINE">
+<PARAM NAME = "CHART_BORDER" VALUE = "0.2|BLACK|LINE">
+<PARAM NAME = "CHART_FILL" VALUE = "LIGHTGRAY">
+<PARAM NAME = "BIG_TICK_INTERVALX" VALUE = "1">
+<PARAM NAME = "BIG_TICK_INTERVALY" VALUE = "10">
+<PARAM NAME = "YSCALE_MIN" VALUE = "0">
+<PARAM NAME = "LEGEND_BORDER" VALUE = "0.2|BLACK|LINE">
+<PARAM NAME = "LEGEND_FILL" VALUE = "WHITE">
+<PARAM NAME = "XAXIS_GRID" VALUE = "0.2|WHITE|DASHED">
+<PARAM NAME = "YAXIS_GRID" VALUE = "0.2|WHITE|DASHED">
+<PARAM NAME = "XAXIS_TICKATBASE" VALUE = "true">
+<PARAM NAME = "BACK_IMAGE" VALUE = "back16.gif">
+
+<-- Activate Zoom and scroll ->
+<PARAM NAME = "CHART_WIDTH" VALUE = "800">
+<PARAM NAME = "CHART_HEIGHT" VALUE = "600">
+<PARAM NAME = "CHART_ALLOW_ZOOM" VALUE = "TRUE">
+<PARAM NAME = "CHART_MAX_ZOOM" VALUE = "150">
+<PARAM NAME = "CHART_MIN_ZOOM" VALUE = "50">
+<PARAM NAME = "CHART_ZOOM_INC" VALUE = "50">
+</APPLET>
+<BR>
+<BR>
+Some features:
+<ul>
+  <li>
+
+<A HREF="javascript:loadData()">Load parameters from a file/URL (i.e. Servlet, CGI ...)</A>
+  </li>
+  <li>
+<A HREF="javascript:changeParameter('SERIE_STYLE_2','2|GREEN|DASHED')">Change line style</A>
+  </li>
+  <li>
+<A HREF="javascript:loadData2()">Add new Line</A>
+  </li>
+  <li>
+<A HREF="javascript:resetChart()">Reset</A>
+  </li>
+</ul>
+</BODY>
+</HTML>
+

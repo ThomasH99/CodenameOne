@@ -1,0 +1,273 @@
+com.android.launcher/com.android.launcher2.Launcher}
+I/Choreographer(  400): Skipped 71 frames!  The application may be doing too muc
+h work on its main thread.
+I/ARMAssembler(   37): generated scanline__00000077:03010104_00008001_00000000 [
+ 89 ipp] (110 ins) at [0x40c378e0:0x40c37a98] in 1436358 ns
+D/dalvikvm(  522): GC_CONCURRENT freed 179K, 10% free 2797K/3096K, paused 14ms+9
+ms, total 161ms
+D/dalvikvm(  522): WAIT_FOR_CONCURRENT_GC blocked 147ms
+I/dalvikvm-heap(  522): Grow heap (frag case) to 3.450MB for 635812-byte allocat
+ion
+D/dalvikvm(  522): GC_FOR_ALLOC freed 93K, 11% free 3324K/3720K, paused 47ms, to
+tal 48ms
+E/SurfaceFlinger(   37): ro.sf.lcd_density must be defined as a build property
+I/Choreographer(  522): Skipped 41 frames!  The application may be doing too muc
+h work on its main thread.
+D/gralloc_goldfish(  522): Emulator without GPU emulation detected.
+I/ActivityManager(  279): Displayed com.android.providers.downloads.ui/.Download
+List: +2s445ms (total +5m28s846ms)
+I/Choreographer(  400): Skipped 341 frames!  The application may be doing too mu
+ch work on its main thread.
+W/WindowManager(  279): Failure taking screenshot for (246x410) to layer 21010
+I/Choreographer(  400): Skipped 42 frames!  The application may be doing too muc
+h work on its main thread.
+E/SurfaceFlinger(   37): ro.sf.lcd_density must be defined as a build property
+I/Choreographer(  400): Skipped 34 frames!  The application may be doing too muc
+h work on its main thread.
+I/Choreographer(  522): Skipped 46 frames!  The application may be doing too muc
+h work on its main thread.
+I/ActivityManager(  279): START u0 {act=android.intent.action.MAIN cat=[android.
+intent.category.LAUNCHER] flg=0x10200000 cmp=com.todocatalyst.todocat/.TodoCatal
+ystStub} from pid 400
+W/WindowManager(  279): Failure taking screenshot for (246x410) to layer 21005
+E/SurfaceFlinger(   37): ro.sf.lcd_density must be defined as a build property
+I/ActivityManager(  279): Start proc com.todocatalyst.todocat for activity com.todocatalyst.todocat/.TodoCatalystStub: pid=848 uid=10046 gids={50046, 3003, 1015, 1028}
+I/dalvikvm(  848): Turning on JNI app bug workarounds for target SDK version 7...
+E/Trace   (  848): error opening trace file: No such file or directory (2)
+W/ActivityThread(  848): Application com.todocatalyst.todocat can be debugged on port 8100...
+W/dalvikvm(  848): VFY: unable to find class referenced in signature (Lcom/todocatalyst/todocat/dg;)
+I/dalvikvm(  848): Could not find method com.todocatalyst.todocat.dg.c, referenced from method com.todocatalyst.todocat.TodoCatalystStub.onDestroy
+W/dalvikvm(  848): VFY: unable to resolve virtual method 4748: Lcom/todocatalyst/todocat/dg;.c ()V
+D/dalvikvm(  848): VFY: replacing opcode 0x6e at 0x0005
+E/dalvikvm(  848): Could not find class 'com.todocatalyst.todocat.dg', referenced from method com.todocatalyst.todocat.TodoCatalystStub.onResume
+W/dalvikvm(  848): VFY: unable to resolve new-instance 373 (Lcom/todocatalyst/todocat/dg;) in Lcom/todocatalyst/todocat/TodoCatalystStub;
+D/dalvikvm(  848): VFY: replacing opcode 0x22 at 0x0034
+I/dalvikvm(  848): Could not find method com.todocatalyst.todocat.dg.b, referenced from method com.todocatalyst.todocat.TodoCatalystStub.onStop
+W/dalvikvm(  848): VFY: unable to resolve virtual method 4747: Lcom/todocatalyst/todocat/dg;.b ()V
+D/dalvikvm(  848): VFY: replacing opcode 0x6e at 0x000f
+I/dalvikvm(  848): Could not find method com.todocatalyst.todocat.dg.a, referenced from method com.todocatalyst.todocat.TodoCatalystStub.run
+W/dalvikvm(  848): VFY: unable to resolve virtual method 4746: Lcom/todocatalyst/todocat/dg;.a (Ljava/lang/Object;)V
+D/dalvikvm(  848): VFY: replacing opcode 0x6e at 0x0009
+I/dalvikvm(  848): Could not find method com.todocatalyst.todocat.dg.a, referenced from method com.todocatalyst.todocat.TodoCatalystStub.run
+W/dalvikvm(  848): VFY: unable to resolve virtual method 4745: Lcom/todocatalyst/todocat/dg;.a ()V
+D/dalvikvm(  848): VFY: replacing opcode 0x6e at 0x0071
+D/dalvikvm(  848): DexOpt: unable to opt direct call 0x1288 at 0x36 in Lcom/todocatalyst/todocat/TodoCatalystStub;.onResume
+W/ResourceType(  848): No package identifier when getting value for resource number 0x00000000
+W/ResourceType(  848): No package identifier when getting value for resource number 0x00000000
+D/dalvikvm(  848): GC_FOR_ALLOC freed 78K, 8% free 2509K/2708K, paused 58ms, total 61ms
+I/dalvikvm-heap(  848): Grow heap (frag case) to 4.031MB for 1536016-byte allocation
+D/dalvikvm(  848): GC_FOR_ALLOC freed 1K, 5% free 4007K/4212K, paused 54ms, total 54ms
+D/AndroidRuntime(  848): Shutting down VM
+W/dalvikvm(  848): threadid=1: thread exiting with uncaught exception (group=0x40a71930)
+E/AndroidRuntime(  848): FATAL EXCEPTION: main
+E/AndroidRuntime(  848): java.lang.NoClassDefFoundError: com.todocatalyst.todocat.dg
+E/AndroidRuntime(  848):        at com.todocatalyst.todocat.TodoCatalystStub.onResume(TodoCatalystStub.java:55)
+E/AndroidRuntime(  848):        at android.app.Instrumentation.callActivityOnResume(Instrumentation.java:1185)
+E/AndroidRuntime(  848):        at android.app.Activity.performResume(Activity.java:5182)
+E/AndroidRuntime(  848):        at android.app.ActivityThread.performResumeActiv
+ity(ActivityThread.java:2732)
+E/AndroidRuntime(  848):        at android.app.ActivityThread.handleResumeActivi
+ty(ActivityThread.java:2771)
+E/AndroidRuntime(  848):        at android.app.ActivityThread.handleLaunchActivi
+ty(ActivityThread.java:2235)
+E/AndroidRuntime(  848):        at android.app.ActivityThread.access$600(Activit
+yThread.java:141)
+E/AndroidRuntime(  848):        at android.app.ActivityThread$H.handleMessage(Ac
+tivityThread.java:1234)
+E/AndroidRuntime(  848):        at android.os.Handler.dispatchMessage(Handler.ja
+va:99)
+E/AndroidRuntime(  848):        at android.os.Looper.loop(Looper.java:137)
+E/AndroidRuntime(  848):        at android.app.ActivityThread.main(ActivityThrea
+d.java:5041)
+E/AndroidRuntime(  848):        at java.lang.reflect.Method.invokeNative(Native
+Method)
+E/AndroidRuntime(  848):        at java.lang.reflect.Method.invoke(Method.java:5
+11)
+E/AndroidRuntime(  848):        at com.android.internal.os.ZygoteInit$MethodAndA
+rgsCaller.run(ZygoteInit.java:793)
+E/AndroidRuntime(  848):        at com.android.internal.os.ZygoteInit.main(Zygot
+eInit.java:560)
+E/AndroidRuntime(  848):        at dalvik.system.NativeStart.main(Native Method)
+
+W/ActivityManager(  279):   Force finishing activity com.todocatalyst.todocat/.T
+odoCatalystStub
+W/WindowManager(  279): Failure taking screenshot for (246x410) to layer 21010
+D/dalvikvm(  848): GC_CONCURRENT freed 30K, 3% free 4098K/4220K, paused 90ms+8ms
+, total 290ms
+I/Choreographer(  279): Skipped 57 frames!  The application may be doing too muc
+h work on its main thread.
+E/SurfaceFlinger(   37): ro.sf.lcd_density must be defined as a build property
+W/ActivityManager(  279): Activity pause timeout for ActivityRecord{41095de0 u0
+com.todocatalyst.todocat/.TodoCatalystStub}
+E/SurfaceFlinger(   37): ro.sf.lcd_density must be defined as a build property
+I/Choreographer(  400): Skipped 39 frames!  The application may be doing too muc
+h work on its main thread.
+I/Process (  848): Sending signal. PID: 848 SIG: 9
+I/ActivityManager(  279): Process com.todocatalyst.todocat (pid 848) has died.
+I/Choreographer(  279): Skipped 43 frames!  The application may be doing too muc
+h work on its main thread.
+W/InputMethodManagerService(  279): Window already focused, ignoring focus gain
+of: com.android.internal.view.IInputMethodClient$Stub$Proxy@4108d538 attribute=n
+ull, token = android.os.BinderProxy@40eae978
+D/ExchangeService(  684): Received deviceId from Email app: null
+D/ExchangeService(  684): !!! deviceId unknown; stopping self and retrying
+D/ExchangeService(  684): !!! EAS ExchangeService, onCreate
+D/ExchangeService(  684): !!! EAS ExchangeService, onStartCommand, startingUp =
+false, running = false
+W/ActivityManager(  279): Unable to start service Intent { act=com.android.email
+.ACCOUNT_INTENT } U=0: not found
+D/ExchangeService(  684): !!! EAS ExchangeService, onStartCommand, startingUp =
+true, running = false
+D/ExchangeService(  684): !!! Email application not found; stopping self
+W/ActivityManager(  279): Unable to start service Intent { act=com.android.email
+.ACCOUNT_INTENT } U=0: not found
+E/ActivityThread(  684): Service com.android.exchange.ExchangeService has leaked
+ ServiceConnection com.android.emailcommon.service.ServiceProxy$ProxyConnection@
+40d120d8 that was originally bound here
+E/ActivityThread(  684): android.app.ServiceConnectionLeaked: Service com.androi
+d.exchange.ExchangeService has leaked ServiceConnection com.android.emailcommon.
+service.ServiceProxy$ProxyConnection@40d120d8 that was originally bound here
+E/ActivityThread(  684):        at android.app.LoadedApk$ServiceDispatcher.<init
+>(LoadedApk.java:969)
+E/ActivityThread(  684):        at android.app.LoadedApk.getServiceDispatcher(Lo
+adedApk.java:863)
+E/ActivityThread(  684):        at android.app.ContextImpl.bindService(ContextIm
+pl.java:1418)
+E/ActivityThread(  684):        at android.app.ContextImpl.bindService(ContextIm
+pl.java:1407)
+E/ActivityThread(  684):        at android.content.ContextWrapper.bindService(Co
+ntextWrapper.java:473)
+E/ActivityThread(  684):        at com.android.emailcommon.service.ServiceProxy.
+setTask(ServiceProxy.java:157)
+E/ActivityThread(  684):        at com.android.emailcommon.service.ServiceProxy.
+setTask(ServiceProxy.java:145)
+E/ActivityThread(  684):        at com.android.emailcommon.service.AccountServic
+eProxy.getDeviceId(AccountServiceProxy.java:116)
+E/ActivityThread(  684):        at com.android.exchange.ExchangeService.getDevic
+eId(ExchangeService.java:1249)
+E/ActivityThread(  684):        at com.android.exchange.ExchangeService$7.run(Ex
+changeService.java:1856)
+E/ActivityThread(  684):        at com.android.emailcommon.utility.Utility$2.doI
+nBackground(Utility.java:551)
+E/ActivityThread(  684):        at com.android.emailcommon.utility.Utility$2.doI
+nBackground(Utility.java:549)
+E/ActivityThread(  684):        at android.os.AsyncTask$2.call(AsyncTask.java:28
+7)
+E/ActivityThread(  684):        at java.util.concurrent.FutureTask.run(FutureTas
+k.java:234)
+E/ActivityThread(  684):        at java.util.concurrent.ThreadPoolExecutor.runWo
+rker(ThreadPoolExecutor.java:1080)
+E/ActivityThread(  684):        at java.util.concurrent.ThreadPoolExecutor$Worke
+r.run(ThreadPoolExecutor.java:573)
+E/ActivityThread(  684):        at java.lang.Thread.run(Thread.java:856)
+E/StrictMode(  684): null
+E/StrictMode(  684): android.app.ServiceConnectionLeaked: Service com.android.ex
+change.ExchangeService has leaked ServiceConnection com.android.emailcommon.serv
+ice.ServiceProxy$ProxyConnection@40d120d8 that was originally bound here
+E/StrictMode(  684):    at android.app.LoadedApk$ServiceDispatcher.<init>(Loaded
+Apk.java:969)
+E/StrictMode(  684):    at android.app.LoadedApk.getServiceDispatcher(LoadedApk.
+java:863)
+E/StrictMode(  684):    at android.app.ContextImpl.bindService(ContextImpl.java:
+1418)
+E/StrictMode(  684):    at android.app.ContextImpl.bindService(ContextImpl.java:
+1407)
+E/StrictMode(  684):    at android.content.ContextWrapper.bindService(ContextWra
+pper.java:473)
+E/StrictMode(  684):    at com.android.emailcommon.service.ServiceProxy.setTask(
+ServiceProxy.java:157)
+E/StrictMode(  684):    at com.android.emailcommon.service.ServiceProxy.setTask(
+ServiceProxy.java:145)
+E/StrictMode(  684):    at com.android.emailcommon.service.AccountServiceProxy.g
+etDeviceId(AccountServiceProxy.java:116)
+E/StrictMode(  684):    at com.android.exchange.ExchangeService.getDeviceId(Exch
+angeService.java:1249)
+E/StrictMode(  684):    at com.android.exchange.ExchangeService$7.run(ExchangeSe
+rvice.java:1856)
+E/StrictMode(  684):    at com.android.emailcommon.utility.Utility$2.doInBackgro
+und(Utility.java:551)
+E/StrictMode(  684):    at com.android.emailcommon.utility.Utility$2.doInBackgro
+und(Utility.java:549)
+E/StrictMode(  684):    at android.os.AsyncTask$2.call(AsyncTask.java:287)
+E/StrictMode(  684):    at java.util.concurrent.FutureTask.run(FutureTask.java:2
+34)
+E/StrictMode(  684):    at java.util.concurrent.ThreadPoolExecutor.runWorker(Thr
+eadPoolExecutor.java:1080)
+E/StrictMode(  684):    at java.util.concurrent.ThreadPoolExecutor$Worker.run(Th
+readPoolExecutor.java:573)
+E/StrictMode(  684):    at java.lang.Thread.run(Thread.java:856)
+W/ActivityManager(  279): Unbind failed: could not find connection for android.o
+s.BinderProxy@411cfaa8
+E/ActivityThread(  684): Service com.android.exchange.ExchangeService has leaked
+ ServiceConnection com.android.emailcommon.service.ServiceProxy$ProxyConnection@
+40d11e30 that was originally bound here
+E/ActivityThread(  684): android.app.ServiceConnectionLeaked: Service com.androi
+d.exchange.ExchangeService has leaked ServiceConnection com.android.emailcommon.
+service.ServiceProxy$ProxyConnection@40d11e30 that was originally bound here
+E/ActivityThread(  684):        at android.app.LoadedApk$ServiceDispatcher.<init
+>(LoadedApk.java:969)
+E/ActivityThread(  684):        at android.app.LoadedApk.getServiceDispatcher(Lo
+adedApk.java:863)
+E/ActivityThread(  684):        at android.app.ContextImpl.bindService(ContextIm
+pl.java:1418)
+E/ActivityThread(  684):        at android.app.ContextImpl.bindService(ContextIm
+pl.java:1407)
+E/ActivityThread(  684):        at android.content.ContextWrapper.bindService(Co
+ntextWrapper.java:473)
+E/ActivityThread(  684):        at com.android.emailcommon.service.ServiceProxy.
+setTask(ServiceProxy.java:157)
+E/ActivityThread(  684):        at com.android.emailcommon.service.ServiceProxy.
+setTask(ServiceProxy.java:145)
+E/ActivityThread(  684):        at com.android.emailcommon.service.ServiceProxy.
+test(ServiceProxy.java:191)
+E/ActivityThread(  684):        at com.android.exchange.ExchangeService$7.run(Ex
+changeService.java:1850)
+E/ActivityThread(  684):        at com.android.emailcommon.utility.Utility$2.doI
+nBackground(Utility.java:551)
+E/ActivityThread(  684):        at com.android.emailcommon.utility.Utility$2.doI
+nBackground(Utility.java:549)
+E/ActivityThread(  684):        at android.os.AsyncTask$2.call(AsyncTask.java:28
+7)
+E/ActivityThread(  684):        at java.util.concurrent.FutureTask.run(FutureTas
+k.java:234)
+E/ActivityThread(  684):        at java.util.concurrent.ThreadPoolExecutor.runWo
+rker(ThreadPoolExecutor.java:1080)
+E/ActivityThread(  684):        at java.util.concurrent.ThreadPoolExecutor$Worke
+r.run(ThreadPoolExecutor.java:573)
+E/ActivityThread(  684):        at java.lang.Thread.run(Thread.java:856)
+E/StrictMode(  684): null
+E/StrictMode(  684): android.app.ServiceConnectionLeaked: Service com.android.ex
+change.ExchangeService has leaked ServiceConnection com.android.emailcommon.serv
+ice.ServiceProxy$ProxyConnection@40d11e30 that was originally bound here
+E/StrictMode(  684):    at android.app.LoadedApk$ServiceDispatcher.<init>(Loaded
+Apk.java:969)
+E/StrictMode(  684):    at android.app.LoadedApk.getServiceDispatcher(LoadedApk.
+java:863)
+E/StrictMode(  684):    at android.app.ContextImpl.bindService(ContextImpl.java:
+1418)
+E/StrictMode(  684):    at android.app.ContextImpl.bindService(ContextImpl.java:
+1407)
+E/StrictMode(  684):    at android.content.ContextWrapper.bindService(ContextWra
+pper.java:473)
+E/StrictMode(  684):    at com.android.emailcommon.service.ServiceProxy.setTask(
+ServiceProxy.java:157)
+E/StrictMode(  684):    at com.android.emailcommon.service.ServiceProxy.setTask(
+ServiceProxy.java:145)
+E/StrictMode(  684):    at com.android.emailcommon.service.ServiceProxy.test(Ser
+viceProxy.java:191)
+E/StrictMode(  684):    at com.android.exchange.ExchangeService$7.run(ExchangeSe
+rvice.java:1850)
+E/StrictMode(  684):    at com.android.emailcommon.utility.Utility$2.doInBackgro
+und(Utility.java:551)
+E/StrictMode(  684):    at com.android.emailcommon.utility.Utility$2.doInBackgro
+und(Utility.java:549)
+E/StrictMode(  684):    at android.os.AsyncTask$2.call(AsyncTask.java:287)
+E/StrictMode(  684):    at java.util.concurrent.FutureTask.run(FutureTask.java:2
+34)
+E/StrictMode(  684):    at java.util.concurrent.ThreadPoolExecutor.runWorker(Thr
+eadPoolExecutor.java:1080)
+E/StrictMode(  684):    at java.util.concurrent.ThreadPoolExecutor$Worker.run(Th
+readPoolExecutor.java:573)
+E/StrictMode(  684):    at java.lang.Thread.run(Thread.java:856)
+W/ActivityManager(  279): Unbind failed: could not find connection for android.o
+s.BinderProxy@41022960

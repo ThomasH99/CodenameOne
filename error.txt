@@ -1,0 +1,110 @@
+Executing: c:\Program Files\Android\android-sdk\tools\android.bat create project --target android-11 --name TodoCatalyst --path C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst --activity TodoCatalystStub --package com.todocatalyst.todocat Created directory C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\todocatalyst\todocat
+Added file C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\todocatalyst\todocat\TodoCatalystStub.java
+Created directory C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\res
+Created directory C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\bin
+Created directory C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\libs
+Created directory C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\res\values
+Added file C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\res\values\strings.xml
+Created directory C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\res\layout
+Added file C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\res\layout\main.xml
+Added file C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\AndroidManifest.xml
+Added file C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\build.xml
+Added file C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\proguard.cfg
+Executing: C:\Users\Shai\Desktop\android\ant\bin\ant.bat release Buildfile: C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\build.xml
+
+-set-mode-check:
+
+-set-release-mode:
+
+-release-obfuscation-check:
+
+-setup:
+     [echo] Gathering info for TodoCatalyst...
+    [setup] Android SDK Tools Revision 16
+    [setup] Project Target: Android 3.0
+    [setup] API level: 11
+    [setup] 
+    [setup] ------------------
+    [setup] Resolving library dependencies:
+    [setup] No library dependencies.
+    [setup] 
+    [setup] ------------------
+    [setup] 
+    [setup] WARNING: Attribute minSdkVersion in AndroidManifest.xml (7) is lower than the project target API level (11)
+
+-build-setup:
+     [echo] Creating output directories if needed...
+    [mkdir] Created dir: C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\bin\res
+    [mkdir] Created dir: C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\gen
+    [mkdir] Created dir: C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\bin\classes
+
+-pre-build:
+
+-code-gen:
+     [echo] ----------
+     [echo] Handling aidl files...
+     [aidl] No AIDL files to compile.
+     [echo] ----------
+     [echo] Handling RenderScript files...
+[renderscript] No RenderScript files to compile.
+     [echo] ----------
+     [echo] Handling Resources...
+     [aapt] Generating resource IDs...
+
+-pre-compile:
+
+-compile:
+    [javac] Compiling 222 source files to C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\bin\classes
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\codename1\components\Ads.java:385: warning: unmappable character for encoding UTF-8
+    [javac]      * Keywords relevant to this user?s specific session
+    [javac]                                      ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\codename1\components\Ads.java:393: warning: unmappable character for encoding UTF-8
+    [javac]      * User?s age
+    [javac]            ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\codename1\components\Ads.java:409: warning: unmappable character for encoding UTF-8
+    [javac]      * Keywords relevant to this user?s specific session
+    [javac]                                      ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\codename1\components\Ads.java:425: warning: unmappable character for encoding UTF-8
+    [javac]      * Category ? a single word description of the application.
+    [javac]                 ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\codename1\components\Ads.java:433: warning: unmappable character for encoding UTF-8
+    [javac]      * Category ? a single word description of the application.
+    [javac]                 ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\codename1\components\Ads.java:441: warning: unmappable character for encoding UTF-8
+    [javac]      * Location string ? comma separated list of country, state/province, city
+    [javac]                        ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\codename1\components\Ads.java:450: warning: unmappable character for encoding UTF-8
+    [javac]      * Location string ? comma separated list of country, state/province, city
+    [javac]                        ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\todocatalyst\todocat\TodoCatalystStub.java:36: cannot find symbol
+    [javac] symbol  : method init(com.todocatalyst.todocat.TodoCatalystStub)
+    [javac] location: class com.todocatalyst.todocat.TodoCatalyst
+    [javac]             i.init(this);
+    [javac]              ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\todocatalyst\todocat\TodoCatalystStub.java:37: cannot find symbol
+    [javac] symbol  : method start()
+    [javac] location: class com.todocatalyst.todocat.TodoCatalyst
+    [javac]             i.start();
+    [javac]              ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\todocatalyst\todocat\TodoCatalystStub.java:46: cannot find symbol
+    [javac] symbol  : method stop()
+    [javac] location: class com.todocatalyst.todocat.TodoCatalyst
+    [javac]         i.stop();
+    [javac]          ^
+    [javac] C:\Users\Shai\AppData\Local\Temp\build4969183186893477034xxx\TodoCatalyst\src\com\todocatalyst\todocat\TodoCatalystStub.java:51: cannot find symbol
+    [javac] symbol  : method destroy()
+    [javac] location: class com.todocatalyst.todocat.TodoCatalyst
+    [javac]         i.destroy();
+    [javac]          ^
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] 4 errors
+    [javac] 7 warnings
+
+BUILD FAILED
+c:\Program Files\Android\android-sdk\tools\ant\build.xml:602: The following error occurred while executing this line:
+c:\Program Files\Android\android-sdk\tools\ant\build.xml:622: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds

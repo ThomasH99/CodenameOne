@@ -1,0 +1,2824 @@
+Executing: c:\Program Files (x86)\Android\android-sdk\tools\android.bat create project --target android-14 --name TodoCatalyst --path C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst --activity TodoCatalystStub --package com.todocatalyst.todocat Created directory C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\src\com\todocatalyst\todocat
+Added file C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\src\com\todocatalyst\todocat\TodoCatalystStub.java
+Created directory C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res
+Created directory C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin
+Created directory C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\libs
+Created directory C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\values
+Added file C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\values\strings.xml
+Created directory C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\layout
+Added file C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\layout\main.xml
+Created directory C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-hdpi
+Created directory C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-mdpi
+Created directory C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-ldpi
+Added file C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\AndroidManifest.xml
+Added file C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\build.xml
+Added file C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\proguard-project.txt
+Executing: C:\Users\Administrator\Desktop\android\ant\bin\ant.bat release Buildfile: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\build.xml
+
+-set-mode-check:
+
+-set-release-mode:
+
+-release-obfuscation-check:
+     [echo] proguard.config is proguard.cfg
+     [echo] Proguard.config is enabled
+
+-check-env:
+ [checkenv] Android SDK Tools Revision 21.0.1
+ [checkenv] Installed at c:\Program Files (x86)\Android\android-sdk
+
+-setup:
+     [echo] Project Name: TodoCatalyst
+  [gettype] Project Type: Application
+
+-build-setup:
+     [echo] Resolving Build Target for TodoCatalyst...
+[gettarget] Project Target:   Android 4.0
+[gettarget] API level:        14
+     [echo] ----------
+     [echo] Creating output directories if needed...
+    [mkdir] Created dir: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res
+    [mkdir] Created dir: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\gen
+    [mkdir] Created dir: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\classes
+    [mkdir] Created dir: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\dexedLibs
+     [echo] ----------
+     [echo] Resolving Dependencies for TodoCatalyst...
+[dependency] Library dependencies:
+[dependency] No Libraries
+[dependency] 
+[dependency] ------------------
+[dependency] API<=15: Adding annotations.jar to the classpath.
+     [echo] ----------
+     [echo] Building Libraries with 'release'...
+   [subant] No sub-builds to iterate on
+
+-pre-build:
+
+-code-gen:
+[mergemanifest] Merging AndroidManifest files into one.
+[mergemanifest] Manifest merger disabled. Using project manifest only.
+     [echo] Handling aidl files...
+     [aidl] No AIDL files to compile.
+     [echo] ----------
+     [echo] Handling RenderScript files...
+[renderscript] No RenderScript files to compile.
+     [echo] ----------
+     [echo] Handling Resources...
+     [aapt] Generating resource IDs...
+     [echo] ----------
+     [echo] Handling BuildConfig class...
+[buildconfig] Generating BuildConfig class.
+
+-pre-compile:
+
+-compile:
+    [javac] Compiling 311 source files to C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\classes
+    [javac] warning: com\todocatalyst\todocat\TodoCatalyst.class(com\todocatalyst\todocat:TodoCatalyst.class): major version 51 is newer than 50, the highest major version supported by this compiler.
+    [javac] It is recommended that the compiler be upgraded.
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] 1 warning
+
+-post-compile:
+
+-obfuscate:
+    [mkdir] Created dir: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\proguard
+      [jar] Building jar: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\proguard\original.jar
+ [proguard] ProGuard, version 4.7
+ [proguard] Reading input...
+ [proguard] Reading program jar [C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\proguard\original.jar]
+ [proguard] Reading program jar [C:\Program Files (x86)\Android\android-sdk\tools\support\annotations.jar]
+ [proguard] Reading program jar [C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\libs\userClasses.jar]
+ [proguard] Reading library jar [C:\Program Files (x86)\Android\android-sdk\platforms\android-14\android.jar]
+ [proguard] Initializing...
+ [proguard] Note: com.codename1.testing.DeviceRunner calls '(com.codename1.testing.UnitTest)Class.forName(variable).newInstance()'
+ [proguard] Note: the configuration refers to the unknown class 'com.android.vending.licensing.ILicensingService'
+ [proguard] Note: the configuration refers to the unknown class 'com.apperhand.device.android.EULAActivity$EulaJsInterface'
+ [proguard] Note: there were 2 references to unknown classes.
+ [proguard]       You should check your configuration for typos.
+ [proguard] Note: there were 1 class casts of dynamically created class instances.
+ [proguard]       You might consider explicitly keeping the mentioned classes and/or
+ [proguard]       their implementations (using '-keep').
+ [proguard] Ignoring unused library classes...
+ [proguard]   Original number of library classes: 3133
+ [proguard]   Final number of library classes:    637
+ [proguard] Printing kept classes, fields, and methods...
+ [proguard] Shrinking...
+ [proguard] Printing usage to [C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\proguard\usage.txt]...
+ [proguard] Removing unused program classes and class elements...
+ [proguard]   Original number of program classes: 1385
+ [proguard]   Final number of program classes:    783
+ [proguard] Obfuscating...
+ [proguard] Printing mapping to [C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\proguard\mapping.txt]...
+ [proguard] Writing output...
+ [proguard] Preparing output jar [C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\proguard\obfuscated.jar]
+ [proguard]   Copying resources from program jar [C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\proguard\original.jar]
+ [proguard]   Copying resources from program jar [C:\Program Files (x86)\Android\android-sdk\tools\support\annotations.jar]
+ [proguard] Warning: can't write resource [META-INF/MANIFEST.MF] (Duplicate zip entry [annotations.jar:META-INF/MANIFEST.MF])
+ [proguard]   Copying resources from program jar [C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\libs\userClasses.jar]
+ [proguard] Printing classes to [C:\Users\Administrator\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\proguard\dump.txt]...
+
+-dex:
+      [dex] input: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\proguard\obfuscated.jar
+      [dex] Converting compiled files and external libraries into C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\classes.dex...
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/b.class
+       [dx] ...while processing com/todocatalyst/todocat/b.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$1.class
+       [dx] ...while processing com/todocatalyst/todocat/c$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$2.class
+       [dx] ...while processing com/todocatalyst/todocat/c$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$3.class
+       [dx] ...while processing com/todocatalyst/todocat/c$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$4.class
+       [dx] ...while processing com/todocatalyst/todocat/c$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$5.class
+       [dx] ...while processing com/todocatalyst/todocat/c$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$6.class
+       [dx] ...while processing com/todocatalyst/todocat/c$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$7$1.class
+       [dx] ...while processing com/todocatalyst/todocat/c$7$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$7$2.class
+       [dx] ...while processing com/todocatalyst/todocat/c$7$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$7.class
+       [dx] ...while processing com/todocatalyst/todocat/c$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$8.class
+       [dx] ...while processing com/todocatalyst/todocat/c$8.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$9.class
+       [dx] ...while processing com/todocatalyst/todocat/c$9.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$10.class
+       [dx] ...while processing com/todocatalyst/todocat/c$10.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$11.class
+       [dx] ...while processing com/todocatalyst/todocat/c$11.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$12.class
+       [dx] ...while processing com/todocatalyst/todocat/c$12.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$13.class
+       [dx] ...while processing com/todocatalyst/todocat/c$13.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$14.class
+       [dx] ...while processing com/todocatalyst/todocat/c$14.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$15.class
+       [dx] ...while processing com/todocatalyst/todocat/c$15.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$a.class
+       [dx] ...while processing com/todocatalyst/todocat/c$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$b.class
+       [dx] ...while processing com/todocatalyst/todocat/c$b.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c$c.class
+       [dx] ...while processing com/todocatalyst/todocat/c$c.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/c.class
+       [dx] ...while processing com/todocatalyst/todocat/c.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/a.class
+       [dx] ...while processing com/todocatalyst/todocat/a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/d.class
+       [dx] ...while processing com/todocatalyst/todocat/d.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/e.class
+       [dx] ...while processing com/todocatalyst/todocat/e.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/f.class
+       [dx] ...while processing com/todocatalyst/todocat/f.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/g.class
+       [dx] ...while processing com/todocatalyst/todocat/g.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/h.class
+       [dx] ...while processing com/todocatalyst/todocat/h.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/i.class
+       [dx] ...while processing com/todocatalyst/todocat/i.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/j.class
+       [dx] ...while processing com/todocatalyst/todocat/j.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/k.class
+       [dx] ...while processing com/todocatalyst/todocat/k.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/l.class
+       [dx] ...while processing com/todocatalyst/todocat/l.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/m.class
+       [dx] ...while processing com/todocatalyst/todocat/m.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/n.class
+       [dx] ...while processing com/todocatalyst/todocat/n.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/o.class
+       [dx] ...while processing com/todocatalyst/todocat/o.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/p$1.class
+       [dx] ...while processing com/todocatalyst/todocat/p$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/p$a.class
+       [dx] ...while processing com/todocatalyst/todocat/p$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/p.class
+       [dx] ...while processing com/todocatalyst/todocat/p.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/q.class
+       [dx] ...while processing com/todocatalyst/todocat/q.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/s.class
+       [dx] ...while processing com/todocatalyst/todocat/s.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/t.class
+       [dx] ...while processing com/todocatalyst/todocat/t.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/u.class
+       [dx] ...while processing com/todocatalyst/todocat/u.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/v$a.class
+       [dx] ...while processing com/todocatalyst/todocat/v$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/v$b.class
+       [dx] ...while processing com/todocatalyst/todocat/v$b.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/v.class
+       [dx] ...while processing com/todocatalyst/todocat/v.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/w$a.class
+       [dx] ...while processing com/todocatalyst/todocat/w$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/w$b.class
+       [dx] ...while processing com/todocatalyst/todocat/w$b.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/w.class
+       [dx] ...while processing com/todocatalyst/todocat/w.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/x.class
+       [dx] ...while processing com/todocatalyst/todocat/x.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/y$1.class
+       [dx] ...while processing com/todocatalyst/todocat/y$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/y.class
+       [dx] ...while processing com/todocatalyst/todocat/y.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$1$1.class
+       [dx] ...while processing com/todocatalyst/todocat/z$1$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$1.class
+       [dx] ...while processing com/todocatalyst/todocat/z$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$2.class
+       [dx] ...while processing com/todocatalyst/todocat/z$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$3.class
+       [dx] ...while processing com/todocatalyst/todocat/z$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$4.class
+       [dx] ...while processing com/todocatalyst/todocat/z$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$5.class
+       [dx] ...while processing com/todocatalyst/todocat/z$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$6.class
+       [dx] ...while processing com/todocatalyst/todocat/z$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$7.class
+       [dx] ...while processing com/todocatalyst/todocat/z$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$8$1.class
+       [dx] ...while processing com/todocatalyst/todocat/z$8$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$8.class
+       [dx] ...while processing com/todocatalyst/todocat/z$8.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$9.class
+       [dx] ...while processing com/todocatalyst/todocat/z$9.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$10.class
+       [dx] ...while processing com/todocatalyst/todocat/z$10.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$11$1.class
+       [dx] ...while processing com/todocatalyst/todocat/z$11$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$11.class
+       [dx] ...while processing com/todocatalyst/todocat/z$11.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$12.class
+       [dx] ...while processing com/todocatalyst/todocat/z$12.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$13.class
+       [dx] ...while processing com/todocatalyst/todocat/z$13.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$14$1.class
+       [dx] ...while processing com/todocatalyst/todocat/z$14$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$14.class
+       [dx] ...while processing com/todocatalyst/todocat/z$14.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$15.class
+       [dx] ...while processing com/todocatalyst/todocat/z$15.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$16$1.class
+       [dx] ...while processing com/todocatalyst/todocat/z$16$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$16.class
+       [dx] ...while processing com/todocatalyst/todocat/z$16.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$17.class
+       [dx] ...while processing com/todocatalyst/todocat/z$17.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$18.class
+       [dx] ...while processing com/todocatalyst/todocat/z$18.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$19.class
+       [dx] ...while processing com/todocatalyst/todocat/z$19.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$20.class
+       [dx] ...while processing com/todocatalyst/todocat/z$20.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$21.class
+       [dx] ...while processing com/todocatalyst/todocat/z$21.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$22.class
+       [dx] ...while processing com/todocatalyst/todocat/z$22.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$23.class
+       [dx] ...while processing com/todocatalyst/todocat/z$23.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$24.class
+       [dx] ...while processing com/todocatalyst/todocat/z$24.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$25.class
+       [dx] ...while processing com/todocatalyst/todocat/z$25.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$26.class
+       [dx] ...while processing com/todocatalyst/todocat/z$26.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$27.class
+       [dx] ...while processing com/todocatalyst/todocat/z$27.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$28.class
+       [dx] ...while processing com/todocatalyst/todocat/z$28.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$29.class
+       [dx] ...while processing com/todocatalyst/todocat/z$29.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$30.class
+       [dx] ...while processing com/todocatalyst/todocat/z$30.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$31.class
+       [dx] ...while processing com/todocatalyst/todocat/z$31.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$32.class
+       [dx] ...while processing com/todocatalyst/todocat/z$32.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$33$1.class
+       [dx] ...while processing com/todocatalyst/todocat/z$33$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$33.class
+       [dx] ...while processing com/todocatalyst/todocat/z$33.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z$a.class
+       [dx] ...while processing com/todocatalyst/todocat/z$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/z.class
+       [dx] ...while processing com/todocatalyst/todocat/z.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$1.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$2.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$3.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$4.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$5$1.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$5$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$5.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$6.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$7$1.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$7$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$7.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$8.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$8.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$9.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$9.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$10.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$10.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$11.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$11.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$12.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$12.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$13.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$13.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$14.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$14.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$15.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$15.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$16.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$16.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$17.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$17.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$18.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$18.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$19$1.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$19$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$19.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$19.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$20.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$20.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa$a.class
+       [dx] ...while processing com/todocatalyst/todocat/aa$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aa.class
+       [dx] ...while processing com/todocatalyst/todocat/aa.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ab.class
+       [dx] ...while processing com/todocatalyst/todocat/ab.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ac.class
+       [dx] ...while processing com/todocatalyst/todocat/ac.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ad.class
+       [dx] ...while processing com/todocatalyst/todocat/ad.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ae.class
+       [dx] ...while processing com/todocatalyst/todocat/ae.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/af.class
+       [dx] ...while processing com/todocatalyst/todocat/af.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ag.class
+       [dx] ...while processing com/todocatalyst/todocat/ag.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ah.class
+       [dx] ...while processing com/todocatalyst/todocat/ah.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ai.class
+       [dx] ...while processing com/todocatalyst/todocat/ai.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aj.class
+       [dx] ...while processing com/todocatalyst/todocat/aj.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ak.class
+       [dx] ...while processing com/todocatalyst/todocat/ak.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/am.class
+       [dx] ...while processing com/todocatalyst/todocat/am.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/an.class
+       [dx] ...while processing com/todocatalyst/todocat/an.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/al.class
+       [dx] ...while processing com/todocatalyst/todocat/al.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ao$1.class
+       [dx] ...while processing com/todocatalyst/todocat/ao$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ao$2.class
+       [dx] ...while processing com/todocatalyst/todocat/ao$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ao$3.class
+       [dx] ...while processing com/todocatalyst/todocat/ao$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ao$a.class
+       [dx] ...while processing com/todocatalyst/todocat/ao$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ao$b.class
+       [dx] ...while processing com/todocatalyst/todocat/ao$b.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ao.class
+       [dx] ...while processing com/todocatalyst/todocat/ao.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ap$1.class
+       [dx] ...while processing com/todocatalyst/todocat/ap$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ap$a.class
+       [dx] ...while processing com/todocatalyst/todocat/ap$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ap$b.class
+       [dx] ...while processing com/todocatalyst/todocat/ap$b.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ap.class
+       [dx] ...while processing com/todocatalyst/todocat/ap.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aq$1.class
+       [dx] ...while processing com/todocatalyst/todocat/aq$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aq$a.class
+       [dx] ...while processing com/todocatalyst/todocat/aq$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aq$b.class
+       [dx] ...while processing com/todocatalyst/todocat/aq$b.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aq$c.class
+       [dx] ...while processing com/todocatalyst/todocat/aq$c.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aq.class
+       [dx] ...while processing com/todocatalyst/todocat/aq.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ar$a.class
+       [dx] ...while processing com/todocatalyst/todocat/ar$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ar.class
+       [dx] ...while processing com/todocatalyst/todocat/ar.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/as.class
+       [dx] ...while processing com/todocatalyst/todocat/as.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/at.class
+       [dx] ...while processing com/todocatalyst/todocat/at.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/au.class
+       [dx] ...while processing com/todocatalyst/todocat/au.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/av.class
+       [dx] ...while processing com/todocatalyst/todocat/av.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/aw.class
+       [dx] ...while processing com/todocatalyst/todocat/aw.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ax.class
+       [dx] ...while processing com/todocatalyst/todocat/ax.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ay.class
+       [dx] ...while processing com/todocatalyst/todocat/ay.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/az.class
+       [dx] ...while processing com/todocatalyst/todocat/az.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ba.class
+       [dx] ...while processing com/todocatalyst/todocat/ba.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bb$a.class
+       [dx] ...while processing com/todocatalyst/todocat/bb$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bb.class
+       [dx] ...while processing com/todocatalyst/todocat/bb.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bc.class
+       [dx] ...while processing com/todocatalyst/todocat/bc.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bd.class
+       [dx] ...while processing com/todocatalyst/todocat/bd.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/be.class
+       [dx] ...while processing com/todocatalyst/todocat/be.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bf.class
+       [dx] ...while processing com/todocatalyst/todocat/bf.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bg.class
+       [dx] ...while processing com/todocatalyst/todocat/bg.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bh$1.class
+       [dx] ...while processing com/todocatalyst/todocat/bh$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bh$2.class
+       [dx] ...while processing com/todocatalyst/todocat/bh$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bh$3.class
+       [dx] ...while processing com/todocatalyst/todocat/bh$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bh$4.class
+       [dx] ...while processing com/todocatalyst/todocat/bh$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bh.class
+       [dx] ...while processing com/todocatalyst/todocat/bh.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bi.class
+       [dx] ...while processing com/todocatalyst/todocat/bi.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bj.class
+       [dx] ...while processing com/todocatalyst/todocat/bj.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bk$a$a.class
+       [dx] ...while processing com/todocatalyst/todocat/bk$a$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bk$a.class
+       [dx] ...while processing com/todocatalyst/todocat/bk$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bk.class
+       [dx] ...while processing com/todocatalyst/todocat/bk.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bl.class
+       [dx] ...while processing com/todocatalyst/todocat/bl.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bm.class
+       [dx] ...while processing com/todocatalyst/todocat/bm.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bn$1.class
+       [dx] ...while processing com/todocatalyst/todocat/bn$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bn$2$1.class
+       [dx] ...while processing com/todocatalyst/todocat/bn$2$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bn$2.class
+       [dx] ...while processing com/todocatalyst/todocat/bn$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bn$3.class
+       [dx] ...while processing com/todocatalyst/todocat/bn$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bn.class
+       [dx] ...while processing com/todocatalyst/todocat/bn.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bo.class
+       [dx] ...while processing com/todocatalyst/todocat/bo.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bp.class
+       [dx] ...while processing com/todocatalyst/todocat/bp.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bq$1.class
+       [dx] ...while processing com/todocatalyst/todocat/bq$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bq.class
+       [dx] ...while processing com/todocatalyst/todocat/bq.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/br.class
+       [dx] ...while processing com/todocatalyst/todocat/br.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bs.class
+       [dx] ...while processing com/todocatalyst/todocat/bs.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bt.class
+       [dx] ...while processing com/todocatalyst/todocat/bt.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bu.class
+       [dx] ...while processing com/todocatalyst/todocat/bu.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bv$a.class
+       [dx] ...while processing com/todocatalyst/todocat/bv$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bv.class
+       [dx] ...while processing com/todocatalyst/todocat/bv.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bw.class
+       [dx] ...while processing com/todocatalyst/todocat/bw.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bx$a.class
+       [dx] ...while processing com/todocatalyst/todocat/bx$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bx.class
+       [dx] ...while processing com/todocatalyst/todocat/bx.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/by.class
+       [dx] ...while processing com/todocatalyst/todocat/by.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/bz.class
+       [dx] ...while processing com/todocatalyst/todocat/bz.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ca$a.class
+       [dx] ...while processing com/todocatalyst/todocat/ca$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ca.class
+       [dx] ...while processing com/todocatalyst/todocat/ca.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cb.class
+       [dx] ...while processing com/todocatalyst/todocat/cb.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cc.class
+       [dx] ...while processing com/todocatalyst/todocat/cc.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cd$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cd$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cd.class
+       [dx] ...while processing com/todocatalyst/todocat/cd.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$1.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$2.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$3.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$4.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$5.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$6.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$7.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$8.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$8.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$9.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$9.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce$10.class
+       [dx] ...while processing com/todocatalyst/todocat/ce$10.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ce.class
+       [dx] ...while processing com/todocatalyst/todocat/ce.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cf$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cf$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cf$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cf$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cf$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cf$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cf$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cf$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cf.class
+       [dx] ...while processing com/todocatalyst/todocat/cf.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$2$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$2$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$5.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$6.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$7.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$8.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$8.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$9.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$9.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$10.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$10.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$11$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$11$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$11.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$11.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg$12.class
+       [dx] ...while processing com/todocatalyst/todocat/cg$12.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cg.class
+       [dx] ...while processing com/todocatalyst/todocat/cg.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ch$1.class
+       [dx] ...while processing com/todocatalyst/todocat/ch$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ch$2.class
+       [dx] ...while processing com/todocatalyst/todocat/ch$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ch$3.class
+       [dx] ...while processing com/todocatalyst/todocat/ch$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ch$4.class
+       [dx] ...while processing com/todocatalyst/todocat/ch$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ch$5.class
+       [dx] ...while processing com/todocatalyst/todocat/ch$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ch$6.class
+       [dx] ...while processing com/todocatalyst/todocat/ch$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ch$7.class
+       [dx] ...while processing com/todocatalyst/todocat/ch$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ch.class
+       [dx] ...while processing com/todocatalyst/todocat/ch.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ci$1.class
+       [dx] ...while processing com/todocatalyst/todocat/ci$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ci$2.class
+       [dx] ...while processing com/todocatalyst/todocat/ci$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ci.class
+       [dx] ...while processing com/todocatalyst/todocat/ci.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$5.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$6.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$7.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$8.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$8.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$9.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$9.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$10.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$10.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$11.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$11.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$12$a.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$12$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$12.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$12.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$13.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$13.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$14.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$14.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$15.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$15.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$16.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$16.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$17.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$17.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$18.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$18.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$19.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$19.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$20.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$20.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$21.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$21.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$22$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$22$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$22.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$22.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$23.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$23.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$24$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$24$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$24.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$24.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$25.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$25.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$26$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$26$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$26$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$26$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$26.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$26.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$27.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$27.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$28.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$28.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$29$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$29$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$29.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$29.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$30$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$30$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$30.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$30.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$31$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$31$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$31.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$31.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$32$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$32$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$32.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$32.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$33$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$33$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$33.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$33.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$34.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$34.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$35.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$35.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$36$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$36$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$36.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$36.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$37$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$37$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$37.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$37.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$38$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$38$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$38.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$38.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$39$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$39$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$39$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$39$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$39$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$39$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$39$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$39$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$39.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$39.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$40$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$40$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$40$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$40$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$40$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$40$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$40$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$40$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$40$5.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$40$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$40.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$40.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$41$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$41$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$41.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$41.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$42$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$42$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$42.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$42.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$43$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$43$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$43.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$43.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$44$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$44$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$44.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$44.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$45.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$45.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$46$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$46$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$46.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$46.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$47$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$47$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$47.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$47.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$48$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$48$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$48.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$48.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$49$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$49$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$49$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$49$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$49.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$49.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$50.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$50.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$51.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$51.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$52.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$52.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$53.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$53.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$54.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$54.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$55.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$55.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$56.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$56.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$57$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$57$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$57.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$57.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$58.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$58.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$59$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$59$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$59.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$59.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$60.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$60.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$61.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$61.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$62.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$62.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$63.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$63.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$64.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$64.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$65.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$65.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$66$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$66$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$66.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$66.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$67.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$67.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$68.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$68.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$69.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$69.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$70$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$70$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$70.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$70.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$71.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$71.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$72.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$72.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$73$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$73$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$73.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$73.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$74$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$74$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$74.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$74.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$75$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$75$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$75.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$75.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$76$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$76$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$76.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$76.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$77.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$77.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj$78.class
+       [dx] ...while processing com/todocatalyst/todocat/cj$78.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cj.class
+       [dx] ...while processing com/todocatalyst/todocat/cj.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ck$1.class
+       [dx] ...while processing com/todocatalyst/todocat/ck$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ck.class
+       [dx] ...while processing com/todocatalyst/todocat/ck.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$1$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$1$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$2$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$2$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$5.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$6.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$7.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$8.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$8.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$9.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$9.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$10.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$10.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$11.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$11.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$12.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$12.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$13.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$13.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$14.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$14.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$15.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$15.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$16.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$16.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$17.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$17.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$18.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$18.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$19.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$19.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$20.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$20.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$21.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$21.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$22.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$22.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$23.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$23.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$24.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$24.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$25.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$25.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$26.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$26.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4$27.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4$27.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$5$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$5$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$5.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$6.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$7$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$7$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$7.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$8$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$8$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$8.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$8.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$9.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$9.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$10.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$10.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$11$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$11$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$11.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$11.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$12$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$12$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$12.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$12.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$13$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$13$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$13.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$13.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$14$1$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$14$1$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$14$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$14$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$14.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$14.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$15$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$15$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$15.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$15.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$16$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$16$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$16.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$16.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$17$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$17$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$17.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$17.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$18$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$18$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$18.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$18.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$19$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$19$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$19.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$19.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$20$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$20$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$20.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$20.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$21$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$21$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$21.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$21.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl$a.class
+       [dx] ...while processing com/todocatalyst/todocat/cl$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cl.class
+       [dx] ...while processing com/todocatalyst/todocat/cl.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cm.class
+       [dx] ...while processing com/todocatalyst/todocat/cm.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cn$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cn$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cn$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cn$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cn$3$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cn$3$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cn$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cn$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cn$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cn$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cn.class
+       [dx] ...while processing com/todocatalyst/todocat/cn.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/co$1.class
+       [dx] ...while processing com/todocatalyst/todocat/co$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/co$2.class
+       [dx] ...while processing com/todocatalyst/todocat/co$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/co$3.class
+       [dx] ...while processing com/todocatalyst/todocat/co$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/co.class
+       [dx] ...while processing com/todocatalyst/todocat/co.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cp$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cp$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cp.class
+       [dx] ...while processing com/todocatalyst/todocat/cp.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cq$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cq$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cq$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cq$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cq.class
+       [dx] ...while processing com/todocatalyst/todocat/cq.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$5.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$6.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$6.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$7.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$7.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$8.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$8.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$9$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$9$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$9.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$9.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$a$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$a$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr$a.class
+       [dx] ...while processing com/todocatalyst/todocat/cr$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cr.class
+       [dx] ...while processing com/todocatalyst/todocat/cr.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cs$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cs$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cs$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cs$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cs$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cs$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cs$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cs$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cs$5.class
+       [dx] ...while processing com/todocatalyst/todocat/cs$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cs$a.class
+       [dx] ...while processing com/todocatalyst/todocat/cs$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cs.class
+       [dx] ...while processing com/todocatalyst/todocat/cs.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ct$1$1.class
+       [dx] ...while processing com/todocatalyst/todocat/ct$1$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ct$1.class
+       [dx] ...while processing com/todocatalyst/todocat/ct$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ct$2$1.class
+       [dx] ...while processing com/todocatalyst/todocat/ct$2$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ct$2.class
+       [dx] ...while processing com/todocatalyst/todocat/ct$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/ct.class
+       [dx] ...while processing com/todocatalyst/todocat/ct.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cu$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cu$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cu.class
+       [dx] ...while processing com/todocatalyst/todocat/cu.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cv.class
+       [dx] ...while processing com/todocatalyst/todocat/cv.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cw$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cw$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cw$2$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cw$2$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cw$2.class
+       [dx] ...while processing com/todocatalyst/todocat/cw$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cw$3$1.class
+       [dx] ...while processing com/todocatalyst/todocat/cw$3$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cw$3.class
+       [dx] ...while processing com/todocatalyst/todocat/cw$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cw$4.class
+       [dx] ...while processing com/todocatalyst/todocat/cw$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cw.class
+       [dx] ...while processing com/todocatalyst/todocat/cw.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cx.class
+       [dx] ...while processing com/todocatalyst/todocat/cx.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cy.class
+       [dx] ...while processing com/todocatalyst/todocat/cy.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/cz.class
+       [dx] ...while processing com/todocatalyst/todocat/cz.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/da.class
+       [dx] ...while processing com/todocatalyst/todocat/da.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dd.class
+       [dx] ...while processing com/todocatalyst/todocat/dd.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/db.class
+       [dx] ...while processing com/todocatalyst/todocat/db.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dc.class
+       [dx] ...while processing com/todocatalyst/todocat/dc.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/de.class
+       [dx] ...while processing com/todocatalyst/todocat/de.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/df$1.class
+       [dx] ...while processing com/todocatalyst/todocat/df$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/df$a.class
+       [dx] ...while processing com/todocatalyst/todocat/df$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/df$b.class
+       [dx] ...while processing com/todocatalyst/todocat/df$b.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/df.class
+       [dx] ...while processing com/todocatalyst/todocat/df.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dg$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dg$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dg$2.class
+       [dx] ...while processing com/todocatalyst/todocat/dg$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dg.class
+       [dx] ...while processing com/todocatalyst/todocat/dg.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$a$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$a$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$a$2.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$a$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$a.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$b$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$b$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$b$2.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$b$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$b.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$b.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$c$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$c$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$c$2.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$c$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$c$3.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$c$3.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$c$4.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$c$4.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$c$5.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$c$5.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$c.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$c.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$d$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$d$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$d.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$d.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$e$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$e$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$e$2.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$e$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$e.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$e.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$f$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$f$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$f.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$f.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$g$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$g$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$g$2.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$g$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh$g.class
+       [dx] ...while processing com/todocatalyst/todocat/dh$g.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dh.class
+       [dx] ...while processing com/todocatalyst/todocat/dh.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/di.class
+       [dx] ...while processing com/todocatalyst/todocat/di.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dj.class
+       [dx] ...while processing com/todocatalyst/todocat/dj.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dk.class
+       [dx] ...while processing com/todocatalyst/todocat/dk.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dl$1.class
+       [dx] ...while processing com/todocatalyst/todocat/dl$1.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dl$2.class
+       [dx] ...while processing com/todocatalyst/todocat/dl$2.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dl$a.class
+       [dx] ...while processing com/todocatalyst/todocat/dl$a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dl.class
+       [dx] ...while processing com/todocatalyst/todocat/dl.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dm.class
+       [dx] ...while processing com/todocatalyst/todocat/dm.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing com/todocatalyst/todocat/dn.class
+       [dx] ...while processing com/todocatalyst/todocat/dn.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing a/a.class
+       [dx] ...while processing a/a.class
+       [dx] 
+       [dx] trouble processing:
+       [dx] bad class file magic (cafebabe) or version (0033.0000)
+       [dx] ...while parsing b/a.class
+       [dx] ...while processing b/a.class
+       [dx] 531 warnings
+
+-crunch:
+   [crunch] Crunching PNG Files in source dir: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res
+   [crunch] To destination dir: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res
+   [crunch] Processing image to cache: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-hdpi\ic_launcher.png => C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-hdpi\ic_launcher.png
+   [crunch]   (processed image to cache entry C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-hdpi\ic_launcher.png: 0% size of source)
+   [crunch] Processing image to cache: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-hdpi\icon.png => C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-hdpi\icon.png
+   [crunch]   (processed image to cache entry C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-hdpi\icon.png: 105% size of source)
+   [crunch] Processing image to cache: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-ldpi\ic_launcher.png => C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-ldpi\ic_launcher.png
+   [crunch]   (processed image to cache entry C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-ldpi\ic_launcher.png: 0% size of source)
+   [crunch] Processing image to cache: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-ldpi\icon.png => C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-ldpi\icon.png
+   [crunch]   (processed image to cache entry C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-ldpi\icon.png: 0% size of source)
+   [crunch] Processing image to cache: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-mdpi\ic_launcher.png => C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-mdpi\ic_launcher.png
+   [crunch]   (processed image to cache entry C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-mdpi\ic_launcher.png: 0% size of source)
+   [crunch] Processing image to cache: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-mdpi\icon.png => C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-mdpi\icon.png
+   [crunch]   (processed image to cache entry C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-mdpi\icon.png: 0% size of source)
+   [crunch] Processing image to cache: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable-xhdpi\icon.png => C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-xhdpi\icon.png
+   [crunch]   (processed image to cache entry C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable-xhdpi\icon.png: 64% size of source)
+   [crunch] Processing image to cache: C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\res\drawable\icon.png => C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable\icon.png
+   [crunch]   (processed image to cache entry C:\Users\ADMINI~1\AppData\Local\Temp\2\build3162937088331091499xxx\TodoCatalyst\bin\res\drawable\icon.png: 97% size of source)
+   [crunch] Crunched 8 PNG files to update cache
+
+-package-resources:
+     [aapt] Creating full resource package...
+
+-package:
+[apkbuilder] Current build type is different than previous build: forced apkbuilder run.
+[apkbuilder] Creating TodoCatalyst-release-unsigned.apk for release...
+
+-post-package:
+
+-release-prompt-for-password:
+
+-release-nosign:
+
+-release-sign:
+     [echo] Signing final apk...
+
+BUILD FAILED
+c:\Program Files (x86)\Android\android-sdk\tools\ant\build.xml:1128: The following error occurred while executing this line:
+c:\Program Files (x86)\Android\android-sdk\tools\ant\build.xml:1140: Keystore was tampered with, or password was incorrect: Password verification failed
+
+Total time: 27 seconds

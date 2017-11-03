@@ -1,0 +1,532 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>  Class com.java4less.rchart.ChartApplet
+</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.04Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P>&nbsp;</P>
+<p align="center"></P>
+<H1 align="center">RChart Visual Builder 1.1</H1>
+<HR>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif" size="3"><a href="#introduction"> 
+    Introduction</a> </font> </li>
+  <ul>
+    <li><font face="Arial, Helvetica, sans-serif"><a href="#what"><font size="2">What 
+      is RChart Visual Builder</font></a></font></li>
+    <li><font size="2"><a href="#requirements"><font face="Arial, Helvetica, sans-serif">Requirements</font></a></font></li>
+    <li><font face="Arial, Helvetica, sans-serif" size="2"><a href="#about">About 
+      the evaluation version</a></font></li>
+  </ul>
+  <li><font face="Arial, Helvetica, sans-serif" size="3"><a href="#description">Description</a> 
+    </font> </li>
+  <ul>
+    <li><font size="2"><a href="#installation"><font face="Arial, Helvetica, sans-serif">Installation</font></a></font></li>
+    <li><font size="2"><a href="#starting"><font face="Arial, Helvetica, sans-serif">Starting 
+      RChart Visual Builder</font></a></font></li>
+    <li><font size="2"><a href="#user"><font face="Arial, Helvetica, sans-serif">User 
+      Interface</font></a></font></li>
+    <li><font size="2"><a href="#limitation"><font face="Arial, Helvetica, sans-serif">Limitations</font></a></font></li>
+    <li><font face="Arial, Helvetica, sans-serif" size="2"><a href="#running">Running 
+      the chart</a></font></li>
+  </ul>
+  <li><font face="Arial, Helvetica, sans-serif" size="3"><a href="#minichart">MiniChart 
+    configuration</a> </font> </li>
+  <li><font face="Arial, Helvetica, sans-serif" size="3"><a href="#tutorial">Tutorial 
+    </a></font> 
+    <ul>
+      <li><font size="2"><a href="#createline"><font face="Arial, Helvetica, sans-serif">Create 
+        a line or bar chart, step by step</font></a></font></li>
+      <li><font face="Arial, Helvetica, sans-serif" size="2"><a href="#createpie">Create 
+        a pie chart, step by step</a></font></li>
+      <li><font size="2"><a href="#examples"><font face="Arial, Helvetica, sans-serif">Examples</font></a></font></li>
+    </ul>
+  </li>
+  <li><font face="Arial, Helvetica, sans-serif" size="3"><a href="#links">Links 
+    and contact</a></font></li>
+</ul>
+<P>&nbsp;</P>
+<P><font face="Arial, Helvetica, sans-serif"><b><font size=+2><a name="introduction"><!-- --></a>Introduction</font></b></font></P>
+<P>&nbsp;</P>
+<P><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="what"><!-- --></a></font></b><font color="#003399">What 
+  is RChart Visual Builder</font></b></font></P>
+<P><font face="Arial, Helvetica, sans-serif">RChart Visual Builder is a tool for 
+  creating charts to be used with RChart product. Therefore:</font></P>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">it is optional. You don't have 
+    to use RChart Visual Builder if you don't want to, you can still manually 
+    create the parameters for Rchart.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">it is a tool for Rchart. You must 
+    already have a license for the product RChart.</font></li>
+</ul>
+<P><font face="Arial, Helvetica, sans-serif">the<b> benefits</b> of using RChart 
+  Visual Builder are:</font></P>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">you don't have to write much Java[TM] 
+    source code in order to create charts.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">you will not make any mistakes 
+    when typing parameters, since you visually define the chart.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">you will have an overview of the 
+    available parameters.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">you will easily and quickly test 
+    changes in you chart design.</font></li>
+</ul>
+<P><font face="Arial, Helvetica, sans-serif">this will result in<i><b> shorter 
+  learning and development times </b></i>of charts.</font></P>
+<P>&nbsp;</P>
+<P><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="requirements"><!-- --></a></font></b><font color="#003399">Requirements</font></b></font></P>
+<P><font face="Arial, Helvetica, sans-serif">In order to run RChart Visual Builder 
+  you need the Java development kit 1.1 or later (1.2, 1.3 ...)</font></P>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif"> Java development kit 1.1 or 1.2, 
+    you must also install Swing (swingall.jar). If you don't have it you can dowload 
+    it here: <a href="http://java.sun.com/products/jfc/">The Swing Connection.</a></font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Java development kit 1.3 or later, 
+    already contains the swing classes.</font></li>
+</ul>
+<P><font face="Arial, Helvetica, sans-serif">Note: Swing is needed it to run RChart 
+  Visual Builder only, it is not needed for running RChart.</font></P>
+<P>&nbsp;</P>
+<P><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="about"><!-- --></a></font></b><font color="#003399">About 
+  the evaluation version</font></b></font></P>
+<P><font face="Arial, Helvetica, sans-serif">If you are running the evaluation 
+  version of RChart Visual Builder you must be aware of these limitations:</font></P>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">a reminded will be displayed when 
+    you start the application.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">you will not be able to save or 
+    export your charts.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">you will only be able to see the 
+    first 10 created parameters in the menu <i>output-&gt;view</i>. </font></li>
+</ul>
+<p>&nbsp;</p>
+<P><font face="Arial, Helvetica, sans-serif"><b><font size=+2><a name="description"><!-- --></a>Description</font></b></font></P>
+<P>&nbsp;</P>
+<P><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="installation"><!-- --></a></font></b><font color="#003399">Installation</font></b></font></P>
+<P><font face="Arial, Helvetica, sans-serif">Unzip Rchart Visual Builder ZIP file 
+  in the same directory where you have installed/unzipped Rchart. Remember that 
+  RChart Visual Builder is an additional tool for RChart, so you must separately 
+  download and install RChart.</font></P>
+<P>&nbsp;</P>
+<p><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="starting"><!-- --></a></font></b><font color="#003399">Starting 
+  RChart Visual Builder</font></b></font></p>
+<p><font face="Arial, Helvetica, sans-serif">In order to start the application 
+  you must execute the following files:</font></p>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">for Microsoft's Virtual Machine: 
+    runRChartMS.bat</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">for Sun's Virtual Machine: runRChartSUN.bat</font></li>
+</ul>
+<p><font face="Arial, Helvetica, sans-serif">Remember! if you use the Java[TM] 
+  Development Kit 1.1 or 1.2 you need also Swing (swingall.jar)</font></p>
+<p>&nbsp;</p>
+<p><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="user"><!-- --></a></font></b><font color="#003399">User 
+  Interface</font></b></font></p>
+<p><font face="Arial, Helvetica, sans-serif">The user interface is made of the 
+  following sections:</font></p>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">the <b>chart area</b>: left window. 
+    This area will display the created chart. </font></li>
+</ul>
+<p align="center"><font face="Arial, Helvetica, sans-serif"><img src="RCVB3.jpg" width="353" height="389"></font></p>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">The <b>components tree</b>. This 
+    tree displays the components of the chart.Each chart can have the following 
+    components: </font></li>
+</ul>
+<ul>
+  <ul>
+    <li><font face="Arial, Helvetica, sans-serif"><b><font color="#6666FF">the 
+      chart</font></b>: this component stores some general configuration, like 
+      chart's title, background color...</font></li>
+    <li><font color="#6666FF" face="Arial, Helvetica, sans-serif"><b>the axis</b></font><font face="Arial, Helvetica, sans-serif">: 
+      each chart can have up to 3 axis, X, Y and Y2.</font></li>
+    <li><font face="Arial, Helvetica, sans-serif"><b><font color="#6666FF">the 
+      plotters</font></b>: each chart can have several plotters, depending on 
+      the kind of chart you create: linechart (for 2D/3D lines, areas, candlestick 
+      and curves), barchart (2D/3D bars) piechart (2D/3D pies) and radarchart.</font></li>
+    <li><font face="Arial, Helvetica, sans-serif"><b><font color="#6666FF">the 
+      series</font></b>. RChart Visual Builder supports up to 9 series (RChart 
+      supports however 50). In order to activate each serie you must enter a name 
+      in the &quot;<i>name</i>&quot; field. If this field is empty, the serie 
+      will not be used. Each serie represents, a line (if type is line) or a serie 
+      of bars (if type is chart).</font></li>
+  </ul>
+</ul>
+<p align="center"><font face="Arial, Helvetica, sans-serif"><img src="RCVB2.jpg" width="396" height="157"></font></p>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">Whenever you click on a component 
+    in the tree window, the parameters for the selected component will be displayed 
+    in the <b>parameters window</b>. In order to apply the changes of the parameters 
+    and rebuild the chart click on the <b>&quot;Build&quot; button</b>. If you 
+    move the mouse over the parameters name you will be able to see a short <b>tip/description</b> 
+    of the same. </font>
+    <p><font face="Arial, Helvetica, sans-serif">Read also <a href="Help_English.html">RChart 
+      documentation</a> if you want a detailed description of the parameters.</font></p>
+  </li>
+</ul>
+<p align="center"><font face="Arial, Helvetica, sans-serif"><img src="RCVB1.jpg" width="399" height="365"></font></p>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">the menu. It allows the following 
+    operations: </font>
+    <ul>
+      <li><font face="Arial, Helvetica, sans-serif"><i>File-&gt;New</i>: creates 
+        new chart, current parameters will be lost.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>File-&gt;Load</i>: loads 
+        new parameters, current parameters will be lost.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>File-&gt;Save</i>: saves 
+        current chart parameters into a file.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>File-&gt;Exit</i>: exits 
+        application.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Output-&gt;View</i>: view 
+        current parameters. You can copy and paste these parameters to use them 
+        in your <a href="http://www.java4less.com/faqs_chart.htm">ASP, JSP[TM] 
+        or Php scripts</a>.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Output-&gt;Run on browser</i>: 
+        run the current chart as applet in a browser. This option will create 
+        a file called <i>chart_test.html </i>and will open it using the defined 
+        browser (see also administration menu).</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Output-&gt;Applet Parameters</i>: 
+        creates a file that contains the applet parameters for the current chart.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Output-&gt;Servlet/Java 
+        parameters</i>: creates a file that contains the parameters for the current 
+        chart to be used in a servlet or Java program (see section &quot;running 
+        the chart&quot;).</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Administration -&gt; parameters' 
+        names: </i>if checked, the name of the parameters will be displayed instead 
+        of the description. </font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Administration -&gt; set 
+        browser</i>: you must select the browser executable in your computer in 
+        order to be able to view the help files or run the chart on the browser.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Help -&gt; RChart Visual 
+        Builder</i>: view this file.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Help -&gt; RChart Parameters</i>: 
+        view Help_English.html file.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Help -&gt; RChart JavaDoc</i>: 
+        view JavaDoc[TM] files.</font></li>
+      <li><font face="Arial, Helvetica, sans-serif"><i>Help -&gt; About</i>: displays 
+        version.</font></li>
+    </ul>
+  </li>
+</ul>
+<p align="center">&nbsp;</p>
+<p><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="limitation"><!-- --></a></font></b><font color="#003399">Limitations</font></b></font></p>
+<p><font face="Arial, Helvetica, sans-serif">When you build your chart using the 
+  Visual Builder you must take into account that the following features are not 
+  activated inside the Builder:</font></p>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif"> Zoom and scroll.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif"> Tips.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif"> Html links and Javascript.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Realtime features.</font></li>
+</ul>
+<p><font face="Arial, Helvetica, sans-serif">in order to test this features you 
+  must use the &quot;<i>Output-&gt;Run on browser</i>&quot; option, because these 
+  features are only available when RChart is running as applet.</font></p>
+<p>&nbsp;</p>
+<p><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="running"><!-- --></a></font></b><font color="#003399">Running 
+  the chart</font></b></font></p>
+<p><font face="Arial, Helvetica, sans-serif">Once your chart has been created 
+  you can:</font></p>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">view the parameters (<i>menu-&gt;output-&gt;view</i>). 
+    You can copy and paste the parameters to use them in your <a href="http://www.java4less.com/faqs_chart.htm">ASP, 
+    JSP[TM] or Php scripts</a>.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">save the parameters to use them 
+    in your servlet: <i>menu-&gt;output-&gt;Servlet /Java parameters</i> . Read 
+    also this to learn <a href="Help_English.html">how to setup a servlet</a>.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">save the parameters to use them 
+    as applet: <i>menu-&gt;output-&gt; Applet parameters. </i>After that use a 
+    browser to open the file.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">save the parameters to use them 
+    in a Java program (: <i>menu-&gt;output-&gt;Servlet /Java parameters</i>). 
+    In this case you must use the following Java code: </font> 
+    <blockquote> 
+      <blockquote> 
+        <p><font size="-1" face="Arial, Helvetica, sans-serif">// create chart 
+          loader <br>
+          chartLoader loader=new chartLoader(null); <br>
+          <br>
+          // load paremeters <br>
+          loader.loadFromFile("file://" + f[1]+f[0],true); <br>
+          <br>
+          // create charts<br>
+          Chart c=loader.build(false,false);</font></p>
+      </blockquote>
+    </blockquote>
+  </li>
+</ul>
+<P><font face="Arial, Helvetica, sans-serif">Note that some of the parameters 
+  in your chart are constant, for example, your chart will always have a yellow 
+  background color. However some other parameters will be variable, for example 
+  the data to be plotted (parameter SERIE_DATA_*). You must of course change those 
+  parameters at runtime:</font></P>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif">If you use a ASP,JSP[TM] or php 
+    script, see <a href="http://www.java4less.com/faqs_chart.htm">examples of 
+    scripts</a>.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">If you use Java source code you 
+    change the parameters: </font></li>
+  <blockquote> 
+    <blockquote> 
+      <p><font size="-1" face="Arial, Helvetica, sans-serif">// create chart loader 
+        <br>
+        chartLoader loader=new chartLoader(null); <br>
+        <br>
+        // load paremeters <br>
+        loader.loadFromFile("file://" + f[1]+f[0],true); <br>
+        </font></p>
+      <p><font size="-1" color="#FF0033" face="Arial, Helvetica, sans-serif">// 
+        change the parameters you what here, for example, provide new data to 
+        be plotted<br>
+        loader.setParameter(&quot;SERIE_DATA_1&quot;,&quot;1|34|54&quot;)</font><font size="-1" face="Arial, Helvetica, sans-serif"><br>
+        <br>
+        // create charts<br>
+        Chart c=loader.build(false,false);</font></p>
+    </blockquote>
+  </blockquote>
+  <li><font face="Arial, Helvetica, sans-serif">If you use Java source code you 
+    also change the chart once has been created (see RChart Javadoc[TM]): </font> 
+    <blockquote> 
+      <blockquote> 
+        <p><font size="-1" face="Arial, Helvetica, sans-serif">// create chart 
+          loader <br>
+          chartLoader loader=new chartLoader(null); <br>
+          <br>
+          // load paremeters <br>
+          loader.loadFromFile("file://" + f[1]+f[0],true); <br>
+          <br>
+          // create charts<br>
+          Chart c=loader.build(false,false);</font></p>
+        <p><font size="-1" color="#FF0033" face="Arial, Helvetica, sans-serif">// 
+          change first serie in plotter 0 <br>
+          c.plotters[0].replaceSerie(0,yourDataSerie);</font></p>
+      </blockquote>
+    </blockquote>
+  </li>
+</ul>
+<P>&nbsp;</P>
+<P><font face="Arial, Helvetica, sans-serif"><b><font size=+2><a name="minichart"><!-- --></a>MiniChart 
+  configuration</font></b></font></P>
+<P>&nbsp;</P>
+<P><font face="Arial, Helvetica, sans-serif"><b><font color="#003399">Introduction</font></b></font></P>
+<P><font face="Arial, Helvetica, sans-serif">We have introduced<b><font color="#990000"> 
+  </font></b><font color="#000000">MiniChart</font> in order to <font color="#CC0033"><b>speed 
+  up the download</b></font> process of RChart when running as <b>Applet</b><font color="#000000">.</font><b><font color="#990000">&nbsp;</font></b> 
+  This is a tool that will minimize the size of the applet. This is achieved by 
+  recompiling the source code of RChart and including only <b>those features you 
+  are going to use</b>.&nbsp; For this reason miniChart can only be used if you 
+  have purchased the source code of RChart.</font></P>
+<p><font face="Arial, Helvetica, sans-serif">By means of MiniChart you can achieve 
+  applets as small as <b><font color="#990000">32K </font></b><font color="#000000">(for 
+  a pie or radar chart)</font>,&nbsp; the final size will depend on how many features 
+  you require and the Java development kit version you use. The size of minichart 
+  for line or bar charts range from 40k to 50k. </font> 
+<p>&nbsp;
+<p align="center"><img src="minichart.png" width="499" height="370">
+<p>&nbsp;
+<p><font face="Arial, Helvetica, sans-serif"><b><font color="#003399">Installation</font></b></font>
+<p><font face="Arial, Helvetica, sans-serif">Before you run minichart you must 
+  :</font>
+<ol>
+  <li><font face="Arial, Helvetica, sans-serif">Install <b>Sun's Java[TM] Development 
+    Kit</b>, you can download it at <a href="http://www.java.sun.com">http://www.java.sun.com</a>. 
+    This will install the Java compiler minichart will use to compile you applet.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">copy all source code files (*.java 
+    files) to the following directory:</font> 
+    <p><font face="Arial, Helvetica, sans-serif"><i>DIR/com/java4less/rchart</i></font></p>
+    <p><font face="Arial, Helvetica, sans-serif">, <i>DIR</i> is the directory 
+      where you have installed RChart Visual Buidler.</font></p>
+  </li>
+</ol>
+<p>&nbsp;
+<P><font face="Arial, Helvetica, sans-serif"><b><font color="#003399">Create your 
+  own applet</font></b></font></P>
+<P><font face="Arial, Helvetica, sans-serif">Follow these steps in order to create 
+  your miniChart applet:</font></P>
+<ol>
+  <li><font face="Arial, Helvetica, sans-serif">Start miniChart from the menu: 
+    <i>administration -&gt; minichart.</i></font></li>
+  <li><font face="Arial, Helvetica, sans-serif">deselect all features you will 
+    not need.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">click on &quot;Create&quot;, this 
+    will modify the source code and will copy the modified files to DIR/tmp/com/java4less/rchart</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">select directory where you installed 
+    the Java development kit (for example c:\jdk1.4) so that minichart is able 
+    to recompile the source code. The compiler command will be modified to include 
+    the correct directory.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">enter the applet file name (default 
+    is minichart.jar)</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">click on compile.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">you will be able to see the result 
+    of the compilation in the result window.</font></li>
+</ol>
+<P>&nbsp;</P>
+<P><font face="Arial, Helvetica, sans-serif"><b><font color="#003399">How to use 
+  the applet (miniChart.jar)</font></b></font></P>
+<P><font face="Arial, Helvetica, sans-serif">Once you have created you own applet 
+  you will be able to use ir in your HTML pages adding the following parameter 
+  to the &lt;APPLET&gt; tag:</font></P>
+<blockquote> 
+  <blockquote>
+    <p><font size="-1">ARCHIVE=miniChart.jar</font></p>
+  </blockquote>
+</blockquote>
+<P><font face="Arial, Helvetica, sans-serif">a complete example would look like 
+  this:</font></P>
+<blockquote> 
+  <blockquote>
+    <p><font size="-1">&lt;APPLET<br>
+      CODEBASE = &quot;.&quot;<br>
+      <font color="#CC0033"><b>ARCHIVE=miniChart.jar</b></font><br>
+      CODE = &quot;com.java4less.rchart.ChartApplet.class&quot;<br>
+      NAME = &quot;TestApplet&quot;<br>
+      WIDTH = 500<br>
+      HEIGHT = 500<br>
+      HSPACE = 0<br>
+      VSPACE = 0<br>
+      ALIGN = middle<br>
+      MAYSCRIPT<br>
+      &gt;</font></p>
+  </blockquote>
+</blockquote>
+<P>&nbsp;</P>
+<P><font face="Arial, Helvetica, sans-serif"><b><font size=+2><a name="tutorial"><!-- --></a>Tutorial</font></b></font></P>
+<P><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="createline"><!-- --></a></font></b><font color="#003399">Create 
+  a line or bar chart, step by step</font></b></font></P>
+<P><font face="Arial, Helvetica, sans-serif">The following steps will show you 
+  how to create a line chart that uses dates in the x axis:</font></P>
+<ol>
+  <li><font face="Arial, Helvetica, sans-serif"> Start RChart Visual Builder</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Create a new chart with menu <i>File-&gt;New</i>.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Click on the <i>Chart</i> node 
+    of the components tree (top right corner of the window).</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter desired size of the chart 
+    in the <i>Area's width and height</i> parameters. For example 400,400.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter a title for you chart in 
+    the &quot;<i>Text of the title</i>&quot; field. For example &quot;My first 
+    chart&quot;.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif"><b>Proceed now with the X Axis</b></font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Click on the <i>X Axis </i> node 
+    of the components tree.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter title for the X Axis in 
+    the &quot;<i>Text of the X label</i>&quot;. For example &quot;Date&quot;. 
+    </font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter initial date &quot;X initial 
+    date&quot; , for example &quot;23-12-2001&quot;.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter &quot;d&quot; in the &quot;X 
+    date step&quot;. In this way, each tick will stand for 1 day. </font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter 7 in the &quot;X big tick 
+    interval&quot; so that you get 1 big tick every 7 days.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif"><b>Proceed now with the YAxis</b></font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Click on the <i>Y Axis </i> node 
+    of the components tree.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter 0 in the &quot;Y Min&quot; 
+    field.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter &quot;10&quot; in the &quot;<i>Y 
+    auto ticks</i>&quot; so that you get only 10 ticks on the Y axis.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Set &quot;Y axis integer&quot; 
+    to &quot;Yes&quot;, in order to avoid decimal values on the Y Axis labels.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif"><b>Proceed now with the Data to 
+    be plotted</b></font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Click on the <i>Serie 1</i> node 
+    of the components tree </font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter a name for the serie in 
+    the field &quot;Name of the serie&quot;. For example &quot;Sales&quot;.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter the values to be plotted 
+    in the &quot;Data&quot; field. For example: &quot;10|23|45|24|45|67|86|23|43&quot; 
+    .</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Set<i> Type</i> to LINE in order 
+    to get a line chart or BAR in order to get a bar chart.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Select now color of the line in 
+    the field:</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">click on the <i>Build </i>button.</font></li>
+</ol>
+<p><font face="Arial, Helvetica, sans-serif">congratulations!, you have created 
+  your first chart, you can now change some other parameters like colors, images, 
+  line styles or fonts in order to make this simple chart look a bit nicer.</font></p>
+<p>&nbsp;</p>
+<p><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="createpie"><!-- --></a></font></b><font color="#003399">Create 
+  a pie chart, step by step</font></b></font></p>
+<p><font face="Arial, Helvetica, sans-serif">The following steps will show you 
+  how to create a pie chart:</font></p>
+<ol>
+  <li><font face="Arial, Helvetica, sans-serif"> Start RChart Visual Builder</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Create a new chart with menu <i>File-&gt;New</i>.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Click on the <i>Chart</i> node 
+    of the components tree (top right corner of the window).</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter desired size of the chart 
+    in the <i>Area's width and height</i> parameters. For example 400,400.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter a title for you chart in 
+    the &quot;<i>Text of the title</i>&quot; field. For example &quot;My first 
+    chart&quot;.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif"><b>Proceed now with the Data to 
+    be plotted</b></font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Click on the <i>Serie 1</i> node 
+    of the components tree.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter a name for the serie in 
+    the field &quot;Name of the serie&quot;. For example &quot;Test&quot;.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Set<i> Type</i> to PIE.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Set now the values in the &quot;Data&quot; 
+    field, for example &quot;10|45|67&quot;. This will be the values for each 
+    item of the pie.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter now the names of the items.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter the name in the &quot;Item 
+    name 1&quot; field of the &quot;PieChart&quot; section of the &quot;Serie 
+    1&quot;, for example &quot;Item A&quot;.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter the name in the &quot;Item 
+    name 2&quot; field of the &quot;PieChart&quot; section of the &quot;Serie 
+    2&quot;, for example &quot;Item B&quot;.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter the name in the &quot;Item 
+    name 3&quot; field of the &quot;PieChart&quot; section of the &quot;Serie 
+    3&quot;, for example &quot;Item C&quot;.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Enter now the colors for the items 
+    of the pie.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Select a color in the &quot;Item 
+    style 1&quot; field of the &quot;PieChart&quot; section of the &quot;Serie 
+    1&quot;</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Select a color in the &quot;Item 
+    style 2&quot; field of the &quot;PieChart&quot; section of the &quot;Serie 
+    2&quot;</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">Select a color in the &quot;Item 
+    style 3&quot; field of the &quot;PieChart&quot; section of the &quot;Serie 
+    3&quot;</font></li>
+  <li><font face="Arial, Helvetica, sans-serif">click on the <i>Build </i>button.</font></li>
+</ol>
+<p><font face="Arial, Helvetica, sans-serif">congratulations!, you have created 
+  your first chart, you can now change some other parameters; Click on the &quot;<i>Piechart</i>&quot; 
+  node of the components tree to change the aspect of the pie.</font></p>
+<p>&nbsp;</p>
+<p><font face="Arial, Helvetica, sans-serif"><b><b><font size=+2><a name="examples"><!-- --></a></font></b><font color="#003399">Examples</font></b></font></p>
+<p><font face="Arial, Helvetica, sans-serif">The subdirectory &quot;Examples&quot; 
+  contains several files you can load into RChart Visual Builder. We recommend 
+  you to use this examples as start point for your own charts.</font></p>
+<p>&nbsp;</p>
+<P><font face="Arial, Helvetica, sans-serif"><b><font size=+2><a name="links"><!-- --></a>Links 
+  and contact</font></b></font></P>
+<ul>
+  <li><font face="Arial, Helvetica, sans-serif"><b>Faqs</b>: some answers to common 
+    questions are to be found here: <a href="http://www.java4less.com/faqs.htm">Faqs</a>.</font></li>
+  <li><font face="Arial, Helvetica, sans-serif"><b>Registration</b>: if you are 
+    using a evaluation version of this product you can registrate here: <a href="http://www.java4less.com/charts_e.htm">RChart 
+    home page </a></font></li>
+  <li><font face="Arial, Helvetica, sans-serif"><b>Updates</b>: if you are entitled 
+    to get free updates (see license agreement) you can check for new versions 
+    here: <a href="http://www.java4less.com/charts_e.htm">RChart home page</a> 
+    </font></li>
+  <li><font face="Arial, Helvetica, sans-serif"><b>other</b>: you can also contact 
+    us at <a href="mailto:%20java4less@confluencia.net">java4less@confluencia.net</a>.</font></li>
+</ul>
+<hr>
+<div align="center"> 
+  <blockquote><b><font face="Arial, Helvetica, sans-serif"><font size=-1>Java, 
+    JSP, JDBC, JDK and all Java-based marks are trademarks or registered trademarks 
+    of Sun Microsystems, Inc. in the U.S. and other countries. J4L Components 
+    is independent of Sun Microsystems, Inc.</font></font></b> </blockquote>
+</div>
+<P>&nbsp;</P>
+<P>&nbsp;</P>
+</BODY>
+</HTML>

@@ -1,0 +1,27 @@
+COMO EJECUTAR LOS EJEMPLOS
+
+EJECUTAR EL APPLET
+
+abra examples.html con su navegador.
+
+EJECUTAR EL SERVLET
+
+vea Help_Spanish.htm
+
+EJECUTAR LA APLICACIÓN
+
+Antes de ejecutar la application debe cambiar el directorio actual al lugar
+donde ha instalado RChart
+
+
+------------------------------------------------------------------------------
+
+1. Microsoft Java VM 
+
+WJVIEW.EXE /p /cp ".;rchart.jar" charapp
+
+------------------------------------------------------------------------------
+
+2. JDK 1.2, 1.3, 1.4 ...
+
+JAVA.EXE -cp ".;rchart.jar" charapp

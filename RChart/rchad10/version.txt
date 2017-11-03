@@ -1,0 +1,92 @@
+RChart version 1.14
+
+---------------------------------------------------------
+
+History
+
+new to 1.6
+
+- Vertical labels for Y axis
+- different colors for bars in same serie. Parameter SERIE_BARS_COLORS_*
+- logaritmic scales. paramteres: *SCALE_LOG,*SCALE_LOG_BASE,TICK_LOG_INTERVAL*
+- "NULL" values are accepted in lineplotters in order to make a break in the line. It is incompatible with clipping (LINECHART_FIXED_LIMITS) and areachart (SERIE_FILL_1).
+- add space between lines in line chart 3D. parameter LINECHART3D_SEPARATOR
+- SERIE_DATA_LABELS_1: this parameter will allow your to specify your own labels for the points/bars in the chart
+- BIG_TICK_INTERVAL_LISTX: this parameter allows you to specify the position of big ticks (and labels) in the axis.
+- moved to com.java4less.rchart package
+
+new to 1.7 
+
+- fixed bug: exception when there are too few tickLabels
+- stacked bars 2D: values are now automatically cumulated. Use BARCHART_CUMULATIVE_BACK_COMPATIBLE=true if you want to be backwards compatible
+- Axis: start with a big tick. New property Axis.startWithBigTick and parameter XAXIS_START_WITH_BIG_TICK
+- stackbar: new parameter BARCHART_SUMMED_LABELS. If true will display summed values as labels in the stackbar.
+- curves (CurvePlotter.class): natural CUBIC and B-SPLINES. Not compatible with clipping. Use parameter SERIE_TYPE_? = "CURVE" or "B-SPLINES"
+- lines (CurvePlotter.class): least squares line. Use parameter SERIE_TYPE_? = "LINE_LEAST_SQUARES"
+- new parameter for negative bars: SERIE_NEGATIVE_STYLE_*
+
+new to 1.8 
+
+- view cursor position. (parameter CHART_SHOW_POSITION ) 
+- view tips. (parameter CHART_SHOW_TIPS and SERIE_TIPS_*). Tips aspect CHART_TIPS_COLOR. CHART_TIPS_FONT_COLOR and CHART_TIPS_FONT
+- java script events when click on bars, items or points (parameter CHART_JAVASCRIPT_EVENTS triggers onClickRChart)
+- html urls (parameter SERIE_LINKS_* and CHART_LINKS_TARGET)
+- automatic min/max/tickinterval (XAXIS_AUTO_TICKS, XAXIS_PREF_TICK_INTERVAL, XSCALE_EXACT_MAX , XSCALE_EXACT_MIN and XSCALE_PREF_MAXMIN).
+- axis will automatically create "Date labels". Parameters: XAXIS_DATE_FORMAT, XAXIS_DATE_STEP and XAXIS_INITIAL_DATE
+- Realtime parameters: REALTIME_DATAFILE, REALTIME_MSECS, REALTIME_JS
+- Event chart. New parameter "SERIE_BARS_START_1" to set starting position of bars and SERIE_DATAX_* in order to put several bars at same Y coordinate. And BARCHART_EVENTCHART.
+- autoscale (max) did not work with stackbar. Fixed.
+- RIGHT_MARGIN parameter used to remove the right space if the legend is on top or bottom.
+- save to PNG: see source code of RChartServlet.java and ChartEncoder.java
+- new parameter PIE_LABEL_LINE to set lines that will link the label to the items in the piechart
+
+new to 1.9
+
+- chartLoader anb support for RChart Visual Builder
+
+
+new to 1.9.1
+
+- parameters RADARCHART_POINT_COLORS and RADARCHART_POINT_COLORS_SCALE
+- Bug files: DATAFILE parameter not working
+- tips now also available when Scroll bars are active
+
+new to 1.9.2
+- axis ticks labels support "\n" in order to create up lo 3 lines. Only supported for horizontal labels.
+- parmeter XAXIS_TICK_TEXT_LINE specifies number maximum of characters in the label in ordr to automatically create up to 3 lines.
+- Title text supports "\" in order to create tup to 3 lines.
+
+new to 1.10
+
+- RChartMapServlet: support for HTML image maps.
+- Support for miniChart
+
+new to 1.10.1
+
+- servlet will run on jdk 1.4 as headless
+- XAXIS_CLOSED (YAXIS_CLOSED), if true a line on the top (right) of the chart will be paint. The result will be a frame around the chart.
+- Fixed: curve chart throwed exception if data serie had only 1 value.
+
+
+new to 1.11
+
+- Gaugechart
+- JChartBean and JiChartBean. Bean and Swing classes.
+
+new to 1.12 (aug. 2002)
+
+- JDBC support in parameters of the servlet/chartLoader
+
+new to 1.12.1 (Nov. 2002)
+
+- new parameter LINECHART_START_VALUE_X to set starting point of lines.
+
+new to 1.13
+
+- pie labels can be multiline (use \n)
+
+new to 1.14
+
+- xaxis scale can be now on top, parameter XAXIS_ON_TOP=true
+- Transparency in fillStyles, new class FillStyle2D
+

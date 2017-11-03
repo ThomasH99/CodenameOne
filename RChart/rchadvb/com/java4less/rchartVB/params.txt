@@ -1,0 +1,237 @@
+WIDTH;Area's width;;CHART;INTEGER
+HEIGHT;Area's height;;CHART;INTEGER
+_TITLE;Title;;CHART;
+TITLECHART;Text of the title;;CHART;STRING
+TITLE_FONT;Font of the title;;CHART;FONT
+TITLE_COLOR;Color of the title;;CHART;COLOR
+_?LABEL;? Label;;?AXIS;
+?LABEL;Text of the ? label;;?AXIS;STRING 
+?LABEL_FONT;Font of the ? label;;?AXIS;FONT
+?LABEL_COLOR;Color of the ? label;;?AXIS;COLOR
+?LABEL_VERTICAL;Vertical ? label;If "true" the label will be painted with a 90 degrees rotation;?AXIS;BOOLEAN;FALSE
+_?Axis;? Axis/Scale;;?AXIS;
+?AXIS;Enable ? axis;;?AXIS;BOOLEAN;TRUE
+?SCALE_MIN;? Min;Mininum value for ? axis;?AXIS;DOUBLE
+?SCALE_MAX;? Max;Maximum value for ? axis;?AXIS;DOUBLE
+TICK_INTERVAL?;? tick interval;(default 1) This means, draw a small tick each unit;?AXIS;DOUBLE;1
+BIG_TICK_INTERVAL?;? big tick interval;(default 5) This means. Draw one big tick (with label) after 5 small ticks. For example, if TICK_INTERVAL?=2 and BIG_TICK_INTERVAL?=5, you will get one big tick (with a label) each 10 units;?AXIS;DOUBLE;5
+BIG_TICK_INTERVAL_LIST?;? big tick list;This is an alternative to BIG_TICK_INTERVAL?. BIG_TICK_INTERVAL? will allow you to draw big tick at regular intervals. BIG_TICK_INTERVAL_LIST_X will allow you to specify the position of the big tiks. For example: Example: "0|10|12|14" will draw big ticks after 0, 10,l2 and 14 small ticks. ;?AXIS;DOUBLE_LIST
+?AXIS_TICKATBASE;? tick at base;;?AXIS;BOOLEAN;TRUE
+?AXIS_GRID;? Axis grid;Line style of the grid for the ? Axis;?AXIS;LINE
+GRID?;Grid at big tick;Display grid at big ticks only;?AXIS;BOOLEAN;FALSE
+?AXIS_LABELS;List of ? labels;;?AXIS;STRING_LIST
+?AXIS_START_WITH_BIG_TICK;? start with big tick;if "true" the first tick in the axis will be a big ticks (with label);?AXIS;BOOLEAN;FALSE
+CERO_?AXIS;? cero axis;valid values are NO,LINE and SCALE;?AXIS;INTEGER;NO;NO,LINE,SCALE
+?AXIS_STYLE;? axis style;Line style of the axis;?AXIS;LINE
+?AXIS_FONT;? font; Font of the labels;?AXIS;FONT
+?AXIS_FONT_COLOR;? color;Color of the labels;?AXIS;COLOR
+?AXIS_INTEGER;? axis integer;"True" or "false". if "True", the value 2.0 will be plotted as "2".;?AXIS;BOOLEAN;FALSE
+?AXIS_LABEL_FORMAT;? label format;If ?AXIS_INTEGER is false, this format will be used to draw the label. For example "#####.00" will always display 2 decimal digits.;?AXIS;STRING
+?AXIS_VERTICAL_LABELS;? vertical labels;If "true" the labels will be painted with a 90 degrees rotation;?AXIS;BOOLEAN;FALSE
+?AXIS_TICK_TEXT_LINE;? tick label length;If > 0 labels that exceed this length will be wrapped;?AXIS;INTEGER;0
+?AXIS_CLOSED;? Closed;If true two lines will be painted top/bottom or left/right;?AXIS;BOOLEAN;FALSE
+_?Auto;Auto axis ?;;?AXIS;
+?SCALE_EXACT_MAX;Exact max.;if true, RChart will calculate the max value of the scale using the preferred min/max values list ;?AXIS;BOOLEAN;TRUE
+?SCALE_EXACT_MIN;Exact min.;if true, RChart will calculate the min value of the scale using the preferred min/max values list ;?AXIS;BOOLEAN;TRUE
+?SCALE_PREF_MAXMIN;Preferred max/min;sorted list of preferred values for minimum and maximum values;?AXIS;DOUBLE_LIST;-1000000|-500000|-100000|-50000|-10000|-5000|-1000|-500|-250|-100|-50|-25-10|-5|-1|-0.5|-0.1|0|0.1|0.5|1|5|10|25|50|100|250|500|1000|5000|10000|50000|100000|500000|1000000
+?AXIS_AUTO_TICKS;? auto ticks;Desired number of ticks in the axis;?AXIS;INTEGER
+?AXIS_PREF_TICK_INTERVAL;? preferred tick interval;if auto ticks>0 RChart will use the interval in this list which is more appropiate to get the desired amount of ticks.;?AXIS;DOUBLE_LIST;0.1|0.5|1|5|10|25|50|100|250|500|1000|5000|10000|50000|100000|500000|1000000
+_?LOGAXIS;? Log Axis;;?AXIS;
+?SCALE_LOG;Log Scale;Log Scale;?AXIS;BOOLEAN;FALSE
+?SCALE_LOG_BASE;Log base;Base of the logarithm for the scale. ;?AXIS;INTEGER
+TICK_LOG_INTERVAL?;Log tick interval;Log tick interval;?AXIS;DOUBLE
+_?DATEAXIS;? Date Axis;;?AXIS;
+?AXIS_DATE_FORMAT;? date format;format of the label (for dates). Use "MMM" to display only the month's name.;?AXIS;STRING;dd-MMM-yyyy
+?AXIS_DATE_STEP;? date step;date step for consecutive (small) ticks. The default is "d" which means 1 step/tick is 1 day. Other values are "m" (months), "w" (week) , "y" (year). You can also use "d3" ( 3 days), "m2" (2 months) .... ;?AXIS;STRING;d
+?AXIS_INITIAL_DATE;? initial date;this date (e.g. 31-12-2001) will be used as base (first tick) if you want to calculate dates for the tick labels. Incompatible with logarithmic scales;?AXIS;STRING
+_LEGEND;Legend;;CHART;
+LEGEND;Legend;enable legend;CHART;BOOLEAN;TRUE
+LEGEND_FILL;Legend's style;Fill style of the legend. This is the background.;CHART;FILL
+LEGEND_COLOR;Legend's color;Color of the legend;CHART;COLOR
+LEGEND_FONT;Legend's font;Font of the legend;CHART;FONT
+LEGEND_VERTICAL;Vertical legend;Layout of the elements in the legend;CHART;BOOLEAN;TRUE
+LEGEND_BORDER;Legend's border;Line style of the legend's border;CHART;LINE
+_SERIE*;Serie *;;SERIE;STRING
+SERIE_*;Name of the serie;;SERIE;STRING
+SERIE_TYPE_*;Type;Type of the serie (LINE, LINE3D, BAR, BAR3D or PIE). In order to draw curves you must use the values: "CURVE" (cubic curve that interpolates the points, B-SPLINES (curve that approximates the points, is very smooth) or LINE_LEAST_SQUARES (for a approximate line).;SERIE;STRING;LINE;LINE,LINE3D,BAR,BAR3D,PIE,RADAR,GAUGE,CURVE,B-SPLINES,LINE_LEAST_SQUARES
+SERIE_TIPS_*;Tips;List of tips for the values of the serie. For example, if serie 1 has 3 bars:  < PARAM NAME="SERIE_TIPS_*" VALUE="tip for first bar|tip for second bar| tip for third bar">;SERIE;STRING_LIST
+SERIE_LINKS_*;Links;List of links to be displayed when the user clicks on a bar, points...;SERIE;STRING_LIST
+SERIE_SECONDYAXIS_*;Use Y2 axis;if "true" this data serie will use the second Y axis. The second YAxis is painted on the right side of the chart;SERIE;BOOLEAN;FALSE
+_Values*;Value's label;;SERIE
+SERIE_FORMAT_*;Values' format;Indicates the format of the values in the chart. The default is: "#####.##". (use 0 to indicate a digit, # to indicate a digit or empty and . for the decimal separator);SERIE;STRING
+SERIE_FONT_*;Font of the values;Use NULL to suppress the labels.;SERIE;FONT
+SERIE_COLOR_*;Font color;color of the values;SERIE;COLOR
+_DATA*;Data for serie *;;SERIE
+SERIE_DATA_*;Data;Data of the serie (Y Values). Example: "0|23|76|4";SERIE;DOUBLE_LIST
+SERIE_DATAX_*;X Data ;(optional) use it if you want to specify the X values. Example: "0|2|4|6". You will need this parameter in order to create scatter charts. ;SERIE;DOUBLE_LIST
+SERIE_DATA_LABELS_*;Labels;(optional) use it if you want to specify your own labels for the points/bars in the chart. It is an array, you must put as many labels as values in SERIE_DATA_*. Example: "cero|two|four|six" ;SERIE;STRING_LIST
+_BAR*;BarChart *;;SERIE;STRING
+SERIE_BORDER_TYPE_*;Border's type;Type of the border of the bar (only BAR type). NORMAL, RAISED or LOWERED;SERIE;STRING;NORMAL;NORMAL,NO,LOWERED,RAISED
+SERIE_BORDER_*;Border's style;Line style of the border of the bar (only BAR type);SERIE;LINE
+SERIE_BARS_START_*;Bars' base;list of values that specify the starting position of the bars. The default is 0 for all bars (i.e. all bars start at position 0). This parameter is used to create "Event charts".;SERIE;DOUBLE_LIST
+SERIE_BAR_STYLE_*;Style;fill style of the bars (for BAR type);SERIE;FILL
+SERIE_BARS_COLORS_*;Bars colors;list of colors used for the bars in the barchart. This wil allow you to have different colors in the bars in the same serie. For example: "RED|WHITE|BLUE";SERIE;COLOR_LIST
+_MAXMIN*;Max/Min values *;;SERIE
+SERIE_MAX_DATA_*;Max values;Maximum values of the data of the serie (e.g. Candlestick, bubblechart... ). Example: "0|23|76|4" ;SERIE;DOUBLE_LIST
+SERIE_MIN_DATA_*;Min values;Minimum values of the data of the serie (e.g. Candlestick). Example: "0|23|76|4" ;SERIE;DOUBLE_LIST
+SERIE_CLOSE_DATA_*;Close values;Close values of the data of the serie. Example: "0|23|76|4" ;SERIE;DOUBLE_LIST
+_LINE*;LineChart *;;SERIE;STRING
+SERIE_DRAW_LINE_*;Draw line;Draw line between points?;SERIE;BOOLEAN;TRUE
+SERIE_STYLE_*;Style;Line style of the lines (for LINE type);SERIE;LINE
+SERIE_LINE_TYPE_*;Serie type;Type of chart (NORMAL, OHLC or CANDLESTICK). The NORMAL type doesn't need close values. ;SERIE;STRING;NORMAL;NORMAL,OHLC,CANDLESTICK
+SERIE_FILL_*;Fill style (area chart);Fill style for AREA charts;SERIE;FILL
+SERIE_POINT_*;Draw points;;SERIE;BOOLEAN;false
+SERIE_POINT_COLOR_*;Point Color;Color of the point (only LINE type and fill style of bubblechart);SERIE;COLOR
+SERIE_POINT_IMAGE_*;Point image;Name of the image file used for the points (gif or jpg). The file must be either relative to the java classes (e.g. "point.gif" or "..\images\point.gif") or absolute (e.g. "http://www.mysite.com/images/point.gif");SERIE;STRING
+_PIE*;PieChart;;SERIE;STRING
+PIE_NAME_*;Item name *;Text for the legend of the pie. The second element will need the parameter PIE_NAME_2 ... ;SERIE;STRING
+PIE_STYLE_*;Item style *;Fill styles of the elements in SERIE_* if it is PIE type. The second element will need the parameter PIE_STYLE_2. ... ;SERIE;FILL
+_GAUGE*;GaugeChart;;SERIE;STRING
+GAUGE_NEEDLE_*;Item (needle) name *;Text for the legend of the gauge. The second needle in the gauge will need the parameter GAUGE_NEEDLE_2 ... ;SERIE;STRING
+GAUGE_NEEDLE_STYLE_*;Neele style *;Color of the needle. The second needle will need the parameter GAUGE_NEEDLE_STYLE_2. ... ;SERIE;FILL
+SERIE_NEEDLE_STYLE_*;Needle's line style;Line style for the needle of the gauge;SERIE;LINE;3|0x0|NORMAL
+SERIE_NEEDLE_LENTGH_*;Needle's length;Length of the needle (in % fo the radius). Default is 80.;SERIE;INTEGER;80
+_BUBBLE*;BubbleChart *;;SERIE;STRING
+SERIE_BUBBLE_*;Bubble values;if TRUE the MAX values will be used as radius to draw a bubble chart. The Min values are not used in this case. ;SERIE;BOOLEAN;FALSE
+SERIE_FILL_BUBBLE_*;Fill bubble;If true the bubbles will be solid. Set also "Point Color".;SERIE;BOOLEAN;FALSE
+_CANDLE*;Candlestick, OHLC , etc ;;SERIE;STRING
+SERIE_CANDLE_POSITIVE_COLOR_*;Positive color;(only CANDLESTICK) Color of when close value > open value. ;SERIE;COLOR
+SERIE_CANDLE_NEGATIVE_COLOR_*;Negative color;(only CANDLESTICK) Color of when close value < open value.;SERIE;COLOR
+SERIE_MAXMIN_STYLE_*;Style of the vertical line.;;SERIE;LINE
+SERIE_OPENCLOSE_WIDTH_*;OHLC width;Width of the horizontal line for open and close values.;SERIE;DOUBLE
+SERIE_LINE_END_*;Line end;Draw line ending horizontal line? Y or N ;SERIE;BOOLEAN;FALSE
+_GAUGE;Main Gauge;;GAUGE;STRING
+GAUGE_RADIUS;Size of the gauge;Value between > 0 and < 2;GAUGE;DOUBLE;1
+GAUGE_BORDER;Pie border;Line style of the border of the pie;GAUGE;LINE
+GAUGE_BASE;Needle's base size (%);Size of the circle painted as needle base (% of the radius);GAUGE;INTEGER;6
+GAUGE_AXIS1_MARGIN;Scale 1 margin (pixels);Distance in pixels between border and ticks;GAUGE;INTEGER;5
+GAUGE_AXIS2_MARGIN;Scale 2 margin (pixels);Distance in pixels between border and ticks;GAUGE;INTEGER;40
+GAUGE_AXIS1_LABEL_MARGIN;Labels 1 margin (pixels);Distance in pixels between border and the labels.  Use positive/negative to place the labels outside/inside the circle.;GAUGE;INTEGER;10
+GAUGE_AXIS2_LABEL_MARGIN;Labels 2 margin (pixels);Distance in pixels between border and the labels.  Use positive/negative to place the labels outside/inside the circle.;GAUGE;INTEGER;-20
+GAUGE_MAX_ZONE;Max. Zone;Zone above this value will be coloured;GAUGE;DOUBLE;0
+GAUGE_MAX_ZONE_COLOR;Max. Color;Color of the ticks of the scale near to the maximum value;GAUGE;FILL;0xFF0000
+GAUGE_MIN_ZONE;Min. Zone;Zone under this value will be coloured;GAUGE;DOUBLE;0
+GAUGE_MIN_ZONE_COLOR;Min. Color;Color of the ticks of the scale near to the minimum value;GAUGE;FILL;0x00FF00
+GAUGE_MAXMIN_ZONE_WIDTH;Min/max zone width;Width in pixels of the ring for the max and min zones;GAUGE;INTEGER;50
+GAUGE_MAXMIN_ZONE_MARGIN;Min/max margin;Margin, in pixels (disnbace to border) of the min/max area;GAUGE;INTEGER;5
+GAUGE_START_ANGLE;Start angle;Start angle of the gauge (default is -20);GAUGE;INTEGER;-20
+GAUGE_END_ANGLE;End angle;eEnd angle of the gauge (default is 200).;GAUGE;INTEGER;200
+GAUGE_SUBGAUGE_SIZE;Subgauge size(%).;Subgauge size. In % of the size of the main gauge.;GAUGE;INTEGER;30
+GAUGE_BACK;Background color;Background color of the circle;GAUGE;FILL;0x0000FF
+_GAUGE;Sub Gauge 1;;GAUGE1;STRING
+GAUGE1_ENABLE;Enable;Enable subgauge;GAUGE1;BOOLEAN;FALSE
+GAUGE1_BORDER;Pie border;Line style of the border of the pie;GAUGE1;LINE
+GAUGE1_BASE;Needle's base size (%);Size of the circle painted as needle base (% of the radius);GAUGE1;INTEGER;6
+GAUGE1_AXIS1_MARGIN;Scale 1 margin (pixels);Distance in pixels between border and ticks;GAUGE1;INTEGER;5
+GAUGE1_AXIS2_MARGIN;Scale 2 margin (pixels);Distance in pixels between border and ticks;GAUGE1;INTEGER;40
+GAUGE1_AXIS1_LABEL_MARGIN;Labels 1 margin (pixels);Distance in pixels between border and the labels.  Use positive/negative to place the labels outside/inside the circle.;GAUGE1;INTEGER;10
+GAUGE1_AXIS2_LABEL_MARGIN;Labels 2 margin (pixels);Distance in pixels between border and the labels.  Use positive/negative to place the labels outside/inside the circle.;GAUGE1;INTEGER;-20
+GAUGE1_MAX_ZONE;Max. Zone;Zone above this value will be coloured;GAUGE1;DOUBLE;0
+GAUGE1_MAX_ZONE_COLOR;Max. Color;Color of the ticks of the scale near to the maximum value;GAUGE1;FILL;0xFF0000
+GAUGE1_MIN_ZONE;Min. Zone;Zone under this value will be coloured;GAUGE1;DOUBLE;0
+GAUGE1_MIN_ZONE_COLOR;Min. Color;Color of the ticks of the scale near to the minimum value;GAUGE1;FILL;0x00FF00
+GAUGE1_MAXMIN_ZONE_WIDTH;Min/max zone width;Width in pixels of the ring for the max and min zones;GAUGE1;INTEGER;50
+GAUGE1_MAXMIN_ZONE_MARGIN;Min/max margin;Margin, in pixels (distance to border) of the min/max area;GAUGE1;INTEGER;5
+GAUGE1_START_ANGLE;Start angle;Start angle of the gauge (default is -20);GAUGE1;INTEGER;-20
+GAUGE1_END_ANGLE;End angle;eEnd angle of the gauge (default is 200).;GAUGE1;INTEGER;200
+GAUGE1_BACK;Background color;Background color of the circle;GAUGE1;FILL;0x0000FF
+_GAUGE;Sub Gauge 2;;GAUGE2;STRING
+GAUGE2_ENABLE;Enable;Enable subgauge;GAUGE2;BOOLEAN;FALSE
+GAUGE2_BORDER;Gauge border;Line style of the border of the pie;GAUGE2;LINE
+GAUGE2_BASE;Needle's base size (%);Size of the circle painted as needle base (% of the radius);GAUGE2;INTEGER;6
+GAUGE2_AXIS1_MARGIN;Scale 1 margin (pixels);Distance in pixels between border and ticks;GAUGE2;INTEGER;5
+GAUGE2_AXIS2_MARGIN;Scale 2 margin (pixels);Distance in pixels between border and ticks;GAUGE2;INTEGER;40
+GAUGE2_AXIS1_LABEL_MARGIN;Labels 1 margin (pixels);Distance in pixels between border and the labels.  Use positive/negative to place the labels outside/inside the circle.;GAUGE2;INTEGER;10
+GAUGE2_AXIS2_LABEL_MARGIN;Labels 2 margin (pixels);Distance in pixels between border and the labels.  Use positive/negative to place the labels outside/inside the circle.;GAUGE2;INTEGER;-20
+GAUGE2_MAX_ZONE;Max. Zone;Zone above this value will be coloured;GAUGE2;DOUBLE;0
+GAUGE2_MAX_ZONE_COLOR;Max. Color;Color of the ticks of the scale near to the maximum value;GAUGE2;FILL;0xFF0000
+GAUGE2_MIN_ZONE;Min. Zone;Zone under this value will be coloured;GAUGE2;DOUBLE;0
+GAUGE2_MIN_ZONE_COLOR;Min. Color;Color of the ticks of the scale near to the minimum value;GAUGE2;FILL;0x00FF00
+GAUGE2_MAXMIN_ZONE_WIDTH;Min/max zone width;Width in pixels of the ring for the max and min zones;GAUGE2;INTEGER;50
+GAUGE2_MAXMIN_ZONE_MARGIN;Min/max margin;Margin, in pixels (disnbace to border) of the min/max area;GAUGE2;INTEGER;5
+GAUGE2_START_ANGLE;Start angle;Start angle of the gauge (default is -20);GAUGE2;INTEGER;-20
+GAUGE2_END_ANGLE;End angle;eEnd angle of the gauge (default is 200).;GAUGE2;INTEGER;200
+GAUGE2_BACK;Background color;Background color of the circle;GAUGE2;FILL;0x0000FF
+_PIECHART;Pie Chart;;PIECHART;STRING
+PIECHART_RADIUS;Size of the pie;Value between > 0 and < 2;PIECHART;DOUBLE;1
+PIECHART_3D;3D effect;;PIECHART;BOOLEAN;FALSE
+PIE_LABEL_FORMAT;Pie label format;Label format for items in the pie. The following variables can be use: #VALUE#, #PERCENTAGE# and #LABEL#. For example, the following format: "#LABEL# = #PERCENTAGE#" would produce this output: "ItemA = 35%". See SERIE_LABELS parameter. ;PIECHART;STRING
+SERIE_LABELS_1;Labels;labels to be used if #LABEL# is included in the LABEL_FORMAT. For example, if the pie has 3 items, the labels could be: "Product|Services|Other" ;PIECHART;STRING_LIST
+PIE_BORDER;Pie border;Line style of the border of the pie;PIECHART;LINE
+PIE_LABEL_LINE;Label line;this is the line style (e.g. "2|BLACK|NORMAL") used to draw the lines that link the labels with the pie. The default is null. ;PIECHART;LINE
+SERIE_DISTCENTER_1;Values position; Value between 0-1. Indicantes distance to center of the values.;PIECHART;DOUBLE;1
+SERIE_PERCENTAGES_1;Percentages;If true the labels will be displayed as percentage, if false as absilute value.Only used if the PIE_LABEL_FORMAT parameter is empty. ;PIECHART;BOOLEAN;TRUE
+SERIE_TOGETHER_1;Detached items;This list of booleans indicates which items of the pie will be displayes separated from the others. For example, in a pie with 3 items: "TRUE|FALSE|TRUE". The second item will be displayed separated from the other 2.;PIECHART;BOOLEAN_LIST
+_BARCHART;Bar Chart;;BARCHART;STRING
+BARCHART_VERTICAL;Vertical;Vertical columns or horizontal bars;BARCHART;BOOLEAN;TRUE
+BARCHART_BAR_AT_AXIS;First bar at Axis;If true, first bar will be painted at the position 0;BARCHART;BOOLEAN;FALSE
+BARCHART_EVENTCHART;Event chart;If true bars will be centered on the ticks;BARCHART;BOOLEAN;FALSE
+BARCHART_CUMULATIVE;Stacked bars;True for stackbarChart;BARCHART;BOOLEAN;FALSE
+BARCHART_SUMMED_LABELS;Summed labels;If true will display summed values as labels in the stackbar;BARCHART;BOOLEAN;TRUE
+BARCHART_CUMULATIVE_BACK_COMPATIBLE;Version 1.5 compatible;if "true", the stacked chart will be draw as previous versions of Rchart. If false, the values will be automatically acumulated.;BARCHART;BOOLEAN;FALSE
+BARCHART_BARWIDTH;Width (pixels) of bars;;BARCHART;INTEGER
+BARCHART_BARSPACE;Space (pixels) between bars;Used to calculate the width of the bars if the parameter BARCHART_BARWIDTH is not present.;BARCHART;INTEGER
+BARCHART_GROUPSPACE;Space between groups;Space (pixels) between groups of bars.Used to calculate the width of the bars if the parameter BARCHART_BARWIDTH is not present.;BARCHART;INTEGER
+BARCHART_BACK;background style;;BARCHART;FILL
+BARCHART_BASE;Base of bars;Starting point of bars;BARCHART;INTEGER;0
+BARCHART3D_DEPTH;Depth;Length of the Z axis (depth of the chart);BARCHART3D;INTEGER
+BARCHART3D_FULL_DEPTH;Max. depth;if TRUE the depth of the bars will be the same as the depth of the charts. If FALSE the depth of the bars will be half of the width.;BARCHART3D;BOOLEAN
+BARCHART3D_BACK;Background style;;BARCHART3D;FILL
+_LINECHART;Line Chart;;LINECHART;STRING
+LINECHART_BACK;Background style;;LINECHART;FILL
+LINECHART_FIXED_LIMITS;Perform line clipping;Perform line clipping if point is outside chart;LINECHART;BOOLEAN;FALSE
+LINECHART_POINT_SIZE;Points size;;LINECHART;INTEGER;6
+LINECHART3D_DEPTH;Depth;Length of the Z axis (depth of the chart);LINECHART3D;INTEGER
+LINECHART3D_BACK;Background style;;LINECHART3D;FILL
+LINECHART3D_BORDER;Border's style;style of the lines' border. The default is null (no border).;LINECHART3D;LINE
+LINECHART3D_SEPARATOR;Separator;Number of pixels between lines of different series (default is 0, lines are together).;LINECHART3D;INTEGER
+_RADARCHART;Radar Chart;;RADARCHART;STRING
+RADARCHART_BACK;Backgorund style;Background fill style of the diagram.;RADARCHART;FILL
+RADARCHART_BORDER;Border;Style of the border and faktor lines.;RADARCHART;LINE
+RADARCHART_CIRCLE;Circle;Draw a circle around the diagram (true or false).;RADARCHART;BOOLEAN;FALSE
+RADARCHART_FAKTOR_COLOR;Faktor color;Color of the faktor's names.;RADARCHART;COLOR
+RADARCHART_FAKTOR_FONT;Faktor font;Font used to draw the faktors' names.;RADARCHART;FONT
+RADARCHART_FAKTOR_MAX;Max values;List of maximum values for each faktor. For example <PARAM NAME = "RADARCHART_FAKTOR_MAX" VALUE = "100|100|100|100">. ;RADARCHART;DOUBLE_LIST
+RADARCHART_FAKTOR_MIN;Min values;List of maximum values for each faktor. For example <PARAM NAME = "RADARCHART_FAKTOR_MIN" VALUE = "0|0|0|0">. ;RADARCHART;DOUBLE_LIST
+RADARCHART_FAKTOR_NAMES;Faktors' names;;RADARCHART;STRING_LIST
+RADARCHART_TICKS;Ticks;Number of ticks in the grid.;RADARCHART;INTEGER;5
+RADARCHART_GRID;Grid;Style of the grid.;RADARCHART;LINE
+RADARCHART_GRID_FONT;Grid font;Font used to draw grid ticks.;RADARCHART;FONT
+RADARCHART_GRID_FONT_COLOR;Grid font color;Color of the ticks' values.;RADARCHART;COLOR
+RADARCHART_RADIUS;Radius;Controls the size of the diagram. The default value is 0.9. Valid values are 0 to 1.;RADARCHART;DOUBLE
+RADARCHART_POINT_COLORS_SCALE;Point color scale;List of values to select colors of the poitns;RADARCHART;DOUBLE_LIST
+RADARCHART_POINT_COLORS;Point colors;List of colors for point (depends on value);RADARCHART;COLOR_LIST
+_LAYOUT;Layout;;CHART;
+LEGEND_POSITION;Legend position;Position of the legend. Valid values are RIGHT, TOP or BOTTOM;CHART;STRING;LEFT;BOTTOM,LEFT,RIGHT,TOP
+LEFT_MARGIN;Left margin;(default 0.1, 10%). Reserverd space for the Y Axis.;CHART;DOUBLE;0.1
+RIGHT_MARGIN;Right margin;(default 0.1, 10%). Only used if legend position is TOP or BOTTOM. This margin is the blank space left to the right of the chart. ;CHART;DOUBLE;0.1
+TOP_MARGIN;Top margin;(default 0.1, 10%). Reserverd space for the title. ;CHART;DOUBLE;0.1
+BOTTOM_MARGIN;Bottom margin;(default 0.1, 10%). Reserverd space for the X Axis. ;CHART;DOUBLE;0.1
+LEGEND_MARGIN;Legend margin;(default 0.2, 20%). Reserverd space for the legend. ;CHART;DOUBLE;0.2
+CHART_BORDER;Border;Line style of the border of the chart. ;CHART;LINE
+CHART_FILL;Background;Background of the chart (Fill style).;CHART;FILL
+BACK_IMAGE;Back. image;Name of the image file used as backgroung (gif or jpg). The file must be either relative to the java classes (e.g. "back.gif" or "..\images\back.gif") or absolute (e.g. "http://www.mysite.com/images/back.gif").;CHART;STRING
+_JDBC;JDBC;;CHART;
+JDBC_DATABASE;Database's Url;;CHART;STRING
+JDBC_DRIVER;JDBC Driver (optional);;CHART;STRING
+JDBC_USER;Database's user (optional);;CHART;STRING
+JDBC_PASSWORD;Database's password;;CHART;STRING
+_PARAM;File;;CHART;
+DATAFILE;Data file;Specifies data file that contains chart definition.;CHART;STRING
+_INTERACTIVE;Interactive;;CHART;
+CHART_WIDTH;Width;width of the chart (in pixels). The horizontal scroll bar will be activated if the chart is wider than the available space. ;CHART;INTEGER
+CHART_HEIGHT;Height;Height of the chart (in pixels). The vertical scroll bar will be activated if the chart is higher than the available space. ;CHART;INTEGER
+CHART_ALLOW_ZOOM;Zoom;if TRUE the +/- zoom buttons will be made visible.;CHART;BOOLEAN;FALSE
+CHART_MAX_ZOOM;Max. zoom;Maximum zoom in %. The default is 200.;CHART;INTEGER 
+CHART_MIN_ZOOM;Min. zoom;Minimum zoom in %. The default is 50. ;CHART;INTEGER
+CHART_ZOOM_INC;Zoom increment;Zoom increment in % for the +/- buttons. The default is 25.;CHART;INTEGER
+CHART_SHOW_TIPS;Show tips;Set it to "true" in order to activate tips. ;CHART;BOOLEAN;FALSE
+CHART_TIPS_COLOR;Tips Color;Background color of the tips.;CHART;COLOR
+CHART_TIPS_FONT_COLOR;Tips' font Color;Font color. ;CHART;COLOR
+CHART_TIPS_FONT;Tips's font;Font of the tips.;CHART;FONT
+CHART_SHOW_POSITION;Show position tip;;CHART;BOOLEAN;FALSE
+CHART_LINKS_TARGET;Links' target;Valid values are: _new, _top and <frame name>;CHART;STRING
+_REALTIME;Realtime;;CHART;
+REALTIME_DATAFILE;Data file;Data file to be reloaded after X miliseconds;CHART;STRING
+REALTIME_MSECS;Miliseconds;Refresh frecuency;CHART;INTEGER;2000
+REALTIME_JS;Trigger Javascript;Trigger "OnRChart" Javascript function;CHART;BOOLEAN;FALSE

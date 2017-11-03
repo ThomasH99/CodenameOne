@@ -1,0 +1,37 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.todocatalyst.todocatalyst;
+
+import com.codename1.ui.Container;
+import com.codename1.ui.Dialog;
+import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
+
+/**
+ * https://www.codenameone.com/blog/sticky-headers.html
+ *
+ * Creates a floating action button on the lower right corner of the screen, expands
+ * @author Thomas
+ */
+public class FloatingActionButton {
+
+    FloatingActionButton() {
+
+//        Container con = BoxLayout.encloseY(fabNewsletter, fabAdd, fabMark, fabClear);
+        Container con = BoxLayout.encloseY();
+
+        Dialog f = new Dialog();
+        f.setDialogUIID("Container");
+
+        f.getLayeredPane().removeAll();
+        f.showPacked(BorderLayout.CENTER, false);
+        f.getLayeredPane().setLayout(new BorderLayout());
+        f.getLayeredPane().add(BorderLayout.SOUTH, new Container(new BorderLayout()).add(BorderLayout.EAST, con));
+
+        con.animateLayoutAndWait(10);
+
+    }
+}

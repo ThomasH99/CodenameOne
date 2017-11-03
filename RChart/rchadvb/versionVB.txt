@@ -1,0 +1,7 @@
+RChart Visual Builder version 1.0
+
+---------------------------------------------------------
+
+Version 1.1
+
+- support for miniChart

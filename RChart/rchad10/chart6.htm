@@ -1,0 +1,76 @@
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
+<TITLE>
+HTML Test Page
+</TITLE>
+<SCRIPT>
+function OnClickRChart(s,p) {
+
+  if (p==0) {
+   document.TestApplet.loadFromFile('pieData11.html','N');
+  }
+  if (p==1) {
+   document.TestApplet.loadFromFile('pieData12.html','N');
+  }
+  if (p==2) {
+   document.TestApplet.loadFromFile('pieData13.html','N');
+  }
+
+  document.TestApplet.rebuild('N','N');
+
+}
+function resetChart() {
+   
+   document.TestApplet.rebuild('Y','Y');
+}
+</SCRIPT>
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<BR>
+<A HREF="javascript:resetChart()">Back to main Pie</A>
+<BR>
+<APPLET
+  CODEBASE = "."
+  CODE     = "com.java4less.rchart.ChartApplet.class"
+  NAME     = "TestApplet"
+  ARCHIVE  = "rchart.jar"
+  WIDTH    = 500
+  HEIGHT   = 500
+  HSPACE   = 0
+  VSPACE   = 0
+  ALIGN    = middle
+  MAYSCRIPT
+>
+
+<PARAM NAME = "TITLECHART" VALUE = "Sales 1999">
+<PARAM NAME = "LEGEND" VALUE = "TRUE">
+<PARAM NAME = "SERIE_1" VALUE = "Pie">
+<PARAM NAME = "SERIE_TYPE_1" VALUE = "PIE">
+<PARAM NAME = "PIE_STYLE_1" VALUE = "RED">
+<PARAM NAME = "PIE_STYLE_2" VALUE = "BLUE">
+<PARAM NAME = "PIE_STYLE_3" VALUE = "GREEN">
+<PARAM NAME = "PIE_NAME_1" VALUE = "Products">
+<PARAM NAME = "PIE_NAME_2" VALUE = "Services">
+<PARAM NAME = "PIE_NAME_3" VALUE = "Other">
+<PARAM NAME = "PIE_LABEL_FORMAT" VALUE = "#VALUE# (#PERCENTAGE#)">
+<PARAM NAME = "SERIE_DATA_1" VALUE = "94|48|28">
+<PARAM NAME = "SERIE_FONT_1" VALUE = "ARIAL|BOLD|12">
+<PARAM NAME = "SERIE_LABELS_1" VALUE = "Products|Services|Other">
+<PARAM NAME = "SERIE_TIPS_1" VALUE = "Click to see PRODUCT \nsales by continent|Click to see SERVICES \nsales by continent|Click to see OTHER \nsales by continent">
+<PARAM NAME = "CHART_SHOW_TIPS" VALUE = "true">
+<PARAM NAME = "CHART_JAVASCRIPT_EVENTS" VALUE = "true">
+<PARAM NAME = "SERIE_TOGETHER_1" VALUE = "true|false|true">
+<PARAM NAME = "CHART_BORDER" VALUE = "0.2|BLACK|LINE">
+<PARAM NAME = "CHART_FILL" VALUE = "LIGHTGRAY">
+<PARAM NAME = "LEGEND_BORDER" VALUE = "0.2|BLACK|LINE">
+<PARAM NAME = "LEGEND_VERTICAL" VALUE = "false">
+<PARAM NAME = "LEGEND_POSITION" VALUE = "TOP">
+<PARAM NAME = "LEGEND_FILL" VALUE = "WHITE">
+<PARAM NAME = "PIECHART_3D" VALUE = "true">
+<PARAM NAME = "BACK_IMAGE" VALUE = "back19.jpg">
+
+</APPLET>
+</BODY>
+</HTML>
+

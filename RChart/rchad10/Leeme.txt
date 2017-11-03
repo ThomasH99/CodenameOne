@@ -1,0 +1,54 @@
+RChart es una librería (incluye un Applet) de clases en Java que le permitirá incluir gráficos en sus aplicaciones java o página web. Para ejecutar los ejemplos debe descomprimir el fichero .zip y leer ComoEjecutar.txt.
+
+EVALUACIÓN
+
+Ha descargado una versión de evaluación de RChart. Esta versión le permite visualizar un máximo de 7 valores.
+
+PREGUNTAS, COMENTARIOS ...
+
+Si tiene alguna pregunta o comentario puede contactar con el autor en e-mail: Java4less@confluencia.net
+http://RReport.8m.com
+
+LICENCIA
+
+El precio de la licencia es de 22$.
+
+Si está interesado en el producto, puede contactar con el auto en Java4less@confluencia.net.
+
+http://rreport.port5.com
+http://rreport.8m.com
+http://www.java4less.com
+
+
+--------------------------------------------------------------------------------------
+Licencia de evaluación del software. (si no ha adquirido la version completa del software)
+
+
+IMPORTANTE - LEA DETENIDAMENTE
+
+Esta licencia constituye un contracto legal entre usted (como individuo o entidad) y J4L Componentes para el software RChart para propósitos de evaluación , incluyendo ejemplos, código fuente y documentación
+
+AL DESCOMPRIMIR, COPIAR O USAR DE OTRA FORMA LOS FICHEROS ZIP RECIBIDOS, ESTÁ USTED ACEPTANDO LOS TERMINOS DE ESTA LICENCIA.
+
+Al aceptar esta licencia recibe usted derecho de uso del software de la forma que se expone a continuación.
+
+Este Software es propiedad de J4L Componentes y está protegido por tratados internacionales de copyright. Por lo tanto debe tratar este software como cualquier otro material con derechos de autor ( por ejemplo, un libro).
+
+LICENCIA DE EVALUACIÓN
+
+
+1. La versión de evaluación del software sólo se puede usar con propósitos de evaluación.
+2. No puede incluir ningún componente de esta versión en un producto final o aplicación.
+3. No puede redistribuir ningún componente de esta versión sin una copia de esta licencia.
+4. Debe borrar el software tras 30 días si no ha adquirido la versión completa.
+5. Reingenieria, decompilación, o desensamblado del software está expresamente prohibido.
+
+
+SECRETO
+
+Usted acepta que la estructura, secuencia y organización del software es un secreto mercantil de valor propiedad de J4L Componentes. Usted está de acuerdo en mantener la confidencialidad de tales secretos.
+
+
+SIN GARANTIA: EL SOFTWARE Y DOCUMENTACIÓN SE PROPORCINA TAL COMO ES. J4L COMPONENTES NO OFRECE NINGUNA GARANTIA DE QUE EL SOFTWARE O DOCUMENTACIÓN ESTÁN LIBRE DE ERRORES O SON ADECUADOS PARA SUS NECESIDADES.
+
+RESPONSABILIDAD: J4L NO SERÁ EN NINGÚN CASO RESPONSABLE ANTE USTED O UNA TERCERA PARTE POR CONSECUENCIAS, DANYOS, PERDIDA DE BENEFICIOS O INTERRUPCIÓN DE NEGOCIO DERIVADO DE ALGUNA FORMA DEL USO DEL SOFTWARE O DE LA DOCUMENTACIÓN, INCLUSO CUANDO J4L COMPONENTES HAYA SIDO INFORMADO DE LA POSIBILIDAD DE ESTOS DAÑOS
