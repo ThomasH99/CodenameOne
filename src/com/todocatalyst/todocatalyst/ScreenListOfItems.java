@@ -921,7 +921,7 @@ public class ScreenListOfItems extends MyForm {
         //TIMER
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
         if (!optionTemplateEditMode && !optionNoTimer) {
-            toolbar.addCommandToLeftBar(new MyReplayCommand("ScreenTimer", Icons.iconTimerSymbolToolbarStyle) {
+            toolbar.addCommandToLeftBar(new MyReplayCommand("ScreenTimer", "",Icons.iconTimerSymbolToolbarStyle) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
@@ -1709,7 +1709,7 @@ public class ScreenListOfItems extends MyForm {
                 Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
             }
         };
-        Command editItemCmd = new MyReplayCommand("EditItem","", Icons.get().iconEditSymbolLabelStyle) {
+        Command editItemCmd = new MyReplayCommand("EditItem-"+item.getObjectIdP(),"", Icons.get().iconEditSymbolLabelStyle) {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                Item item = (Item) mainCont.getClientProperty("item"); //TODO!!!! is this needed, why notjust access 'item'??

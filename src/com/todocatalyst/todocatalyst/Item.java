@@ -6224,6 +6224,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getWorkSlotList() != null;
 //    }
 
+    @Override
     public List<ItemAndListCommonInterface> getWorkTimeProviders() {
         List<ItemAndListCommonInterface> providers = new ArrayList();
 
@@ -6401,6 +6402,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void resetWorkTimeDefinition() {
         wtd = null;
     }
+
+public long getRequiredWorkTimeFromProvider(ItemAndListCommonInterface provider){
+    List<ItemAndListCommonInterface> workTimeProviderList = getWorkTimeProviders();
+    Iterator<ItemAndListCommonInterface> workTimeProviders = workTimeProviderList.iterator();
+    while ()
+}
     
 
 //<editor-fold defaultstate="collapsed" desc="comment">

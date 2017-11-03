@@ -82,8 +82,9 @@ public class MyReplayCommand extends Command {
         return create(name, name, icon, ev);
     }
     
-    public String toString() {
-        return getCommandName()+"/"+getCmdUniqueID();
-    }
+//    @Override
+//    public String toString() {
+//        return getCommandName()+"/"+getCmdUniqueID();
+//    }
 
 }

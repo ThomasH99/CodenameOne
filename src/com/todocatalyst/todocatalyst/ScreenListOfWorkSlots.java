@@ -5,19 +5,15 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.ui.*;
-import com.codename1.l10n.L10NManager;
 import com.codename1.ui.Button;
-import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.InfiniteContainer;
 import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
-import com.parse4cn1.ParseObject;
 import java.util.Date;
 import java.util.List;
 //import com.java4less.rchart.*;
@@ -329,7 +325,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 
     protected Container buildContentPaneForWorkSlotList(WorkSlotList workSlotList) {
         parseIdMapReset();
-        Container cont = new Container(BoxLayout.y());
+        Container cont = new ContainerScrollY(BoxLayout.y());
         long now = System.currentTimeMillis();
         if (workSlotList != null) {
             for (WorkSlot workSlot : workSlotList) {

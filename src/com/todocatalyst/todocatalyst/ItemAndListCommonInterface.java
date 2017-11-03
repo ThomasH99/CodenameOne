@@ -45,7 +45,8 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 
     /**
      * returns null if no workslots
-     * @return 
+     *
+     * @return
      */
     public WorkSlotList getWorkSlotList();
 
@@ -307,7 +308,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @param item
      * @return
      */
-    default public Date getFinishTime(ItemAndListCommonInterface item){
+    default public Date getFinishTime(ItemAndListCommonInterface item) {
         WorkTimeDefinition workTimeDef = getWorkTimeDefinition();
         if (workTimeDef != null) {
 //            return new Date(workTimeDef.getFinishTime(item));
@@ -315,9 +316,11 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
         } else {
             return new Date(0);
         }
-    };
+    }
 
-    default public Date getFinishTime(){
+    ;
+
+    default public Date getFinishTime() {
 //        WorkTimeDefinition workTimeDef = getWorkTimeDefinition();
         WorkTime workTime = getWorkTime();
         if (workTime != null) {
@@ -326,7 +329,9 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
         } else {
             return new Date(0);
         }
-    };
+    }
+
+    ;
 
     public String getObjectIdP();
 
@@ -337,7 +342,6 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @param workTime
      */
 //    public void setWorkTime(WorkTime workTime);
-
     /**
      * return the list of work time providers in priority order. will for
      * example return in priority order: (first) Category with worktime, then
@@ -349,12 +353,15 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 
     /**
      * returns true if has future workTime associated with it
-     * @return 
+     *
+     * @return
      */
-    default public boolean hasWorkTimeDefinition(){
+    default public boolean hasWorkTimeDefinition() {
         WorkSlotList workSlots = getWorkSlotList();
-        return workSlots!=null&&workSlots.size()>0; //||getWorkTime()!=null;
-    };
+        return workSlots != null && workSlots.size() > 0; //||getWorkTime()!=null;
+    }
+
+    ;
     
     /**
      * return the allocated work time (a list since can come from different work time
@@ -387,13 +394,15 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //            }
         }
         return workTime;
-    };
+    }
+
+    ;
     default public WorkTime getWorkTime(ItemAndListCommonInterface itemOrList) {
         return getWorkTimeDefinition().getWorkTime(itemOrList);
     }
 
     default public WorkTime getWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
-        return getWorkTimeDefinition().getWorkTime(itemOrList,remainingDuration);
+        return getWorkTimeDefinition().getWorkTime(itemOrList, remainingDuration);
     }
 
     /**
@@ -404,6 +413,15 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * that come later than the changed one.
      */
 //    public void refreshWorkTime();
-
     //TODO!!!!! must store separately for cache!! Same as 
+    /**
+     * returns how much workTime this element requires from the provider. If the
+     * element has other higher prioritized providers they are asked how much
+     * they can provide and only the remaining is returned for this provider.
+     *
+     * @param provider
+     * @return
+     */
+    public long getRequiredWorkTimeFromProvider(ItemAndListCommonInterface provider);
+
 }
