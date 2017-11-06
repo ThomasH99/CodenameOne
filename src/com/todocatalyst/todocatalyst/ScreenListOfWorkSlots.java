@@ -101,6 +101,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
+        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
 //        List<WorkSlot> wsList = null;
         WorkSlotList wsList = null;

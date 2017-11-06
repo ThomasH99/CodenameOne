@@ -1301,7 +1301,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
         if (false && saveChangedItems) { //false: no need to save Item since will be only be used when saving an edited item
-            DAO.getInstance().save((ParseObject) this); 
+            DAO.getInstance().save((ParseObject) this);
         }
     }
 
@@ -6223,9 +6223,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public boolean hasWorkTimeDefinition() {
 //        return getWorkSlotList() != null;
 //    }
-
     @Override
-    public List<ItemAndListCommonInterface> getWorkTimeProviders() {
+    public List<ItemAndListCommonInterface> getWorkTimeProvidersInPrioOrder() {
         List<ItemAndListCommonInterface> providers = new ArrayList();
 
         //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
@@ -6256,15 +6255,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
         }
-
-        return providers;
+        if (providers.size() > 0) {
+            return providers;
+        } else {
+            return null;
+        }
     }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getNeededWorkTime() {
 //        return getRemainingEffort();
 //    }
 //    public List<WorkTime> getWorkTime() {
-//<editor-fold defaultstate="collapsed" desc="comment">
 //    public WorkTime getWorkTime(ItemAndListCommonInterface subtask) {
 //    public WorkTime getWorkTime() {
 //        long neededWorkTime = getNeededWorkTime();
@@ -6331,24 +6332,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        return workTime;
 //    }
+//    @Override
+//    public WorkTimeDefinition getWorkTimeDefinition() {
+//        return getWorkTimeDefinition(false);
+//    }
 //</editor-fold>
-
-    public WorkTimeDefinition getWorkTimeDefinition() {
-        return getWorkTimeDefinition(false);
-    }
 
     @Override
     public WorkTimeDefinition getWorkTimeDefinition(boolean reset) {
-        if (wtd != null && !reset) {
-            return wtd;
-        } else { //get right workSlots
-            WorkSlotList workSlots = getWorkSlotList();
-            if (workSlots != null && workSlots.hasComingWorkSlots()) {
-                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), workSlots);
-                return wtd;
+        if (wtd == null || reset) {
+            WorkTime availableWorkTime = getAvailableWorkTime();
+            if (availableWorkTime != null) {
+//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), availableWorkTime);
+                wtd = new WorkTimeDefinition(getList(), availableWorkTime, this);
             }
         }
-        return null;
+        return wtd;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public WorkTimeDefinition getWorkTimeDefinition(boolean reset) {
@@ -6403,12 +6402,122 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         wtd = null;
     }
 
-public long getRequiredWorkTimeFromProvider(ItemAndListCommonInterface provider){
-    List<ItemAndListCommonInterface> workTimeProviderList = getWorkTimeProviders();
-    Iterator<ItemAndListCommonInterface> workTimeProviders = workTimeProviderList.iterator();
-    while ()
-}
-    
+    @Override
+    public long getWorkTimeRequiredFromThisProvider(ItemAndListCommonInterface provider) {
+//        List<ItemAndListCommonInterface> subtasks = getList();
+        long remaining;
+//        if (subtasks == null || subtasks.size() == 0) {
+        remaining = getRemainingEffort(); //how much total workTime is required?
+
+        List<ItemAndListCommonInterface> workTimeProviderList = getWorkTimeProvidersInPrioOrder();
+        Iterator<ItemAndListCommonInterface> workTimeProviders = workTimeProviderList.iterator();
+
+        while (workTimeProviders.hasNext()) {
+            //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+            ItemAndListCommonInterface prov = workTimeProviders.next();
+            if (prov == provider) {
+//                    break; //return remaining;
+                return remaining;
+            } else {
+                remaining -= prov.getWorkTime(this).getAllocatedDuration(); //deduct time allocated by higher prioritized provider
+            }
+        }
+        return remaining;
+//    }
+//        else {
+//            remaining = 0;
+//            for (ItemAndListCommonInterface elt : subtasks) {
+//                remaining += elt.getWorkTimeRequiredFromThisProvider(provider);
+//            }
+//            return remaining;
+//        }
+    }
+
+    @Override
+    public WorkTime getAllocatedWorkTime() {
+        boolean reset = false;
+//        return getWorkTimeDefinition().getWorkTime(this);
+        ItemAndListCommonInterface owner = getOwner();
+        long remaining = getRemainingEffort();
+//        long remaining = getWorkTimeRequiredFromThisProvider();
+
+        List<ItemAndListCommonInterface> workTimeProviderList = getWorkTimeProvidersInPrioOrder();
+        Iterator<ItemAndListCommonInterface> workTimeProviders = workTimeProviderList.iterator();
+
+        WorkTime workTime = null;
+        WorkTime newWorkTime = null;
+        ItemAndListCommonInterface provider;
+        while (remaining > 0 && workTimeProviders.hasNext()) {
+            //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+            provider = workTimeProviders.next();
+            newWorkTime = provider.getWorkTime(this);
+            if (workTime == null) {
+                workTime = newWorkTime;
+            } else {
+                workTime.addWorkTime(newWorkTime);
+            }
+            remaining = newWorkTime.getRemainingDuration();
+        }
+        return workTime;
+
+    }
+
+    public WorkTime getAllocatedWorkTimeOLD() {
+        boolean reset = false;
+//        return getWorkTimeDefinition().getWorkTime(this);
+        WorkTime workTime = null;
+        ItemAndListCommonInterface owner = getOwner();
+//        long remaining = getRemainingEffort();
+        long remaining = -9999;//getWorkTimeRequiredFromThisProvider();
+
+        if (owner != null && remaining > 0 && !MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean()) {
+            if (owner != null) {
+//                WorkTime ownerWT = owner.getAvailableWorkTime();
+                WorkTimeDefinition ownerWTD = owner.getWorkTimeDefinition(reset);
+                if (ownerWTD != null) {
+                    workTime = ownerWTD.getWorkTime(this, remaining);
+                    if (workTime != null) {
+                        remaining -= workTime.getRemainingDuration();
+                    }
+                }
+            }
+        }
+
+        if (remaining > 0) {
+            List<Category> categories = getCategories(); //TODO optimize: get only categories with workTimeDefs
+            for (Category cat : categories) { //UI: workTime allocated in the order that categories are defined/added??
+                WorkTimeDefinition catWTD = cat.getWorkTimeDefinition(reset);
+                if (catWTD != null) {
+                    WorkTime newWorkTime = catWTD.getWorkTime(this, remaining);
+                    if (workTime == null) {
+                        workTime = newWorkTime;
+                    } else {
+                        workTime.addWorkTime(newWorkTime); //OK if newWorkTime is null
+                    }
+                    if (newWorkTime != null) {
+                        remaining = newWorkTime.getRemainingDuration(); //use the new remaining duration
+                    }
+                }
+            }
+        }
+
+        if (owner != null && remaining > 0 && MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean()) {
+            WorkTimeDefinition ownerWTD = owner.getWorkTimeDefinition(reset);
+            if (ownerWTD != null) {
+                WorkTime newWorkTime = ownerWTD.getWorkTime(this, remaining);
+                if (workTime == null) {
+                    workTime = newWorkTime;
+                } else {
+                    workTime.addWorkTime(newWorkTime); //OK if newWorkTime is null
+                }
+                if (newWorkTime != null) {
+                    remaining = newWorkTime.getRemainingDuration(); //use the new remaining duration
+                }
+            }
+        }
+
+        return workTime;
+    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
@@ -6452,5 +6561,4 @@ public long getRequiredWorkTimeFromProvider(ItemAndListCommonInterface provider)
 //        return new Date(0);
 //    }
 //</editor-fold>
-
 }

@@ -102,21 +102,35 @@ public class WorkTimeDefinition { //implements Externalizable { //extends ItemLi
      * Ordered by startDate. From these the available time slots are calculated
      * and added to the WorkSlotList (and then available via
      */
-    private WorkSlotList workSlots;// = new ItemList(); //lazy
+//    private WorkSlotList workSlots;// = new ItemList(); //lazy
+    private WorkTime workTime;// = new ItemList(); //lazy
     private List<ItemAndListCommonInterface> items;
     List<WorkTime> workTimeCache = new ArrayList();
     private boolean cacheActive = false;
+    private ItemAndListCommonInterface owner;// = new ItemList(); //lazy
 
 //    private Hashtable<ItemAndListCommonInterface, WorkTimeInfo> workSlotInfoHashTable; // = new Hashtable();
-    WorkTimeDefinition(List<ItemAndListCommonInterface> listOfItemsOrItemListsFilteredSorted, WorkSlotList workSlots) {
+//    WorkTimeDefinition(List<ItemAndListCommonInterface> listOfItemsOrItemListsFilteredSorted, WorkSlotList workSlots) {
+    WorkTimeDefinition(List<ItemAndListCommonInterface> listOfItemsOrItemListsFilteredSorted, WorkTime workTime, ItemAndListCommonInterface owner) {
         this.items = listOfItemsOrItemListsFilteredSorted;
 //        this.orgItemOrList = orgItemOrList;
-        this.workSlots = workSlots;
+        this.workTime = workTime;
+        this.owner = owner;
 //        init();
 //        workSlotInfoList = new ArrayList();
 //        workSlotInfoHashTable = new Hashtable();
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    WorkTimeDefinition(WorkTime workTime) {
+//        this.items = listOfItemsOrItemListsFilteredSorted;
+////        this.orgItemOrList = orgItemOrList;
+//        this.workSlots = workSlots;
+////        init();
+////        workSlotInfoList = new ArrayList();
+////        workSlotInfoHashTable = new Hashtable();
+//    }
+//</editor-fold>
     /**
      * for a given duration (starting from earliest available workslot [after
      * NOW]), find the date on which that duration is reached. TODO: replace
@@ -130,82 +144,121 @@ public class WorkTimeDefinition { //implements Externalizable { //extends ItemLi
      *
      * @param duration
      */
-    private WorkTime calculateWorkTime(WorkTime prevWorkTime) {
-        return calculateWorkTime(prevWorkTime.getLastWorkSlotIndex(), prevWorkTime.getFinishTime(), prevWorkTime.getRemainingDuration());
-    }
-
-    private WorkTime calculateWorkTime(int workSlotIndex, long startTime, long remainingDuration) {
-//        long startTime = Long.MIN_VALUE;
-        long endTime = Long.MIN_VALUE;
-        List<WorkSlot> usedWorkSlots = null;
-        boolean startTimeCheckedAgainstFirstValidWorkSLot = false; //first valid workslot must be checked to see if it *starts* later than startTime (no overlap w previous workslot), so startTime can be updated (bot should only be done once!)
-
-        while (remainingDuration > 0 && workSlotIndex < workSlots.size()) {
-            WorkSlot workSlot = workSlots.get(workSlotIndex); //get next workSlot
-            if (workSlot.getEndTime() <= startTime || workSlot.getDurationAdjusted() == 0) { //if first workslot ends before startTime, or it empty, skip to next one
-                //UI: 0-duration workslots will NOT be included in list for a task
-                workSlotIndex++;
-                continue; //continue with next workSLot
-            }
-            if (!startTimeCheckedAgainstFirstValidWorkSLot && workSlot.getStartAdjusted() > startTime) { //if next workSlot starts *after* startTime, adjust startTime
-                startTime = workSlot.getStartAdjusted();
-                startTimeCheckedAgainstFirstValidWorkSLot = true;
-            }
-//            startTime = Math.max(startTime, workSlot.getStartAdjusted()); //not needed! If workSlot.startTime is smaller than startTime, it will simply be ignored in WorkTime
-            if (startTime + remainingDuration <= workSlot.getEndTime()) { //duration is fully covered within current workSlot
-                endTime = startTime + remainingDuration;
-                remainingDuration = 0;
-            } else {
-                remainingDuration -= workSlot.getEndTime() - workSlot.getStartAdjusted(startTime);
-                endTime = workSlot.getEndTime(); //store this workslot'e endtime in case we've reached the last workslot (if not, endTime will get overwritten in next iteration)
-                workSlotIndex++;
-            }
-            if (usedWorkSlots == null) { //lazy init
-                usedWorkSlots = new ArrayList();
-            }
-            usedWorkSlots.add(workSlot);
-        }
-        return new WorkTime(usedWorkSlots, startTime, endTime, remainingDuration, null, workSlotIndex);
-    }
-
-    private WorkTime getWorkTimeFromWorkSlots(int itemIndex, long finishTime) {
-//        long finishTime; // = MyDate.MIN_DATE;
-        Integer startWorkSlotIndex; // = 0; //Integer so that getWorkTimeFromSlots can return update workSlots index
-
-        if (itemIndex > 0) {
-            WorkTime prevWorkTime = getWorkTime(itemIndex - 1); //recurse
-            finishTime = prevWorkTime.getFinishTime();
-            startWorkSlotIndex = prevWorkTime.getLastWorkSlotIndex();
-        } else {
-            finishTime = MyDate.MIN_DATE;
-            startWorkSlotIndex = 0; //Integer so that getWorkTimeFromSlots can return update workSlots index
-        }
-
-        return calculateWorkTime(startWorkSlotIndex, finishTime, items.get(itemIndex).getRemainingEffort());
 //<editor-fold defaultstate="collapsed" desc="comment">
+//    private WorkTime calculateWorkTime(WorkTime prevWorkTime) {
+//        return calculateWorkTime(prevWorkTime.getLastWorkSlotIndex(), prevWorkTime.getFinishTime(), prevWorkTime.getRemainingDuration());
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private WorkTime calculateWorkTime(int workSlotIndex, long startTime, long remainingDuration) {
+////        long startTime = Long.MIN_VALUE;
 //        long endTime = Long.MIN_VALUE;
-//        List<WorkSlot> usedWorkSlots = new ArrayList();
-//        while (remainingDuration > 0 && workSlotStartIndex < workSlots.size()) {
-//            WorkSlot workSlot = workSlots.get(workSlotStartIndex); //get next workSlot
-//            if (workSlot.getEndTime() <= startTime) { //if first workslot ends before startTime, skip to next one
-//                workSlotStartIndex++;
-//                continue;
+//        List<WorkSlot> usedWorkSlots = null;
+//        boolean startTimeCheckedAgainstFirstValidWorkSLot = false; //first valid workslot must be checked to see if it *starts* later than startTime (no overlap w previous workslot), so startTime can be updated (bot should only be done once!)
+//
+//        while (remainingDuration > 0 && workSlotIndex < workSlots.size()) {
+//            WorkSlot workSlot = workSlots.get(workSlotIndex); //get next workSlot
+//            if (workSlot.getEndTime() <= startTime || workSlot.getDurationAdjusted() == 0) { //if first workslot ends before startTime, or it empty, skip to next one
+//                //UI: 0-duration workslots will NOT be included in list for a task
+//                workSlotIndex++;
+//                continue; //continue with next workSLot
 //            }
-//            startTime = workSlot.getStartAdjusted();
-//            if (startTime + remainingDuration <= workSlot.getEndTime()) {
-//                remainingDuration = 0;
+//            if (!startTimeCheckedAgainstFirstValidWorkSLot && workSlot.getStartAdjusted() > startTime) { //if next workSlot starts *after* startTime, adjust startTime
+//                startTime = workSlot.getStartAdjusted();
+//                startTimeCheckedAgainstFirstValidWorkSLot = true;
+//            }
+////            startTime = Math.max(startTime, workSlot.getStartAdjusted()); //not needed! If workSlot.startTime is smaller than startTime, it will simply be ignored in WorkTime
+//            if (startTime + remainingDuration <= workSlot.getEndTime()) { //duration is fully covered within current workSlot
 //                endTime = startTime + remainingDuration;
+//                remainingDuration = 0;
 //            } else {
-//                remainingDuration -= workSlot.getEndTime() - workSlot.getStartAdjusted();
+//                remainingDuration -= workSlot.getEndTime() - workSlot.getStartAdjusted(startTime);
 //                endTime = workSlot.getEndTime(); //store this workslot'e endtime in case we've reached the last workslot (if not, endTime will get overwritten in next iteration)
-//                workSlotStartIndex++;
+//                workSlotIndex++;
+//            }
+//            if (usedWorkSlots == null) { //lazy init
+//                usedWorkSlots = new ArrayList();
 //            }
 //            usedWorkSlots.add(workSlot);
 //        }
-//        return new WorkTime(workSlots, startTime, endTime, remainingDuration);
+//        return new WorkTime(usedWorkSlots, startTime, endTime, remainingDuration, null, workSlotIndex);
+//    }
 //</editor-fold>
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private WorkTime calculateWorkTimeOLD(int workSlotIndex, long startTime, long remainingDuration) {
+////        long startTime = Long.MIN_VALUE;
+//        long endTime = Long.MIN_VALUE;
+//        List<WorkSlot> usedWorkSlots = null;
+//        boolean startTimeCheckedAgainstFirstValidWorkSLot = false; //first valid workslot must be checked to see if it *starts* later than startTime (no overlap w previous workslot), so startTime can be updated (bot should only be done once!)
+//
+//        while (remainingDuration > 0 && workSlotIndex < workSlots.size()) {
+//            WorkSlot workSlot = workSlots.get(workSlotIndex); //get next workSlot
+//            if (workSlot.getEndTime() <= startTime || workSlot.getDurationAdjusted() == 0) { //if first workslot ends before startTime, or it empty, skip to next one
+//                //UI: 0-duration workslots will NOT be included in list for a task
+//                workSlotIndex++;
+//                continue; //continue with next workSLot
+//            }
+//            if (!startTimeCheckedAgainstFirstValidWorkSLot && workSlot.getStartAdjusted() > startTime) { //if next workSlot starts *after* startTime, adjust startTime
+//                startTime = workSlot.getStartAdjusted();
+//                startTimeCheckedAgainstFirstValidWorkSLot = true;
+//            }
+////            startTime = Math.max(startTime, workSlot.getStartAdjusted()); //not needed! If workSlot.startTime is smaller than startTime, it will simply be ignored in WorkTime
+//            if (startTime + remainingDuration <= workSlot.getEndTime()) { //duration is fully covered within current workSlot
+//                endTime = startTime + remainingDuration;
+//                remainingDuration = 0;
+//            } else {
+//                remainingDuration -= workSlot.getEndTime() - workSlot.getStartAdjusted(startTime);
+//                endTime = workSlot.getEndTime(); //store this workslot'e endtime in case we've reached the last workslot (if not, endTime will get overwritten in next iteration)
+//                workSlotIndex++;
+//            }
+//            if (usedWorkSlots == null) { //lazy init
+//                usedWorkSlots = new ArrayList();
+//            }
+//            usedWorkSlots.add(workSlot);
+//        }
+//        return new WorkTime(usedWorkSlots, startTime, endTime, remainingDuration, null, workSlotIndex);
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private WorkTime getWorkTimeImpl(int itemIndex, long finishTime) {
+////        long finishTime; // = MyDate.MIN_DATE;
+//        Integer startWorkSlotIndex; // = 0; //Integer so that getWorkTimeFromSlots can return update workSlots index
+//
+//        if (itemIndex > 0) {
+//            WorkTime prevWorkTime = getWorkTime(itemIndex - 1); //recurse
+//            finishTime = prevWorkTime.getFinishTime();
+//            startWorkSlotIndex = prevWorkTime.getLastWorkSlotIndex();
+//        } else {
+//            finishTime = MyDate.MIN_DATE;
+//            startWorkSlotIndex = 0; //Integer so that getWorkTimeFromSlots can return update workSlots index
+//        }
+//
+////        return calculateWorkTime(startWorkSlotIndex, finishTime, items.get(itemIndex).getRemainingEffort());
+//        return workTime.getWorkTime(startWorkSlotIndex, finishTime, items.get(itemIndex).getRemainingEffort());
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        long endTime = Long.MIN_VALUE;
+////        List<WorkSlot> usedWorkSlots = new ArrayList();
+////        while (remainingDuration > 0 && workSlotStartIndex < workSlots.size()) {
+////            WorkSlot workSlot = workSlots.get(workSlotStartIndex); //get next workSlot
+////            if (workSlot.getEndTime() <= startTime) { //if first workslot ends before startTime, skip to next one
+////                workSlotStartIndex++;
+////                continue;
+////            }
+////            startTime = workSlot.getStartAdjusted();
+////            if (startTime + remainingDuration <= workSlot.getEndTime()) {
+////                remainingDuration = 0;
+////                endTime = startTime + remainingDuration;
+////            } else {
+////                remainingDuration -= workSlot.getEndTime() - workSlot.getStartAdjusted();
+////                endTime = workSlot.getEndTime(); //store this workslot'e endtime in case we've reached the last workslot (if not, endTime will get overwritten in next iteration)
+////                workSlotStartIndex++;
+////            }
+////            usedWorkSlots.add(workSlot);
+////        }
+////        return new WorkTime(workSlots, startTime, endTime, remainingDuration);
+////</editor-fold>
+//    }
+//</editor-fold>
     public WorkTime getWorkTime(ItemAndListCommonInterface item, long remainingDuration) {
         int itemIndex = items.indexOf(item);
         return getWorkTime(itemIndex, remainingDuration);
@@ -232,42 +285,42 @@ public class WorkTimeDefinition { //implements Externalizable { //extends ItemLi
      * remainingTime
      *
      * @param itemIndex
-     * @param remainingTime
+     * @param desiredDuration
      * @return
      */
-    public WorkTime getWorkTime(int itemIndex, long remainingTime) {
-        if (workTimeCache != null && itemIndex < workTimeCache.size()) {
+    public WorkTime getWorkTime(int itemIndex, long desiredDuration) {
+        if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
             return workTimeCache.get(itemIndex);
         } else {
-            WorkTime workTime = getWorkTimeFromWorkSlots(itemIndex, remainingTime);
+//            WorkTime workTime = getWorkTimeImpl(itemIndex, remainingDuration);
+//            long finishTime;
+            WorkTime workT;
+            if (itemIndex > 0) {
+//            WorkTime prevWorkTime = getWorkTime(itemIndex - 1); //recurse
+//                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()); //recurse
+                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromThisProvider(owner)); //recurse
+                long finishTime = prevWorkTime.getFinishTime();
+                workT = workTime.getWorkTime(finishTime, desiredDuration);
+                if (false) {
+                    workT = workTime.getWorkTime(getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()).getFinishTime(), desiredDuration); //one line version
+                }
+//            startWorkSlotIndex = prevWorkTime.getLastWorkSlotIndex();
+            } else {
+//                finishTime = MyDate.MIN_DATE;
+//                workT = workTime.getWorkTime(MyDate.MIN_DATE, desiredDuration);
+                workT = workTime.getWorkTime(desiredDuration);
+//            startWorkSlotIndex = 0; //Integer so that getWorkTimeFromSlots can return update workSlots index
+            }
+//            WorkTime workT = workTime.getWorkTime(itemIndex, remainingDuration);
             if (workTimeCache == null && cacheActive) {
                 workTimeCache = new ArrayList<>();
             }
-            if (workTimeCache != null) {
-                workTimeCache.add(workTime);
+//            if (workTimeCache != null) {
+            if (cacheActive) {
+                workTimeCache.add(workT);
             }
-            return workTime;
+            return workT;
         }
-    }
-
-    private void resetCachedValues(WorkSlot changedWorkSlot) {
-        //find 
-    }
-
-    private void resetCachedValuesOnWorkSlotChange(int indexOfChangedWorkSlot) {
-        if (workTimeCache != null) {
-            for (int i = 0, size = workTimeCache.size(); i < size; i++) {
-                WorkTime workTime = workTimeCache.get(i);
-                if (workTime.getLastWorkSlotIndex() >= indexOfChangedWorkSlot) {
-                    resetCache(workTime.getLastWorkSlotIndex());
-                    break;
-                }
-            }
-        }
-    }
-
-    private void resetCachedValues(ItemAndListCommonInterface item) {
-
     }
 
     /**
@@ -279,11 +332,57 @@ public class WorkTimeDefinition { //implements Externalizable { //extends ItemLi
      * new item has been inserted
      */
     private void resetCache(int fromIndex) {
-        if (workTimeCache != null) {
-            workTimeCache.removeAll(workTimeCache.subList(fromIndex, workTimeCache.size() - 1));
+        if (workTimeCache != null && fromIndex >= 0) {
+//            workTimeCache.removeAll(workTimeCache.subList(fromIndex, workTimeCache.size() - 1));
+//            while (workTime.workSlotSlices.size() > fromIndex) {
+//                workTime.workSlotSlices.remove(fromIndex);
+//            }
+            resetCache(fromIndex);
         }
     }
 
+    public void resetCachedValues(WorkSlot changedWorkSlot) {
+        //find first workTime that contains changedWorkSlot and delete/reset that and all following
+        if (workTimeCache != null) {
+            for (int i = 0, size = workTimeCache.size(); i < size; i++) {
+                WorkTime workTime = workTimeCache.get(i);
+                for (int i2 = 0, size2 = workTime.getWorkSlotSlices().size(); i2 < size2; i2++) {
+                    if (workTime.getWorkSlotSlices().get(i2).workSlot == changedWorkSlot) {
+//                        while (workTime.workSlotSlices.size() > i2) {
+//                            workTime.workSlotSlices.remove(i2);
+//                        }
+                        resetCache(i2);
+                    }
+                }
+            }
+        }
+    }
+
+    public void resetCachedValues(ItemAndListCommonInterface changedItem) {
+        if (workTimeCache != null) {
+            int index = workTimeCache.indexOf(changedItem);
+//            if (index >= 0) {
+//                while (workTime.workSlotSlices.size() > index) {
+//                    workTime.workSlotSlices.remove(index);
+//                }
+            resetCache(index);
+//            }
+        }
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void resetCachedValuesOnWorkSlotChange(int indexOfChangedWorkSlot) {
+//        if (workTimeCache != null) {
+//            for (int i = 0, size = workTimeCache.size(); i < size; i++) {
+//                WorkTime workTime = workTimeCache.get(i);
+//                if (workTime.getLastWorkSlotIndex() >= indexOfChangedWorkSlot) {
+//                    resetCache(workTime.getLastWorkSlotIndex());
+//                    break;
+//                }
+//            }
+//        }
+//    }
+//</editor-fold>
     /**
      * completely reset cache. Use on every time a screen is refreshed for now
      * (optimize later).

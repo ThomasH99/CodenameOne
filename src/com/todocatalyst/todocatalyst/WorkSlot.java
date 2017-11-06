@@ -1534,7 +1534,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    public Date getFinishTime(ItemAndListCommonInterface item) {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-
     @Override
     public List getChildrenList(Object parent) {
         return getTasksInWorkSlotForToday();
@@ -1546,8 +1545,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public List<ItemAndListCommonInterface> getWorkTimeProviders() {
+    public List<ItemAndListCommonInterface> getWorkTimeProvidersInPrioOrder() {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public WorkTime getAllocatedWorkTime() {
+//        return getWorkTimeDefinition().getWorkTime(this);
+        throw new Error("Not supported yet."); //not supported by WorkSlot
     }
 
 }

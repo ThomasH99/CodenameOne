@@ -68,6 +68,7 @@ public class ScreenCategory extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
+        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         buildContentPane(getContentPane());
         restoreKeepPos();
@@ -94,16 +95,17 @@ public class ScreenCategory extends MyForm {
 //        toolbar.addCommandToLeftBar(backCmd);
         toolbar.setBackCommand(backCommand = makeDoneUpdateWithParseIdMapCommand());
 
-        if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens))
-        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
+        if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
+            toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
 //            Log.p("Clicked");
 //            item.revert(); //forgetChanges***/refresh
 //            previousForm.showBack(); //drop any changes
 //            previousForm.revalidate();
 
 //            previousForm.show(); //drop any changes
-            showPreviousScreenOrDefault(previousForm, false);
-        });
+                showPreviousScreenOrDefault(previousForm, false);
+            });
+        }
 
         //DELETE
         toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {

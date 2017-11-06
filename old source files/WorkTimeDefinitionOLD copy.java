@@ -611,7 +611,7 @@ public class WorkTimeDefinitionOLD { //implements Externalizable { //extends Ite
             }
             usedWorkSlots.add(workSlot);
         }
-        return new WorkTime(workSlots, startTime, endTime, remainingDuration);
+        return null; //new WorkTime(workSlots, startTime, endTime, remainingDuration);
     }
 
     public void resetCachedValues(WorkSlot changedWorkSlot) {

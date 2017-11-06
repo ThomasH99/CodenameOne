@@ -190,6 +190,7 @@ public class ScreenTimer extends MyForm {
     public void refreshAfterEdit() {
 //        getContentPane().removeAll(); //clear existing contentPane
 //        buildContentPane(getTimedItem(), itemList, getContentPane()); //rebuild for new values of item etc
+        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         buildContentPane(); //also removes previous content of contentPane
     }
 

@@ -9,6 +9,7 @@ import com.codename1.ui.tree.TreeModel;
 import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
 import static com.todocatalyst.todocatalyst.Util.removeTrailingPrecedingSpacesNewLinesEtc;
 //import com.todocatalyst.todocatalyst.MyTree.MyTreeModel;
 import java.util.Vector;
@@ -3190,10 +3191,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    boolean hasWorkTimeDefinition() {
 //        return workTimeDefinition != null;
 //    }
-    public WorkTimeDefinition getWorkTimeDefinition() {
-        return getWorkTimeDefinition(false);
-    }
-
+//    public WorkTimeDefinition getWorkTimeDefinition() {
+//        return getWorkTimeDefinition(false);
+//    }
     @Override
     public WorkTimeDefinition getWorkTimeDefinition(boolean reset) {
         if (wtd == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotList(true), itemListFilteredSorted);
@@ -3201,7 +3201,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             WorkSlotList workSlots = getWorkSlotList();
             if (workSlots != null && workSlots.hasComingWorkSlots()) {
 //                wtd = new WorkTimeDefinition(((<? extends ItemAndListCommonInterface>)getList(), workSlots);
-                wtd = new WorkTimeDefinition((List<ItemAndListCommonInterface>) getList(), workSlots);
+                wtd = new WorkTimeDefinition((List<ItemAndListCommonInterface>) getList(), new WorkTime(workSlots), this);
             }
         }
         return wtd;
@@ -3299,17 +3299,25 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public String getObjectId() {
         return CLASS_NAME;
     }
+    
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    @Override
+//    public List<ItemAndListCommonInterface> getWorkTimeProviders() {
+//        List<ItemAndListCommonInterface> providers = new ArrayList();
+//
+//        //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
+//        if (hasWorkTimeDefinition()) {
+//            providers.add(this);
+//        }
+//        return providers;
+//    }
+//</editor-fold>
     @Override
-    public List<ItemAndListCommonInterface> getWorkTimeProviders() {
-        List<ItemAndListCommonInterface> providers = new ArrayList();
-
-        //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
-        if (hasWorkTimeDefinition()) {
-            providers.add(this);
-        }
-        return providers;
+    public WorkTime getAllocatedWorkTime() {
+        return new WorkTime(getWorkSlotList()); //a list can only get workTime allocated via its workslots
     }
+
 
 } // Class ItemList
 
