@@ -45,21 +45,25 @@ public class WorkTime {
 //    private int lastWorkSlotIndex = -1;
     class WorkSlotSlice {
 
-        long startTime = Long.MIN_VALUE;
-        long endTime = Long.MAX_VALUE;
-        long missingDuration = 0;
+        long startTime;// = Long.MIN_VALUE;
+        long endTime;// = Long.MAX_VALUE;
+        long missingDuration;// = 0;
         WorkSlot workSlot;
 
         @Override
         public String toString() {
-            return new Date(startTime) + "-" + new Date(endTime) + " of " + new Date(workSlot.getDurationAdjusted()) + "-" + new Date(workSlot.getEndTime());
+            return new Date(startTime) + "-" + new Date(endTime) + " of "
+                    + (workSlot != null ? new Date(workSlot.getDurationAdjusted()) : "null") + "-"
+                    + (workSlot != null ? new Date(workSlot.getEndTime()) : "null");
         }
 
         WorkSlotSlice(WorkSlot workSlot, long startTime, long endTime, long missingDuration) {
             this.workSlot = workSlot;
-            this.startTime = startTime < workSlot.getStartAdjusted() ? workSlot.getStartAdjusted() : startTime;
+//            this.startTime = startTime < workSlot.getStartAdjusted() ? workSlot.getStartAdjusted() : startTime;
+            this.startTime = Math.max(startTime, workSlot.getStartAdjusted()); //use the larger value (knowing that startTime must never be smaller than getStartAdjusted())
 //            this.endTime = endTime;
-            this.endTime = endTime < workSlot.getEndTime() ? endTime : workSlot.getEndTime();
+//            this.endTime = workSlot.getEndTime() < endTime ? workSlot.getEndTime() : endTime; //endTime < workSlot.getEndTime() ? endTime : workSlot.getEndTime();
+            this.endTime = Math.min(workSlot.getEndTime(), endTime); //use the smaller value (knowing that endTime must never be larger than getEndTime())
             this.missingDuration = missingDuration;
             ASSERT.that(startTime >= workSlot.getStartAdjusted(), "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted()));
             ASSERT.that(endTime <= workSlot.getEndTime(), "endTime:" + new Date(endTime) + "must be less than workSlot.getEndTime():" + new Date(workSlot.getEndTime()));
@@ -93,7 +97,7 @@ public class WorkTime {
 //            ASSERT.that(endTime <= workSlot.getEndTime(), "endTime:" + new Date(endTime) + "must be less than workSlot.getEndTime():" + new Date(workSlot.getEndTime()));
 
 //            return new WorkSlotSlice(workSlot, startTime, Math.min(startTime + duration, endTime), Math.max(0, (startTime + duration) - endTime));
-            return new WorkSlotSlice(workSlot, startTime, 
+            return new WorkSlotSlice(workSlot, startTime,
                     Math.min(startTime + duration, endTime), //only allocate to endTime is slice is too small to allocate full duration
                     Math.max(0, (startTime + duration) - Math.min(startTime + duration, endTime))); //missing = fullEndTime - actualEndTime
         }

@@ -1788,7 +1788,8 @@ public class ScreenListOfItems extends MyForm {
         //WORK TIME
 //        long finishTime = item.getFinishTimeD().getTime();
         long finishTime = item.getFinishTime();
-        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
+//        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
+        if (!item.isDone() && finishTime != MyDate.MIN_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
 //            south.add("F:" + L10NManager.getInstance().formatDateTimeShort(item.getFinishTime()));
             southDetailsContainer.add("F:" + MyDate.formatDateTimeNew(new Date(finishTime)));
         }

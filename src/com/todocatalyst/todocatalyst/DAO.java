@@ -1830,7 +1830,11 @@ public class DAO {
             }
         }
 //        }
-        return results;
+        if (results == null || results.size() == 0) {
+            return null;
+        } else {
+            return results;
+        }
     }
 
     public WorkSlotList getWorkSlots(Date startDate, Date endDate) {

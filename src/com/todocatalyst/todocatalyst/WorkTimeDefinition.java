@@ -298,7 +298,8 @@ public class WorkTimeDefinition { //implements Externalizable { //extends ItemLi
             if (itemIndex > 0) {
 //            WorkTime prevWorkTime = getWorkTime(itemIndex - 1); //recurse
 //                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()); //recurse
-                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromThisProvider(owner)); //recurse
+//                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromOwner(owner)); //recurse
+                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromOwner()); //recurse
                 long finishTime = prevWorkTime.getFinishTime();
                 workT = workTime.getWorkTime(finishTime, desiredDuration);
                 if (false) {

@@ -69,7 +69,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    private List<WorkSlot> workSlotListBuffer;
     private WorkSlotList workSlotListBuffer;
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
-    private static WorkTimeDefinition wtd; //calculated when needed
+    private  WorkTimeDefinition wtd; //calculated when needed
 
     /**
      * used to save the underlying list when ItemList is not a ParseObject

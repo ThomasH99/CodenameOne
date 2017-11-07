@@ -354,7 +354,8 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     /**
      * return the list of work time providers in priority order. will for
      * example return in priority order: (first) Category with worktime, then
-     * owner which can be a Project or a List.
+     * owner which can be a Project or a List. For ItemLists or Categories, will
+     * just return WorkSlotList.
      *
      * @return null if no providers
      */
@@ -363,27 +364,34 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
         if (workSlots == null) {
             return null;
         } else {
-            List<ItemAndListCommonInterface> res = new ArrayList<ItemAndListCommonInterface>();
+            List<ItemAndListCommonInterface> res = new ArrayList();
             res.add(this);
             return res;
         }
     }
 
-//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * returns true if has future workTime associated with it. either from own
      * workSlots or allocated WorkTime.
      *
      * @return
      */
-    default public boolean hasWorkTimeDefinition() {
+    default public boolean hasWorkTime() {
         WorkSlotList workSlots = getWorkSlotList();
 //        return workSlots != null && workSlots.size() > 0; //||getWorkTime()!=null;
 //        return (workSlots != null && workSlots.size() > 0) || getAvailableWorkTime() != null;
-        return (workSlots != null && workSlots.size() > 0) || getAllocatedWorkTime() != null;
+//        return (workSlots != null && workSlots.size() > 0) || getAllocatedWorkTime() != null;
+        if (workSlots != null && workSlots.size() > 0) {
+            return true;
+        }
+        ItemAndListCommonInterface owner = getOwner();
+        if (owner != null && owner.hasWorkTime()) {
+            return true;
+        }
+//        for (Category cat:getCa|| getAllocatedWorkTime() != null;
+        return false;
 //        return getWorkTimeProvidersInPrioOrder() != null; //TODO optimization - is there a more efficient way?
     }
-//</editor-fold>
 
     /**
      * return the allocated work time (a list since can come from different work
@@ -478,24 +486,27 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //        return workTime;
 //    }
 //</editor-fold>
+    /**
+     * 
+     * @return null if no worktime allocated
+     */
     public WorkTime getAllocatedWorkTime();
 //     {
 ////        return getWorkTimeDefinition().getWorkTime(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
 
-    default public WorkTime getWorkTime(ItemAndListCommonInterface itemOrList) {
+    default public WorkTime allocateWorkTime(ItemAndListCommonInterface itemOrList) {
         return getWorkTimeDefinition().getWorkTime(itemOrList);
     }
 
-    default public WorkTime getWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
+    default public WorkTime allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
         return getWorkTimeDefinition().getWorkTime(itemOrList, remainingDuration);
     }
 
-    default public long getWorkTime() {
-        return getAllocatedWorkTime().getFinishTime();
-    }
-
+//    default public long getAllocatedWorkTime() {
+//        return getAllocatedWorkTime().getFinishTime();
+//    }
     default public Date getFinishTimeD() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        WorkTimeDefinition workTimeDef = getWorkTimeDefinition();
@@ -507,11 +518,18 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //            return new Date(0);
 //        }
 //</editor-fold>
-        return getAllocatedWorkTime().getFinishTimeD();
+        WorkTime wt= getAllocatedWorkTime();
+        return wt!=null?getAllocatedWorkTime().getFinishTimeD():new Date(MyDate.MIN_DATE);
     }
 
+    /**
+     * returns the calculated finishTime for this item
+     * @return finishTime or MyDate.MIN_DATE if no workTime was allocated
+     */
     default public long getFinishTime() {
-        return getAllocatedWorkTime().getFinishTime();
+//        return getAllocatedWorkTime().getFinishTime();
+        WorkTime wt= getAllocatedWorkTime();
+        return wt!=null?getAllocatedWorkTime().getFinishTime():MyDate.MIN_DATE;
     }
 
     /**
@@ -531,7 +549,8 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @param provider
      * @return
      */
-    default public long getWorkTimeRequiredFromThisProvider(ItemAndListCommonInterface provider) {
+//    default public long getWorkTimeRequiredFromOwner(ItemAndListCommonInterface provider) {
+    default public long getWorkTimeRequiredFromOwner(   ) {
         return getRemainingEffort(); //for lists and categories, we use the standard remaining, for Items it's a special impl
     }
 
