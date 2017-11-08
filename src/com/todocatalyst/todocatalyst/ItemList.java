@@ -3313,10 +3313,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return providers;
 //    }
 //</editor-fold>
-    @Override
-    public WorkTime getAllocatedWorkTime() {
-        return new WorkTime(getWorkSlotList()); //a list can only get workTime allocated via its workslots
-    }
+//    @Override
+//    public WorkTime getAllocatedWorkTime() {
+////        return new WorkTime(getWorkSlotList()); //a list can only get workTime allocated via its workslots
+//        throw new Error("Not supported yet."); 
+//    }
 
 
 } // Class ItemList

@@ -1549,10 +1549,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public WorkTime getAllocatedWorkTime() {
-//        return getWorkTimeDefinition().getWorkTime(this);
-        throw new Error("Not supported yet."); //not supported by WorkSlot
-    }
+//    @Override
+//    public WorkTime getAllocatedWorkTime() {
+////        return getWorkTimeDefinition().getWorkTime(this);
+//        throw new Error("Not supported yet."); //not supported by WorkSlot
+//    }
 
 }

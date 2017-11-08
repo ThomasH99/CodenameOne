@@ -168,8 +168,11 @@ class KeepInSameScreenPosition {
     }
 
     public String toString() {
-        return (itemOrg != null && itemOrg instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) itemOrg).getText() : "")
+        return (itemOrg != null && itemOrg instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) itemOrg).getText() : "itemOrg=null")
                 + " rel:" + relScroll + " scrollY:" + scrollY;
+//          public String toString(){
+//        return (itemOrg!=null?itemOrg:"itemOrg=null")+
+//    }
     }
 
     /**
@@ -342,7 +345,8 @@ class KeepInSameScreenPosition {
 //                        ASSERT.that(false, "Container "+scrollCont+" is not ContainerScrollY");
 //                    }
 //</editor-fold>
-                    ASSERT.that(scrollCont instanceof ContainerScrollY, "Scrollable container not found, must improve findScrollableContainer(), scrollCont not ContainerScrollY: " + scrollCont);
+                    ASSERT.that(scrollCont instanceof ContainerScrollY, 
+                            "Scrollable container not found, must improve findScrollableContainer(), scrollCont not ContainerScrollY: " + scrollCont);
                     ((ContainerScrollY) scrollCont).setScrollYPublic(scrollY);
                 }
             }

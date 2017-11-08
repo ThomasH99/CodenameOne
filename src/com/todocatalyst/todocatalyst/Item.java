@@ -606,48 +606,50 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    private BufferedValue derivedRemainingEffortSubItemsSumBuffered = new BufferedValue(new UpdaterInterface() {
-        public Object getValue() {
-            long subItemSum = 0;
-//            for (int item: getItemList()) {
-            for (int i = 0, size = getItemListSize(); i < size; i++) {
-//                Item item = ((Item) getItemList().getItemAt(i));
-                Item item = (Item) getList().get(i);
-                if (!item.isDone()) { // /** || includeDone */) {
-                    subItemSum += item.getRemainingEffort();
-                }
-            }
-            return new Long(subItemSum);
-        }
-    });
-    private BufferedValue derivedEstimateEffortSubItemsSumBuffered = new BufferedValue(new UpdaterInterface() {
-        public Object getValue() {
-            long subItemSum = 0;
-            for (int i = 0, size = getItemListSize(); i < size; i++) {
-//                Item item = ((Item) getItemList().getItemAt(i));
-                Item item = (Item) getList().get(i);
-                if (!item.isDone()) { // /** || includeDone */) {
-                    subItemSum += item.getEffortEstimate();
-                }
-            }
-            return new Long(subItemSum);
-        }
-    });
-    private BufferedValue derivedActualEffortSubItemsSumBuffered = new BufferedValue(new UpdaterInterface() {
-        public Object getValue() {
-            long subItemSum = 0;
-            for (int i = 0, size = getItemListSize(); i < size; i++) {
-//                Item item = ((Item) getItemList().getItemAt(i));
-                Item item = (Item) getList().get(i);
-                if (!item.isDone() /*
-                         * || includeDone
-                         */) {
-                    subItemSum += item.getActualEffort();
-                }
-            }
-            return new Long(subItemSum);
-        }
-    });
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private BufferedValue derivedRemainingEffortSubItemsSumBuffered = new BufferedValue(new UpdaterInterface() {
+//        public Object getValue() {
+//            long subItemSum = 0;
+////            for (int item: getItemList()) {
+//            for (int i = 0, size = getItemListSize(); i < size; i++) {
+////                Item item = ((Item) getItemList().getItemAt(i));
+//                Item item = (Item) getList().get(i);
+//                if (!item.isDone()) { // /** || includeDone */) {
+//                    subItemSum += item.getRemainingEffort();
+//                }
+//            }
+//            return new Long(subItemSum);
+//        }
+//    });
+//    private BufferedValue derivedEstimateEffortSubItemsSumBuffered = new BufferedValue(new UpdaterInterface() {
+//        public Object getValue() {
+//            long subItemSum = 0;
+//            for (int i = 0, size = getItemListSize(); i < size; i++) {
+////                Item item = ((Item) getItemList().getItemAt(i));
+//                Item item = (Item) getList().get(i);
+//                if (!item.isDone()) { // /** || includeDone */) {
+//                    subItemSum += item.getEffortEstimate();
+//                }
+//            }
+//            return new Long(subItemSum);
+//        }
+//    });
+//    private BufferedValue derivedActualEffortSubItemsSumBuffered = new BufferedValue(new UpdaterInterface() {
+//        public Object getValue() {
+//            long subItemSum = 0;
+//            for (int i = 0, size = getItemListSize(); i < size; i++) {
+////                Item item = ((Item) getItemList().getItemAt(i));
+//                Item item = (Item) getList().get(i);
+//                if (!item.isDone() /*
+//                         * || includeDone
+//                         */) {
+//                    subItemSum += item.getActualEffort();
+//                }
+//            }
+//            return new Long(subItemSum);
+//        }
+//    });
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * last date when the item was modified (or created) - only real changes
@@ -6235,6 +6237,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
 //        if (hasWorkTimeDefinition()) {
+//UI: if an item has BOTH own workSlots AND a category with WorkSLots, then it will first try to get workTime from its own workslots (otherwise, why would it have them?!)
         if (getWorkSlotList() != null) {
             providers.add(this);
         }
@@ -6409,35 +6412,51 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     @Override
-    public long getWorkTimeRequiredFromOwner() {
+//    public long getWorkTimeRequiredFromOwner() {
+    public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
         long remaining = 0;
         List<ItemAndListCommonInterface> subtasks = getList();
         if (subtasks != null && subtasks.size() > 0) {
-            for (ItemAndListCommonInterface elt : subtasks) {
+//            for (ItemAndListCommonInterface elt : subtasks) { //starts from the *last* element in the list!!!
+            ItemAndListCommonInterface elt;
+            for (int i = 0, size = subtasks.size(); i < size; i++) {
 //                remaining += elt.getWorkTimeRequiredFromOwner(provider);
-                remaining += elt.getWorkTimeRequiredFromOwner();
+//                if (elt == this) {
+//                    continue;
+//                }
+                elt = subtasks.get(i);
+//                remaining += elt.getWorkTimeRequiredFromProvider(provider);
+                remaining += elt.getWorkTimeRequiredFromProvider(this);
             }
         } else { //leaf task
             remaining = getRemainingEffort(); //how much total workTime is required?
-
-            List<ItemAndListCommonInterface> workTimeProviderList = getWorkTimeProvidersInPrioOrder(false);
-            if (workTimeProviderList != null) {
+        }
+//        List<ItemAndListCommonInterface> workTimeProviderList = getWorkTimeProvidersInPrioOrder(true);
+        List<ItemAndListCommonInterface> providers = getWorkTimeProvidersInPrioOrder(true);
+//        if (workTimeProviderList != null) {
+        if (providers != null) {
 //                Iterator<ItemAndListCommonInterface> workTimeProviders = workTimeProviderList.iterator();
-                for (ItemAndListCommonInterface prov : getWorkTimeProvidersInPrioOrder(false)) {
+//                for (ItemAndListCommonInterface prov : getWorkTimeProvidersInPrioOrder(false)) {
+//            for (ItemAndListCommonInterface prov : getWorkTimeProvidersInPrioOrder(true)) {
+            ItemAndListCommonInterface prov;
+//            List<ItemAndListCommonInterface> providers = getWorkTimeProvidersInPrioOrder(true);
+            for (int i = 0, size = providers.size(); i < size; i++) {
 //                while (workTimeProviders.hasNext()) {
-                    //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+                //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
 //                    ItemAndListCommonInterface prov = workTimeProviders.next();
-//                if (prov == provider) {
-//                    return remaining;
-//                } else {
+                prov = providers.get(i);
+                if (prov == provider) {
+                    break; // return remaining;
+                } else {
 //                    remaining -= prov.allocateWorkTime(this).getAllocatedDuration(); //deduct time allocated by higher prioritized provider
-                    remaining = prov.allocateWorkTime(this, remaining).getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+                    WorkTime wt = prov.allocateWorkTime(this, remaining);
+                    remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
 //                    remaining = 0;
 //                    return remaining;
-//                }
                 }
             }
         }
+//        }
         return remaining;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    }
@@ -6451,6 +6470,51 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    @Override
+////    public long getWorkTimeRequiredFromOwner() {
+//    public long getWorkTimeRequiredFromOwner() {
+//        long remaining = 0;
+//        List<ItemAndListCommonInterface> subtasks = getList();
+//        if (subtasks != null && subtasks.size() > 0) {
+//            for (ItemAndListCommonInterface elt : subtasks) {
+////                remaining += elt.getWorkTimeRequiredFromOwner(provider);
+//                remaining += elt.getWorkTimeRequiredFromOwner();
+//            }
+//        } else { //leaf task
+//            remaining = getRemainingEffort(); //how much total workTime is required?
+//
+//            List<ItemAndListCommonInterface> workTimeProviderList = getWorkTimeProvidersInPrioOrder(false);
+//            if (workTimeProviderList != null) {
+////                Iterator<ItemAndListCommonInterface> workTimeProviders = workTimeProviderList.iterator();
+//                for (ItemAndListCommonInterface prov : getWorkTimeProvidersInPrioOrder(false)) {
+////                while (workTimeProviders.hasNext()) {
+//                    //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+////                    ItemAndListCommonInterface prov = workTimeProviders.next();
+////                if (prov == provider) {
+////                    return remaining;
+////                } else {
+////                    remaining -= prov.allocateWorkTime(this).getAllocatedDuration(); //deduct time allocated by higher prioritized provider
+//                    remaining = prov.allocateWorkTime(this, remaining).getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+////                    remaining = 0;
+////                    return remaining;
+////                }
+//                }
+//            }
+//        }
+//        return remaining;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////    }
+////        else {
+////            remaining = 0;
+////            for (ItemAndListCommonInterface elt : subtasks) {
+////                remaining += elt.getWorkTimeRequiredFromThisProvider(provider);
+////            }
+////            return remaining;
+////        }
+////</editor-fold>
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public long getWorkTimeRequiredFromOwner(ItemAndListCommonInterface provider) {
@@ -6503,9 +6567,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         ItemAndListCommonInterface provider;
 
 //        long requiredWT = getWorkTimeRequiredFromOwner(this); //only get the workTime required from this provider (e.g. subtasks with own categories may have been served directly at their level)
-        long requiredWT = getWorkTimeRequiredFromOwner(); //only get the workTime required from this provider (e.g. subtasks with own categories may have been served directly at their level)
+        long requiredWT = getWorkTimeRequiredFromProvider(this); //only get the workTime required from this provider (e.g. subtasks with own categories may have been served directly at their level)
 
-        List<ItemAndListCommonInterface> workTimeProviderList = getWorkTimeProvidersInPrioOrder(false); //only allocate from own workSlots or categories to ripple up what owner must allocate
+        List<ItemAndListCommonInterface> workTimeProviderList = getWorkTimeProvidersInPrioOrder(true); //only allocate from own workSlots or categories to ripple up what owner must allocate
         if (workTimeProviderList != null) {
             Iterator<ItemAndListCommonInterface> workTimeProviders = workTimeProviderList.iterator();
             while (requiredWT > 0 && workTimeProviders.hasNext()) {

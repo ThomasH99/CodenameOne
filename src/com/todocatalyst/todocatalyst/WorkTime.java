@@ -212,7 +212,10 @@ public class WorkTime {
 
     WorkTime(WorkSlotList workSlots) {
         if (workSlots != null && workSlots.size() > 0) {
-            for (WorkSlot workSlot : workSlots) {
+//            for (WorkSlot workSlot : workSlots) {
+            WorkSlot workSlot;
+            for (int i = 0, size = workSlots.size(); i < size; i++) {
+                workSlot = workSlots.get(i);
                 workSlotSlices.add(new WorkSlotSlice(workSlot));
             }
         }
@@ -272,7 +275,10 @@ public class WorkTime {
     public long getAllocatedDuration(boolean totalDuration) {
         long allocatedTime = 0;
         //sum up the time allocated from each workslot. NB. First and last may only be partially allocated
-        for (WorkSlotSlice slice : workSlotSlices) {
+//        for (WorkSlotSlice slice : workSlotSlices) {
+        WorkSlotSlice slice;
+        for (int i = 0, size = workSlotSlices.size(); i < size; i++) {
+            slice = workSlotSlices.get(i);
             allocatedTime += slice.getDuration();
         }
         return allocatedTime;
@@ -331,7 +337,7 @@ public class WorkTime {
 //    }
     public long getFinishTime() {
 //        return nextWorkTime == null ? finishTime : Math.max(finishTime, nextWorkTime.getFinishTime()); //must call getFinishTime() to get value recursively (although very rarely needed)
-        return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(workSlotSlices.size() - 1).getEndTime() : MyDate.MAX_DATE;
+        return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(workSlotSlices.size() - 1).getEndTime() : MyDate.MIN_DATE;
     }
 
     public Date getFinishTimeD() {

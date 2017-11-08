@@ -1126,7 +1126,8 @@ public abstract class MyForm extends Form {
 //            for (Category cat : setOrList) {
             for (ItemAndListCommonInterface itemCategoryOrList : setOrList) {
 //                str = itemCategoryOrList.toString() + separator + str;
-                str = itemCategoryOrList.getText() + separator + str;
+//                str = itemCategoryOrList.getText() + separator + str;
+                str = str+ separator + itemCategoryOrList.getText() ;
                 separator = ", ";
             }
         }

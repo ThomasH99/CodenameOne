@@ -655,7 +655,7 @@ public class ScreenListOfItems extends MyForm {
                             itemListOrg, ScreenListOfItems.this, (iList) -> {
 //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
                                 //DONE!!! reload/recalc workslots
-                                refreshAfterEdit();
+                                ScreenListOfItems.this.refreshAfterEdit();
                             }).show();
                 }
             });
@@ -1561,7 +1561,8 @@ public class ScreenListOfItems extends MyForm {
             } else {
                 west.add(new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
                     if (newStatus != oldStatus) {
-                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
+//                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
+                        myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
                         item.setStatus(newStatus);
 //                        if (refreshOnItemEdits != null) {
 //                            refreshOnItemEdits.launchAction();
@@ -1715,7 +1716,8 @@ public class ScreenListOfItems extends MyForm {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                Item item = (Item) mainCont.getClientProperty("item"); //TODO!!!! is this needed, why notjust access 'item'??
-                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+//                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 new ScreenItem(item, (MyForm) swipCont.getComponentForm(), () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    KeepInSameScreenPosition keepPos = new KeepInSameScreenPosition(null, swipCont); //TODO!!!!!! porblem with access to this
@@ -1731,7 +1733,8 @@ public class ScreenListOfItems extends MyForm {
 //                        ((ScreenListOfItems) mainCont.getComponentForm()).refreshAfterEdit(new KeepInSameScreenPosition(item, swipCont));
 //                        ((ScreenListOfItems) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
 //</editor-fold>
-                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+//                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+                        myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                     }
                     DAO.getInstance().save(item);
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2062,7 +2065,8 @@ refreshAfterEdit();
 //                        @Override
 //                        public void actionPerformed(ActionEvent evt) {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
-                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+//                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+                        myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                         ScreenTimer.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
 //                        }
                     }));

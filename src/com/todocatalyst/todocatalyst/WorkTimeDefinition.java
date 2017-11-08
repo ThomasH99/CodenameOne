@@ -272,12 +272,14 @@ public class WorkTimeDefinition { //implements Externalizable { //extends ItemLi
      */
     public WorkTime getWorkTime(ItemAndListCommonInterface item) {
         int itemIndex = items.indexOf(item);
-        return getWorkTime(itemIndex, item.getRemainingEffort());
+//        return getWorkTime(itemIndex, item.getRemainingEffort());
+        return getWorkTime(itemIndex, item.getWorkTimeRequiredFromProvider(owner));
     }
 
     public WorkTime getWorkTime(int itemIndex) {
 //        ItemAndListCommonInterface item = items.get(itemIndex);
-        return getWorkTime(itemIndex, items.get(itemIndex).getRemainingEffort());
+//        return getWorkTime(itemIndex, items.get(itemIndex).getRemainingEffort());
+        return getWorkTime(itemIndex, items.get(itemIndex).getWorkTimeRequiredFromProvider(owner));
     }
 
     /**
@@ -299,7 +301,7 @@ public class WorkTimeDefinition { //implements Externalizable { //extends ItemLi
 //            WorkTime prevWorkTime = getWorkTime(itemIndex - 1); //recurse
 //                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()); //recurse
 //                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromOwner(owner)); //recurse
-                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromOwner()); //recurse
+                WorkTime prevWorkTime = getWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
                 long finishTime = prevWorkTime.getFinishTime();
                 workT = workTime.getWorkTime(finishTime, desiredDuration);
                 if (false) {
