@@ -1633,6 +1633,14 @@ public class ScreenItem extends MyForm {
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
         statusCont.add(layout(Item.OBJECT_ID, itemObjectId, "**", true, true, false));
 
+        //FINISH_TIME
+        WorkTime workTime = item.getAllocatedWorkTime();
+        if (workTime != null) {
+            Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(new Date(workTime.getFinishTime())), null, (e) -> {
+                new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
+            }));
+            statusCont.add(layout(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, true, true, true));
+        }
         //TAB SUBTASKS
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
@@ -1853,7 +1861,8 @@ public class ScreenItem extends MyForm {
 //        ItemAndListCommonInterface locallyStoreOwner;
         ItemAndListCommonInterface locallyStoreOwner = (ItemAndListCommonInterface) DAO.getInstance().fetch((String) Storage.getInstance().readObject(FILE_LOCAL_EDITED_OWNER)); //save 
 //        locallyStoreOwner = (ItemAndListCommonInterface) DAO.getInstance().fetchIfNeededReturnCachedIfAvail((ParseObject) locallyStoreOwner);
-        if (restoreNewOwner() != null) {
+//        if (restoreNewOwner() != null) {
+        if (locallyStoreOwner != null) {
             locallyEditedOwner = new ArrayList();
             locallyEditedOwner.add(locallyStoreOwner);
         }
@@ -1875,11 +1884,13 @@ public class ScreenItem extends MyForm {
     private List<Category> restoreNewCategories() {
         List<String> catObjIds = (List) Storage.getInstance().readObject(FILE_LOCAL_EDITED_CATEGORIES);
         List<Category> categories = null;
-        for (String cat : catObjIds) {
-            if (categories == null) {
-                categories = new ArrayList<>();
+        if (catObjIds != null) {
+            for (String cat : catObjIds) {
+                if (categories == null) {
+                    categories = new ArrayList<>();
+                }
+                categories.add((Category) DAO.getInstance().fetch(cat));
             }
-            categories.add((Category) DAO.getInstance().fetch(cat));
         }
         return categories;
     }

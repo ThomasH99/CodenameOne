@@ -1060,7 +1060,7 @@ public class ScreenListOfItems extends MyForm {
     ////        }
     ////        ASSERT.that(idx>=0, "Item ["+item+"] not found in ItemList ["+itemList+"] as expected");
     ////        if ((finishTime = itemList.getFinishTime(idx)) != 0) {
-    ////        WorkTimeDefinition wtd = itemList.getWorkTimeDefinition();
+    ////        WorkTimeDefinition wtd = itemList.getWorkTimeAllocator();
     ////        java.util.List workSlotList = itemListOrg.getWorkSlotList();
     ////        if (workSlotList != null && workSlotList.size() > 0) {
     ////            WorkTimeDefinition wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotList(), itemList); //use possibly filtered/sorted list here. UI: finishTime is calcuated based on current view/filter/sort. E.g. if you always work by priority and not manual sorting
@@ -1081,7 +1081,7 @@ public class ScreenListOfItems extends MyForm {
     //        if (motherItemList != null) {
     //            long finishTime;
     //            int idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
-    //            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeDefinition();
+    //            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocator();
     //            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
     //                south.addComponent(new Label("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime))));
     //            }
@@ -1767,8 +1767,8 @@ public class ScreenListOfItems extends MyForm {
 //            long finishTime;
 ////            int idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
 //            int idx = motherListWithWorkTimeDef.indexOf(item); //TODO!!! optimization by passing index to here
-////            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeDefinition();
-//            WorkTimeDefinition wtd = ((ItemList) motherListWithWorkTimeDef).getSourceItemList().getWorkTimeDefinition();
+////            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocator();
+//            WorkTimeDefinition wtd = ((ItemList) motherListWithWorkTimeDef).getSourceItemList().getWorkTimeAllocator();
 //            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
 //                south.add("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime)));
 ////                south.add("F:" + MyDate.formatDateCasual(new Date(finishTime)));
@@ -2533,8 +2533,8 @@ refreshAfterEdit();
 ////            long finishTime;
 //////            int idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
 ////            int idx = motherListWithWorkTimeDef.indexOf(item); //TODO!!! optimization by passing index to here
-//////            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeDefinition();
-////            WorkTimeDefinition wtd = ((ItemList) motherListWithWorkTimeDef).getSourceItemList().getWorkTimeDefinition();
+//////            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocator();
+////            WorkTimeDefinition wtd = ((ItemList) motherListWithWorkTimeDef).getSourceItemList().getWorkTimeAllocator();
 ////            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
 ////                south.add("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime)));
 //////                south.add("F:" + MyDate.formatDateCasual(new Date(finishTime)));

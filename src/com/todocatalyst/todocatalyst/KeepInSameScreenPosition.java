@@ -34,9 +34,10 @@ import static com.todocatalyst.todocatalyst.Config.TEST;
 class KeepInSameScreenPosition {
 
     private int relScroll; //store the 'relative scroll' (magic number) to 
-    private int scrollY; //store the total scrollY in case we cannot find the new component corresponding to the old one
+    private int scrollY = Integer.MIN_VALUE; //store the total scrollY in case we cannot find the new component corresponding to the old one
     private Object itemOrg = null; //keep the item we want to keep in the same scroll position
     private Component newComponent = null; //the component we want to place in same scroll position
+    private Component someComponent = null; //keep some (random) component from the container to be able to find the ScrollableContainer
 
 //    KeepInSameScreenPosition() {
 //    }
@@ -57,7 +58,10 @@ class KeepInSameScreenPosition {
      */
     KeepInSameScreenPosition() {
 //        this(findScrollableContainer());
-        this.scrollY = findScrollableContainer().getScrollY();
+        Container cont = findScrollableContainer();
+        if (cont != null) {
+            this.scrollY = cont.getScrollY();
+        }
     }
 
     KeepInSameScreenPosition(Object item, Component oldItemComponent) {
@@ -184,6 +188,9 @@ class KeepInSameScreenPosition {
      */
 //    private Container getParentInScrollableContainer(Component comp) {
     private Container getScrollableContainer(Component comp) {
+        if (comp == null) {
+            return null;
+        }
         Component scrollable = comp.getScrollable();
         if (scrollable instanceof Container) {
             return (Container) scrollable;
@@ -252,6 +259,7 @@ class KeepInSameScreenPosition {
             this.newComponent = possibleNewComponent;
             itemOrg = null;
         }
+        someComponent = possibleNewComponent;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -266,6 +274,35 @@ class KeepInSameScreenPosition {
      * @return the found scrollableContainer or null if none found
      */
     private Container findScrollableContainer() {
+        if (Test.DEBUG) {
+            Form currentForm = Display.getInstance().getCurrent();
+        }
+        if (newComponent != null) {
+            return getScrollableContainer(newComponent);
+        } else { //we didn't find newComponent so must find the scrollable container in some other way
+//            Container scrollableCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y 
+//            if (Test.DEBUG) {
+//                Container parent = scrollableCont.getParent();
+//            }
+//            if (scrollableCont.isScrollableY()) {
+//                return scrollableCont;
+//            } else {
+//                //is the ContentPane a BorderLayout with a scrollable CENTER?
+//                Layout layout = scrollableCont.getLayout();
+//                if (layout instanceof BorderLayout) {
+//                    Component centerComp = ((BorderLayout) layout).getCenter();
+//                    if (centerComp instanceof Container && centerComp.isScrollableY()) {
+////                        scrollableCont = ((Container) centerComp); //if usual construction with scrollable center container
+//                        return ((Container) centerComp); //if usual construction with scrollable center container
+//                    }
+//                }
+//            }
+//            return null;
+            return getScrollableContainer(someComponent);
+        }
+    }
+
+    private Container findScrollableContainerOLD() {
         if (Test.DEBUG) {
             Form currentForm = Display.getInstance().getCurrent();
         }
@@ -320,7 +357,8 @@ class KeepInSameScreenPosition {
      */
     void setNewScrollYPosition() {
         if (newComponent == null) {
-            if (scrollY != 0) {
+//            if (scrollY != 0) {
+            if (scrollY != Integer.MIN_VALUE) {
                 //original object has disappeared from the list (eg filtered after set Done) so simply scroll to same Y position
                 //try to find the scrollable container (from the top of the hierarchy):
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -345,11 +383,11 @@ class KeepInSameScreenPosition {
 //                        ASSERT.that(false, "Container "+scrollCont+" is not ContainerScrollY");
 //                    }
 //</editor-fold>
-                    ASSERT.that(scrollCont instanceof ContainerScrollY, 
+                    ASSERT.that(scrollCont instanceof ContainerScrollY,
                             "Scrollable container not found, must improve findScrollableContainer(), scrollCont not ContainerScrollY: " + scrollCont);
                     ((ContainerScrollY) scrollCont).setScrollYPublic(scrollY);
                 }
-            }
+            } //else //UI: do nothing, no scroll
         } else { // (newComponent != null) 
 //            Container scrollableContainer = newComponent.getComponentForm().getContentPane();
             Container scrollableContainer = getScrollableContainer(newComponent);

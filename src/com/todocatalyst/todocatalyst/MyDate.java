@@ -152,7 +152,6 @@ public class MyDate extends Date {
 //            setTime(Settings.getInstance().defaultHourOfDay.getInt(), Settings.getInstance().defaultMinuteOfDay.getInt());
 //        }
 //    }
-
     public MyDate(long time) {
 //        this.timeWithFlags = time;
         setTime(time);
@@ -185,7 +184,6 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), false, true);
 ////        time = calendar.getTime().getTime();
 //    }
-
 //    public MyDate(int hour24, int minutes) {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.setTime(new Date(0));
@@ -199,7 +197,6 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), true, false);
 ////        time = calendar.getTime().getTime();
 //    }
-
 //    public MyDate(int day, int month, int year, int hour, int minute, int seconds) {
 ////        setDate(day, month, year, hour, minute, seconds);
 //        Calendar calendar = Calendar.getInstance();
@@ -213,7 +210,6 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), true, true);
 ////        time = calendar.getTime().getTime();
 //    }
-
 //    public MyDate(int day, int month, int year, int hour, int minute, int seconds, int amPm) {
 ////        setDate(day, month, year, hour, minute, seconds, amPm);
 //        Calendar calendar = Calendar.getInstance();
@@ -228,7 +224,6 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), true, true);
 ////        time = calendar.getTime().getTime();
 //    }
-
     public long getTime() {
 //        return time;
 //        return (timeWithFlags & topmostSignbit) == 0 ? (timeWithFlags & timeMask) : (timeWithFlags & timeMask) | flagMask; //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
@@ -448,7 +443,6 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), true, false);
 ////        time = calendar.getTime().getTime();
 //    }
-
     /**
      * resets both date and time to 0 (and resets date and time set flags as
      * well)
@@ -569,7 +563,6 @@ public class MyDate extends Date {
 ////        calendar.set(Calendar.AM_PM, amPm);
 ////        time = calendar.getTime().getTime();
 //    }// </editor-fold>
-
     /**
      * returns day in month, 1..31
      */
@@ -662,7 +655,6 @@ public class MyDate extends Date {
 //        cal.setTime(new Date(getTime()));
 //        return cal.get(Calendar.AM_PM);
 //    }
-
     /**
      * returns the week number within the year (according to ISO definition).
      * See definition overview:
@@ -720,7 +712,6 @@ public class MyDate extends Date {
 //            return (weekNum);
 //        }
 //    }
-
     static Date getStartOfWeek(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -826,7 +817,6 @@ public class MyDate extends Date {
 //        // This way we can make the following calculation without having to worry about rounding errors
 //        return (int) ((calendar.getTime().getTime() - getTime()) / DAY_IN_MILLISECONDS);
 //    }
-
     public void addDays(int days) {
 //        time += days * DAY_IN_MILLISECONDS;
 //        setTime(getTimeWithFlags() + days * DAY_IN_MILLISECONDS);
@@ -893,7 +883,6 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), false, true);
 ////        time = calendar.getTime().getTime();
 //    }
-
     /**
      * moves date one month forward. If setToFirstInMonth then also sets day of
      * that month to the 1st day of the month
@@ -919,7 +908,6 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), false, true);
 ////        time = calendar.getTime().getTime();
 //    }
-
 //    public void retreatYear(Date date, boolean setToFirstInMonth) {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.setTime(new Date(getTime()));
@@ -932,7 +920,6 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), false, true);
 ////        time = calendar.getTime().getTime();
 //    }
-
 //    public void advanceYear(Date date, boolean setToFirstInMonth) {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.setTime(new Date(getTime()));
@@ -945,7 +932,6 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), false, true);
 ////        time = calendar.getTime().getTime();
 //    }
-
     /**
      * returns list of display text strings indicating week in month (FIRST,
      * THIRD, LAST, ...)
@@ -953,7 +939,6 @@ public class MyDate extends Date {
 //    static String[] getMonthNames() {
 //        return MONTH_NAMES;
 //    }
-
     static String[] getShortMonthNames() {
         return MONTH_NAMES_SHORT;
     }
@@ -961,7 +946,6 @@ public class MyDate extends Date {
 //    public static String getMonthName(int month) {
 //        return Localize.localize(MONTH_NAMES[month - 1]);
 //    }
-
 //    public String getMonthName(Date date) {
 //        return Localize.localize(MONTH_NAMES[getMonth(date) - 1]);
 //    }
@@ -982,20 +966,16 @@ public class MyDate extends Date {
 ////        return L.l(DAY_NAMES[getDayOfWeek() - 1]);
 //        return getDayName(getDayOfWeek(date));
 //    }
-
 //    public static String getShortDayName(int dayOfWeek) {
 //        return Localize.localize(DAY_NAMES_SHORT[dayOfWeek - 1]);
 //    }
-
 //    public String getShortDayName(Date date) {
 ////        return L.l(SHORT_DAY_NAMES[getDay() - 1]);
 //        return getShortDayName(getDayOfWeek(date));
 //    }
-
 //    public boolean isBefore(MyDate other) {
 //        return getTime() < other.getTime();
 //    }
-
     public static int getDaysInMonth(int month, int year) {
         switch (month) {
             case 4:
@@ -1060,7 +1040,6 @@ public class MyDate extends Date {
 //    int getWeekday(Date date) {
 //        return getWeekday(this.getDay(date), this.getMonth(date), this.getYear(date));
 //    }
-
 //    public String toShortString() {
 //        String dateString = "";
 //        dateString += this.getDay() + ".";
@@ -1081,7 +1060,6 @@ public class MyDate extends Date {
 ////        }
 ////        return false;
 //    }
-
     /**
      * returns true if other is the same time (hour, minutes)
      *
@@ -1097,7 +1075,6 @@ public class MyDate extends Date {
 //    final static int SEVEN_DAYS = 0;
 //    final static int THIRTY_DAYS = 0;
 //    final static int ONE_YEAR = 0;
-
 //    public boolean isToday(long timeNow) {
 //        MyDate dateNow = new MyDate(timeNow);
 //        return (getDay()==dateNow.getDay() && getMonth()==dateNow.getMonth() && getYear()==dateNow.getYear());
@@ -1455,7 +1432,9 @@ public class MyDate extends Date {
                     str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
                 }
             } else {
-                dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "") + (includeDate ? "MM/dd/yyyy" : "") + (includeTimeOfDay ? " KK:mm a" : ""));
+                dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "") + (includeDate ? "MM/dd/yyyy" : "") 
+                        + (includeDate && includeTimeOfDay ? " " : "") 
+                        + (includeTimeOfDay ? "KK:mm a" : ""));
                 str = dtfmt.format(cal.getTime());
             }
         } else {
@@ -1466,7 +1445,10 @@ public class MyDate extends Date {
                     str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
                 }
             } else {
-                dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "") + (includeDate ? "dd/MM/yyyy" : "") + (includeTimeOfDay ? " HH:mm" : "")); //TODO if not using date, will add a space too much between EEE and HH:mm
+                dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "") 
+                        + (includeDate ? "dd/MM/yyyy" : "") 
+                        + (includeDate && includeTimeOfDay ? " " : "") 
+                        + (includeTimeOfDay ? "HH:mm" : "")); //TODO if not using date, will add a space too much between EEE and HH:mm
                 str = dtfmt.format(cal.getTime());
             }
         }
@@ -1629,7 +1611,7 @@ public class MyDate extends Date {
 //            return "" + hours + "h" + (minutes < 10 ? "0" + minutes : "" + minutes);
 //            s = hours + ":" + (minutes != 0 ? ((minutes < 10 ? "0" + minutes : "" + minutes)) : "");
         s = (dontShowZeroHours && hours == 0 ? "" : (showLeadingZeroForHour && hours < 10 ? "0" : "") + hours + (showHBtwHoursAndMinutes ? "h" : ":"))
-//                + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes + (dontShowZeroHours ? "'" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
+                //                + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes + (dontShowZeroHours ? "'" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
                 //https://english.stackexchange.com/questions/114205/english-notation-for-hour-minutes-and-seconds says: minutes *can* be 3', but 3m is more common
                 + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes + (dontShowZeroHours ? "m" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
         int seconds = (int) (restAfterHours % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS; //1000;
@@ -1702,7 +1684,6 @@ public class MyDate extends Date {
 //        today = new MyDate(today.getDay(date), today.getMonth(date), today.getYear(date));
 //        return today.getTime();
 //    }
-
     /**
      * returns today's date with hour/minute/second/millesecond set to zero
      */
@@ -1711,7 +1692,6 @@ public class MyDate extends Date {
 //        today = new MyDate(today.getHour24(), today.getMinute());
 //        return today.getTime();
 //    }
-
     /**
      * returns time adjusted to 'midnight' to today's date with
      * hour/minute/second/millesecond set to zero

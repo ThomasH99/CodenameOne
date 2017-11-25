@@ -69,7 +69,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    private List<WorkSlot> workSlotListBuffer;
     private WorkSlotList workSlotListBuffer;
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
-    private  WorkTimeDefinition wtd; //calculated when needed
+    private  WorkTimeAllocator wtd; //calculated when needed
 
     /**
      * used to save the underlying list when ItemList is not a ParseObject
@@ -199,7 +199,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //
 //    void calculateWorkTimeForItems() {
 //        List<E> list = getList();
-//        WorkTimeDefinition workList = getWorkTimeDefinition();
+//        WorkTimeDefinition workList = getWorkTimeAllocator();
 //        if (list != null && list.size() > 0 && workList != null) {
 //            startTime = new long[list.size()];
 //            finishTime = new long[list.size()];
@@ -3126,7 +3126,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @return
      */
-//    public WorkTimeDefinition getWorkTimeDefinition() { //the WorkTimeDef should be created by the screen for the specific (possibly filtered/sorted) list
+//    public WorkTimeDefinition getWorkTimeAllocator() { //the WorkTimeDef should be created by the screen for the specific (possibly filtered/sorted) list
 ////        if (!hasWorkTimeDefinition()) {
 //////            workTimeDefinition = new WorkTimeDefinition(this);
 ////            workTimeDefinition = new WorkTimeDefinition();
@@ -3136,7 +3136,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        return new WorkTimeDefinition(getWorkSlotList(), getList());
 //        if (workTimeDefinitionBuffer == null) {
 //            if (getSourceItemList() != null && getSourceItemList() != this) {
-//                return getSourceItemList().getWorkTimeDefinition();
+//                return getSourceItemList().getWorkTimeAllocator();
 //            } else {
 //                workTimeDefinitionBuffer = new WorkTimeDefinition(getWorkSlotList(), getList());
 //            }
@@ -3183,25 +3183,25 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     /**
      * use this to check if a WorkTimeDefinition exists *before* calling
-     * getWorkTimeDefinition() since otherwise it will create a new
-     * WorkTimeDefinition
+ getWorkTimeAllocator() since otherwise it will create a new
+ WorkTimeDefinition
      *
      * @return true if a WorkTimeDefinition is defined in this list
      */
 //    boolean hasWorkTimeDefinition() {
 //        return workTimeDefinition != null;
 //    }
-//    public WorkTimeDefinition getWorkTimeDefinition() {
-//        return getWorkTimeDefinition(false);
+//    public WorkTimeDefinition getWorkTimeAllocator() {
+//        return getWorkTimeAllocator(false);
 //    }
     @Override
-    public WorkTimeDefinition getWorkTimeDefinition(boolean reset) {
+    public WorkTimeAllocator getWorkTimeAllocator(boolean reset) {
         if (wtd == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotList(true), itemListFilteredSorted);
 //            wtd = new WorkTimeDefinition(getList(), this);
             WorkSlotList workSlots = getWorkSlotList();
             if (workSlots != null && workSlots.hasComingWorkSlots()) {
 //                wtd = new WorkTimeDefinition(((<? extends ItemAndListCommonInterface>)getList(), workSlots);
-                wtd = new WorkTimeDefinition((List<ItemAndListCommonInterface>) getList(), new WorkTime(workSlots), this);
+                wtd = new WorkTimeAllocator((List<ItemAndListCommonInterface>) getList(), new WorkTime(workSlots), this);
             }
         }
         return wtd;
@@ -3217,7 +3217,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public Date getFinishTime(ItemAndListCommonInterface item) {
-//        WorkTimeDefinition workTimeDef = getWorkTimeDefinition();
+//        WorkTimeDefinition workTimeDef = getWorkTimeAllocator();
 //        if (workTimeDef != null) {
 //            return new Date(workTimeDef.getFinishTime(item));
 //        } else {
@@ -3227,7 +3227,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public Date getFinishTimeOLD(Item item) {
-//        WorkTimeDefinition workTimeDef = getWorkTimeDefinition();
+//        WorkTimeDefinition workTimeDef = getWorkTimeAllocator();
 //        if (workTimeDef != null) {
 //            return new Date(workTimeDef.getFinishTime(item));
 //        } else {

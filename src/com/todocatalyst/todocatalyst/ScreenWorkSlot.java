@@ -1,6 +1,7 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.components.SpanButton;
+import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
@@ -16,6 +17,7 @@ import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
 import static com.todocatalyst.todocatalyst.MyForm.layout;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Main screen should contain the following elements: Views - user defined views
@@ -202,7 +204,7 @@ public class ScreenWorkSlot extends MyForm {
         locallyEditedRepeatRule = workSlot.getRepeatRule();
         SpanButton repeatRuleButton = new SpanButton();
 //        Command repeatRuleEditCmd = new Command("<click to set repeat>NOT SHOWN?!") {
-        Command repeatRuleEditCmd = new MyReplayCommand("EditRepeatRule","") {
+        Command repeatRuleEditCmd = new MyReplayCommand("EditRepeatRule", "") {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 if (locallyEditedRepeatRule == null) {
@@ -296,6 +298,27 @@ public class ScreenWorkSlot extends MyForm {
             }
             return null;
         };
+
+        //HEADER - EDIT LIST IN FULL SCREEN MODE
+//                    Button editSubtasksFullScreen = ScreenListOfItems.makeSubtaskButton(item, null);
+        List<Item> items = workSlot.getItemsInWorkSlot();
+        if (items != null && items.size() > 0) {
+            ItemList itemList = new ItemList(workSlot.getItemsInWorkSlot());
+            Button editSubtasksFullScreen = new Button();
+            editSubtasksFullScreen.setCommand(new MyReplayCommand("ShowTasksInWorkSlot", "Tasks ("+items.size()+")", Icons.iconEditPropertiesToolbarStyle) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    new ScreenListOfItems("Tasks in WorkSlot" , itemList, ScreenWorkSlot.this, (iList) -> {
+//                        item.setItemList(subtaskList);
+//                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
+                    }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                    ).show();
+                }
+            });
+//        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
+            content.add(layout("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
+        }
 
         return content;
     }

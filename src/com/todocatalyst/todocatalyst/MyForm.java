@@ -1548,7 +1548,8 @@ public abstract class MyForm extends Form {
      * align with other fields)
      * @return
      */
-    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
+    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, 
+            boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
 
         if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
 //            field.getAllStyles().setPaddingRight(6);

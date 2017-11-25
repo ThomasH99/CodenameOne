@@ -139,6 +139,9 @@ public class DAO {
 
     public ItemAndListCommonInterface fetch(String objectId) {
         ItemAndListCommonInterface item;
+        if (objectId == null || objectId.length() == 0) {
+            return null;
+        }
         if ((item = (ItemAndListCommonInterface) cache.get(objectId)) != null) {
             return item;
         }
