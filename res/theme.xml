@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<resource majorVersion="1" minorVersion="9" useXmlUI="false">
+    <image name="Container.borderBottom_1.png" type="multi"  />
+    <image name="Container.borderBottomL_1.png" type="multi"  />
+    <image name="Container.borderBottomR_1.png" type="multi"  />
+    <image name="Container.borderCenter_1.png" type="multi"  />
+    <image name="Container.borderLeft_1.png" type="multi"  />
+    <image name="Container.borderRight_1.png" type="multi"  />
+    <image name="Container.borderTop_1.png" type="multi"  />
+    <image name="Container.borderTopL_1.png" type="multi"  />
+    <image name="Container.borderTopR_1.png" type="multi"  />
+    <image name="Container.sel#borderBottom_1.png" type="multi"  />
+    <image name="Container.sel#borderBottomL_1.png" type="multi"  />
+    <image name="Container.sel#borderBottomR_1.png" type="multi"  />
+    <image name="Container.sel#borderCenter_1.png" type="multi"  />
+    <image name="Container.sel#borderLeft_1.png" type="multi"  />
+    <image name="Container.sel#borderRight_1.png" type="multi"  />
+    <image name="Container.sel#borderTop_1.png" type="multi"  />
+    <image name="Container.sel#borderTopL_1.png" type="multi"  />
+    <image name="Container.sel#borderTopR_1.png" type="multi"  />
+    <image name="ContainerListElement.borderBottom_1.png" type="multi"  />
+    <image name="ContainerListElement.borderBottom_2.png" type="multi"  />
+    <image name="ContainerListElement.borderBottomL_1.png" type="multi"  />
+    <image name="ContainerListElement.borderBottomL_2.png" type="multi"  />
+    <image name="ContainerListElement.borderBottomR_1.png" type="multi"  />
+    <image name="ContainerListElement.borderBottomR_2.png" type="multi"  />
+    <image name="ContainerListElement.borderCenter_1.png" type="multi"  />
+    <image name="ContainerListElement.borderCenter_2.png" type="multi"  />
+    <image name="ContainerListElement.borderLeft_1.png" type="multi"  />
+    <image name="ContainerListElement.borderLeft_2.png" type="multi"  />
+    <image name="ContainerListElement.borderRight_1.png" type="multi"  />
+    <image name="ContainerListElement.borderRight_2.png" type="multi"  />
+    <image name="ContainerListElement.borderTop_1.png" type="multi"  />
+    <image name="ContainerListElement.borderTop_2.png" type="multi"  />
+    <image name="ContainerListElement.borderTopL_1.png" type="multi"  />
+    <image name="ContainerListElement.borderTopL_2.png" type="multi"  />
+    <image name="ContainerListElement.borderTopR_1.png" type="multi"  />
+    <image name="ContainerListElement.borderTopR_2.png" type="multi"  />
+    <image name="firewater.jpg"  />
+    <l10n name="LocalizationBundle">
+        <lang name="fr">
+            <entry key="SUPPORT" value="Support" />
+            <entry key="menu" value="M&#xe9;nu" />
+            <entry key="DESCRIPTION_HINT" value=" Nouvelle [TASK]" />
+            <entry key="TASK" value="Tache" />
+            <entry key="cancel" value="Annuler" />
+            <entry key="ANONYMOUS_WARNING" value="" />
+            <entry key="EARNED_POINTS_PER_HOUR" value="Valeur/heure" />
+            <entry key="PREFERENCES" value="Pr&#xe9;ferences" />
+            <entry key="ok" value="OK" />
+            <entry key="WELCOME" value="Bienvenu dans [TODOCATALYST]" />
+            <entry key="DESCRIPTION" value="D&#xe9;scription" />
+            <entry key="DUE_DATE" value="" />
+            <entry key="edit" value="R&#xe9;diger" />
+            <entry key="select" value="Choisir" />
+            <entry key="COMMENT" value="Notes" />
+            <entry key="CANCELLED" value="Annul&#xe9;" />
+            <entry key="WAITING" value="En attente" />
+            <entry key="EFFORT_ESTIMATE" value="Estimation" />
+            <entry key="TASK_HELP" value="D&#xe9;crire votre [TASK] ici" />
+            <entry key="EFFORT_REMAINING" value="Restant" />
+            <entry key="TODOCATALYST" value="TodoCatalyst" />
+            <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
+            <entry key="Email" value="Courriel" />
+            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
+            <entry key="DONE" value="Termin&#xe9;" />
+            <entry key="DUE_DATE_HELP" value="" />
+            <entry key="EFFORT_ACTUAL" value="Travail" />
+        </lang>
+        <lang name="en">
+            <entry key="SUPPORT" value="Support" />
+            <entry key="menu" value="Menu" />
+            <entry key="DESCRIPTION_HINT" value="New [TASK]" />
+            <entry key="TASK" value="Task" />
+            <entry key="cancel" value="Cancel" />
+            <entry key="ANONYMOUS_WARNING" value="&lt;html&gt;   &lt;head&gt;        &lt;/head&gt;   &lt;body&gt;     You will use [TODOCATALYST] with an incognito account.  If you later want to convert this to a permanent account please enter your      email in [PREFERENCES]. If you &lt;b&gt;lose&lt;/b&gt; this device your data cannot be recovered.  WIth an incognito account you cannot log in from another device. If you do not use your account it may be deleted after 6 months of inactivity.   &lt;/body&gt; &lt;/html&gt; " />
+            <entry key="EARNED_POINTS_PER_HOUR" value="Value/hour" />
+            <entry key="PREFERENCES" value="Preferences" />
+            <entry key="ok" value="OK" />
+            <entry key="WELCOME" value="Welcome to TodoCatalyst" />
+            <entry key="DESCRIPTION" value="Description" />
+            <entry key="DUE_DATE" value="Due" />
+            <entry key="edit" value="Edit" />
+            <entry key="select" value="Select" />
+            <entry key="COMMENT" value="Notes" />
+            <entry key="CANCELLED" value="Cancelled" />
+            <entry key="WAITING" value="Waiting" />
+            <entry key="EFFORT_ESTIMATE" value="Estimate" />
+            <entry key="TASK_HELP" value="Describe your [TASK] here" />
+            <entry key="EFFORT_REMAINING" value="Remaining" />
+            <entry key="TODOCATALYST" value="TodoCatalyst" />
+            <entry key="SETTINGS" value="Settings" />
+            <entry key="Email" value="Email" />
+            <entry key="REPEAT_RULE" value="Repeat" />
+            <entry key="DONE" value="Completed" />
+            <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
+            <entry key="EFFORT_ACTUAL" value="Work" />
+        </lang>
+        <lang name="dk">
+            <entry key="SUPPORT" value="Support" />
+            <entry key="menu" value="Menu" />
+            <entry key="DESCRIPTION_HINT" value="Ny [TASK]" />
+            <entry key="TASK" value="Opgave" />
+            <entry key="cancel" value="Annuler" />
+            <entry key="ANONYMOUS_WARNING" value="" />
+            <entry key="EARNED_POINTS_PER_HOUR" value="V&#xe6;rdi/time" />
+            <entry key="PREFERENCES" value="" />
+            <entry key="ok" value="OK" />
+            <entry key="WELCOME" value="Velkommen i TodoCatalyst" />
+            <entry key="DESCRIPTION" value="Beskrivelse" />
+            <entry key="DUE_DATE" value="Forfaldsdato" />
+            <entry key="edit" value="Ret" />
+            <entry key="select" value="V&#xe6;lg" />
+            <entry key="COMMENT" value="Noter" />
+            <entry key="CANCELLED" value="Annuleret" />
+            <entry key="WAITING" value="Venter" />
+            <entry key="EFFORT_ESTIMATE" value="Estimate" />
+            <entry key="TASK_HELP" value="Beskriv [TASK] her" />
+            <entry key="EFFORT_REMAINING" value="Resterende" />
+            <entry key="TODOCATALYST" value="TodoCatalyst" />
+            <entry key="SETTINGS" value="Ops&#xe6;tning" />
+            <entry key="Email" value="Email" />
+            <entry key="REPEAT_RULE" value="Gentag" />
+            <entry key="DONE" value="Afslutttet" />
+            <entry key="DUE_DATE_HELP" value="" />
+            <entry key="EFFORT_ACTUAL" value="Arbejdet" />
+        </lang>
+    </l10n>
+    <theme name="MyTheme">
+        <val key="@fadeScrollBarBool " value="true" />
+        <val key="@includeNativeBool" value="true" />
+        <val key="@onOffIOSModeBool" value="true" />
+        <val key="@statusBarScrollsUpBool" value="true" />
+        <val key="@tabPlacementInt" value="2" />
+        <val key="Button.bgColor" value="ffffff" />
+        <val key="Button.dis#derive" value="Button" />
+        <val key="Button.dis#fgColor" value="999999" />
+        <val key="Button.fgColor" value="ff6666" />
+        <val key="Button.press#derive" value="Button" />
+        <val key="Button.press#fgColor" value="cc6600" />
+        <val key="Button.sel#derive" value="Button" />
+        <val key="ButtonGroupElement.derive" value="ButtonGroupElement" />
+        <val key="ButtonGroupElement.dis#derive" value="ButtonGroupElement" />
+        <val key="ButtonGroupElement.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="ButtonGroupElement.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="ButtonGroupElement.press#derive" value="ButtonGroupElement" />
+        <val key="ButtonGroupElement.sel#derive" value="ButtonGroupElement" />
+        <val key="ButtonGroupFirst.dis#derive" value="ButtonGroupFirst" />
+        <val key="ButtonGroupFirst.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="ButtonGroupFirst.press#derive" value="ButtonGroupFirst" />
+        <val key="ButtonGroupFirst.sel#derive" value="ButtonGroupFirst" />
+        <val key="ButtonGroupLast.derive" value="ButtonGroupLast" />
+        <val key="ButtonGroupLast.dis#derive" value="ButtonGroupLast" />
+        <val key="ButtonGroupLast.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="ButtonGroupLast.press#derive" value="ButtonGroupLast" />
+        <val key="ButtonGroupLast.sel#derive" value="ButtonGroupLast" />
+        <val key="ButtonGroupOnly.dis#derive" value="ButtonGroupOnly" />
+        <val key="ButtonGroupOnly.padding" value="0.0,0.0,3.0,3.0" />
+        <val key="ButtonGroupOnly.press#derive" value="ButtonGroupOnly" />
+        <val key="ButtonGroupOnly.sel#derive" value="ButtonGroupOnly" />
+        <val key="Comment.align" value="1" />
+        <val key="Comment.dis#derive" value="Comment" />
+        <val key="Comment.fgColor" value="9999" />
+        <font key="Comment.font" type="system" face="64" style="0" size="8" />
+        <val key="Comment.press#derive" value="Comment" />
+        <val key="Comment.sel#derive" value="Comment" />
+        <border key="ContainerListElement.border" type="line" millimeters="false" thickness="4.0" color="16711935" />
+        <val key="ContainerListElement.dis#derive" value="ContainerListElement" />
+        <val key="ContainerListElement.press#derive" value="ContainerListElement" />
+        <val key="ContainerListElement.sel#derive" value="ContainerListElement" />
+        <val key="EditedText.align" value="1" />
+        <val key="EditedText.derive" value="LabelValue" />
+        <val key="EditedText.dis#derive" value="EditedText" />
+        <val key="EditedText.fgColor" value="cc" />
+        <val key="EditedText.press#derive" value="EditedText" />
+        <val key="EditedText.sel#align" value="1" />
+        <val key="EditedText.sel#derive" value="LabelValue" />
+        <val key="EditedText.sel#fgColor" value="cc" />
+        <val key="GroupElement.derive" value="GroupElement" />
+        <val key="GroupElement.dis#derive" value="GroupElement" />
+        <val key="GroupElement.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="GroupElement.press#derive" value="GroupElement" />
+        <val key="GroupElement.sel#derive" value="GroupElement" />
+        <val key="GroupElementFirst.derive" value="GroupElementFirst" />
+        <val key="GroupElementFirst.dis#derive" value="GroupElementFirst" />
+        <val key="GroupElementFirst.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="GroupElementFirst.press#derive" value="GroupElementFirst" />
+        <val key="GroupElementFirst.sel#derive" value="GroupElementFirst" />
+        <val key="GroupElementLast.derive" value="GroupElementLast" />
+        <val key="GroupElementLast.dis#derive" value="GroupElementLast" />
+        <val key="GroupElementLast.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="GroupElementLast.press#derive" value="GroupElementLast" />
+        <val key="GroupElementLast.sel#derive" value="GroupElementLast" />
+        <val key="IconEdit.align" value="4" />
+        <val key="IconEdit.dis#derive" value="IconEdit" />
+        <val key="IconEdit.padUnit" value="2,2,2,2" />
+        <val key="IconEdit.padding" value="1.0,1.0,1.0,1.0" />
+        <val key="IconEdit.press#derive" value="IconEdit" />
+        <val key="IconEdit.sel#derive" value="IconEdit" />
+        <val key="LabelField.align" value="1" />
+        <val key="LabelField.derive" value="Label" />
+        <val key="LabelField.dis#derive" value="LabelField" />
+        <val key="LabelField.fgColor" value="3399ff" />
+        <val key="LabelField.press#derive" value="LabelField" />
+        <val key="LabelField.press#fgColor" value="99ff" />
+        <val key="LabelField.sel#derive" value="LabelField" />
+        <val key="LabelFixed.derive" value="LabelValue" />
+        <val key="LabelFixed.dis#derive" value="LabelFixed" />
+        <val key="LabelFixed.fgColor" value="ffcc" />
+        <val key="LabelFixed.press#derive" value="LabelFixed" />
+        <val key="LabelFixed.sel#derive" value="LabelFixed" />
+        <val key="LabelValue.align" value="3" />
+        <val key="LabelValue.derive" value="Label" />
+        <val key="LabelValue.dis#derive" value="LabelValue" />
+        <val key="LabelValue.fgColor" value="ff0000" />
+        <val key="LabelValue.marUnit" value="2,2,2,2" />
+        <val key="LabelValue.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="LabelValue.padUnit" value="2,2,2,2" />
+        <val key="LabelValue.padding" value="1.0,1.0,2.0,2.0" />
+        <val key="LabelValue.press#derive" value="LabelValue" />
+        <val key="LabelValue.sel#derive" value="LabelValue" />
+        <val key="LargeWhiteText.align" value="4" />
+        <val key="LargeWhiteText.dis#derive" value="LargeWhiteText" />
+        <val key="LargeWhiteText.fgColor" value="ffffff" />
+        <val key="LargeWhiteText.press#derive" value="LargeWhiteText" />
+        <val key="LargeWhiteText.sel#derive" value="LargeWhiteText" />
+        <val key="ListOfItemsEditItemIcon.dis#derive" value="ListOfItemsEditItemIcon" />
+        <val key="ListOfItemsEditItemIcon.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="ListOfItemsEditItemIcon.press#derive" value="ListOfItemsEditItemIcon" />
+        <val key="ListOfItemsEditItemIcon.sel#derive" value="ListOfItemsEditItemIcon" />
+        <val key="ListOfItemsRemaining.dis#derive" value="ListOfItemsRemaining" />
+        <val key="ListOfItemsRemaining.fgColor" value="cc00cc" />
+        <val key="ListOfItemsRemaining.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="ListOfItemsRemaining.press#derive" value="ListOfItemsRemaining" />
+        <val key="ListOfItemsRemaining.sel#derive" value="ListOfItemsRemaining" />
+        <val key="ListOfItemsSectionHeader.align" value="4" />
+        <val key="ListOfItemsSectionHeader.bgColor" value="cccccc" />
+        <border key="ListOfItemsSectionHeader.border" type="line" millimeters="false" thickness="1.0" color="52275" />
+        <val key="ListOfItemsSectionHeader.dis#derive" value="ListOfItemsSectionHeader" />
+        <val key="ListOfItemsSectionHeader.fgColor" value="9933" />
+        <val key="ListOfItemsSectionHeader.press#derive" value="ListOfItemsSectionHeader" />
+        <val key="ListOfItemsSectionHeader.sel#derive" value="ListOfItemsSectionHeader" />
+        <val key="ListOfItemsSubtasks.align" value="4" />
+        <val key="ListOfItemsSubtasks.bgColor" value="999999" />
+        <border key="ListOfItemsSubtasks.border" type="rounded" thickness="0.0" arcW="10" arcH="10" />
+        <val key="ListOfItemsSubtasks.dis#derive" value="ListOfItemsSubtasks" />
+        <val key="ListOfItemsSubtasks.fgColor" value="ffffff" />
+        <val key="ListOfItemsSubtasks.margin" value="0.0,0.0,2.0,2.0" />
+        <val key="ListOfItemsSubtasks.padding" value="3.0,3.0,3.0,3.0" />
+        <val key="ListOfItemsSubtasks.press#derive" value="ListOfItemsSubtasks" />
+        <val key="ListOfItemsSubtasks.sel#derive" value="ListOfItemsSubtasks" />
+        <val key="ListOfItemsSubtasks.transparency" value="255" />
+        <val key="ListOfItemsText.align" value="1" />
+        <val key="ListOfItemsText.dis#derive" value="ListOfItemsText" />
+        <val key="ListOfItemsText.fgColor" value="cc6600" />
+        <font key="ListOfItemsText.font" type="system" face="0" style="0" size="0" />
+        <val key="ListOfItemsText.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="ListOfItemsText.press#derive" value="ListOfItemsText" />
+        <val key="ListOfItemsText.sel#derive" value="ListOfItemsText" />
+        <val key="MyCheckBox.align" value="4" />
+        <val key="MyCheckBox.dis#derive" value="MyCheckBox" />
+        <val key="MyCheckBox.padUnit" value="0,2,0,2" />
+        <val key="MyCheckBox.padding" value="0.0,0.0,1.0,1.0" />
+        <val key="MyCheckBox.press#derive" value="MyCheckBox" />
+        <val key="MyCheckBox.sel#derive" value="MyCheckBox" />
+        <val key="OnOffSwitch.derive" value="OnOffSwitch" />
+        <val key="OnOffSwitch.transparency" value="0" />
+        <val key="SwipeButton.align" value="4" />
+        <val key="SwipeButton.bgColor" value="ffff99" />
+        <val key="SwipeButton.dis#derive" value="SwipeButton" />
+        <val key="SwipeButton.fgColor" value="3333" />
+        <val key="SwipeButton.padUnit" value="2,2,2,2" />
+        <val key="SwipeButton.padding" value="1.0,1.0,1.0,1.0" />
+        <val key="SwipeButton.press#derive" value="SwipeButton" />
+        <val key="SwipeButton.sel#derive" value="SwipeButton" />
+        <val key="SwipeButton.transparency" value="255" />
+        <val key="Text.align" value="1" />
+        <val key="Text.derive" value="TextArea" />
+        <val key="Text.dis#derive" value="Text" />
+        <val key="Text.fgColor" value="666666" />
+        <val key="Text.padding" value="3.0,3.0,3.0,3.0" />
+        <val key="Text.press#derive" value="Text" />
+        <val key="Text.sel#derive" value="Text" />
+        <val key="TimerTimer.bgColor" value="33ff" />
+        <border key="TimerTimer.border" type="rounded" thickness="0.0" arcW="12" arcH="12" color="16777215" />
+        <val key="TimerTimer.dis#derive" value="TimerTimer" />
+        <val key="TimerTimer.fgColor" value="ffffff" />
+        <font key="TimerTimer.font" type="system" face="32" style="1" size="16" />
+        <val key="TimerTimer.margin" value="3.0,3.0,3.0,3.0" />
+        <val key="TimerTimer.padding" value="12.0,12.0,12.0,12.0" />
+        <val key="TimerTimer.press#derive" value="TimerTimer" />
+        <val key="TimerTimer.sel#derive" value="TimerTimer" />
+        <val key="TimerTimer.transparency" value="255" />
+        <val key="ToggleButton.dis#derive" value="ToggleButton" />
+        <val key="ToggleButton.fgColor" value="6eaeff" />
+        <val key="ToggleButton.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="ToggleButton.padUnit" value="2,2,2,2" />
+        <val key="ToggleButton.padding" value="1.0,1.0,1.0,1.0" />
+        <val key="ToggleButton.press#derive" value="ToggleButton" />
+        <val key="ToggleButton.press#fgColor" value="3333ff" />
+        <val key="ToggleButton.sel#derive" value="ToggleButton" />
+        <val key="ToggleButtonFirst.dis#derive" value="ToggleButtonFirst" />
+        <val key="ToggleButtonFirst.fgColor" value="6eaeff" />
+        <val key="ToggleButtonFirst.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="ToggleButtonFirst.padUnit" value="2,2,2,2" />
+        <val key="ToggleButtonFirst.padding" value="1.0,1.0,1.0,1.0" />
+        <val key="ToggleButtonFirst.press#derive" value="ToggleButtonFirst" />
+        <val key="ToggleButtonFirst.press#fgColor" value="3333ff" />
+        <val key="ToggleButtonFirst.sel#bgColor" value="cc66ff" />
+        <val key="ToggleButtonFirst.sel#fgColor" value="ffffff" />
+        <val key="ToggleButtonLast.dis#derive" value="ToggleButtonLast" />
+        <val key="ToggleButtonLast.fgColor" value="6eaeff" />
+        <val key="ToggleButtonLast.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="ToggleButtonLast.padUnit" value="2,2,2,2" />
+        <val key="ToggleButtonLast.padding" value="1.0,1.0,1.0,1.0" />
+        <val key="ToggleButtonLast.press#derive" value="ToggleButtonLast" />
+        <val key="ToggleButtonLast.press#fgColor" value="3333ff" />
+        <val key="ToggleButtonLast.sel#bgColor" value="cc66ff" />
+        <val key="ToggleButtonLast.sel#derive" value="ToggleButtonLast" />
+        <val key="ToggleButtonLast.sel#fgColor" value="ffffff" />
+    </theme>
+</resource>

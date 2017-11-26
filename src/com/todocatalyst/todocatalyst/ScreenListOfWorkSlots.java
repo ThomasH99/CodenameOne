@@ -5,7 +5,9 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.ui.*;
+import com.codename1.io.Log;
 import com.codename1.ui.Button;
+import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.InfiniteContainer;
@@ -14,6 +16,7 @@ import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import static com.todocatalyst.todocatalyst.ScreenListOfItems.makeSubtaskButton;
 import java.util.Date;
 import java.util.List;
 //import com.java4less.rchart.*;
@@ -200,6 +203,10 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        return buildWorkSlotContainer(workSlot, null);
 //    }
     protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm.Action refreshOnItemEdits, KeepInSameScreenPosition keepPos) {
+        return buildWorkSlotContainer(workSlot, refreshOnItemEdits, keepPos, false);
+    }
+
+    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm.Action refreshOnItemEdits, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot) {
         Container cont = new Container();
         cont.setLayout(new BorderLayout());
 //        cont.addComponent(BorderLayout.CENTER, new Button(item.getText()));
@@ -221,7 +228,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                }).show();
 //            }
 //        });
-        editWorkSlotButton.setCommand(MyReplayCommand.create("Edit WorkSLot:"+workSlot.getObjectIdP(), null, Icons.iconEditSymbolLabelStyle, (e) -> {
+        editWorkSlotButton.setCommand(MyReplayCommand.create("Edit WorkSLot:" + workSlot.getObjectIdP(), null, Icons.iconEditSymbolLabelStyle, (e) -> {
 //                keepPos.setKeepPos(new KeepInSameScreenPosition());
             ((MyForm) cont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(workSlot, cont));
 //                new ScreenWorkSlot(workSlot, ScreenListOfWorkSlots.this, () -> {
@@ -268,8 +275,8 @@ public class ScreenListOfWorkSlots extends MyForm {
         String startTimeStr = workSlot.getStartAdjusted() != workSlot.getStartTime() ? "Now" : MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted())); //UI: for ongoing workSlot, show 'now' instead of startTime
         west.add(startTimeStr
                 + "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
-                //                + " " + MyDate.formatTimeDuration(workSlot.getDuration())// + ")"
-                + " " + MyDate.formatTimeDuration(workSlot.getDurationAdjusted())// + ")"
+        //                + " " + MyDate.formatTimeDuration(workSlot.getDuration())// + ")"
+        //                + " " + MyDate.formatTimeDuration(workSlot.getDurationAdjusted())// + ")" //DON'T show duration since end-time is shown
         );
 //            static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate, boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat) {
 
@@ -279,6 +286,13 @@ public class ScreenListOfWorkSlots extends MyForm {
         cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getText() + (workSlot.getRepeatRule() != null ? "*" : "")));
 //        }
 //        east.addComponent(editItemPropertiesButton);
+
+        List<Item> items = workSlot.getItemsInWorkSlot();
+        if (items != null && items.size() > 0) {
+            Button showItemsInWorkSlotButton = new Button(new Command("[" + items.size() + "]"));
+            showItemsInWorkSlotButton.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, showItemsInWorkSlotButton);
+            west.addComponent(showItemsInWorkSlotButton);
+        }
 
 //        east.addComponent(new Label(new SimpleDateFormat().format(new Date(itemList.getFinishTime(item, 0)))));
         cont.addComponent(BorderLayout.WEST, west);

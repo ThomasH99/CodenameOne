@@ -305,20 +305,23 @@ public class ScreenWorkSlot extends MyForm {
         if (items != null && items.size() > 0) {
             ItemList itemList = new ItemList(workSlot.getItemsInWorkSlot());
             Button editSubtasksFullScreen = new Button();
-            editSubtasksFullScreen.setCommand(new MyReplayCommand("ShowTasksInWorkSlot", "Tasks ("+items.size()+")", Icons.iconEditPropertiesToolbarStyle) {
+            editSubtasksFullScreen.setCommand(new MyReplayCommand("ShowTasksInWorkSlot", items.size()+" tasks", null) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     new ScreenListOfItems("Tasks in WorkSlot" , itemList, ScreenWorkSlot.this, (iList) -> {
 //                        item.setItemList(subtaskList);
 //                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
-                    }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                    }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER|ScreenListOfItems.OPTION_NO_NEW_BUTTON|ScreenListOfItems.OPTION_NO_TIMER
+                            |ScreenListOfItems.OPTION_NO_WORK_TIME|ScreenListOfItems.OPTION_NO_INTERRUPT|ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
+                            |ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES|ScreenListOfItems.OPTION_NO_SELECTION_MODE
                     ).show();
                 }
             });
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
             content.add(layout("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
         }
+        content.add(layout("Unallocated time", new Label(MyDate.formatTimeDuration(workSlot.getUnallocatedTime())), "How much of this work slot is still free", true, true, false));
 
         return content;
     }

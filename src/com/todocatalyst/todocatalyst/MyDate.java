@@ -1432,8 +1432,8 @@ public class MyDate extends Date {
                     str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
                 }
             } else {
-                dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "") + (includeDate ? "MM/dd/yyyy" : "") 
-                        + (includeDate && includeTimeOfDay ? " " : "") 
+                dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "") + (includeDate ? "MM/dd/yyyy" : "")
+                        + (includeDate && includeTimeOfDay ? " " : "")
                         + (includeTimeOfDay ? "KK:mm a" : ""));
                 str = dtfmt.format(cal.getTime());
             }
@@ -1445,14 +1445,40 @@ public class MyDate extends Date {
                     str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
                 }
             } else {
-                dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "") 
-                        + (includeDate ? "dd/MM/yyyy" : "") 
-                        + (includeDate && includeTimeOfDay ? " " : "") 
+                dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "")
+                        + (includeDate ? "dd/MM/yyyy" : "")
+                        + (includeDate && includeTimeOfDay ? " " : "")
                         + (includeTimeOfDay ? "HH:mm" : "")); //TODO if not using date, will add a space too much between EEE and HH:mm
                 str = dtfmt.format(cal.getTime());
             }
         }
         return str;
+    }
+
+    static public String formatDateSmart(Date date) {
+        long now = System.currentTimeMillis();
+        long diff = date.getTime() - now;
+//        long dateTime = date.getTime();
+        //overdue
+        if (diff < 0) {
+            return "Overdue";
+        }
+        //within today(before midnight/*next 24h*?/till 5 in the morning for night owls?!): "13h14" / "1h14am"
+//        if (dateTime<=MyDate.getEndOfDay(new Date(dateTime+MyDate.DAY_IN_MILLISECONDS)).getTime())
+        if (diff <= MyDate.DAY_IN_MILLISECONDS) {
+            return new SimpleDateFormat("HH'h'mm").format(date);
+        }
+        //within next 7 days: "Mon13h"
+        if (diff <= MyDate.DAY_IN_MILLISECONDS * 7) {
+            return new SimpleDateFormat("EEEHH'h'").format(date);
+        }
+        //within next 365 days: "Jun11"
+        if (diff <= MyDate.DAY_IN_MILLISECONDS * 365) {
+            return new SimpleDateFormat("MMMdd").format(date);
+        }
+        //beyond 365 days: "Jun'18"
+
+        return new SimpleDateFormat("MMM'yy").format(date);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -1569,7 +1569,8 @@ public abstract class MyForm extends Form {
             visibleField = field;
         } else { //place a visible or invisible button
             Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
-            editFieldButton.setVisible(!makeFieldUneditable && !hideEditButton);
+//            editFieldButton.setVisible(!makeFieldUneditable && !hideEditButton);
+            editFieldButton.setVisible(! hideEditButton);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
 //            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton);

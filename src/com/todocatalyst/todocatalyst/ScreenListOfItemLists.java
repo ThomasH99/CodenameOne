@@ -125,7 +125,7 @@ public class ScreenListOfItemLists extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         //NEW ITEMLIST
-        toolbar.addCommandToRightBar(new MyReplayCommand("EditListProperties","", Icons.iconNewToolbarStyle) {
+        toolbar.addCommandToRightBar(new MyReplayCommand("EditListProperties", "", Icons.iconNewToolbarStyle) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 ItemList itemList = new ItemList();
@@ -337,7 +337,9 @@ public class ScreenListOfItemLists extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, new Label(itemList.getText()));
 //</editor-fold>
 //        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText()+(itemList.getWorkSlotList()!=null?"#":""), swipCont, () -> true); //D&D
-        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotList(false).size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
+        WorkSlotList wSlots = itemList.getWorkSlotList(false);
+//        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotList(false).size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
+        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (wSlots != null && wSlots.size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
 
         mainCont.addComponent(BorderLayout.CENTER, itemLabel);
 
@@ -346,7 +348,7 @@ public class ScreenListOfItemLists extends MyForm {
             editItemListPropertiesButton = new Button();
             //SHOW/EDIT SUBTASKS OF LIST
 //        editItemPropertiesButton.setIcon(iconEdit);
-            editItemListPropertiesButton.setCommand(new MyReplayCommand("EditItemListProperties-"+itemList.getObjectIdP(),"", Icons.iconEditSymbolLabelStyle) {
+            editItemListPropertiesButton.setCommand(new MyReplayCommand("EditItemListProperties-" + itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     MyForm f = ((MyForm) mainCont.getComponentForm());

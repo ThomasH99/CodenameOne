@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
 import com.codename1.io.Storage;
 import com.codename1.ui.Command;
 import com.codename1.ui.Image;
@@ -22,12 +23,10 @@ import java.util.Map;
  * @author thomashjelm
  */
 public class ReplayLog {
-    
+
 //TODO!!!! store that a new Item has been created and was being edited, not as Replay feature, just check on creation of such a screen    
 //TODO!! add support for storing active popups (eg show Tasks/Workslots in RepeatRuleScreen (but also requires logging when exiting!)
     //TODO!!!! How to handle Timer? Just store if its active but no replay (meaning you will go back to main menu afterwards)? Better to store full path, but will it then activate in same state as before (continue based on previously stored timerActivatedTime)???
-    
-
     final static String REPLAY_LOG_FILE_NAME = "ReplayLog";
     private ArrayList<String> logList = null;
     private static ReplayLog INSTANCE;
@@ -92,6 +91,7 @@ public class ReplayLog {
             ASSERT.that(!logList.contains(replayCommand.getCmdUniqueID()), "Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list");
             logList.add(replayCommand.getCmdUniqueID());
             Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, logList);
+            Log.p("+ ReplayCommand: " + replayCommand.getCmdUniqueID());
         }
     }
 
@@ -101,6 +101,7 @@ public class ReplayLog {
     public void popCmd() {
         if (true) { //deactivate while testing
             if (!Test.DEBUG || logList.size() > 0) { //while debugging //TODO!!!!! remove DEBUG once ReplayCommands have been added everywhere
+                Log.p("- ReplayCommand: " + logList.get(logList.size() - 1));
                 logList.remove(logList.size() - 1); //TODO!!! add check that logList.size>=1 (not during testing to provoke stacktrace
             }
         }
@@ -224,6 +225,7 @@ public class ReplayLog {
 //        MyReplayCommand cmd = screenCommands.get(getNextCmdToReplayLog());
             MyReplayCommand cmd = fetchNextCmdFromReplayLog();
             if (cmd != null) { //if ever logged command is not found (eg the Item has beend deleted), the replay stops here
+                Log.p("x ReplayCommand: " + cmd.getCmdUniqueID());
                 cmd.actionPerformed(evt);
 //                updateReplayingNow(); //update *after* replaying the command to avoid storing it again
                 return true;

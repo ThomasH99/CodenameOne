@@ -132,6 +132,10 @@ public class ScreenListOfItems extends MyForm {
     private boolean optionDisableDragAndDrop;
     final static int OPTION_SINGLE_SELECT_MODE = OPTION_DISABLE_DRAG_AND_DROP * 2;
     private boolean optionSingleSelectMode;
+    final static int OPTION_NO_NEW_FROM_TEMPLATE = OPTION_SINGLE_SELECT_MODE * 2;
+    private boolean optionNoNewFromTemplate;
+    final static int OPTION_NO_TASK_DETAILS = OPTION_NO_NEW_FROM_TEMPLATE * 2;
+    private boolean optionNoTaskDetails;
 //    boolean optionSingleSelectMode;
 //    final static int OPTION_MULTIPLE_SELECT_MODE = OPTION_SINGLE_SELECT_MODE * 2;
 //    private boolean optionMultipleSelectMode;
@@ -147,6 +151,8 @@ public class ScreenListOfItems extends MyForm {
         this.optionNoMultipleSelectionMode = (options & OPTION_NO_SELECTION_MODE) != 0;
         this.optionDisableDragAndDrop = (options & OPTION_DISABLE_DRAG_AND_DROP) != 0;
         this.optionSingleSelectMode = (options & OPTION_SINGLE_SELECT_MODE) != 0;
+        this.optionNoNewFromTemplate = (options & OPTION_SINGLE_SELECT_MODE) != 0;
+        this.optionNoTaskDetails = (options & OPTION_SINGLE_SELECT_MODE) != 0;
 //        this.optionMultipleSelectMode = (options & OPTION_MULTIPLE_SELECT_MODE) != 0;
 
     }
@@ -1605,20 +1611,32 @@ public class ScreenListOfItems extends MyForm {
         });
         east.add(starButton);
 
+        long finishTime = item.getFinishTime();
+//        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
+
         //REMAINING EFFORT / ACTUAL EFFORT
         Label actualEffortLabel = new Label();
-        Label remainingEffortLabel = null;
+//        Label remainingEffortLabel = null;
         if (item.isDone()) {
             long actualEffort = item.getActualEffort();
             if (actualEffort != 0) {
 //                east.addComponent(actualEffortLabel = new Label(MyDate.formatTimeDuration(actualEffort)));
-                actualEffortLabel.setText(MyDate.formatTimeDuration(actualEffort));
+                actualEffortLabel.setText("A:"+MyDate.formatTimeDuration(actualEffort));
                 east.addComponent(actualEffortLabel);
             }
         } else {
-            long remainingEffort = item.getRemainingEffort();
-            if (remainingEffort != 0 || MyPrefs.itemListShowRemainingEvenIfZero.getBoolean()) {
-                east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
+            if (finishTime != MyDate.MIN_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
+                east.add("F:"+MyDate.formatDateSmart(new Date(finishTime)));
+            } else {
+                long due = item.getDueDate();
+                if (due != 0) {
+                    east.add("D:"+MyDate.formatDateSmart(new Date(due)));
+                }
+                long remainingEffort = item.getRemainingEffort();
+                if (remainingEffort != 0 || MyPrefs.itemListShowRemainingEvenIfZero.getBoolean()) {
+//                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
+                    east.addComponent(new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
+                }
             }
         }
 
@@ -1790,7 +1808,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
         //WORK TIME
 //        long finishTime = item.getFinishTimeD().getTime();
-        long finishTime = item.getFinishTime();
+//        long finishTime = item.getFinishTime();
 //        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
         if (!item.isDone() && finishTime != MyDate.MIN_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
 //            south.add("F:" + L10NManager.getInstance().formatDateTimeShort(item.getFinishTime()));
@@ -3153,6 +3171,9 @@ refreshAfterEdit();
 //                            selectedObjects,
 //                            category, keepPos, expandedObjects, () -> animateMyForm(), false, optionSingleSelectMode); //hack: get access to the latest category (the one above the items in the Tree list)
 //</editor-fold>
+                    } else if (node instanceof WorkSlot) {
+                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, () -> {
+                        }, keepPos);
                     } else {
                         assert false;
                     }

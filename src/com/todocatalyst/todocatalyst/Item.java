@@ -798,6 +798,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     //        final static String FIELD_DONE = "Done", Expr.VALUE_FIELD_TYPE_STRING),
     final static String DONE = "DONE"; //"Done";
     final static String DUE_DATE = "DUE_DATE"; //"Due";
+    final static String DUE_DATE_HELP = "DUE_DATE_HELP"; //"Due";
     final static String UPDATED_DATE = "Modified"; //"Modified"; "Date last modified", "Update", "Last modified"
     final static String UPDATED_DATE_HELP = "The time this task was last modified. Set automatically. Cannot be modified by user."; //"Modified"; "Date last modified", "Update", "Last modified"
     final static String COMPLETED_DATE = "Completed"; //"Completed by"; //"Completed"; "Date completed", "Completed on"

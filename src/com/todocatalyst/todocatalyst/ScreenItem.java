@@ -290,7 +290,11 @@ public class ScreenItem extends MyForm {
 //                            Dialog.show("INFO", "No templates yet. \n\nGo to " + ScreenMain.SCREEN_TEMPLATES_TITLE + " to create templates or save existing tasks or projects as templates", "OK", null);
 //                        }
                     }, (obj) -> {
-                        return ((Item) obj).getText();
+                        if (obj instanceof Item) {
+                            return ((Item) obj).getText();
+                        } else {
+                            return obj.toString();
+                        }
                     }, 1, true, false, false).show();
 //                    if (template != null) {
                 };
@@ -756,8 +760,17 @@ public class ScreenItem extends MyForm {
 //        mainCont.add(new Label(Item.DUE_DATE)).add(addDatePickerWithClearButton(dueDate));
 //        mainCont.add(new Label(Item.DUE_DATE)).add(dueDate.makeContainerWithClearButton());
 //        mainCont.add(layout(Item.DUE_DATE, dueDate.makeContainerWithClearButton(), "**"));
-        mainCont.add(layout(Item.DUE_DATE, dueDate, "**"));
+        mainCont.add(layout(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
+
+        //FINISH_TIME
+        WorkTime workTime = item.getAllocatedWorkTime();
+        if (workTime != null) {
+            Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(new Date(workTime.getFinishTime())), null, (e) -> {
+                new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
+            }));
+            mainCont.add(layout(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, true, true, false));
+        }
 
 //        MyDateAndTimePicker alarmDate = new MyDateAndTimePicker("<click to set an alarm>", parseIdMap, item, Item.PARSE_ALARM_DATE);
 //        MyDateAndTimePicker alarmDate = new MyDateAndTimePicker("<click to set an alarm>", parseIdMap2, () -> item.getAlarmDateD(), (d) -> item.setAlarmDate(d));
@@ -1090,15 +1103,15 @@ public class ScreenItem extends MyForm {
 //            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getRemainingEffort()), "Button"), "**")); //hack to insert after alarmDate field
 //            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getRemainingEffortNoDefault()), "Button"), "**", false, true, true)); //hack to insert after alarmDate field
 //</editor-fold>
-            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"), "**", false, true, false)); //hack to insert after alarmDate field
+            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"), "**", false, true, true)); //hack to insert after alarmDate field
 
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getActualEffort()), "Button"), Item.EFFORT_ACTUAL_SUBTASKS_HELP, false, true, false));
-            timeCont.add(layout(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualEffort()), "LabelFixed"), Item.EFFORT_ACTUAL_SUBTASKS_HELP, false, true, false));
+            timeCont.add(layout(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualEffort()), "LabelFixed"), Item.EFFORT_ACTUAL_SUBTASKS_HELP, false, true, true));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getEffortEstimateInMinutes()), "Button"), "**"));
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "Button"), Item.EFFORT_ESTIMATE_SUBTASKS, false, true, false));
 //</editor-fold>
-            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"), Item.EFFORT_ESTIMATE_SUBTASKS, false, true, false));
+            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"), Item.EFFORT_ESTIMATE_SUBTASKS, false, true, true));
             //get the effort for the project task itself:
             remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
@@ -1297,7 +1310,7 @@ public class ScreenItem extends MyForm {
 //        prioCont.add(new Label(Item.EARNED_POINTS_PER_HOUR)).add(earnedValuePerHour).add(new SpanLabel("Value per hour is calculated as Value divided by the Estimate, or the sum of Remaining and Actual effort - once work has started."));
 //                add(new SpanLabel(Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_POINTS + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."));
         prioCont.add(layout(Item.EARNED_POINTS_PER_HOUR, earnedValuePerHour,
-                Item.EARNED_POINTS_PER_HOUR_HELP, true, true, false));
+                Item.EARNED_POINTS_PER_HOUR_HELP, true, true, true));
 
         //Update earnedValuePerHour by listening to actions from any of the four fields that affect it
         MyActionListener earnedValuePerHourUpdater = new MyActionListener() {
@@ -1369,7 +1382,7 @@ public class ScreenItem extends MyForm {
 //        Label createdDate = new Label(item.getCreatedDate() == 0 ? "<date set when saved>" : MyDate.formatDateNew(item.getCreatedDate()));
         Label createdDate = new Label(item.getCreatedDate() == 0 ? "" : MyDate.formatDateNew(item.getCreatedDate())); //NOT use itemLS since CreatedDate is not saved locally
 //        statusCont.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        statusCont.add(layout(Item.CREATED_DATE, createdDate, "**", true, true, false));
+        statusCont.add(layout(Item.CREATED_DATE, createdDate, "**", true, true, true));
 
 //        Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "<date when modified>" : L10NManager.getInstance().formatDateShortStyle(new Date(item.getLastModifiedDate())));
 //        Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "<date when modified>" : L10NManager.getInstance().formatDateTimeShort(new Date(item.getLastModifiedDate())));
@@ -1377,7 +1390,7 @@ public class ScreenItem extends MyForm {
 //        Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "<date when modified>" : MyDate.formatDateNew(item.getLastModifiedDate()));
         Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "" : MyDate.formatDateNew(item.getLastModifiedDate()));
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**", true, true, false));
+        statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**", true, true, true));
 
 //        MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker("<set>", parseIdMap2, () -> item.getStartedOnDateD(), (d) -> item.setStartedOnDate(d));
         MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker("", parseIdMap2, () -> itemLS.getStartedOnDateD(), (d) -> item.setStartedOnDate(d));
@@ -1533,6 +1546,8 @@ public class ScreenItem extends MyForm {
         Command editOwnerCmd = new MyReplayCommand("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText()) {
             @Override
             public void actionPerformed(ActionEvent evt) {
+                List projects = DAO.getInstance().getAllProjects(false);
+                projects.remove(item); //Must not be possible to select the item itself as its own owner
                 ScreenObjectPicker ownerPicker
                         //<editor-fold defaultstate="collapsed" desc="comment">
                         //                        = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(), DAO.getInstance().getItemListList(), locallyEditedOwner, ScreenItem.this);
@@ -1543,7 +1558,7 @@ public class ScreenItem extends MyForm {
                         //</editor-fold>
                         = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(),
                                 DAO.getInstance().getItemListList(),
-                                DAO.getInstance().getAllProjects(false),
+                                projects,
                                 locallyEditedOwner, ScreenItem.this,
                                 () -> {
 //                                    ItemAndListCommonInterface newOwner;
@@ -1590,7 +1605,7 @@ public class ScreenItem extends MyForm {
 
 //        statusCont.add(new Label(Item.DEPENDS_ON)).add(dependsOn); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        statusCont.add(layout(Item.DEPENDS_ON, dependsOn, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-                statusCont.add(layout(Item.DEPENDS_ON, dependsOnLabel, "**", true, true, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+                statusCont.add(layout(Item.DEPENDS_ON, dependsOnLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
             }
         }
 
@@ -1609,7 +1624,7 @@ public class ScreenItem extends MyForm {
             Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
 //            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            sourceLabel.setUIID();
         }
 
@@ -1631,16 +1646,8 @@ public class ScreenItem extends MyForm {
 //        Label itemObjectId = new Label(item.getObjectIdP() == null ? "<created when saved>" : item.getObjectIdP(), "LabelFixed");
         Label itemObjectId = new Label(item.getObjectIdP() == null ? "<set on save>" : item.getObjectIdP(), "LabelFixed");
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        statusCont.add(layout(Item.OBJECT_ID, itemObjectId, "**", true, true, false));
+        statusCont.add(layout(Item.OBJECT_ID, itemObjectId, "**", true, true, true));
 
-        //FINISH_TIME
-        WorkTime workTime = item.getAllocatedWorkTime();
-        if (workTime != null) {
-            Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(new Date(workTime.getFinishTime())), null, (e) -> {
-                new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
-            }));
-            statusCont.add(layout(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, true, true, true));
-        }
         //TAB SUBTASKS
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
