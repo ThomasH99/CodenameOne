@@ -125,9 +125,7 @@ public class ScreenListOfItemLists extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         //NEW ITEMLIST
-        toolbar.addCommandToRightBar(new MyReplayCommand("EditListProperties", "", Icons.iconNewToolbarStyle) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        toolbar.addCommandToRightBar( MyReplayCommand.create("EditListProperties", "", Icons.iconNewToolbarStyle,(e)->{
                 ItemList itemList = new ItemList();
                 setKeepPos(new KeepInSameScreenPosition());
                 new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
@@ -145,7 +143,7 @@ public class ScreenListOfItemLists extends MyForm {
                     }
                 }).show();
             }
-        });
+        ));
 
         //MOVE mode
         toolbar.addCommandToOverflowMenu(draggableOnOff = new Command("Move ON", Icons.iconMoveUpDownToolbarStyle) {
@@ -348,9 +346,7 @@ public class ScreenListOfItemLists extends MyForm {
             editItemListPropertiesButton = new Button();
             //SHOW/EDIT SUBTASKS OF LIST
 //        editItemPropertiesButton.setIcon(iconEdit);
-            editItemListPropertiesButton.setCommand(new MyReplayCommand("EditItemListProperties-" + itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle) {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemListProperties-" + itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
                     MyForm f = ((MyForm) mainCont.getComponentForm());
                     f.setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllItemsIn((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
@@ -386,7 +382,7 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
                     }).show();
                 }
-            }
+            )
             );
         }
 

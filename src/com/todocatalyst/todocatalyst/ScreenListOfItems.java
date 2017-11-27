@@ -492,9 +492,7 @@ public class ScreenListOfItems extends MyForm {
         //NEW ITEM
 //        Command newCmd = new Command("OldCmd", Icons.iconNewToolbarStyle) {
         if (!optionNoNewButton) {
-            Command newCmd = new MyReplayCommand("CreateNewItem", null, Icons.iconNewToolbarStyle) {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            Command newCmd =  MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle, (e) -> {
                     Item item = new Item();
 //                    item.setOwner(itemListOrg); //necessary to have an owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
                     item.setTemplate(optionTemplateEditMode);
@@ -535,7 +533,7 @@ public class ScreenListOfItems extends MyForm {
                         }
                     }, optionTemplateEditMode).show();
                 }
-            };
+            );
             toolbar.addCommandToRightBar(newCmd);
         }
 
@@ -574,9 +572,7 @@ public class ScreenListOfItems extends MyForm {
         //NEW ITEM from TEMPLATE
         //TODO!!! create template by longpress on (+)
         if (true || optionTemplateEditMode) {
-            toolbar.addCommandToOverflowMenu(new MyReplayCommand("New from template") {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("New from template", "",null,(e) -> {
                     //select appropriate template
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                List<Item> templateList = DAO.getInstance().getAllTemplates();
@@ -631,15 +627,13 @@ public class ScreenListOfItems extends MyForm {
                         }).show();
                     }
                 }
-            });
+            ));
         }
 
         //EDIT PROPERTIES OF LIST
         if (!optionTemplateEditMode && !optionNoEditListProperties) {
             String txt = itemListOrg instanceof Category ? "Category Properties" : "List Properties";
-            toolbar.addCommandToOverflowMenu(new MyReplayCommand(txt) {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create(txt, "",null,(e) -> {
 //                ItemList itemList = new ItemList();
 //                    setKeepPos(new KeepInSameScreenPosition()); //not needed
                     new ScreenItemListProperties(itemListOrg, ScreenListOfItems.this, () -> {
@@ -648,14 +642,12 @@ public class ScreenListOfItems extends MyForm {
 //                    previousForm.revalidate(); //refresh list to show new items(??)
                     }).show();
                 }
-            });
+            ));
         }
 
         //EDIT WORKSLOTS
         if (!optionTemplateEditMode && !optionNoWorkTime) {
-            toolbar.addCommandToOverflowMenu(new MyReplayCommand("Work time", Icons.iconSettingsApplicationLabelStyle) {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
                     setKeepPos(new KeepInSameScreenPosition());
                     new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotList(),
                             itemListOrg, ScreenListOfItems.this, (iList) -> {
@@ -664,7 +656,7 @@ public class ScreenListOfItems extends MyForm {
                                 ScreenListOfItems.this.refreshAfterEdit();
                             }).show();
                 }
-            });
+            ));
         }
 
         //SHOW DETAILS
@@ -688,9 +680,7 @@ public class ScreenListOfItems extends MyForm {
 
         //FILTER / SORT
         if (!optionUnmodifiableFilter) {
-            toolbar.addCommandToOverflowMenu(new MyReplayCommand("Filter/Sort settings", Icons.iconSettingsLabelStyle) {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", Icons.iconSettingsLabelStyle, (e) -> {
 //                    if (filterSortDef == null) {
 ////                        filterSortDef = FilterSortDef.fetchFilterSortDef(SCREEN_ID, itemListOrg, new FilterSortDef(SCREEN_ID, itemListOrg));
 //                        filterSortDef = itemListOrg.getFilterSortDef();
@@ -714,7 +704,7 @@ public class ScreenListOfItems extends MyForm {
                         refreshAfterEdit(); //TODO optimize the application of a filter? 
                     }).show();
                 }
-            });
+            ));
 
 //            toolbar.addCommandToOverflowMenu(sortOnOff = new Command("Sort ON/OFF", Icons.iconCmdSortOnOff) { //this title never shown
             toolbar.addCommandToOverflowMenu(new Command("Sort XXX", Icons.iconCmdSortOnOff) { //this title never shown
@@ -929,15 +919,13 @@ public class ScreenListOfItems extends MyForm {
         //TIMER
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
         if (!optionTemplateEditMode && !optionNoTimer) {
-            toolbar.addCommandToLeftBar(new MyReplayCommand("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle) {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
                     ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
                 }
-            });
+            ));
         }
 
         //INTERRUPT TASK
@@ -1729,10 +1717,8 @@ public class ScreenListOfItems extends MyForm {
                 Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
             }
         };
-        Command editItemCmd = new MyReplayCommand("EditItem-" + item.getObjectIdP(), "", Icons.get().iconEditSymbolLabelStyle) {
+        Command editItemCmd = MyReplayCommand.create("EditItem-" + item.getObjectIdP(), "", Icons.get().iconEditSymbolLabelStyle, (e) -> {
             //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
-            @Override
-            public void actionPerformed(ActionEvent evt) {
 //                Item item = (Item) mainCont.getClientProperty("item"); //TODO!!!! is this needed, why notjust access 'item'??
 //                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
@@ -1768,7 +1754,7 @@ public class ScreenListOfItems extends MyForm {
                 }).show();
 //                new ScreenItem(item, thisScreen).show();
             }
-        };
+        );
         editItemButton.setCommand(editItemCmd);
 
         mainCont.putClientProperty("item", item);
@@ -2091,9 +2077,7 @@ refreshAfterEdit();
                     startTimer.setUIID("SwipeButton");
                     buttonSwipeContainer.add(startTimer);
                 } else { // item.isTemplate()
-                    Button newFromTemplate = new Button(new MyReplayCommand("NewItemFromTemplate", null, Icons.iconNewItemFromTemplate) {
-                        @Override
-                        public void actionPerformed(ActionEvent evt) {
+                    Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, Icons.iconNewItemFromTemplate, (e) -> {
                             Item newTemplateInstantiation = new Item();
                             item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
                             new ScreenItem(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
@@ -2102,7 +2086,7 @@ refreshAfterEdit();
 //                            refreshOnItemEdits.launchAction(); //NOT necessary, since item not saved in list of templates
                             }).show();
                         }
-                    }
+                    )
                     );
                     newFromTemplate.setUIID("SwipeButton");
                     buttonSwipeContainer.add(newFromTemplate);

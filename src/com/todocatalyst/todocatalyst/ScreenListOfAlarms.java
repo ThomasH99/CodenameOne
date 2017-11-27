@@ -177,12 +177,10 @@ public class ScreenListOfAlarms extends MyForm {
     
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
-        toolbar.addCommandToRightBar(new MyReplayCommand("AlarmSettings", null, Icons.iconSettingsLabelStyle) {
-            boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
-            int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
+        toolbar.addCommandToRightBar( MyReplayCommand.create("AlarmSettings", null, Icons.iconSettingsLabelStyle,(e)->{
+                boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
+                int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
             
-            @Override
-            public void actionPerformed(ActionEvent evt) {
                 setKeepPos(new KeepInSameScreenPosition());
                 new ScreenSettingsAlarms(ScreenListOfAlarms.this, () -> {
                     if (!MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
@@ -195,7 +193,29 @@ public class ScreenListOfAlarms extends MyForm {
                     refreshAfterEdit(); //refresh since default snooze time may have changed
                 }).show();
             }
-        });
+        ) );
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        toolbar.addCommandToRightBar(new MyReplayCommand("AlarmSettings", null, Icons.iconSettingsLabelStyle) {
+//            boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
+//            int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
+//
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                setKeepPos(new KeepInSameScreenPosition());
+//                new ScreenSettingsAlarms(ScreenListOfAlarms.this, () -> {
+//                    if (!MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
+//                        AlarmHandler.getInstance().cancelAllExpiredAlarms();
+//                    }
+//                    if (MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean() != oldShowDueTime
+//                            || MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt() != oldAlarmInterval) {
+//                        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //refresh all local notifications
+//                    }
+//                    refreshAfterEdit(); //refresh since default snooze time may have changed
+//                }).show();
+//            }
+//        });
+//</editor-fold>
 
         //BACK
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true));

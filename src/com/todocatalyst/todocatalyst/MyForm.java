@@ -1289,9 +1289,7 @@ public abstract class MyForm extends Form {
     public Command makeInterruptCommand(String title, Image icon) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
-        return new MyReplayCommand("StartTimerFromMyForm",title, icon) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        return MyReplayCommand.create("StartTimerFromMyForm",title, icon,(e)->{
                 Item item = new Item();
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
@@ -1304,7 +1302,7 @@ public abstract class MyForm extends Form {
 //            setupTimerForItem(item, 0);
                 //Upon Done/Stop, save and return to previous task
             }
-        };
+        );
     }
 
     public Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {

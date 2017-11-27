@@ -204,9 +204,7 @@ public class ScreenWorkSlot extends MyForm {
         locallyEditedRepeatRule = workSlot.getRepeatRule();
         SpanButton repeatRuleButton = new SpanButton();
 //        Command repeatRuleEditCmd = new Command("<click to set repeat>NOT SHOWN?!") {
-        Command repeatRuleEditCmd = new MyReplayCommand("EditRepeatRule", "") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        Command repeatRuleEditCmd =  MyReplayCommand.create("EditRepeatRule", "",null,(e)->{
                 if (locallyEditedRepeatRule == null) {
                     locallyEditedRepeatRule = new RepeatRuleParseObject();
                 }
@@ -233,7 +231,7 @@ public class ScreenWorkSlot extends MyForm {
 //                }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
                 }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
             }
-        };
+        );
 
 //        parseIdMap2.put("REPEAT_RULE", () -> {
         parseIdMap2.put(REPEAT_RULE_KEY, () -> {
@@ -305,9 +303,7 @@ public class ScreenWorkSlot extends MyForm {
         if (items != null && items.size() > 0) {
             ItemList itemList = new ItemList(workSlot.getItemsInWorkSlot());
             Button editSubtasksFullScreen = new Button();
-            editSubtasksFullScreen.setCommand(new MyReplayCommand("ShowTasksInWorkSlot", items.size()+" tasks", null) {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            editSubtasksFullScreen.setCommand( MyReplayCommand.create("ShowTasksInWorkSlot", items.size()+" tasks", null,(e)->{
                     new ScreenListOfItems("Tasks in WorkSlot" , itemList, ScreenWorkSlot.this, (iList) -> {
 //                        item.setItemList(subtaskList);
 //                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
@@ -317,7 +313,7 @@ public class ScreenWorkSlot extends MyForm {
                             |ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES|ScreenListOfItems.OPTION_NO_SELECTION_MODE
                     ).show();
                 }
-            });
+            ));
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
             content.add(layout("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
         }

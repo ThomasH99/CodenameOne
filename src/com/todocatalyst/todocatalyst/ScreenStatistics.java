@@ -139,9 +139,7 @@ public class ScreenStatistics extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
-        toolbar.addCommandToRightBar(new MyReplayCommand("Settings",null, Icons.iconSettingsLabelStyle) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        toolbar.addCommandToRightBar( MyReplayCommand.create("Settings",null, Icons.iconSettingsLabelStyle,(e)->{
                 int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
                 new ScreenSettingsStatistics(ScreenStatistics.this, () -> {
                     if (daysInThePast != MyPrefs.statisticsScreenNumberPastDaysToShow.getInt()) {
@@ -150,7 +148,7 @@ public class ScreenStatistics extends MyForm {
                     refreshAfterEdit();
                 }).show();
             }
-        });
+        ));
 
         //BACK
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());

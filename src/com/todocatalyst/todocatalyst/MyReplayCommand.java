@@ -78,7 +78,7 @@ public class MyReplayCommand extends Command {
      * @return
      */
 //    public static Command create(String name, Image icon, final ActionListener ev) {
-    public static Command create(String name, Image icon, final ActionListener ev) {
+    public static MyReplayCommand create(String name, Image icon, final ActionListener ev) {
         return create(name, name, icon, ev);
     }
     

@@ -841,9 +841,8 @@ public class ScreenItem extends MyForm {
         WrapButton repeatRuleButton = new WrapButton();
 //        RepeatRule 
 //        locallyEditedRepeatRule = item.getRepeatRule();
-        Command repeatRuleEditCmd = new MyReplayCommand("EditRepeatRules", "") { //DON'T set a string since SpanButton shows both Command string and SpanLabel string
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRules", "",null,(e)->{
+//DON'T set a string since SpanButton shows both Command string and SpanLabel string
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (Display)
 //                if (locallyEditedCategories == null) {
@@ -921,7 +920,7 @@ public class ScreenItem extends MyForm {
 //                    }
                 }, true, dueDate.getDate()).show(); //TODO false<=>editing startdate not allowed - correct???
             }
-        };
+        );
 //        parseIdMap2.put("REPEAT_RULE", () -> {
         parseIdMap2.put(REPEAT_RULE_KEY, () -> {
             if (localSave) {
@@ -1543,9 +1542,7 @@ public class ScreenItem extends MyForm {
         WrapButton editOwnerButton = new WrapButton();
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
-        Command editOwnerCmd = new MyReplayCommand("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText()) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(),null,(e)->{
                 List projects = DAO.getInstance().getAllProjects(false);
                 projects.remove(item); //Must not be possible to select the item itself as its own owner
                 ScreenObjectPicker ownerPicker
@@ -1580,7 +1577,7 @@ public class ScreenItem extends MyForm {
                                 }, null, 0, 1, true, false, false);
                 ownerPicker.show();
             }
-        };
+        );
         editOwnerButton.setCommand(editOwnerCmd);
         statusCont.add(layout(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, true, false, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 

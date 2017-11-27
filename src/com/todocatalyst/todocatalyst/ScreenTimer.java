@@ -1807,14 +1807,12 @@ public class ScreenTimer extends MyForm {
 //        }
 //</editor-fold>
 //        toolbar.addCommandToOverflowMenu(new Command("Timer settings", Icons.iconSettingsLabelStyle) {
-        toolbar.addCommandToRightBar(new MyReplayCommand("TimerSettings",null, Icons.iconSettingsLabelStyle) { // "Timer settings"
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        toolbar.addCommandToRightBar( MyReplayCommand.create("TimerSettings",null, Icons.iconSettingsLabelStyle, (e) -> {
                 new ScreenSettingsTimer(ScreenTimer.this, () -> {
                     refreshAfterEdit();
                 }).show();
             }
-        });
+        ));
     }
 
     /**
@@ -2217,9 +2215,7 @@ public class ScreenTimer extends MyForm {
         });
         parseIdMap2.put(status, () -> timerStack.currEntry.timedItem.setStatus(status.getStatus()));
 
-        editItemButton = new Button(new MyReplayCommand("EditItem","", Icons.iconEditSymbolLabelStyle) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        editItemButton = new Button(MyReplayCommand.create("EditItem","", Icons.iconEditSymbolLabelStyle,(e)->{
                 putEditedValues2(parseIdMap2, timerStack.currEntry.timedItem); //first update Item with any values changed in Timer
                 ScreenItem screenItem = new ScreenItem(timerStack.currEntry.timedItem, ScreenTimer.this, () -> {
                     DAO.getInstance().save(timerStack.currEntry.timedItem);
@@ -2228,7 +2224,7 @@ public class ScreenTimer extends MyForm {
                 });
                 screenItem.show();
             }
-        });
+        ));
         cont.add(BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton));
 
         remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) timerStack.currEntry.timedItem.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,

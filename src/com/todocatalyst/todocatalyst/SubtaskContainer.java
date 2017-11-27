@@ -240,9 +240,7 @@ public class SubtaskContainer extends Container {
                 //HEADER - EDIT LIST IN FULL SCREEN MODE
 //                    Button editSubtasksFullScreen = ScreenListOfItems.makeSubtaskButton(item, null);
                 Button editSubtasksFullScreen = new Button();
-                editSubtasksFullScreen.setCommand(new MyReplayCommand("EditSubtasks", "", Icons.iconEditPropertiesToolbarStyle) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
+                editSubtasksFullScreen.setCommand(MyReplayCommand.create("EditSubtasks", "", Icons.iconEditPropertiesToolbarStyle,(e)->{
 //                    Button editSubtasksFullScreenOLD = new Button();
 //                    editSubtasksFullScreenOLD.setCommand(Command.create(null, Icons.iconEditPropertiesLabelStyle, (e) -> {
                         ItemList subtaskList = item.getItemList();
@@ -253,7 +251,7 @@ public class SubtaskContainer extends Container {
                         }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                         ).show();
                     }
-                });
+                ));
 
                 //HEADER - count + expand button
                 subtaskHeader.add(BorderLayout.EAST, BoxLayout.encloseXNoGrow(

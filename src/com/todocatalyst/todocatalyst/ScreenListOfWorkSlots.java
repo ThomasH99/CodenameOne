@@ -134,9 +134,7 @@ public class ScreenListOfWorkSlots extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         //NEW WORKSLOT
-        toolbar.addCommandToRightBar(new MyReplayCommand("NewWorkSlot", "", Icons.iconNewToolbarStyle) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        toolbar.addCommandToRightBar( MyReplayCommand.create("NewWorkSlot", "", Icons.iconNewToolbarStyle,(e)->{
                 WorkSlot workSlot = new WorkSlot();
                 workSlot.setOwner(owner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
                 setKeepPos(new KeepInSameScreenPosition());
@@ -177,7 +175,7 @@ public class ScreenListOfWorkSlots extends MyForm {
                     }
                 }).show();
             }
-        });
+        ));
 
         //BACK
 //        toolbar.addCommandToLeftBar(makeDoneCommand("", FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle())));

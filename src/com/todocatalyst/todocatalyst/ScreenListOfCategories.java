@@ -127,9 +127,7 @@ public class ScreenListOfCategories extends MyForm {
 
     static Command makeNewCategoryCmd(CategoryList categoryOwnerList, MyForm previousForm, MyForm.Action refreshOnItemEdits) { //static since reused in other screens
         //NEW CATEGORY
-        return new Command("", Icons.iconNewToolbarStyle) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        return MyReplayCommand.create("CreateNewCategory", "",Icons.iconNewToolbarStyle,(e)->{
                 Category category = new Category();
 //                new ScreenCategory(category, ScreenListOfCategories.this, () -> {
                 previousForm.setKeepPos(new KeepInSameScreenPosition());
@@ -144,7 +142,7 @@ public class ScreenListOfCategories extends MyForm {
                     }
                 }).show();
             }
-        };
+        );
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
@@ -336,9 +334,7 @@ public class ScreenListOfCategories extends MyForm {
         mainCont.addComponent(BorderLayout.CENTER, itemLabel);
 
         Button editItemPropertiesButton = new Button();
-        editItemPropertiesButton.setCommand(new Command("", Icons.iconEditPropertiesToolbarStyle) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCatProps"+category.getObjectIdP(), "",Icons.iconEditPropertiesToolbarStyle, (e) -> {
 //                new ScreenCategory(category, ScreenListOfCategories.this, 
 //                ()-> {}
 //                ).show();
@@ -357,7 +353,7 @@ public class ScreenListOfCategories extends MyForm {
                     refreshOnItemEdits.launchAction();
                 }).show();
             }
-        });
+        ));
 
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //        Container east = new Container(BoxLayout.x());
