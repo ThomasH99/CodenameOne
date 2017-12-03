@@ -61,12 +61,12 @@
             <entry key="TASK_HELP" value="D&#xe9;crire votre [TASK] ici" />
             <entry key="EFFORT_REMAINING" value="Restant" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
-            <entry key="Email" value="Courriel" />
-            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
             <entry key="DONE" value="Termin&#xe9;" />
-            <entry key="DUE_DATE_HELP" value="" />
+            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
+            <entry key="Email" value="Courriel" />
+            <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
             <entry key="EFFORT_ACTUAL" value="Travail" />
+            <entry key="DUE_DATE_HELP" value="" />
         </lang>
         <lang name="en">
             <entry key="SUPPORT" value="Support" />
@@ -90,12 +90,12 @@
             <entry key="TASK_HELP" value="Describe your [TASK] here" />
             <entry key="EFFORT_REMAINING" value="Remaining" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="SETTINGS" value="Settings" />
-            <entry key="Email" value="Email" />
-            <entry key="REPEAT_RULE" value="Repeat" />
             <entry key="DONE" value="Completed" />
-            <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
+            <entry key="REPEAT_RULE" value="Repeat" />
+            <entry key="Email" value="Email" />
+            <entry key="SETTINGS" value="Settings" />
             <entry key="EFFORT_ACTUAL" value="Work" />
+            <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
         </lang>
         <lang name="dk">
             <entry key="SUPPORT" value="Support" />
@@ -119,24 +119,25 @@
             <entry key="TASK_HELP" value="Beskriv [TASK] her" />
             <entry key="EFFORT_REMAINING" value="Resterende" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="SETTINGS" value="Ops&#xe6;tning" />
-            <entry key="Email" value="Email" />
-            <entry key="REPEAT_RULE" value="Gentag" />
             <entry key="DONE" value="Afslutttet" />
-            <entry key="DUE_DATE_HELP" value="" />
+            <entry key="REPEAT_RULE" value="Gentag" />
+            <entry key="Email" value="Email" />
+            <entry key="SETTINGS" value="Ops&#xe6;tning" />
             <entry key="EFFORT_ACTUAL" value="Arbejdet" />
+            <entry key="DUE_DATE_HELP" value="" />
         </lang>
     </l10n>
     <theme name="MyTheme">
         <val key="@fadeScrollBarBool " value="true" />
         <val key="@includeNativeBool" value="true" />
         <val key="@onOffIOSModeBool" value="true" />
+        <val key="@paintsTitleBarBool" value="true" />
         <val key="@statusBarScrollsUpBool" value="true" />
         <val key="@tabPlacementInt" value="2" />
-        <val key="Button.bgColor" value="ffffff" />
+        <val key="ActualEffort.derive" value="LabelValue" />
+        <val key="ActualEffort.fgColor" value="2fbd00" />
         <val key="Button.dis#derive" value="Button" />
         <val key="Button.dis#fgColor" value="999999" />
-        <val key="Button.fgColor" value="ff6666" />
         <val key="Button.press#derive" value="Button" />
         <val key="Button.press#fgColor" value="cc6600" />
         <val key="Button.sel#derive" value="Button" />
@@ -150,7 +151,6 @@
         <val key="ButtonGroupFirst.padding" value="0.0,0.0,0.0,0.0" />
         <val key="ButtonGroupFirst.press#derive" value="ButtonGroupFirst" />
         <val key="ButtonGroupFirst.sel#derive" value="ButtonGroupFirst" />
-        <val key="ButtonGroupLast.derive" value="ButtonGroupLast" />
         <val key="ButtonGroupLast.dis#derive" value="ButtonGroupLast" />
         <val key="ButtonGroupLast.padding" value="0.0,0.0,0.0,0.0" />
         <val key="ButtonGroupLast.press#derive" value="ButtonGroupLast" />
@@ -161,14 +161,20 @@
         <val key="ButtonGroupOnly.sel#derive" value="ButtonGroupOnly" />
         <val key="Comment.align" value="1" />
         <val key="Comment.dis#derive" value="Comment" />
-        <val key="Comment.fgColor" value="9999" />
+        <val key="Comment.fgColor" value="666666" />
         <font key="Comment.font" type="system" face="64" style="0" size="8" />
         <val key="Comment.press#derive" value="Comment" />
         <val key="Comment.sel#derive" value="Comment" />
-        <border key="ContainerListElement.border" type="line" millimeters="false" thickness="4.0" color="16711935" />
+        <val key="CompletedDate.derive" value="LabelValue" />
+        <val key="CompletedDate.fgColor" value="cc00" />
+        <border key="ContainerListElement.border" type="line" millimeters="true" thickness="0.2" color="14869218" />
         <val key="ContainerListElement.dis#derive" value="ContainerListElement" />
+        <val key="ContainerListElement.margin" value="0.0,0.0,0.0,0.0" />
         <val key="ContainerListElement.press#derive" value="ContainerListElement" />
         <val key="ContainerListElement.sel#derive" value="ContainerListElement" />
+        <val key="DueDate.derive" value="LabelValue" />
+        <val key="DueDateOverdue.derive" value="LabelValue" />
+        <val key="DueDateOverdue.fgColor" value="ff0000" />
         <val key="EditedText.align" value="1" />
         <val key="EditedText.derive" value="LabelValue" />
         <val key="EditedText.dis#derive" value="EditedText" />
@@ -177,21 +183,8 @@
         <val key="EditedText.sel#align" value="1" />
         <val key="EditedText.sel#derive" value="LabelValue" />
         <val key="EditedText.sel#fgColor" value="cc" />
-        <val key="GroupElement.derive" value="GroupElement" />
-        <val key="GroupElement.dis#derive" value="GroupElement" />
-        <val key="GroupElement.padding" value="0.0,0.0,0.0,0.0" />
-        <val key="GroupElement.press#derive" value="GroupElement" />
-        <val key="GroupElement.sel#derive" value="GroupElement" />
-        <val key="GroupElementFirst.derive" value="GroupElementFirst" />
-        <val key="GroupElementFirst.dis#derive" value="GroupElementFirst" />
-        <val key="GroupElementFirst.padding" value="0.0,0.0,0.0,0.0" />
-        <val key="GroupElementFirst.press#derive" value="GroupElementFirst" />
-        <val key="GroupElementFirst.sel#derive" value="GroupElementFirst" />
-        <val key="GroupElementLast.derive" value="GroupElementLast" />
-        <val key="GroupElementLast.dis#derive" value="GroupElementLast" />
-        <val key="GroupElementLast.padding" value="0.0,0.0,0.0,0.0" />
-        <val key="GroupElementLast.press#derive" value="GroupElementLast" />
-        <val key="GroupElementLast.sel#derive" value="GroupElementLast" />
+        <val key="FinishTime.derive" value="LabelValue" />
+        <val key="FinishTimeOverdue.derive" value="FinishTime" />
         <val key="IconEdit.align" value="4" />
         <val key="IconEdit.dis#derive" value="IconEdit" />
         <val key="IconEdit.padUnit" value="2,2,2,2" />
@@ -207,13 +200,13 @@
         <val key="LabelField.sel#derive" value="LabelField" />
         <val key="LabelFixed.derive" value="LabelValue" />
         <val key="LabelFixed.dis#derive" value="LabelFixed" />
-        <val key="LabelFixed.fgColor" value="ffcc" />
+        <val key="LabelFixed.fgColor" value="999999" />
         <val key="LabelFixed.press#derive" value="LabelFixed" />
         <val key="LabelFixed.sel#derive" value="LabelFixed" />
         <val key="LabelValue.align" value="3" />
         <val key="LabelValue.derive" value="Label" />
         <val key="LabelValue.dis#derive" value="LabelValue" />
-        <val key="LabelValue.fgColor" value="ff0000" />
+        <val key="LabelValue.fgColor" value="666666" />
         <val key="LabelValue.marUnit" value="2,2,2,2" />
         <val key="LabelValue.margin" value="0.0,0.0,0.0,0.0" />
         <val key="LabelValue.padUnit" value="2,2,2,2" />
@@ -229,9 +222,9 @@
         <val key="ListOfItemsEditItemIcon.padding" value="0.0,0.0,0.0,0.0" />
         <val key="ListOfItemsEditItemIcon.press#derive" value="ListOfItemsEditItemIcon" />
         <val key="ListOfItemsEditItemIcon.sel#derive" value="ListOfItemsEditItemIcon" />
+        <val key="ListOfItemsRemaining.derive" value="LabelValue" />
         <val key="ListOfItemsRemaining.dis#derive" value="ListOfItemsRemaining" />
-        <val key="ListOfItemsRemaining.fgColor" value="cc00cc" />
-        <val key="ListOfItemsRemaining.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="ListOfItemsRemaining.fgColor" value="c8330d" />
         <val key="ListOfItemsRemaining.press#derive" value="ListOfItemsRemaining" />
         <val key="ListOfItemsRemaining.sel#derive" value="ListOfItemsRemaining" />
         <val key="ListOfItemsSectionHeader.align" value="4" />
@@ -252,13 +245,11 @@
         <val key="ListOfItemsSubtasks.sel#derive" value="ListOfItemsSubtasks" />
         <val key="ListOfItemsSubtasks.transparency" value="255" />
         <val key="ListOfItemsText.align" value="1" />
+        <val key="ListOfItemsText.derive" value="LabelValue" />
         <val key="ListOfItemsText.dis#derive" value="ListOfItemsText" />
-        <val key="ListOfItemsText.fgColor" value="cc6600" />
-        <font key="ListOfItemsText.font" type="system" face="0" style="0" size="0" />
-        <val key="ListOfItemsText.padding" value="0.0,0.0,0.0,0.0" />
         <val key="ListOfItemsText.press#derive" value="ListOfItemsText" />
         <val key="ListOfItemsText.sel#derive" value="ListOfItemsText" />
-        <val key="MyCheckBox.align" value="4" />
+        <val key="MyCheckBox.align" value="1" />
         <val key="MyCheckBox.dis#derive" value="MyCheckBox" />
         <val key="MyCheckBox.padUnit" value="0,2,0,2" />
         <val key="MyCheckBox.padding" value="0.0,0.0,1.0,1.0" />
@@ -267,14 +258,22 @@
         <val key="OnOffSwitch.derive" value="OnOffSwitch" />
         <val key="OnOffSwitch.transparency" value="0" />
         <val key="SwipeButton.align" value="4" />
-        <val key="SwipeButton.bgColor" value="ffff99" />
+        <val key="SwipeButton.bgColor" value="ffff00" />
         <val key="SwipeButton.dis#derive" value="SwipeButton" />
-        <val key="SwipeButton.fgColor" value="3333" />
+        <val key="SwipeButton.fgColor" value="ffffff" />
         <val key="SwipeButton.padUnit" value="2,2,2,2" />
-        <val key="SwipeButton.padding" value="1.0,1.0,1.0,1.0" />
+        <val key="SwipeButton.padding" value="3.0,3.0,3.0,3.0" />
         <val key="SwipeButton.press#derive" value="SwipeButton" />
         <val key="SwipeButton.sel#derive" value="SwipeButton" />
         <val key="SwipeButton.transparency" value="255" />
+        <val key="SwipeButtonNewFromTemplate.bgColor" value="99ccff" />
+        <val key="SwipeButtonNewFromTemplate.derive" value="SwipeButton" />
+        <val key="SwipeButtonSetDueToToday.bgColor" value="68d468" />
+        <val key="SwipeButtonSetDueToToday.derive" value="SwipeButton" />
+        <val key="SwipeButtonStar.bgColor" value="da5050" />
+        <val key="SwipeButtonStar.derive" value="SwipeButton" />
+        <val key="SwipeButtonTimer.bgColor" value="6666ff" />
+        <val key="SwipeButtonTimer.derive" value="SwipeButton" />
         <val key="Text.align" value="1" />
         <val key="Text.derive" value="TextArea" />
         <val key="Text.dis#derive" value="Text" />
@@ -282,41 +281,38 @@
         <val key="Text.padding" value="3.0,3.0,3.0,3.0" />
         <val key="Text.press#derive" value="Text" />
         <val key="Text.sel#derive" value="Text" />
+        <val key="TimerTimer.align" value="4" />
         <val key="TimerTimer.bgColor" value="33ff" />
         <border key="TimerTimer.border" type="rounded" thickness="0.0" arcW="12" arcH="12" color="16777215" />
         <val key="TimerTimer.dis#derive" value="TimerTimer" />
         <val key="TimerTimer.fgColor" value="ffffff" />
         <font key="TimerTimer.font" type="system" face="32" style="1" size="16" />
-        <val key="TimerTimer.margin" value="3.0,3.0,3.0,3.0" />
-        <val key="TimerTimer.padding" value="12.0,12.0,12.0,12.0" />
+        <val key="TimerTimer.marUnit" value="2,2,2,2" />
+        <val key="TimerTimer.margin" value="5.0,5.0,5.0,5.0" />
         <val key="TimerTimer.press#derive" value="TimerTimer" />
         <val key="TimerTimer.sel#derive" value="TimerTimer" />
         <val key="TimerTimer.transparency" value="255" />
+        <val key="TitleCommand.derive" value="TitleCommand" />
+        <val key="TitleCommand.marUnit" value="2,2,2,2" />
+        <val key="TitleCommand.margin" value="2.0,2.0,2.0,2.0" />
         <val key="ToggleButton.dis#derive" value="ToggleButton" />
         <val key="ToggleButton.fgColor" value="6eaeff" />
-        <val key="ToggleButton.margin" value="0.0,0.0,0.0,0.0" />
         <val key="ToggleButton.padUnit" value="2,2,2,2" />
         <val key="ToggleButton.padding" value="1.0,1.0,1.0,1.0" />
-        <val key="ToggleButton.press#derive" value="ToggleButton" />
-        <val key="ToggleButton.press#fgColor" value="3333ff" />
+        <val key="ToggleButton.press#derive" value="ToggleButton.sel" />
         <val key="ToggleButton.sel#derive" value="ToggleButton" />
+        <val key="ToggleButton.sel#fgColor" value="ffffff" />
         <val key="ToggleButtonFirst.dis#derive" value="ToggleButtonFirst" />
         <val key="ToggleButtonFirst.fgColor" value="6eaeff" />
-        <val key="ToggleButtonFirst.margin" value="0.0,0.0,0.0,0.0" />
         <val key="ToggleButtonFirst.padUnit" value="2,2,2,2" />
         <val key="ToggleButtonFirst.padding" value="1.0,1.0,1.0,1.0" />
-        <val key="ToggleButtonFirst.press#derive" value="ToggleButtonFirst" />
-        <val key="ToggleButtonFirst.press#fgColor" value="3333ff" />
-        <val key="ToggleButtonFirst.sel#bgColor" value="cc66ff" />
+        <val key="ToggleButtonFirst.press#derive" value="ToggleButtonFirst.sel" />
         <val key="ToggleButtonFirst.sel#fgColor" value="ffffff" />
         <val key="ToggleButtonLast.dis#derive" value="ToggleButtonLast" />
         <val key="ToggleButtonLast.fgColor" value="6eaeff" />
-        <val key="ToggleButtonLast.margin" value="0.0,0.0,0.0,0.0" />
         <val key="ToggleButtonLast.padUnit" value="2,2,2,2" />
         <val key="ToggleButtonLast.padding" value="1.0,1.0,1.0,1.0" />
-        <val key="ToggleButtonLast.press#derive" value="ToggleButtonLast" />
-        <val key="ToggleButtonLast.press#fgColor" value="3333ff" />
-        <val key="ToggleButtonLast.sel#bgColor" value="cc66ff" />
+        <val key="ToggleButtonLast.press#derive" value="ToggleButtonLast.sel" />
         <val key="ToggleButtonLast.sel#derive" value="ToggleButtonLast" />
         <val key="ToggleButtonLast.sel#fgColor" value="ffffff" />
     </theme>

@@ -131,6 +131,10 @@ public class MyCheckBox extends Button {
         }
     }
 
+    void setStatus(String itemStatus) {
+        setStatus(ItemStatus.valueOf(itemStatus));
+    }
+
     /**
      * updates the statusIcon without any other effects
      *
@@ -211,7 +215,6 @@ public class MyCheckBox extends Button {
 //        d.showPopupDialog(this); //showDialog(x) = x is the component the dialog will 'point' to
 //    }
 //</editor-fold>
-
     @Override
     public void longPointerPress(int x, int y) {
         super.longPointerPress(x, y);

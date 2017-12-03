@@ -141,6 +141,11 @@ public class Icons {
     final static Image iconPerson = FontImage.createMaterial(FontImage.MATERIAL_PERSON, toolBarStyle);
     final static Image iconPersonNew = FontImage.createMaterial(FontImage.MATERIAL_PERSON_ADD, toolBarStyle);
     final static Image iconPersonIngocnito = FontImage.createMaterial(FontImage.MATERIAL_HELP, toolBarStyle);
+    
+    //OTHER
+    final static Image iconLightBulb= FontImage.createMaterial(FontImage.MATERIAL_LIGHTBULB_OUTLINE, toolBarStyle); //submit ideas, suggestions or bugs
+    final static Image iconFeedback= FontImage.createMaterial(FontImage.MATERIAL_FEEDBACK, toolBarStyle); //feedback speach bubble (could be used for submit ideas, suggestions or bugs)
+    
 
     static Image getCheckBoxIcon(ItemStatus itemStatus) {
         switch (itemStatus) {

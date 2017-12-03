@@ -299,7 +299,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             if (listOfAllLists != null && listOfAllLists.size() > 0) {
                 cmdLists = new Button(Command.create("Lists", null, (e) -> {
                     buildList(listOfAllLists, cont);
-
+//                    cmdLists.setToggle(listOfLists);
                     animateMyForm();
                 }));
                 cmds.add(cmdLists);

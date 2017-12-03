@@ -172,7 +172,9 @@ public abstract class MyForm extends Form {
 //        if (getToolbar().getTitleComponent() instanceof Label) {
 //            ((Label) getToolbar().getTitleComponent()).setAutoSizeMode(true); //ensure title is centered even when icons are added
 //        }//        getTitleComponent().setAutoSizeMode(true); //DOESN'T work with toolbar
-        setAutoSizeMode(true); //ensure title is centered even when icons are added
+        if (false) {
+            setAutoSizeMode(true); //ensure title is centered even when icons are added
+        }
         this.previousForm = previousForm;
         this.updateActionOnDone = updateActionOnDone;
         ASSERT.that(updateActionOnDone != null, "doneAction should always be defined, Form=" + this);
@@ -305,7 +307,7 @@ public abstract class MyForm extends Form {
 
     interface FetchWorkSlotList {
 
-        List<WorkSlot>  getUpdatedWorkSlotList(Object objworkSlotList);
+        List<WorkSlot> getUpdatedWorkSlotList(Object objworkSlotList);
 //        void update(List workSlotList);
     }
 
@@ -763,54 +765,6 @@ public abstract class MyForm extends Form {
 
     static int COLUMNS_FOR_STRING = 20;
 
-    class MyTextArea extends TextArea {
-
-//            String title;
-//            String parseId;
-        MyTextArea(String hint, Map<Object, UpdateField> parseIdMap, GetString getValue, PutString setValue) {
-            this(hint, COLUMNS_FOR_STRING, TextArea.ANY, parseIdMap, getValue, setValue);
-        }
-
-        MyTextArea(String hint, int columns, int constraint, Map<Object, UpdateField> parseIdMap, GetString getValue, PutString setValue) {
-            this(hint, columns, 1, 1, 128, constraint, parseIdMap, getValue, setValue); //UI: 128 = default max size of a text field //TODO: make a preference or PRO feature
-        }
-//        MyTextField(String title, String hint, int columns, int constraint, Map<String, ScreenItemP.GetParseValue> parseIdMap, Consumer<String> setValue, Supplier<String> getValue, ParseObject parseObject, String parseId) {
-
-        MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint, Map<Object, UpdateField> parseIdMap, GetString getValue, PutString setValue) {
-            super("", rows, columns, constraint);
-//            if (rows != 1) {
-//                setRows(rows);
-//            }
-            setGrowByContent(true);
-            setAutoDegradeMaxSize(true);
-            setGrowLimit(maxRows);
-            setHint(hint);
-//            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
-            setMaxSize(maxTextSize);
-            setText(getValue.get());
-            parseIdMap.put(this, () -> setValue.accept(getText()));
-        }
-
-//        MyTextArea(String hint, int columns, int constraint, Map<Object, UpdateField> parseIdMap, GetDouble getValue, PutDouble setValue) {
-//            super("", 1, columns, constraint);
-//            setHint(hint);
-//            if (getValue.get() != 0) {
-//                this.setText(getValue.get() + "");
-//            }
-////            this.set //TODO how to ensure cursor is positioned at end of entered text and not beginning?
-//            parseIdMap.put(this, () -> setValue.accept(getText().equals("") ? 0 : Double.valueOf(getText())));
-//        }
-//            MyTextField(String title, String hint, int columns, int constraint, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
-//                super("", hint, columns, constraint);
-////                this.title = title;
-////                this.parseId = parseId;
-//                setText(parseObject.getString(parseId));
-////                parseIdMap.put(parseId, this);
-////            parseIdMap.put(parseId, () -> getText());
-//                parseIdMap.put(parseId, () -> parseObject.put(parseId, getText()));
-//            }
-    };
-
     class MyTextField extends TextField {
 
         MyTextField(String hint, Map<Object, UpdateField> parseIdMap, GetString getValue, PutString setValue) {
@@ -1127,7 +1081,7 @@ public abstract class MyForm extends Form {
             for (ItemAndListCommonInterface itemCategoryOrList : setOrList) {
 //                str = itemCategoryOrList.toString() + separator + str;
 //                str = itemCategoryOrList.getText() + separator + str;
-                str = str+ separator + itemCategoryOrList.getText() ;
+                str = str + separator + itemCategoryOrList.getText();
                 separator = ", ";
             }
         }
@@ -1289,23 +1243,23 @@ public abstract class MyForm extends Form {
     public Command makeInterruptCommand(String title, Image icon) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
-        return MyReplayCommand.create("StartTimerFromMyForm",title, icon,(e)->{
-                Item item = new Item();
+        return MyReplayCommand.create("StartTimerFromMyForm", title, icon, (e) -> {
+            Item item = new Item();
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItem());
 //                }
 //                ScreenTimer.getInstance().startTimer(item, MyForm.this);
-                ScreenTimer.getInstance().startInterrupt(item, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
-                //TODO Allow to pick a common (predefined/template) interrupt task (long-press??)
-                //Open it up in editing mode with timer running
+            ScreenTimer.getInstance().startInterrupt(item, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
+            //TODO Allow to pick a common (predefined/template) interrupt task (long-press??)
+            //Open it up in editing mode with timer running
 //            setupTimerForItem(item, 0);
-                //Upon Done/Stop, save and return to previous task
-            }
+            //Upon Done/Stop, save and return to previous task
+        }
         );
     }
 
-    public Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
+    public static Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
         return new Button(Command.create(null, Icons.iconAddTimeStampToCommentLabelStyle, (e) -> {
@@ -1546,8 +1500,13 @@ public abstract class MyForm extends Form {
      * align with other fields)
      * @return
      */
-    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, 
+    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
+        return layout(fieldLabelTxt, field, help, swipeClear, wrapText, makeFieldUneditable, hideEditButton,false);
+    }
+
+    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+            boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton, boolean invisibleEditButton) {
 
         if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
 //            field.getAllStyles().setPaddingRight(6);
@@ -1567,8 +1526,10 @@ public abstract class MyForm extends Form {
             visibleField = field;
         } else { //place a visible or invisible button
             Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
-//            editFieldButton.setVisible(!makeFieldUneditable && !hideEditButton);
-            editFieldButton.setVisible(! hideEditButton);
+            boolean editButtonInvisible = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
+            editFieldButton.setVisible(!editButtonInvisible);
+//            editFieldButton.setVisible(!hideEditButton);
+            editFieldButton.setHidden(invisibleEditButton);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
 //            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton);
@@ -2097,13 +2058,22 @@ public abstract class MyForm extends Form {
         ReplayLog.getInstance().popCmd(); //pop any previous command
         super.showBack();
     }
-    
+
     /**
-     * save any ongoing edits locally when app is paused (in case it is destroyed later on). Does nothing in screens with no new edits.
-     * Saved items must be read back in constructor of the screen. 
+     * save any ongoing edits locally when app is paused (in case it is
+     * destroyed later on). Does nothing in screens with no new edits. Saved
+     * items must be read back in constructor of the screen.
      */
-    public void saveOnAppExit() {
-        
+    public void saveLocallyEditedValuesOnAppExit() {
+
+    }
+
+    public boolean restoreLocallyEditedValuesOnAppExit() {
+        return false;
+    }
+
+    public void deleteLocallyEditedValuesOnAppExit() {
+
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

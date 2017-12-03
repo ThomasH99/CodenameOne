@@ -296,7 +296,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
             return workTimeCache.get(itemIndex);
         } else {
             if (itemIndex >= startIndex) { //if same WTD is called recursively for same or higher index, we'll get an infinite loop, eg if a subtask is in same category as a mother task
-                ASSERT.that(false, "");
+                ASSERT.that(false, "allocateWorkTime called with itemIndex="+itemIndex+" with startIndex="+startIndex+" for owner="+owner);
                 return null;
             } else {
                 if (startIndex == Integer.MAX_VALUE) { //ensure startIndex is only set the first time called (when it is -1)

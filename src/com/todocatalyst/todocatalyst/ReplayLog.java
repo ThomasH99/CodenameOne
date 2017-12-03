@@ -230,7 +230,7 @@ public class ReplayLog {
 //                updateReplayingNow(); //update *after* replaying the command to avoid storing it again
                 return true;
             } else {
-                ASSERT.that(replayingNow == false);
+//                ASSERT.that(replayingNow == false, "");
                 replayingNow = false;
 //                while (logList.size() >= currentIndex - 1) { //if force breaking the replay, remove all non-replayed commands including the broken one at nextIndex-1 (so log is correct as other actions are added)
                 while (logList.size() - 1 > currentIndex) { //if force breaking the replay, remove all non-replayed commands including the broken one at nextIndex-1 (so log is correct as other actions are added)

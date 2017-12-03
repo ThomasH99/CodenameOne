@@ -3,9 +3,14 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.background.BackgroundFetch;
 import com.codename1.io.ConnectionRequest;
 import com.codename1.io.Log;
+import static com.codename1.io.Log.e;
+import static com.codename1.io.Log.p;
+import static com.codename1.io.Log.sendLog;
 import com.codename1.io.NetworkManager;
+import com.codename1.io.Storage;
 import com.codename1.io.Util;
 import com.codename1.l10n.L10NManager;
+import com.codename1.messaging.Message;
 import com.codename1.notifications.LocalNotificationCallback;
 import com.codename1.ui.*;
 import com.codename1.ui.events.ActionEvent;
@@ -461,27 +466,68 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         }
         UIManager.getInstance().setBundle(theme.getL10N("LocalizationBundle", local));
 
-        Toolbar.setGlobalToolbar(true);
+        Toolbar.setGlobalToolbar(true); //needed, otherwise toolbar null in other screens
 
         Log.getInstance();
-        Log.bindCrashProtection(false); //TODO: should probaly be true in production version (to consume errors so end-user doesn't see them)
+        if (false) {
+            Log.bindCrashProtection(false); //TODO: should probaly be true in production version (to consume errors so end-user doesn't see them)
+        } else {
+//            m.setUrl("https://crashreport.codenameone.com/CrashReporterEmail/sendCrashReport");
+//            byte[] read = Util.readInputStream(Storage.getInstance().createInputStream("CN1Log__$"));
+//            m.addArgument("i", "" + Log.getUniqueDeviceId());
+//            m.addArgument("u", Display.getInstance().getProperty("built_by_user", ""));
+//            m.addArgument("p", Display.getInstance().getProperty("package_name", ""));
+//            m.addArgument("v", Display.getInstance().getProperty("AppVersion", "0.1"));
+            Display.getInstance().addEdtErrorHandler(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    if (Display.getInstance().isSimulator()) {
+                        return;
+                    }
+                    if (true) {//consumeError
+                        evt.consume();
+                    }
+                    p("Exception in " + Display.getInstance().getProperty("AppName", "app") + " version " + Display.getInstance().getProperty("AppVersion", "Unknown"));
+                    p("OS " + Display.getInstance().getPlatformName());
+                    p("Error " + evt.getSource());
+                    if (Display.getInstance().getCurrent() != null) {
+                        p("Current Form " + Display.getInstance().getCurrent().getName());
+                    } else {
+                        p("Before the first form!");
+                    }
+                    e((Throwable) evt.getSource());
+//                sendLog();
+                    Message m = new Message("Body of message"
+                            + "DeviceId: " + Log.getUniqueDeviceId()
+                            + "\nBuilt by user: " + Display.getInstance().getProperty("built_by_user", "")
+                            + "\nPackage name: " + Display.getInstance().getProperty("package_name", "")
+                            + "\nAppVersion: " + Display.getInstance().getProperty("AppVersion", "0.1")
+                            + "\nLOG:\n---------------------------------\n"
+                            + Storage.getInstance().readObject("CN1Log__$")
+                    );
+//            m.getAttachments().put(textAttachmentUri, "text/plain");
+//            m.getAttachments().put(imageAttachmentUri, "image/png");
+                    Display.getInstance().sendMessage(new String[]{"crashreport@todocatalyst.com"}, "TodoCatalyst crash report", m);
+                }
+            });
+        }
         Log.getInstance().setFileWriteEnabled(true);
         Log.setLevel(Log.DEBUG);
         Log.setReportingLevel(Log.REPORTING_DEBUG);
         Log.p("init()");
 
-        Display.getInstance().addEdtErrorHandler(new ActionListener() {
-            //TODO!!!! check if keep this error handling for out of memory in production version
-            //https://www.codenameone.com/blog/handling-the-exception.html
-            //https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/memleaks002.html
-            public void actionPerformed(ActionEvent evt) {
+        if (false) {
+            Display.getInstance().addEdtErrorHandler(new ActionListener() {
+                //TODO!!!! check if keep this error handling for out of memory in production version
+                //https://www.codenameone.com/blog/handling-the-exception.html
+                //https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/memleaks002.html
+                public void actionPerformed(ActionEvent evt) {
 //                evt.consume();
 //                if (evt.getEventType()==ActionEvent.Type.Exception)
-                if (((Throwable) evt.getSource()) instanceof OutOfMemoryError) {
-                    System.gc();
-                    System.gc();
-                    Log.p(APP_NAME + " ran out of memory. This can be due your device running out of free memory or due to an internal error. If you have just made changes, they may be lost. ");
-                }
+                    if (((Throwable) evt.getSource()) instanceof OutOfMemoryError) {
+                        System.gc();
+                        System.gc();
+                        Log.p(APP_NAME + " ran out of memory. This can be due your device running out of free memory or due to an internal error. If you have just made changes, they may be lost. ");
+                    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                Log.p("Exception in version " + Display.getInstance().getProperty("AppVersion", "Unknown"));
 //                Log.p("OS " + Display.getInstance().getPlatformName());
@@ -490,8 +536,9 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //                Log.e((Throwable) evt.getSource());
 //                Log.sendLog();
 //</editor-fold>
-            }
-        });
+                }
+            });
+        }
 
         Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
 
@@ -589,9 +636,10 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         });
 
         // will return true for desktops as well...
-        if (Display.getInstance().isTablet()) { //TODO!!!! is not working
-            Toolbar.setPermanentSideMenu(true); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
-        }
+//        if (Display.getInstance().isTablet()) { //TODO!!!! is not working
+//            Toolbar.setPermanentSideMenu(true); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
+            Toolbar.setPermanentSideMenu(Display.getInstance().isTablet()); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
+//        }
 
 //        Display d = Display.getInstance();
 //        Label supported = new Label();
@@ -681,13 +729,13 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                 AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
 
                 //TIMER - was running when app was moved to background?
-                if (!ScreenTimer.getInstance().isTimerActive()) {
-                    new ScreenMain().show(); //go directly to main screen if user already has a session
-                } else {
-                    if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
-                        new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
-                    }
-                }
+//                if (!ScreenTimer.getInstance().isTimerActive()) {
+//                    new ScreenMain().show(); //go directly to main screen if user already has a session
+//                } else {
+//                    if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
+//                        new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+//                    }
+//                }
             }
         } else {
 //            new ScreenLogin2(theme).go();
@@ -738,9 +786,9 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         }
         Form current = Display.getInstance().getCurrent();
         if (current != null) {
-            if (false && current == ScreenTimer.getInstance()) { //NOT necessary since current.show() should update the timemr
-                ScreenTimer.getInstance().refreshDisplayedTimerInfo();//repaint to update timer count (especially necessary if timer is only updating every minute or so, otherwise it will show wrong time for a long time)
-            }
+//            if (false && current == ScreenTimer.getInstance()) { //NOT necessary since current.show() should update the timemr
+//                ScreenTimer.getInstance().refreshDisplayedTimerInfo();//repaint to update timer count (especially necessary if timer is only updating every minute or so, otherwise it will show wrong time for a long time)
+//            }
             current.show();
             return;
         }
@@ -877,15 +925,25 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
      */
     public void stop() {
         Form current = Display.getInstance().getCurrent();
-        if (current instanceof Dialog) {
-            ((Dialog) current).dispose();
-            current = Display.getInstance().getCurrent();
+//        if (current instanceof Dialog) {
+//            if (false)((Dialog) current).dispose();
+//            current = Display.getInstance().getCurrent();
+//        }
+        if (!(current instanceof Form)) {
+//            if (current instanceof Dialog)
+//            current = ((Dialog)current).getComponentForm();
+            if (current instanceof Component) {
+                current = ((Component) current).getComponentForm();
+            } else {
+                ASSERT.that("on stop(), current=" + current + " (NOT Form or Component)");
+            }
         }
+        ASSERT.that(current instanceof MyForm, "on stop(), current=" + current + " (NOT Form or Component)");
         if (current instanceof MyForm) {
-            ((MyForm) current).saveOnAppExit(); //save any ongoing edits
+            ((MyForm) current).saveLocallyEditedValuesOnAppExit(); //save any ongoing edits
         }
-        ScreenTimer.getInstance().saveTimerStatusOnAppStop();
-        ScreenTimer.getInstance().onDestroy(); //called here because destroy doesn't seem to be called
+//        ScreenTimer.getInstance().saveTimerStatusOnAppStop();
+//        ScreenTimer.getInstance().onDestroy(); //called here because destroy doesn't seem to be called
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && !MyPrefs.loginStayLoggedIn.getBoolean()) { //DOESN'T make sense to log user out here (when switched to background)
 //            try {
@@ -896,8 +954,8 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        }
 //</editor-fold>
 //        setNotification(new Date(System.currentTimeMillis() + 10 * 1000));
+        Log.p("stop()"); //do before updating badgeCount which calls network and may be too slow and get killed
         setBadgeCount();
-        Log.p("stop()");
         //set the app icon badge count
 //        if (Display.getInstance().isBadgingSupported()) {
 //            Display.getInstance().setBadgeNumber(DAO.getInstance().getBadgeCount(true));

@@ -58,7 +58,7 @@ class KeepInSameScreenPosition {
      */
     KeepInSameScreenPosition() {
 //        this(findScrollableContainer());
-        Container cont = findScrollableContainer();
+        Component cont = findScrollableContainer_N();
         if (cont != null) {
             this.scrollY = cont.getScrollY();
         }
@@ -136,6 +136,10 @@ class KeepInSameScreenPosition {
 //</editor-fold>
         itemOrg = item;
         Container scrollableCont = getScrollableContainer(oldItemComponent);
+        if (scrollableCont == null) { //this may happen in ScreenListOfItems if the list is empty, eg. only showing QuickEntry container
+
+            return;
+        }
 
         //get the parent of the component that is in the scrollableContainer
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -171,6 +175,32 @@ class KeepInSameScreenPosition {
         }
     }
 
+    /**
+     * copied from Form (where it is **private)
+     *
+     * @param c
+     * @return
+     */
+    Component findScrollableChild(Container c) {
+        if (c.isScrollableY()) {
+            return c;
+        }
+        int count = c.getComponentCount();
+        for (int iter = 0; iter < count; iter++) {
+            Component comp = c.getComponentAt(iter);
+            if (comp.isScrollableY()) {
+                return comp;
+            }
+            if (comp instanceof Container) {
+                Component chld = findScrollableChild((Container) comp);
+                if (chld != null) {
+                    return chld;
+                }
+            }
+        }
+        return null;
+    }
+
     public String toString() {
         return (itemOrg != null && itemOrg instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) itemOrg).getText() : "itemOrg=null")
                 + " rel:" + relScroll + " scrollY:" + scrollY;
@@ -184,7 +214,7 @@ class KeepInSameScreenPosition {
      * scrollable
      *
      * @param comp
-     * @return
+     * @return null if comp is null or nothing found
      */
 //    private Container getParentInScrollableContainer(Component comp) {
     private Container getScrollableContainer(Component comp) {
@@ -273,13 +303,21 @@ class KeepInSameScreenPosition {
      *
      * @return the found scrollableContainer or null if none found
      */
-    private Container findScrollableContainer() {
+    private Component findScrollableContainer_N() {
         if (Test.DEBUG) {
             Form currentForm = Display.getInstance().getCurrent();
         }
-        if (newComponent != null) {
-            return getScrollableContainer(newComponent);
-        } else { //we didn't find newComponent so must find the scrollable container in some other way
+        if (true) {
+            Form currentForm = Display.getInstance().getCurrent();
+            if (currentForm != null) {
+                if (currentForm.getContentPane() != null) {
+                    return findScrollableChild(currentForm.getContentPane());
+                }
+            }
+        } else {
+            if (newComponent != null) {
+                return getScrollableContainer(newComponent);
+            } else { //we didn't find newComponent so must find the scrollable container in some other way
 //            Container scrollableCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y 
 //            if (Test.DEBUG) {
 //                Container parent = scrollableCont.getParent();
@@ -298,8 +336,10 @@ class KeepInSameScreenPosition {
 //                }
 //            }
 //            return null;
-            return getScrollableContainer(someComponent);
+                return getScrollableContainer(someComponent);
+            }
         }
+        return null;
     }
 
     private Container findScrollableContainerOLD() {
@@ -373,7 +413,7 @@ class KeepInSameScreenPosition {
 //                }
 //            }
 //</editor-fold>
-                Container scrollCont = findScrollableContainer();
+                Component scrollCont = findScrollableContainer_N();
                 if (scrollCont != null) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    scrollCont.setScrollY(scrollY - relScroll);

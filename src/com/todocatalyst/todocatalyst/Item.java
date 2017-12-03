@@ -818,28 +818,28 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    final static String EFFORT_ACTUAL_HELP = "The amount of " + EFFORT_ACTUAL + " you have spend on this task. It is updated automatically when you use the Timer while working on tasks."; //"Actual effort";"Time spent"
     final static String EFFORT_ACTUAL_HELP = "The amount of [EFFORT_ACTUAL] you have worked on this task. It is updated automatically when you use the Timer while working on tasks."; //"Actual effort";"Time spent"
 //        String actualExplanation = "Setting '" + Item.EFFORT_ACTUAL + "' will automatically set " + Item.STATUS + " to " + ItemStatus.ONGOING;
-    final static String EFFORT_REMAINING = "Remaining time"; //"Remaining effort"; "Remaining time"
+    final static String EFFORT_REMAINING = "Remaining effort"; //"Remaining effort"; "Remaining time"
     final static String EFFORT_REMAINING_SHORT = "Remaining"; //"Remaining effort";
-    final static String EFFORT_REMAINING_HELP = "The amount of time in hours:minutes that is remaining on this task. You can update it for partially finished tasks. The Timer can be set to prompt you to update it every time you move to another task without finishing the current one (Setting)."; //"Remaining effort"; "Remaining time"
-    final static String EFFORT_ESTIMATE_SUBTASKS = "Estimate subtasks"; //"Effort estimate";"Estimated time (subtasks)"
+    final static String EFFORT_REMAINING_HELP = "The amount of effort in hours:minutes that is remaining on this task. You can update it for partially finished tasks. The Timer can be set to prompt you to update it every time you move to another task without finishing the current one (Setting)."; //"Remaining effort"; "Remaining time"
+    final static String EFFORT_ESTIMATE_SUBTASKS = "Estimate effort, subtasks"; //"Effort estimate";"Estimated time (subtasks)"
 //    final static String EFFORT_ESTIMATE_SUBTASKS_HELP = "The sum of the " + EFFORT_ESTIMATE + " of all subtasks"; //"Effort estimate";"Estimated time (subtasks)"
     final static String EFFORT_ESTIMATE_SUBTASKS_HELP = "The sum of the [EFFORT_ESTIMATE] of all subtasks"; //"Effort estimate";"Estimated time (subtasks)"
-    final static String EFFORT_ACTUAL_SUBTASKS = "Work subtasks"; //"Actual effort";, "Time spent (subtasks)"
+    final static String EFFORT_ACTUAL_SUBTASKS = "Worked effort, subtasks"; //"Actual effort";, "Time spent (subtasks)"
 //    final static String EFFORT_ACTUAL_SUBTASKS_HELP = "The sum of the " + EFFORT_ACTUAL + " of all subtasks"; //"Actual effort";, "Time spent (subtasks)"
     final static String EFFORT_ACTUAL_SUBTASKS_HELP = "The sum of the [EFFORT_ACTUAL] of all subtasks"; //"Actual effort";, "Time spent (subtasks)"
-    final static String EFFORT_REMAINING_SUBTASKS = "Remaining subtasks"; //"Remaining effort";"Remaining time (subtasks)"
+    final static String EFFORT_REMAINING_SUBTASKS = "Remaining effort, subtasks"; //"Remaining effort";"Remaining time (subtasks)"
 //    final static String EFFORT_REMAINING_SUBTASKS_HELP = "The sum of the " + EFFORT_REMAINING+" of all subtasks"; //"Remaining effort";"Remaining time (subtasks)"
     final static String EFFORT_REMAINING_SUBTASKS_HELP = "The sum of the [EFFORT_REMAINING] of all subtasks"; //"Remaining effort";"Remaining time (subtasks)"
-    final static String EFFORT_ESTIMATE_PROJECT = "Estimate project"; //"Effort estimate";"Estimated time (project)"
+    final static String EFFORT_ESTIMATE_PROJECT = "Estimated effort, project"; //"Effort estimate";"Estimated time (project)"
 //    final static String EFFORT_ESTIMATE_PROJECT_HELP = EFFORT_ESTIMATE+" for the project. You can use this to indicate a total estimate for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_ESTIMATE_PROJECT_HELP = "[EFFORT_ESTIMATE] for the project. You can use this to indicate a total estimate for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
-    final static String EFFORT_ACTUAL_PROJECT = "Work project"; //"Actual effort";"Time spent (project)"
+    final static String EFFORT_ACTUAL_PROJECT = "Work effort, project"; //"Actual effort";"Time spent (project)"
 //    final static String EFFORT_ACTUAL_PROJECT_HELP = EFFORT_ACTUAL+" for the project. You can use this to capture "+EFFORT_ACTUAL+" that is not captured on the individual subtasks."; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_ACTUAL_PROJECT_HELP = "[EFFORT_ACTUAL] for the project. You can use this to capture [EFFORT_ACTUAL] that is not captured on the individual subtasks."; //"Effort estimate";"Estimated time (project)"
-    final static String EFFORT_REMAINING_PROJECT = "Remaining project"; //"Remaining effort";"Remaining time (project)"
+    final static String EFFORT_REMAINING_PROJECT = "Remaining effort, project"; //"Remaining effort";"Remaining time (project)"
 //    final static String EFFORT_REMAINING_PROJECT_HELP = EFFORT_REMAINING+" for the project. You can use this to **?? indicate a total for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_REMAINING_PROJECT_HELP = "[EFFORT_REMAINING] for the project. You can use this to **?? indicate a total for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
-    final static String EFFORT_TOTAL_SHORT = "Total"; //total effort in Timer (previous actual + timer elapsed time)
+    final static String EFFORT_TOTAL_SHORT = "Total effort"; //total effort in Timer (previous actual + timer elapsed time)
     final static String STATUS = "Status"; //"Status""Task status"
     final static String PRIORITY = "Priority";
     final static String PRIORITY_HELP = "Priority";
@@ -6713,6 +6713,26 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public void setAllocatedWorkTime(WorkTime workTime) {
         this.workTime = workTime;
+    }
+
+    @Override
+    public long getFinishTime() {
+        long latestFinishTime = MyDate.MIN_DATE;
+        if (isProject()) { //UI: for projects, finishTime is ALWAYS latest finishTime for subtasks (or undefined if all subtasks are Done)
+            for (Object subtask : getList()) {
+                if (subtask instanceof ItemAndListCommonInterface) {
+                    Item item = (Item) subtask;
+                    long finishT = item.getFinishTime();
+                    if (finishT > latestFinishTime && !item.isDone()) {
+                        latestFinishTime = finishT;
+                    }
+                }
+            }
+//            if (latestFinishTime != MyDate.MIN_DATE) { //only return if we actually have a date (all subtasks may be Done)
+            return latestFinishTime;
+//            }
+        }
+        return ItemAndListCommonInterface.super.getFinishTime();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

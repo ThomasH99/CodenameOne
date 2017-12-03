@@ -222,6 +222,7 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(statistics, toolbar, cont, "**");
 
+        //Log
         //TODO!!! add support for help text on these commands
         Command completionLog = MyReplayCommand.create(SCREEN_COMPLETION_LOG_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     FilterSortDef filterSort = new FilterSortDef(Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, false);
@@ -234,6 +235,7 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(completionLog, toolbar, cont, "**");
 
+        //diary
         Command creationLog = MyReplayCommand.create(SCREEN_CREATION_LOG_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     FilterSortDef filterSort = new FilterSortDef(Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, false);
                     new ScreenListOfItems(SCREEN_CREATION_LOG_TITLE, new ItemList(SCREEN_CREATION_LOG_TITLE, DAO.getInstance().getCreationtLog(), filterSort, true), ScreenMain.this, (i) -> {

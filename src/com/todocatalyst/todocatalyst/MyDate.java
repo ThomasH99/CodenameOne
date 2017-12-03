@@ -269,59 +269,56 @@ public class MyDate extends Date {
      * update time and set appropriate bits. Does NOT reset the bits to zero if
      * setTimeBit or setDateBit are false!
      */
-    private void addToTimeSetFlags(long value, boolean setTimeBit, boolean setDateBit) {
-        addToTimeKeepFlags(value);
-        timeWithFlags = timeWithFlags | (setTimeBit ? timeSetBit : 0) | (setDateBit ? dateSetBit : 0);
-    }
-
-    void setTimeBit(boolean set) {
-        if (set) {
-            timeWithFlags |= timeSetBit; //set bit flag for time is set to 1
-        } else {
-            timeWithFlags &= ~timeSetBit; //reset bit flag for time is set to 0
-        }
-    }
-
-    private void setDateBit(boolean set) {
-        if (set) {
-            timeWithFlags |= dateSetBit; //set bit flag for time is set to 1
-        } else {
-            timeWithFlags &= ~dateSetBit; //reset bit flag for time is set to 0
-        }
-    }
-
+//    private void addToTimeSetFlags(long value, boolean setTimeBit, boolean setDateBit) {
+//        addToTimeKeepFlags(value);
+//        timeWithFlags = timeWithFlags | (setTimeBit ? timeSetBit : 0) | (setDateBit ? dateSetBit : 0);
+//    }
+//
+//    void setTimeBit(boolean set) {
+//        if (set) {
+//            timeWithFlags |= timeSetBit; //set bit flag for time is set to 1
+//        } else {
+//            timeWithFlags &= ~timeSetBit; //reset bit flag for time is set to 0
+//        }
+//    }
+//
+//    private void setDateBit(boolean set) {
+//        if (set) {
+//            timeWithFlags |= dateSetBit; //set bit flag for time is set to 1
+//        } else {
+//            timeWithFlags &= ~dateSetBit; //reset bit flag for time is set to 0
+//        }
+//    }
     /**
      * sets both time and date bits - as a convinient shortcut
      */
-    void setTimeAndDateBit(boolean timeSet, boolean dateSet) {
-        setTimeBit(timeSet);
-        setDateBit(dateSet);
-    }
-
+//    void setTimeAndDateBit(boolean timeSet, boolean dateSet) {
+//        setTimeBit(timeSet);
+//        setDateBit(dateSet);
+//    }
     /**
      * time is set either if the timebit is set, OR time is defined (!=0), and
      * both time bit and date bit are zero (meaning that time was set without
      * using the time/date bits)
      */
-    public boolean isTimeSet() {
-//        long time = getTime();
-//        return ((time & timeSetBit) != 0) || (time != 0 && (time & timeSetBit) == 0 && (time & dateSetBit) == 0);
-//        return ((timeWithFlags & timeSetBit) != 0) || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
-        return ((timeWithFlags & timeSetBit) != 0); // || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
-    }
-
-    /**
-     * date is set either if the datebit is set, OR time is defined (!=0), and
-     * both time bit and date bit are zero (meaning that time was set without
-     * using the time/date bits)
-     */
-    public boolean isDateSet() {
-//        long time = getTime();
-//        return ((time & dateSetBit) != 0) || (time != 0 && (time & timeSetBit) == 0 && (time & dateSetBit) == 0);
-//        return ((timeWithFlags & dateSetBit) != 0) || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
-        return ((timeWithFlags & dateSetBit) != 0); // || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
-    }
-
+//    public boolean isTimeSet() {
+////        long time = getTime();
+////        return ((time & timeSetBit) != 0) || (time != 0 && (time & timeSetBit) == 0 && (time & dateSetBit) == 0);
+////        return ((timeWithFlags & timeSetBit) != 0) || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
+//        return ((timeWithFlags & timeSetBit) != 0); // || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
+//    }
+//
+//    /**
+//     * date is set either if the datebit is set, OR time is defined (!=0), and
+//     * both time bit and date bit are zero (meaning that time was set without
+//     * using the time/date bits)
+//     */
+//    public boolean isDateSet() {
+////        long time = getTime();
+////        return ((time & dateSetBit) != 0) || (time != 0 && (time & timeSetBit) == 0 && (time & dateSetBit) == 0);
+////        return ((timeWithFlags & dateSetBit) != 0) || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
+//        return ((timeWithFlags & dateSetBit) != 0); // || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public String toString() {
@@ -1379,6 +1376,10 @@ public class MyDate extends Date {
         return formatDateNew(date, false, true, true, false, false);
     }
 
+    static public String formatDateTimeNew(long date) {
+        return formatDateNew(new Date(date), false, true, true, false, false);
+    }
+
     static public String formatTimeNew(Date date) {
         return formatDateNew(date, false, false, true, false, false);
     }
@@ -1460,8 +1461,11 @@ public class MyDate extends Date {
         long diff = date.getTime() - now;
 //        long dateTime = date.getTime();
         //overdue
-        if (diff < 0) {
-            return "Overdue";
+        if (diff < 0 && diff > getStartOfToday().getTime() - MyDate.DAY_IN_MILLISECONDS) {
+//            return "Overdue";
+            return "Yesterday";
+        } else {
+            diff = -diff; //else use same distance from today to determine formatting??
         }
         //within today(before midnight/*next 24h*?/till 5 in the morning for night owls?!): "13h14" / "1h14am"
 //        if (dateTime<=MyDate.getEndOfDay(new Date(dateTime+MyDate.DAY_IN_MILLISECONDS)).getTime())
@@ -1478,7 +1482,7 @@ public class MyDate extends Date {
         }
         //beyond 365 days: "Jun'18"
 
-        return new SimpleDateFormat("MMM'yy").format(date);
+        return new SimpleDateFormat("MMM''yy").format(date);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1625,6 +1629,17 @@ public class MyDate extends Date {
         return formatTimeDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, showHBtwHoursAndMinutes, true);
     }
 
+    /**
+     * format duration as e.g.
+     *
+     * @param hoursMinutesInMilliSeconds
+     * @param showSeconds
+     * @param roundUpMinutes
+     * @param showLeadingZeroForHour
+     * @param showHBtwHoursAndMinutes
+     * @param dontShowZeroHours
+     * @return
+     */
     private static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes, boolean dontShowZeroHours) {
 //        boolean SHOW_SECONDS = false;
 //        boolean SHOW_LEADING_ZERO_FOR_HOUR = true;
@@ -1639,7 +1654,8 @@ public class MyDate extends Date {
         s = (dontShowZeroHours && hours == 0 ? "" : (showLeadingZeroForHour && hours < 10 ? "0" : "") + hours + (showHBtwHoursAndMinutes ? "h" : ":"))
                 //                + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes + (dontShowZeroHours ? "'" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
                 //https://english.stackexchange.com/questions/114205/english-notation-for-hour-minutes-and-seconds says: minutes *can* be 3', but 3m is more common
-                + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes + (dontShowZeroHours ? "m" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
+                + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes
+                        + (dontShowZeroHours && !showSeconds ? "m" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
         int seconds = (int) (restAfterHours % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS; //1000;
         if (roundUpMinutes && seconds >= 30) {
             minutes++;
@@ -1720,7 +1736,7 @@ public class MyDate extends Date {
 //    }
     /**
      * returns time adjusted to 'midnight' to today's date with
-     * hour/minute/second/millesecond set to zero
+     * hour/minute/second/millisecond set to zero
      */
     static Date setDateToMidnight(Date time) {
         Calendar cal = Calendar.getInstance();

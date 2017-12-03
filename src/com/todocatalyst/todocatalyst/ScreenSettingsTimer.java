@@ -35,6 +35,7 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
 //        cont.setScrollableY(true);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAutomaticallyStartTimer);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowNextTask);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowNextTaskWithRemainingTime);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAutomaticallyGotoNextTask);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowEffortEstimateDetails);

@@ -81,14 +81,15 @@ public class ScreenLogin2 extends MyForm {
             //ALARMS - initialize
             AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
 
-            //TIMER - was running when app was moved to background?
-            if (!ScreenTimer.getInstance().isTimerActive()) {
-                new ScreenMain().show(); //go directly to main screen if user already has a session
-            } else {
-                if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
+            //TIMER - was running when app was moved to background? - now done with ReplayCommand
+//            if (!ScreenTimer.getInstance().isTimerActive()) {
+//                new ScreenMain().show(); //go directly to main screen if user already has a session
+//            } else {
+//                if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
+//                    new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+//                }
+//            }
                     new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
-                }
-            }
 
         } else {
             setupLoginScreen();

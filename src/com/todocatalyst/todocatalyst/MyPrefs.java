@@ -38,6 +38,8 @@ public class MyPrefs {
 //    static PrefEntry insertNewItemsInStartOfCategory = new PrefEntry("insertNewItemsInStartOfCategory", true, "Always insert new tasks at the beginning of lists (instead of at the end)");
     static PrefEntry insertNewItemsInStartOfLists
             = new PrefEntry("Insert created at top of list", "insertNewItemsInStartOfLists", true, "Always insert new tasks at the beginning of lists (instead of at the end)");
+    static PrefEntry insertNewSubtasksInScreenItemInStartOfLists
+            = new PrefEntry("**Insert new subtasks created at top of list", "insertNewSubtasksInScreenItemInStartOfLists", false, "**Always insert new subtasks at the beginning of lists (instead of at the end)");
     //"Insert created at top of list", "Insert new tasks at beginning of list"
 
     static PrefEntry insertNewCategoriesForItemsInStartOfIList
@@ -56,6 +58,9 @@ public class MyPrefs {
     static PrefEntry timerAutomaticallyGotoNextTask
             = new PrefEntry("Automatically continue on next task", "timerAutomaticallyGotoNextTask", true, "Automatically go to the next task in the list or project after the current task is done");
 
+    static PrefEntry timerShowNextTaskWithRemainingTime
+            = new PrefEntry("Show "+Item.EFFORT_REMAINING+" for next-coming task", "timerShowNextTaskWithRemainingTime", true, 
+                    "Will show the "+Item.EFFORT_REMAINING+" in square brackets like [1:15] after next task at the bottom of the Timer screen."); //TODO make timerShowNextTask a numerical value to show 0/1/2/3 next tasks and start one by clicking on it
     static PrefEntry timerShowNextTask
             = new PrefEntry("Show next-coming task in Timer", "timerShowNextTask", true, "Will show the next task in a list at the bottom of the Timer screen. This can help mentally prepare but can also disturb the focus on the current task"); //TODO make timerShowNextTask a numerical value to show 0/1/2/3 next tasks and start one by clicking on it
 
@@ -165,7 +170,7 @@ public class MyPrefs {
                     "updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem", true, "**");
 
     //NB probably not really useful since the easy way to update the other field is to delete it before setting the other... More intuitive (difficult to explain why different values cannot be set)
-    static PrefEntry alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem
+    static PrefEntry alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX
             = new PrefEntry("Always copy values between " + Item.EFFORT_ESTIMATE + " and " + Item.EFFORT_REMAINING + " the first time these values are being edited for a task",
                     "alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem", false, "NB. Makes it impossible to set different initial values for two fields");
 
@@ -226,8 +231,8 @@ public class MyPrefs {
     static PrefEntry cacheLocalStorageSize
             = new PrefEntry("**","cacheLocalStorageSize", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
-//    static PrefEntry cacheLocalStorageSizeWorkSlotsXXX
-//            = new PrefEntry("**","cacheLocalStorageSizeWorkSlots", 1000, "deactivated if 0** need to implement Externalizable before this will work!!");
+    static PrefEntry cacheLocalStorageSizeWorkSlots
+            = new PrefEntry("**","cacheLocalStorageSizeWorkSlots", 1000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
     static PrefEntry cacheMaxNumberParseObjectsToFetchInQueries
             = new PrefEntry("**","cacheMaxNumberParseObjectsToFetchInQueries", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");

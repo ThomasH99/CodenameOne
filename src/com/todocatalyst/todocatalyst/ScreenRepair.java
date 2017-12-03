@@ -384,7 +384,24 @@ public class ScreenRepair extends MyForm {
 //                DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(true);
 //TODO!!!! show waiting turning symbol
                 DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
-                Dialog.show("Info", "Finished updating cache","OK",null);
+                Dialog.show("Info", "Finished updating cache", "OK", null);
+            }
+        }));
+
+        content.add(new Button(new Command("Storage location info") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                String[] roots = FileSystemStorage.getInstance().getRoots();
+                String str = "FileSystemStorage.getInstance().getRoots()=\n";
+                for (String s : roots) {
+                    str += s + "\n";
+                }
+                for (String s : roots) {
+                    str += s + "\n";
+                }
+                str+= "FileSystemStorage.getInstance().getAppHomePath()="+FileSystemStorage.getInstance().getAppHomePath();
+                str+= "FileSystemStorage.getInstance().getCachesDir()="+FileSystemStorage.getInstance().getCachesDir();
+                Dialog.show("Info", str, "OK", null);
             }
         }));
 

@@ -33,9 +33,9 @@ public class InlineInsertNewTaskContainer extends Container {
     private Item newItem;
 //    private Container cont=new Container(new BorderLayout());
 
-    private final static String ENTER_SUBTASK = "Subtask. Swipe left for task"; //"Enter subtask (swipe left: cancel)";
-    private final static String ENTER_TASK = "Task. Swipe right for subtask)"; //"Task (swipe right: subtask)"
-    private final static String ENTER_TASK_NO_SWIPE_RIGHT = "Task"; //"Task (swipe right: subtask)"
+    private final static String ENTER_SUBTASK = "New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
+    private final static String ENTER_TASK = "New task, ->for subtask)"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_TASK_NO_SWIPE_RIGHT = "New task"; //"Task (swipe right: subtask)"
 
     interface InsertNewTaskFunc {
 
@@ -202,7 +202,7 @@ public class InlineInsertNewTaskContainer extends Container {
         Container westCont = new Container(BoxLayout.x());
 
         if (item != null) { //only add RIGHT swipe to create a subtask if the insertNew is below an Item (eg not if only element on the screen)
-            Label swipeIconLabel = new Label(Icons.iconInsertNewTaskIndent);
+//            if (false) {Label swipeIconLabel = new Label(Icons.iconInsertNewTaskIndent);}
             swipC.addSwipeOpenListener((ev) -> { //Swipe RIGHT/LEFT for subtask/task
                 if (item != null) {
 //                    insertAsSubtask = swipC.isOpenedToRight(); //swipe right == make it a subtask //TODO!!!! use button/icon instead to mark it subtask eg [S] or indented subtask icon
@@ -210,7 +210,7 @@ public class InlineInsertNewTaskContainer extends Container {
 //                    swipeIconLabel.setIcon(insertAsSubtask ? Icons.iconInsertNewTaskExdend : Icons.iconInsertNewTaskIndent); //change arrow 
                     if (swipC.isOpenedToRight()) { //swipe right == make it a subtask //TODO!!!! use button/icon instead to mark it subtask eg [S] or indented subtask icon
                         if (insertAsSubtask) {
-                            //do nothing
+                            //if already a subtask, do nothing
                         } else {
                             insertAsSubtask = false; //make 
                         }
@@ -222,7 +222,7 @@ public class InlineInsertNewTaskContainer extends Container {
                         }
                     }
                     taskTextEntryField2.setHint(insertAsSubtask ? ENTER_SUBTASK : ENTER_TASK); //item!=null to avoid 
-                    swipeIconLabel.setIcon(insertAsSubtask ? Icons.iconInsertNewTaskExdend : Icons.iconInsertNewTaskIndent); //change arrow 
+//                    if (false) swipeIconLabel.setIcon(insertAsSubtask ? Icons.iconInsertNewTaskExdend : Icons.iconInsertNewTaskIndent); //change arrow 
 //                this.repaint();  //refresh InsertNewTaskContainer after changing hint and icon
                 }
                 ev.consume();
@@ -240,8 +240,9 @@ public class InlineInsertNewTaskContainer extends Container {
                 if (false) {
                     getComponentForm().animateLayout(300);//TODO: enough to update the field?
                 }
+                revalidate(); //ensure refresh?!
             });
-            westCont.add(swipeIconLabel);
+//            westCont.add(swipeIconLabel);
         }
 
         //DONE listener - create and insert new task
@@ -582,7 +583,8 @@ public class InlineInsertNewTaskContainer extends Container {
 //        if (lastInsertNewTaskContainer != null && f.equals(lastInsertNewTaskContainer.getComponentForm())
         if (taskTextEntryField2 != null) {
 //            f.setEditOnShow(lastInsertNewTaskContainer.taskTextEntryField2);
-            taskTextEntryField2.requestFocus();
+            if (false)taskTextEntryField2.requestFocus();
+            else taskTextEntryField2.startEditingAsync();
         }
     }
 

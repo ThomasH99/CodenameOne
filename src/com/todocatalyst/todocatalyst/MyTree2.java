@@ -132,10 +132,12 @@ public class MyTree2 extends ContainerScrollY {
 //    }
 //    public MyTree2(MyTreeModel model, HashSet expandedObjects, FilterSortDef itemListFilteredSorted, InsertNewTaskFunc insertNewTask) {
     /**
-     * 
+     *
      * @param model the model to expand, e.g. an Item or ItemList
-     * @param expandedObjects list of expanded objects to know it should be expanded by default when displaying
-     * @param insertNewTask function to determine a newTaskContainer should be insert below an Item
+     * @param expandedObjects list of expanded objects to know it should be
+     * expanded by default when displaying
+     * @param insertNewTask function to determine a newTaskContainer should be
+     * insert below an Item
      */
     public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewTaskFunc insertNewTask) {
         super();
@@ -634,8 +636,8 @@ public class MyTree2 extends ContainerScrollY {
                     || (parent == null && model instanceof ItemAndListCommonInterface))) {
 //                Component insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) model);
 //                InsertNewTaskContainer insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) parent);
-                InlineInsertNewTaskContainer insertNewTask = 
-                        insertNewTaskFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
+                InlineInsertNewTaskContainer insertNewTask
+                        = insertNewTaskFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
                 if (insertNewTask != null) {
                     destination.add(insertNewTask);
 //                    getComponentForm().setEditOnShow(insertNewTask.getTextField()); //ComponentForm should never be undefined here since MyTree should already be in a form
@@ -718,9 +720,11 @@ public class MyTree2 extends ContainerScrollY {
         } else {
             cmp.setIcon(folder);
         }
-        updateNodeComponentStyle(cmp.getSelectedStyle(), depth);
-        updateNodeComponentStyle(cmp.getUnselectedStyle(), depth);
-        updateNodeComponentStyle(cmp.getPressedStyle(), depth);
+        if (false) {
+            updateNodeComponentStyle(cmp.getSelectedStyle(), depth);
+            updateNodeComponentStyle(cmp.getUnselectedStyle(), depth);
+            updateNodeComponentStyle(cmp.getPressedStyle(), depth);
+        }
         return cmp;
     }
 
@@ -943,9 +947,11 @@ public class MyTree2 extends ContainerScrollY {
     }
 
     static void setIndent(Component cmp, int depth) {
-        cmp.getSelectedStyle().setMargin(LEFT, depth * DEPTH_INDENT);
-        cmp.getUnselectedStyle().setMargin(LEFT, depth * DEPTH_INDENT);
-        cmp.getPressedStyle().setMargin(LEFT, depth * DEPTH_INDENT);
+        if (false) { //don't indent but use frame instead
+            cmp.getSelectedStyle().setMargin(LEFT, depth * DEPTH_INDENT);
+            cmp.getUnselectedStyle().setMargin(LEFT, depth * DEPTH_INDENT);
+            cmp.getPressedStyle().setMargin(LEFT, depth * DEPTH_INDENT);
+        }
         if (cmp instanceof Container) {
             ((Container) cmp).setScrollable(false); //to avoid nested scrolling, http://stackoverflow.com/questions/36044418/how-to-extend-infinitecontainer-with-the-capability-of-expanding-the-nodes-in-th
         }

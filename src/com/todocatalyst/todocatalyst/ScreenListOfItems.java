@@ -454,8 +454,12 @@ public class ScreenListOfItems extends MyForm {
      * @param item
      * @param pos
      */
+    static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
+        addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.size(), itemListOrg);
+    }
+
     static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg) {
-        addNewTaskToListAndSave(item, MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.size(), itemListOrg);
+        addNewTaskToListAndSave(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
     }
 
 //    private void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
@@ -492,15 +496,15 @@ public class ScreenListOfItems extends MyForm {
         //NEW ITEM
 //        Command newCmd = new Command("OldCmd", Icons.iconNewToolbarStyle) {
         if (!optionNoNewButton) {
-            Command newCmd =  MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle, (e) -> {
-                    Item item = new Item();
+            Command newCmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle, (e) -> {
+                Item item = new Item();
 //                    item.setOwner(itemListOrg); //necessary to have an owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
-                    item.setTemplate(optionTemplateEditMode);
-                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
+                item.setTemplate(optionTemplateEditMode);
+                addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
 //                    ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                    setKeepPos(new KeepInSameScreenPosition());
+                setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllItemsIn(item, true);
-                    new ScreenItem(item, ScreenListOfItems.this, () -> {
+                new ScreenItem(item, ScreenListOfItems.this, () -> {
 ////                    DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        boolean addToList = (itemListOrg != null && itemListOrg.getObjectId() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
 ////                    if (itemListOrg != null && itemListOrg.getObjectId() != null && !(itemListOrg instanceof Category)) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
@@ -516,23 +520,23 @@ public class ScreenListOfItems extends MyForm {
 //                            DAO.getInstance().save(itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        }//                    } else {
 //                        if (!(!item.needToSaveNewTask() && !Dialog.show("INFO", "No key data in this task, save anyway?", "Save","Don't save"))) {
-                        if (item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
-                            //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
-                            //only save if data (don't save if no relevant data)
-                            if (false) {
-                                item.setTemplate(optionTemplateEditMode);
-                                addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
-                            }
-                            DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
-                            refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+                    if (item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
+                        //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
+                        //only save if data (don't save if no relevant data)
+                        if (false) {
+                            item.setTemplate(optionTemplateEditMode);
+                            addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+                        }
+                        DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
+                        refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                        assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
 //                    }
-                        } else {
-                            itemListOrg.removeFromList(item); //if no saveable data, undo the 
-                            //TODO!!!! how to remove from eg Categories if finally the task is not saved??
-                        }
-                    }, optionTemplateEditMode).show();
-                }
+                    } else {
+                        itemListOrg.removeFromList(item); //if no saveable data, undo the 
+                        //TODO!!!! how to remove from eg Categories if finally the task is not saved??
+                    }
+                }, optionTemplateEditMode).show();
+            }
             );
             toolbar.addCommandToRightBar(newCmd);
         }
@@ -572,8 +576,8 @@ public class ScreenListOfItems extends MyForm {
         //NEW ITEM from TEMPLATE
         //TODO!!! create template by longpress on (+)
         if (true || optionTemplateEditMode) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("New from template", "",null,(e) -> {
-                    //select appropriate template
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("NewFromTemplate", "New from template", null, (e) -> {
+                //select appropriate template
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                List<Item> templateList = DAO.getInstance().getAllTemplates();
 //                Picker templatePicker = new Picker();
@@ -597,65 +601,65 @@ public class ScreenListOfItems extends MyForm {
 //                    }
 //                }
 //</editor-fold>
-                    Item selectedTemplate = pickTemplateOLD();
-                    if (selectedTemplate != null) { //null if user cancelled
-                        Item newTemplateInstantiation = new Item();
-                        if (itemListOrg instanceof ParseObject) { //itemListOrg can be a temporary list like Today
-                            newTemplateInstantiation.setOwner(itemListOrg); //necessary to have an owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
-                        }
+                Item selectedTemplate = pickTemplateOLD();
+                if (selectedTemplate != null) { //null if user cancelled
+                    Item newTemplateInstantiation = new Item();
+                    if (itemListOrg instanceof ParseObject) { //itemListOrg can be a temporary list like Today
+                        newTemplateInstantiation.setOwner(itemListOrg); //necessary to have an owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
+                    }
 //                        setKeepPos(new KeepInSameScreenPosition()); //NO, move to position of new item
-                        selectedTemplate.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
-                        new ScreenItem(newTemplateInstantiation, ScreenListOfItems.this, () -> {
+                    selectedTemplate.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
+                    new ScreenItem(newTemplateInstantiation, ScreenListOfItems.this, () -> {
 //                        DAO.getInstance().save(newTemplateInstance); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            newTemplateInstance.setOwner(itemListOrg); //works for any type of owner
 //                            DAO.getInstance().save(newTemplateInstance); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            itemListOrg.addItemAtIndex(newTemplateInstance, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize()); //UI: add to top of list
-                            if (false) {
-                                DAO.getInstance().save(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner
-                                if (itemListOrg != null && itemListOrg.getObjectIdP() != null && !optionTemplateEditMode) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-                                    //if creating new template instances within the TemplateList, then don't save it into template list
-                                    itemListOrg.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), newTemplateInstantiation); //UI: add to top of list
-                                    DAO.getInstance().save(itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                                } else {
-                                    assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
-                                }
+                        if (false) {
+                            DAO.getInstance().save(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner
+                            if (itemListOrg != null && itemListOrg.getObjectIdP() != null && !optionTemplateEditMode) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+                                //if creating new template instances within the TemplateList, then don't save it into template list
+                                itemListOrg.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), newTemplateInstantiation); //UI: add to top of list
+                                DAO.getInstance().save(itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                            } else {
+                                assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
                             }
-                            newTemplateInstantiation.setTemplate(optionTemplateEditMode);
-                            addNewTaskToListAndSave(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), itemListOrg);
-                            setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation)); //scroll to position of new item, whereever it is inserted
-                            refreshAfterEdit();
-                        }).show();
-                    }
+                        }
+                        newTemplateInstantiation.setTemplate(optionTemplateEditMode);
+                        addNewTaskToListAndSave(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), itemListOrg);
+                        setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation)); //scroll to position of new item, whereever it is inserted
+                        refreshAfterEdit();
+                    }).show();
                 }
+            }
             ));
         }
 
         //EDIT PROPERTIES OF LIST
         if (!optionTemplateEditMode && !optionNoEditListProperties) {
             String txt = itemListOrg instanceof Category ? "Category Properties" : "List Properties";
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.create(txt, "",null,(e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("EditCatListProps", txt, null, (e) -> {
 //                ItemList itemList = new ItemList();
 //                    setKeepPos(new KeepInSameScreenPosition()); //not needed
-                    new ScreenItemListProperties(itemListOrg, ScreenListOfItems.this, () -> {
-                        DAO.getInstance().save(itemListOrg);
-                        setTitle(itemListOrg.getText()); //refrehs title of screen after edit of list name
+                new ScreenItemListProperties(itemListOrg, ScreenListOfItems.this, () -> {
+                    DAO.getInstance().save(itemListOrg);
+                    setTitle(itemListOrg.getText()); //refrehs title of screen after edit of list name
 //                    previousForm.revalidate(); //refresh list to show new items(??)
-                    }).show();
-                }
+                }).show();
+            }
             ));
         }
 
         //EDIT WORKSLOTS
         if (!optionTemplateEditMode && !optionNoWorkTime) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
-                    setKeepPos(new KeepInSameScreenPosition());
-                    new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotList(),
-                            itemListOrg, ScreenListOfItems.this, (iList) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
+                setKeepPos(new KeepInSameScreenPosition());
+                new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotList(),
+                        itemListOrg, ScreenListOfItems.this, (iList) -> {
 //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
-                                //DONE!!! reload/recalc workslots
-                                ScreenListOfItems.this.refreshAfterEdit();
-                            }).show();
-                }
+                            //DONE!!! reload/recalc workslots
+                            ScreenListOfItems.this.refreshAfterEdit();
+                        }).show();
+            }
             ));
         }
 
@@ -688,22 +692,22 @@ public class ScreenListOfItems extends MyForm {
 //                            filterSortDef = new FilterSortDef();
 //                        }
 //                    }
-                    filterSortDef = itemListOrg.getFilterSortDef();
-                    if (filterSortDef == null) {
-                        filterSortDef = new FilterSortDef();
-                    }
-                    setKeepPos(new KeepInSameScreenPosition());
-                    new ScreenFilter(filterSortDef, ScreenListOfItems.this, () -> {
+                filterSortDef = itemListOrg.getFilterSortDef();
+                if (filterSortDef == null) {
+                    filterSortDef = new FilterSortDef();
+                }
+                setKeepPos(new KeepInSameScreenPosition());
+                new ScreenFilter(filterSortDef, ScreenListOfItems.this, () -> {
 //                    itemList = filterSortDef.filterAndSortItemList(itemListOrg);
-                        DAO.getInstance().save(filterSortDef);
-                        itemListOrg.setFilterSortDef(filterSortDef);
-                        DAO.getInstance().save(itemListOrg);
+                    DAO.getInstance().save(filterSortDef);
+                    itemListOrg.setFilterSortDef(filterSortDef);
+                    DAO.getInstance().save(itemListOrg);
 //                        refreshItemListFilterSort();
 //                        setupList(); //TODO optimize the application of a filter?
-                        //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
-                        refreshAfterEdit(); //TODO optimize the application of a filter? 
-                    }).show();
-                }
+                    //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
+                    refreshAfterEdit(); //TODO optimize the application of a filter? 
+                }).show();
+            }
             ));
 
 //            toolbar.addCommandToOverflowMenu(sortOnOff = new Command("Sort ON/OFF", Icons.iconCmdSortOnOff) { //this title never shown
@@ -923,8 +927,8 @@ public class ScreenListOfItems extends MyForm {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                }
+                ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+            }
             ));
         }
 
@@ -1602,28 +1606,42 @@ public class ScreenListOfItems extends MyForm {
         long finishTime = item.getFinishTime();
 //        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
 
+Container eastDateEffortCont = new Container(BoxLayout.y());
+
         //REMAINING EFFORT / ACTUAL EFFORT
-        Label actualEffortLabel = new Label();
+        final Label actualEffortLabel = new Label(); //must be final for use in lambda, null;
+        Label finishTimeLabel = null;
+        Label dueDateLabel = null;
+        Label completedDateLabel = null;
+        Label remainingEffortLabel = null;
 //        Label remainingEffortLabel = null;
         if (item.isDone()) {
             long actualEffort = item.getActualEffort();
             if (actualEffort != 0) {
 //                east.addComponent(actualEffortLabel = new Label(MyDate.formatTimeDuration(actualEffort)));
-                actualEffortLabel.setText("A:"+MyDate.formatTimeDuration(actualEffort));
+//                actualEffortLabel = new Label();
+                actualEffortLabel.setText("A:" + MyDate.formatTimeDuration(actualEffort));
+                actualEffortLabel.setUIID("ActualEffort");
                 east.addComponent(actualEffortLabel);
+                completedDateLabel = new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "CompletedDate");
+                east.addComponent(completedDateLabel);
             }
         } else {
+            long due = item.getDueDate();
             if (finishTime != MyDate.MIN_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
-                east.add("F:"+MyDate.formatDateSmart(new Date(finishTime)));
+                finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
+                        finishTime > due ? "FinishTimeOverdue" : "FinishTime");
+                east.add(finishTimeLabel);
             } else {
-                long due = item.getDueDate();
                 if (due != 0) {
-                    east.add("D:"+MyDate.formatDateSmart(new Date(due)));
+                    dueDateLabel = new Label("D:" + MyDate.formatDateSmart(new Date(due)),
+                            due < System.currentTimeMillis() ? "DueDateOverdue" : "DueDate");
+                    east.add(dueDateLabel);
                 }
                 long remainingEffort = item.getRemainingEffort();
                 if (remainingEffort != 0 || MyPrefs.itemListShowRemainingEvenIfZero.getBoolean()) {
 //                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
-                    east.addComponent(new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
+                    east.addComponent(remainingEffortLabel=new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
                 }
             }
         }
@@ -1641,13 +1659,14 @@ public class ScreenListOfItems extends MyForm {
 
         //EXPAND subtasks in Item
 //<editor-fold defaultstate="collapsed" desc="comment">
+        Button subTasksButton = null;
         if (true) {
 //        int numberUndoneSubtasks = item.getNumberOfUndoneItems(true); //true: get subtasks, always necessary for a project
             int numberUndoneSubtasks = item.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
             int totalNumberSubtasks = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 //        int totalNumberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks; //true: get subtasks, always necessary for a project
             if (numberUndoneSubtasks > 0 || totalNumberSubtasks > 0) {
-                Button subTasksButton = new Button() {
+                subTasksButton = new Button() {
                     @Override
                     public void longPointerPress(int x, int y) {
                         super.longPointerPress(x, y);
@@ -1721,15 +1740,15 @@ public class ScreenListOfItems extends MyForm {
             //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
 //                Item item = (Item) mainCont.getClientProperty("item"); //TODO!!!! is this needed, why notjust access 'item'??
 //                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                new ScreenItem(item, (MyForm) swipCont.getComponentForm(), () -> {
+            myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+            new ScreenItem(item, (MyForm) swipCont.getComponentForm(), () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    KeepInSameScreenPosition keepPos = new KeepInSameScreenPosition(null, swipCont); //TODO!!!!!! porblem with access to this
 //                    KeepInSameScreenPosition keepPos = new KeepInSameScreenPosition(); //TODO!!!!!! porblem with access to this
 //                    Form f = new Form(item.getText());
 //</editor-fold>
-                    //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
-                    if (false && item.isDirty()) {
+                //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
+                if (false && item.isDirty()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        myTree.refresh();
 //                        refreshOnItemEdits.launchAction(); //refresh when item edited, eg update anything derived from estimates, subtasks, ...
@@ -1738,9 +1757,9 @@ public class ScreenListOfItems extends MyForm {
 //                        ((ScreenListOfItems) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
 //</editor-fold>
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                        myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                    }
-                    DAO.getInstance().save(item);
+                    myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+                }
+                DAO.getInstance().save(item);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //NB. replacing swipCont will work even if swipCont is not updated since each container that replaces creates its own new
 //                    swipCont.getParent().replace(swipCont, buildTreeOrSingleItemContainer(item, motherItemList, isDragEnabled), null); //update the container with edited content
@@ -1750,10 +1769,10 @@ public class ScreenListOfItems extends MyForm {
 //                        refreshOnItemEdits.launchAction();
 //                    }
 //</editor-fold>
-                    myForm.refreshAfterEdit();
-                }).show();
+                myForm.refreshAfterEdit();
+            }).show();
 //                new ScreenItem(item, thisScreen).show();
-            }
+        }
         );
         editItemButton.setCommand(editItemCmd);
 
@@ -1796,7 +1815,7 @@ public class ScreenListOfItems extends MyForm {
 //        long finishTime = item.getFinishTimeD().getTime();
 //        long finishTime = item.getFinishTime();
 //        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
-        if (!item.isDone() && finishTime != MyDate.MIN_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
+        if (false && !item.isDone() && finishTime != MyDate.MIN_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
 //            south.add("F:" + L10NManager.getInstance().formatDateTimeShort(item.getFinishTime()));
             southDetailsContainer.add("F:" + MyDate.formatDateTimeNew(new Date(finishTime)));
         }
@@ -1808,46 +1827,53 @@ public class ScreenListOfItems extends MyForm {
         southDetailsContainer.add(new Label(item.getImpUrgPrioValueAsString()));
 
         //DUE DATE or COMPLETED DATE
-        if (!item.isDone()) {
+        if (false && !item.isDone()) {
             if (item.getDueDateD().getTime() != 0) {
 //            south.addComponent(new Label("D:" + L10NManager.getInstance().formatDateShortStyle(new Date(item.getDueDate()))));
 //            south.addComponent(new Label("D:" + MyDate.formatDateNatural(new MyDate(new Date(item.getDueDate())),MyDate.FORMAT_CASUAL, false)));
 //                south.addComponent(new Label("D:" + MyDate.formatDateNatural(new MyDate(item.getDueDate()), new MyDate(), MyDate.FORMAT_CASUAL, false)));
-                southDetailsContainer.addComponent(new Label("D:" + MyDate.formatDateNew(item.getDueDate())));
+                southDetailsContainer.addComponent(new Label("D:" + MyDate.formatDateNew(item.getDueDate()),
+                        item.getDueDate() < System.currentTimeMillis() ? "DueDateOverdue" : "DueDate"));
             }
-        } else {
-//            south.addComponent(new Label("C:" + MyDate.formatDateNatural(new MyDate(item.getCompletedDate()), new MyDate(), MyDate.FORMAT_CASUAL, false)));
-            southDetailsContainer.addComponent(new Label("C:" + MyDate.formatDateNew(item.getCompletedDate())));
         }
+//        else {
+////            south.addComponent(new Label("C:" + MyDate.formatDateNatural(new MyDate(item.getCompletedDate()), new MyDate(), MyDate.FORMAT_CASUAL, false)));
+//            southDetailsContainer.addComponent(new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "CompletedDate"));
+//        }
 
         //ALARM SET icon
+        Label alarmLabel = null;
         if (item.getAlarmDate() != 0) {
 //            south.addComponent(new Label((Image) (item.getAlarmDate() != 0 ? Icons.get().iconAlarmSetLabelStyle : null)));
-            Label alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), (Image) Icons.get().iconAlarmSetLabelStyle);
+            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), (Image) Icons.get().iconAlarmSetLabelStyle);
             alarmLabel.getStyle().setAlignment(Component.RIGHT);
             southDetailsContainer.addComponent(alarmLabel);
         }
 
         //                new Label("(R:" + item.getRemainingEffortInMinutes() + "/A:" + item.getActualEffortInMinutes() + ")"),
         //HIDE UNTIL
+        Label hideUntilLabel = null;
         if (item.getHideUntilDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowHideUntilDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            southDetailsContainer.addComponent(new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD())));
+            southDetailsContainer.addComponent(hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD())));
         }
         //START BY
+        Label startByLabel = null;
         if (item.getStartByDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowStartByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            southDetailsContainer.addComponent(new Label("S:" + MyDate.formatDateNew(item.getStartByDateD())));
+            southDetailsContainer.addComponent(startByLabel = new Label("S:" + MyDate.formatDateNew(item.getStartByDateD())));
         }
         //EXPIRE BY
+        Label expireByLabel = null;
         if (item.getExpiresOnDateD().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            southDetailsContainer.addComponent(new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD())));
+            southDetailsContainer.addComponent(expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD())));
         }
         //WAITING
+        Label waitingTillLabel = null;
         if (item.getWaitingTillDateD().getTime() != 0 && MyPrefs.itemListWaitingTillDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            southDetailsContainer.addComponent(new Label("W:" + MyDate.formatDateNew(item.getWaitingTillDateD())));
+            southDetailsContainer.addComponent(waitingTillLabel = new Label("W:" + MyDate.formatDateNew(item.getWaitingTillDateD())));
         }
         //ACTUAL
         long actual = item.getActualEffort();
@@ -2055,91 +2081,94 @@ refreshAfterEdit();
 //                    Log.p("Swipe right");
 //                }
             });
+        }
 //        } //else {
-            //TIMER
+        //TIMER
 //<editor-fold defaultstate="collapsed" desc="comment">
 //only add swipe buttons when NOT in projectEditMode
 //        bottomLeft.add(new Button(Icons.get().iconTimerSymbolLabelStyle)); //Start Timer on this
 //            if (!item.isTemplate() && !item.isDone()) {
 //</editor-fold>
-            if (true || myFormScreenListOfItems == null || !myFormScreenListOfItems.projectEditMode) {
-                if (!item.isTemplate()) {
+        if (true || myFormScreenListOfItems == null || !myFormScreenListOfItems.projectEditMode) {
+            if (!item.isTemplate()) {
 //                    buttonSwipeContainer.add(new Button(new Command(null, Icons.iconTimerSymbolToolbarStyle) {
-                    Button startTimer = new Button(MyReplayCommand.create("StartTimer-" + item.getObjectIdP(), null, Icons.iconTimerSymbolToolbarStyle, (ev) -> {
+                Button startTimer = new Button(MyReplayCommand.create("StartTimer-" + item.getObjectIdP(), null, Icons.iconTimerSymbolToolbarStyle, (ev) -> {
 //                        @Override
 //                        public void actionPerformed(ActionEvent evt) {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                        myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                        ScreenTimer.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
+                    myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+                    ScreenTimer.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
 //                        }
-                    }));
-                    startTimer.setUIID("SwipeButton");
-                    buttonSwipeContainer.add(startTimer);
-                } else { // item.isTemplate()
-                    Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, Icons.iconNewItemFromTemplate, (e) -> {
-                            Item newTemplateInstantiation = new Item();
-                            item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
-                            new ScreenItem(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
-                                DAO.getInstance().save(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
-                                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation));
+                }));
+                startTimer.setUIID("SwipeButtonTimer");
+                buttonSwipeContainer.add(startTimer);
+            } else { // item.isTemplate()
+                Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, Icons.iconNewItemFromTemplate, (e) -> {
+                    Item newTemplateInstantiation = new Item();
+                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
+                    new ScreenItem(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
+                        DAO.getInstance().save(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
+                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation));
 //                            refreshOnItemEdits.launchAction(); //NOT necessary, since item not saved in list of templates
-                            }).show();
-                        }
-                    )
-                    );
-                    newFromTemplate.setUIID("SwipeButton");
-                    buttonSwipeContainer.add(newFromTemplate);
+                    }).show();
                 }
+                )
+                );
+//                    newFromTemplate.setUIID("SwipeButton");
+                newFromTemplate.setUIID("SwipeButtonNewFromTemplate");
+                buttonSwipeContainer.add(newFromTemplate);
             }
-
-            if (true || !((ScreenListOfItems) myForm).projectEditMode) {
-                //STARRED
-                if (!item.isTemplate() && !item.isDone()) {
-//            Button starredSwipeable = new Button(null, item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
-                    starredSwipeableButton.addActionListener((e) -> {
-                        item.setStarred(!item.isStarred()); //flip the starred value
-                        //update the starred button
-                        starButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
-                        starButton.setHidden(!item.isStarred());
-                        starredSwipeableButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
-//            starred.getParent().revalidate();
-                        //update and save the item
-                        //update the starredSwipeable button
-//            starredSwipeable.repaint();
-                        DAO.getInstance().save(item);
-                        swipCont.close();
-                    });
-                    starredSwipeableButton.setUIID("SwipeButton");
-                    buttonSwipeContainer.add(starredSwipeableButton);
-                }
-            }
-
-            //UPDATE DUE DATE
-            if (!item.isTemplate() && !item.isDone()) {
-                setDueDateToToday.addActionListener((e) -> {
-                    Date tomorrow = new Date(new Date().getTime() + MyDate.DAY_IN_MILLISECONDS);
-                    if (MyDate.isToday(item.getDueDateD())) {
-//                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
-                        item.setDueDate((new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
-                    } else if (MyDate.isToday(item.getWaitingTillDateD())) {
-                        item.setWaitingTillDate((new Date(item.getWaitingTillDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
-                    } else if (MyDate.isToday(item.getStartByDateD())) {
-                        item.setStartByDate((new Date(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
-                    } else {
-//                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date())); //UI: if due is NOT already today, then set due day to today
-                        item.setDueDate(MyDate.setDateToTodayKeepTime(item.getDueDateD())); //UI: if due is NOT already today, then set due day to today
-                    }                    //update and save the item
-                    DAO.getInstance().save(item);
-                    swipCont.close();
-//                    refreshOnItemEdits.launchAction(); //optimize, eg ?? (is likely to affect work time)
-                    myForm.refreshAfterEdit();//optimize, eg ?? (is likely to affect work time)
-                });
-                setDueDateToToday.setUIID("SwipeButton");
-                buttonSwipeContainer.add(setDueDateToToday);
-            }
-//        }
         }
+
+        if (true || !((ScreenListOfItems) myForm).projectEditMode) {
+            //STARRED
+            if (!item.isTemplate() && !item.isDone()) {
+//            Button starredSwipeable = new Button(null, item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
+                starredSwipeableButton.addActionListener((e) -> {
+                    item.setStarred(!item.isStarred()); //flip the starred value
+                    //update the starred button
+                    starButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
+                    starButton.setHidden(!item.isStarred());
+                    starredSwipeableButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
+//            starred.getParent().revalidate();
+                    //update and save the item
+                    //update the starredSwipeable button
+//            starredSwipeable.repaint();
+                    swipCont.close(); //close before save 
+//                        myForm.revalidate();
+                    swipCont.revalidate();
+                    DAO.getInstance().save(item);
+                });
+                starredSwipeableButton.setUIID("SwipeButtonStar");
+                buttonSwipeContainer.add(starredSwipeableButton);
+            }
+        }
+
+        //UPDATE DUE DATE
+        if (!item.isTemplate() && !item.isDone()) {
+            setDueDateToToday.addActionListener((e) -> {
+                Date tomorrow = new Date(new Date().getTime() + MyDate.DAY_IN_MILLISECONDS);
+                if (MyDate.isToday(item.getDueDateD())) {
+//                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
+                    item.setDueDate((new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
+                } else if (MyDate.isToday(item.getWaitingTillDateD())) {
+                    item.setWaitingTillDate((new Date(item.getWaitingTillDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
+                } else if (MyDate.isToday(item.getStartByDateD())) {
+                    item.setStartByDate((new Date(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
+                } else {
+//                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date())); //UI: if due is NOT already today, then set due day to today
+                    item.setDueDate(MyDate.setDateToTodayKeepTime(item.getDueDateD())); //UI: if due is NOT already today, then set due day to today
+                }                    //update and save the item
+                DAO.getInstance().save(item);
+                swipCont.close();
+//                    refreshOnItemEdits.launchAction(); //optimize, eg ?? (is likely to affect work time)
+                myForm.refreshAfterEdit();//optimize, eg ?? (is likely to affect work time)
+            });
+            setDueDateToToday.setUIID("SwipeButtonSetDueToToday");
+            buttonSwipeContainer.add(setDueDateToToday);
+        }
+//        }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && projectEditMode) {

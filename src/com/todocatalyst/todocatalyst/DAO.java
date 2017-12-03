@@ -64,7 +64,7 @@ public class DAO {
 //    CacheMap<String, ParseObject> cache = new CacheMap();
 //    CacheMap cache; // = new CacheMap(); //always initialize since DAO may be called before initializing cache via start() (https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html)
     MyCacheMap cache; // = new CacheMap(); //always initialize since DAO may be called before initializing cache via start() (https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html)
-//    CacheMap cacheWorkSlots = new CacheMap(); //optimize speed when searching only for WorkSlots
+    CacheMap cacheWorkSlots;// = new CacheMap(); //optimize speed when searching only for WorkSlots
     Date latestCacheUpdateDate = new Date(MyDate.MIN_DATE); //start wtih minimal date
 //    Object temp;
 
@@ -1757,14 +1757,15 @@ public class DAO {
             reload = false;
 //            results = new ArrayList(); //reset list if need for reload
             results = new WorkSlotList(); //reset list if need for reload
-//            Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
-            Vector keys = cache.getKeysInCache();
-            for (Object key : keys) {
+            if (cacheWorkSlots != null) {
+                Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
+//                Vector keys = cache.getKeysInCache();
+                for (Object key : workSlotKeys) {
+                    workSlot = (WorkSlot) cacheWorkSlots.get(key);
+//                Object o = cache.get(key);
+//                if (o instanceof WorkSlot) {
 //                workSlot = (WorkSlot) cacheWorkSlots.get(key);
-                Object o = cache.get(key);
-                if (o instanceof WorkSlot) {
-//                workSlot = (WorkSlot) cacheWorkSlots.get(key);
-                    workSlot = (WorkSlot) o;
+//                    workSlot = (WorkSlot) o;
 //                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
 //                if (workSlot != null) {
                     Object owner = workSlot.getOwner();
@@ -1793,14 +1794,56 @@ public class DAO {
                             repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
                             reload = true;
                             break; //exit the for loop to reload workslots
-//                            }
-//                            }
                         } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
                             results.add(workSlot);
                         }
                     }
                 }
+            } else {
+                Vector keys = cache.getKeysInCache();
+                for (Object key : keys) {
+//                workSlot = (WorkSlot) cacheWorkSlots.get(key);
+                    Object o = cache.get(key);
+                    if (o instanceof WorkSlot) {
+//                workSlot = (WorkSlot) cacheWorkSlots.get(key);
+                        workSlot = (WorkSlot) o;
+//                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
+//                if (workSlot != null) {
+                        Object owner = workSlot.getOwner();
+                        //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
+                        if (owner != null && owner.equals(itemWithWorkSlots)) {
+                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+                            if (repeatRule != null
+                                    && workSlot.getEndTime() < System.currentTimeMillis()
+                                    && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    if (workSlot.getRepeatRule()!=null) { //if repeating workslot
+//                        RepeatRuleParseObject repeatRule =workSlot.getRepeatRule();
+//                        //If workslot fully in the past, but still in list of active instances, then it has expired since last loading
+//                        if (workSlot.getEndTime()<now && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
+//                            RepeatRuleObjectInterface newWorkSlot = repeatRule.updateRepeatInstancesOnDoneCancelOrDelete(workSlot);
+//                            workSlot=(WorkSlot)newWorkSlot;
+//                        }
+//                    }
+//                    workSlot = workSlot.checkIfExpiredAndReturnNewRepeatInstance(now);
+//</editor-fold>
+//                        if (workSlot.getEndTime() < System.currentTimeMillis()) { //if workSlot has expired
+//                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+//                            if (repeatRule != null) { //if repeating workslot
+                                //DONE!!!! continue generating new instances until we get enough future ones as defined by repeatRule
+//                            if (repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
+                                repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
+                                reload = true;
+                                break; //exit the for loop to reload workslots
+//                            }
+//                            }
+                            } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
+                                results.add(workSlot);
+                            }
+                        }
+                    }
 //                }
+                }
             }
         }
 //        Collections.sort(results, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTime(), i2.getStartTime()));
@@ -2451,7 +2494,7 @@ public class DAO {
         }
         if (objId != null) {
             cache.delete(objId);
-//            cacheWorkSlots.delete(objId);
+            cacheWorkSlots.delete(objId);
         }
     }
 
@@ -3217,9 +3260,12 @@ public class DAO {
             for (ParseObject o : results) {
 //                ASSERT.that(o.isDataAvailable(), "isDataAvailable() false for WorkSlot ObjId=" + o.getObjectId());
 //                cache.put(o.getObjectId(), o);
-                cache.put(o.getObjectIdP(), o);
-                ASSERT.that(o instanceof WorkSlot);
-//                cacheWorkSlots.put(o.getObjectIdP(), o); //cache WorkSlots in both caches (to avoid any weird edge cases)
+//                ASSERT.that(o instanceof WorkSlot);
+                if (cacheWorkSlots != null) {
+                    cacheWorkSlots.put(o.getObjectIdP(), o); //cache WorkSlots in both caches (to avoid any weird edge cases)
+                } else {
+                    cache.put(o.getObjectIdP(), o);
+                }
             }
         } catch (ParseException ex) {
             Log.e(ex);
@@ -3474,10 +3520,14 @@ public class DAO {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        }
 //        createNewCacheForWorkSlots(true);
-//        if (cacheWorkSlots == null) { // || forceCreationOfNewCache) {
-//            cacheWorkSlots = new CacheMap("WS"); //prefix neccessary to not confuse locally cached items
+        if (cacheWorkSlots == null) { // || forceCreationOfNewCache) {
+            cacheWorkSlots = new CacheMap("WS"); //prefix neccessary to not confuse locally cached items
+            cacheWorkSlots.setCacheSize(MyPrefs.cacheDynamicSizeWorkSlots.getInt()); //persist cached elements
+            //activate or de-activate local storage
+            cacheWorkSlots.setAlwaysStore(MyPrefs.cacheLocalStorageSizeWorkSlots.getInt() > 0); //persist cached elements
+            cacheWorkSlots.setStorageCacheSize(MyPrefs.cacheLocalStorageSizeWorkSlots.getInt()); //persist cached elements //TODO!!!! will this automatically too many locally cached elements?? At first look, seems not
 //            initNewCache(cacheWorkSlots, MyPrefs.getInt(MyPrefs.cacheDynamicSizeWorkSlots), MyPrefs.getInt(MyPrefs.cacheLocalStorageSizeWorkSlots));
-//        }
+        }
 //        int cacheDynamicSize = MyPrefs.getInt(MyPrefs.cacheDynamicSize);
 //        cache.setCacheSize(cacheDynamicSize); //persist cached elements
 //
