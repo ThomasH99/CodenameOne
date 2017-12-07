@@ -46,7 +46,7 @@ public class ScreenMain extends MyForm {
 //        setLayout(new BorderLayout());
         setLayout(BoxLayout.y());
         getContentPane().setScrollableY(true);
-        addCommandsToToolbar(null, getContentPane());//, theme);
+        addCommandsToToolbar(getToolbar(), getContentPane());//, theme);
 //        addCommandsToToolbar(new Toolbar(), getContentPane());//, theme); //new Toolbar() hack to hide the toolbar
         if (false) {
             getToolbar().setUIID("Container");
@@ -91,9 +91,12 @@ public class ScreenMain extends MyForm {
         c.setUIID("Button");
 //        c.setLeadComponent(titleButton);
         cont.add(c);
+        
     }
 
     public void addCommandsToToolbar(Toolbar toolbar, Container cont) { //, Resources theme) {
+        toolbar.addCommandToRightBar(newItemSaveToInboxCmd());
+
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
         MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconAlarmSetLabelStyle/*FontImage.create(" \ue838 ", iconStyle)*/,

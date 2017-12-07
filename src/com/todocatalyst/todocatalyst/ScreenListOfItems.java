@@ -657,6 +657,7 @@ public class ScreenListOfItems extends MyForm {
                         itemListOrg, ScreenListOfItems.this, (iList) -> {
 //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
                             //DONE!!! reload/recalc workslots
+                            itemListOrg.resetWorkTimeDefinition(); //ensure workTime is recalculated
                             ScreenListOfItems.this.refreshAfterEdit();
                         }).show();
             }

@@ -1,43 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <resource majorVersion="1" minorVersion="9" useXmlUI="false">
-    <image name="Container.borderBottom_1.png" type="multi"  />
-    <image name="Container.borderBottomL_1.png" type="multi"  />
-    <image name="Container.borderBottomR_1.png" type="multi"  />
-    <image name="Container.borderCenter_1.png" type="multi"  />
-    <image name="Container.borderLeft_1.png" type="multi"  />
-    <image name="Container.borderRight_1.png" type="multi"  />
-    <image name="Container.borderTop_1.png" type="multi"  />
-    <image name="Container.borderTopL_1.png" type="multi"  />
-    <image name="Container.borderTopR_1.png" type="multi"  />
-    <image name="Container.sel#borderBottom_1.png" type="multi"  />
-    <image name="Container.sel#borderBottomL_1.png" type="multi"  />
-    <image name="Container.sel#borderBottomR_1.png" type="multi"  />
-    <image name="Container.sel#borderCenter_1.png" type="multi"  />
-    <image name="Container.sel#borderLeft_1.png" type="multi"  />
-    <image name="Container.sel#borderRight_1.png" type="multi"  />
-    <image name="Container.sel#borderTop_1.png" type="multi"  />
-    <image name="Container.sel#borderTopL_1.png" type="multi"  />
-    <image name="Container.sel#borderTopR_1.png" type="multi"  />
-    <image name="ContainerListElement.borderBottom_1.png" type="multi"  />
-    <image name="ContainerListElement.borderBottom_2.png" type="multi"  />
-    <image name="ContainerListElement.borderBottomL_1.png" type="multi"  />
-    <image name="ContainerListElement.borderBottomL_2.png" type="multi"  />
-    <image name="ContainerListElement.borderBottomR_1.png" type="multi"  />
-    <image name="ContainerListElement.borderBottomR_2.png" type="multi"  />
-    <image name="ContainerListElement.borderCenter_1.png" type="multi"  />
-    <image name="ContainerListElement.borderCenter_2.png" type="multi"  />
-    <image name="ContainerListElement.borderLeft_1.png" type="multi"  />
-    <image name="ContainerListElement.borderLeft_2.png" type="multi"  />
-    <image name="ContainerListElement.borderRight_1.png" type="multi"  />
-    <image name="ContainerListElement.borderRight_2.png" type="multi"  />
-    <image name="ContainerListElement.borderTop_1.png" type="multi"  />
-    <image name="ContainerListElement.borderTop_2.png" type="multi"  />
-    <image name="ContainerListElement.borderTopL_1.png" type="multi"  />
-    <image name="ContainerListElement.borderTopL_2.png" type="multi"  />
-    <image name="ContainerListElement.borderTopR_1.png" type="multi"  />
-    <image name="ContainerListElement.borderTopR_2.png" type="multi"  />
-    <image name="firewater.jpg"  />
     <l10n name="LocalizationBundle">
         <lang name="fr">
             <entry key="SUPPORT" value="Support" />
@@ -167,7 +130,7 @@
         <val key="Comment.sel#derive" value="Comment" />
         <val key="CompletedDate.derive" value="LabelValue" />
         <val key="CompletedDate.fgColor" value="cc00" />
-        <border key="ContainerListElement.border" type="line" millimeters="true" thickness="0.2" color="14869218" />
+        <border key="ContainerListElement.border" type="underline"  millimeters="true" thickness="0.2" color="14869218" />
         <val key="ContainerListElement.dis#derive" value="ContainerListElement" />
         <val key="ContainerListElement.margin" value="0.0,0.0,0.0,0.0" />
         <val key="ContainerListElement.press#derive" value="ContainerListElement" />
@@ -210,7 +173,7 @@
         <val key="LabelValue.marUnit" value="2,2,2,2" />
         <val key="LabelValue.margin" value="0.0,0.0,0.0,0.0" />
         <val key="LabelValue.padUnit" value="2,2,2,2" />
-        <val key="LabelValue.padding" value="1.0,1.0,2.0,2.0" />
+        <val key="LabelValue.padding" value="1.0,1.0,1.0,1.0" />
         <val key="LabelValue.press#derive" value="LabelValue" />
         <val key="LabelValue.sel#derive" value="LabelValue" />
         <val key="LargeWhiteText.align" value="4" />
@@ -245,14 +208,15 @@
         <val key="ListOfItemsSubtasks.sel#derive" value="ListOfItemsSubtasks" />
         <val key="ListOfItemsSubtasks.transparency" value="255" />
         <val key="ListOfItemsText.align" value="1" />
-        <val key="ListOfItemsText.derive" value="LabelValue" />
+        <val key="ListOfItemsText.derive" value="Label" />
         <val key="ListOfItemsText.dis#derive" value="ListOfItemsText" />
         <val key="ListOfItemsText.press#derive" value="ListOfItemsText" />
         <val key="ListOfItemsText.sel#derive" value="ListOfItemsText" />
         <val key="MyCheckBox.align" value="1" />
         <val key="MyCheckBox.dis#derive" value="MyCheckBox" />
+        <val key="MyCheckBox.margin" value="0.0,0.0,0.0,0.0" />
         <val key="MyCheckBox.padUnit" value="0,2,0,2" />
-        <val key="MyCheckBox.padding" value="0.0,0.0,1.0,1.0" />
+        <val key="MyCheckBox.padding" value="0.0,0.0,0.5,0.0" />
         <val key="MyCheckBox.press#derive" value="MyCheckBox" />
         <val key="MyCheckBox.sel#derive" value="MyCheckBox" />
         <val key="OnOffSwitch.derive" value="OnOffSwitch" />
@@ -261,6 +225,7 @@
         <val key="SwipeButton.bgColor" value="ffff00" />
         <val key="SwipeButton.dis#derive" value="SwipeButton" />
         <val key="SwipeButton.fgColor" value="ffffff" />
+        <val key="SwipeButton.margin" value="0.0,0.0,0.0,0.0" />
         <val key="SwipeButton.padUnit" value="2,2,2,2" />
         <val key="SwipeButton.padding" value="3.0,3.0,3.0,3.0" />
         <val key="SwipeButton.press#derive" value="SwipeButton" />

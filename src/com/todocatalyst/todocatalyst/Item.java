@@ -800,6 +800,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String DUE_DATE = "DUE_DATE"; //"Due";
     final static String DUE_DATE_HELP = "DUE_DATE_HELP"; //"Due";
     final static String UPDATED_DATE = "Modified"; //"Modified"; "Date last modified", "Update", "Last modified"
+    final static String UPDATED_DATE_SUBTASKS = "Modified subtasks"; //"Modified"; "Date last modified", "Update", "Last modified"
     final static String UPDATED_DATE_HELP = "The time this task was last modified. Set automatically. Cannot be modified by user."; //"Modified"; "Date last modified", "Update", "Last modified"
     final static String COMPLETED_DATE = "Completed"; //"Completed by"; //"Completed"; "Date completed", "Completed on"
 //    final static String COMPLETED_DATE_HELP = "The time this task was completed. Set automatically when a task is marked " + ItemStatus.DONE + " or " + ItemStatus.CANCELLED; //"Completed by"; //"Completed"; "Date completed", "Completed on"
@@ -902,7 +903,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String FUN_DREAD_HELP = "Is this a task you'd love to work on or not? Helps pick tasks on a low-energy day";
     final static String CHALLENGE = "Challenge";
     final static String CHALLENGE_HELP = "Challenge";
-    final static String BELONGS_TO = "Belongs to";
+    final static String BELONGS_TO = "Owner List/Project"; //"Belongs to";
     final static String BELONGS_TO_HELP = "Indicates the List or Project this task belongs to. Change to move the task to another List or Project or delete to move to Inbox";
     final static String DEPENDS_ON = "Depends on";
     final static String DEPENDS_ON_HELP = "Indicates that this task depends on another task. Dependent tasks can automatically be hidden until the task they depend on is completed.";
@@ -6733,6 +6734,28 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
         }
         return ItemAndListCommonInterface.super.getFinishTime();
+    }
+    
+    /**
+     * returns the latest date the project or any subtask was updated
+     *
+     * @return
+     */
+    public Date getLastModifiedDateSubtasks() {
+        long lastSubtaskUpdate = getLastModifiedDate(); //if ever project task itself is updated the last, return that date. 
+        long temp;
+        if (isProject()) {
+            for (Object o : getList()) {
+                if (o instanceof Item) {
+                    temp = ((Item) o).getLastModifiedDateSubtasks().getTime(); //cache since potentially heavy operation
+                    if (temp > lastSubtaskUpdate) {
+                        lastSubtaskUpdate = temp;
+                    }
+                }
+            }
+        }
+        return new Date(lastSubtaskUpdate);
+//        return getUpdatedAt();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

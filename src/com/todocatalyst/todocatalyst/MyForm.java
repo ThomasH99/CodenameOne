@@ -8,6 +8,7 @@ import com.codename1.components.OnOffSwitch;
 import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.ToastBar;
+import com.codename1.io.Log;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
@@ -1259,6 +1260,33 @@ public abstract class MyForm extends Form {
         );
     }
 
+    public Command newItemSaveToInboxCmd() {
+
+        Command cmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle, (e) -> {
+            Item item = new Item();
+//                addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
+            setKeepPos(new KeepInSameScreenPosition());
+            new ScreenItem(item, (MyForm) getComponentForm(), () -> {
+                if (item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
+                    //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
+                    //only save if data (don't save if no relevant data)
+                    if (true) {
+                        //TODO!!! save directly to Inbox
+//                            addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+                    }
+                    DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
+                    refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+//                    }
+                } else {
+                    //if no saveable data, do nothing
+//                        itemListOrg.removeFromList(item); //if no saveable data, undo the 
+                    //TODO!!!! how to remove from eg Categories if finally the task is not saved??
+                }
+            }, false).show(); //false=optionTemplateEditMode
+        });
+        return cmd;
+    }
+
     public static Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
@@ -1293,109 +1321,6 @@ public abstract class MyForm extends Form {
 //        }
 //    }
 //</editor-fold>
-    class TemplatePicker extends Picker {
-
-        List<Item> templateList = DAO.getInstance().getTemplateList();
-        String[] stringArray = new String[templateList.size()];
-
-        TemplatePicker() {
-            for (int i = 0, size = templateList.size(); i < size; i++) {
-                stringArray[i] = templateList.get(i).getText();
-            }
-            setType(Display.PICKER_TYPE_STRINGS);
-            setStrings(stringArray);
-        }
-
-        Item getTemplate() {
-            String s = this.getSelectedString();
-            if (s != null) {
-                for (int i = 0, size = templateList.size(); i < size; i++) {
-                    if (s.equals(stringArray[i])) {
-                        return templateList.get(i);
-                    }
-                }
-            }
-            return null;
-        }
-    }
-
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    static Item pickTemplate() {
-//                            new ScreenObjectPicker(ScreenMain.SCREEN_TEMPLATE_PICKER, DAO.getInstance().getTemplateList(), selectedTemplates, ScreenItem.this, () -> {
-//                        if (selectedTemplates.size() >= 1) {
-//                            Item template = (Item) selectedTemplates.get(0);
-//                            Dialog ip = new InfiniteProgress().showInifiniteBlocking();
-//                            template.copyMeInto(item, Item.CopyMode.COPY_FROM_TEMPLATE);
-//                            locallyEditedCategories = null; //HACK needed to force update of locallyEditedCategories (which shouldn't be refreshed when eg editing subtasks to avoid losing the edited categories)
-//                            ip.dispose();
-//                            refreshAfterEdit();
-//                        } else {
-//                            Dialog.show("INFO", "No templates yet. \n\nGo to "+ScreenMain.SCREEN_TEMPLATES_TITLE+" to create templates or save existing tasks or projects as templates", "OK", null);
-//                        }
-//                    }, (obj) -> {
-//                        return ((Item) obj).getText();
-//                    }, 1, true).show();
-//
-//    }
-//</editor-fold>
-    static Item pickTemplateOLD() {
-        List<Item> templateList = DAO.getInstance().getTemplateList();
-        Picker templatePicker = new Picker();
-//                templatePicker.s;
-        String[] stringArray = new String[templateList.size()];
-        for (int i = 0, size = templateList.size(); i < size; i++) {
-            stringArray[i] = templateList.get(i).getText();
-        }
-        templatePicker.setType(Display.PICKER_TYPE_STRINGS);
-        templatePicker.setStrings(stringArray);
-        templatePicker.pressed();
-        templatePicker.released(); //simulate pressing the key to make the Picker pop up without a physical key
-        String s = templatePicker.getSelectedString();
-        Item selectedTemplate = null;
-        if (s != null) {
-            for (int i = 0, size = templateList.size(); i < size; i++) {
-                if (s.equals(stringArray[i])) {
-                    selectedTemplate = templateList.get(i);
-                    break;
-                }
-            }
-        }
-        return selectedTemplate;
-    }
-
-    double pinchDistance;
-
-    private void insertNewContainer() {
-        //find position where to insert in list
-        //insert a (scaled) temporary container (create from empty Item)
-        //cancel insert if less than 100%
-        //insert: create new Item in appropriate underlying ItemList, 
-    }
-
-//    @Override
-    public void pointerDraggedX(int[] x, int[] y) {
-//        super.pointerDragged(x, y);
-        if (x.length > 1) {
-            double currentDis = distance(x, y);
-
-            // prevent division by 0
-            if (pinchDistance <= 0) {
-                pinchDistance = currentDis;
-            }
-            double scale = currentDis / pinchDistance;
-            if (pinch((float) scale)) {
-                return;
-            }
-        }
-        pointerDragged(x[0], y[0]);
-    }
-
-    private double distance(int[] x, int[] y) {
-        int disx = x[0] - x[1];
-        int disy = y[0] - y[1];
-        return Math.sqrt(disx * disx + disy * disy);
-    }
-
     final static int TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS = 80; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
     final static int ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR = 500; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
 
@@ -1502,7 +1427,7 @@ public abstract class MyForm extends Form {
      */
     protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
-        return layout(fieldLabelTxt, field, help, swipeClear, wrapText, makeFieldUneditable, hideEditButton,false);
+        return layout(fieldLabelTxt, field, help, swipeClear, wrapText, makeFieldUneditable, hideEditButton, false);
     }
 
     protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
@@ -2074,6 +1999,63 @@ public abstract class MyForm extends Form {
 
     public void deleteLocallyEditedValuesOnAppExit() {
 
+    }
+
+        private double distance(int[] x, int[] y) {
+        int disx = x[0] - x[1];
+        int disy = y[0] - y[1];
+        return Math.sqrt(disx * disx + disy * disy);
+    }
+
+    /**
+     * If this Component is focused, the pointer dragged event
+     * will call this method
+     * 
+     * @param x the pointer x coordinate
+     * @param y the pointer y coordinate
+     */
+    public void pointerDragged(int[] x, int[] y) {
+        if (x.length > 1) {
+            double currentDis = distance(x, y);
+
+            // prevent division by 0
+            if (pinchDistance <= 0) {
+                pinchDistance = currentDis;
+            }
+            double scale = currentDis / pinchDistance;
+            if (pinch((float)scale)) {
+                return;
+            }
+            Log.p("PointerDragged dist="+pinchDistance+", x="+x+", y="+y);
+        }
+        pointerDragged(x[0], y[0]);
+    }
+    
+    double pinchDistance;
+
+    private void insertNewContainer() {
+        //find position where to insert in list
+        //insert a (scaled) temporary container (create from empty Item)
+        //cancel insert if less than 100%
+        //insert: create new Item in appropriate underlying ItemList, 
+    }
+
+//    @Override
+    public void pointerDraggedXXX(int[] x, int[] y) {
+//        super.pointerDragged(x, y);
+        if (x.length > 1) {
+            double currentDis = distance(x, y);
+
+            // prevent division by 0
+            if (pinchDistance <= 0) {
+                pinchDistance = currentDis;
+            }
+            double scale = currentDis / pinchDistance;
+            if (pinch((float) scale)) {
+                return;
+            }
+        }
+        pointerDragged(x[0], y[0]);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
