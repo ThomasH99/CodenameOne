@@ -601,7 +601,8 @@ public class ScreenListOfItems extends MyForm {
 //                    }
 //                }
 //</editor-fold>
-                Item selectedTemplate = pickTemplateOLD();
+//                Item selectedTemplate = pickTemplateOLD();
+                Item selectedTemplate = null; //pickTemplate();
                 if (selectedTemplate != null) { //null if user cancelled
                     Item newTemplateInstantiation = new Item();
                     if (itemListOrg instanceof ParseObject) { //itemListOrg can be a temporary list like Today
@@ -659,7 +660,7 @@ public class ScreenListOfItems extends MyForm {
                             //DONE!!! reload/recalc workslots
                             itemListOrg.resetWorkTimeDefinition(); //ensure workTime is recalculated
                             ScreenListOfItems.this.refreshAfterEdit();
-                        }).show();
+                        },null,false).show();
             }
             ));
         }
@@ -1607,7 +1608,7 @@ public class ScreenListOfItems extends MyForm {
         long finishTime = item.getFinishTime();
 //        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
 
-Container eastDateEffortCont = new Container(BoxLayout.y());
+        Container eastDateEffortCont = new Container(BoxLayout.y());
 
         //REMAINING EFFORT / ACTUAL EFFORT
         final Label actualEffortLabel = new Label(); //must be final for use in lambda, null;
@@ -1642,7 +1643,7 @@ Container eastDateEffortCont = new Container(BoxLayout.y());
                 long remainingEffort = item.getRemainingEffort();
                 if (remainingEffort != 0 || MyPrefs.itemListShowRemainingEvenIfZero.getBoolean()) {
 //                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
-                    east.addComponent(remainingEffortLabel=new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
+                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
                 }
             }
         }
@@ -3186,8 +3187,8 @@ refreshAfterEdit();
 //                            category, keepPos, expandedObjects, () -> animateMyForm(), false, optionSingleSelectMode); //hack: get access to the latest category (the one above the items in the Tree list)
 //</editor-fold>
                     } else if (node instanceof WorkSlot) {
-                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, () -> {
-                        }, keepPos);
+//                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, () -> {}, keepPos);
+                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, ScreenListOfItems.this, keepPos, false,true);
                     } else {
                         assert false;
                     }

@@ -167,18 +167,19 @@ public class ScreenWorkSlot extends MyForm {
     private Container buildContentPane(Container content) {
         parseIdMapReset();
 //        Container content = new Container();
-        TableLayout tl;
+        if (false) {
+            TableLayout tl;
 //        int spanButton = 2;
-        int nbFields = 8;
-        if (Display.getInstance().isTablet()) {
-            tl = new TableLayout(nbFields, 2);
-        } else {
-            tl = new TableLayout(nbFields * 2, 1);
+            int nbFields = 8;
+            if (Display.getInstance().isTablet()) {
+                tl = new TableLayout(nbFields, 2);
+            } else {
+                tl = new TableLayout(nbFields * 2, 1);
 //            spanButton = 1;
+            }
+            tl.setGrowHorizontally(true);
+            content.setLayout(tl);
         }
-        tl.setGrowHorizontally(true);
-        content.setLayout(tl);
-
         MyDateAndTimePicker startByDate = new MyDateAndTimePicker("<start work on this date>", parseIdMap2,
                 () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? new Date(System.currentTimeMillis()) : workSlot.getStartTimeD(),
                 (d) -> workSlot.setStartTime(d));
@@ -204,33 +205,33 @@ public class ScreenWorkSlot extends MyForm {
         locallyEditedRepeatRule = workSlot.getRepeatRule();
         SpanButton repeatRuleButton = new SpanButton();
 //        Command repeatRuleEditCmd = new Command("<click to set repeat>NOT SHOWN?!") {
-        Command repeatRuleEditCmd =  MyReplayCommand.create("EditRepeatRule", "",null,(e)->{
-                if (locallyEditedRepeatRule == null) {
-                    locallyEditedRepeatRule = new RepeatRuleParseObject();
-                }
+        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule", "", null, (e) -> {
+            if (locallyEditedRepeatRule == null) {
+                locallyEditedRepeatRule = new RepeatRuleParseObject();
+            }
 
 //                if (!locallyEditedRepeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
-                if (!locallyEditedRepeatRule.canRepeatRuleBeEdited(workSlot)) {
-                    Dialog.show("INFO", "Once a repeating " + WorkSlot.WORKSLOT + " is in the past, the " + WorkSlot.REPEAT_DEFINITION + " definition cannot be edited anymore", "OK", null);
-                    return;
-                }
-
-                if (repeatRuleCopyBeforeEdit == null && workSlot.getRepeatRule() != null) {
-                    repeatRuleCopyBeforeEdit = workSlot.getRepeatRule().cloneMe(); //make a copy of the *original* repeatRule
-                }
-                ASSERT.that(workSlot.getRepeatRule() == null || (repeatRuleCopyBeforeEdit.equals(locallyEditedRepeatRule) && locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)), "problem in cloning repeatRule");
-
-                new ScreenRepeatRuleNew(Item.REPEAT_RULE, locallyEditedRepeatRule, workSlot, ScreenWorkSlot.this, () -> {
-                    repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-                    if (false) { //now done when exiting via parseIdMap2 below
-                        workSlot.setRepeatRule(locallyEditedRepeatRule);
-                        DAO.getInstance().save(locallyEditedRepeatRule);
-                    }
-//                    repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
-                    repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-//                }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
-                }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
+            if (!locallyEditedRepeatRule.canRepeatRuleBeEdited(workSlot)) {
+                Dialog.show("INFO", "Once a repeating " + WorkSlot.WORKSLOT + " is in the past, the " + WorkSlot.REPEAT_DEFINITION + " definition cannot be edited anymore", "OK", null);
+                return;
             }
+
+            if (repeatRuleCopyBeforeEdit == null && workSlot.getRepeatRule() != null) {
+                repeatRuleCopyBeforeEdit = workSlot.getRepeatRule().cloneMe(); //make a copy of the *original* repeatRule
+            }
+            ASSERT.that(workSlot.getRepeatRule() == null || (repeatRuleCopyBeforeEdit.equals(locallyEditedRepeatRule) && locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)), "problem in cloning repeatRule");
+
+            new ScreenRepeatRuleNew(Item.REPEAT_RULE, locallyEditedRepeatRule, workSlot, ScreenWorkSlot.this, () -> {
+                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
+                if (false) { //now done when exiting via parseIdMap2 below
+                    workSlot.setRepeatRule(locallyEditedRepeatRule);
+                    DAO.getInstance().save(locallyEditedRepeatRule);
+                }
+//                    repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
+                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
+//                }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
+            }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
+        }
         );
 
 //        parseIdMap2.put("REPEAT_RULE", () -> {
@@ -303,16 +304,16 @@ public class ScreenWorkSlot extends MyForm {
         if (items != null && items.size() > 0) {
             ItemList itemList = new ItemList(workSlot.getItemsInWorkSlot());
             Button editSubtasksFullScreen = new Button();
-            editSubtasksFullScreen.setCommand( MyReplayCommand.create("ShowTasksInWorkSlot", items.size()+" tasks", null,(e)->{
-                    new ScreenListOfItems("Tasks in WorkSlot" , itemList, ScreenWorkSlot.this, (iList) -> {
+            editSubtasksFullScreen.setCommand(MyReplayCommand.create("ShowTasksInWorkSlot", items.size() + " tasks", null, (e) -> {
+                new ScreenListOfItems("Tasks in WorkSlot", itemList, ScreenWorkSlot.this, (iList) -> {
 //                        item.setItemList(subtaskList);
 //                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
-                    }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER|ScreenListOfItems.OPTION_NO_NEW_BUTTON|ScreenListOfItems.OPTION_NO_TIMER
-                            |ScreenListOfItems.OPTION_NO_WORK_TIME|ScreenListOfItems.OPTION_NO_INTERRUPT|ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
-                            |ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES|ScreenListOfItems.OPTION_NO_SELECTION_MODE
-                    ).show();
-                }
+                }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
+                        | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_INTERRUPT | ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
+                        | ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_SELECTION_MODE
+                ).show();
+            }
             ));
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
             content.add(layout("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));

@@ -120,6 +120,9 @@ public class ScreenInspirationalLists extends MyForm {
         //TODO!! check old filters from first version of TodoCatalyst
         content.add(new Button(new MyReplayCommand("Longest duration between creation and start work or complete (procrastinating what type of tasks?)")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(new MyReplayCommand("On top of the mountain")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(new MyReplayCommand("Really that urgent?")));  //tasks marked Urgent that are not done after e.g. 7 days
+        content.add(new Button(new MyReplayCommand("Should have been postponed?")));  //tasks marked were marked Import=Low but still done quickly after creation?
+        content.add(new Button(new MyReplayCommand("Maybe start focusing on what's Important?")));  //tasks marked were marked Import=High but still done/started after eg 30 days?
         content.add(new Button(new MyReplayCommand("What never gets done")));  //Important but not urgent, sorted by ROI
         content.add(new Button(new MyReplayCommand("Warm up")));  //getting started when 
         content.add(new Button(new MyReplayCommand("Quickies")));  //less than 2 minutes
@@ -137,7 +140,7 @@ public class ScreenInspirationalLists extends MyForm {
         content.add(new Button(new MyReplayCommand("Dusty/Moldy/Clean up"))); //oldest created tasks still not started
         content.add(new Button(new MyReplayCommand("Stalled"))); //still incomplete tasks by age of 'last worked on' (last update or last time timer was used or actuals updated)
         content.add(new Button(new MyReplayCommand("Better start early")));  //projects that it might be a good idea to look at early (e.g. large effort, challenging, due date approaching)
-        content.add(new Button(new MyReplayCommand("Lazy day")));  //??
+        content.add(new Button(new MyReplayCommand("Lazy day")));  //??easy and fun
 //        content.add(new Button(Command.create("Show items in another list than the item's ownerList", null, (e)->{}))); 
 
         return content;

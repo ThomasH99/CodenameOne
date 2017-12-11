@@ -108,6 +108,7 @@ public class ScreenMain extends MyForm {
 
         makeAndAddButtons(listOfAlarms, toolbar, cont, "See past reminders that you have not cancelled or changed");
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            if (toolbar != null) {
 //                toolbar.addCommandToSideMenu( MyReplayCommand.create("Test Login2"/*FontImage.create(" \ue838 ", iconStyle)*/, null,(e)->{
@@ -122,6 +123,7 @@ public class ScreenMain extends MyForm {
 //            }
 //            makeAndAddButtons(listOfAlarms, toolbar, cont);
 //        }
+//</editor-fold>
         Command overdue = MyReplayCommand.create(SCREEN_OVERDUE_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true); //FilterSortDef.FILTER_SHOW_DONE_TASKS
                     new ScreenListOfItems(SCREEN_OVERDUE_TITLE, new ItemList(SCREEN_OVERDUE_TITLE, DAO.getInstance().getOverdue(), filterSort, true), ScreenMain.this, (i) -> {
@@ -200,7 +202,7 @@ public class ScreenMain extends MyForm {
         MyReplayCommand workSlots = (MyReplayCommand) MyReplayCommand.create(ScreenListOfWorkSlots.SCREEN_TITLE, null, (e) -> {
 //                super.actionPerformed(e);
             new ScreenListOfWorkSlots("", null, null, ScreenMain.this, (i) -> {
-            }, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis()), new Date(MyDate.MAX_DATE))).show();
+            }, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis()), new Date(MyDate.MAX_DATE)),true).show();
         }
         );
         makeAndAddButtons(workSlots, toolbar, cont, "**");
@@ -275,6 +277,7 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(tutorial, toolbar, cont, "**");
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            Command editRepeatRule = new MyReplayCommand("Edit RepeatRule2"/*FontImage.create(" \ue838 ", iconStyle)*/,null,(e)->{
 //                    RepeatRuleParseObject repeatRule = new RepeatRuleParseObject();
@@ -295,11 +298,13 @@ public class ScreenMain extends MyForm {
 //            };
 //            makeAndAddButtons(testRepeatRule, toolbar, cont, "**");
 //        }
+//</editor-fold>
         Command inspirationLists = MyReplayCommand.create(ScreenInspirationalLists.SCREEN_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     new ScreenInspirationalLists(ScreenMain.this).show();
                 }
         );
         makeAndAddButtons(inspirationLists, toolbar, cont, "**");
+//<editor-fold defaultstate="collapsed" desc="comment">
 
 //        if (false) {
 //            Command statisticsList = new MyReplayCommand(ScreenStatisticsLists.SCREEN_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
@@ -311,6 +316,7 @@ public class ScreenMain extends MyForm {
 //            }
 //            cont.add(new Button(statisticsList));
 //        }
+//</editor-fold>
 
         Command cleanTemplates = MyReplayCommand.create("Clean up templates", Icons.get().iconSettingsLabelStyle, (e) -> {
             DAO.getInstance().cleanUpTemplateListInParse();

@@ -304,7 +304,8 @@ public class ScreenRepeatRuleNew extends MyForm {
 //                            repeatRuleHideableDetailsContainer.add(ScreenListOfItems.buildItemContainer((Item) item, null, () -> false, null, false, null));
                             repeatRuleHideableDetailsContainer.add(ScreenListOfItems.buildItemContainer(ScreenRepeatRuleNew.this, (Item) item, null, null));
                         } else if (item instanceof WorkSlot) {
-                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, () -> refreshAfterEdit(), null));
+//                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, () -> refreshAfterEdit(), null));
+                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item,ScreenRepeatRuleNew.this , null, false,false));
                         }
                     }
                     if (myRepeatRule.getLatestDateCompletedOrCancelled().getTime() != 0) {

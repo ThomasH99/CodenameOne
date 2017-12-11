@@ -896,7 +896,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        } else {
 //            return 0;
 //        }
-        return (long) getDurationInMinutes() * MINUTES_IN_MILLISECONDS;
+        return ((long) getDurationInMinutes()) * MINUTES_IN_MILLISECONDS;
     }
 
     public int getDurationInMinutes() {
@@ -1346,7 +1346,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     public boolean hasSaveableData() {
-        return getStartTime() != 0 || getDuration() != 0;
+        return true || (getStartTime() != 0 || getDuration() != 0); //TODO! should also check for new/changed repeat rule
     }
 
     /**
@@ -1359,16 +1359,18 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     public List<Item> getItemsInWorkSlot() {
         ItemAndListCommonInterface owner = getOwner();
         List<Item> items = new ArrayList<>();
-        for (Object i : owner.getList()) { //go through everyone of the WorkSLot's Owner's tasks
-            if (i instanceof Item) {
-                Item item = (Item) i;
-                WorkTime wTime = item.getAllocatedWorkTime();
-                if (wTime != null) {
-                    List<WorkSlotSlice> slices = wTime.getWorkSlotSlices();
-                    if (slices != null) {
-                        for (WorkSlotSlice slice : slices) {
-                            if (slice.workSlot == this && !items.contains(item)) {
-                                items.add(item);
+        if (owner != null) {
+            for (Object i : owner.getList()) { //go through everyone of the WorkSLot's Owner's tasks
+                if (i instanceof Item) {
+                    Item item = (Item) i;
+                    WorkTime wTime = item.getAllocatedWorkTime();
+                    if (wTime != null) {
+                        List<WorkSlotSlice> slices = wTime.getWorkSlotSlices();
+                        if (slices != null) {
+                            for (WorkSlotSlice slice : slices) {
+                                if (slice.workSlot == this && !items.contains(item)) {
+                                    items.add(item);
+                                }
                             }
                         }
                     }
@@ -1593,7 +1595,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
 //    @Override
 //    public WorkTime getAllocatedWorkTime() {
-////        return getWorkTimeAllocator().getWorkTime(this);
+////        return getWorkTimeAllocator().getWorkTime_N(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
 }

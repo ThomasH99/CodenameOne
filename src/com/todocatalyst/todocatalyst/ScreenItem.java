@@ -235,7 +235,7 @@ public class ScreenItem extends MyForm {
                 new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotList(), item, ScreenItem.this, (iList) -> {
 //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
 //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
-                }).show();
+                },null,false).show();
             }
         });
 //        }
@@ -852,9 +852,10 @@ public class ScreenItem extends MyForm {
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
 
         //FINISH_TIME
-        WorkTime workTime = item.getAllocatedWorkTime();
-        if (workTime != null) {
-            Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(new Date(workTime.getFinishTime())), null, (e) -> {
+//        WorkTime workTime = item.getAllocatedWorkTime();
+        Date workTime = item.getFinishTimeD();
+        if (workTime.getTime() != MyDate.MIN_DATE) {
+            Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(workTime), null, (e) -> {
                 new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
             }));
             mainCont.add(layout(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, true, true, false));

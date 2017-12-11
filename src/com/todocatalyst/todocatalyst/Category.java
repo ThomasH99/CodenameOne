@@ -952,5 +952,49 @@ public class Category extends ItemList { //Flatten { //implements ExpandableInte
         return getText() + " [" + getList().size() + "]";
     }
 
+    /**
+     * checks if the owner (recursively) is in the list in a position *before*
+     * item. Used to check for recursive dependencies in work time allocation
+     * for categories. E.g. cat= [proj, ..., subtask] where subtask is a subtask
+     * of proj (directly or recursively). Here, to know how much time proj needs
+     * to allocate time to subtask, we need to know how much time subtask
+     * requires from cat, which can only be determined once we know how is left
+     * in cat after proj has gotten what it needs from cat, which requires proj
+     * to know how much subtask requires from proj!!
+     *
+     * @param list
+     * @param itemIndex
+     * @return
+     */
+    static public boolean isOwnerOfItemInListBeforeItem(List<ItemAndListCommonInterface> list, int itemIndex, ItemAndListCommonInterface item) {
+//        ItemAndListCommonInterface owner = list.get(itemIndex).getOwner();
+        ItemAndListCommonInterface owner = item.getOwner();
+        if (owner != null && itemIndex > 0) {
+//            int itemIndex = list.indexOf(itemIndex);
+            List<ItemAndListCommonInterface> catSubList = list.subList(0, itemIndex - 1); //get the part of the list that is *before* the position of item
+            return catSubList.indexOf(owner) != -1 || isOwnerOfItemInListBeforeItem(catSubList, owner);
+        }
+        return false;
+    }
+
+    static public boolean isOwnerOfItemInListBeforeItem(List<ItemAndListCommonInterface> list, int itemIndex) {
+        if (itemIndex < 0 || itemIndex >= list.size()) {
+            return false;
+        }
+        return isOwnerOfItemInListBeforeItem(list, itemIndex, list.get(itemIndex));
+    }
+
+    static public boolean isOwnerOfItemInListBeforeItem(List<ItemAndListCommonInterface> list, ItemAndListCommonInterface item) {
+        return isOwnerOfItemInListBeforeItem(list, list.indexOf(item));
+    }
+
+    public boolean isOwnerOfItemInCategoryBeforeItem(ItemAndListCommonInterface item) {
+        return isOwnerOfItemInListBeforeItem(getList(), item);
+    }
+
+    public boolean isOwnerOfItemInCategoryBeforeItem(int itemIndex) {
+        return isOwnerOfItemInListBeforeItem(getList(), itemIndex);
+    }
+
 } // end Category
 

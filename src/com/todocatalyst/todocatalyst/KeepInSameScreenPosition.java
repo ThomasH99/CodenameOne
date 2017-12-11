@@ -38,6 +38,7 @@ class KeepInSameScreenPosition {
     private Object itemOrg = null; //keep the item we want to keep in the same scroll position
     private Component newComponent = null; //the component we want to place in same scroll position
     private Component someComponent = null; //keep some (random) component from the container to be able to find the ScrollableContainer
+//    private MyForm form = null; //keep some (random) component from the container to be able to find the ScrollableContainer
 
 //    KeepInSameScreenPosition() {
 //    }
@@ -49,6 +50,7 @@ class KeepInSameScreenPosition {
 //    KeepInSameScreenPosition(int scrollY) {
     KeepInSameScreenPosition(Container scrollableContainer) {
         ASSERT.that(scrollableContainer.isScrollableY(), "KeepInSameScreenPosition called with non-scrollableY container=" + scrollableContainer);
+//        form = (MyForm) scrollableContainer.getComponentForm();
         this.scrollY = scrollableContainer.getScrollY();
     }
 
@@ -58,6 +60,7 @@ class KeepInSameScreenPosition {
      */
     KeepInSameScreenPosition() {
 //        this(findScrollableContainer());
+//        form = (MyForm) Display.getInstance().getCurrent();
         Component cont = findScrollableContainer_N();
         if (cont != null) {
             this.scrollY = cont.getScrollY();
@@ -134,6 +137,7 @@ class KeepInSameScreenPosition {
 //            scrollableCont = scrollableCont.getParent();
 //        }
 //</editor-fold>
+//        form = (MyForm) Display.getInstance().getCurrent();
         itemOrg = item;
         Container scrollableCont = getScrollableContainer(oldItemComponent);
         if (scrollableCont == null) { //this may happen in ScreenListOfItems if the list is empty, eg. only showing QuickEntry container
@@ -305,20 +309,24 @@ class KeepInSameScreenPosition {
      */
     private Component findScrollableContainer_N() {
         if (Test.DEBUG) {
-            Form currentForm = Display.getInstance().getCurrent();
+//            Form currentForm = Display.getInstance().getCurrent();
         }
         if (true) {
-            Form currentForm = Display.getInstance().getCurrent();
-            if (currentForm != null) {
-                if (currentForm.getContentPane() != null) {
-                    return findScrollableChild(currentForm.getContentPane());
-                }
+//            Form currentForm = Display.getInstance().getCurrent();
+//            if (currentForm != null) {
+//                if (currentForm.getContentPane() != null) {
+//                    return findScrollableChild(currentForm.getContentPane());
+//                }
+//            }
+            if (newComponent != null) {
+                return findScrollableChild(newComponent.getComponentForm().getContentPane());
             }
         } else {
             if (newComponent != null) {
                 return getScrollableContainer(newComponent);
             } else { //we didn't find newComponent so must find the scrollable container in some other way
-//            Container scrollableCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            Container scrollableCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y
 //            if (Test.DEBUG) {
 //                Container parent = scrollableCont.getParent();
 //            }
@@ -336,6 +344,7 @@ class KeepInSameScreenPosition {
 //                }
 //            }
 //            return null;
+//</editor-fold>
                 return getScrollableContainer(someComponent);
             }
         }

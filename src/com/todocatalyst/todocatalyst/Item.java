@@ -6427,11 +6427,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public long getWorkTimeRequiredFromOwner() {
     public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
         long required = 0;
-
+        if (isDone()) {
+            return 0;
+        }
+        //get the amount of worktime the subtasks require from me (their mother project)
         List<ItemAndListCommonInterface> subtasks = getList();
         if (subtasks != null && subtasks.size() > 0) {
-            for (ItemAndListCommonInterface elt : subtasks) { //starts from the *last* element in the list!!!
-                required += elt.getWorkTimeRequiredFromProvider(this);
+            for (ItemAndListCommonInterface subtask : subtasks) { //starts from the *last* element in the list!!!
+                required += subtask.getWorkTimeRequiredFromProvider(this);
             }
         } else { //leaf task
             required = getRemainingEffort(); //how much total workTime is required?
@@ -6444,14 +6447,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            for (int i = 0, size = providers.size(); i < size; i++) {
             for (ItemAndListCommonInterface prov : providers) {
 //                prov = providers.get(i);
-                if (prov == provider) {
+                if (prov.equals(provider)) { //prov == provider) {
                     break; // return what is remaining for provider
                 } else {
-                    WorkTime wt = prov.getWorkTimeAllocator(false).allocateWorkTime(this, required);
-                    required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+                    ASSERT.that(!prov.equals(provider), "duplicate object instances for prov=" + prov + ", this=" + this);
+                    WorkTime wt = prov.getWorkTimeAllocator(false).allocateWorkTime_N(this, required);
+                    if (wt != null) {
+                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+                    }
                 }
-                if (required == 0) {
-                    return required;
+                assert required >= 0;
+                if (required == 0) { //other higher prio providers allocated all required worktime
+                    return 0;//required; //return here, don't go through other providers
                 }
             }
         }
@@ -6670,7 +6677,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return null if no workTime
      */
     public WorkTime getAllocatedWorkTime(boolean reset) {
-        if (workTime == null || reset) {
+        if (true || workTime == null || reset) { //true: don't cache values in Item, only cache WorkTimeAllocator
 //            return workTime;
 //        } else {
 
@@ -6694,12 +6701,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    WorkTimeAllocator wtd = prov.getWorkTimeAllocator(reset);
 //                    if (true ||wtd != null) {
 //                        ASSERT.that(wtd!=null,"WTD should never ne null for a workTimeProvider");
-                    WorkTime wt = prov.getWorkTimeAllocator(reset).allocateWorkTime(this, remaining);
+                    WorkTime wt = prov.getWorkTimeAllocator(reset).allocateWorkTime_N(this, remaining);
 //                        remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
                     if (workTime == null) {
                         workTime = new WorkTime();
                     }
-                    workTime.addWorkTime(wt);
+                    if (wt != null) {
+                        workTime.addWorkTime(wt);
+                    }
                     remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
                 }
             }
@@ -6735,7 +6744,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return ItemAndListCommonInterface.super.getFinishTime();
     }
-    
+
     /**
      * returns the latest date the project or any subtask was updated
      *

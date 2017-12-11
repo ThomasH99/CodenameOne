@@ -422,7 +422,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //                } else if (prov == this) {
                 WorkTimeAllocator wtd = prov.getWorkTimeDefinition();
                 if (wtd != null) {
-                    WorkTime wt = wtd.allocateWorkTime(this);
+                    WorkTime wt = wtd.allocateWorkTime_N(this);
                     if (workTime != null) {
                         workTime.addWorkTime(wt);
                     } else {
@@ -551,7 +551,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     default public WorkTime allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
 //        return getWorkTimeAllocator().allocateWorkTime(itemOrList);
         WorkTimeAllocator wt = getWorkTimeDefinition();
-        return wt != null ? wt.allocateWorkTime(itemOrList) : null;
+        return wt != null ? wt.allocateWorkTime_N(itemOrList) : null;
     }
 
     /**
@@ -565,7 +565,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     default public WorkTime allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
 //        return getWorkTimeAllocator().allocateWorkTime(itemOrList, remainingDuration);
         WorkTimeAllocator wt = getWorkTimeDefinition();
-        return wt != null ? wt.allocateWorkTime(itemOrList, remainingDuration) : null;
+        return wt != null ? wt.allocateWorkTime_N(itemOrList, remainingDuration) : null;
     }
 
 //    default public long getAllocatedWorkTime() {
@@ -582,8 +582,9 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //            return new Date(0);
 //        }
 //</editor-fold>
-        WorkTime wt = getAllocatedWorkTime();
-        return wt != null ? wt.getFinishTimeD() : new Date(MyDate.MIN_DATE);
+//        WorkTime wt = getAllocatedWorkTime();
+//        return wt != null ? wt.getFinishTimeD() : new Date(MyDate.MIN_DATE);
+        return new Date(getFinishTime());
     }
 
     /**

@@ -18,9 +18,11 @@ public class ContainerScrollY extends Container {
     
     public ContainerScrollY() {
         super();
+//        setScrollableY(true);
     }
     public ContainerScrollY(Layout l) {
         super(l);
+//        setScrollableY(true);
     }
     
     public void setScrollYPublic(int scrollY) {
