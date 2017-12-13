@@ -854,7 +854,7 @@ public class ScreenItem extends MyForm {
         //FINISH_TIME
 //        WorkTime workTime = item.getAllocatedWorkTime();
         Date workTime = item.getFinishTimeD();
-        if (workTime.getTime() != MyDate.MIN_DATE) {
+        if (workTime.getTime() != MyDate.MAX_DATE) {
             Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(workTime), null, (e) -> {
                 new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
             }));

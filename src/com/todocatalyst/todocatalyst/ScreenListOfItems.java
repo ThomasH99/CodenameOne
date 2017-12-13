@@ -1630,7 +1630,7 @@ public class ScreenListOfItems extends MyForm {
             }
         } else {
             long due = item.getDueDate();
-            if (finishTime != MyDate.MIN_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
+            if (finishTime != MyDate.MAX_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
                 finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
                         finishTime > due ? "FinishTimeOverdue" : "FinishTime");
                 east.add(finishTimeLabel);

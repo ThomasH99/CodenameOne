@@ -262,7 +262,7 @@ public class ReplayLog {
     public void addToSetOfScreenCommands(MyReplayCommand replayCommand) {
 
         if (storeAllCommandsForScreen) {
-            ASSERT.that(screenCommands.get(replayCommand.getCmdUniqueID()) == null, "MyReplayCommand created twice:" + replayCommand.getCmdUniqueID() + " cmd=" + replayCommand);
+            if (false)ASSERT.that(screenCommands.get(replayCommand.getCmdUniqueID()) == null, "MyReplayCommand created twice:" + replayCommand.getCmdUniqueID() + " cmd=" + replayCommand);
             screenCommands.put(replayCommand.getCmdUniqueID(), replayCommand);
         } else {
 //            if (replayCommand.getCmdUniqueID().equals(getCurrentReplayCmdID())) {

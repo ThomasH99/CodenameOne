@@ -336,7 +336,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //        WorkTimeDefinition workTimeDef = getWorkTimeAllocator();
 //        if (workTimeDef != null) {
 ////            return new Date(workTimeDef.getFinishTime(item));
-//            return workTimeDef.allocateWorkTime(item).getFinishTimeD();
+//            return workTimeDef.getAllocatedWorkTime(item).getFinishTimeD();
 //        } else {
 //            return new Date(0);
 //        }
@@ -377,7 +377,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      */
     default public boolean hasWorkTime() {
         WorkSlotList workSlots = getWorkSlotList();
-//        return workSlots != null && workSlots.size() > 0; //||allocateWorkTime()!=null;
+//        return workSlots != null && workSlots.size() > 0; //||getAllocatedWorkTime()!=null;
 //        return (workSlots != null && workSlots.size() > 0) || getAvailableWorkTime() != null;
 //        return (workSlots != null && workSlots.size() > 0) || getAllocatedWorkTime() != null;
         if (workSlots != null && workSlots.size() > 0) {
@@ -402,7 +402,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return workSlots and possibly workTime allocated by owner. null if no
      * WorkTime available
      */
-//    public WorkTime allocateWorkTime(ItemAndListCommonInterface itemOrList);
+//    public WorkTime getAllocatedWorkTime(ItemAndListCommonInterface itemOrList);
     default public WorkTime getAvailableWorkTimeXXX() {
         WorkTime workTime = null; // = new WorkTime();
 
@@ -422,12 +422,13 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //                } else if (prov == this) {
                 WorkTimeAllocator wtd = prov.getWorkTimeDefinition();
                 if (wtd != null) {
-                    WorkTime wt = wtd.allocateWorkTime_N(this);
-                    if (workTime != null) {
+                    WorkTime wt = wtd.allocateWorkTimeXXX(this);
+//                    if (workTime != null) {
+//                        workTime.addWorkTime(wt);
+//                    } else {
+//                        workTime = wt;
+//                    }
                         workTime.addWorkTime(wt);
-                    } else {
-                        workTime = wt;
-                    }
                 }
             }
         }
@@ -449,7 +450,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //        if (owner != null) {
 //            WorkTimeDefinition wtd = owner.getWorkTimeAllocator();
 //            if (wtd != null) {
-//                WorkTime allocated = wtd.allocateWorkTime(this);
+//                WorkTime allocated = wtd.getAllocatedWorkTime(this);
 ////        WorkTime allocated = getAllocatedWorkTime();
 //                if (allocated != null) {
 //                    if (workTime != null) {
@@ -475,18 +476,18 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //
 //            ItemAndListCommonInterface workTimeProvider = workTimeProviders.next();
 //            neededWorkTime = this.getWorkTimeRequiredFromThisProvider(workTimeProvider);
-//            WorkTime newWorkTime = workTimeProvider.getWorkTimeAllocator().allocateWorkTime(this, neededWorkTime);
+//            WorkTime newWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this, neededWorkTime);
 //            if (workTime == null) {
-////                lastWorkTime = workTimeProvider.getWorkTimeAllocator().allocateWorkTime(this);
-//                workTime = newWorkTime; //workTimeProvider.getWorkTimeAllocator().allocateWorkTime(this,neededWorkTime);
+////                lastWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this);
+//                workTime = newWorkTime; //workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this,neededWorkTime);
 ////                workTime = lastWorkTime;
 //            } else {
 //                workTime.addWorkTime(newWorkTime);
 //            }
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////            else if (workTime.getRemainingDuration() > 0) {
-//////                workTime=workTimeProviders.allocateWorkTime(workTime,workTimeProvider.allocateWorkTime(this, workTime.getUncoveredTime()));
-////                lastWorkTime = workTimeProvider.getWorkTimeAllocator().allocateWorkTime(this, workTime.getRemainingDuration());
+//////                workTime=workTimeProviders.getAllocatedWorkTime(workTime,workTimeProvider.getAllocatedWorkTime(this, workTime.getUncoveredTime()));
+////                lastWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this, workTime.getRemainingDuration());
 ////                workTime.setNextWorkTime(lastWorkTime);
 ////            } else {
 ////                lastWorkTime = null;
@@ -510,11 +511,11 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //        while (workTimeProviders.hasNext() && neededWorkTime > 0 && (workTime == null || workTime.getRemainingDuration() > 0)) {
 //            ItemAndListCommonInterface workTimeProvider = workTimeProviders.next();
 //            if (workTime == null) {
-//                lastWorkTime = workTimeProvider.getWorkTimeAllocator().allocateWorkTime(this);
+//                lastWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this);
 //                workTime = lastWorkTime;
 //            } else if (workTime.getRemainingDuration() > 0) {
-////                workTime=workTimeProviders.allocateWorkTime(workTime,workTimeProvider.allocateWorkTime(this, workTime.getUncoveredTime()));
-//                lastWorkTime = workTimeProvider.getWorkTimeAllocator().allocateWorkTime(this, workTime.getRemainingDuration());
+////                workTime=workTimeProviders.getAllocatedWorkTime(workTime,workTimeProvider.getAllocatedWorkTime(this, workTime.getUncoveredTime()));
+//                lastWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this, workTime.getRemainingDuration());
 //                workTime.setNextWorkTime(lastWorkTime);
 //            } else {
 //                lastWorkTime = null;
@@ -538,7 +539,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     }
 
 //     {
-////        return getWorkTimeAllocator().allocateWorkTime(this);
+////        return getWorkTimeAllocator().getAllocatedWorkTime(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
 
@@ -549,9 +550,9 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return 
      */
     default public WorkTime allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
-//        return getWorkTimeAllocator().allocateWorkTime(itemOrList);
+//        return getWorkTimeAllocator().getAllocatedWorkTime(itemOrList);
         WorkTimeAllocator wt = getWorkTimeDefinition();
-        return wt != null ? wt.allocateWorkTime_N(itemOrList) : null;
+        return wt != null ? wt.allocateWorkTimeXXX(itemOrList) : null;
     }
 
     /**
@@ -563,9 +564,9 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return
      */
     default public WorkTime allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
-//        return getWorkTimeAllocator().allocateWorkTime(itemOrList, remainingDuration);
+//        return getWorkTimeAllocator().getAllocatedWorkTime(itemOrList, remainingDuration);
         WorkTimeAllocator wt = getWorkTimeDefinition();
-        return wt != null ? wt.allocateWorkTime_N(itemOrList, remainingDuration) : null;
+        return wt != null ? wt.getAllocatedWorkTime(itemOrList, remainingDuration) : null;
     }
 
 //    default public long getAllocatedWorkTime() {
@@ -590,12 +591,12 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     /**
      * returns the calculated finishTime for this item
      *
-     * @return finishTime or MyDate.MIN_DATE if no workTime was allocated
+     * @return finishTime or MyDate.MAX_DATE if no workTime was allocated
      */
     default public long getFinishTime() {
 //        return getAllocatedWorkTime().getFinishTime();
         WorkTime wt = getAllocatedWorkTime();
-        return wt != null ? wt.getFinishTime() : MyDate.MIN_DATE;
+        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
     }
 
     /**

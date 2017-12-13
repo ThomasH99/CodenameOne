@@ -1595,7 +1595,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
 //    @Override
 //    public WorkTime getAllocatedWorkTime() {
-////        return getWorkTimeAllocator().getWorkTime_N(this);
+////        return getWorkTimeAllocator().getWorkTime(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
 }

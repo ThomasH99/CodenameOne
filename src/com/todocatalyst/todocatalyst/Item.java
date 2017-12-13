@@ -6426,6 +6426,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
 //    public long getWorkTimeRequiredFromOwner() {
     public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
+        Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
+
         long required = 0;
         if (isDone()) {
             return 0;
@@ -6451,10 +6453,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     break; // return what is remaining for provider
                 } else {
                     ASSERT.that(!prov.equals(provider), "duplicate object instances for prov=" + prov + ", this=" + this);
-                    WorkTime wt = prov.getWorkTimeAllocator(false).allocateWorkTime_N(this, required);
-                    if (wt != null) {
-                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+                    if (prov instanceof Category && ((Category) prov).isOwnerOfItemInCategoryBeforeItem(this)) {
+                        return 0;
                     }
+                    WorkTime wt = prov.getWorkTimeAllocator(false).getAllocatedWorkTime(this, required);
+//                    if (wt != null) {
+                    required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+//                    }
                 }
                 assert required >= 0;
                 if (required == 0) { //other higher prio providers allocated all required worktime
@@ -6489,8 +6494,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////                if (prov == provider) {
 ////                    return remaining;
 ////                } else {
-////                    remaining -= prov.allocateWorkTime(this).getAllocatedDuration(); //deduct time allocated by higher prioritized provider
-//                    remaining = prov.allocateWorkTime(this, remaining).getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+////                    remaining -= prov.getAllocatedWorkTime(this).getAllocatedDuration(); //deduct time allocated by higher prioritized provider
+//                    remaining = prov.getAllocatedWorkTime(this, remaining).getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
 ////                    remaining = 0;
 ////                    return remaining;
 ////                }
@@ -6531,7 +6536,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                if (prov == provider) {
 //                    return remaining;
 //                } else {
-//                    remaining -= prov.allocateWorkTime(this).getAllocatedDuration(); //deduct time allocated by higher prioritized provider
+//                    remaining -= prov.getAllocatedWorkTime(this).getAllocatedDuration(); //deduct time allocated by higher prioritized provider
 ////                    remaining = 0;
 ////                    return remaining;
 //                }
@@ -6701,7 +6706,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    WorkTimeAllocator wtd = prov.getWorkTimeAllocator(reset);
 //                    if (true ||wtd != null) {
 //                        ASSERT.that(wtd!=null,"WTD should never ne null for a workTimeProvider");
-                    WorkTime wt = prov.getWorkTimeAllocator(reset).allocateWorkTime_N(this, remaining);
+                    WorkTime wt = prov.getWorkTimeAllocator(reset).getAllocatedWorkTime(this, remaining);
 //                        remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
                     if (workTime == null) {
                         workTime = new WorkTime();
