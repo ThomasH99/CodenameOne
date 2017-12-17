@@ -96,6 +96,23 @@ public class WorkTime {
 //</editor-fold>
     }
 
+    WorkTime(WorkSlotSlice workSlotSlice) {
+//        if (workSlots != null && workSlots.size() > 0) {
+//        if (workSlotSlices != null && workSlotSlices.size() > 0) {
+//        this.workSlotSlices = new ArrayList<>();
+        workSlotSlices.add(workSlotSlice);
+//        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        this.workSlots = workSlots;
+////        }
+//        this.startTime = startTime;
+//        this.finishTime = finishTime;
+//        this.remainingDuration = remainingDuration;
+//        this.nextWorkTime = nextWorkTime;
+//        this.lastWorkSlotIndex = lastWorkSlotIndex;
+//</editor-fold>
+    }
+
     WorkTime(WorkSlotList workSlots) {
         if (workSlots != null && workSlots.size() > 0) {
 //            for (WorkSlot workSlot : workSlots) {
@@ -237,7 +254,7 @@ public class WorkTime {
      */
     public long getFinishTime() {
 //        return nextWorkTime == null ? finishTime : Math.max(finishTime, nextWorkTime.getFinishTime()); //must call getFinishTime() to get value recursively (although very rarely needed)
-        ASSERT.that(workSlotSlices != null && workSlotSlices.size() > 0);
+        ASSERT.that(workSlotSlices != null && workSlotSlices.size() > 0, "no workSlotSlices in WorkTime:" + this);
         return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(workSlotSlices.size() - 1).getEndTime() : MyDate.MAX_DATE;
     }
 
@@ -287,7 +304,11 @@ public class WorkTime {
 //    }
 //</editor-fold>
     /**
-     * get a new WorkTime based on workslots in this worktime.
+     * get a new WorkTime based on workslots in this worktime. if
+     * remainingDuration is 0 then return an empty slice of the last(!)
+     * workSlotSlice (to ensure that xero-duration tasks don't break the
+     * continuation of the allocated time (the current algorithm depends on
+     * this). If there are no
      *
      * @param startTime when should workTime start (== when did workTime for
      * previous task end)
@@ -300,22 +321,31 @@ public class WorkTime {
 
     WorkTime getWorkTime(long startTime, long remainingDuration) {
         WorkSlotSlice slice;
+        if (remainingDuration == 0 && workSlotSlices.size() > 0) {
+            slice = workSlotSlices.get(workSlotSlices.size() - 1);
+            WorkSlotSlice newSlice = slice.getSlice(startTime, 0); //allocate empty slice of last workslot
+//            newWorkSlotSlices.add(newSlice);
+            return new WorkTime(newSlice);
+        }
         List<WorkSlotSlice> newWorkSlotSlices = new ArrayList<WorkSlotSlice>();
         int index = 0;
         int size = workSlotSlices.size();
-        //find first slice with appropriate startTime
-        while (index < size && workSlotSlices.get(index).getStartTime() < startTime) {
+        //find first slice with appropriate startTime (skip slides that start *after* startTime or end *before* startTime (<=> no overlap)
+//        while (index < size && startTime < workSlotSlices.get(index).getStartTime() && startTime > workSlotSlices.get(index).getEndTime()) {
+        while (index < size && !(startTime >= workSlotSlices.get(index).getStartTime() && startTime <= workSlotSlices.get(index).getEndTime())) {
             index++;
         }
-        while (index < size ) {
+        while (index < size) {
             slice = workSlotSlices.get(index);
             WorkSlotSlice newSlice = slice.getSlice(startTime, remainingDuration);
             newWorkSlotSlices.add(newSlice);
             remainingDuration = newSlice.missingDuration; //new remaining is what was not allocated in the last slot
             startTime = newSlice.endTime; //new startTime is the end of the allocated workSlotSlice
-            if (remainingDuration==0)break; //break after allocation of first slice when duration is zero (avoids having multiple zeru duration slices allocated)
+            if (remainingDuration == 0) {
+                break; //break after allocation of first slice when duration is zero (avoids having multiple zeru duration slices allocated)
+            }
             index++;
-        } 
+        }
 //        return usedWorkSlotSlices != null && usedWorkSlotSlices.size() > 0 ? new WorkTime(usedWorkSlotSlices) : null;
         return new WorkTime(newWorkSlotSlices);
 //<editor-fold defaultstate="collapsed" desc="comment">

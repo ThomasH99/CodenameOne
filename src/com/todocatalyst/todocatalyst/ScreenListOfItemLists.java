@@ -337,7 +337,7 @@ public class ScreenListOfItemLists extends MyForm {
 //        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText()+(itemList.getWorkSlotList()!=null?"#":""), swipCont, () -> true); //D&D
         WorkSlotList wSlots = itemList.getWorkSlotList(false);
 //        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotList(false).size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
-        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (wSlots != null && wSlots.size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
+        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (wSlots != null && wSlots.size() > 0 ? "[W]" : ""), swipCont, () -> true); //D&D
 
         mainCont.addComponent(BorderLayout.CENTER, itemLabel);
 

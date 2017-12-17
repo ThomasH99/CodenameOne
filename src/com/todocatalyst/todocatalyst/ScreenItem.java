@@ -858,7 +858,7 @@ public class ScreenItem extends MyForm {
             Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(workTime), null, (e) -> {
                 new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
             }));
-            mainCont.add(layout(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, true, true, false));
+            mainCont.add(layout(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, false, true));
         }
 
 //        MyDateAndTimePicker alarmDate = new MyDateAndTimePicker("<click to set an alarm>", parseIdMap, item, Item.PARSE_ALARM_DATE);

@@ -5541,7 +5541,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public String toString() {
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
-        return getText() + " (" + getObjectIdP() + ")" + (getList().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getList()) + "}");
+        return getText() + " (" + getObjectIdP() + ")"
+                + (isDone() ? "[V]" : (getRemainingEffort() > 0 ? MyDate.formatTimeDuration(getRemainingEffort()) : ""))
+                + (getList().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getList()) + "}");
     }
 
     @Override
@@ -6360,7 +6362,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public WorkTimeAllocator getWorkTimeAllocator(boolean reset) {
-        if (wtd == null || reset) {
+        if (true || wtd == null || reset) {
 //            WorkTime availableWorkTime = getAvailableWorkTime();
             WorkTime availableWorkTime = getAllocatedWorkTime();
             if (availableWorkTime != null) {
@@ -6428,10 +6430,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
         Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
 
-        long required = 0;
         if (isDone()) {
             return 0;
         }
+        long required = 0;
         //get the amount of worktime the subtasks require from me (their mother project)
         List<ItemAndListCommonInterface> subtasks = getList();
         if (subtasks != null && subtasks.size() > 0) {
@@ -6682,7 +6684,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return null if no workTime
      */
     public WorkTime getAllocatedWorkTime(boolean reset) {
-        if (true || workTime == null || reset) { //true: don't cache values in Item, only cache WorkTimeAllocator
+        boolean noCache = true;
+        if (noCache || workTime == null || reset) { //true: don't cache values in Item, only cache WorkTimeAllocator
 //            return workTime;
 //        } else {
 
@@ -6708,13 +6711,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                        ASSERT.that(wtd!=null,"WTD should never ne null for a workTimeProvider");
                     WorkTime wt = prov.getWorkTimeAllocator(reset).getAllocatedWorkTime(this, remaining);
 //                        remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
-                    if (workTime == null) {
+                    if (workTime == null || noCache) {
                         workTime = new WorkTime();
                     }
                     if (wt != null) {
                         workTime.addWorkTime(wt);
                     }
                     remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
+                    if (wt != null && remaining == 0) {
+                        break;
+                    }
                 }
             }
         }
@@ -6735,7 +6741,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         long latestFinishTime = MyDate.MIN_DATE;
         if (isProject()) { //UI: for projects, finishTime is ALWAYS latest finishTime for subtasks (or undefined if all subtasks are Done)
             for (Object subtask : getList()) {
-                if (subtask instanceof ItemAndListCommonInterface) {
+                if (subtask instanceof Item) { //AndListCommonInterface) {
                     Item item = (Item) subtask;
                     long finishT = item.getFinishTime();
                     if (finishT > latestFinishTime && !item.isDone()) {
@@ -6744,9 +6750,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
 //            if (latestFinishTime != MyDate.MIN_DATE) { //only return if we actually have a date (all subtasks may be Done)
-            return latestFinishTime;
+            return latestFinishTime==MyDate.MIN_DATE?MyDate.MAX_DATE:latestFinishTime;
 //            }
-        }
+        }else
         return ItemAndListCommonInterface.super.getFinishTime();
     }
 

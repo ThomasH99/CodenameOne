@@ -24,12 +24,12 @@
             <entry key="TASK_HELP" value="D&#xe9;crire votre [TASK] ici" />
             <entry key="EFFORT_REMAINING" value="Restant" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="DONE" value="Termin&#xe9;" />
-            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
-            <entry key="Email" value="Courriel" />
             <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
-            <entry key="EFFORT_ACTUAL" value="Travail" />
+            <entry key="Email" value="Courriel" />
+            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
+            <entry key="DONE" value="Termin&#xe9;" />
             <entry key="DUE_DATE_HELP" value="" />
+            <entry key="EFFORT_ACTUAL" value="Travail" />
         </lang>
         <lang name="en">
             <entry key="SUPPORT" value="Support" />
@@ -53,12 +53,12 @@
             <entry key="TASK_HELP" value="Describe your [TASK] here" />
             <entry key="EFFORT_REMAINING" value="Remaining" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="DONE" value="Completed" />
-            <entry key="REPEAT_RULE" value="Repeat" />
-            <entry key="Email" value="Email" />
             <entry key="SETTINGS" value="Settings" />
-            <entry key="EFFORT_ACTUAL" value="Work" />
+            <entry key="Email" value="Email" />
+            <entry key="REPEAT_RULE" value="Repeat" />
+            <entry key="DONE" value="Completed" />
             <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
+            <entry key="EFFORT_ACTUAL" value="Work" />
         </lang>
         <lang name="dk">
             <entry key="SUPPORT" value="Support" />
@@ -82,12 +82,12 @@
             <entry key="TASK_HELP" value="Beskriv [TASK] her" />
             <entry key="EFFORT_REMAINING" value="Resterende" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="DONE" value="Afslutttet" />
-            <entry key="REPEAT_RULE" value="Gentag" />
-            <entry key="Email" value="Email" />
             <entry key="SETTINGS" value="Ops&#xe6;tning" />
-            <entry key="EFFORT_ACTUAL" value="Arbejdet" />
+            <entry key="Email" value="Email" />
+            <entry key="REPEAT_RULE" value="Gentag" />
+            <entry key="DONE" value="Afslutttet" />
             <entry key="DUE_DATE_HELP" value="" />
+            <entry key="EFFORT_ACTUAL" value="Arbejdet" />
         </lang>
     </l10n>
     <theme name="MyTheme">
@@ -126,11 +126,13 @@
         <val key="Comment.dis#derive" value="Comment" />
         <val key="Comment.fgColor" value="666666" />
         <font key="Comment.font" type="system" face="64" style="0" size="8" />
+        <val key="Comment.padUnit" value="0,2,0,2" />
+        <val key="Comment.padding" value="0.0,0.0,2.0,2.0" />
         <val key="Comment.press#derive" value="Comment" />
         <val key="Comment.sel#derive" value="Comment" />
         <val key="CompletedDate.derive" value="LabelValue" />
         <val key="CompletedDate.fgColor" value="cc00" />
-        <border key="ContainerListElement.border" type="underline"  millimeters="true" thickness="0.2" color="14869218" />
+        <border key="ContainerListElement.border" type="underline"  millimeters="false" thickness="0.0" color="14869218" />
         <val key="ContainerListElement.dis#derive" value="ContainerListElement" />
         <val key="ContainerListElement.margin" value="0.0,0.0,0.0,0.0" />
         <val key="ContainerListElement.press#derive" value="ContainerListElement" />
@@ -214,9 +216,8 @@
         <val key="ListOfItemsText.sel#derive" value="ListOfItemsText" />
         <val key="MyCheckBox.align" value="1" />
         <val key="MyCheckBox.dis#derive" value="MyCheckBox" />
-        <val key="MyCheckBox.margin" value="0.0,0.0,0.0,0.0" />
         <val key="MyCheckBox.padUnit" value="0,2,0,2" />
-        <val key="MyCheckBox.padding" value="0.0,0.0,0.5,0.0" />
+        <val key="MyCheckBox.padding" value="0.0,0.0,1.0,1.0" />
         <val key="MyCheckBox.press#derive" value="MyCheckBox" />
         <val key="MyCheckBox.sel#derive" value="MyCheckBox" />
         <val key="OnOffSwitch.derive" value="OnOffSwitch" />
@@ -243,7 +244,8 @@
         <val key="Text.derive" value="TextArea" />
         <val key="Text.dis#derive" value="Text" />
         <val key="Text.fgColor" value="666666" />
-        <val key="Text.padding" value="3.0,3.0,3.0,3.0" />
+        <val key="Text.padUnit" value="0,2,0,2" />
+        <val key="Text.padding" value="0.0,0.0,1.0,2.0" />
         <val key="Text.press#derive" value="Text" />
         <val key="Text.sel#derive" value="Text" />
         <val key="TimerTimer.align" value="4" />

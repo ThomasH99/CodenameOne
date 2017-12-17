@@ -239,11 +239,22 @@ public class WorkSlotList extends ArrayList<WorkSlot> {
     }
 
     /**
-     * returns true if there are future workslots (the list may contain expired workslots).
-     * The use of this function to test find the workslots to use to calculate finishTime also means that TDC will 'fall back' to using other workslots. E.g. if a subproject has defined workTime which then expired, 
+     * returns true if there are future workslots (the list may contain expired
+     * workslots). The use of this function to test find the workslots to use to
+     * calculate finishTime also means that TDC will 'fall back' to using other
+     * workslots. E.g. if a subproject has defined workTime which then expired,
      */
     public boolean hasComingWorkSlots() {
-        return size()>0; //TODO!!!!!
+        if (size() == 0) {
+            return false; //return size()>0; //TODO!!!!!
+        }
+        long now = System.currentTimeMillis();
+        for (WorkSlot workSlot : this) {
+            if (workSlot.getEndTime() > now) {
+                return true;
+            }
+        }
+        return false;
     }
-    
+
 }

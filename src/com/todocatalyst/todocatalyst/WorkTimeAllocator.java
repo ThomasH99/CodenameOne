@@ -364,7 +364,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //                return workT;
 //            startWorkSlotIndex = 0; //Integer so that getWorkTimeFromSlots can return update workSlots index
 //                if (workTimeCache == null && cacheActive) {
-                if (cacheActive) {
+                if (workTimeCache == null && cacheActive) {
                     workTimeCache = new ArrayList<>();
                 }
             }
@@ -524,7 +524,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
     }
 
     public String toString() {
-        return (owner != null ? owner.getText() : "noOwner");
+        return "WTA for:" + (owner != null ? owner.getText() + ", " + workTime : "noOwner");
     }
 
 }

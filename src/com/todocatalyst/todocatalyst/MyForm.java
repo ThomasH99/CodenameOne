@@ -1425,13 +1425,144 @@ public abstract class MyForm extends Form {
      * align with other fields)
      * @return
      */
+    protected static Component layoutN(String fieldLabelTxt, Picker field, String help,
+            boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
+        return layout(fieldLabelTxt, field, help,
+                field instanceof MyTimePicker ? (() -> ((MyTimePicker) field).swipeClear())
+                        : field instanceof MyDatePicker ? ((MyDatePicker) field).swipeClear()
+                                : ((MyDateAndTimePicker) field).swipeClear(),
+                wrapText, makeFieldUneditable, hideEditButton, false);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear) {
+        return layoutN(fieldLabelTxt, field, help, swipeClear, true, false, true, false);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean wrapText, boolean showAsFieldUneditable) {
+        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, false, false);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton) {
+        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
+//            field.getAllStyles().setPaddingRight(6);
+        } else {
+            if (field instanceof WrapButton) {
+//                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
+                ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
+                ((WrapButton) field).setUIID("Container");
+            } else {
+                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
+            }
+        }
+
+        //EDIT FIELD
+        Component visibleField = null; //contains the edit field and possibly the edit button
+//        if (hideEditButton) {
+//            visibleField = field;
+//        } else 
+        { //place a visible or invisible button
+            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
+//            boolean editButtonHidden = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
+//            editFieldButton.setVisible(!editButtonInvisible);
+            editFieldButton.setVisible(!showAsFieldUneditable || visibleEditButton); //Visible, but still using space
+//            editFieldButton.setVisible(!hideEditButton);
+            editFieldButton.setHidden(hiddenEditButton); //hidden, not taking any space
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
+//            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton);
+//            visibleField = BoxLayout.encloseX(field, editFieldButton);
+//            visibleField = BorderLayout.centerEastWest(null, field, editFieldButton);
+//</editor-fold>
+            visibleField = BorderLayout.centerEastWest(field, editFieldButton, null);
+            if (field instanceof WrapButton) {
+                ((Container) visibleField).setLeadComponent(((WrapButton) field).getActualButton());
+            } else {
+                ((Container) visibleField).setLeadComponent(field);
+            }
+        }
+
+        Container fieldContainer = new Container(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+
+        //SWIPE CLEAR
+        if (swipeClear != null) { //ADD SWIPE to delete
+            SwipeableContainer swipeCont;
+            assert !showAsFieldUneditable : "showAsUneditableField should never be true if we also define a swipeClear function";
+            Button swipeDeleteFieldButton = new Button();
+            swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
+            ActionListener l = (ev) -> {
+                swipeClear.clearFieldValue();
+                fieldContainer.revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
+                swipeCont.close();
+            };
+            swipeCont.addSwipeOpenListener(l);
+            swipeDeleteFieldButton.setCommand(Command.create("", Icons.iconCloseCircleLabelStyle, l));
+            visibleField = swipeCont;
+        }
+
+        //FIELD LABEL
+        Component fieldLabel = makeHelpButton(fieldLabelTxt, help, wrapText);
+        if (wrapText) {
+            int availDisplWidth = Display.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
+//            int availDisplWidthParent = getPaDisplay.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
+            int labelPreferredW = fieldLabel.getPreferredW();
+            int fieldPreferredW = visibleField.getPreferredW();
+            if (labelPreferredW + fieldPreferredW > availDisplWidth) { //if too wide
+                if (field instanceof MyComponentGroup) { //MyComponentGroups cannot wrap and must be shown fully so split on *two* lines
+                    fieldContainer.add(BorderLayout.NORTH, fieldLabel);
+                    fieldContainer.add(BorderLayout.EAST, visibleField);
+                } else {
+                    int widthFirstColumn = 0;
+                    int relativeWidthFieldPercent = fieldPreferredW * 100 / availDisplWidth;
+                    int relativeWidthLabelPercent = labelPreferredW * 100 / availDisplWidth;
+                    if (relativeWidthFieldPercent < 30) { //visibleField takes up less than 30% of avail space 
+//                        int widthFirstColumn = Math.min(Math.max(fieldLabelPreferredW / visibleFieldPreferredW * 100, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
+                        widthFirstColumn = 100 - relativeWidthFieldPercent; //first column gets the rest
+                    }
+                    if (relativeWidthLabelPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
+                        widthFirstColumn = relativeWidthLabelPercent; //give it full space (no wrap)
+                    } else {
+//                        int widthVisibleFieldPercent = 100 - widthFieldLabelPercent;
+                        int widthLabelPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
+                        widthFirstColumn = Math.min(Math.max(widthLabelPercent, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
+                    }
+                    TableLayout tl = new TableLayout(1, 2);
+                    tl.setGrowHorizontally(true); //grow the remaining right-most column
+//                fieldContainer = new Container(tl);
+                    fieldContainer.setLayout(tl);
+                    fieldContainer.
+                            add(tl.createConstraint().widthPercentage(widthFirstColumn), fieldLabel).
+                            //                            add(visibleField);
+                            add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.RIGHT), visibleField); //align center right
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                fieldLabel.getAllStyles().setMarginBottom(0);
+//                fieldLabel.getAllStyles().setPaddingBottom(0); //reduce space between label and field
+//                visibleField.getAllStyles().setMarginBottom(0);
+//                visibleField.getAllStyles().setPaddingTop(0);
+//                fieldContainer.add(BorderLayout.NORTH, fieldLabel);
+//                fieldContainer.add(BorderLayout.EAST, visibleField); //label NORTH
+//</editor-fold>
+                }
+            } else {
+                fieldContainer.add(BorderLayout.WEST, fieldLabel);
+                fieldContainer.add(BorderLayout.EAST, visibleField);  //label WEST
+            }
+        } else {
+            fieldContainer.add(BorderLayout.WEST, fieldLabel);
+            fieldContainer.add(BorderLayout.EAST, visibleField);
+        }
+
+        return fieldContainer;
+
+    }
+
     protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
         return layout(fieldLabelTxt, field, help, swipeClear, wrapText, makeFieldUneditable, hideEditButton, false);
     }
 
     protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
-            boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton, boolean invisibleEditButton) {
+            boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton, boolean forceVisibleEditButton) {
 
         if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
 //            field.getAllStyles().setPaddingRight(6);
@@ -1451,10 +1582,11 @@ public abstract class MyForm extends Form {
             visibleField = field;
         } else { //place a visible or invisible button
             Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
-            boolean editButtonInvisible = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
-            editFieldButton.setVisible(!editButtonInvisible);
+//            boolean editButtonHidden = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
+//            editFieldButton.setVisible(!editButtonInvisible);
+            editFieldButton.setVisible(!(makeFieldUneditable || hideEditButton) || forceVisibleEditButton); //Visible, but still using space
 //            editFieldButton.setVisible(!hideEditButton);
-            editFieldButton.setHidden(invisibleEditButton);
+            editFieldButton.setHidden(editButtonHidden || !forceVisibleEditButton); //hidden, not taking any space
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
 //            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton);
@@ -2001,16 +2133,16 @@ public abstract class MyForm extends Form {
 
     }
 
-        private double distance(int[] x, int[] y) {
+    private double distance(int[] x, int[] y) {
         int disx = x[0] - x[1];
         int disy = y[0] - y[1];
         return Math.sqrt(disx * disx + disy * disy);
     }
 
     /**
-     * If this Component is focused, the pointer dragged event
-     * will call this method
-     * 
+     * If this Component is focused, the pointer dragged event will call this
+     * method
+     *
      * @param x the pointer x coordinate
      * @param y the pointer y coordinate
      */
@@ -2023,14 +2155,14 @@ public abstract class MyForm extends Form {
                 pinchDistance = currentDis;
             }
             double scale = currentDis / pinchDistance;
-            if (pinch((float)scale)) {
+            if (pinch((float) scale)) {
                 return;
             }
-            Log.p("PointerDragged dist="+pinchDistance+", x="+x+", y="+y);
+            Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
         }
         pointerDragged(x[0], y[0]);
     }
-    
+
     double pinchDistance;
 
     private void insertNewContainer() {

@@ -21,10 +21,13 @@ class WorkSlotSlice {
     long startTime;// = Long.MIN_VALUE;
     long endTime;// = Long.MAX_VALUE;
     long missingDuration;// = 0;
+    private ItemAndListCommonInterface allocatedTo;
 
     @Override
     public String toString() {
-        return "Slice: " + MyDate.formatDateSmart(new Date(startTime)) + "-" + MyDate.formatDateSmart(new Date(endTime)) + " From:" + workSlot.getOwner().getText();
+        return "Slice: " + MyDate.formatDateTimeNew(new Date(startTime)) + "-" + MyDate.formatTimeNew(new Date(endTime))
+                + (workSlot != null && workSlot.getOwner() != null ? " Owner:" + workSlot.getOwner().getText() : "-")
+                + " AllocTo:" + (allocatedTo != null ? allocatedTo.getText() : "-");
 //                + " of "
 //                + (workSlot != null ? new Date(workSlot.getDurationAdjusted()) : "null") + "-"
 //                + (workSlot != null ? new Date(workSlot.getEndTime()) : "null");
@@ -64,6 +67,10 @@ class WorkSlotSlice {
      * @return
      */
     WorkSlotSlice getSlice(long startTime, long duration) {
+        return getSlice(startTime, duration, null);
+    }
+
+    WorkSlotSlice getSlice(long startTime, long duration, ItemAndListCommonInterface allocatedTo) {
 //            if (startTime == MyDate.MIN_DATE) {
 //                startTime = workSlot.getStartAdjusted();
 //            }
@@ -76,12 +83,13 @@ class WorkSlotSlice {
 //if (duration>0 && )
 //        if (duration > 0 && startTime >= this.startTime && startTime < this.endTime) { //TODO optimization: simplify/optimize epxression
 //        if (startTime >= this.startTime && startTime < this.endTime) { //TODO optimization: simplify/optimize epxression
-            //if either duration==0 or startTime==endTime, an empty slide will be allocated
-            long actualSliceEndTime = Math.min(startTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
-            return new WorkSlotSlice(workSlot, startTime,
-                    actualSliceEndTime,
-                    //                Math.max(0, (startTime + duration) - Math.min(startTime + duration, endTime))); //missing = desiredEndTime - actualEndTime
-                    startTime + duration - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
+        //if either duration==0 or startTime==endTime, an empty slide will be allocated
+        this.allocatedTo = allocatedTo;
+        long actualSliceEndTime = Math.min(startTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
+        return new WorkSlotSlice(workSlot, startTime,
+                actualSliceEndTime,
+                //                Math.max(0, (startTime + duration) - Math.min(startTime + duration, endTime))); //missing = desiredEndTime - actualEndTime
+                startTime + duration - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
 //        } 
 //        else {
 //            return null;
@@ -107,7 +115,6 @@ class WorkSlotSlice {
 ////        return getSlice(workSlot.getStartAdjusted(), duration);
 //        return WorkSlotSlice.this.getSlice(startTime, duration);
 //    }
-
     /**
      * returns true if the WorkTimeSlice has (any amount of) working time that
      * overlaps with [startTime - startTime+duration], which can be allocated
@@ -158,6 +165,14 @@ class WorkSlotSlice {
 //            return Math.max(0, getEndTime() - getStartTime());
 //            return Math.max(0, endTime - startTime);
         return endTime - startTime; //should always be positive, otherwise error elsewhere
+    }
+
+    public ItemAndListCommonInterface getAllocatedTo() {
+        return allocatedTo;
+    }
+
+    public void setAllocatedTo(ItemAndListCommonInterface allocatedTo) {
+        this.allocatedTo = allocatedTo;
     }
 
 }
