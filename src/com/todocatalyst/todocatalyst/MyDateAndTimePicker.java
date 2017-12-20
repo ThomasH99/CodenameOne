@@ -6,12 +6,7 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Button;
-import com.codename1.ui.Command;
-import com.codename1.ui.Component;
 import com.codename1.ui.Display;
-import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.layouts.FlowLayout;
-import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.spinner.Picker;
 import java.util.Date;
 import java.util.Map;
@@ -114,6 +109,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear{
         }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    Component makeContainerWithClearButtonXXX() {
 ////        Button clearButton = new Button();
 ////        timePicker.setClearButton(clearButton);
@@ -145,5 +141,6 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear{
 ////        return LayeredLayout.encloseIn(this, FlowLayout.encloseRightMiddle(clearButton));
 //        return FlowLayout.encloseRightMiddle(this, clearButton);
 //    }
+//</editor-fold>
 
 }

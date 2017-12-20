@@ -2832,7 +2832,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Item getTaskInterrupted() {
-        return (Item) getParseObject(PARSE_INTERRUPTED_TASK);
+//        return (Item) getParseObject(PARSE_INTERRUPTED_TASK);       
+        Item interrupted = (Item) getParseObject(PARSE_INTERRUPTED_TASK);
+//        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
+         return (Item)DAO.getInstance().fetchIfNeededReturnCachedIfAvail(interrupted);
+
     }
 
     /**
@@ -2856,7 +2860,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Item getDependingOnTask() {
-        return (Item) getParseObject(PARSE_DEPENDS_ON_TASK);
+//        return (Item) getParseObject(PARSE_DEPENDS_ON_TASK);
+        Item dependingOn = (Item) getParseObject(PARSE_DEPENDS_ON_TASK);
+//        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
+         return (Item)DAO.getInstance().fetchIfNeededReturnCachedIfAvail(dependingOn);
+
     }
 
     /**
@@ -2881,7 +2889,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Item getSource() {
-        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
+        Item source = (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
+//        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
+         return (Item)DAO.getInstance().fetchIfNeededReturnCachedIfAvail(source);
     }
 
     /**
@@ -3250,6 +3260,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (!isTemplate() && !oldAlarmDate.equals(waitingAlarmDate)) {
 //            afterSaveActions.put("WaitingAlarmDate", () -> AlarmHandler.getInstance().updateWaitingAlarm(this, oldAlarmDate, waitingAlarmDate));
             mustUpdateAlarms = true;
+//            AlarmHandler.getInstance().updateAlarmsOrTextForItem(this); //update any existing alarms to the new value
         }
 
 //        this.alarmDate = alarmDate;

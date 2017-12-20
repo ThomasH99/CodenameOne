@@ -118,10 +118,10 @@ public class AlarmHandler {
 //</editor-fold>
     /**
      * Called regularly, eg daily, to set up local notifications for an
-     * additional period, e.g. another day. Called in background fetch, so must
-     * be completely self-reliant and not eg assume that cache or other things
-     * have been loaded. Assumes that any changes in the time period for local
-     * notifications have already been setup are (???).
+     * additional period, e.g. another day. Called in background fetchFromCacheOnly, so must
+ be completely self-reliant and not eg assume that cache or other things
+ have been loaded. Assumes that any changes in the time period for local
+ notifications have already been setup are (???).
      */
 //    private void setAlarmsForNewIntervalBackgroundFetch() {
     public void updateLocalNotificationsOnBackgroundFetchOrAppStart() {
@@ -196,8 +196,8 @@ public class AlarmHandler {
 //</editor-fold>
     /**
      * called from performBackgroundFetch(long deadline, Callback<Boolean>
-     * onComplete) to fetch additional alarms (in the time interval between the
-     * last deadline used and end of the interval used, e.g. now+8 days) and
+ onComplete) to fetchFromCacheOnly additional alarms (in the time interval between the
+ last deadline used and end of the interval used, e.g. now+8 days) and
      * schedule the OS/device local notifications for it.
      */
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -267,10 +267,10 @@ public class AlarmHandler {
 
     /**
      * initialization of the alarm handling. Called on each start up of the app.
-     * Will update local notifications. Also launches timer to handle in-app
-     * (while app is running) alarms. NB! Initiating the background fetch task
-     * to update local notifications regularly even if app is not activated is
-     * done in the main start().
+ Will update local notifications. Also launches timer to handle in-app
+ (while app is running) alarms. NB! Initiating the background fetchFromCacheOnly task
+ to update local notifications regularly even if app is not activated is
+ done in the main start().
      */
     public void setupAlarmHandlingOnAppStart() {
         updateLocalNotificationsOnBackgroundFetchOrAppStart();

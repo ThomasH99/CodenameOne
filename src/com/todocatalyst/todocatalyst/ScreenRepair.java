@@ -85,7 +85,8 @@ public class ScreenRepair extends MyForm {
         gr.setAutoFit(true);
         Form hi = new Form("Fonts", gr);
 
-        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
+//        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
+        getToolbar().setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 
         int fontSize = Display.getInstance().convertToPixels(3);
 
@@ -128,7 +129,8 @@ public class ScreenRepair extends MyForm {
             hi.add(createForFont(tt, s));
         }
 
-        if (false) {
+//        if (false) {
+        if (true) {
             // requires Handlee-Regular.ttf in the src folder root!
             Font ttfFont = Font.createTrueTypeFont("Handlee", "Handlee-Regular.ttf").derive(fontSize, Font.STYLE_PLAIN);
 

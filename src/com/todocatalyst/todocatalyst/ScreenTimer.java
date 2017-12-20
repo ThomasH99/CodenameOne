@@ -39,6 +39,7 @@ import static com.todocatalyst.todocatalyst.MyForm.dialogSetWaitingDateAndAlarm;
  */
 public class ScreenTimer extends MyForm {
 
+    //TODO!!! get owner project / list from owner field of timed task (to ensure that even if started from e.g. Overdue, it will show!
     //TODO Imp: rearrange Timer to show most useful/needed first: show task and timer first, then Notes, then estimates.
     //TODO Imp: when storing time, round of to seconds to avoid that a few miliseconds suddenly makes a difference between actual and total actual
     //TODO implement pop up to validate Remaining time on Done/Next/Waiting + setting to activate/deactivate (+option to deactivate in pop-up)

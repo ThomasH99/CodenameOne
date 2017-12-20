@@ -1813,6 +1813,20 @@ public class MyDate extends Date {
     }
 
     /**
+     * set time to start of minute. E.g. 22:31:47 is rounded down to 22:31:00. Used eg to ensure that a snooze alarm starts right at the minute seen by user and not 45s later. 
+     * @param time
+     * @return 
+     */
+    static Date getStartOfMinute(Date time) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(time);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0); //ensure it's after midnight //TODO!!!! is 0 the right value??
+        return cal.getTime();
+    }
+
+    /**
      * returns the time at which Today started (midnight)
      *
      * @return

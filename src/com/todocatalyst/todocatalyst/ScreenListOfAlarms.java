@@ -161,7 +161,8 @@ public class ScreenListOfAlarms extends MyForm {
 //                for (ExpiredAlarm expired : expiredAlarms) {
 //                    AlarmHandler.getInstance().snoozeAlarm(expired, snoozeExpireTimeInMillis);
 //                }
-                AlarmHandler.getInstance().snoozeAllExpiredAlarms(new Date(System.currentTimeMillis() + snoozeTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS));
+                AlarmHandler.getInstance().snoozeAllExpiredAlarms(
+                        MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + snoozeTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS)));
                 showPreviousScreenOrDefault(false);
             }))));
             
@@ -289,8 +290,10 @@ public class ScreenListOfAlarms extends MyForm {
 //        Container cont = new Container();
         Container cont = new ContainerScrollY();
         cont.setScrollableY(true);
-        for (int i = 0, size = expiredAlarms.size(); i < size; i++) {
-            ExpiredAlarm notif = expiredAlarms.get(i);
+//        for (int i = 0, size = expiredAlarms.size(); i < size; i++) {
+//            ExpiredAlarm notif = expiredAlarms.get(i);
+        for (ExpiredAlarm notif: expiredAlarms) {
+//            ExpiredAlarm notif = expiredAlarms.get(i);
             if (notif.alarmTime.getTime() <= now) {
                 Item item = DAO.getInstance().fetchItem(notif.objectId);
                 Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),

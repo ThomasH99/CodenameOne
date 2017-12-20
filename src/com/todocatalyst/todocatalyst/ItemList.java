@@ -34,7 +34,7 @@ import java.util.ListIterator;
 public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         implements /*ItemListModel,*/
         MyTreeModel, /*Collection,*/ List, SumField, ItemAndListCommonInterface, Iterable { //, DataChangedListener {
-    //TODO implement deep fetch to get all tasks and sub-tasks at any depth
+    //TODO implement deep fetchFromCacheOnly to get all tasks and sub-tasks at any depth
     //TODO: implement caching of worksum of sub-tasks (callback from subtasks to all affected owners and categories??)
     //TODO optimization: for long lists (e.g. size>100) add a hashmap to find the index faster than linear search in getItemIndex
 
@@ -935,7 +935,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //            List<E> list = getList(PARSE_ITEMLIST);
 //            if (list != null) {
-////            for (E o:list) {ParseObject.fetch(o)};
+////            for (E o:list) {ParseObject.fetchFromCacheOnly(o)};
 ////            ParseQuery. //include the linked
 //                DAO.getInstance().cacheUpdateListToCachedObjects(list);
 //                FilterSortDef filterSortDef = getFilterSortDef();

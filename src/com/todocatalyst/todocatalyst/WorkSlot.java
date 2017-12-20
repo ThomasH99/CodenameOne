@@ -378,7 +378,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      */
     public RepeatRuleParseObject getRepeatRule() {
 //        return repeatRule;
-//        ParseObject.fetch("RepeatRule", repeatRule.getObjectId());
+//        ParseObject.fetchFromCacheOnly("RepeatRule", repeatRule.getObjectId());
         RepeatRuleParseObject repeatRule = (RepeatRuleParseObject) getParseObject(PARSE_REPEAT_RULE);
         repeatRule = (RepeatRuleParseObject) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(repeatRule);
 //        return (RepeatRuleParseObject) getParseObject(PARSE_REPEAT_RULE);
@@ -414,7 +414,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //            this.repeatRule = repeatRule; //TODO!!!!: shouldn't repeat instances be calculated/updated whenever a repeat rule sit set?! (Currently done in copyMeInto)
 ////            changed();
 //        }
-//        ParseObject.fetch("RepeatRule", repeatRule.getObjectId());
+//        ParseObject.fetchFromCacheOnly("RepeatRule", repeatRule.getObjectId());
         setRepeatRuleNoUpdate(repeatRule); //MUST set repeatRule before creating repeatInstances!
         if (repeatRule != null) {
 //            repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);

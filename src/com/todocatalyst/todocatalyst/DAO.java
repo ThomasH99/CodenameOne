@@ -124,6 +124,9 @@ public class DAO {
      */
     public Item fetchItem(String objectId) {
         Item item;
+        if (objectId == null || objectId.length() == 0) {
+            return null;
+        }
         if ((item = (Item) cache.get(objectId)) != null) {
             return item;
         }
@@ -137,22 +140,27 @@ public class DAO {
         return item;
     }
 
-    public ItemAndListCommonInterface fetch(String objectId) {
-        ItemAndListCommonInterface item;
+    /**
+     *
+     * @param objectId
+     * @return
+     */
+    public ItemAndListCommonInterface fetchFromCacheOnly(String objectId) {
+        ItemAndListCommonInterface elt;
         if (objectId == null || objectId.length() == 0) {
             return null;
         }
-        if ((item = (ItemAndListCommonInterface) cache.get(objectId)) != null) {
-            return item;
+        if ((elt = (ItemAndListCommonInterface) cache.get(objectId)) != null) {
+            return elt;
         }
 //        Item item = null;
-        try {
-            item = ParseObject.fetch(Item.CLASS_NAME, objectId);
-            cache.put(objectId, item);
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        return item;
+//        try {
+//            item = ParseObject.fetchFromCacheOnly(Item.CLASS_NAME, objectId);
+//            cache.put(objectId, item);
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+        return null;
     }
 
     /**
@@ -212,7 +220,7 @@ public class DAO {
 //        queryDueToday.whereContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.CREATED.toString(), ItemStatus.ONGOING.toString(), ItemStatus.WAITING.toString()))); //item that are NOT DONE or CANCELLED
         queryDueToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 //        setupItemQueryNoTemplatesLimit1000(queryDueToday);
-        queryDueToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
+        queryDueToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
 
         ParseQuery<Item> queryWaitingExpiresToday = null;
         if (includeWaiting) {
@@ -226,7 +234,7 @@ public class DAO {
             queryWaitingExpiresToday.whereEqualTo(Item.PARSE_STATUS, ItemStatus.WAITING.toString()); //item that are NOT DONE or CANCELLED
 //        queryDueToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), ItemStatus.ONGOING.toString(), ItemStatus.CREATED.toString()))); //item that are NOT DONE or CANCELLED
 //        setupItemQueryNoTemplatesLimit1000(queryWaitingExpiresToday);
-            queryWaitingExpiresToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
+            queryWaitingExpiresToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
         }
 
         ParseQuery<Item> queryStartToday = null;
@@ -241,7 +249,7 @@ public class DAO {
 //            queryStartToday.whereEqualTo(Item.PARSE_STATUS, ItemStatus.WAITING.toString()); //item that are NOT DONE or CANCELLED
 //            queryStartToday.whereContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.CREATED.toString(), ItemStatus.ONGOING.toString()))); //item that are NOT DONE or CANCELLED, don't include WAITING since waiting for a later date overrides
             queryStartToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), ItemStatus.WAITING.toString()))); //item that are NOT DONE or CANCELLED, don't include WAITING since waiting for a later date overrides
-            queryWaitingExpiresToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
+            queryWaitingExpiresToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
 //        setupItemQueryNoTemplatesLimit1000(queryStartToday);
         }
 
@@ -285,7 +293,7 @@ public class DAO {
                 queryWorkSlots.whereLessThan(WorkSlot.PARSE_START_TIME, startOfTomorrow);
                 queryWorkSlots.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 //        setupItemQueryNoTemplatesLimit1000(queryDueToday);
-//        queryWorkSlots.whereDoesNotExist(WorkSlot.PARSE_CANCELLED); //don't fetch any templates
+//        queryWorkSlots.whereDoesNotExist(WorkSlot.PARSE_CANCELLED); //don't fetchFromCacheOnly any templates
                 List<WorkSlot> resultsWorkSlots = queryWorkSlots.find();
                 fetchAllItemsIn(resultsWorkSlots);
                 results.addAll(resultsWorkSlots);
@@ -305,7 +313,7 @@ public class DAO {
         query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfOverdueInterval);
         query.whereLessThan(Item.PARSE_DUE_DATE, startOfToday);
         query.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
-        query.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
+        query.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
         query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
         try {
@@ -521,7 +529,7 @@ public class DAO {
                     getInstance().save(categoryList); //always save so new lists can be assigned to it
                 }
 //            cacheList(results);
-                cache.put(categoryList.getObjectIdP(), categoryList); //may fetch by objectId via getOwner
+                cache.put(categoryList.getObjectIdP(), categoryList); //may fetchFromCacheOnly by objectId via getOwner
                 cache.put(CategoryList.CLASS_NAME, categoryList);
             } catch (ParseException ex) {
                 Log.e(ex);
@@ -545,7 +553,7 @@ public class DAO {
             if (results.size() > 0) {
                 CategoryList categoryList = results.get(0); //return first element
                 fetchAllItemsIn(categoryList);
-                cache.put(categoryList.getObjectIdP(), categoryList); //may fetch by objectId via getOwner
+                cache.put(categoryList.getObjectIdP(), categoryList); //may fetchFromCacheOnly by objectId via getOwner
                 cache.put(CategoryList.CLASS_NAME, categoryList);
             }
         } catch (ParseException ex) {
@@ -563,7 +571,7 @@ public class DAO {
             if (results.size() > 0) {
                 ItemListList itemListList = results.get(0); //return first element
                 fetchAllItemsIn(itemListList);
-                cache.put(itemListList.getObjectIdP(), itemListList); //may fetch by objectId via getOwner
+                cache.put(itemListList.getObjectIdP(), itemListList); //may fetchFromCacheOnly by objectId via getOwner
                 cache.put(ItemListList.CLASS_NAME, itemListList);
             }
         } catch (ParseException ex) {
@@ -581,7 +589,7 @@ public class DAO {
             if (results.size() > 0) {
                 TemplateList templateList = results.get(0); //return first element
                 fetchAllItemsIn(templateList);
-                cache.put(templateList.getObjectIdP(), templateList); //may fetch by objectId via getOwner
+                cache.put(templateList.getObjectIdP(), templateList); //may fetchFromCacheOnly by objectId via getOwner
                 cache.put(TemplateList.CLASS_NAME, templateList);
             }
         } catch (ParseException ex) {
@@ -697,9 +705,9 @@ public class DAO {
 //    }
 //    public void fetchAllItemsIn(ParseObject listOrCategory, boolean recursively) {
     /**
-     * NB! Not the usual semantic of fetch, since it may return an existing
-     * instance of the parseObject instead of simply fetching the data for the
-     * passed parseObject (to avoid multiple parallel copies of the same
+     * NB! Not the usual semantic of fetchFromCacheOnly, since it may return an
+     * existing instance of the parseObject instead of simply fetching the data
+     * for the passed parseObject (to avoid multiple parallel copies of the same
      * ParseObject, e.g. when using getOnwerList, a new instance of the
      * ownerList is returned and any changes to this will not be reflected until
      * the list is saved and fetched again).
@@ -760,7 +768,7 @@ public class DAO {
         List<ParseObject> list = null;
         try {
 //            ParseBatch batch = ParseBatch.create();
-            //TODO!!! find more efficient way to fetch all the objects - use ParseBatch once switched to new version of parse4cn1!!
+            //TODO!!! find more efficient way to fetchFromCacheOnly all the objects - use ParseBatch once switched to new version of parse4cn1!!
 
             if (itemOrItemListOrCategoryOrList instanceof ParseObject && ((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP() != null) {
 //                 if ((temp = cache.get(((ParseObject) itemOrListOrCategory).getObjectId())) != null) {
@@ -822,7 +830,7 @@ public class DAO {
     private void fetchAllItemsInImplNOT_WORKING(Object itemOrItemListOrCategoryOrList, boolean recursively) {
         try {
 //            ParseBatch batch = ParseBatch.create();
-            //TODO!!! find more efficient way to fetch all the objects - use ParseBatch once switched to new version of parse4cn1!!
+            //TODO!!! find more efficient way to fetchFromCacheOnly all the objects - use ParseBatch once switched to new version of parse4cn1!!
 
             if (itemOrItemListOrCategoryOrList instanceof ParseObject) {
 //                 if ((temp = cache.get(((ParseObject) itemOrListOrCategory).getObjectId())) != null) {
@@ -855,7 +863,7 @@ public class DAO {
                 if ((temp = (ParseObject) cache.get(list.get(i).getObjectIdP())) != null) {
                     list.set(i, temp); //NB! will possibly replace the parseObjects in the list with cached ones
                 } else {
-                    batchToFetchAllLevelsOfHierarchyInOneGo.addObject(list.get(i), ParseBatch.EBatchOpType.UPDATE); //NO BATCH operation to fetch (fetchAllIfNeeded exists but requires merge: https://github.com/ParsePlatform/parse-php-sdk/issues/75)
+                    batchToFetchAllLevelsOfHierarchyInOneGo.addObject(list.get(i), ParseBatch.EBatchOpType.UPDATE); //NO BATCH operation to fetchFromCacheOnly (fetchAllIfNeeded exists but requires merge: https://github.com/ParsePlatform/parse-php-sdk/issues/75)
                 }
 //                list.set(i, fetchIfNeeded(list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
                 if (recursively) {
@@ -871,7 +879,7 @@ public class DAO {
         try {
             category.fetchIfNeeded();
             List<Item> list = category.getList();
-            //TODO!!! find more efficient way to fetch all the objects
+            //TODO!!! find more efficient way to fetchFromCacheOnly all the objects
             for (int i = 0, size = list.size(); i < size; i++) {
                 list.set(i, (Item) fetchIfNeededReturnCachedIfAvail(list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
 //            for (Object item : category.getList()) {
@@ -894,14 +902,14 @@ public class DAO {
 
     private static void setupItemQueryNotTemplateNotDeletedLimit10000(ParseQuery<Item> query, boolean excludeDoneAndCancelled) {
         assert query.getClassName().equals(Item.CLASS_NAME) : "only use this on queries to retrieve Items";
-//        //TODO are the below includes really necessary? Or add additional includes to actually fetch needed info like Category names?
+//        //TODO are the below includes really necessary? Or add additional includes to actually fetchFromCacheOnly needed info like Category names?
 //        query2.include(Item.PARSE_SUBTASKS); //
 //        query2.include(Item.PARSE_CATEGORIES);
-//        query2.include(Item.PARSE_OWNER_ITEM); //ensure we fetch the owner (eg for drag & drop)
-//        query2.include(Item.PARSE_OWNER_LIST); //ensure we fetch the ownerList (eg for drag & drop)
+//        query2.include(Item.PARSE_OWNER_ITEM); //ensure we fetchFromCacheOnly the owner (eg for drag & drop)
+//        query2.include(Item.PARSE_OWNER_LIST); //ensure we fetchFromCacheOnly the ownerList (eg for drag & drop)
 //        query2.include(Item.PARSE_REPEAT_RULE); //TODO!!! cache all ParseRules and access that instead!
-        query.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
-        query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //don't fetch any deleted items
+        query.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
+        query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //don't fetchFromCacheOnly any deleted items
 //        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
         if (excludeDoneAndCancelled) {
@@ -939,8 +947,8 @@ public class DAO {
         }//        query2.include(Item.PARSE_TEXT);
 //        query2.include(Item.PARSE_SUBTASKS);
 //        query2.include(Item.PARSE_CATEGORIES);
-//        query2.include(Item.PARSE_OWNER_ITEM); //ensure we fetch the owner (eg for drag & drop)
-//        query2.include(Item.PARSE_OWNER_LIST); //ensure we fetch the ownerList (eg for drag & drop)
+//        query2.include(Item.PARSE_OWNER_ITEM); //ensure we fetchFromCacheOnly the owner (eg for drag & drop)
+//        query2.include(Item.PARSE_OWNER_LIST); //ensure we fetchFromCacheOnly the ownerList (eg for drag & drop)
 //        setupStandardItemQuery(query2);
 //        query2.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude all subtasks
         query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
@@ -1000,7 +1008,7 @@ public class DAO {
         if (repeatRule != null && repeatRule.getObjectIdP() != null) {
             ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //            setupItemQueryNoTemplatesLimit1000(query);
-            query.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
+            query.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
             query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
 //            query.whereEqualTo(Item.PARSE_REPEAT_RULE, repeatRule.getObjectId());
             query.whereEqualTo(Item.PARSE_REPEAT_RULE, repeatRule);
@@ -1044,8 +1052,8 @@ public class DAO {
 ////        query2.include(Item.PARSE_TEXT);
 ////        query2.include(Item.PARSE_SUBTASKS);
 ////        query2.include(Item.PARSE_CATEGORIES);
-////        query2.include(Item.PARSE_OWNER_ITEM); //ensure we fetch the owner (eg for drag & drop)
-////        query2.include(Item.PARSE_OWNER_LIST); //ensure we fetch the ownerList (eg for drag & drop)
+////        query2.include(Item.PARSE_OWNER_ITEM); //ensure we fetchFromCacheOnly the owner (eg for drag & drop)
+////        query2.include(Item.PARSE_OWNER_LIST); //ensure we fetchFromCacheOnly the ownerList (eg for drag & drop)
 //        setupStandardItemQuery(query2);
 ////        query2.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude all subtasks
 //        query2.orderByDescending(Item.PARSE_UPDATED_AT);
@@ -1075,9 +1083,9 @@ public class DAO {
         if (false) {
             query.include(Item.PARSE_SUBTASKS);
             query.include(Item.PARSE_CATEGORIES);
-            query.include(Item.PARSE_OWNER_ITEM); //ensure we fetch the owner (eg for drag & drop)
+            query.include(Item.PARSE_OWNER_ITEM); //ensure we fetchFromCacheOnly the owner (eg for drag & drop)
         }
-//        query2.include(Item.PARSE_OWNER_LIST); //ensure we fetch the ownerList (eg for drag & drop)
+//        query2.include(Item.PARSE_OWNER_LIST); //ensure we fetchFromCacheOnly the ownerList (eg for drag & drop)
         query.whereExists(Item.PARSE_TEMPLATE); //fetch only templates
         query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude all subtasks
         query.orderByDescending(Item.PARSE_TEXT); //order alphabetically
@@ -1131,7 +1139,7 @@ public class DAO {
         }
         query.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //exclude Done if has subtaskss
         query.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.CANCELLED.toString()); //include if has subtaskss
-        query.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
+        query.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
 
         query.orderByDescending(Item.PARSE_UPDATED_AT);
         query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
@@ -1279,10 +1287,10 @@ public class DAO {
             ParseQuery<ItemListList> query = ParseQuery.getQuery(ItemListList.CLASS_NAME);
             query.setLimit(1); //if ever there is more than one list, get only first one
 //            query.include(ItemListList.PARSE_ITEMLIST_LIST);
-//            query.include(ItemListList.PARSE_ITEMLIST_LIST + "." + ItemList.CLASS_NAME); //TODO!!!! not necessary to fetch this since coming from cache
+//            query.include(ItemListList.PARSE_ITEMLIST_LIST + "." + ItemList.CLASS_NAME); //TODO!!!! not necessary to fetchFromCacheOnly this since coming from cache
 //            query.include(ItemListList.PARSE_ITEMLIST_LIST + "." + ItemList.CLASS_NAME + "." + Item.CLASS_NAME);
             if (false) {
-                query.include(ItemListList.PARSE_ITEMLIST + "." + ItemList.CLASS_NAME); //TODO!!!! not necessary to fetch this since coming from cache
+                query.include(ItemListList.PARSE_ITEMLIST + "." + ItemList.CLASS_NAME); //TODO!!!! not necessary to fetchFromCacheOnly this since coming from cache
                 query.include(ItemListList.PARSE_ITEMLIST + "." + ItemList.CLASS_NAME + "." + Item.CLASS_NAME);
             }
 //            query.include(ItemListList.PARSE_ITEMLIST_LIST+"."+ItemList.PARSE_ITEMLIST+"."+Item.PARSE_STATUS);
@@ -1297,7 +1305,7 @@ public class DAO {
                 if (results.size() > 0) {
                     assert results.size() <= 1 : "error: more than one CategoryList element (" + results.size() + ")";
                     itemListList = results.get(0); //return first element
-                    cache.put(itemListList.getObjectIdP(), itemListList); //may fetch by objectId via getOwner
+                    cache.put(itemListList.getObjectIdP(), itemListList); //may fetchFromCacheOnly by objectId via getOwner
                     cache.put(ItemListList.CLASS_NAME, itemListList);
                 } else { //if (results.size() == 0) {
                     //first time only
@@ -1367,7 +1375,7 @@ public class DAO {
 //        query.whereContainedIn(Item.PARSE_CATEGORIES, cat);
         query.whereEqualTo(Item.PARSE_CATEGORIES, cat); //TODO!!: right expression to get all items with cat in Categories??
         query.include(Item.PARSE_CATEGORIES);
-//        query.include(Item.PARSE_CATEGORIES+"."+Category.PARSE_TEXT); //only fetch category name
+//        query.include(Item.PARSE_CATEGORIES+"."+Category.PARSE_TEXT); //only fetchFromCacheOnly category name
         List<Item> results = null;
         try {
             results = (List<Item>) query.find();
@@ -1652,11 +1660,19 @@ public class DAO {
 //                anyParseObject.save();
                 saveImpl(anyParseObject);
                 if (saveToCache) {
-                    cache.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+                    if (anyParseObject instanceof WorkSlot) {
+                        cacheWorkSlots.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+                    } else {
+                        cache.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+                    }
                 }
             } else {
                 if (saveToCache) { //TODO Optimization: don't put if already cached (any substantial savings??)
-                    cache.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+                    if (anyParseObject instanceof WorkSlot) {
+                        cacheWorkSlots.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+                    } else {
+                        cache.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+                    }
                 }
                 saveInBackground(anyParseObject);
             }
@@ -2044,7 +2060,7 @@ public class DAO {
         query.whereLessThan(Item.PARSE_ALARM_DATE,
                 new Date(timeAfterWhichToFindNextItemWithAlarm.getTime() + MyPrefs.alarmDaysAheadToFetchFutureAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS)); //don't search more than 30 days ahead in the future
         query.addAscendingOrder(Item.PARSE_ALARM_DATE); //sort on the alarm field
-        query.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetch the data needed to set alarms
+        query.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
         query.setLimit(maxNumberItemsToRetrieve);
 
         try {
@@ -2068,7 +2084,7 @@ public class DAO {
         query.whereLessThan(Item.PARSE_WAITING_ALARM_DATE,
                 new Date(timeAfterWhichToFindNextItemWithAlarm.getTime() + MyPrefs.alarmDaysAheadToFetchFutureAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS)); //don't search more than 30 days ahead in the future
         query.addAscendingOrder(Item.PARSE_WAITING_ALARM_DATE); //sort on the alarm field
-        query.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetch the data needed to set alarms
+        query.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
         query.setLimit(maxNumberItemsToRetrieve);
 
         try {
@@ -2107,7 +2123,7 @@ public class DAO {
         }
         if (false) {
             query.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE,
-                    Item.PARSE_WAITING_ALARM_DATE, Item.PARSE_SNOOZE_DATE))); // just fetch the data needed to set alarms //TODO!! investigate if only fetching the relevant fields is a meaningful optimziation (check that only the fetched fields are used!)
+                    Item.PARSE_WAITING_ALARM_DATE, Item.PARSE_SNOOZE_DATE))); // just fetchFromCacheOnly the data needed to set alarms //TODO!! investigate if only fetching the relevant fields is a meaningful optimziation (check that only the fetched fields are used!)
         }
         query.setLimit(maxNumberItemsToRetrieve);
 
@@ -2222,7 +2238,7 @@ public class DAO {
         try {
             ParseQuery<Item> queryGetAllItemsWithAlarms = ParseQuery.getOrQuery(Arrays.asList(queryReminderAlarm, queryWaitingAlarm, querySnoozedAlarm));
             if (false) {
-                queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetch the data needed to set alarms
+                queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
             }
             queryGetAllItemsWithAlarms.setLimit(maxNumberItemsToRetrieve);
 
@@ -2243,7 +2259,7 @@ public class DAO {
 
         ParseQuery<Item> queryReminderAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
 //        setupStandardItemQuery(queryReminderAlarm);
-        queryReminderAlarm.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
+        queryReminderAlarm.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
 //        queryReminderAlarm.setLimit(MyPrefs.alarmMaxNumberItemsForWhichToSetupAlarms.getInt());
 //        queryAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //item that are NOT DONE
         //also need to avoid items that are cancelled
@@ -2256,7 +2272,7 @@ public class DAO {
         queryReminderAlarm.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 
         ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
-        queryReminderAlarm.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
+        queryReminderAlarm.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
 //        setupItemQueryNoTemplatesLimit1000(queryWaitingAlarm);
 //        queryWaitingAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //item that are NOT DONE
         //also need to avoid items that are cancelled
@@ -2272,7 +2288,7 @@ public class DAO {
             //        ParseQuery<Item> queryOr = ParseQuery<Item>.getOrQuery(new ArrayList(){queryAlarm, queryWaitingAlarm});
             ParseQuery<Item> queryGetAllItemsWithAlarms = ParseQuery.getOrQuery(Arrays.asList(queryReminderAlarm, queryWaitingAlarm));
 
-            queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetch the data needed to set alarms
+            queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
 
 //            queryGetAllItemsWithAlarms.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
             queryGetAllItemsWithAlarms.setLimit(alarmMaxNumberItems); //item that are NOT DONE or CANCELLED
@@ -2315,16 +2331,16 @@ public class DAO {
 //        setupAlarmQuery(queryReminderAlarm, Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
         queryReminderAlarm.whereGreaterThan(Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem);
         queryReminderAlarm.setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
-//        queryReminderAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetch the data needed to set alarms
-        queryReminderAlarm.selectKeys(new ArrayList()); // just fetch the objectId - assumes items are cached already
+//        queryReminderAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
+        queryReminderAlarm.selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
 
         ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
         setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingAlarm, true);
 //        setupAlarmQuery(queryWaitingAlarm, Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
         queryWaitingAlarm.whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem);
         queryWaitingAlarm.setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
-//        queryWaitingAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetch the data needed to set alarms
-        queryWaitingAlarm.selectKeys(new ArrayList()); // just fetch the objectId - assumes items are cached already
+//        queryWaitingAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
+        queryWaitingAlarm.selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
 
         Item nextItemWithAlarm = null;
 
@@ -2389,7 +2405,7 @@ public class DAO {
 //        //also need to avoid items that are cancelled
 ////        queryAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.CANCELLED.toString()); //item that are NOT DONE
 ////        setupAlarmQuery(queryReminderAlarm, Item.PARSE_ALARM_DATE, earliestTimeForNextAlarm, new Date(Long.MAX_VALUE));
-////        queryReminderAlarm.setLimit(1); //only fetch the first one with the smallest alarm
+////        queryReminderAlarm.setLimit(1); //only fetchFromCacheOnly the first one with the smallest alarm
 ////        queryReminderAlarm.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 //        setupAlarmQuery(queryReminderAlarm, Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
 //
@@ -2398,7 +2414,7 @@ public class DAO {
 ////        queryWaitingAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //item that are NOT DONE
 //        //also need to avoid items that are cancelled
 ////        queryWaitingAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.CANCELLED.toString()); //item that are NOT DONE
-////        queryWaitingAlarm.setLimit(1); //only fetch the first one with the smallest alarm
+////        queryWaitingAlarm.setLimit(1); //only fetchFromCacheOnly the first one with the smallest alarm
 ////        queryWaitingAlarm.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 //        setupAlarmQuery(queryWaitingAlarm, Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
 //
@@ -2411,7 +2427,7 @@ public class DAO {
 //            //        ParseQuery<Item> queryOr = ParseQuery<Item>.getOrQuery(new ArrayList(){queryAlarm, queryWaitingAlarm});
 //            ParseQuery<Item> queryGetAllItemsWithAlarms = ParseQuery.getOrQuery(Arrays.asList(queryReminderAlarm, queryWaitingAlarm));
 //            queryGetAllItemsWithAlarms.setLimit(1);
-//            queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetch the data needed to set alarms
+//            queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
 ////            setupItemQuery(queryGetAllItemsWithAlarms);
 ////            queryGetAllItemsWithAlarms.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //item that are NOT DONE
 //            //also need to avoid items that are cancelled

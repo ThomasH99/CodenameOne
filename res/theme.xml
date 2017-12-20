@@ -125,9 +125,9 @@
         <val key="Comment.align" value="1" />
         <val key="Comment.dis#derive" value="Comment" />
         <val key="Comment.fgColor" value="666666" />
-        <font key="Comment.font" type="system" face="64" style="0" size="8" />
-        <val key="Comment.padUnit" value="0,2,0,2" />
-        <val key="Comment.padding" value="0.0,0.0,2.0,2.0" />
+        <font key="Comment.font" type="system" face="0" style="0" size="8" />
+        <val key="Comment.padUnit" value="2,2,2,2" />
+        <val key="Comment.padding" value="1.0,1.0,1.0,1.0" />
         <val key="Comment.press#derive" value="Comment" />
         <val key="Comment.sel#derive" value="Comment" />
         <val key="CompletedDate.derive" value="LabelValue" />
@@ -244,8 +244,9 @@
         <val key="Text.derive" value="TextArea" />
         <val key="Text.dis#derive" value="Text" />
         <val key="Text.fgColor" value="666666" />
-        <val key="Text.padUnit" value="0,2,0,2" />
-        <val key="Text.padding" value="0.0,0.0,1.0,2.0" />
+        <font key="Text.font" type="system" face="0" style="0" size="0" />
+        <val key="Text.padUnit" value="2,2,2,2" />
+        <val key="Text.padding" value="1.0,1.0,1.0,1.0" />
         <val key="Text.press#derive" value="Text" />
         <val key="Text.sel#derive" value="Text" />
         <val key="TimerTimer.align" value="4" />
@@ -260,8 +261,8 @@
         <val key="TimerTimer.sel#derive" value="TimerTimer" />
         <val key="TimerTimer.transparency" value="255" />
         <val key="TitleCommand.derive" value="TitleCommand" />
-        <val key="TitleCommand.marUnit" value="2,2,2,2" />
-        <val key="TitleCommand.margin" value="2.0,2.0,2.0,2.0" />
+        <val key="TitleCommand.padUnit" value="2,2,2,2" />
+        <val key="TitleCommand.padding" value="0.5,0.5,1.5,1.5" />
         <val key="ToggleButton.dis#derive" value="ToggleButton" />
         <val key="ToggleButton.fgColor" value="6eaeff" />
         <val key="ToggleButton.padUnit" value="2,2,2,2" />

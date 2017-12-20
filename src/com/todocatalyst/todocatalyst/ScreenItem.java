@@ -94,7 +94,7 @@ public class ScreenItem extends MyForm {
 //    Map<Object, UpdateField> parseIdMap2 = new HashMap<Object, UpdateField>();
 //    MyForm previousForm;
     private Item item;
-    private Item itemLS; //FromLocalStorage, read from local storage if app was stopped with unsaved edits to Item
+    private Item itemLS; //FromLocalStorage, read from local storage if app was stopped with unsaved edits to Item, otherwise set to edited item
 //    Set locallyEditedCategories;
     private List locallyEditedCategories = null;
 //    private ItemAndListCommonInterface locallyEditedOwner = null;
@@ -235,7 +235,7 @@ public class ScreenItem extends MyForm {
                 new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotList(), item, ScreenItem.this, (iList) -> {
 //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
 //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
-                },null,false).show();
+                }, null, false).show();
             }
         });
 //        }
@@ -848,7 +848,7 @@ public class ScreenItem extends MyForm {
 //        mainCont.add(new Label(Item.DUE_DATE)).add(dueDate.makeContainerWithClearButton());
 //        mainCont.add(layout(Item.DUE_DATE, dueDate.makeContainerWithClearButton(), "**"));
 //</editor-fold>
-        mainCont.add(layout(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
+        mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
 
         //FINISH_TIME
@@ -858,7 +858,7 @@ public class ScreenItem extends MyForm {
             Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(workTime), null, (e) -> {
                 new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
             }));
-            mainCont.add(layout(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, false, true));
+            mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true));
         }
 
 //        MyDateAndTimePicker alarmDate = new MyDateAndTimePicker("<click to set an alarm>", parseIdMap, item, Item.PARSE_ALARM_DATE);
@@ -874,7 +874,7 @@ public class ScreenItem extends MyForm {
 //        if (false)mainCont.add(layout(Item.ALARM_DATE, alarmDate.makeContainerWithClearButton(), Item.ALARM_DATE_HELP));
 //</editor-fold>
 //        mainCont.add(layout(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)), true));
-        mainCont.add(layout(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)), true, false, false));
+        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)))); //, true, false, false));
         int remainingIndex = mainCont.getComponentCount() - 1; //store the index at which to insert remainingEffort
 
         MyTimePicker remainingEffort;
@@ -923,7 +923,8 @@ public class ScreenItem extends MyForm {
 //</editor-fold>
 //        categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "<set>")); //"<click to set categories>"
         categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
-        mainCont.add(layout(Item.CATEGORIES, categoriesButton, "**", false, false, false));
+//        mainCont.add(layout(Item.CATEGORIES, categoriesButton, "**", false, false, false));
+        mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, "**", null, true, false, true));
 
         //REPEAT RULE
 //        SpanButton repeatRuleButton = new SpanButton();
@@ -1039,7 +1040,8 @@ public class ScreenItem extends MyForm {
 //            orgRepeatRule = null;
 //            repeatRuleButton.setText("<set>"); //TODO!!!! temporary hack!
 //        }), "**"));
-        mainCont.add(layout(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> item.setRepeatRule(null), false, false, false));
+//        mainCont.add(layout(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> item.setRepeatRule(null), false, false, false));
+        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> item.setRepeatRule(null)));
         //TODO deleting should not delete in item but delete editcopy and when saving via parseIdMap
         //<editor-fold defaultstate="collapsed" desc="comment">
         //        if (false) {
@@ -1191,28 +1193,37 @@ public class ScreenItem extends MyForm {
 //            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getRemainingEffort()), "Button"), "**")); //hack to insert after alarmDate field
 //            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getRemainingEffortNoDefault()), "Button"), "**", false, true, true)); //hack to insert after alarmDate field
 //</editor-fold>
-            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"), "**", false, true, true)); //hack to insert after alarmDate field
+//            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"), "**", false, true, true)); //hack to insert after alarmDate field
+            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"),
+                    "**", true, true, false)); //hack to insert after alarmDate field
 
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getActualEffort()), "Button"), Item.EFFORT_ACTUAL_SUBTASKS_HELP, false, true, false));
-            timeCont.add(layout(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualEffort()), "LabelFixed"), Item.EFFORT_ACTUAL_SUBTASKS_HELP, false, true, true));
+//            timeCont.add(layout(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualEffort()), "LabelFixed"), Item.EFFORT_ACTUAL_SUBTASKS_HELP, false, true, true));
+            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualEffort()), "LabelFixed"),
+                    Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getEffortEstimateInMinutes()), "Button"), "**"));
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "Button"), Item.EFFORT_ESTIMATE_SUBTASKS, false, true, false));
 //</editor-fold>
-            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"), Item.EFFORT_ESTIMATE_SUBTASKS, false, true, true));
+//            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"), Item.EFFORT_ESTIMATE_SUBTASKS, false, true, true));
+            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
+                    Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
             //get the effort for the project task itself:
-            remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
+            remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS,
+                    false, true));
 //            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
-            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {
-            }, true, false, true, true));
+//            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {            }, true, true, false));
+            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP));
 
             actualEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getActualEffort(true) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setActualEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort.makeContainerWithClearButton(), actualExplanation));
-            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP, true, false, false));
+//            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP, true, false, false));
+            timeCont.add(layoutN(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP));
 
 //            effortEstimate = new MyTimePicker(parseIdMap2, () -> (int) item.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate(i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate.makeContainerWithClearButton(), "**"));
-            timeCont.add(layout(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate, Item.EFFORT_ESTIMATE_PROJECT_HELP, true, false, false));
+//            timeCont.add(layout(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate, Item.EFFORT_ESTIMATE_PROJECT_HELP, true, false, false));
+            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate, Item.EFFORT_ESTIMATE_PROJECT_HELP));
         } else {
 //            actualEffort = new MyTimePicker(parseIdMap2, () -> (int) item.getActualEffortInMinutes(), (i) -> item.setActualEffortInMinutes((int) i));
             actualEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getActualEffort() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setActualEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS));
@@ -1221,13 +1232,15 @@ public class ScreenItem extends MyForm {
 //            timeCont.add(new Label(Item.EFFORT_ACTUAL)).add(actualEffort.makeContainerWithClearButton()).add(actualExplanation);
 //            timeCont.add(layout(Item.EFFORT_ACTUAL, actualEffort.makeContainerWithClearButton(), actualExplanation));
 //</editor-fold>
-            timeCont.add(layout(Item.EFFORT_ACTUAL, actualEffort, Item.EFFORT_ACTUAL_HELP, true, false, false));
+//            timeCont.add(layout(Item.EFFORT_ACTUAL, actualEffort, Item.EFFORT_ACTUAL_HELP, true, false, false));
+            timeCont.add(layoutN(Item.EFFORT_ACTUAL, actualEffort, Item.EFFORT_ACTUAL_HELP));
 
 //            effortEstimate = new MyTimePicker(parseIdMap2, () -> (int) item.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate((int) i * MyDate.MINUTE_IN_MILLISECONDS));
 //            timeCont.add(new Label(Item.EFFORT_ESTIMATE)).add(addTimePickerWithClearButton(effortEstimate));
 //            timeCont.add(new Label(Item.EFFORT_ESTIMATE)).add(effortEstimate.makeContainerWithClearButton());
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE, effortEstimate.makeContainerWithClearButton(), "**"));
-            timeCont.add(layout(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP, true, false, false));
+//            timeCont.add(layout(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP, true, false, false));
+            timeCont.add(layoutN(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP));
 
 //            remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
             remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS));
@@ -1237,7 +1250,8 @@ public class ScreenItem extends MyForm {
 //            timeCont.add(layout(Item.EFFORT_REMAINING,remainingEffort.makeContainerWithClearButton(),"**"));
 //            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING, remainingEffort.makeContainerWithClearButton(), "**")); //hack to insert
 //</editor-fold>
-            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING, remainingEffort, Item.EFFORT_REMAINING_HELP, true, false, false)); //hack to insert
+//            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING, remainingEffort, Item.EFFORT_REMAINING_HELP, true, false, false)); //hack to insert
+            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING, remainingEffort, Item.EFFORT_REMAINING_HELP)); //hack to insert
         }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1304,32 +1318,32 @@ public class ScreenItem extends MyForm {
 //        timeCont.add(new Label(Item.WAIT_DATE)).add(addDatePickerWithClearButton(waitingTill));
 //        timeCont.add(new Label(Item.WAIT_DATE)).add(waitingTill.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.WAIT_UNTIL_DATE, waitingTill.makeContainerWithClearButton(), "**"));
-        timeCont.add(layout(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP));
+        timeCont.add(layoutN(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP));
 
         MyDateAndTimePicker waitingAlarm = new MyDateAndTimePicker(parseIdMap2, () -> itemLS.getWaitingAlarmDateD(), (d) -> item.setWaitingAlarmDate(d)); //"<waiting reminder this date>", 
 //        timeCont.add(new Label(Item.WAITING_ALARM_DATE)).add(addDatePickerWithClearButton(waitingAlarm));
 //        timeCont.add(new Label(Item.WAITING_ALARM_DATE)).add(waitingAlarm.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.WAITING_ALARM_DATE, waitingAlarm.makeContainerWithClearButton(), "**"));
-        timeCont.add(layout(Item.WAITING_ALARM_DATE, waitingAlarm, Item.WAITING_ALARM_DATE_HELP));
+        timeCont.add(layoutN(Item.WAITING_ALARM_DATE, waitingAlarm, Item.WAITING_ALARM_DATE_HELP));
 
         MyDatePicker hideUntil = new MyDatePicker(parseIdMap2, () -> itemLS.getHideUntilDateD(), (d) -> item.setHideUntilDate(d)); //"<hide task until>", 
 //        timeCont.add(new Label(Item.HIDE_UNTIL)).add(addDatePickerWithClearButton(hideUntil));
 //        timeCont.add(new Label(Item.HIDE_UNTIL)).add(hideUntil.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.HIDE_UNTIL, hideUntil.makeContainerWithClearButton(), "**"));
-        timeCont.add(layout(Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP));
+        timeCont.add(layoutN(Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP));
 
         MyDateAndTimePicker startByDate = new MyDateAndTimePicker(parseIdMap2, () -> itemLS.getStartByDateD(), (d) -> item.setStartByDate(d)); // "<start task on this date>", 
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(addDatePickerWithClearButton(startByDate));
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(startByDate.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.START_BY_TIME, startByDate.makeContainerWithClearButton(), "**"));
-        timeCont.add(layout(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP));
+        timeCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP));
 
         if (true) {
             MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDateD(d)); // "<auto-cancel on date>", 
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(addDatePickerWithClearButton(expireByDate));
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(expireByDate.makeContainerWithClearButton());
 //            timeCont.add(layout(Item.AUTOCANCEL_BY, expireByDate.makeContainerWithClearButton(), "**"));
-            timeCont.add(layout(Item.AUTOCANCEL_BY, expireByDate, Item.AUTOCANCEL_BY_HELP));
+            timeCont.add(layoutN(Item.AUTOCANCEL_BY, expireByDate, Item.AUTOCANCEL_BY_HELP));
         }
 
         //TAB PRIO
@@ -1344,14 +1358,16 @@ public class ScreenItem extends MyForm {
         MyComponentGroup priority = new MyComponentGroup(new String[]{"-", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, parseIdMap2,
                 () -> itemLS.getPriority() == 0 ? "" : itemLS.getPriority() + "",
                 (s) -> item.setPriority(Integer.parseInt(s.length() == 0 ? "0" : s)));
-        prioCont.add(layout(Item.PRIORITY, priority, Item.PRIORITY_HELP, true, false, true));
+//        prioCont.add(layout(Item.PRIORITY, priority, Item.PRIORITY_HELP, true, false, true));
+        prioCont.add(layoutN(Item.PRIORITY, priority, Item.PRIORITY_HELP));//, null, true, false, false, true));
 
         MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
                 () -> itemLS.getImportance() == null ? "" : itemLS.getImportance().getDescription(),
                 (s) -> item.setImportance(Item.HighMediumLow.getValue(s)));
 //        prioCont.add(Item.IMPORTANCE).add(FlowLayout.encloseCenterMiddle(importance));
 //        prioCont.add(layout(Item.IMPORTANCE, FlowLayout.encloseCenterMiddle(importance), "**"));
-        prioCont.add(layout(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, true, false, true));
+//        prioCont.add(layout(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, true, false, true));
+        prioCont.add(layoutN(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP));//, null, false, false, true, true));
 
         MyComponentGroup urgency = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
                 () -> itemLS.getUrgency() == null ? "" : itemLS.getUrgency().getDescription(),
@@ -1359,7 +1375,8 @@ public class ScreenItem extends MyForm {
 //        cont.add(new Label("Urgency")).add(urgency);
 //        prioCont.add(Item.URGENCY).add(FlowLayout.encloseMiddle(urgency));
 //        prioCont.add(layout(Item.URGENCY, FlowLayout.encloseMiddle(urgency), "**"));
-        prioCont.add(layout(Item.URGENCY, urgency, Item.URGENCY_HELP, true, false, true));
+//        prioCont.add(layout(Item.URGENCY, urgency, Item.URGENCY_HELP, true, false, true));
+        prioCont.add(layoutN(Item.URGENCY, urgency, Item.URGENCY_HELP));//, null, false, false, true, true));
 
         MyComponentGroup challenge = new MyComponentGroup(Item.Challenge.getDescriptionList(), parseIdMap2,
                 () -> itemLS.getChallenge() == null ? "" : itemLS.getChallenge().getDescription(),
@@ -1375,20 +1392,23 @@ public class ScreenItem extends MyForm {
 //        prioCont.add(new Label(Item.CHALLENGE)).add(FlowLayout.encloseCenterMiddle(challenge));
 //        prioCont.add(new Label("TEST")).add(FlowLayout.encloseCenterMiddle(new Label("11111"),new Label("22222"),new Label("33333"),new Label("44444"),new Label("55555")));
 //        prioCont.add(layout(Item.CHALLENGE, FlowLayout.encloseCenterMiddle(challenge), "**", true));
-        prioCont.add(layout(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, true, false, true));
+//        prioCont.add(layout(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, true, false, true));
+        prioCont.add(layoutN(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP));//, null, false, false, true, true));
 
         MyComponentGroup dreadFun = new MyComponentGroup(Item.DreadFunValue.getDescriptionList(), parseIdMap2,
                 () -> itemLS.getDreadFunValue() == null ? "" : itemLS.getDreadFunValue().getDescription(),
                 (s) -> item.setDreadFunValue(Item.DreadFunValue.getValue(s)));
 //        prioCont.add(new Label(Item.FUN_DREAD)).add(dreadFun);
 //        prioCont.add(layout(Item.FUN_DREAD, FlowLayout.encloseCenterMiddle(dreadFun), Item.FUN_DREAD_HELP));
-        prioCont.add(layout(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, true, false, true));
+//        prioCont.add(layout(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, true, false, true));
+        prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP));//, null, false, false, true, true));
 
         MyNumericTextField earnedValue = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValue(), (d) -> item.setEarnedValue(d));
 //        earnedValue.setColumns(2); //result: only shows/truncates to 2 columns when field is not edited
 
 //        prioCont.add(new Label(Item.EARNED_POINTS)).add(earnedValue);
-        prioCont.add(layout(Item.EARNED_POINTS, earnedValue, Item.EARNED_POINTS_HELP, true, false, false));
+//        prioCont.add(layout(Item.EARNED_POINTS, earnedValue, Item.EARNED_POINTS_HELP, true, false, false));
+        prioCont.add(layoutN(Item.EARNED_POINTS, earnedValue, Item.EARNED_POINTS_HELP, true, false, true));
 
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("<set>", parseIdMap2, () -> item.getEarnedValuePerHour(), (d) -> {
         MyNumericTextField earnedValuePerHour = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValuePerHour(), (d) -> {
@@ -1398,8 +1418,8 @@ public class ScreenItem extends MyForm {
         earnedValuePerHour.setUIID("LabelFixed");
 //        prioCont.add(new Label(Item.EARNED_POINTS_PER_HOUR)).add(earnedValuePerHour).add(new SpanLabel("Value per hour is calculated as Value divided by the Estimate, or the sum of Remaining and Actual effort - once work has started."));
 //                add(new SpanLabel(Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_POINTS + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."));
-        prioCont.add(layout(Item.EARNED_POINTS_PER_HOUR, earnedValuePerHour,
-                Item.EARNED_POINTS_PER_HOUR_HELP, true, true, true));
+//        prioCont.add(layout(Item.EARNED_POINTS_PER_HOUR, earnedValuePerHour, Item.EARNED_POINTS_PER_HOUR_HELP, true, true, true));
+        prioCont.add(layoutN(Item.EARNED_POINTS_PER_HOUR, earnedValuePerHour, Item.EARNED_POINTS_PER_HOUR_HELP, true, true, false));
 
         //Update earnedValuePerHour by listening to actions from any of the four fields that affect it
         MyActionListener earnedValuePerHourUpdater = new MyActionListener() {
@@ -1512,14 +1532,16 @@ public class ScreenItem extends MyForm {
 //        Label createdDate = new Label(item.getCreatedDate() == 0 ? "<date set when saved>" : MyDate.formatDateNew(item.getCreatedDate()));
         Label createdDate = new Label(item.getCreatedDate() == 0 ? "" : MyDate.formatDateTimeNew(item.getCreatedDate())); //NOT use itemLS since CreatedDate is not saved locally
 //        statusCont.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        statusCont.add(layout(Item.CREATED_DATE, createdDate, "**", true, true, true));
+//        statusCont.add(layout(Item.CREATED_DATE, createdDate, "**", true, true, true));
+        statusCont.add(layoutN(Item.CREATED_DATE, createdDate, "**", true));
 
         if (item.isProject()) {
             long lastModifiedSubtasks = item.getLastModifiedDateSubtasks().getTime();
             Label lastModifiedDateSubtasks = new Label(lastModifiedSubtasks == 0 ? "" : MyDate.formatDateTimeNew(lastModifiedSubtasks));
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //            statusCont.add(layout(Item.UPDATED_DATE_SUBTASKS, lastModifiedDateSubtasks, "**", true, true, true));
-            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, true, true));
+//            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, true, true));
+            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true));
         } else {
 //        Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "<date when modified>" : L10NManager.getInstance().formatDateShortStyle(new Date(item.getLastModifiedDate())));
 //        Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "<date when modified>" : L10NManager.getInstance().formatDateTimeShort(new Date(item.getLastModifiedDate())));
@@ -1527,7 +1549,8 @@ public class ScreenItem extends MyForm {
 //        Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "<date when modified>" : MyDate.formatDateNew(item.getLastModifiedDate()));
             Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "" : MyDate.formatDateTimeNew(item.getLastModifiedDate()));
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**", true, true, true));
+//            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**", true, true, true));
+            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true));
         }
 
 //        MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker("<set>", parseIdMap2, () -> item.getStartedOnDateD(), (d) -> item.setStartedOnDate(d));
@@ -1535,7 +1558,8 @@ public class ScreenItem extends MyForm {
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(addDatePickerWithClearButton(startedOnDate)).add(new SpanLabel("Set automatically when using the timer"));
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(startedOnDate.makeContainerWithClearButton()).add(new SpanLabel("Set automatically when using the timer"));
 //        statusCont.add(layout(Item.STARTED_ON_DATE, startedOnDate.makeContainerWithClearButton(), "Set automatically when using the timer")); //"click to set date when started"
-        statusCont.add(layout(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP)); //"click to set date when started"
+//        statusCont.add(layout(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP)); //"click to set date when started"
+        statusCont.add(layoutN(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP)); //"click to set date when started"
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(startedOnDate.)).add(new SpanLabel("Set automatically when using the timer"));
 
 //        MyDateAndTimePicker completedDate = new MyDateAndTimePicker("<set>", parseIdMap2, () -> item.getCompletedDateD(), (d) -> item.setCompletedDate(d));
@@ -1543,14 +1567,16 @@ public class ScreenItem extends MyForm {
 //        statusCont.add(new Label(Item.COMPLETED_DATE)).add(addDatePickerWithClearButton(completedDate)).add(new SpanLabel("Set automatically when a task is completed"));
 //        statusCont.add(new Label(Item.COMPLETED_DATE)).add(completedDate.makeContainerWithClearButton()).add(new SpanLabel("Set automatically when a task is completed"));
 //        statusCont.add(layout(Item.COMPLETED_DATE, completedDate.makeContainerWithClearButton(), "Set automatically when a task is completed")); //"click to set a completed date"
-        statusCont.add(layout(Item.COMPLETED_DATE, completedDate, Item.COMPLETED_DATE_HELP)); //"click to set a completed date"
+//        statusCont.add(layout(Item.COMPLETED_DATE, completedDate, Item.COMPLETED_DATE_HELP)); //"click to set a completed date"
+        statusCont.add(layoutN(Item.COMPLETED_DATE, completedDate, Item.COMPLETED_DATE_HELP)); //"click to set a completed date"
 
 //        MyDateAndTimePicker dateSetWaitingDate = new MyDateAndTimePicker("<set date>", parseIdMap2, () -> item.getDateWhenSetWaitingD(), (d) -> item.setDateWhenSetWaiting(d));
         MyDateAndTimePicker dateSetWaitingDate = new MyDateAndTimePicker("", parseIdMap2, () -> itemLS.getDateWhenSetWaitingD(), (d) -> item.setDateWhenSetWaiting(d));
 //        statusCont.add(new Label(Item.COMPLETED_DATE)).add(addDatePickerWithClearButton(completedDate)).add(new SpanLabel("Set automatically when a task is completed"));
 //        statusCont.add(new Label(Item.WAIT_WHEN_SET_WAITING_DATE)).add(dateSetWaitingDate.makeContainerWithClearButton()).add(new SpanLabel("Set automatically when a task is set Waiting"));
 //        statusCont.add(layout(Item.WAIT_WHEN_SET_WAITING_DATE, dateSetWaitingDate.makeContainerWithClearButton(), "Set automatically when a task is set Waiting"));
-        statusCont.add(layout(Item.WAIT_WHEN_SET_WAITING_DATE, dateSetWaitingDate, Item.WAIT_WHEN_SET_WAITING_DATE_HELP));
+//        statusCont.add(layout(Item.WAIT_WHEN_SET_WAITING_DATE, dateSetWaitingDate, Item.WAIT_WHEN_SET_WAITING_DATE_HELP));
+        statusCont.add(layoutN(Item.WAIT_WHEN_SET_WAITING_DATE, dateSetWaitingDate, Item.WAIT_WHEN_SET_WAITING_DATE_HELP));
         dateSetWaitingDate.addActionListener((e) -> {
             if (status.getStatus() != ItemStatus.WAITING) {
                 status.setStatus(ItemStatus.WAITING);
@@ -1721,7 +1747,8 @@ public class ScreenItem extends MyForm {
         }
         );
         editOwnerButton.setCommand(editOwnerCmd);
-        statusCont.add(layout(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, true, false, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//        statusCont.add(layout(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, true, false, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+        statusCont.add(layoutN(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 
         //DEPENDS ON
         //TODO!!!! implement DependsOn properly before enabling it
@@ -1744,39 +1771,38 @@ public class ScreenItem extends MyForm {
 
 //        statusCont.add(new Label(Item.DEPENDS_ON)).add(dependsOn); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        statusCont.add(layout(Item.DEPENDS_ON, dependsOn, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-                statusCont.add(layout(Item.DEPENDS_ON, dependsOnLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//                statusCont.add(layout(Item.DEPENDS_ON, dependsOnLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+                statusCont.add(layoutN(Item.DEPENDS_ON, dependsOnLabel, Item.DEPENDS_ON_HELP)); //.add(new SpanLabel("Click to move task to other projects or lists"));
             }
         }
 
         //ORIGINAL SOURCE
-        if (itemLS.getSource() != null) { //don't show unless defined
-            if (false) {
-                MyTextArea source = new MyTextArea(Item.SOURCE, 20, TextArea.ANY, parseIdMap2, () -> {
-//                Item sourceTask = item.getSource();
-                    return itemLS.getSource() == null ? "" : itemLS.getSource().getText();
-                },
-                        (d) -> {
-                        });
-                source.setEditable(false);
-            }
+        if (item.getSource() != null) { //don't show unless defined
             //TODO!! what happens if source is set to template or other item, then saved locally on app exit and THEN recreated via Replay???
-            Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
+//            Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
+            Label sourceLabel = new Label(item.getSource().getText(), "LabelFixed");
 //            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            statusCont.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            sourceLabel.setUIID();
         }
 
         //INTERRUPT
         MyOnOffSwitch interruptTask = new MyOnOffSwitch(parseIdMap2, () -> itemLS.isInteruptOrInstantTask(), (b) -> item.setInteruptOrInstantTask(b));
 //                statusCont.add(new Label(Item.INTERRUPT_TASK)).add(interruptTask).add(new SpanLabel("This task interrupted another task"));
-        statusCont.add(layout(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task"));
+//        statusCont.add(layout(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task"));
+        statusCont.add(layoutN(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task", true));
 //        if (item.isInteruptOrInstantTask()) {
 //            MyOnOffSwitch interruptTask = new MyOnOffSwitch(parseIdMap2, () -> item.isInteruptOrInstantTask(), (b) -> item.setInteruptOrInstantTask(b));
+        //INTERRUPTED TASK
         if (itemLS.getTaskInterrupted() != null) {
             //TODO!!! enable deleting the taskInterrupted (in case wrong or meaningless)
-            statusCont.add(layout(Item.INTERRUPT_TASK_INTERRUPTED,
-                    new SpanLabel("\"" + itemLS.getTaskInterrupted() != null ? itemLS.getTaskInterrupted().getText() + "\"" : "<none>"), "**", true, false, true)); //TODO capture and save the task that was interrupted
+//            statusCont.add(layout(Item.INTERRUPT_TASK_INTERRUPTED,
+//                    new SpanLabel("\"" + itemLS.getTaskInterrupted() != null ? itemLS.getTaskInterrupted().getText() + "\"" : "<none>"), "**", true, false, true)); //TODO capture and save the task that was interrupted
+            statusCont.add(layoutN(Item.INTERRUPT_TASK_INTERRUPTED,
+                    new SpanLabel("\"" + itemLS.getTaskInterrupted() != null ? itemLS.getTaskInterrupted().getText() + "\"" : "<none>"),
+                    Item.INTERRUPT_TASK_INTERRUPTED_HELP, true)); //TODO capture and save the task that was interrupted
 //            } else {
 //                statusCont.add(new Label(Item.INTERRUPT_OR_INSTANT_TASK)).add(interruptTask);
         }
@@ -1785,7 +1811,8 @@ public class ScreenItem extends MyForm {
 //        Label itemObjectId = new Label(item.getObjectIdP() == null ? "<created when saved>" : item.getObjectIdP(), "LabelFixed");
         Label itemObjectId = new Label(item.getObjectIdP() == null ? "<set on save>" : item.getObjectIdP(), "LabelFixed");
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        statusCont.add(layout(Item.OBJECT_ID, itemObjectId, "**", true, true, true));
+//        statusCont.add(layout(Item.OBJECT_ID, itemObjectId, "**", true, true, true));
+        statusCont.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
 
         //TAB SUBTASKS
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2011,7 +2038,8 @@ public class ScreenItem extends MyForm {
     private List<ItemAndListCommonInterface> restoreNewOwner_N() {
         List<ItemAndListCommonInterface> locallyEditedOwner = null;
 //        ItemAndListCommonInterface locallyStoreOwner;
-        ItemAndListCommonInterface locallyStoreOwner = (ItemAndListCommonInterface) DAO.getInstance().fetch((String) Storage.getInstance().readObject(FILE_LOCAL_EDITED_OWNER)); //save 
+        //DONE!!!!! DAO.fetchFromCacheOnly only works for Item so selecting a new ItemList as owner will crash!!
+        ItemAndListCommonInterface locallyStoreOwner = (ItemAndListCommonInterface) DAO.getInstance().fetchFromCacheOnly((String) Storage.getInstance().readObject(FILE_LOCAL_EDITED_OWNER)); //save 
 //        locallyStoreOwner = (ItemAndListCommonInterface) DAO.getInstance().fetchIfNeededReturnCachedIfAvail((ParseObject) locallyStoreOwner);
 //        if (restoreNewOwner() != null) {
         if (locallyStoreOwner != null) {
@@ -2041,7 +2069,7 @@ public class ScreenItem extends MyForm {
                 if (categories == null) {
                     categories = new ArrayList<>();
                 }
-                categories.add((Category) DAO.getInstance().fetch(cat));
+                categories.add((Category) DAO.getInstance().fetchFromCacheOnly(cat));
             }
         }
         return categories;

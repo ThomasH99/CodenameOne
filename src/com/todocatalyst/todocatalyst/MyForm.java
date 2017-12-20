@@ -1414,7 +1414,7 @@ public abstract class MyForm extends Form {
     /**
      *
      * @param fieldLabelTxt
-     * @param field
+     * @param group
      * @param help
      * @param swipeClear if defined (non-null) will be added as a swipe function
      * @param wrapText check if field text and field together become larger than
@@ -1425,12 +1425,22 @@ public abstract class MyForm extends Form {
      * align with other fields)
      * @return
      */
+    protected static Component layoutN(String fieldLabelTxt, MyComponentGroup group, String help) {
+        return layoutN(fieldLabelTxt, group, help, null, true, false, false, true);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Picker field, String help) {
+        return layoutN(fieldLabelTxt, field, help, field instanceof MyTimePicker ? (() -> ((MyTimePicker) field).swipeClear())
+                : (field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear() : () -> ((MyDateAndTimePicker) field).swipeClear()),
+                true, false, false, false);
+    }
+
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
         return layout(fieldLabelTxt, field, help,
                 field instanceof MyTimePicker ? (() -> ((MyTimePicker) field).swipeClear())
-                        : field instanceof MyDatePicker ? ((MyDatePicker) field).swipeClear()
-                                : ((MyDateAndTimePicker) field).swipeClear(),
+                        : field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear()
+                                : () -> ((MyDateAndTimePicker) field).swipeClear(),
                 wrapText, makeFieldUneditable, hideEditButton, false);
     }
 
@@ -1438,8 +1448,23 @@ public abstract class MyForm extends Form {
         return layoutN(fieldLabelTxt, field, help, swipeClear, true, false, true, false);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean wrapText, boolean showAsFieldUneditable) {
-        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, false, false);
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
+        return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable) {
+//        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
+        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton) {
+        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton) {
+        return layoutN(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false);
     }
 
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
@@ -1451,7 +1476,7 @@ public abstract class MyForm extends Form {
 //                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
                 ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
                 ((WrapButton) field).setUIID("Container");
-            } else {
+            } else {//if (!(field instanceof MyComponentGroup)) {
                 field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
             }
         }
@@ -1459,12 +1484,14 @@ public abstract class MyForm extends Form {
         //EDIT FIELD
         Component visibleField = null; //contains the edit field and possibly the edit button
 //        if (hideEditButton) {
-//            visibleField = field;
-//        } else 
+        if (!visibleEditButton&&hiddenEditButton) {
+            visibleField = field;
+        } else 
         { //place a visible or invisible button
             Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
 //            boolean editButtonHidden = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
 //            editFieldButton.setVisible(!editButtonInvisible);
+//            editFieldButton.setVisible(!showAsFieldUneditable || visibleEditButton); //Visible, but still using space
             editFieldButton.setVisible(!showAsFieldUneditable || visibleEditButton); //Visible, but still using space
 //            editFieldButton.setVisible(!hideEditButton);
             editFieldButton.setHidden(hiddenEditButton); //hidden, not taking any space
@@ -1582,7 +1609,7 @@ public abstract class MyForm extends Form {
             visibleField = field;
         } else { //place a visible or invisible button
             Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
-//            boolean editButtonHidden = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
+            boolean editButtonHidden = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
 //            editFieldButton.setVisible(!editButtonInvisible);
             editFieldButton.setVisible(!(makeFieldUneditable || hideEditButton) || forceVisibleEditButton); //Visible, but still using space
 //            editFieldButton.setVisible(!hideEditButton);

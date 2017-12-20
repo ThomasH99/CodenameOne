@@ -74,15 +74,14 @@ public class ScreenListOfWorkSlots extends MyForm {
 //    ScreenListOfWorkSlots(String nameOfOwner, WorkSlotList workSlotList, ItemAndListCommonInterface owner, MyForm previousForm, GetWorkSlotList updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        this(nameOfOwner, workSlotList, owner, previousForm, updateItemListOnDone, null);
 //    }
-
     /**
-     * 
+     *
      * @param nameOfOwner
      * @param workSlotList
      * @param owner
      * @param previousForm
      * @param updateItemListOnDone
-     * @param refreshWorkSlotList 
+     * @param refreshWorkSlotList
      */
     ScreenListOfWorkSlots(String nameOfOwner, WorkSlotList workSlotList, ItemAndListCommonInterface owner, MyForm previousForm,
             GetWorkSlotList updateItemListOnDone, FetchWorkSlotList refreshWorkSlotList, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
@@ -220,9 +219,10 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        return buildWorkSlotContainer(workSlot, (MyForm)null, keepPos, expandItemsInWorkSlot);
 //    }
     protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot) {
-        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot,true);
+        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, true);
     }
-    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot,boolean showOwner) {
+
+    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot, boolean showOwner) {
         Container cont = new Container();
         cont.setLayout(new BorderLayout());
 //        cont.addComponent(BorderLayout.CENTER, new Button(item.getText()));
@@ -294,7 +294,7 @@ public class ScreenListOfWorkSlots extends MyForm {
         String startTimeStr = workSlot.getStartAdjusted() != workSlot.getStartTime() ? "Now" : MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted())); //UI: for ongoing workSlot, show 'now' instead of startTime
         west.add(startTimeStr
                 + "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
-                +(workSlot.getRepeatRule() != null ? "*" : "")
+                + (workSlot.getRepeatRule() != null ? "*" : "")
         //                + " " + MyDate.formatTimeDuration(workSlot.getDuration())// + ")"
         //                + " " + MyDate.formatTimeDuration(workSlot.getDurationAdjusted())// + ")" //DON'T show duration since end-time is shown
         );
@@ -303,7 +303,10 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        east.addComponent(new Label("[" + workSlot.getDurationAdjustedInMinutes(now) + "]"));
 //        west.add(MyDate.formatTime(workSlot.getDuration()));
 //        west.add("(" + MyDate.formatTimeDuration(workSlot.getDuration()) + ")");
-        cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getText() + (workSlot.getRepeatRule() != null ? "*" : "")));
+//        cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getText() + (workSlot.getRepeatRule() != null ? "*" : "")));
+        if (showOwner && workSlot.getOwner() != null) {
+            cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getOwner().getText()));
+        }
 //        }
 //        east.addComponent(editItemPropertiesButton);
 
@@ -317,12 +320,12 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        east.addComponent(new Label(new SimpleDateFormat().format(new Date(itemList.getFinishTime(item, 0)))));
         cont.addComponent(BorderLayout.WEST, west);
         Container south = new Container(BoxLayout.y());
-        
-        if (workSlot.getOwner() != null) {
-            if(showOwner)south.addComponent(new Label("For: " + workSlot.getOwner().getText()));
-            south.addComponent(new Label((showOwner?" ":"")+"\""+workSlot.getText()+"\""));
-            cont.addComponent(BorderLayout.SOUTH, south);
-        }
+        cont.addComponent(BorderLayout.SOUTH, south);
+
+//        if (workSlot.getOwner() != null) {
+//            if(showOwner)south.addComponent(new Label("For: " + workSlot.getOwner().getText()));
+        south.addComponent(new Label(("\"" + workSlot.getText() + "\"")));
+//        }
 
         return cont;
     }
@@ -374,14 +377,14 @@ public class ScreenListOfWorkSlots extends MyForm {
         long now = System.currentTimeMillis();
         if (workSlotList != null) {
             for (WorkSlot workSlot : workSlotList) {
-                
+
                 if (Test.DEBUG || workSlot.getEndTime() <= now) { //ignore workSlots in the past
 //                    cont.add(buildWorkSlotContainer(workSlot, () -> refreshAfterEdit(), keepPos));
 //                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, keepPos, false));
                     cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, null, false, showOwner));
-                       if (keepPos != null) {
-            keepPos.testItemToKeepInSameScreenPosition(workSlot, cont);
-        }
+                    if (keepPos != null) {
+                        keepPos.testItemToKeepInSameScreenPosition(workSlot, cont);
+                    }
                 }
             }
         }

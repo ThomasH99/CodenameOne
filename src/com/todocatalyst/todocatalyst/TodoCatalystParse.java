@@ -643,9 +643,9 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 
 //        Display d = Display.getInstance();
 //        Label supported = new Label();
-        //code from https://www.codenameone.com/blog/background-fetch.html
+        //code from https://www.codenameone.com/blog/background-fetchFromCacheOnly.html
         if (Display.getInstance().isBackgroundFetchSupported()) {
-            // This call is necessary to initialize background fetch
+            // This call is necessary to initialize background fetchFromCacheOnly
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Display.getInstance().setPreferredBackgroundFetchInterval(MyDate.HOUR_IN_MILISECONDS * 12 / 1000); //in seconds = 12hours
 //            Display.getInstance().setPreferredBackgroundFetchInterval(MyPrefs.getInt(MyPrefs.backgroundFetchIntervalInSeconds)); //in seconds = 12hours

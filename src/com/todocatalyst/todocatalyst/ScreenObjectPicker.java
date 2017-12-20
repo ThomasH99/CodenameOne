@@ -5,6 +5,7 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Button;
+import com.codename1.ui.ButtonGroup;
 import com.codename1.ui.CheckBox;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
@@ -13,6 +14,7 @@ import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 import com.codename1.ui.InfiniteContainer;
 import com.codename1.ui.Label;
+import com.codename1.ui.RadioButton;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
@@ -37,6 +39,8 @@ import java.util.List;
  */
 public class ScreenObjectPicker<E> extends MyForm {
 
+    //TODO!!!! change how selection of Lists/Projects selector is shown (now as checkmark)
+    //TODO!!! keep same Lists/Projects button shown as selected when re-entering the objectPicker
     //TODO!!! support expanding projects to show subprojects and task to allow to pick any subproject level - or replace this screen by ScreenListOfItems??
     //DONE parameter with list(s!) of elements to pick from. 
     //TODO enable expansion of eg Templates to see their subtasks, and to edit them, so basically same list as 
@@ -221,7 +225,7 @@ public class ScreenObjectPicker<E> extends MyForm {
                 () -> (selectedObjects.size() >= minNbOfSelected && selectedObjects.size() <= maxNbOfSelected),
                 errorMsgInSelection)); //false: don't refresh ScreenItem when returning from Category selector
 
-        if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
+        if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //UI: always enable Cancel to make it easy to regret any changes
             toolbar.addCommandToOverflowMenu(
                     "Cancel", null, (e) -> {
                         showPreviousScreenOrDefault(previousForm, false); //restore originally selected categories
@@ -291,26 +295,41 @@ public class ScreenObjectPicker<E> extends MyForm {
     private Container buildContentPane(Container cont) {//, Set<Category> selectedCategories) {
         boolean listOfLists = true;
         if (listOfLists) {
-            Button cmdLists = null;
-            Button cmdProjects = null;
+//            Button cmdLists = null;
+            RadioButton cmdLists = null;
+//            Button cmdProjects = null;
+            RadioButton cmdProjects = null;
 //            Button cmdTasks = null;
-            List<Button> cmds = new ArrayList();
+//            List<Button> cmds = new ArrayList();
 
             if (listOfAllLists != null && listOfAllLists.size() > 0) {
-                cmdLists = new Button(Command.create("Lists", null, (e) -> {
-                    buildList(listOfAllLists, cont);
-//                    cmdLists.setToggle(listOfLists);
-                    animateMyForm();
-                }));
-                cmds.add(cmdLists);
+//                cmdLists = new Button(Command.create("Lists", null, (e) -> {
+                cmdLists = new RadioButton("Lists", null);
+//                , (e) -> {
+//                    buildList(listOfAllLists, cont);
+////                    cmdLists.setToggle(listOfLists);
+//                    animateMyForm();
+//                }));
+//                cmds.add(cmdLists);
             }
+            cmdLists.addActionListener((e) -> {
+                buildList(listOfAllLists, cont);
+//                    cmdLists.setToggle(listOfLists);
+                animateMyForm();
+            });
             if (listOfAllTopLevelProjects != null && listOfAllTopLevelProjects.size() > 0) {
-                cmdProjects = new Button(Command.create("Projects", null, (e) -> {
+                cmdProjects = new RadioButton("Projects", null);
+//                cmdProjects = new Button(Command.create("Projects", null, (e) -> {
+//                    buildList(listOfAllTopLevelProjects, cont);
+//                    animateMyForm();
+//                }));
+//                cmds.add(cmdProjects);
+                cmdProjects.addActionListener((e2) -> {
                     buildList(listOfAllTopLevelProjects, cont);
                     animateMyForm();
-                }));
-                cmds.add(cmdProjects);
+                });
             }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (listOfAllTasks != null && listOfAllTasks.size() > 0) {
 //                cmdTasks = new Button(Command.create("Tasks", null, (e) -> {
 //                    buildList(listOfAllTasks, cont);
@@ -318,14 +337,20 @@ public class ScreenObjectPicker<E> extends MyForm {
 //                }));
 //                cmds.add(cmdTasks);
 //            }
-            assert cmds.size() > 0 : "must have at least one list";
-            if (cmds.size() == 1) {
-//                cmds.get(0).getCommand().actionPerformed(null); //run command to show the 
-            } else {
-                Container butCont = new Container(new GridLayout(cmds.size()));
-                for (Button b : cmds) {
-                    butCont.add(b);
-                }
+//</editor-fold>
+//            assert cmds.size() > 0 : "must have at least one list";
+//            if (cmds.size() == 1) {
+////                cmds.get(0).getCommand().actionPerformed(null); //run command to show the 
+//            } else {
+            if (cmdLists != null && cmdProjects != null) {
+                ButtonGroup buttonGroup = new ButtonGroup(cmdLists, cmdProjects);
+//                Container butCont = new Container(new GridLayout(cmds.size()));
+                Container butCont = new Container(new GridLayout(2));
+//                for (Button b : cmds) {
+//                    butCont.add(b);
+//                }
+                butCont.add(cmdLists);
+                butCont.add(cmdProjects);
                 add(BorderLayout.SOUTH, butCont);
             }
             ItemAndListCommonInterface firstSelectedObj;
