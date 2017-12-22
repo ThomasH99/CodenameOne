@@ -264,7 +264,11 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //</editor-fold>
     public WorkTime getAllocatedWorkTime(ItemAndListCommonInterface item, long remainingDuration) {
         int itemIndex = items.indexOf(item);
-        return getAllocatedWorkTime(itemIndex, remainingDuration);
+        if (itemIndex >= 0) {
+            return getAllocatedWorkTime(itemIndex, remainingDuration);
+        } else {
+            return new WorkTime();
+        }
     }
 
     /**
