@@ -232,10 +232,10 @@ public class ScreenItem extends MyForm {
         toolbar.addCommandToOverflowMenu(new Command("Work time", Icons.iconSettingsApplicationLabelStyle) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotList(), item, ScreenItem.this, (iList) -> {
+                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotList(), item, ScreenItem.this, null, //(iList) -> {
 //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
 //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
-                }, null, false).show();
+                 null, false).show();
             }
         });
 //        }
@@ -725,11 +725,13 @@ public class ScreenItem extends MyForm {
         }
 
         //need to declare already here to use in actionListener below
-        MyTimePicker effortEstimate;
+        MyDurationPicker effortEstimate;
         if (item.isProject()) {
-            effortEstimate = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate(i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
+            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS, 
+                    (i) -> item.setEffortEstimate(((long)i) * MyDate.MINUTE_IN_MILLISECONDS, false, true));
         } else {
-            effortEstimate = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate((int) i * MyDate.MINUTE_IN_MILLISECONDS));
+            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS, 
+                    (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
         }
 
 //        description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
@@ -750,7 +752,7 @@ public class ScreenItem extends MyForm {
             setTitle(getScreenTitle(item.isTemplate(), description.getText()));
         }); //update the form title when text is changed
 
-//        MyTimePicker actualEffort = null;
+//        MyDurationPicker actualEffort = null;
 //        Button status = ItemContainer.createCheckbox(item, false);
 //        MyCheckBox status = new MyCheckBox(item, false);
         MyCheckBox status = new MyCheckBox(itemLS.getStatus(), (oldStatus, newStatus) -> {
@@ -877,16 +879,16 @@ public class ScreenItem extends MyForm {
         mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)))); //, true, false, false));
         int remainingIndex = mainCont.getComponentCount() - 1; //store the index at which to insert remainingEffort
 
-        MyTimePicker remainingEffort;
+        MyDurationPicker remainingEffort;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (!item.isProject()) {
-//            remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
+//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
 ////            timeCont.add(new Label(Item.EFFORT_REMAINING)).add(addTimePickerWithClearButton(remainingEffort));
 ////            timeCont.add(new Label(Item.EFFORT_REMAINING)).add(remainingEffort.makeContainerWithClearButton());
 //            mainCont.add(layout(Item.EFFORT_REMAINING, remainingEffort.makeContainerWithClearButton(), "**"));
 //        } else {
 //            mainCont.add(layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTime(item.getRemainingEffort()), "Button"), "**"));
-//            remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) item.getRemainingEffort(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
+//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffort(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //        }
 //</editor-fold>
 
@@ -923,6 +925,7 @@ public class ScreenItem extends MyForm {
 //</editor-fold>
 //        categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "<set>")); //"<click to set categories>"
         categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
+        categoriesButton.revalidate();
 //        mainCont.add(layout(Item.CATEGORIES, categoriesButton, "**", false, false, false));
         mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, "**", null, true, false, true));
 
@@ -1182,8 +1185,8 @@ public class ScreenItem extends MyForm {
         timeCont.setScrollableY(true);
         tabs.addTab("Time", null, timeCont);
 
-//        MyTimePicker effortEstimate;
-        MyTimePicker actualEffort;
+//        MyDurationPicker effortEstimate;
+        MyDurationPicker actualEffort;
 //        SpanLabel actualExplanation = new SpanLabel("Setting '" + Item.EFFORT_ACTUAL + "' will automatically set " + Item.STATUS + " to " + ItemStatus.ONGOING);
         if (itemLS.isProject()) {
 
@@ -1209,24 +1212,27 @@ public class ScreenItem extends MyForm {
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
                     Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
             //get the effort for the project task itself:
-            remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS,
+            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS, 
+                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,
                     false, true));
 //            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
 //            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {            }, true, true, false));
             timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP));
 
-            actualEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getActualEffort(true) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setActualEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
+            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort(true) / MyDate.MINUTE_IN_MILLISECONDS, 
+                    (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort.makeContainerWithClearButton(), actualExplanation));
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP, true, false, false));
             timeCont.add(layoutN(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP));
 
-//            effortEstimate = new MyTimePicker(parseIdMap2, () -> (int) item.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate(i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
+//            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) item.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate(i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate.makeContainerWithClearButton(), "**"));
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate, Item.EFFORT_ESTIMATE_PROJECT_HELP, true, false, false));
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate, Item.EFFORT_ESTIMATE_PROJECT_HELP));
         } else {
-//            actualEffort = new MyTimePicker(parseIdMap2, () -> (int) item.getActualEffortInMinutes(), (i) -> item.setActualEffortInMinutes((int) i));
-            actualEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getActualEffort() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setActualEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS));
+//            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getActualEffortInMinutes(), (i) -> item.setActualEffortInMinutes((int) i));
+            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort() / MyDate.MINUTE_IN_MILLISECONDS, 
+                    (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            timeCont.add(new Label(Item.EFFORT_ACTUAL)).add(addTimePickerWithClearButton(actualEffort)).add(actualExplanation);
 //            timeCont.add(new Label(Item.EFFORT_ACTUAL)).add(actualEffort.makeContainerWithClearButton()).add(actualExplanation);
@@ -1235,15 +1241,16 @@ public class ScreenItem extends MyForm {
 //            timeCont.add(layout(Item.EFFORT_ACTUAL, actualEffort, Item.EFFORT_ACTUAL_HELP, true, false, false));
             timeCont.add(layoutN(Item.EFFORT_ACTUAL, actualEffort, Item.EFFORT_ACTUAL_HELP));
 
-//            effortEstimate = new MyTimePicker(parseIdMap2, () -> (int) item.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate((int) i * MyDate.MINUTE_IN_MILLISECONDS));
+//            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) item.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate((int) i * MyDate.MINUTE_IN_MILLISECONDS));
 //            timeCont.add(new Label(Item.EFFORT_ESTIMATE)).add(addTimePickerWithClearButton(effortEstimate));
 //            timeCont.add(new Label(Item.EFFORT_ESTIMATE)).add(effortEstimate.makeContainerWithClearButton());
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE, effortEstimate.makeContainerWithClearButton(), "**"));
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP, true, false, false));
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP));
 
-//            remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
-            remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS));
+//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
+            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS, 
+                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            timeCont.add(new Label(Item.EFFORT_REMAINING)).add(addTimePickerWithClearButton(remainingEffort));
 //            timeCont.add(new Label(Item.EFFORT_REMAINING)).add(remainingEffort.makeContainerWithClearButton());
@@ -1430,9 +1437,9 @@ public class ScreenItem extends MyForm {
                     earnedValuePerHour.setText(""
                             + Item.calculateEarnedValuePerHour(
                                     Item.getTotalExpectedEffort(
-                                            remainingEffort.getTime() * MyDate.MINUTE_IN_MILLISECONDS,
-                                            actualEffort.getTime() * MyDate.MINUTE_IN_MILLISECONDS,
-                                            effortEstimate.getTime() * MyDate.MINUTE_IN_MILLISECONDS),
+                                            ((long)remainingEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
+                                            ((long)actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
+                                            ((long)effortEstimate.getTime()) * MyDate.MINUTE_IN_MILLISECONDS),
                                     Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())));
                     earnedValuePerHour.animate(); //TODO: needed?
                 }
@@ -1665,7 +1672,7 @@ public class ScreenItem extends MyForm {
 //                    if (item.getStartedOnDate()==0 && startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
                     if (item.getStartedOnDate() == 0 || startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
 //                        startedOnDate.setDate(new Date());
-                        startedOnDate.setDate(new Date(completedDate.getDate().getTime() - actualEffort.getTime() * MyDate.MINUTE_IN_MILLISECONDS));
+                        startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long)actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
                     }
                 }
 

@@ -135,7 +135,7 @@ public class ScreenListOfAlarms extends MyForm {
                 
             })));
             
-            MyTimePicker snoozeTimePicker = new MyTimePicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt());
+            MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt());
             
             cancelAllButtonsCont.add(BorderLayout.EAST, Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(Command.create("Snooze All", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //                Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
@@ -162,7 +162,7 @@ public class ScreenListOfAlarms extends MyForm {
 //                    AlarmHandler.getInstance().snoozeAlarm(expired, snoozeExpireTimeInMillis);
 //                }
                 AlarmHandler.getInstance().snoozeAllExpiredAlarms(
-                        MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + snoozeTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS)));
+                        MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + ((long)snoozeTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS)));
                 showPreviousScreenOrDefault(false);
             }))));
             
@@ -246,7 +246,7 @@ public class ScreenListOfAlarms extends MyForm {
                 ? "Waiting reminder at " : "Reminder at ") + MyDate.formatDateTimeNew(expiredAlarm.alarmTime);
         alarmCont.add(BorderLayout.CENTER, new SpanLabel(header));
         
-        MyTimePicker snoozeTimePicker = new MyTimePicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt());
+        MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt());
         
         alarmCont.add(BorderLayout.SOUTH, TableLayout.encloseIn(2,
                 //        alarmCont.add(BorderLayout.west(new Button(Command.create("Cancel", Icons.iconAlarmOffLabelStyle, (evt) -> {

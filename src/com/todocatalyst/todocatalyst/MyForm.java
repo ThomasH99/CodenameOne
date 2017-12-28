@@ -264,32 +264,33 @@ public abstract class MyForm extends Form {
      *
      * @author Chen
      */
-    public class CustomToolbar extends Toolbar implements ScrollListener {
-        //TODO use this toolbar
-
-        private int alpha;
-
-        public CustomToolbar() {
-        }
-
-        public CustomToolbar(boolean layered) {
-            super(layered);
-        }
-
-        public void paintComponentBackground(Graphics g) {
-            int a = g.getAlpha();
-            g.setAlpha(alpha);
-            super.paintComponentBackground(g);
-            g.setAlpha(a);
-        }
-
-        public void scrollChanged(int scrollX, int scrollY, int oldscrollX, int oldscrollY) {
-            alpha = scrollY;
-            alpha = Math.max(alpha, 0);
-            alpha = Math.min(alpha, 255);
-        }
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public class CustomToolbar extends Toolbar implements ScrollListener {
+//        //TODO use this toolbar
+//
+//        private int alpha;
+//
+//        public CustomToolbar() {
+//        }
+//
+//        public CustomToolbar(boolean layered) {
+//            super(layered);
+//        }
+//
+//        public void paintComponentBackground(Graphics g) {
+//            int a = g.getAlpha();
+//            g.setAlpha(alpha);
+//            super.paintComponentBackground(g);
+//            g.setAlpha(a);
+//        }
+//
+//        public void scrollChanged(int scrollX, int scrollY, int oldscrollX, int oldscrollY) {
+//            alpha = scrollY;
+//            alpha = Math.max(alpha, 0);
+//            alpha = Math.min(alpha, 255);
+//        }
+//    }
+//</editor-fold>
     interface CreateAndEditListItem {
 
         void editNewItemListItem(ItemList itemList);
@@ -462,7 +463,7 @@ public abstract class MyForm extends Form {
 //        return dia;
     }
 
-    static Dialog dialogUpdateRemainingTime(MyTimePicker remainingTimePicker) {
+    static Dialog dialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
         Dialog dia = new Dialog();
         dia.setTitle("Update " + Item.EFFORT_REMAINING + "?");
         dia.setLayout(new BoxLayout(BoxLayout.Y_AXIS));
@@ -498,7 +499,7 @@ public abstract class MyForm extends Form {
 //
 ////        Picker p = new Picker();
 ////        MyDateAndTimePicker waitingDatePicker = new MyDateAndTimePicker("<set date>", parseIdMap2, () -> {
-//        MyTimePicker remainingTimePicker = new MyTimePicker("<set date>", parseIdMap2, () -> {
+//        MyDurationPicker remainingTimePicker = new MyDurationPicker("<set date>", parseIdMap2, () -> {
 ////            return new Date(item.getWaitingTillDate());
 ////            return item.getRemainingEffortInMinutes();
 //            return (int) item.getRemainingEffort() / MyDate.MINUTE_IN_MILLISECONDS;
@@ -845,6 +846,7 @@ public abstract class MyForm extends Form {
             }
         }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        MyIntPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue, int step) {
 //            super();
 //            int defaultSelectedValue = get.get();
@@ -869,6 +871,7 @@ public abstract class MyForm extends Form {
 //                });
 //            }
 //        }
+//</editor-fold>
         public int getValueInt() {
 //            String str = getSelectedString();
 //            int interval;
@@ -886,14 +889,14 @@ public abstract class MyForm extends Form {
 //    static Component clearcreate(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, boolean addClearButton) {
 //        Button clearButton = new Button();
 //
-//        MyTimePicker p = new MyTimePicker(parseIdMap, get, set) {
+//        MyDurationPicker p = new MyDurationPicker(parseIdMap, get, set) {
 //            @Override
 //            public void setTime(int time) {
 //                super.setTime(time); //To change body of generated methods, choose Tools | Templates.
 //                if (clearButton != null) {
 //                    clearButton.setHidden(getTime() == 0);
 //                }
-////                    for (Object al : MyTimePicker.this.getListeners()) {
+////                    for (Object al : MyDurationPicker.this.getListeners()) {
 //                for (Object al : getListeners()) {
 //                    if (al instanceof MyActionListener) {
 //                        ((MyActionListener) al).actionPerformed(null);
@@ -922,7 +925,7 @@ public abstract class MyForm extends Form {
 //        return p;
 //    }
 //
-//    static Component addClearButton(MyTimePicker timePicker) {
+//    static Component addClearButton(MyDurationPicker timePicker) {
 //        Button clearButton = new Button();
 //        timePicker.setClearButton(clearButton);
 //        Command clear = Command.create(null, Icons.iconCloseCircleLabelStyle, (e) -> {
@@ -1404,7 +1407,7 @@ public abstract class MyForm extends Form {
         return layout(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
     }
 
-    protected static Component layout(String fieldLabelTxt, MyTimePicker field, String help) {
+    protected static Component layout(String fieldLabelTxt, MyDurationPicker field, String help) {
         return layout(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
     }
 
@@ -1430,7 +1433,7 @@ public abstract class MyForm extends Form {
     }
 
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help) {
-        return layoutN(fieldLabelTxt, field, help, field instanceof MyTimePicker ? (() -> ((MyTimePicker) field).swipeClear())
+        return layoutN(fieldLabelTxt, field, help, field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
                 : (field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear() : () -> ((MyDateAndTimePicker) field).swipeClear()),
                 true, false, false, false);
     }
@@ -1438,7 +1441,7 @@ public abstract class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
         return layout(fieldLabelTxt, field, help,
-                field instanceof MyTimePicker ? (() -> ((MyTimePicker) field).swipeClear())
+                field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
                         : field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear()
                                 : () -> ((MyDateAndTimePicker) field).swipeClear(),
                 wrapText, makeFieldUneditable, hideEditButton, false);
@@ -1484,10 +1487,9 @@ public abstract class MyForm extends Form {
         //EDIT FIELD
         Component visibleField = null; //contains the edit field and possibly the edit button
 //        if (hideEditButton) {
-        if (!visibleEditButton&&hiddenEditButton) {
+        if (!visibleEditButton && hiddenEditButton) {
             visibleField = field;
-        } else 
-        { //place a visible or invisible button
+        } else { //place a visible or invisible button
             Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
 //            boolean editButtonHidden = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
 //            editFieldButton.setVisible(!editButtonInvisible);
@@ -1530,7 +1532,7 @@ public abstract class MyForm extends Form {
         //FIELD LABEL
         Component fieldLabel = makeHelpButton(fieldLabelTxt, help, wrapText);
         if (wrapText) {
-            int availDisplWidth = Display.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
+            int availDisplWidth = (Display.getInstance().getDisplayWidth() * 90) / 100; //asumme roughly 90% of width is available after margins
 //            int availDisplWidthParent = getPaDisplay.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
             int labelPreferredW = fieldLabel.getPreferredW();
             int fieldPreferredW = visibleField.getPreferredW();
@@ -1540,47 +1542,51 @@ public abstract class MyForm extends Form {
                     fieldContainer.add(BorderLayout.EAST, visibleField);
                 } else {
                     int widthFirstColumn = 0;
-                    int relativeWidthFieldPercent = fieldPreferredW * 100 / availDisplWidth;
-                    int relativeWidthLabelPercent = labelPreferredW * 100 / availDisplWidth;
-                    if (relativeWidthFieldPercent < 30) { //visibleField takes up less than 30% of avail space 
-//                        int widthFirstColumn = Math.min(Math.max(fieldLabelPreferredW / visibleFieldPreferredW * 100, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
-                        widthFirstColumn = 100 - relativeWidthFieldPercent; //first column gets the rest
-                    }
-                    if (relativeWidthLabelPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
-                        widthFirstColumn = relativeWidthLabelPercent; //give it full space (no wrap)
+                    int labelRelativeWidthPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
+                    int labelScreenWidthPercent = labelPreferredW * 100 / (availDisplWidth);
+                    if (true) {
+                        if (labelScreenWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
+                            widthFirstColumn = labelScreenWidthPercent;
+                        }
                     } else {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//field should not be less than 30% of width
+//                    int labelRelativeWidthPercent = labelPreferredW * 100/ availDisplWidth ;
+//                    int fieldRelativeWidthPercent = fieldPreferredW * 100/ availDisplWidth ;
+//                        int labelRelativeWidthPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
+//                    int fieldRelativeWidthPercent = 100 - labelPreferredW;
+//                    if (fieldRelativeWidthPercent < 30) { //visibleField takes up less than 30% of avail space
+//                        int widthFirstColumn = Math.min(Math.max(fieldLabelPreferredW / visibleFieldPreferredW * 100, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
+//                        widthFirstColumn = 100 - fieldRelativeWidthPercent; //first column gets the rest
+//</editor-fold>
+                        if (labelRelativeWidthPercent > 70) { //visibleField takes up less than 30% of avail space 
+                            widthFirstColumn = 70; //first column gets the rest
+                        } else if (labelRelativeWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
+                            widthFirstColumn = labelRelativeWidthPercent; //give it full space (no wrap)
+                        } else if (labelRelativeWidthPercent < 30) { //visibleField takes up less than 30% of avail space 
 //                        int widthVisibleFieldPercent = 100 - widthFieldLabelPercent;
-                        int widthLabelPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
-                        widthFirstColumn = Math.min(Math.max(widthLabelPercent, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
+//                        int widthLabelPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
+                            widthFirstColumn = 30; //Math.min(Math.max(widthLabelPercent, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
+                        }
                     }
                     TableLayout tl = new TableLayout(1, 2);
                     tl.setGrowHorizontally(true); //grow the remaining right-most column
 //                fieldContainer = new Container(tl);
                     fieldContainer.setLayout(tl);
                     fieldContainer.
-                            add(tl.createConstraint().widthPercentage(widthFirstColumn), fieldLabel).
-                            //                            add(visibleField);
+                            add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.LEFT).widthPercentage(widthFirstColumn), fieldLabel).
                             add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.RIGHT), visibleField); //align center right
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                fieldLabel.getAllStyles().setMarginBottom(0);
-//                fieldLabel.getAllStyles().setPaddingBottom(0); //reduce space between label and field
-//                visibleField.getAllStyles().setMarginBottom(0);
-//                visibleField.getAllStyles().setPaddingTop(0);
-//                fieldContainer.add(BorderLayout.NORTH, fieldLabel);
-//                fieldContainer.add(BorderLayout.EAST, visibleField); //label NORTH
-//</editor-fold>
                 }
             } else {
                 fieldContainer.add(BorderLayout.WEST, fieldLabel);
-                fieldContainer.add(BorderLayout.EAST, visibleField);  //label WEST
+                fieldContainer.add(BorderLayout.EAST, visibleField);
             }
         } else {
             fieldContainer.add(BorderLayout.WEST, fieldLabel);
             fieldContainer.add(BorderLayout.EAST, visibleField);
         }
-
+        fieldContainer.revalidate(); //right way to get the full text to size up?
         return fieldContainer;
-
     }
 
     protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,

@@ -35,7 +35,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     public static String CLASS_NAME = "WorkSlot";
 
-    public static int MINUTES_IN_MILLISECONDS = MyDate.MINUTE_IN_MILLISECONDS; //60 * 1000;
+//    public static int MINUTES_IN_MILLISECONDS = MyDate.MINUTE_IN_MILLISECONDS; //60 * 1000;
 
     final static String WORKSLOT = "Workslot";
     final static String DESCRIPTION = "Description";//"Name";
@@ -431,6 +431,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         } else if (getRepeatRule() != null) { //if the user deleted the repeatRule, 
             getRepeatRule().deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this);
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (repeatRule != null) {
 //            put(PARSE_REPEAT_RULE, repeatRule);
 //        } else {
@@ -449,6 +450,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //                changed();
 //            }
 //        }
+//</editor-fold>
     }
 
     public final void setRepeatRuleNoUpdate(RepeatRuleParseObject repeatRule) {
@@ -896,7 +898,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        } else {
 //            return 0;
 //        }
-        return ((long) getDurationInMinutes()) * MINUTES_IN_MILLISECONDS;
+        return ((long) getDurationInMinutes()) * MyDate.MINUTE_IN_MILLISECONDS;
     }
 
     public int getDurationInMinutes() {
@@ -1014,14 +1016,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //            put(PARSE_DURATION, durationInMilliSeconds / MINUTES_IN_MILLISECONDS); //store duration in minutes for readability
 //            updateEndTimeWithNewDuration(durationInMilliSeconds);
 //        }
-        setDurationInMinutes((int) (durationInMilliSeconds / MINUTES_IN_MILLISECONDS));
+        setDurationInMinutes((int) (durationInMilliSeconds / MyDate.MINUTE_IN_MILLISECONDS));
     }
 
     public final void setDurationInMinutes(int durationInMinutes) {
 //        setDuration(durationInMinutes * MINUTES_IN_MILLISECONDS);
         if (durationInMinutes != 0) {
             put(PARSE_DURATION, durationInMinutes); //store duration in minutes for readability
-            updateEndTimeWithNewDuration(durationInMinutes * MINUTES_IN_MILLISECONDS);
+            updateEndTimeWithNewDuration(((long)durationInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
         } else {
             remove(PARSE_DURATION);
         }

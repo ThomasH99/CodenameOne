@@ -35,9 +35,13 @@ public class ScreenMain extends MyForm {
         super(SCREEN_MAIN_NAME, null, () -> {
         });
 
-        int totalCount = DAO.getInstance().getItemCount(false);
-        int countDone = DAO.getInstance().getItemCount(true);
-        setTitle("TodoCatalyst" + " " + (totalCount - countDone) + " [" + totalCount + "]");
+        String countStr = "";
+        if (false) {
+            int totalCount = DAO.getInstance().getItemCount(false);
+            int countDone = DAO.getInstance().getItemCount(true);
+            countStr = " " + (totalCount - countDone) + " [" + totalCount + "]";
+        }
+        setTitle("TodoCatalyst" + countStr);
 
 //        this.theme = theme;
 //        Toolbar toolbar = new Toolbar();
@@ -91,12 +95,11 @@ public class ScreenMain extends MyForm {
         c.setUIID("Button");
 //        c.setLeadComponent(titleButton);
         cont.add(c);
-        
+
     }
 
     public void addCommandsToToolbar(Toolbar toolbar, Container cont) { //, Resources theme) {
         toolbar.addCommandToRightBar(newItemSaveToInboxCmd());
-
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
         MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconAlarmSetLabelStyle/*FontImage.create(" \ue838 ", iconStyle)*/,
@@ -162,7 +165,7 @@ public class ScreenMain extends MyForm {
                     ).show();
                 }
         );
-        makeAndAddButtons(next, toolbar, cont,"**");
+        makeAndAddButtons(next, toolbar, cont, "**");
 
         Command inbox = MyReplayCommand.create(SCREEN_INBOX_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     new ScreenListOfItems(SCREEN_INBOX_TITLE, new ItemList(SCREEN_INBOX_TITLE, DAO.getInstance().getAllItemsWithoutOwners(), true), ScreenMain.this, (i) -> {
@@ -202,7 +205,8 @@ public class ScreenMain extends MyForm {
         MyReplayCommand workSlots = (MyReplayCommand) MyReplayCommand.create(ScreenListOfWorkSlots.SCREEN_TITLE, null, (e) -> {
 //                super.actionPerformed(e);
             new ScreenListOfWorkSlots("", null, null, ScreenMain.this, (i) -> {
-            }, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis()), new Date(MyDate.MAX_DATE)),true).show();
+                
+            }, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis()), new Date(MyDate.MAX_DATE)), true).show();
         }
         );
         makeAndAddButtons(workSlots, toolbar, cont, "**");
@@ -243,7 +247,7 @@ public class ScreenMain extends MyForm {
         //diary
         Command creationLog = MyReplayCommand.create(SCREEN_CREATION_LOG_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     FilterSortDef filterSort = new FilterSortDef(Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, false);
-                    new ScreenListOfItems(SCREEN_CREATION_LOG_TITLE, new ItemList(SCREEN_CREATION_LOG_TITLE, DAO.getInstance().getCreationtLog(), filterSort, true), ScreenMain.this, (i) -> {
+                    new ScreenListOfItems(SCREEN_CREATION_LOG_TITLE, new ItemList(SCREEN_CREATION_LOG_TITLE, DAO.getInstance().getCreationLog(), filterSort, true), ScreenMain.this, (i) -> {
                     },
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                             | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
@@ -252,7 +256,7 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(creationLog, toolbar, cont, "**");
 
-        Command touched =  MyReplayCommand.create(SCREEN_TOUCHED/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
+        Command touched = MyReplayCommand.create(SCREEN_TOUCHED/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     FilterSortDef filterSort = new FilterSortDef(Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true); //true => show most recent first
                     new ScreenListOfItems(SCREEN_TOUCHED, new ItemList(SCREEN_TOUCHED, DAO.getInstance().getTouchedLog(), filterSort, true), ScreenMain.this, (i) -> {
                     },
@@ -317,7 +321,6 @@ public class ScreenMain extends MyForm {
 //            cont.add(new Button(statisticsList));
 //        }
 //</editor-fold>
-
         Command cleanTemplates = MyReplayCommand.create("Clean up templates", Icons.get().iconSettingsLabelStyle, (e) -> {
             DAO.getInstance().cleanUpTemplateListInParse();
         }
@@ -329,18 +332,18 @@ public class ScreenMain extends MyForm {
             new ScreenSettings(ScreenMain.this).show();
         }
         );
-        makeAndAddButtons(settings, toolbar, cont,                "**");
+        makeAndAddButtons(settings, toolbar, cont, "**");
 
         Command repair = MyReplayCommand.create(ScreenRepair.SCREEN_TITLE, Icons.get().iconSettingsLabelStyle, (e) -> {
 //                new ScreenListOfCategories("Categories", new ItemList(DAO.getInstance().getAllCategories()), ScreenMain.this, (i)->{}).show();
-                new ScreenRepair(ScreenMain.this).show();
-            }
+            new ScreenRepair(ScreenMain.this).show();
+        }
         );
-        makeAndAddButtons(repair, toolbar, cont,                "**");
+        makeAndAddButtons(repair, toolbar, cont, "**");
 
         Command homePage = MyReplayCommand.create("Home page"/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
-                Display.getInstance().execute("http://todocatalyst.com");
-            }
+                    Display.getInstance().execute("http://todocatalyst.com");
+                }
         );
 
         makeAndAddButtons(homePage, toolbar, cont,

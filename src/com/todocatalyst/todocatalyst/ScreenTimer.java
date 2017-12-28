@@ -139,8 +139,8 @@ public class ScreenTimer extends MyForm {
 //    private Button status;
     private MyTextArea comment;
     private Container commentCont;
-    private MyTimePicker remainingEffort;
-    private MyTimePicker effortEstimate;
+    private MyDurationPicker remainingEffort;
+    private MyDurationPicker effortEstimate;
     private Label totalActualEffort;
     private Button editItemButton;
 
@@ -1907,7 +1907,7 @@ public class ScreenTimer extends MyForm {
 //        dia.add(cont);
 //
 //        cont.add(new SpanLabel(item.getText(), "Label"));
-//        MyTimePicker remainingTimePicker = new MyTimePicker(parseIdMap2, () -> (int) item.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> {
+//        MyDurationPicker remainingTimePicker = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> {
 //        });
 //        if (false) {
 //            cont.add(new Label("Remaining")).add(new Label(MyDate.formatTimeDuration(item.getRemainingEffortNoDefault(), MyPrefs.getBoolean(MyPrefs.timerShowSecondsInTimer))));
@@ -2238,8 +2238,8 @@ public class ScreenTimer extends MyForm {
         ));
         cont.add(BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton));
 
-        remainingEffort = new MyTimePicker(parseIdMap2, () -> (int) timerStack.currEntry.timedItem.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,
-                (i) -> timerStack.currEntry.timedItem.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS));
+        remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) timerStack.currEntry.timedItem.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,
+                (i) -> timerStack.currEntry.timedItem.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
 //        remainingEffort.setFormatter(myFormatter); //don't format with seconds
 
         //If go to nexttask
@@ -2268,7 +2268,7 @@ public class ScreenTimer extends MyForm {
             public void actionPerformed(ActionEvent evt) {
                 //whenever elsapsedTimePicker is edited manually (only possible when timer is Paused), update elapsed time afterwards
 //                timerStack.currEntry.timerElapsedTimeSavedDuringPauseMillis = elapsedTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.secondsInMillis;
-                timerStack.currEntry.setTimerDurationInMillis(elapsedTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.savedSecondsFromTimerInMillis);
+                timerStack.currEntry.setTimerDurationInMillis(((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.savedSecondsFromTimerInMillis);
 //                updateTotalActualEffort(timerStack.currEntry.timedItem.getActualEffort(false), elapsedTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS);
                 updateTotalActualEffort();
             }
@@ -2289,18 +2289,19 @@ public class ScreenTimer extends MyForm {
             if (timerStack.currEntry.timerShowsActualTotal) {
 //                entry.timedItem.setActualEffort(elapsedTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS + entry.secondsInMillis - entry.secondsInMillis >= MyDate.MINUTE_IN_MILLISECONDS / 2 ? 1 : 0); //remove rounded up minutes when saving
                 if (isMinimumThresholdPassed()) {
-                    timerStack.currEntry.timedItem.setActualEffort(elapsedTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.savedSecondsFromTimerInMillis); //remove rounded up minutes when saving
+                    timerStack.currEntry.timedItem.setActualEffort(((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.savedSecondsFromTimerInMillis); //remove rounded up minutes when saving
                 }
             } else //                entry.timedItem.addToActualEffort(elapsedTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS + entry.secondsInMillis - entry.secondsInMillis >= MyDate.MINUTE_IN_MILLISECONDS / 2 ? 1 : 0); //remove rounded up minutes when saving
             {
                 if (isMinimumThresholdPassed()) {
-                    timerStack.currEntry.timedItem.addToActualEffort(elapsedTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.savedSecondsFromTimerInMillis); //no round up minutes when saving, but add seconds even when not shown in picker
+                    timerStack.currEntry.timedItem.addToActualEffort(((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.savedSecondsFromTimerInMillis); //no round up minutes when saving, but add seconds even when not shown in picker
                 }
             }
         });
 
-        effortEstimate = new MyTimePicker(parseIdMap2, () -> (int) timerStack.currEntry.timedItem.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> timerStack.currEntry.timedItem.setEffortEstimate(i * MyDate.MINUTE_IN_MILLISECONDS));
-//        totalEffort = new MyTimePicker(parseIdMap2, () -> (int) item.getEffortEstimateInMinutes(), (i) -> item.setEffortEstimateInMinutes((int) i));
+        effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) timerStack.currEntry.timedItem.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS,
+                (i) -> timerStack.currEntry.timedItem.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
+//        totalEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getEffortEstimateInMinutes(), (i) -> item.setEffortEstimateInMinutes((int) i));
 //        totalActualEffort = new Label("", "TextField"); //MyDate.formatTime(calcTotalEffortInMinutes(item, elapsedTimePicker.getTime(), MyPrefs.getBoolean((MyPrefs.timerShowTotalActualInTimer))), showSeconds), "Button");
         totalActualEffort = new Label(); //MyDate.formatTime(calcTotalEffortInMinutes(item, elapsedTimePicker.getTime(), MyPrefs.getBoolean((MyPrefs.timerShowTotalActualInTimer))), showSeconds), "Button");
 
@@ -2434,7 +2435,7 @@ public class ScreenTimer extends MyForm {
                 Button c3 = new Button(cmdSetCompletedAndGotoNextTaskOrExit); //"Completed")));
                 c3.setTextPosition(textPos);
 //                cont.add(GridLayout.encloseIn(3, c1, c2, c3));
-                cont.add(GridLayout.encloseIn(2,c1, c2)); //autofit
+                cont.add(GridLayout.encloseIn(2, c1, c2)); //autofit
                 cont.add(GridLayout.encloseIn(1, c3)); //autofit
                 //UI: as long as there is interrupted task(s!) show only those (not next tasks)
 //                cont.add(new SpanLabel("Interrupted: " + timerStack.getInterruptedEntry().timedItem.getText()));
@@ -2449,8 +2450,8 @@ public class ScreenTimer extends MyForm {
                 c6.setTextPosition(textPos);
 //                cont.add(GridLayout.encloseIn(3, c4, c5, c6));
 //                cont.add(GridLayout.encloseIn(c4, c5, c6));
-                cont.add(GridLayout.encloseIn(2,c4, c5));
-                cont.add(GridLayout.encloseIn(1,c6));
+                cont.add(GridLayout.encloseIn(2, c4, c5));
+                cont.add(GridLayout.encloseIn(1, c6));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //no task was interrupted
 //                cont.add(GridLayout.encloseIn(3,
@@ -2472,8 +2473,8 @@ public class ScreenTimer extends MyForm {
             c9.setTextPosition(textPos);
 //            cont.add(GridLayout.encloseIn(3, c7, c8, c9));
 //            cont.add(GridLayout.encloseIn(c7, c8, c9));
-            cont.add(GridLayout.encloseIn(2,c7, c8));
-            cont.add(GridLayout.encloseIn(1,c9));
+            cont.add(GridLayout.encloseIn(2, c7, c8));
+            cont.add(GridLayout.encloseIn(1, c9));
 //            cont.add(new SpanLabel("Exit: stop and save Timer, then exit. Wait: set current task Waiting. Stop: stop Timer. All: Stop Timer and save elapsed time. Tip: use task checkbox"));
         } else {
 //        entry.nextItem != null //MyPrefs.getBoolean(MyPrefs.timerAutomaticallyGotoNextTask) && 
@@ -2488,8 +2489,8 @@ public class ScreenTimer extends MyForm {
             c13.setTextPosition(textPos);
 //            cont.add(GridLayout.encloseIn(4, c10, c11, c12, c13));
 //            cont.add(GridLayout.encloseIn(c10, c11, c12, c13));
-            cont.add(GridLayout.encloseIn(3,c10, c11, c12));
-            cont.add(GridLayout.encloseIn(1,c13));
+            cont.add(GridLayout.encloseIn(3, c10, c11, c12));
+            cont.add(GridLayout.encloseIn(1, c13));
 //            cont.add(new SpanLabel("Exit: save elapsted time and exit Timer. \nWait: set current task Waiting and start next task. Stop: stop Timer and start next task. Completed: mark task as completed and start next task. All: Stop Timer and save elapsed time. Tip: use task checkbox"));
             //Show next tasks
             //TODO optimization: only construct nextTask containers etc if there is one and it is shown

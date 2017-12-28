@@ -226,19 +226,19 @@ public class MyPrefs {
     static PrefEntry backgroundFetchIntervalInSeconds = new PrefEntry("**","backgroundFetchIntervalInSeconds", 1 * MyDate.HOUR_IN_MILISECONDS / 1000, "interval for updating eg local notifications and badge count when app is in background**");
 
     static PrefEntry cacheDynamicSize = new PrefEntry("**","cacheDynamicSize", 10000, "number of tasks, lists, categories etc cached**");
-    static PrefEntry cacheDynamicSizeWorkSlots = new PrefEntry("**","cacheDynamicSizeWorkSlots", 1000, "number of WorkSlots cached**");
+    static PrefEntry cacheDynamicSizeWorkSlots = new PrefEntry("**","cacheDynamicSizeWorkSlots", 10000, "number of WorkSlots cached**");
 
     static PrefEntry cacheLocalStorageSize
             = new PrefEntry("**","cacheLocalStorageSize", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
     static PrefEntry cacheLocalStorageSizeWorkSlots
-            = new PrefEntry("**","cacheLocalStorageSizeWorkSlots", 1000, "deactivated if 0** need to implement Externalizable before this will work!!");
+            = new PrefEntry("**","cacheLocalStorageSizeWorkSlots", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
     static PrefEntry cacheMaxNumberParseObjectsToFetchInQueries
             = new PrefEntry("**","cacheMaxNumberParseObjectsToFetchInQueries", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
     static PrefEntry cacheLoadChangedElementsOnAppStart
-            = new PrefEntry("**","cacheLoadChangedElementsOnAppStart", false, "used to speed up app start during testing - NOT END USER");
+            = new PrefEntry("cacheLoadChangedElementsOnAppStart (INTERNAL)","cacheLoadChangedElementsOnAppStart", true, "used to speed up app start during testing - NOT END USER");
 
     //LOOK AND FEEL
     static PrefEntry themeNameWithoutBackslash

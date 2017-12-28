@@ -62,19 +62,23 @@ public class ScreenLogin2 extends MyForm {
     }
 
     public void go(boolean forceLaunchForTest) {
+        //Check if already logged in, if so, refresh cache
+        //if not logged in, show window to create account or log in
         ParseUser parseUser = getLastUserSessionFromStorage();
         Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
 
         if (!forceLaunchForTest && parseUser != null) { //already logged in
-            int count = -1;
             setDefaultACL(parseUser); //TODO needed??
-            ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
-            try {
-                count = query.count();
-            } catch (ParseException ex) {
-                Log.e(ex);
+            if (false) {
+                int count = -1;
+                ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
+                try {
+                    count = query.count();
+                } catch (ParseException ex) {
+                    Log.e(ex);
+                }
+                Log.p("Count of Item in Parse = " + count, Log.DEBUG);
             }
-            Log.p("Count of Item in Parse = " + count, Log.DEBUG);
             //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
             DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
 
@@ -89,7 +93,7 @@ public class ScreenLogin2 extends MyForm {
 //                    new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
 //                }
 //            }
-                    new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+            new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
 
         } else {
             setupLoginScreen();

@@ -39,15 +39,15 @@ public class Duration {
 //    }
 
     public void setDurationInSeconds(int durationInSeconds) {
-        this.duration = durationInSeconds * MyDate.SECOND_IN_MILLISECONDS;
+        this.duration = ((long)durationInSeconds) * MyDate.SECOND_IN_MILLISECONDS;
     }
 
     public void setDuration(int hours, int minutes) {
-        this.duration = hours*MyDate.HOUR_IN_MILISECONDS + minutes * MyDate.MINUTE_IN_MILLISECONDS;
+        this.duration = ((long)hours)*MyDate.HOUR_IN_MILISECONDS + ((long)minutes) * MyDate.MINUTE_IN_MILLISECONDS;
     }
 
     public void setDurationInHoursMinutes(int hours, int minutes, int seconds) {
-        this.duration = hours*MyDate.HOUR_IN_MILISECONDS + minutes * MyDate.MINUTE_IN_MILLISECONDS + seconds * MyDate.SECOND_IN_MILLISECONDS;
+        this.duration = ((long)hours)*MyDate.HOUR_IN_MILISECONDS + ((long)minutes) * MyDate.MINUTE_IN_MILLISECONDS + ((long)seconds) * MyDate.SECOND_IN_MILLISECONDS;
     }
 
     /**
@@ -74,7 +74,7 @@ public class Duration {
     }
 
     public void addMinutes(int minutes) {
-        duration += (minutes*MyDate.MINUTE_IN_MILLISECONDS);
+        duration += (((long)minutes)*MyDate.MINUTE_IN_MILLISECONDS);
     }
 
     public long getSeconds60() {

@@ -9,6 +9,7 @@
             <entry key="TASK" value="Tache" />
             <entry key="cancel" value="Annuler" />
             <entry key="ANONYMOUS_WARNING" value="" />
+            <entry key="PROJECT" value="Projet" />
             <entry key="EARNED_POINTS_PER_HOUR" value="Valeur/heure" />
             <entry key="PREFERENCES" value="Pr&#xe9;ferences" />
             <entry key="ok" value="OK" />
@@ -24,12 +25,12 @@
             <entry key="TASK_HELP" value="D&#xe9;crire votre [TASK] ici" />
             <entry key="EFFORT_REMAINING" value="Restant" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
-            <entry key="Email" value="Courriel" />
-            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
             <entry key="DONE" value="Termin&#xe9;" />
-            <entry key="DUE_DATE_HELP" value="" />
+            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
+            <entry key="Email" value="Courriel" />
+            <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
             <entry key="EFFORT_ACTUAL" value="Travail" />
+            <entry key="DUE_DATE_HELP" value="" />
         </lang>
         <lang name="en">
             <entry key="SUPPORT" value="Support" />
@@ -38,6 +39,7 @@
             <entry key="TASK" value="Task" />
             <entry key="cancel" value="Cancel" />
             <entry key="ANONYMOUS_WARNING" value="&lt;html&gt;   &lt;head&gt;        &lt;/head&gt;   &lt;body&gt;     You will use [TODOCATALYST] with an incognito account.  If you later want to convert this to a permanent account please enter your      email in [PREFERENCES]. If you &lt;b&gt;lose&lt;/b&gt; this device your data cannot be recovered.  WIth an incognito account you cannot log in from another device. If you do not use your account it may be deleted after 6 months of inactivity.   &lt;/body&gt; &lt;/html&gt; " />
+            <entry key="PROJECT" value="Project" />
             <entry key="EARNED_POINTS_PER_HOUR" value="Value/hour" />
             <entry key="PREFERENCES" value="Preferences" />
             <entry key="ok" value="OK" />
@@ -53,12 +55,12 @@
             <entry key="TASK_HELP" value="Describe your [TASK] here" />
             <entry key="EFFORT_REMAINING" value="Remaining" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="SETTINGS" value="Settings" />
-            <entry key="Email" value="Email" />
-            <entry key="REPEAT_RULE" value="Repeat" />
             <entry key="DONE" value="Completed" />
-            <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
+            <entry key="REPEAT_RULE" value="Repeat" />
+            <entry key="Email" value="Email" />
+            <entry key="SETTINGS" value="Settings" />
             <entry key="EFFORT_ACTUAL" value="Work" />
+            <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
         </lang>
         <lang name="dk">
             <entry key="SUPPORT" value="Support" />
@@ -67,6 +69,7 @@
             <entry key="TASK" value="Opgave" />
             <entry key="cancel" value="Annuler" />
             <entry key="ANONYMOUS_WARNING" value="" />
+            <entry key="PROJECT" value="Projekt" />
             <entry key="EARNED_POINTS_PER_HOUR" value="V&#xe6;rdi/time" />
             <entry key="PREFERENCES" value="" />
             <entry key="ok" value="OK" />
@@ -82,12 +85,12 @@
             <entry key="TASK_HELP" value="Beskriv [TASK] her" />
             <entry key="EFFORT_REMAINING" value="Resterende" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="SETTINGS" value="Ops&#xe6;tning" />
-            <entry key="Email" value="Email" />
-            <entry key="REPEAT_RULE" value="Gentag" />
             <entry key="DONE" value="Afslutttet" />
-            <entry key="DUE_DATE_HELP" value="" />
+            <entry key="REPEAT_RULE" value="Gentag" />
+            <entry key="Email" value="Email" />
+            <entry key="SETTINGS" value="Ops&#xe6;tning" />
             <entry key="EFFORT_ACTUAL" value="Arbejdet" />
+            <entry key="DUE_DATE_HELP" value="" />
         </lang>
     </l10n>
     <theme name="MyTheme">
@@ -97,8 +100,11 @@
         <val key="@paintsTitleBarBool" value="true" />
         <val key="@statusBarScrollsUpBool" value="true" />
         <val key="@tabPlacementInt" value="2" />
+        <val key="ActualEffort.align" value="4" />
         <val key="ActualEffort.derive" value="LabelValue" />
-        <val key="ActualEffort.fgColor" value="2fbd00" />
+        <val key="ActualEffort.fgColor" value="268b04" />
+        <val key="ActualEffort.padUnit" value="0,2,0,2" />
+        <val key="ActualEffort.padding" value="0.0,0.0,0.5,0.5" />
         <val key="Button.dis#derive" value="Button" />
         <val key="Button.dis#fgColor" value="999999" />
         <val key="Button.press#derive" value="Button" />
@@ -135,11 +141,16 @@
         <border key="ContainerListElement.border" type="underline"  millimeters="false" thickness="0.0" color="14869218" />
         <val key="ContainerListElement.dis#derive" value="ContainerListElement" />
         <val key="ContainerListElement.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="ContainerListElement.padding" value="0.0,0.0,0.0,0.0" />
         <val key="ContainerListElement.press#derive" value="ContainerListElement" />
         <val key="ContainerListElement.sel#derive" value="ContainerListElement" />
         <val key="DueDate.derive" value="LabelValue" />
+        <val key="DueDate.padUnit" value="0,2,0,2" />
+        <val key="DueDate.padding" value="0.0,0.0,1.0,1.0" />
         <val key="DueDateOverdue.derive" value="LabelValue" />
-        <val key="DueDateOverdue.fgColor" value="ff0000" />
+        <val key="DueDateOverdue.fgColor" value="eb8d00" />
+        <val key="DueDateOverdue.padUnit" value="0,2,0,2" />
+        <val key="DueDateOverdue.padding" value="0.0,0.0,1.0,1.0" />
         <val key="EditedText.align" value="1" />
         <val key="EditedText.derive" value="LabelValue" />
         <val key="EditedText.dis#derive" value="EditedText" />
@@ -148,14 +159,30 @@
         <val key="EditedText.sel#align" value="1" />
         <val key="EditedText.sel#derive" value="LabelValue" />
         <val key="EditedText.sel#fgColor" value="cc" />
+        <border key="ExpandedList.border" type="roundRect" strokeColor="0" strokeOpacity="255" strokeThickness="1.0" strokeMM="false" shadowSpread="10.0" shadowOpacity="0" shadowX="0.5" shadowY="0.5" shadowBlur="10.0" topOnlyMode="false" bottomOnlyMode="false" CornerRadius="1.0" bezierCorners="false" />
+        <val key="ExpandedList.derive" value="ItemContainer" />
+        <val key="ExpandedList.marUnit" value="0,2,0,0" />
+        <val key="ExpandedList.margin" value="0.0,0.0,1.0,0.0" />
+        <val key="ExpandedList.padding" value="0.0,0.0,0.0,0.0" />
         <val key="FinishTime.derive" value="LabelValue" />
+        <val key="FinishTime.padUnit" value="0,2,0,2" />
+        <val key="FinishTime.padding" value="0.0,0.0,1.0,1.0" />
+        <val key="FinishTime.textDecoration" value="1" />
         <val key="FinishTimeOverdue.derive" value="FinishTime" />
+        <val key="FinishTimeOverdue.fgColor" value="cc3300" />
+        <val key="FinishTimeOverdue.padUnit" value="0,2,0,2" />
+        <val key="FinishTimeOverdue.padding" value="0.0,0.0,1.0,1.0" />
         <val key="IconEdit.align" value="4" />
         <val key="IconEdit.dis#derive" value="IconEdit" />
+        <val key="IconEdit.margin" value="0.0,0.0,0.0,0.0" />
         <val key="IconEdit.padUnit" value="2,2,2,2" />
-        <val key="IconEdit.padding" value="1.0,1.0,1.0,1.0" />
+        <val key="IconEdit.padding" value="1.0,1.0,1.5,1.5" />
         <val key="IconEdit.press#derive" value="IconEdit" />
         <val key="IconEdit.sel#derive" value="IconEdit" />
+        <val key="ItemContainer.derive" value="Container" />
+        <val key="ItemContainer.marUnit" value="0,2,0,0" />
+        <val key="ItemContainer.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="ItemContainer.padding" value="0.0,0.0,0.0,0.0" />
         <val key="LabelField.align" value="1" />
         <val key="LabelField.derive" value="Label" />
         <val key="LabelField.dis#derive" value="LabelField" />
@@ -184,12 +211,16 @@
         <val key="LargeWhiteText.press#derive" value="LargeWhiteText" />
         <val key="LargeWhiteText.sel#derive" value="LargeWhiteText" />
         <val key="ListOfItemsEditItemIcon.dis#derive" value="ListOfItemsEditItemIcon" />
-        <val key="ListOfItemsEditItemIcon.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="ListOfItemsEditItemIcon.padUnit" value="0,2,0,0" />
+        <val key="ListOfItemsEditItemIcon.padding" value="0.0,0.0,1.0,0.0" />
         <val key="ListOfItemsEditItemIcon.press#derive" value="ListOfItemsEditItemIcon" />
         <val key="ListOfItemsEditItemIcon.sel#derive" value="ListOfItemsEditItemIcon" />
+        <val key="ListOfItemsRemaining.align" value="4" />
         <val key="ListOfItemsRemaining.derive" value="LabelValue" />
         <val key="ListOfItemsRemaining.dis#derive" value="ListOfItemsRemaining" />
         <val key="ListOfItemsRemaining.fgColor" value="c8330d" />
+        <val key="ListOfItemsRemaining.padUnit" value="2,2,2,2" />
+        <val key="ListOfItemsRemaining.padding" value="0.0,0.0,0.5,0.5" />
         <val key="ListOfItemsRemaining.press#derive" value="ListOfItemsRemaining" />
         <val key="ListOfItemsRemaining.sel#derive" value="ListOfItemsRemaining" />
         <val key="ListOfItemsSectionHeader.align" value="4" />
@@ -204,24 +235,34 @@
         <border key="ListOfItemsSubtasks.border" type="rounded" thickness="0.0" arcW="10" arcH="10" />
         <val key="ListOfItemsSubtasks.dis#derive" value="ListOfItemsSubtasks" />
         <val key="ListOfItemsSubtasks.fgColor" value="ffffff" />
-        <val key="ListOfItemsSubtasks.margin" value="0.0,0.0,2.0,2.0" />
-        <val key="ListOfItemsSubtasks.padding" value="3.0,3.0,3.0,3.0" />
+        <val key="ListOfItemsSubtasks.marUnit" value="0,2,0,2" />
+        <val key="ListOfItemsSubtasks.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="ListOfItemsSubtasks.padUnit" value="0,2,0,2" />
+        <val key="ListOfItemsSubtasks.padding" value="0.0,0.0,0.5,0.5" />
         <val key="ListOfItemsSubtasks.press#derive" value="ListOfItemsSubtasks" />
         <val key="ListOfItemsSubtasks.sel#derive" value="ListOfItemsSubtasks" />
         <val key="ListOfItemsSubtasks.transparency" value="255" />
         <val key="ListOfItemsText.align" value="1" />
         <val key="ListOfItemsText.derive" value="Label" />
         <val key="ListOfItemsText.dis#derive" value="ListOfItemsText" />
+        <val key="ListOfItemsText.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="ListOfItemsText.padUnit" value="0,2,0,2" />
+        <val key="ListOfItemsText.padding" value="0.0,0.0,0.5,0.5" />
         <val key="ListOfItemsText.press#derive" value="ListOfItemsText" />
         <val key="ListOfItemsText.sel#derive" value="ListOfItemsText" />
         <val key="MyCheckBox.align" value="1" />
         <val key="MyCheckBox.dis#derive" value="MyCheckBox" />
         <val key="MyCheckBox.padUnit" value="0,2,0,2" />
-        <val key="MyCheckBox.padding" value="0.0,0.0,1.0,1.0" />
+        <val key="MyCheckBox.padding" value="0.0,0.0,1.5,0.5" />
         <val key="MyCheckBox.press#derive" value="MyCheckBox" />
         <val key="MyCheckBox.sel#derive" value="MyCheckBox" />
+        <val key="MyCheckBoxStarred.derive" value="MyCheckBox" />
+        <val key="MyCheckBoxStarred.fgColor" value="ffcc33" />
         <val key="OnOffSwitch.derive" value="OnOffSwitch" />
         <val key="OnOffSwitch.transparency" value="0" />
+        <val key="StickyHeader.bgColor" value="9999ff" />
+        <val key="StickyHeader.fgColor" value="f2f1f1" />
+        <val key="StickyHeader.transparency" value="255" />
         <val key="SwipeButton.align" value="4" />
         <val key="SwipeButton.bgColor" value="ffff00" />
         <val key="SwipeButton.dis#derive" value="SwipeButton" />
@@ -283,5 +324,6 @@
         <val key="ToggleButtonLast.press#derive" value="ToggleButtonLast.sel" />
         <val key="ToggleButtonLast.sel#derive" value="ToggleButtonLast" />
         <val key="ToggleButtonLast.sel#fgColor" value="ffffff" />
+        <val key="test_to_delete.derive" value="Button" />
     </theme>
 </resource>

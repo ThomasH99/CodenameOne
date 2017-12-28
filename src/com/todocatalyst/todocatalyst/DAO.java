@@ -64,7 +64,7 @@ public class DAO {
 //    CacheMap<String, ParseObject> cache = new CacheMap();
 //    CacheMap cache; // = new CacheMap(); //always initialize since DAO may be called before initializing cache via start() (https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html)
     MyCacheMap cache; // = new CacheMap(); //always initialize since DAO may be called before initializing cache via start() (https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html)
-    CacheMap cacheWorkSlots;// = new CacheMap(); //optimize speed when searching only for WorkSlots
+    MyCacheMap cacheWorkSlots;// = new CacheMap(); //optimize speed when searching only for WorkSlots
     Date latestCacheUpdateDate = new Date(MyDate.MIN_DATE); //start wtih minimal date
 //    Object temp;
 
@@ -94,7 +94,11 @@ public class DAO {
         }
         for (Object o : list) {
             if (o instanceof ParseObject) { // && o.isDataAvailable() //NOT necessary
-                cache.put(((ParseObject) o).getObjectIdP(), o);
+                if (o instanceof WorkSlot) {
+                    cacheWorkSlots.put(((ParseObject) o).getObjectIdP(), o);
+                } else {
+                    cache.put(((ParseObject) o).getObjectIdP(), o);
+                }
             }
         }
     }
@@ -471,7 +475,11 @@ public class DAO {
             //TODO!!!! need to split getAll into a 'refreshCache' version and a getAllCached
             for (ParseObject o : results) {
                 if (true || o.isDataAvailable()) { //NB. Always cache, even empty objects!!
-                    cache.put(o.getObjectIdP(), o);
+                    if (o instanceof WorkSlot) {
+                        cacheWorkSlots.put(o.getObjectIdP(), o);
+                    } else {
+                        cache.put(o.getObjectIdP(), o);
+                    }
                 }
             }
 //            cacheList(results);
@@ -719,10 +727,44 @@ public class DAO {
         if (parseObject == null) {
             return null;
         }
+        ParseObject temp;
+        Object obj;
+        if (parseObject != null && parseObject.getObjectIdP() != null) {
+            if (parseObject instanceof WorkSlot && (obj = cacheWorkSlots.get(parseObject.getObjectIdP())) != null) {
+//            if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
+                return (WorkSlot) obj;
+            } else if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
+                return temp;
+            } else {
+                try {
+                    parseObject.fetchIfNeeded();
+                    if (parseObject instanceof WorkSlot) {
+//                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
+                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
+                    } else {
+//                        cache.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
+                        cache.put(parseObject.getObjectIdP(), parseObject);
+                    }
+                    return parseObject;
+                } catch (ParseException ex) {
+//            Log.e(ex);
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    public ParseObject fetchIfNeededReturnCachedIfAvailOLD(ParseObject parseObject) {
+        if (parseObject == null) {
+            return null;
+        }
         try {
             ParseObject temp;
             if (parseObject != null && parseObject.getObjectIdP() != null) {
                 if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
+                    return temp;
+                } else if ((temp = (ParseObject) cacheWorkSlots.get(parseObject.getObjectIdP())) != null) {
                     return temp;
                 } else {
                     parseObject.fetchIfNeeded();
@@ -737,16 +779,21 @@ public class DAO {
         return null;
     }
 
-    public ParseObject fetchIfNeeded(ParseObject parseObject) {
+    public ParseObject fetchIfNeededXXX(ParseObject parseObject) {
         try {
             ParseObject fetched = parseObject.fetchIfNeeded();
-            cache.put(parseObject.getObjectIdP(), fetched);
+            if (fetched instanceof WorkSlot) {
+                cacheWorkSlots.put(parseObject.getObjectIdP(), fetched);
+            } else {
+                cache.put(parseObject.getObjectIdP(), fetched);
+            }
         } catch (ParseException ex) {
             Log.e(ex);
         }
         return null;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public ParseObject fetchIfNeededOrgXXX(ParseObject parseObject) {
 //        try {
 //            if (parseObject != null) {
@@ -759,6 +806,7 @@ public class DAO {
 //        }
 //        return null;
 //    }
+//</editor-fold>
     public void fetchAllItemsIn(Object itemOrItemListOrCategoryOrList) {
         fetchAllItemsIn(itemOrItemListOrCategoryOrList, false);
     }
@@ -775,7 +823,11 @@ public class DAO {
 //            return temp;
 //        }
                 ((ParseObject) itemOrItemListOrCategoryOrList).fetchIfNeeded();
-                cache.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
+                if (itemOrItemListOrCategoryOrList instanceof WorkSlot) {
+                    cacheWorkSlots.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
+                } else {
+                    cache.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
+                }
             }
 
             if (itemOrItemListOrCategoryOrList instanceof Item) {
@@ -1093,13 +1145,14 @@ public class DAO {
         List<Item> results = null;
         try {
             results = query.find();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            for (ParseObject o : results) {
 //            for (int i = 0, size = results.size(); i < size; i++) {
 //                Item item = results.get(i);
 //                Item temp;
 ////                if (item.isDataAvailable()) { //WILL always be the case for the items
 ////                    cache.put(item.getObjectId(), item);
-////                } else 
+////                } else
 //                if ((temp = (Item) cache.get(item.getObjectId())) != null) {
 //                    results.set(i, temp);
 //                } else {
@@ -1109,6 +1162,7 @@ public class DAO {
 ////                    cache.put(item.getObjectId(), item); //cached in fetchedIfNeeded()
 //                }
 //            }
+//</editor-fold>
             fetchAllItemsIn(results);
         } catch (ParseException ex) {
             Log.e(ex);
@@ -1252,7 +1306,7 @@ public class DAO {
      *
      * @return
      */
-    public List<Item> getCreationtLog() {
+    public List<Item> getCreationLog() {
         //TODO!!! implement getting in batches of less than 1000
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //        query2.include(Item.PARSE_TEXT);
@@ -1446,6 +1500,7 @@ public class DAO {
         return deletedObjectsCount;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public void deleteItemFromAllCategoriesXXX(Item item) {
 //        if (true) {
 //
@@ -1475,6 +1530,7 @@ public class DAO {
 //        }
 ////        return (List<Item>) getAll(Item.CLASS_NAME);
 //    }
+//</editor-fold>
     public List<Category> getAllCategoriesContainingItem(Item item) {
         ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
         query.whereEqualTo(Category.PARSE_ITEMLIST, item);
@@ -1899,12 +1955,21 @@ public class DAO {
         }
     }
 
-    public WorkSlotList getWorkSlots(Date startDate, Date endDate) {
+    /**
+     * get all workslots that have time *after* startDate. E.g. slot.endDate is bigger or equial to startDate
+     * @param startDate
+     * @param endDate
+     * @return 
+     */
+//    public WorkSlotList getWorkSlots(Date startDate, Date endDate) {
+    public WorkSlotList getWorkSlots(Date startDate) {
 
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
 
-        query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_START_TIME, startDate); //enough to search for endTime later than Now
-        query.whereLessThan(WorkSlot.PARSE_START_TIME, endDate);
+//        query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_START_TIME, startDate); //enough to search for endTime later than Now
+        query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME, startDate); //enough to search for endTime later than Now
+//        query.whereLessThan(WorkSlot.PARSE_START_TIME, endDate);
+//        query.whereLessThan(WorkSlot.PARSE_END_TIME, endDate);
         query.addAscendingOrder(WorkSlot.PARSE_START_TIME); //sort on startTime
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
 
@@ -3537,7 +3602,7 @@ public class DAO {
 //        }
 //        createNewCacheForWorkSlots(true);
         if (cacheWorkSlots == null) { // || forceCreationOfNewCache) {
-            cacheWorkSlots = new CacheMap("WS"); //prefix neccessary to not confuse locally cached items
+            cacheWorkSlots = new MyCacheMap("WS"); //prefix neccessary to not confuse locally cached items
             cacheWorkSlots.setCacheSize(MyPrefs.cacheDynamicSizeWorkSlots.getInt()); //persist cached elements
             //activate or de-activate local storage
             cacheWorkSlots.setAlwaysStore(MyPrefs.cacheLocalStorageSizeWorkSlots.getInt() > 0); //persist cached elements

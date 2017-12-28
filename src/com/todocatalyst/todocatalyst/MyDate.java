@@ -1461,11 +1461,13 @@ public class MyDate extends Date {
         long diff = date.getTime() - now;
 //        long dateTime = date.getTime();
         //overdue
-        if (diff < 0 && diff > getStartOfToday().getTime() - MyDate.DAY_IN_MILLISECONDS) {
+        if (diff < 0) {
+            if (diff > getStartOfToday().getTime() - MyDate.DAY_IN_MILLISECONDS) {
 //            return "Overdue";
-            return "Yesterday";
-        } else {
-            diff = -diff; //else use same distance from today to determine formatting??
+                return "Yesterday";
+            } else {
+                diff = -diff; //else use same distance from today to determine formatting??
+            }
         }
         //within today(before midnight/*next 24h*?/till 5 in the morning for night owls?!): "13h14" / "1h14am"
 //        if (dateTime<=MyDate.getEndOfDay(new Date(dateTime+MyDate.DAY_IN_MILLISECONDS)).getTime())
@@ -1813,9 +1815,12 @@ public class MyDate extends Date {
     }
 
     /**
-     * set time to start of minute. E.g. 22:31:47 is rounded down to 22:31:00. Used eg to ensure that a snooze alarm starts right at the minute seen by user and not 45s later. 
+     * set time to start of minute. E.g. 22:31:47 is rounded down to 22:31:00.
+     * Used eg to ensure that a snooze alarm starts right at the minute seen by
+     * user and not 45s later.
+     *
      * @param time
-     * @return 
+     * @return
      */
     static Date getStartOfMinute(Date time) {
         Calendar cal = Calendar.getInstance();

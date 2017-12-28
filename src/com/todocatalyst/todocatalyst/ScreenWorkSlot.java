@@ -180,30 +180,34 @@ public class ScreenWorkSlot extends MyForm {
             tl.setGrowHorizontally(true);
             content.setLayout(tl);
         }
+        long now = System.currentTimeMillis();
         MyDateAndTimePicker startByDate = new MyDateAndTimePicker("<start work on this date>", parseIdMap2,
-                () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? new Date(System.currentTimeMillis()) : workSlot.getStartTimeD(),
+                () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()
+                ? new Date(now) : workSlot.getStartTimeD(),
                 (d) -> workSlot.setStartTime(d));
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
-        content.add(layout(WorkSlot.START_TIME, startByDate, WorkSlot.START_TIME_HELP));
+        content.add(layoutN(WorkSlot.START_TIME, startByDate, WorkSlot.START_TIME_HELP));
 
-        MyTimePicker duration = new MyTimePicker(parseIdMap2,
-                () -> (workSlot.getDurationInMinutes() == 0 && MyPrefs.workSlotDefaultDuration.getInt() != 0) ? MyPrefs.workSlotDefaultDuration.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
+        MyDurationPicker duration = new MyDurationPicker(parseIdMap2,
+                () -> (workSlot.getDurationInMinutes() == 0 && MyPrefs.workSlotDefaultDuration.getInt() != 0)
+                ? MyPrefs.workSlotDefaultDuration.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
                 (i) -> workSlot.setDurationInMinutes((int) i));
-        content.add(layout(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
+        content.add(layoutN(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
 
 //        MyTextField workSlotName = new MyTextField("Description", parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s));
         MyTextField workSlotName = new MyTextField(WorkSlot.DESCRIPTION_HINT, 20, 100, 0, parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s), TextField.RIGHT);
         workSlotName.addActionListener((e) -> setTitle(workSlotName.getText())); //update the form title when text is changed
 //        content.add(new Label("Description")).add(workSlotName);
-        content.add(layout(WorkSlot.DESCRIPTION, workSlotName, WorkSlot.DESCRIPTION_HELP));
+        content.add(layoutN(WorkSlot.DESCRIPTION, workSlotName, WorkSlot.DESCRIPTION_HELP, true, false, false));
 //        setEditOnShow(workSlotName); //UI: start editing this field, NO
 
 //        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> workSlot.getComment(), (s) -> workSlot.setComment(s));
 //        content.add(new Label("Description")).add(comment);
 //REPEAT RULE
         locallyEditedRepeatRule = workSlot.getRepeatRule();
-        SpanButton repeatRuleButton = new SpanButton();
+//        SpanButton repeatRuleButton = new SpanButton();
+        WrapButton repeatRuleButton = new WrapButton();
 //        Command repeatRuleEditCmd = new Command("<click to set repeat>NOT SHOWN?!") {
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule", "", null, (e) -> {
             if (locallyEditedRepeatRule == null) {
@@ -229,6 +233,7 @@ public class ScreenWorkSlot extends MyForm {
                 }
 //                    repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
                 repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
+                repeatRuleButton.revalidate();
 //                }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
             }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
         }
@@ -248,7 +253,7 @@ public class ScreenWorkSlot extends MyForm {
         });
 
         repeatRuleButton.setCommand(repeatRuleEditCmd);
-        repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule() != null ? workSlot.getRepeatRule().toString() : null, "<set>")); //"<click to make task/project repeat>"
+        repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule() != null ? workSlot.getRepeatRule().toString() : null, "")); //"<click to make task/project repeat>"
 
         if (false) {
             MyTextArea owner = new MyTextArea(Item.BELONGS_TO, 20, TextArea.ANY, parseIdMap2, () -> {
@@ -286,13 +291,14 @@ public class ScreenWorkSlot extends MyForm {
 
 //        statusCont.add(new Label(Item.BELONGS_TO)).add(owner); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        content.add(layout(Item.BELONGS_TO, owner, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-        content.add(layout(Item.BELONGS_TO, ownerLabel, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+        content.add(layoutN(Item.BELONGS_TO, ownerLabel, Item.BELONGS_TO_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        owner.setConstraint(TextArea.UNEDITABLE); //DOESN'T WORK        
 
 //        repeatRuleButton.setUIID("TextField");
-        content.add(layout(WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
+        content.add(layoutN(WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, true, false, true));//, true, false, false));
         checkDataIsCompleteBeforeExit = () -> {
             if (startByDate.getDate().getTime() == 0 ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
+//            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
                 return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
             }
             return null;
@@ -316,10 +322,14 @@ public class ScreenWorkSlot extends MyForm {
             }
             ));
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
-            content.add(layout("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
+            content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
         }
-        content.add(layout("Unallocated time", new Label(MyDate.formatTimeDuration(workSlot.getUnallocatedTime())), "How much of this work slot is still free", true, true, false));
+        content.add(layoutN("Unallocated time", new Label(MyDate.formatTimeDuration(workSlot.getUnallocatedTime())), "How much of this work slot is still free", 
+                true, true, false));
 
+        Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
+        content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+        
         return content;
     }
 }

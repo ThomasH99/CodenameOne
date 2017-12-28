@@ -113,14 +113,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        this(taskText, remainingEffortInMinutes, dueDate, false);
         this();
         setText(taskText);
-        setRemainingEffort(remainingEffortInMinutes * MyDate.MINUTE_IN_MILLISECONDS);
+        setRemainingEffort(((long)remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
         setDueDate(dueDate);
     }
 
     public Item(String taskText, int remainingEffortInMinutes, Date dueDate, boolean saveToDAO) {
         this();
         setText(taskText);
-        setRemainingEffort(remainingEffortInMinutes * MyDate.MINUTE_IN_MILLISECONDS);
+        setRemainingEffort(((long)remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
         setDueDate(dueDate);
         if (saveToDAO) {
             DAO.getInstance().save(this);
@@ -910,7 +910,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String SOURCE = "Copy of"; //Template or Task that this one is a copy of, "Task copy of"
     final static String SOURCE_HELP = "Shows the task was copied from. E.g. for tasks created using templates, automatically repeating tasks or copy/paste. Can be useful for example to find all instances of a given template. "; //Template or Task that this one is a copy of, "Task copy of"
     final static String OBJECT_ID = "Id"; //"Unique id"
-    final static String OBJECT_ID_HELP = "An internal unique identified for this task. This may be helpful if you need help with a problem for a particular task."; //"Unique id"
+            final static String OBJECT_ID_HELP = "An internal unique identifier. This may be useful if requesting support"; //"Unique id"
 
     final static int ITEM_CHANGED_ALARM_DATE = 0;
 
@@ -2835,7 +2835,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return (Item) getParseObject(PARSE_INTERRUPTED_TASK);       
         Item interrupted = (Item) getParseObject(PARSE_INTERRUPTED_TASK);
 //        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
-         return (Item)DAO.getInstance().fetchIfNeededReturnCachedIfAvail(interrupted);
+        return (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(interrupted);
 
     }
 
@@ -2863,7 +2863,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return (Item) getParseObject(PARSE_DEPENDS_ON_TASK);
         Item dependingOn = (Item) getParseObject(PARSE_DEPENDS_ON_TASK);
 //        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
-         return (Item)DAO.getInstance().fetchIfNeededReturnCachedIfAvail(dependingOn);
+        return (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(dependingOn);
 
     }
 
@@ -2891,7 +2891,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public Item getSource() {
         Item source = (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
 //        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
-         return (Item)DAO.getInstance().fetchIfNeededReturnCachedIfAvail(source);
+        return (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(source);
     }
 
     /**
@@ -4509,7 +4509,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return remainingEffort;
             Long remainingEffort = getLong(PARSE_REMAINING_EFFORT);
             if (useDefaultEstimateForZeroEstimates && MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() != 0 && (remainingEffort == null || remainingEffort == 0)) {
-                return MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS;
+                return ((long)MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
             } else {
                 return (remainingEffort == null) ? 0L : remainingEffort;
             }
@@ -4984,9 +4984,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return (date == null) ? new Date(0) : date;
         } else { //isProject
             if (isDone()) {
-                Date latestSubTaskCompletedDate = new Date(0);
+                Date latestSubTaskCompletedDate = new Date();
                 for (Object item : getList()) {
-                    if (item instanceof Item && ((Item) item).getCompletedDateD().getTime() < latestSubTaskCompletedDate.getTime()) {
+                    if (item instanceof Item && ((Item) item).getCompletedDateD().getTime() > latestSubTaskCompletedDate.getTime()) {
                         latestSubTaskCompletedDate = ((Item) item).getCompletedDateD();
                     }
                 }
@@ -5945,7 +5945,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
             EstimateResult res = getEffortEstimateFromTaskText(txt);
             txt = res.cleaned;
-            item.setEffortEstimate(res.minutes * MyDate.MINUTE_IN_MILLISECONDS, true, true); //update remaining, set for project-level
+            item.setEffortEstimate(((long)res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, true, true); //update remaining, set for project-level
         }
         return txt;
     }
@@ -6761,10 +6761,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
 //            if (latestFinishTime != MyDate.MIN_DATE) { //only return if we actually have a date (all subtasks may be Done)
-            return latestFinishTime==MyDate.MIN_DATE?MyDate.MAX_DATE:latestFinishTime;
+            return latestFinishTime == MyDate.MIN_DATE ? MyDate.MAX_DATE : latestFinishTime;
 //            }
-        }else
-        return ItemAndListCommonInterface.super.getFinishTime();
+        } else {
+            return ItemAndListCommonInterface.super.getFinishTime();
+        }
     }
 
     /**

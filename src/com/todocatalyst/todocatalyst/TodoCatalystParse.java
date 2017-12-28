@@ -434,6 +434,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
      *
      * @param context
      */
+//    @Override
     public void init(Object context) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Display.getInstance().addEdtErrorHandler(new ActionListener() {

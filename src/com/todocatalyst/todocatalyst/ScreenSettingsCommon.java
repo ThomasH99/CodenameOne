@@ -121,7 +121,7 @@ public class ScreenSettingsCommon extends MyForm {
         if (tableLayout) {
             cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
 
-            cont.add(rightAdj, new MyTimePicker(parseIdMap2, () -> {
+            cont.add(rightAdj, new MyDurationPicker(parseIdMap2, () -> {
 //                return MyPrefs.getInt(prefEntry);
                 return prefEntry.getInt();
             }, (i) -> {
@@ -132,12 +132,12 @@ public class ScreenSettingsCommon extends MyForm {
                 cont.add(span2Cols, new SpanLabel(prefEntry.getHelpText()));
             }
         } else {
-//            cont.add(BorderLayout.center(new SpanLabel(prefEntry.getFieldScription())).add(BorderLayout.EAST, new MyTimePicker(parseIdMap2, () -> {
+//            cont.add(BorderLayout.center(new SpanLabel(prefEntry.getFieldScription())).add(BorderLayout.EAST, new MyDurationPicker(parseIdMap2, () -> {
 //                return MyPrefs.getInt(prefEntry);
 //            }, (i) -> {
 //                MyPrefs.setInt(prefEntry, i);
 //            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
-            cont.add(layout(prefEntry.getFieldScription(), new MyTimePicker(parseIdMap2, () -> {
+            cont.add(layout(prefEntry.getFieldScription(), new MyDurationPicker(parseIdMap2, () -> {
 //                return MyPrefs.getInt(prefEntry);
                 return prefEntry.getInt();
             }, (i) -> {

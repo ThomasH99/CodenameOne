@@ -985,19 +985,19 @@ public class MyTree2 extends ContainerScrollY {
         String str;
         if (timeInMillis == 0) {
             str = "0m";
-        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 5) {
+        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 5l) {
             str = "1-5m";
-        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 15) {
+        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 15l) {
             str = "5-15m";
-        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 30) {
+        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 30l) {
             str = "15-30m";
-        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 60) {
+        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 60l) {
             str = "30-60m";
-        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 120) {
+        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 120l) {
             str = "1-2h";
-        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 240) {
+        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 240l) {
             str = "2-4h";
-        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 480) {
+        } else if (timeInMillis < MyDate.MINUTE_IN_MILLISECONDS * 480l) {
             str = "4-8h";
         } else {
             str = ">8h";
@@ -1122,7 +1122,8 @@ public class MyTree2 extends ContainerScrollY {
 //                    Label headerLbl = new Label(newStickyStr, "ListOfItemsSectionHeader"); //TODO!! define separate style for stickyheaders
 //                    StickyHeaderDiamond headerLbl = new StickyHeaderDiamond("ToggleButton"); //TODO!! define separate style for stickyheaders //overwrites titlebar
 //                    StickyHeaderMod headerLbl = new StickyHeaderMod("ToggleButton"); //TODO!! define separate style for stickyheaders
-                    StickyHeader headerLbl = new StickyHeader("ToggleButton"); //TODO!! define separate style for stickyheaders
+//                    StickyHeader headerLbl = new StickyHeader("ToggleButton"); //TODO!! define separate style for stickyheaders
+                    StickyHeader headerLbl = new StickyHeader("StickyHeader"); //TODO!! define separate style for stickyheaders
                     headerLbl.add(newStickyStr);
 //                    if (false) headerLbl.putClientProperty("STICKY_HEADER", true);
 //                    headerLbl.getAllStyles().setAlignment(Component.CENTER);

@@ -6,21 +6,15 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Button;
-import com.codename1.ui.Command;
-import com.codename1.ui.Component;
 import com.codename1.ui.Display;
-import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.layouts.FlowLayout;
-import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.spinner.Picker;
-import java.util.Date;
 import java.util.Map;
 
 /**
  *
  * @author Thomas
  */
-class MyTimePicker extends Picker implements SwipeClear{
+class MyDurationPicker extends Picker implements SwipeClear {
 
     private String zeroValuePattern;
     private int defaultValueInMinutes;
@@ -44,50 +38,55 @@ class MyTimePicker extends Picker implements SwipeClear{
 //            super.updateValue(); //To change body of generated methods, choose Tools | Templates.
 //        }
 //    }
+
     @Override
     protected void updateValue() {
 //        if (getType()==Display.PICKER_TYPE_TIME && getTime() != 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
-        if (getType()==Display.PICKER_TYPE_TIME && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
+//        if (getType()==Display.PICKER_TYPE_TIME && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
+        if (getType() == Display.PICKER_TYPE_DURATION && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
             setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
         } else {
             super.updateValue(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
-
-    MyTimePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
-        this(null, parseIdMap, get, set);
+    MyDurationPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
+        this(null, parseIdMap, getDurationInMinutes, setDurationInMinutes);
     }
 
-    MyTimePicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
-        this(zeroValuePatternVal, 0, parseIdMap, get, set);
+    MyDurationPicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
+        this(zeroValuePatternVal, 0, parseIdMap, getDurationInMinutes, setDurationInMinutes);
     }
 
-    MyTimePicker(int defaultValueInMinutes) {
+    MyDurationPicker(int defaultValueInMinutes) {
         this("", defaultValueInMinutes, null, null, null);
     }
 
-    MyTimePicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
+    MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap, 
+            MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
         super();
 //        setUIID("Button");
         setUIID("LabelValue");
 //            this.title = title;
 //            this.parseId = parseId;
-        this.setType(Display.PICKER_TYPE_TIME);
+//        this.setType(Display.PICKER_TYPE_TIME);
+        this.setType(Display.PICKER_TYPE_DURATION);
         this.zeroValuePattern = zeroValuePatternVal;
         if (this.zeroValuePattern == null) {
             this.zeroValuePattern = ""; // "<set>";
         }
         this.defaultValueInMinutes = defaultValueInMinutes;
-        Integer i = get != null ? get.get() : this.defaultValueInMinutes;
-        if (i != null) {
-            this.setTime(i);
+//        Integer i = (getDurationInMinutes != null ? getDurationInMinutes.get() : this.defaultValueInMinutes);
+        int i = (getDurationInMinutes != null ? getDurationInMinutes.get() : this.defaultValueInMinutes);
+        if (i != 0) {
+//            this.setTime(i);
+            this.setDuration(((long) i) * MyDate.MINUTE_IN_MILLISECONDS);
         } else {
             //
         }
 //            parseIdMap.put(parseId, () -> parseObject.put(parseId, this.getTime()));
         if (parseIdMap != null) {
-            parseIdMap.put(this, () -> set.accept(this.getTime()));
+            parseIdMap.put(this, () -> setDurationInMinutes.accept(this.getTime()));
         }
     }
 
@@ -97,12 +96,18 @@ class MyTimePicker extends Picker implements SwipeClear{
 //        this.clearButton = clearButton;
 //    }
     @Override
-    public void setTime(int time) {
+    public int getTime() { //return time in Minutes
+        return (int) (getDuration() / MyDate.MINUTE_IN_MILLISECONDS);
+    }
+
+    @Override
+    public void setTime(int timeInMinutes) {
         if (clearButton != null) {
 //            clearButton.setHidden(time == 0); //hide clear button when field is cleared
-            clearButton.setVisible(time != 0); //hide clear button when field is cleared
+            clearButton.setVisible(timeInMinutes != 0); //hide clear button when field is cleared
         }
-        super.setTime(time);
+//        super.setTime(timeInMinutes);
+        super.setDuration(((long)timeInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
         //inform my own MyActionListeners when the field is changed directly via setTime()
         for (Object al : getListeners()) {
             if (al instanceof MyActionListener) {
@@ -115,6 +120,7 @@ class MyTimePicker extends Picker implements SwipeClear{
         setTime(0);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    Component makeContainerWithClearButtonXXX() {
 ////        Button clearButton = new Button();
 ////        timePicker.setClearButton(clearButton);
@@ -144,7 +150,7 @@ class MyTimePicker extends Picker implements SwipeClear{
 ////        return LayeredLayout.encloseIn(this, FlowLayout.encloseRightMiddle(clearButton));
 //        return FlowLayout.encloseRightMiddle(this, clearButton);
 //    }
-
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    static Component create(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
 //        return create(parseIdMap, get, set, true);
@@ -153,14 +159,14 @@ class MyTimePicker extends Picker implements SwipeClear{
 //    static Component create(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, boolean addClearButton) {
 //        Button clearButton = new Button();
 //
-//        MyTimePicker p = new MyTimePicker(parseIdMap, get, set) {
+//        MyDurationPicker p = new MyDurationPicker(parseIdMap, get, set) {
 //            @Override
 //            public void setTime(int time) {
 //                super.setTime(time); //To change body of generated methods, choose Tools | Templates.
 //                if (clearButton != null) {
 //                    clearButton.setHidden(getTime() == 0);
 //                }
-////                    for (Object al : MyTimePicker.this.getListeners()) {
+////                    for (Object al : MyDurationPicker.this.getListeners()) {
 //                for (Object al : getListeners()) {
 //                    if (al instanceof MyActionListener) {
 //                        ((MyActionListener) al).actionPerformed(null);
@@ -190,7 +196,7 @@ class MyTimePicker extends Picker implements SwipeClear{
 //    }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        MyTimePicker(String title, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
+//        MyDurationPicker(String title, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
 //            super();
 //            this.title = title;
 //            this.parseId = parseId;
@@ -205,7 +211,6 @@ class MyTimePicker extends Picker implements SwipeClear{
 //            return title;
 //        }
 //</editor-fold>
-
     @Override
     public void clearFieldValue() {
         swipeClear();

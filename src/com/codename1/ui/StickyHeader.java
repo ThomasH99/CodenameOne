@@ -141,10 +141,42 @@ public class StickyHeader extends Container implements ScrollListener {
                 int cw = g.getClipWidth();
                 int ch = g.getClipHeight();
 
+                if (true) {
+                    int parAbsX = getParent().getAbsoluteX();
+                    int parPadLeftX = getParent().getStyle().getPaddingLeft(isRTL());
+                    int parMargLeftX = getParent().getStyle().getMarginLeft(isRTL()); //THJ)
+                    int parX = getParent().getX();
+                    int parScrollX = getParent().getScrollX();
+                    int contPaneAbsX = getComponentForm().getContentPane().getAbsoluteX();
+                    int contPanePadLeftX = getComponentForm().getContentPane().getStyle().getPaddingLeft(isRTL());
+                    int contPaneMargLeftX = getComponentForm().getContentPane().getStyle().getMarginLeft(isRTL()); //THJ)
+                    int pcontPaneX = getComponentForm().getContentPane().getX();
+                    int contPaneScrollX = getComponentForm().getContentPane().getScrollX();
+                    int absX = getAbsoluteX();
+                    int outX = getOuterX();
+                    int x = getX();
+                    int parAbsY = getParent().getAbsoluteY();
+                    int parPadLeftY = getParent().getStyle().getPaddingTop();
+                    int parMargTopY = getParent().getStyle().getMarginTop(); //THJ)
+                    int parY = getParent().getY();
+                    int parScrollY = getParent().getScrollY();
+                    int contPaneAbsY = getComponentForm().getContentPane().getAbsoluteY();
+                    int contPanePadTopY = getComponentForm().getContentPane().getStyle().getPaddingTop();
+                    int contPaneMargTopY = getComponentForm().getContentPane().getStyle().getMarginTop(); //THJ)
+                    int pcontPaneY = getComponentForm().getContentPane().getY();
+                    int contPaneScrollY = getComponentForm().getContentPane().getScrollY();
+                    int absY = getAbsoluteY();
+                    int outY = getOuterY();
+                    int y = getY();
+                    int stop = 1;
+                }
+
 //                int tx = getParent().getX();// - getX();
 //                int ty = getParent().getY() - getY();
-                int tx = getComponentForm().getContentPane().getX(); // - getX();
-                int ty = getComponentForm().getContentPane().getY();// - getY();
+                Container contPane = getComponentForm().getContentPane();
+                int tx = contPane.getAbsoluteX() + contPane.getStyle().getMarginLeft(isRTL()); //- getX(); //WORKS
+//                int ty = getComponentForm().getContentPane().getY() - getY();
+                int ty = contPane.getAbsoluteY() - getY(); //WORKS
 
                 g.setClip(0, 0, rect.getWidth(), rect.getHeight());
 

@@ -118,6 +118,7 @@ public class ScreenInspirationalLists extends MyForm {
 
         //TODO!!! Add an explanation to each of these (definition + why/when work on it)
         //TODO!! check old filters from first version of TodoCatalyst
+        content.add(new Button(new MyReplayCommand("Tasks in progress but without any actual time recorded")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(new MyReplayCommand("Longest duration between creation and start work or complete (procrastinating what type of tasks?)")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(new MyReplayCommand("On top of the mountain")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(new MyReplayCommand("Really that urgent?")));  //tasks marked Urgent that are not done after e.g. 7 days

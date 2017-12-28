@@ -1951,18 +1951,19 @@ public class ScreenListOfItems extends MyForm {
             southDetailsContainer.addComponent(new SpanLabel("Cat: " + getListAsCommaSeparatedString(cats)));
         }
 
+        //BUILD CONTAINER
         Container statusSelectionCont = new Container(new BorderLayout())
                 .add(BorderLayout.WEST, selected)
                 .add(BorderLayout.EAST, status);
-
         Container eastCont = new Container(BoxLayout.x())
-                .add(BoxLayout.encloseX(
+                .add(BorderLayout.east(BoxLayout.encloseX(
                         BoxLayout.encloseY(
-                                isDone?actualEffortLabel:BoxLayout.encloseX(remainingEffortLabel, actualEffortLabel),
+                                BorderLayout.east(isDone?actualEffortLabel:BoxLayout.encloseX(remainingEffortLabel, actualEffortLabel)),
 //                                finishTimeLabel != null ? finishTimeLabel : (isDone ? completedDateLabel : dueDateLabel)),
-                                isDone ? completedDateLabel:(finishTimeLabel != null ? finishTimeLabel : dueDateLabel)),
-                        BoxLayout.encloseY(starButton, subTasksButton),
-                        editItemButton)
+                                BorderLayout.east(isDone ? completedDateLabel:(finishTimeLabel != null ? finishTimeLabel : dueDateLabel))),
+//                        BoxLayout.encloseY(starButton, subTasksButton),
+                        subTasksButton,
+                        editItemButton))
         );
 
         Container topBorderCont = new Container(new BorderLayout());

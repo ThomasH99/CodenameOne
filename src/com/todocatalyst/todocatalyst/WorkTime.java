@@ -321,6 +321,7 @@ public class WorkTime {
 
     WorkTime getWorkTime(long startTime, long remainingDuration) {
         WorkSlotSlice slice;
+        //special case if requestedDuration is zero: 
         if (remainingDuration == 0 && workSlotSlices.size() > 0) {
             slice = workSlotSlices.get(workSlotSlices.size() - 1);
             WorkSlotSlice newSlice = slice.getSlice(startTime, 0); //allocate empty slice of last workslot
