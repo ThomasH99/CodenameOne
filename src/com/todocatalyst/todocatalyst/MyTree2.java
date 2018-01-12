@@ -39,6 +39,7 @@ import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.tree.Tree;
 import com.codename1.ui.util.EventDispatcher;
@@ -164,7 +165,13 @@ public class MyTree2 extends ContainerScrollY {
             stickyHeaderGen = (item) -> null;
         }
 
-        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+        BoxLayout layout ;
+        layout= new BoxLayout(BoxLayout.Y_AXIS);
+//        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+//        FlowLayout layout ;
+//        layout =(new FlowLayout(Component.CENTER));
+//        layout.
+        setLayout(layout);
 //        if (folder == null) {
 //            folder = UIManager.getInstance().getThemeImageConstant("treeFolderImage");
 //            openFolder = UIManager.getInstance().getThemeImageConstant("treeFolderOpenImage");

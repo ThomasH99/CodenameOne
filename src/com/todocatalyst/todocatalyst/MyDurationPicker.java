@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
 import com.codename1.ui.Display;
 import com.codename1.ui.spinner.Picker;
@@ -62,7 +63,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
         this("", defaultValueInMinutes, null, null, null);
     }
 
-    MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap, 
+    MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap,
             MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
         super();
 //        setUIID("Button");
@@ -88,6 +89,13 @@ class MyDurationPicker extends Picker implements SwipeClear {
         if (parseIdMap != null) {
             parseIdMap.put(this, () -> setDurationInMinutes.accept(this.getTime()));
         }
+//        setFormatter((s)->{return MyDate.formatTimeDuration(s);});
+        setFormatter(new SimpleDateFormat() {
+            public String format(Object value) {
+                return MyDate.formatTimeDuration((Long) value);
+            }
+        });
+        setMinuteStep(1);
     }
 
     private Button clearButton = null;
@@ -107,7 +115,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
             clearButton.setVisible(timeInMinutes != 0); //hide clear button when field is cleared
         }
 //        super.setTime(timeInMinutes);
-        super.setDuration(((long)timeInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+        super.setDuration(((long) timeInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
         //inform my own MyActionListeners when the field is changed directly via setTime()
         for (Object al : getListeners()) {
             if (al instanceof MyActionListener) {

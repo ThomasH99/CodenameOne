@@ -18,19 +18,19 @@
             <entry key="DUE_DATE" value="" />
             <entry key="edit" value="R&#xe9;diger" />
             <entry key="select" value="Choisir" />
+            <entry key="WAITING" value="En attente" />
             <entry key="COMMENT" value="Notes" />
             <entry key="CANCELLED" value="Annul&#xe9;" />
-            <entry key="WAITING" value="En attente" />
             <entry key="EFFORT_ESTIMATE" value="Estimation" />
             <entry key="TASK_HELP" value="D&#xe9;crire votre [TASK] ici" />
             <entry key="EFFORT_REMAINING" value="Restant" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="DONE" value="Termin&#xe9;" />
-            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
-            <entry key="Email" value="Courriel" />
             <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
-            <entry key="EFFORT_ACTUAL" value="Travail" />
+            <entry key="Email" value="Courriel" />
+            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
+            <entry key="DONE" value="Termin&#xe9;" />
             <entry key="DUE_DATE_HELP" value="" />
+            <entry key="EFFORT_ACTUAL" value="Travail" />
         </lang>
         <lang name="en">
             <entry key="SUPPORT" value="Support" />
@@ -48,19 +48,19 @@
             <entry key="DUE_DATE" value="Due" />
             <entry key="edit" value="Edit" />
             <entry key="select" value="Select" />
+            <entry key="WAITING" value="Waiting" />
             <entry key="COMMENT" value="Notes" />
             <entry key="CANCELLED" value="Cancelled" />
-            <entry key="WAITING" value="Waiting" />
             <entry key="EFFORT_ESTIMATE" value="Estimate" />
             <entry key="TASK_HELP" value="Describe your [TASK] here" />
             <entry key="EFFORT_REMAINING" value="Remaining" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="DONE" value="Completed" />
-            <entry key="REPEAT_RULE" value="Repeat" />
-            <entry key="Email" value="Email" />
             <entry key="SETTINGS" value="Settings" />
-            <entry key="EFFORT_ACTUAL" value="Work" />
+            <entry key="Email" value="Email" />
+            <entry key="REPEAT_RULE" value="Repeat" />
+            <entry key="DONE" value="Completed" />
             <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
+            <entry key="EFFORT_ACTUAL" value="Work" />
         </lang>
         <lang name="dk">
             <entry key="SUPPORT" value="Support" />
@@ -78,19 +78,19 @@
             <entry key="DUE_DATE" value="Forfaldsdato" />
             <entry key="edit" value="Ret" />
             <entry key="select" value="V&#xe6;lg" />
+            <entry key="WAITING" value="Venter" />
             <entry key="COMMENT" value="Noter" />
             <entry key="CANCELLED" value="Annuleret" />
-            <entry key="WAITING" value="Venter" />
             <entry key="EFFORT_ESTIMATE" value="Estimate" />
             <entry key="TASK_HELP" value="Beskriv [TASK] her" />
             <entry key="EFFORT_REMAINING" value="Resterende" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="DONE" value="Afslutttet" />
-            <entry key="REPEAT_RULE" value="Gentag" />
-            <entry key="Email" value="Email" />
             <entry key="SETTINGS" value="Ops&#xe6;tning" />
-            <entry key="EFFORT_ACTUAL" value="Arbejdet" />
+            <entry key="Email" value="Email" />
+            <entry key="REPEAT_RULE" value="Gentag" />
+            <entry key="DONE" value="Afslutttet" />
             <entry key="DUE_DATE_HELP" value="" />
+            <entry key="EFFORT_ACTUAL" value="Arbejdet" />
         </lang>
     </l10n>
     <theme name="MyTheme">
@@ -138,12 +138,18 @@
         <val key="Comment.sel#derive" value="Comment" />
         <val key="CompletedDate.derive" value="LabelValue" />
         <val key="CompletedDate.fgColor" value="cc00" />
+        <val key="CompletedDate.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="CompletedDate.padding" value="0.0,0.0,0.0,0.0" />
         <border key="ContainerListElement.border" type="underline"  millimeters="false" thickness="0.0" color="14869218" />
         <val key="ContainerListElement.dis#derive" value="ContainerListElement" />
         <val key="ContainerListElement.margin" value="0.0,0.0,0.0,0.0" />
         <val key="ContainerListElement.padding" value="0.0,0.0,0.0,0.0" />
         <val key="ContainerListElement.press#derive" value="ContainerListElement" />
         <val key="ContainerListElement.sel#derive" value="ContainerListElement" />
+        <val key="DropTargetPlaceholder.bgColor" value="cccccc" />
+        <val key="DropTargetPlaceholder.margin" value="0.0,0.0,0.0,0.0" />
+        <val key="DropTargetPlaceholder.padding" value="0.0,0.0,0.0,0.0" />
+        <val key="DropTargetPlaceholder.transparency" value="255" />
         <val key="DueDate.derive" value="LabelValue" />
         <val key="DueDate.padUnit" value="0,2,0,2" />
         <val key="DueDate.padding" value="0.0,0.0,1.0,1.0" />
@@ -159,7 +165,7 @@
         <val key="EditedText.sel#align" value="1" />
         <val key="EditedText.sel#derive" value="LabelValue" />
         <val key="EditedText.sel#fgColor" value="cc" />
-        <border key="ExpandedList.border" type="roundRect" strokeColor="0" strokeOpacity="255" strokeThickness="1.0" strokeMM="false" shadowSpread="10.0" shadowOpacity="0" shadowX="0.5" shadowY="0.5" shadowBlur="10.0" topOnlyMode="false" bottomOnlyMode="false" CornerRadius="1.0" bezierCorners="false" />
+        <border key="ExpandedList.border" type="roundRect" strokeColor="0" strokeOpacity="255" strokeThickness="1.0" strokeMM="false" shadowSpread="10.0" shadowOpacity="0" shadowX="0.5" shadowY="0.5" shadowBlur="10.0" topOnlyMode="false" bottomOnlyMode="false" CornerRadius="0.0" bezierCorners="false" />
         <val key="ExpandedList.derive" value="ItemContainer" />
         <val key="ExpandedList.marUnit" value="0,2,0,0" />
         <val key="ExpandedList.margin" value="0.0,0.0,1.0,0.0" />
@@ -192,7 +198,6 @@
         <val key="LabelField.sel#derive" value="LabelField" />
         <val key="LabelFixed.derive" value="LabelValue" />
         <val key="LabelFixed.dis#derive" value="LabelFixed" />
-        <val key="LabelFixed.fgColor" value="999999" />
         <val key="LabelFixed.press#derive" value="LabelFixed" />
         <val key="LabelFixed.sel#derive" value="LabelFixed" />
         <val key="LabelValue.align" value="3" />
@@ -252,6 +257,7 @@
         <val key="ListOfItemsText.sel#derive" value="ListOfItemsText" />
         <val key="MyCheckBox.align" value="1" />
         <val key="MyCheckBox.dis#derive" value="MyCheckBox" />
+        <val key="MyCheckBox.margin" value="0.0,0.0,0.0,0.0" />
         <val key="MyCheckBox.padUnit" value="0,2,0,2" />
         <val key="MyCheckBox.padding" value="0.0,0.0,1.5,0.5" />
         <val key="MyCheckBox.press#derive" value="MyCheckBox" />

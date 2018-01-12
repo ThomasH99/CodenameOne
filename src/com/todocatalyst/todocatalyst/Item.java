@@ -4,6 +4,7 @@ import com.codename1.io.Externalizable;
 import com.codename1.io.Log;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
+import com.codename1.ui.TextArea;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.events.DataChangedListener;
@@ -911,6 +912,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String SOURCE_HELP = "Shows the task was copied from. E.g. for tasks created using templates, automatically repeating tasks or copy/paste. Can be useful for example to find all instances of a given template. "; //Template or Task that this one is a copy of, "Task copy of"
     final static String OBJECT_ID = "Id"; //"Unique id"
             final static String OBJECT_ID_HELP = "An internal unique identifier. This may be useful if requesting support"; //"Unique id"
+    final static String STARRED = "Starred"; //"Unique id"
+            final static String STARRED_HELP = "Tasks can be marked with a Star to emphasize them**"; //"Unique id"
 
     final static int ITEM_CHANGED_ALARM_DATE = 0;
 
@@ -4571,7 +4574,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             for (int i = 0, size = getItemListSize(); i < size; i++) {
 //                Item item = (Item) getItemList().getItemAt(i);
                 Item item = (Item) getList().get(i);
-                if (!item.isDone()) { // /** || includeDone */) {
+                if (true ||!item.isDone()) { // /** || includeDone */) { //ALWAYS include actual even for Done tasks so project Actual is exhaustive
                     subItemSum += item.getActualEffort(forSubtasks);
                 }
             }
@@ -4984,7 +4987,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return (date == null) ? new Date(0) : date;
         } else { //isProject
             if (isDone()) {
-                Date latestSubTaskCompletedDate = new Date();
+//                Date latestSubTaskCompletedDate = new Date(MyDate.MIN_DATE);
+                Date latestSubTaskCompletedDate = new Date(0);
                 for (Object item : getList()) {
                     if (item instanceof Item && ((Item) item).getCompletedDateD().getTime() > latestSubTaskCompletedDate.getTime()) {
                         latestSubTaskCompletedDate = ((Item) item).getCompletedDateD();
@@ -6439,7 +6443,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
 //    public long getWorkTimeRequiredFromOwner() {
     public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
-        Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
+        if (false)Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
 
         if (isDone()) {
             return 0;

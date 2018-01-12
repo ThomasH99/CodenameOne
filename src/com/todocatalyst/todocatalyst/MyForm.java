@@ -1147,11 +1147,11 @@ public abstract class MyForm extends Form {
 //        return makeTimerCommand(null, Icons.iconTimerSymbolToolbarStyle, itemList);
 //    }
     public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit) {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle, callRefreshAfterEdit);
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit);
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand() {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle, false); //default false since otherwise edited values will be lost
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), false); //default false since otherwise edited values will be lost
     }
 
 //    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon) {
@@ -1178,7 +1178,7 @@ public abstract class MyForm extends Form {
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetBoolean canGoBack, String errorMsg) {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle, callRefreshAfterEdit, canGoBack, errorMsg);
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit, canGoBack, errorMsg);
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, GetBoolean canGoBack, String errorMsg) {
@@ -1206,7 +1206,7 @@ public abstract class MyForm extends Form {
     }
 
     public Command makeDoneCommandWithNoUpdate() {
-        Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle) {
+        Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                previousForm.refreshAfterEdit();
@@ -1241,7 +1241,7 @@ public abstract class MyForm extends Form {
     }
 
     public Command makeInterruptCommand() {
-        return makeInterruptCommand("", Icons.iconInterruptToolbarStyle); //"Interrupt", "New Interrupt"
+        return makeInterruptCommand("", Icons.iconInterruptToolbarStyle()); //"Interrupt", "New Interrupt"
     }
 
     public Command makeInterruptCommand(String title, Image icon) {
@@ -1265,7 +1265,7 @@ public abstract class MyForm extends Form {
 
     public Command newItemSaveToInboxCmd() {
 
-        Command cmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle, (e) -> {
+        Command cmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewTaskToolbarStyle(), (e) -> {
             Item item = new Item();
 //                addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
             setKeepPos(new KeepInSameScreenPosition());

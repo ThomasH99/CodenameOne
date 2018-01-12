@@ -170,7 +170,7 @@ public class ScreenRepair extends MyForm {
     private Form showDeviceInfo() {
         Form hi = new Form("Device info");
 //        getToolbar().setBackCommand(Command.create("", null, (e) -> this.show()));
-        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
+        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.show()));
 //        hi.getToolbar().addCommandToLeftBar(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
         Display d = Display.getInstance();
         String density = "";
@@ -332,7 +332,7 @@ public class ScreenRepair extends MyForm {
 
     private Form showLocalizationInfo() {
         Form hi = new Form("L10N", new TableLayout(16, 2));
-        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
+        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.show()));
 
         L10NManager l10n = L10NManager.getInstance();
         hi.add("format(double)").add(l10n.format(11.11)).
@@ -362,6 +362,140 @@ public class ScreenRepair extends MyForm {
         return c;
     }
 
+    ///////////////////////////////////////////////////////////
+    Form fPinchOut;// = new Form(new BorderLayout());
+    Container disp1;// = new Container(BoxLayout.y());
+    Label title;//= new Label();
+    Label xLabel;// = new Label();
+    Label yLabel;// = new Label();
+    Label distLabel;// = new Label();
+    Label comp1Label;// = new Label();
+    Label comp2Label;//= new Label();
+    Label cont1Label;//= new Label();
+    Label cont2Label;//= new Label();
+    Label dropTarget1Label;// = new Label();
+    Label dropTarget2Label;//= new Label();
+
+    private void initPinch() {
+        fPinchOut = new Form(new BorderLayout()) {
+            @Override
+            public void pointerDragged(int[] x, int[] y) {
+                if (x.length > 1) {
+                    double currentDis = distance(x, y);
+
+                    // prevent division by 0
+                    if (pinchDistance <= 0) {
+                        pinchDistance = currentDis;
+                    }
+                    double scale = currentDis / pinchDistance;
+                    if (pinch((float) scale)) {
+                        return;
+                    }
+                    Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
+                    display(x, y, true);
+                } else {
+                    display(x, y, false);
+                }
+                pointerDragged(x[0], y[0]);
+            }
+        };
+        fPinchOut.setScrollableY(true);
+        disp1 = new Container(BoxLayout.y());
+        title = new Label("XX");
+        xLabel = new Label("XX");
+        yLabel = new Label("XX");
+        distLabel = new Label("XX");
+        comp1Label = new Label("XX");
+        comp2Label = new Label("XX");
+        cont1Label = new Label("XX");
+        cont2Label = new Label("XX");
+        dropTarget1Label = new Label("XX");
+        dropTarget2Label = new Label("XX");
+//        disp1.removeAll();
+        disp1.addAll(title, xLabel, yLabel, distLabel, comp1Label, comp2Label, cont1Label, cont2Label, dropTarget1Label, dropTarget2Label);
+        fPinchOut.addComponent(BorderLayout.SOUTH, disp1);
+
+        Container labelCont = new Container(BoxLayout.y());
+        labelCont.setScrollableY(true);
+        for (int i = 0, size = 40; i < size; i++) {
+            Label l = new Label("Label " + i);
+            l.setName("Label" + i);
+            labelCont.add(l);
+        }
+        fPinchOut.addComponent(BorderLayout.CENTER, labelCont);
+    }
+
+    private double distance(int[] x, int[] y) {
+        int disx = x[0] - x[1];
+        int disy = y[0] - y[1];
+        return Math.sqrt(disx * disx + disy * disy);
+    }
+
+    private void display(int[] x, int[] y, boolean inPinch) {
+        title.setText(inPinch ? "***PINCH***" : "MOVE");
+        xLabel.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
+        if (x.length > 1) {
+            yLabel.setText("(x[1],y[1])=(" + x[1] + "," + y[1] + ")");
+            distLabel.setText("dist=" + distance(x, y));
+        }
+
+        Component comp1 = getComponentAt(x[0], y[0]);
+        comp1Label.setText("Comp1=" + comp1);
+        if (comp1 instanceof Container) {
+            Container cont1 = (Container) comp1;
+            cont1Label.setText("Cont1=" + cont1);
+            Component dropTarget1 = cont1.findDropTargetAt(x[0], y[0]);
+            dropTarget1Label.setText("dropTarget1=" + dropTarget1);
+        }
+
+        if (x.length > 1) {
+            Component comp2 = getComponentAt(x[1], y[1]);
+            comp1Label.setText("Comp2=" + comp2);
+            if (comp2 instanceof Container) {
+                Container cont2 = (Container) comp2;
+                cont2Label.setText("Cont2=" + cont2);
+                Component dropTarget2 = cont2.findDropTargetAt(x[1], y[1]);
+                dropTarget2Label.setText("dropTarget2=" + dropTarget2);
+            }
+        } else {
+            comp1Label.setText("Comp2=");
+            cont2Label.setText("Cont2=");
+            dropTarget2Label.setText("dropTarget2=");
+        }
+
+        fPinchOut.revalidate();
+    }
+
+    /**
+     * If this Component is focused, the pointer dragged event will call this
+     * method
+     *
+     * @param x the pointer x coordinate
+     * @param y the pointer y coordinate
+     */
+    public void pointerDragged(int[] x, int[] y) {
+        if (x.length > 1) {
+            double currentDis = distance(x, y);
+
+            // prevent division by 0
+            if (pinchDistance <= 0) {
+                pinchDistance = currentDis;
+            }
+            double scale = currentDis / pinchDistance;
+            if (pinch((float) scale)) {
+                return;
+            }
+//            Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
+            display(x, y, true);
+        } else {
+            display(x, y, false);
+        }
+        pointerDragged(x[0], y[0]);
+    }
+
+    double pinchDistance;
+
+    //////////////////////////////////////////////////////////
     /**
      * This method shows the main user interface of the app
      *
@@ -390,6 +524,18 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
+        content.add(new Button(new Command("Test Pinch") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                initPinch();
+                pointerDragged(new int[]{50, 100}, new int[]{50, 100});
+                fPinchOut.setToolbar(new Toolbar());
+                fPinchOut.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.show()));
+                initPinch();
+                fPinchOut.show();
+            }
+        }));
+
         content.add(new Button(new Command("Storage location info") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -401,8 +547,8 @@ public class ScreenRepair extends MyForm {
                 for (String s : roots) {
                     str += s + "\n";
                 }
-                str+= "FileSystemStorage.getInstance().getAppHomePath()="+FileSystemStorage.getInstance().getAppHomePath();
-                str+= "FileSystemStorage.getInstance().getCachesDir()="+FileSystemStorage.getInstance().getCachesDir();
+                str += "FileSystemStorage.getInstance().getAppHomePath()=" + FileSystemStorage.getInstance().getAppHomePath();
+                str += "FileSystemStorage.getInstance().getCachesDir()=" + FileSystemStorage.getInstance().getCachesDir();
                 Dialog.show("Info", str, "OK", null);
             }
         }));
@@ -515,7 +661,7 @@ public class ScreenRepair extends MyForm {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 Form form = new Form("Local notifiations");
-                form.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> ScreenRepair.this.show()));
+                form.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.show()));
                 LocalNotificationsShadowList list = AlarmHandler.getInstance().getLocalNotificationsTEST();
                 for (int i = 0, size = list.size(); i < size; i++) {
                     form.addComponent(new SpanLabel(list.get(i).toString()));

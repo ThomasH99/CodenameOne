@@ -80,13 +80,18 @@ public class ScreenListOfWorkSlots extends MyForm {
      * @param workSlotList
      * @param owner
      * @param previousForm
-     * @param updateItemListOnDone
+     * @param updateItemListOnDone called to update the workTime for the tasks after the workSlots have been edited to refresh the workTime, e.g. if new slots were added/changed/removed
      * @param refreshWorkSlotList
      */
     ScreenListOfWorkSlots(String nameOfOwner, WorkSlotList workSlotList, ItemAndListCommonInterface owner, MyForm previousForm,
             GetWorkSlotList updateItemListOnDone, FetchWorkSlotList refreshWorkSlotList, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
-        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm, () -> updateItemListOnDone.update(workSlotList));
+        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm,
+                () -> {
+                    if (updateItemListOnDone != null) {
+                        updateItemListOnDone.update(workSlotList);
+                    }
+                });
 //        setUpdateItemListOnDone(updateItemListOnDone);
 //        this.workSlotList = workSLotList;
         this.owner = owner;
@@ -145,7 +150,7 @@ public class ScreenListOfWorkSlots extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         //NEW WORKSLOT
-        toolbar.addCommandToRightBar(MyReplayCommand.create("NewWorkSlot", "", Icons.iconNewToolbarStyle, (e) -> {
+        toolbar.addCommandToRightBar(MyReplayCommand.create("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
             WorkSlot workSlot = new WorkSlot();
             workSlot.setOwner(owner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
             setKeepPos(new KeepInSameScreenPosition());

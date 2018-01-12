@@ -99,7 +99,7 @@ public class ScreenMain extends MyForm {
     }
 
     public void addCommandsToToolbar(Toolbar toolbar, Container cont) { //, Resources theme) {
-        toolbar.addCommandToRightBar(newItemSaveToInboxCmd());
+        toolbar.addCommandToLeftBar(newItemSaveToInboxCmd());
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
         MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconAlarmSetLabelStyle/*FontImage.create(" \ue838 ", iconStyle)*/,
@@ -206,7 +206,8 @@ public class ScreenMain extends MyForm {
 //                super.actionPerformed(e);
             new ScreenListOfWorkSlots("", null, null, ScreenMain.this, (i) -> {
                 
-            }, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis()), new Date(MyDate.MAX_DATE)), true).show();
+//            }, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis()), new Date(MyDate.MAX_DATE)), true).show();
+            }, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), true).show();
         }
         );
         makeAndAddButtons(workSlots, toolbar, cont, "**");

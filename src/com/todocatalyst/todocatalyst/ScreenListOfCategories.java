@@ -127,7 +127,7 @@ public class ScreenListOfCategories extends MyForm {
 
     static Command makeNewCategoryCmd(CategoryList categoryOwnerList, MyForm previousForm, MyForm.Action refreshOnItemEdits) { //static since reused in other screens
         //NEW CATEGORY
-        return MyReplayCommand.create("CreateNewCategory", "",Icons.iconNewToolbarStyle,(e)->{
+        return MyReplayCommand.create("CreateNewCategory", "",Icons.iconNewToolbarStyle(),(e)->{
                 Category category = new Category();
 //                new ScreenCategory(category, ScreenListOfCategories.this, () -> {
                 previousForm.setKeepPos(new KeepInSameScreenPosition());
@@ -341,7 +341,7 @@ public class ScreenListOfCategories extends MyForm {
                 if (false) {
                     DAO.getInstance().getAllItemsInCategory(category);
                 }
-                assert category.isDataAvailable() : "Category \"" + category + "\" data not available";
+                ASSERT.that( category.isDataAvailable() , "Category \"" + category + "\" data not available");
 
 //                new ScreenListOfItems(category, ScreenListOfCategories.this,
                 ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, mainCont)); //mainCont right container to use here??

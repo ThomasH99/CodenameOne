@@ -110,6 +110,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
     private boolean cacheActive = true;
     private ItemAndListCommonInterface owner;// = new ItemList(); //lazy
     private int largestOngoingIndex = Integer.MAX_VALUE; //use MAX to avoid that first call falsely looks like a illegal recursion
+    private boolean log=false;
 //    private int lastIndex = -1; //use MAX to avoid that first call falsely looks like a illegal recursion
 
 //    private Hashtable<ItemAndListCommonInterface, WorkTimeInfo> workSlotInfoHashTable; // = new Hashtable();
@@ -298,7 +299,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
      * @return null if no workTime allocated
      */
     public WorkTime getAllocatedWorkTime(int itemIndex, long desiredDuration) {
-        Log.p(owner + "." + "getAllocatedWorkTime(itemIndex=" + itemIndex + ", duration=" + desiredDuration + "), item=" + items.get(itemIndex));
+        if (log)Log.p(owner + "." + "getAllocatedWorkTime(itemIndex=" + itemIndex + ", duration=" + desiredDuration + "), item=" + items.get(itemIndex));
         WorkTime workT;
         if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
             return workTimeCache.get(itemIndex);

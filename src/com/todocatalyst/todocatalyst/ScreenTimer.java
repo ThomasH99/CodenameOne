@@ -2171,7 +2171,7 @@ public class ScreenTimer extends MyForm {
 //                itemHierarchyContainer.setHidden(true);
                 itemHierarchyContainer.setHidden(MyPrefs.getBoolean((MyPrefs.timerAlwaysExpandListHierarchy)));
                 Button buttonShowItemHierarchy = new Button();
-                buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
+                buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle() : Icons.iconShowLessLabelStyle); //switch icon
                 buttonShowItemHierarchy.addActionListener((e) -> {
                     itemHierarchyContainer.setHidden(!itemHierarchyContainer.isHidden());
 //                    buttonShowItemHierarchy.setIcon(buttonShowItemHierarchy.getIcon() == Icons.iconShowMoreLabelStyle ? Icons.iconShowLessLabelStyle : Icons.iconShowMoreLabelStyle); //switch icon

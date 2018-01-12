@@ -184,7 +184,7 @@ public class ScreenRepeatRuleNew extends MyForm {
 
         //DONE
 //        Command cmd = makeDoneUpdateWithParseIdMapCommand();
-        Command cmd = new Command(null, Icons.iconBackToPrevFormToolbarStyle) {
+        Command cmd = new Command(null, Icons.iconBackToPrevFormToolbarStyle()) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 RepeatRuleParseObject tempMyRepeatRule = new RepeatRuleParseObject();
@@ -305,7 +305,7 @@ public class ScreenRepeatRuleNew extends MyForm {
                             repeatRuleHideableDetailsContainer.add(ScreenListOfItems.buildItemContainer(ScreenRepeatRuleNew.this, (Item) item, null, null));
                         } else if (item instanceof WorkSlot) {
 //                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, () -> refreshAfterEdit(), null));
-                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item,ScreenRepeatRuleNew.this , null, false,false));
+                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, ScreenRepeatRuleNew.this, null, false, false));
                         }
                     }
                     if (myRepeatRule.getLatestDateCompletedOrCancelled().getTime() != 0) {
@@ -314,7 +314,7 @@ public class ScreenRepeatRuleNew extends MyForm {
 //                    repeatRuleHideableDetailsContainer.add(Format.f("Due date of last completed task {0}", MyDate.formatDateNew(myRepeatRule.getLatestDateCompletedOrCancelled())));
                     repeatRuleHideableDetailsContainer.add(Format.f(
                             "Last Due date of all completed tasks {0}", MyDate.formatDateNew(myRepeatRule.getLatestDateCompletedOrCancelled())));
-                    repeatRuleHideableDetailsContainer.add(new Button(MyReplayCommand.create("Show all tasks",Format.f("Show all {0 getTotalNumberOfInstancesGeneratedSoFar} tasks",""+myRepeatRule.getTotalNumberOfInstancesGeneratedSoFar()), null, (ev) -> {
+                    repeatRuleHideableDetailsContainer.add(new Button(MyReplayCommand.create("Show all tasks", Format.f("Show all {0 getTotalNumberOfInstancesGeneratedSoFar} tasks", "" + myRepeatRule.getTotalNumberOfInstancesGeneratedSoFar()), null, (ev) -> {
 //                            DAO.getInstance().getAllItemsForRepeatRule(myRepeatRule);
                         new ScreenListOfItems("", new ItemList(DAO.getInstance().getAllItemsForRepeatRule(myRepeatRule), true), (MyForm) motherContainer.getComponentForm(), (i) -> {
                             refreshAfterEdit();
@@ -333,8 +333,8 @@ public class ScreenRepeatRuleNew extends MyForm {
 //            repeatRuleDetailsContainer = BorderLayout.center(FlowLayout.encloseCenter(new Label(myRepeatRule.getListOfUndoneRepeatInstances().size() + " tasks")))
 //            repeatRuleDetailsContainer = BorderLayout.center(FlowLayout.encloseCenter(new Label(Format.f("{0 total number repeats generated so far} tasks, {1 } active",
             repeatRuleDetailsContainer = BorderLayout.center(FlowLayout.encloseCenter(new Label(Format.f("{0 total number repeats generated so far} tasks, {1 tasksCreatedNotDoneYet} active",
-                    ""+myRepeatRule.getTotalNumberOfInstancesGeneratedSoFar(),
-                    ""+myRepeatRule.getListOfUndoneRepeatInstances().size()))))
+                    "" + myRepeatRule.getTotalNumberOfInstancesGeneratedSoFar(),
+                    "" + myRepeatRule.getListOfUndoneRepeatInstances().size()))))
                     .add(BorderLayout.EAST, buttonRepeatRuleHistory).add(BorderLayout.SOUTH, repeatRuleHideableDetailsContainer);
         }
 
@@ -498,7 +498,6 @@ public class ScreenRepeatRuleNew extends MyForm {
 //        daysAheadField = new ComboBoxOffset(new ListModelInfinite(1, Settings.getInstance().getMaxRepeatInstancesDaysAhead(), "", "", 1, false, false));
 //        daysAheadField = new MyIntPicker(myRepeatRule.useNumberFutureRepeatsToGenerateAhead() ? 1 : myRepeatRule.getNumberOfDaysRepeatsAreGeneratedAhead(), 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead.getInt());
 //        daysAheadField.setSelectedValue(myRepeatRule.useNumberFutureRepeatsToGenerateAhead() ? 1 : myRepeatRule.getNumberOfDaysRepeatsAreGeneratedAhead()); //if 0 (==undefined), defined use 1 as minimum value to display in combobox
-
         //NUMBER OF REPEATS
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        repeatHowLongChoiceCombo = new ComboBoxLogicalNames(new int[]{0, 1, 2}, new String[]{"Repeat forever", "Repeat until", "Number of repeats"});
@@ -895,238 +894,244 @@ public class ScreenRepeatRuleNew extends MyForm {
         int testVal;
 
         myRepeatRule.setRepeatType(repeatFrom_NoneCompletedDue_Field.getSelectedValue());
-        if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
-            if (true || !isForWorkSlot) {
+        if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+            return !missingData;
+        }
+
+        if (true || !isForWorkSlot) {
 //            if (repeatFrom_CompletedDue_Field != null) {
-                if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE) {
+            if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE) {
 //                    Log.l("setReferenceItemForDueDateAndFutureCopies(" + repeatRuleOwner + ")");
 //                myRepeatRule.setReferenceItemForDueDateAndFutureCopies(repeatRuleOwner);
 //                        myRepeatRule.setReferenceObjectForRepeatTime(repeatRuleOwner);
 //                    myRepeatRule.setSpecifiedStartDate(repeatRuleOwner.getRepeatStartTime(false));
 //                    myRepeatRule.setSpecifiedStartDate(repeatStartDate.getTime());
 //                    if (repeatStartDatePicker != null) {
-                    Date editedStartDate = repeatStartDatePicker.getDate();
-                    if (editedStartDate.getTime() != 0) {
-                        myRepeatRule.setSpecifiedStartDate(editedStartDate.getTime());
-                    } else {
-                        missingData = true;
-                        missingDataStr += Item.DUE_DATE;
-                    }
+                Date editedStartDate = repeatStartDatePicker.getDate();
+                if (editedStartDate.getTime() != 0) {
+                    myRepeatRule.setSpecifiedStartDate(editedStartDate.getTime());
+                } else {
+                    missingData = true;
+                    missingDataStr += Item.DUE_DATE;
+                }
 //                    } else {
 //                        myRepeatRule.setSpecifiedStartDate(startDate);
 //                    }
-                } else if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_COMPLETED_DATE) {
-                    Log.p("setReferenceItemForDueDateAndFutureCopies(null)");
+            } else if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_COMPLETED_DATE) {
+                Log.p("setReferenceItemForDueDateAndFutureCopies(null)");
 //                myRepeatRule.setReferenceItemForDueDateAndFutureCopies(null);
 //                        myRepeatRule.setReferenceObjectForRepeatTime(null);
-                    myRepeatRule.setSpecifiedStartDate(0); //reset startDate
-                } else { //MyRepeatRule.REPEAT_TYPE_FROM_SPECIFIED_DATE
+                myRepeatRule.setSpecifiedStartDate(0); //reset startDate
+            } else { //MyRepeatRule.REPEAT_TYPE_FROM_SPECIFIED_DATE
 //                    Log.p("setStartDate(" + MyDate.getNow() + ")");
-                    Log.p("setStartDate(" + System.currentTimeMillis() + ")");
+                Log.p("setStartDate(" + System.currentTimeMillis() + ")");
 //                        myRepeatRule.setStartDate(repeatFromField.getTime());
 //                    myRepeatRule.setSpecifiedStartDate(repeatFromField.getTime());
-                }
+            }
 //            } else {
 //            }
 
-                if (repeatFrom_NoneCompletedDue_Field != null) {
-                    if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE
-                            || repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_SPECIFIED_DATE) {
+//            if (repeatFrom_NoneCompletedDue_Field != null) {
+            if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE) {
+//                        || repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_SPECIFIED_DATE) {
 //                    if (showHowManyChoice.getSelectedIndex() == 0) //{"coming tasks", "days ahead"}
 //                    if (showHowMany_InstancesDaysAhead_Combo.getSelectedIndex() == SHOW_HOW_MANY_AHEAD_INSTANCES) { //{"coming tasks", "days ahead"}
-                        if (showHowMany_InstancesDaysAhead_Combo.getSelectedValue() == SHOW_HOW_MANY_AHEAD_INSTANCES) { //{"coming tasks", "days ahead"}
+                if (showHowMany_InstancesDaysAhead_Combo.getSelectedValue() == SHOW_HOW_MANY_AHEAD_INSTANCES) { //{"coming tasks", "days ahead"}
 //                        Log.p("setNumberFutureRepeatsGeneratedAhead(" + showNumberFutureRepeats.getSelectedValue() + ")");
 //                        myRepeatRule.setNumberFutureRepeatsToGenerateAhead(showNumberFutureRepeats.getSelectedValue());
-                            Log.p("setNumberFutureRepeatsGeneratedAhead(" + showNumberFutureRepeats.getValueInt() + ")");
-                            myRepeatRule.setNumberFutureRepeatsToGenerateAhead(showNumberFutureRepeats.getValueInt() - 1);
-                            myRepeatRule.setNumberOfDaysRepeatsAreGeneratedAhead(0);
-                        } else { // SHOW_HOW_MANY_AHEAD_DAYS_AHEAD
+                    Log.p("setNumberFutureRepeatsGeneratedAhead(" + showNumberFutureRepeats.getValueInt() + ")");
+                    myRepeatRule.setNumberFutureRepeatsToGenerateAhead(showNumberFutureRepeats.getValueInt() - 1);
+                    myRepeatRule.setNumberOfDaysRepeatsAreGeneratedAhead(0);
+                } else // SHOW_HOW_MANY_AHEAD_DAYS_AHEAD
+                if (showHowMany_InstancesDaysAhead_Combo.getSelectedValue() == SHOW_HOW_MANY_AHEAD_DAYS_AHEAD) { //{"coming tasks", "days ahead"}
 //                        Log.p("setNumberOfDaysRepeatsAreGeneratedAhead(" + daysAheadField.getSelectedValue() + ")");
 //                        myRepeatRule.setNumberOfDaysRepeatsAreGeneratedAhead(daysAheadField.getSelectedValue());
 //                            Log.p("setNumberOfDaysRepeatsAreGeneratedAhead(" + daysAheadField.getValue() + ")");
 //                            myRepeatRule.setNumberOfDaysRepeatsAreGeneratedAhead(daysAheadField.getValue());
-                            myRepeatRule.setNumberOfDaysRepeatsAreGeneratedAhead(showNumberDaysAhead.getValueInt());
-                            myRepeatRule.setNumberFutureRepeatsToGenerateAhead(0);
-                        }
-                    }
+                    myRepeatRule.setNumberOfDaysRepeatsAreGeneratedAhead(showNumberDaysAhead.getValueInt());
+                    myRepeatRule.setNumberFutureRepeatsToGenerateAhead(0);
+                } else { // SHOW_HOW_MANY_AHEAD_DAYS_AHEAD
+                    ASSERT.that("error");
                 }
             }
+//            }
+        }
 
-            int frequency = frequency_DailyWeekMonthYearly_Field.getSelectedValue();
+        int frequency = frequency_DailyWeekMonthYearly_Field.getSelectedValue();
 //        int frequency = frequencyChoice.getSelectedValue();
 
-            myRepeatRule.setFrequency(frequency);
-            Log.p("setFrequency(" + frequency + ")");
+        myRepeatRule.setFrequency(frequency);
+        Log.p("setFrequency(" + frequency + ")");
 
-            if (false) {
+        if (false) {
 //                myRepeatRule.setInterval(intervalField.getSelectedValue());
 //                Log.p("setInterval(" + intervalField.getSelectedValue() + ")");
+        }
+        if (false) {
+            String intervalStr = intervalField_1_NN_TextField.getText();
+            if (intervalStr == null || intervalStr.length() == 0) {
+                missingData = true;
+                missingDataStr += true;
             }
-            if (false) {
-                String intervalStr = intervalField_1_NN_TextField.getText();
-                if (intervalStr == null || intervalStr.length() == 0) {
-                    missingData = true;
-                    missingDataStr += true;
-                }
-                int interval = Integer.parseInt(intervalField_1_NN_TextField.getText());
-                if (interval < 1) {
-                    missingData = true;
-                }
-                myRepeatRule.setInterval(interval);
+            int interval = Integer.parseInt(intervalField_1_NN_TextField.getText());
+            if (interval < 1) {
+                missingData = true;
             }
-            myRepeatRule.setInterval(intervalField_1_NN_TextField.getValue());
+            myRepeatRule.setInterval(interval);
+        }
+        myRepeatRule.setInterval(intervalField_1_NN_TextField.getValue());
 
-            switch (frequency) {
-                case RepeatRule.DAILY:
-                    break;
-                case RepeatRule.YEARLY:
+        switch (frequency) {
+            case RepeatRule.DAILY:
+                break;
+            case RepeatRule.YEARLY:
 //                if (yearlyChoice_DayMonths_Combo.getSelectedIndex() == YEAR_OPTION_DAY_OF_YEAR) { //"Select day of year", "Select month(s) of year"
-                    if (yearlyChoice_DayMonths_Combo.getSelectedValue() == YEAR_OPTION_DAY_OF_YEAR) { //"Select day of year", "Select month(s) of year"
+                if (yearlyChoice_DayMonths_Combo.getSelectedValue() == YEAR_OPTION_DAY_OF_YEAR) { //"Select day of year", "Select month(s) of year"
 //                    myRepeatRule.setDayInYear(dayInYear_1_365_Field.getSelectedValue());
-                        String dayInYearStr = dayInYear_1_365_Field.getText();
-                        if (dayInYearStr == null || dayInYearStr.length() == 0) {
-                            missingData = true;
-                        }
-                        int dayInYearInt = Integer.parseInt(dayInYear_1_365_Field.getText());
-                        if (dayInYearInt < 1) {
-                            missingData = true;
-                        }
-                        if (dayInYearInt > 365) {
-                            dayInYearInt = 365; //UI: not allowed to enter day in year bigger than 365
-                        }
-                        myRepeatRule.setDayInYear(dayInYearInt);
+                    String dayInYearStr = dayInYear_1_365_Field.getText();
+                    if (dayInYearStr == null || dayInYearStr.length() == 0) {
+                        missingData = true;
+                    }
+                    int dayInYearInt = Integer.parseInt(dayInYear_1_365_Field.getText());
+                    if (dayInYearInt < 1) {
+                        missingData = true;
+                    }
+                    if (dayInYearInt > 365) {
+                        dayInYearInt = 365; //UI: not allowed to enter day in year bigger than 365
+                    }
+                    myRepeatRule.setDayInYear(dayInYearInt);
 
-                        myRepeatRule.setDayInMonth(0);
-                        myRepeatRule.setWeeksInMonth(0);
-                        myRepeatRule.setWeekdaysInMonth(0);
-                        myRepeatRule.setDaysInWeek(0);
-                        myRepeatRule.setMonthsInYear(0);
+                    myRepeatRule.setDayInMonth(0);
+                    myRepeatRule.setWeeksInMonth(0);
+                    myRepeatRule.setWeekdaysInMonth(0);
+                    myRepeatRule.setDaysInWeek(0);
+                    myRepeatRule.setMonthsInYear(0);
 //                    break;
-                    } else {
-                        assert yearlyChoice_DayMonths_Combo.getSelectedValue() == YEAR_OPTION_MONTHS;
+                } else {
+                    assert yearlyChoice_DayMonths_Combo.getSelectedValue() == YEAR_OPTION_MONTHS;
 //                    myRepeatRule.setMonthsInYear(monthsInYearField.getSelectedOredTogether());
-                        myRepeatRule.setMonthsInYear(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(monthsInYear_JanDec_Field.getSelectedValues()));
-                        missingData = (testVal == 0) || missingData;
+                    myRepeatRule.setMonthsInYear(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(monthsInYear_JanDec_Field.getSelectedValues()));
+                    missingData = (testVal == 0) || missingData;
 //                    if (monthlyChoiceContainer.getSelectedIndex() == 0) { //"Select day of month(s):" : "Select day of month:"
 //                    if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_DAY) { //"Select day of month(s):" : "Select day of month:"
-                        if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_DAY) { //"Select day of month(s):" : "Select day of month:"
+                    if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_DAY) { //"Select day of month(s):" : "Select day of month:"
 //                        myRepeatRule.setDayInMonth(dayInMonth_1_31_Last_FieldFM.getSelectedValue());
-                            myRepeatRule.setDayInMonth(dayInMonth_1_31_Last_FieldFM.getSelectedValue());
+                        myRepeatRule.setDayInMonth(dayInMonth_1_31_Last_FieldFM.getSelectedValue());
 //                    } else if (monthlyChoiceContainer.getSelectedIndex() == 1) {
 //                    } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_WEEK_NB) {
-
-                            myRepeatRule.setWeeksInMonth(0);
-                            myRepeatRule.setWeekdaysInMonth(0);
-                            myRepeatRule.setDaysInWeek(0);
-                            myRepeatRule.setDayInYear(0);
-                        } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_WEEK_NB) {
-//                        myRepeatRule.setWeeksInMonth(weeksInMonthField.getSelectedOredTogether());
-                            myRepeatRule.setWeeksInMonth(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(weeksInMonth_1st2ndLast_Field.getSelectedValues()));
-                            missingData = (testVal == 0) || missingData;
-//                        myRepeatRule.setDaysInWeek(daysInWeekField.getSelectedOredTogether());
-                            myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInWeek_MonSun_Field.getSelectedValues()));
-                            missingData = (testVal == 0) || missingData;
-
-                            myRepeatRule.setWeekdaysInMonth(0);
-                            myRepeatRule.setDayInMonth(0);
-                            myRepeatRule.setDayInYear(0);
-//                        myRepeatRule.setMonthsInYear(0);
-
-//                    } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_WEEKDAYS) {
-                        } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_WEEKDAYS) {
-//                        myRepeatRule.setWeekdaysInMonth(weekdaysInMonthField.getSelectedOredTogether());
-                            myRepeatRule.setWeekdaysInMonth(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(weekdaysInMonth_1st2nLast_Field.getSelectedValues()));
-                            missingData = (testVal == 0) || missingData;
-//                        myRepeatRule.setDaysInWeek(daysInMonthField.getSelectedOredTogether());
-                            myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInMonth_MonSunWeekdays_Field.getSelectedValues()));
-                            missingData = (testVal == 0) || missingData;
-
-                            myRepeatRule.setDayInMonth(0);
-                            myRepeatRule.setWeeksInMonth(0);
-                            myRepeatRule.setDayInYear(0);
-//                        myRepeatRule.setMonthsInYear(0);
-                        }
-                    }
-                    break;
-                //fall-through to set monthly fields:
-                case RepeatRule.MONTHLY:
-//                if (monthlyChoiceContainer.getSelectedIndex() == 0) { //"Select day of month(s):" : "Select day of month:"
-//                if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_DAY) { //"Select day of month(s):" : "Select day of month:"
-                    if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_DAY) { //"Select day of month(s):" : "Select day of month:"
-//                    myRepeatRule.setDayInMonth(dayInMonth_1_31_Last_FieldFM.getSelectedValue());
-                        myRepeatRule.setDayInMonth(dayInMonth_1_31_Last_FieldFM.getSelectedValue());
 
                         myRepeatRule.setWeeksInMonth(0);
                         myRepeatRule.setWeekdaysInMonth(0);
                         myRepeatRule.setDaysInWeek(0);
                         myRepeatRule.setDayInYear(0);
-                        myRepeatRule.setMonthsInYear(0);
-
-//                } else if (monthlyChoiceContainer.getSelectedIndex() == 1) {
-//                } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_WEEK_NB) { //"Select week of month(s):" 
-                    } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_WEEK_NB) { //"Select week of month(s):" 
-//                    myRepeatRule.setWeeksInMonth(weeksInMonthField.getSelectedOredTogether());
+                    } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_WEEK_NB) {
+//                        myRepeatRule.setWeeksInMonth(weeksInMonthField.getSelectedOredTogether());
                         myRepeatRule.setWeeksInMonth(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(weeksInMonth_1st2ndLast_Field.getSelectedValues()));
                         missingData = (testVal == 0) || missingData;
-//                    myRepeatRule.setDaysInWeek(daysInWeekField.getSelectedOredTogether());
+//                        myRepeatRule.setDaysInWeek(daysInWeekField.getSelectedOredTogether());
                         myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInWeek_MonSun_Field.getSelectedValues()));
                         missingData = (testVal == 0) || missingData;
 
                         myRepeatRule.setWeekdaysInMonth(0);
                         myRepeatRule.setDayInMonth(0);
                         myRepeatRule.setDayInYear(0);
-                        myRepeatRule.setMonthsInYear(0);
-//                    myRepeatRule.setMonthsInYear(monthsInYearField.getSelectedOredTogether());
-//                } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_WEEKDAYS) {
+//                        myRepeatRule.setMonthsInYear(0);
+
+//                    } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_WEEKDAYS) {
                     } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_WEEKDAYS) {
-//                    myRepeatRule.setWeekdaysInMonth(weekdaysInMonthField.getSelectedOredTogether());
+//                        myRepeatRule.setWeekdaysInMonth(weekdaysInMonthField.getSelectedOredTogether());
                         myRepeatRule.setWeekdaysInMonth(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(weekdaysInMonth_1st2nLast_Field.getSelectedValues()));
                         missingData = (testVal == 0) || missingData;
-//                    myRepeatRule.setDaysInWeek(daysInMonthField.getSelectedOredTogether());
-//                    myRepeatRule.setDaysInWeek(daysInMonthField.getSelectedOredTogether());
+//                        myRepeatRule.setDaysInWeek(daysInMonthField.getSelectedOredTogether());
                         myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInMonth_MonSunWeekdays_Field.getSelectedValues()));
                         missingData = (testVal == 0) || missingData;
 
                         myRepeatRule.setDayInMonth(0);
                         myRepeatRule.setWeeksInMonth(0);
                         myRepeatRule.setDayInYear(0);
-                        myRepeatRule.setMonthsInYear(0);
+//                        myRepeatRule.setMonthsInYear(0);
                     }
-                    break;
-                case RepeatRule.WEEKLY:
-//                myRepeatRule.setDaysInWeek(daysInWeekField.getSelectedOredTogether());
+                }
+                break;
+            //fall-through to set monthly fields:
+            case RepeatRule.MONTHLY:
+//                if (monthlyChoiceContainer.getSelectedIndex() == 0) { //"Select day of month(s):" : "Select day of month:"
+//                if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_DAY) { //"Select day of month(s):" : "Select day of month:"
+                if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_DAY) { //"Select day of month(s):" : "Select day of month:"
+//                    myRepeatRule.setDayInMonth(dayInMonth_1_31_Last_FieldFM.getSelectedValue());
+                    myRepeatRule.setDayInMonth(dayInMonth_1_31_Last_FieldFM.getSelectedValue());
+
+                    myRepeatRule.setWeeksInMonth(0);
+                    myRepeatRule.setWeekdaysInMonth(0);
+                    myRepeatRule.setDaysInWeek(0);
+                    myRepeatRule.setDayInYear(0);
+                    myRepeatRule.setMonthsInYear(0);
+
+//                } else if (monthlyChoiceContainer.getSelectedIndex() == 1) {
+//                } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_WEEK_NB) { //"Select week of month(s):" 
+                } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_WEEK_NB) { //"Select week of month(s):" 
+//                    myRepeatRule.setWeeksInMonth(weeksInMonthField.getSelectedOredTogether());
+                    myRepeatRule.setWeeksInMonth(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(weeksInMonth_1st2ndLast_Field.getSelectedValues()));
+                    missingData = (testVal == 0) || missingData;
+//                    myRepeatRule.setDaysInWeek(daysInWeekField.getSelectedOredTogether());
                     myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInWeek_MonSun_Field.getSelectedValues()));
+                    missingData = (testVal == 0) || missingData;
+
+                    myRepeatRule.setWeekdaysInMonth(0);
+                    myRepeatRule.setDayInMonth(0);
+                    myRepeatRule.setDayInYear(0);
+                    myRepeatRule.setMonthsInYear(0);
+//                    myRepeatRule.setMonthsInYear(monthsInYearField.getSelectedOredTogether());
+//                } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedIndex() == MONTHLY_OPTION_WEEKDAYS) {
+                } else if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_WEEKDAYS) {
+//                    myRepeatRule.setWeekdaysInMonth(weekdaysInMonthField.getSelectedOredTogether());
+                    myRepeatRule.setWeekdaysInMonth(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(weekdaysInMonth_1st2nLast_Field.getSelectedValues()));
+                    missingData = (testVal == 0) || missingData;
+//                    myRepeatRule.setDaysInWeek(daysInMonthField.getSelectedOredTogether());
+//                    myRepeatRule.setDaysInWeek(daysInMonthField.getSelectedOredTogether());
+                    myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInMonth_MonSunWeekdays_Field.getSelectedValues()));
                     missingData = (testVal == 0) || missingData;
 
                     myRepeatRule.setDayInMonth(0);
                     myRepeatRule.setWeeksInMonth(0);
-                    myRepeatRule.setWeekdaysInMonth(0);
                     myRepeatRule.setDayInYear(0);
                     myRepeatRule.setMonthsInYear(0);
-                    break;
-            }
+                }
+                break;
+            case RepeatRule.WEEKLY:
+//                myRepeatRule.setDaysInWeek(daysInWeekField.getSelectedOredTogether());
+                myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInWeek_MonSun_Field.getSelectedValues()));
+                missingData = (testVal == 0) || missingData;
+
+                myRepeatRule.setDayInMonth(0);
+                myRepeatRule.setWeeksInMonth(0);
+                myRepeatRule.setWeekdaysInMonth(0);
+                myRepeatRule.setDayInYear(0);
+                myRepeatRule.setMonthsInYear(0);
+                break;
+        }
 
 //        if (repeatHowLong_ForeverUntilNumber_ChoiceCombo.getSelectedIndex() == REPEAT_HOW_LONG_OPTION_FOREVER) { //{"Repeat forever", "Repeat until", "Repeat"}
-            if (repeatHowLong_ForeverUntilNumber_ChoiceCombo.getSelectedValue() == REPEAT_HOW_LONG_OPTION_FOREVER) { //{"Repeat forever", "Repeat until", "Repeat"}
+        if (repeatHowLong_ForeverUntilNumber_ChoiceCombo.getSelectedValue() == REPEAT_HOW_LONG_OPTION_FOREVER) { //{"Repeat forever", "Repeat until", "Repeat"}
 //                myRepeatRule.setNumberOfRepeats(Integer.MAX_VALUE);
 //                myRepeatRule.setNumberOfRepeats(0); //also sets endDate to 0
-                myRepeatRule.setNumberOfRepeats(Integer.MAX_VALUE); //also sets endDate 
-                myRepeatRule.setEndDate(new Date(MyDate.MAX_DATE));
+            myRepeatRule.setNumberOfRepeats(Integer.MAX_VALUE); //also sets endDate 
+            myRepeatRule.setEndDate(new Date(MyDate.MAX_DATE));
 //            myRepeatRule.setEndDate(0);
 //        } else if (repeatHowLong_ForeverUntilNumber_ChoiceCombo.getSelectedIndex() == REPEAT_HOW_LONG_OPTION_UNTIL) { //Repeat until
-            } else if (repeatHowLong_ForeverUntilNumber_ChoiceCombo.getSelectedValue() == REPEAT_HOW_LONG_OPTION_UNTIL) { //Repeat until
+        } else if (repeatHowLong_ForeverUntilNumber_ChoiceCombo.getSelectedValue() == REPEAT_HOW_LONG_OPTION_UNTIL) { //Repeat until
 //            myRepeatRule.setEndDate(endDate.getTime() == 0 ? Long.MAX_VALUE : endDate.getTime());
 //            myRepeatRule.setEndDate(endDate.getTime() == 0 ? RepeatRuleParseObject.MAX_DATE : endDate.getTime());
 //                missingData = (repeatEndDateEditButton.getDate().getTime() == 0) || missingData;
-                missingData = (repeatEndDateEditButton.getDate().getTime() == 0) || missingData;
-                myRepeatRule.setEndDate(repeatEndDateEditButton.getDate().getTime() == 0 ? new Date(MyDate.MAX_DATE) : repeatEndDateEditButton.getDate());
-                myRepeatRule.setNumberOfRepeats(Integer.MAX_VALUE);
-            } else { // REPEAT_HOW_LONG_OPTION_NUMBER
+            missingData = (repeatEndDateEditButton.getDate().getTime() == 0) || missingData;
+            myRepeatRule.setEndDate(repeatEndDateEditButton.getDate().getTime() == 0 ? new Date(MyDate.MAX_DATE) : repeatEndDateEditButton.getDate());
+            myRepeatRule.setNumberOfRepeats(Integer.MAX_VALUE);
+        } else { // REPEAT_HOW_LONG_OPTION_NUMBER
 //            myRepeatRule.setNumberOfRepeats(repeatHowManyTimesField.getSelectedValue() == 0 ? Integer.MAX_VALUE : repeatHowManyTimesField.getSelectedValue());
-                myRepeatRule.setNumberOfRepeats(repeatHowManyTimesField.getValue() == 0 ? Integer.MAX_VALUE : repeatHowManyTimesField.getValue());
-                myRepeatRule.setEndDate(new Date(MyDate.MAX_DATE));
-            }
+            myRepeatRule.setNumberOfRepeats(repeatHowManyTimesField.getValue() == 0 ? Integer.MAX_VALUE : repeatHowManyTimesField.getValue());
+            myRepeatRule.setEndDate(new Date(MyDate.MAX_DATE));
         }
+//        }
         return !missingData;
     }
 

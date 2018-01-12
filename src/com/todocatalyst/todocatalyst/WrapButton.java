@@ -4,7 +4,9 @@ import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.TextArea;
+import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
 
 /**
  *
@@ -59,8 +61,8 @@ public class WrapButton extends Container {
         actualButton = new Button();
         actualButton.setUIID("IconInList");
         addComponent(BorderLayout.WEST, actualButton);
-        addComponent(BorderLayout.CENTER, text);
-//        setLeadComponent(actualButton);
+        addComponent(BorderLayout.CENTER, BoxLayout.encloseX(text));
+        setLeadComponent(actualButton);
     }
 
     public WrapButton(Command cmd) {
@@ -102,6 +104,42 @@ public class WrapButton extends Container {
      */
     public void setTextUIID(String uiid) {
         text.setUIID(uiid);
+    }
+
+    /**
+     * Returns if this is an auto released Button. Auto released Buttons will
+     * are been disarmed when a drag is happening within the Button.
+     *
+     * @return true if it's an auto released Button.
+     */
+    public boolean isAutoRelease() {
+        return actualButton.isAutoRelease();
+    }
+
+    /**
+     * Sets the auto released mode of this button, by default it's not an auto
+     * released Button
+     */
+    public void setAutoRelease(boolean autoRelease) {
+        this.actualButton.setAutoRelease(autoRelease);
+    }
+
+    /**
+     * Binds an action listener to button events
+     *
+     * @param l the listener
+     */
+    public void addActionListener(ActionListener l) {
+        actualButton.addActionListener(l);
+    }
+
+    /**
+     * Removes the listener from tracking button events
+     *
+     * @param l the listener
+     */
+    public void removeActionListener(ActionListener l) {
+        actualButton.removeActionListener(l);
     }
 
 }

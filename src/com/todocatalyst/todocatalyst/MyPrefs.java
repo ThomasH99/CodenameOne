@@ -184,43 +184,52 @@ public class MyPrefs {
             = new PrefEntry("Subtasks inherit properties from their project", "itemInheritOwnerProjectProperties", true, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectChallenge
-            = new PrefEntry("Subtasks inherit "+Item.CHALLENGE+" from their project", "itemInheritOwnerProjectChallenge", true, "**");
+//            = new PrefEntry("Subtasks inherit "+Item.CHALLENGE+" from their project", "itemInheritOwnerProjectChallenge", true, "**");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.CHALLENGE), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerStarredProperties
-            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+//            = new PrefEntry(Format.f("Subtasks inherit %1 from their project","propert", "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.STARRED), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectPriority
-            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectPriority", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectPriority", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.PRIORITY), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectDreadFun
-            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectDreadFun", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectDreadFun", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.FUN_DREAD), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectImportance
-            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectImportance", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectImportance", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.IMPORTANCE), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectUrgency
-            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectUrgency", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectUrgency", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.URGENCY), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectDueDate
-            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectDueDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectDueDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.DUE_DATE), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectStartDate
-            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectStartDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectStartDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.START_BY_TIME), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectWaitingTillDate
-            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectWaitingTillDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectWaitingTillDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.WAIT_UNTIL_DATE), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemEffortEstimateExtractFromStringInTaskText
-            = new PrefEntry("**Keep inherit properties from their project", "itemEffortEstimateExtractFromStringInTaskText", true, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry("Extract task estimates from text", "itemEffortEstimateExtractFromStringInTaskText", true, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
     
     static PrefEntry itemEffortEstimateKeepStringInTaskText
-            = new PrefEntry("**Keep inherit properties from their project", "itemEffortEstimateKeepStringInTaskText", false, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry("Keep task estimates text after extraction", "itemEffortEstimateKeepStringInTaskText", false, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemProjectPropertiesDerivedFromSubtasks
             = new PrefEntry("Project properties like [STARTED_ON] shows values from subtasks", "itemProjectPropertiesDerivedFromSubtasks", true, "**");
 
     static PrefEntry workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime
-            = new PrefEntry("Use work time from Categories", "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime", true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
+            = new PrefEntry(Format.f("Prioritize %1 from Categories","work time"), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime", true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
 
     //INTERNAL / TECHNICAL / CACHE
     static PrefEntry backgroundFetchIntervalInSeconds = new PrefEntry("**","backgroundFetchIntervalInSeconds", 1 * MyDate.HOUR_IN_MILISECONDS / 1000, "interval for updating eg local notifications and badge count when app is in background**");

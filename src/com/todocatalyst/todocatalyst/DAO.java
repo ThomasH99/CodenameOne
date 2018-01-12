@@ -1956,20 +1956,26 @@ public class DAO {
     }
 
     /**
-     * get all workslots that have time *after* startDate. E.g. slot.endDate is bigger or equial to startDate
+     * get all workslots that have at least some available time within the interval between startDate and endDate. 
+     *after* startDate and NOT after endTime. E.g. slot.endDate is bigger or equial to startDate and slot.startTime is 
+     * smaller than endDate.
      * @param startDate
      * @param endDate
      * @return 
      */
 //    public WorkSlotList getWorkSlots(Date startDate, Date endDate) {
     public WorkSlotList getWorkSlots(Date startDate) {
+        return getWorkSlots(startDate,new Date(MyDate.MAX_DATE));
+    }
+    
+    public WorkSlotList getWorkSlots(Date startDate, Date endDate) {
 
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
 
 //        query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_START_TIME, startDate); //enough to search for endTime later than Now
         query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME, startDate); //enough to search for endTime later than Now
 //        query.whereLessThan(WorkSlot.PARSE_START_TIME, endDate);
-//        query.whereLessThan(WorkSlot.PARSE_END_TIME, endDate);
+        query.whereLessThan(WorkSlot.PARSE_START_TIME, endDate);
         query.addAscendingOrder(WorkSlot.PARSE_START_TIME); //sort on startTime
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
 

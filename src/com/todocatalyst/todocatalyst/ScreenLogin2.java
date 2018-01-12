@@ -156,7 +156,7 @@ public class ScreenLogin2 extends MyForm {
         forgottenPassword.setHidden(true);
         backToSignupSignIn.setHidden(true);
 
-        backToSignupSignIn.setCommand(Command.create("Back", Icons.iconBackToPrevFormToolbarStyle, (e2) -> {
+        backToSignupSignIn.setCommand(Command.create("Back", Icons.iconBackToPrevFormToolbarStyle(), (e2) -> {
             signUp.setHidden(false);
             login.setHidden(false);
 

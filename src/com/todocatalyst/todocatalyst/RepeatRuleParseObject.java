@@ -56,7 +56,7 @@ public class RepeatRuleParseObject
     final static int REPEAT_TYPE_NO_REPEAT = 0; //11;
     final static int REPEAT_TYPE_FROM_COMPLETED_DATE = 1; //11;
     final static int REPEAT_TYPE_FROM_DUE_DATE = 2;// 33;
-    final static int REPEAT_TYPE_FROM_SPECIFIED_DATE = 3; //7;
+//    final static int REPEAT_TYPE_FROM_SPECIFIED_DATE = 3; //7; //TODO: implement as additional option?
 
     private final static String PARSE_REPEAT_INSTANCE_ITEMLIST = "repeatInstanceItemList";
     private final static String PARSE_DATES_LIST = "datesList";
@@ -295,7 +295,6 @@ public class RepeatRuleParseObject
 //        return list;
 //    }
 //</editor-fold>
-
     @Override
     public int getVersion() {
         return 0;
@@ -305,7 +304,6 @@ public class RepeatRuleParseObject
     public String getObjectId() {
         return CLASS_NAME;
     }
-
 
 //    @Override //TODO!!! how to make this externaizable (in case needed) - look at parse4cn1 approach (getExternizable())
 //    public String getObjectId() {
@@ -341,7 +339,6 @@ public class RepeatRuleParseObject
 //        return newDates;
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private class DateBuffer {
 //
@@ -697,7 +694,6 @@ public class RepeatRuleParseObject
 //        return getTotalNumberOfInstancesGeneratedSoFar() >= getNumberOfRepeats()
 //                || getLastGeneratedDate() >= getEndDate();
 //    }
-
     /**
      * returns the count value to use for the repeatRule. If the repeat rule is
      * defined as a limited to a certain number of repeats, it will return
@@ -717,7 +713,6 @@ public class RepeatRuleParseObject
 //            return maxNbDatesToGenerate; //"datesList.sizeTotal()+1" to generate 1 extra for removing. We only generate COUNTS_AHEAD ahead at any time, or less if we have almost generated all getCount() instances. +1 to ensure we always generate at least 2 instances, otherwise the algorith won't work (since we remove the first, duplicate, generated instance)
 //        }
 //    }
-
     private void removeUnneededTasks(List<Date> newDates, Date subsetBeginDate, int numberInstancesToGenerate) {
         boolean modified = false;
         if (!newDates.isEmpty()) {
@@ -860,7 +855,6 @@ public class RepeatRuleParseObject
 //        return null;
 //    }
 //</editor-fold>
-
     private Date getFirstNotEqualDate(List<Date> newDates, Date dateCompleted) {
 //        Date date=null;
         if (!newDates.isEmpty()) { //if vector not empty AND we repeat from due date (if from completed, we don't skip first date)
@@ -1051,7 +1045,6 @@ public class RepeatRuleParseObject
 //        }
 //    }
 //</editor-fold>
-
     /**
      * show a pop-up dialog with the generated dates, shown with 20 each time
      */
@@ -1093,7 +1086,7 @@ public class RepeatRuleParseObject
 //        List<Date> dates = generateListOfDates(startDate, calcSubsetEndDate(startDate), repeats);
         List<Date> dates = createDates(maxInstances);
         do {
-            for (int i = nextI, size = Math.min(dates.size(), nextI + nbDatesToShowInEachStep-1); i < size; i++) { //Math.min(dates.size in case the dates list is shorter than nbDatesToShowInEachStep
+            for (int i = nextI, size = Math.min(dates.size(), nextI + nbDatesToShowInEachStep - 1); i < size; i++) { //Math.min(dates.size in case the dates list is shorter than nbDatesToShowInEachStep
                 datesVector.addElement(MyDate.formatDateNew(dates.get(i), false, true, true, true, MyPrefs.dateShowDatesInUSFormat.getBoolean()));
             }
             nextI += nbDatesToShowInEachStep;
@@ -1392,7 +1385,7 @@ public class RepeatRuleParseObject
         if (getNumberFutureRepeatsToGenerateAhead() != 0) {
             return new Date(MyDate.MAX_DATE);
         } else {
-            ASSERT.that(getNumberOfDaysRepeatsAreGeneratedAhead() != 0);
+            ASSERT.that(getNumberOfDaysRepeatsAreGeneratedAhead() != 0, "Both getNumberFutureRepeatsToGenerateAhead() and getNumberOfDaysRepeatsAreGeneratedAhead() are 0 for RepeatRule="+this);
             Date subEndDate = MyDate.getEndOfDay(new Date(System.currentTimeMillis() + getNumberOfDaysRepeatsAreGeneratedAhead() * MyDate.DAY_IN_MILLISECONDS));
             if (subEndDate.getTime() >= earliestDate.getTime()) {
                 return subEndDate;
@@ -2168,7 +2161,6 @@ public class RepeatRuleParseObject
 //        }
 //    }
 //</editor-fold>
-
     private Date getNextDueDate() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && isRepeatRuleTerminatedXXX()) { //DO NOT test here, since dates need to be re-generated when changing the rule
@@ -2270,7 +2262,7 @@ public class RepeatRuleParseObject
         List<WorkSlot> workSlotInstanceItemList = getListOfUndoneRepeatInstances();
 //        WorkSlotList workSlotInstanceItemList = new WorkgetListOfUndoneRepeatInstances();
         setLatestDateCompletedOrCancelledIfGreaterThanLast(workSlot.getRepeatStartTime(getRepeatType() == REPEAT_TYPE_FROM_COMPLETED_DATE));
-        ASSERT.that(workSlotInstanceItemList.contains(workSlot), "Error: " + workSlot + " not in list of already generated repeat instances");
+        ASSERT.that(workSlotInstanceItemList.size() == 0 || workSlotInstanceItemList.contains(workSlot), "Error: \"" + workSlot + "\" not in list of already generated repeat instances");
 //        removeFromListOfUndoneRepeatInstances(repeatRuleObject);
         workSlotInstanceItemList.remove(workSlot);
 
@@ -2296,7 +2288,7 @@ public class RepeatRuleParseObject
         } else {
             workSlot = null;
         }
-        
+
         while (workSlot != null && (workSlot.getEndTime() <= System.currentTimeMillis()) && (nextRepeatTime = getNextDueDate()) != null) {
             //when we get here, the current/first in list workslot is in the past and we have a new repeatTime (so repeatRule is not expired)
             workSlotInstanceItemList.remove(workSlot); //remove workSlot in the past
@@ -2962,7 +2954,6 @@ public class RepeatRuleParseObject
 //
 //    }
 //</editor-fold>
-
     @Override
     public int hashCode() {
         int hash = 7;

@@ -37,22 +37,41 @@ public class Icons {
         }
         return INSTANCE;
     }
+    
+    public static Image makeT(char material){
+//        return FontImage.createMaterial(material, UIManager.getInstance().getComponentStyle("TitleCommand"));
+        return make(material, "TitleCommand");
+    }
+    public static Image makeL(char material){
+//        return FontImage.createMaterial(material, UIManager.getInstance().getComponentStyle("Label"));
+        return make(material, "Label");
+    }
+
+    public static Image make(char material, String styleUIID){
+        return FontImage.createMaterial(material, UIManager.getInstance().getComponentStyle(styleUIID));
+    }
 
     private final static Style labelStyle = new Label().getStyle();
     private final static Style toolBarStyle = new Toolbar().getStyle();
     //TODO!!! CN1 uses style "TitleCommand" for toolbar commands
 //    private Style toolbarStyle = (getnew Label()).getStyle();
 
+    static Image iconShowMoreLabelStyle(){return makeT(FontImage.MATERIAL_EXPAND_MORE);}
+    final static char iconShowMoreLabelStyleX = FontImage.MATERIAL_EXPAND_MORE;
     final static Image iconShowMoreLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_EXPAND_MORE, labelStyle);
     final static Image iconShowLessLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_EXPAND_LESS, labelStyle);
     final static Image iconEditSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, labelStyle);
     final static Image iconAddTimeStampToCommentLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ACCESS_TIME, labelStyle);
 
     //TIMER
-    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, toolBarStyle);
+//    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, toolBarStyle);
+    static Image iconTimerSymbolToolbarStyle(){return makeT(FontImage.MATERIAL_TIMER_OFF);}
+//    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand"));
     final static Image iconTimerSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, labelStyle);
-    final static Image iconTimerOffToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER_OFF, toolBarStyle);
-    final static Image iconTimerAutoStartTimerOnNextTaskToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_HISTORY, toolBarStyle); //History: clock with arrow around
+    static Image iconTimerOffToolbarStyle(){return makeT(FontImage.MATERIAL_TIMER_OFF);}
+//    final static Image iconTimerOffToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER_OFF, toolBarStyle);
+    static Image iconTimerAutoStartTimerOnNextTaskToolbarStyle(){return makeT(FontImage.MATERIAL_HISTORY);}
+//    final static Image iconTimerAutoStartTimerOnNextTaskToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_HISTORY, toolBarStyle); //History: clock with arrow around
 //    final static Image iconTimerAutoStartTimerOnNextTaskToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_AUTORENEW, toolBarStyle); //Autorenew: two circular arrows
     final static Image iconTimerAutoGotoNextTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_FILLED, labelStyle);
     final static Image iconTimerStartLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PLAY_CIRCLE_OUTLINE, labelStyle);
@@ -80,14 +99,15 @@ public class Icons {
 //    final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED, labelStyle, 2);
     final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK, labelStyle, 2);
     final static Image iconTemplateStatusSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_DO_NOT_DISTURB_ALT, labelStyle);
-    final static Image iconSetDueDateToToday = FontImage.createMaterial(FontImage.MATERIAL_TODAY, labelStyle);
+    static Image iconSetDueDateToToday(){return makeT(FontImage.MATERIAL_TODAY);}
+//    final static Image iconSetDueDateToToday = FontImage.createMaterial(FontImage.MATERIAL_TODAY, labelStyle);
 //    final static Image iconIndentExdendInsertNewTask = FontImage.createMaterial(FontImage.MATERIAL_COMPARE_ARROWS, labelStyle);
-    final static Image iconIndentExdendInsertNewTask = FontImage.createMaterial(FontImage.MATERIAL_SWAP_HORIZ, labelStyle);
+//    final static Image iconIndentExdendInsertNewTask = FontImage.createMaterial(FontImage.MATERIAL_SWAP_HORIZ, labelStyle);
 //    final static Image iconInsertNewTaskIndent = FontImage.createMaterial(FontImage.MATERIAL_FORWARD, labelStyle); //fat arrow
-    final static Image iconInsertNewTaskIndent = FontImage.createMaterial(FontImage.MATERIAL_ARROW_FORWARD, labelStyle); //MATERIAL_TRENDING_FLAT:thin arrow, TODO!! should be MATERIAL_KEYBOARD_RETURN flipped, MATERIAL_SUBDIRECTORY_ARROW_RIGHT
+//    final static Image iconInsertNewTaskIndent = FontImage.createMaterial(FontImage.MATERIAL_ARROW_FORWARD, labelStyle); //MATERIAL_TRENDING_FLAT:thin arrow, TODO!! should be MATERIAL_KEYBOARD_RETURN flipped, MATERIAL_SUBDIRECTORY_ARROW_RIGHT
 //    final static Image iconInsertNewTaskExdend = iconInsertNewTaskIndent.flipHorizontally(true); //flip the above image
 //    static Image iconInsertNewTaskExdend = FontImage.createMaterial(FontImage.MATERIAL_TRENDING_FLAT, labelStyle); //thin arrow
-    static Image iconInsertNewTaskExdend = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, labelStyle); //thin arrow, MATERIAL_KEYBOARD_BACKSPACE
+//    static Image iconInsertNewTaskExdend = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, labelStyle); //thin arrow, MATERIAL_KEYBOARD_BACKSPACE
 //    static Image iconInsertNewTaskExdend; //init in constructor above // = iconInsertNewTaskIndent.flipHorizontally(true); //flip the above image
 //    static Image iconInsertNewTaskExdend= iconInsertNewTaskIndent.rotate180Degrees(true); //flip the above image
 
@@ -121,10 +141,17 @@ public class Icons {
 //    final static Image iconCheckboxWaiting = FontImage.createMaterial(FontImage.MATERIAL_HOURGLASS_FULL, labelStyle);
     final static Image iconCheckboxWaiting = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_OUTLINE, labelStyle);
 
+    static Image iconBackToPrevFormToolbarStyle(){return makeT(FontImage.MATERIAL_ARROW_BACK);}
+    static Image iconBackToPrevFormLabelStyle(){return makeL(FontImage.MATERIAL_ARROW_BACK);}
     final static Image iconBackToPrevFormToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolBarStyle);
+    static Image iconEditPropertiesToolbarStyle(){return makeT(FontImage.MATERIAL_CHEVRON_RIGHT);}
     final static Image iconEditPropertiesToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, toolBarStyle);
     final static Image iconEditPropertiesLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, labelStyle);
-    final static Image iconNewToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_ADD, toolBarStyle);
+//    static Image iconNewTaskToolbarStyle(){return makeT(FontImage.MATERIAL_ADD_CIRCLE);}
+    static Image iconNewTaskToolbarStyle(){return makeT(FontImage.MATERIAL_ADD_CIRCLE_OUTLINE);}
+    static Image iconNewToolbarStyle(){return makeT(FontImage.MATERIAL_ADD);}
+//    final static Image iconNewToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_ADD, toolBarStyle);
+    static Image iconInterruptToolbarStyle(){return makeT(FontImage.MATERIAL_FLASH_ON);}
     final static Image iconInterruptToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_FLASH_ON, toolBarStyle);
     final static Image iconEditSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, toolBarStyle);
     //TASK STATUS

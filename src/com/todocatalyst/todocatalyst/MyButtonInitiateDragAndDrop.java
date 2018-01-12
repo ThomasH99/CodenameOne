@@ -11,13 +11,15 @@ import com.codename1.ui.Component;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Form;
+import com.codename1.ui.TextArea;
 
 /**
  * implements the code to initiate drag and drop when longPressing the button
  *
  * @author Thomas
  */
-public class MyButtonInitiateDragAndDrop extends SpanButton {
+//public class MyButtonInitiateDragAndDrop extends SpanButton {
+public class MyButtonInitiateDragAndDrop extends WrapButton {
 
     private Component dragAndDropComponent;
     private MyForm.GetBoolean isDragAndDropEnabledFct;
@@ -27,10 +29,15 @@ public class MyButtonInitiateDragAndDrop extends SpanButton {
         super(text);
         this.dragAndDropComponent = dragAndDropComponent;
         this.isDragAndDropEnabledFct = isDragAndDropEnabledFunction;
+//        getTextComponent().setVerticalAlignment(TextArea.CENTER);
+//        getTextComponent().setVerticalAlignment(TextArea.BOTTOM);
+//        getTextComponent().setVerticalAlignment(TextArea.CENTER); //https://stackoverflow.com/questions/36674632/multiple-line-textarea-alignment-in-table-layout-codenameone: can't position text area center
+//        getTextComponent().setActAsLabel(true);
 //        setUIID("LabelField");
         setUIID("ListOfItemsText");
         setTextUIID("ListOfItemsText");
         setAutoRelease(true); //"A bit of "black magic" to avoid that swipe triggers the button http://stackoverflow.com/questions/39558166/how-to-avoid-that-swiping-a-swipeablecontainer-also-creates-an-event-in-the-top
+//        actualButton.setAutoRelease(true); //"A bit of "black magic" to avoid that swipe triggers the button http://stackoverflow.com/questions/39558166/how-to-avoid-that-swiping-a-swipeablecontainer-also-creates-an-event-in-the-top
     }
 
     @Override

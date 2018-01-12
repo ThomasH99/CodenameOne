@@ -123,26 +123,28 @@ public class ScreenListOfItemLists extends MyForm {
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
+        //NEW TASK
+        toolbar.addCommandToLeftBar(newItemSaveToInboxCmd());
 
         //NEW ITEMLIST
-        toolbar.addCommandToRightBar( MyReplayCommand.create("EditListProperties", "", Icons.iconNewToolbarStyle,(e)->{
-                ItemList itemList = new ItemList();
-                setKeepPos(new KeepInSameScreenPosition());
-                new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
+        toolbar.addCommandToRightBar(MyReplayCommand.create("EditListProperties", "", Icons.iconNewToolbarStyle(), (e) -> {
+            ItemList itemList = new ItemList();
+            setKeepPos(new KeepInSameScreenPosition());
+            new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
 //                    if (itemList.getText().length() > 0||itemList.getComment().length() > 0) {
-                    if (itemList.hasSaveableData()) {
+                if (itemList.hasSaveableData()) {
 //                    itemList.setOwner(itemListList); //NB cannot set an owner which is not saved in parse
 //                    DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    itemListList.addItemAtIndex(itemList, 0);
-                        itemListList.addToList(0, itemList);
-                        DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        DAO.getInstance().save(itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    itemListList.addToList(0, itemList);
+                    DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    DAO.getInstance().save(itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
-                        refreshAfterEdit();//refresh list to show new items(??)
-                    }
-                }).show();
-            }
+                    refreshAfterEdit();//refresh list to show new items(??)
+                }
+            }).show();
+        }
         ));
 
         //MOVE mode
@@ -347,23 +349,23 @@ public class ScreenListOfItemLists extends MyForm {
             //SHOW/EDIT SUBTASKS OF LIST
 //        editItemPropertiesButton.setIcon(iconEdit);
             editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemListProperties-" + itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
-                    MyForm f = ((MyForm) mainCont.getComponentForm());
-                    f.setKeepPos(new KeepInSameScreenPosition());
+                MyForm f = ((MyForm) mainCont.getComponentForm());
+                f.setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllItemsIn((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
 //                new ScreenListOfItems(itemList.getText(), itemList, ScreenListOfItemLists.this, (iList) -> {
-                    new ScreenListOfItems(itemList.getText(), itemList, (MyForm) mainCont.getComponentForm(), (iList) -> {
-                        if (true) {
+                new ScreenListOfItems(itemList.getText(), itemList, (MyForm) mainCont.getComponentForm(), (iList) -> {
+                    if (true) {
 //                            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
-                            f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
-                            itemList.setList(iList.getList());
-                            DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
+                        itemList.setList(iList.getList());
+                        DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
-                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
-                        } else {
+                        swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
+                    } else {
 
-                        }
+                    }
 //                        ((MyForm) mainCont.getComponentForm()).refreshAfterEdit();
-                        f.refreshAfterEdit();
+                    f.refreshAfterEdit();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                categoryList.addItemAtIndex(category, 0);
 //                                DAO.getInstance().save(categoryList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
@@ -380,8 +382,8 @@ public class ScreenListOfItemLists extends MyForm {
 //                                itemList.addItem(newItemList);
 //                            }).show();
 //</editor-fold>
-                    }).show();
-                }
+                }).show();
+            }
             )
             );
         }
