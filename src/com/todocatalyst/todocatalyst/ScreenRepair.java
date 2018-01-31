@@ -18,6 +18,7 @@ import com.codename1.ui.Font;
 import com.codename1.ui.Form;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
@@ -25,6 +26,7 @@ import com.codename1.ui.table.TableLayout;
 import com.codename1.util.StringUtil;
 import com.parse4cn1.ParseBatch;
 import com.parse4cn1.ParseException;
+import com.sun.javafx.print.PrintHelper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -375,12 +377,59 @@ public class ScreenRepair extends MyForm {
     Label cont2Label;//= new Label();
     Label dropTarget1Label;// = new Label();
     Label dropTarget2Label;//= new Label();
+    InlineInsertNewTaskContainer newPinchContainer;
+    Item pinchItem;
+
+    private boolean minimumPinchSizeReached() {
+        return false;
+    }
+
+    public void setInsertItemValues(Object obj, Object sortField, Object objBefore, Object objAfter, getValueFunction, makeNewValueFunction) {
+        if (obj instanceof Item) {
+            Item item = (Item) obj;
+
+        } else if (obj instanceof WorkSlot) {
+        } else if (obj instanceof Category) {
+        } else if (obj instanceof ItemList) {
+
+        }
+    }
 
     private void initPinch() {
         fPinchOut = new Form(new BorderLayout()) {
             @Override
             public void pointerDragged(int[] x, int[] y) {
-                if (x.length > 1) {
+                if (x.length > 1) { //PINCH == TWO FINGERS
+                    //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
+                    //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
+                    //INIT pinch out
+                    boolean templateEditMode = false;
+                    boolean pinchIncreasing = false;
+                    Component finger1Comp = findDropTargetAt(x[0], y[0]); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
+                    Component finger2Comp = findDropTargetAt(x[1], y[1]);
+                    Container containerList = null; //TODO find container (==srollable list?)
+                    ItemList itemList = null;
+                    int pos = 0; //TODO find position of *lowest* container (==highest index, == thumb position == most 'stable' position)
+                    if (newPinchContainer == null) {
+                        if (!pinchIncreasing) { //Pinch IN - to delete a just inserted container (or any other item? NO, don't make Delete easy)
+                            Component pinchedInComp = null; //TODO find a possible pinchContainer between the 
+                            if (pinchedInComp instanceof InlineInsertNewTaskContainer) {
+                                newPinchContainer = (InlineInsertNewTaskContainer) pinchedInComp;
+                            }
+                        } else {
+
+                            pinchItem = new Item();
+                            newPinchContainer = new InlineInsertNewTaskContainer(ScreenRepair.this, pinchItem, itemList) {
+                                public Dimension getPreferredSize() {
+                                    return new Dimension(getPreferredW(), Math.min(getPreferredH(), y[0] - y[1]));
+                                }
+                            };
+                            //insert 
+                            containerList.addComponent(pos, newPinchContainer);
+                            ScreenRepair.this.refreshAfterEdit(); //really necessary?
+                        }
+                    }
+
                     double currentDis = distance(x, y);
 
                     // prevent division by 0
@@ -394,9 +443,23 @@ public class ScreenRepair extends MyForm {
                     Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
                     display(x, y, true);
                 } else {
+                    //PinchOut is (maybe) finished (newPinchContainer!=null means a pinch was ongoing before)
+                    if (newPinchContainer != null) { //a pinch container is either created or found (on PinchInToDelete)
+
+                        if (minimumPinchSizeReached()) { //TODO implement
+                            //add new item into underlying list
+                            itemList.addItemAtIndex(pinchItem, pos);
+                        } else {
+                            //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
+                            Container list = null;
+                            list.removeComponent(newPinchContainer);
+                            ScreenRepair.this.refreshAfterEdit();
+                        }
+                        newPinchContainer = null; //indicates done with this container
+                    }
                     display(x, y, false);
                 }
-                pointerDragged(x[0], y[0]);
+                super.pointerDragged(x[0], y[0]);
             }
         };
         fPinchOut.setScrollableY(true);

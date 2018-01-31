@@ -18,19 +18,19 @@
             <entry key="DUE_DATE" value="" />
             <entry key="edit" value="R&#xe9;diger" />
             <entry key="select" value="Choisir" />
-            <entry key="WAITING" value="En attente" />
-            <entry key="COMMENT" value="Notes" />
             <entry key="CANCELLED" value="Annul&#xe9;" />
+            <entry key="COMMENT" value="Notes" />
+            <entry key="WAITING" value="En attente" />
             <entry key="EFFORT_ESTIMATE" value="Estimation" />
             <entry key="TASK_HELP" value="D&#xe9;crire votre [TASK] ici" />
             <entry key="EFFORT_REMAINING" value="Restant" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
-            <entry key="Email" value="Courriel" />
-            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
             <entry key="DONE" value="Termin&#xe9;" />
-            <entry key="DUE_DATE_HELP" value="" />
+            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
+            <entry key="Email" value="Courriel" />
+            <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
             <entry key="EFFORT_ACTUAL" value="Travail" />
+            <entry key="DUE_DATE_HELP" value="" />
         </lang>
         <lang name="en">
             <entry key="SUPPORT" value="Support" />
@@ -48,19 +48,19 @@
             <entry key="DUE_DATE" value="Due" />
             <entry key="edit" value="Edit" />
             <entry key="select" value="Select" />
-            <entry key="WAITING" value="Waiting" />
-            <entry key="COMMENT" value="Notes" />
             <entry key="CANCELLED" value="Cancelled" />
+            <entry key="COMMENT" value="Notes" />
+            <entry key="WAITING" value="Waiting" />
             <entry key="EFFORT_ESTIMATE" value="Estimate" />
             <entry key="TASK_HELP" value="Describe your [TASK] here" />
             <entry key="EFFORT_REMAINING" value="Remaining" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="SETTINGS" value="Settings" />
-            <entry key="Email" value="Email" />
-            <entry key="REPEAT_RULE" value="Repeat" />
             <entry key="DONE" value="Completed" />
-            <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
+            <entry key="REPEAT_RULE" value="Repeat" />
+            <entry key="Email" value="Email" />
+            <entry key="SETTINGS" value="Settings" />
             <entry key="EFFORT_ACTUAL" value="Work" />
+            <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
         </lang>
         <lang name="dk">
             <entry key="SUPPORT" value="Support" />
@@ -78,19 +78,19 @@
             <entry key="DUE_DATE" value="Forfaldsdato" />
             <entry key="edit" value="Ret" />
             <entry key="select" value="V&#xe6;lg" />
-            <entry key="WAITING" value="Venter" />
-            <entry key="COMMENT" value="Noter" />
             <entry key="CANCELLED" value="Annuleret" />
+            <entry key="COMMENT" value="Noter" />
+            <entry key="WAITING" value="Venter" />
             <entry key="EFFORT_ESTIMATE" value="Estimate" />
             <entry key="TASK_HELP" value="Beskriv [TASK] her" />
             <entry key="EFFORT_REMAINING" value="Resterende" />
             <entry key="TODOCATALYST" value="TodoCatalyst" />
-            <entry key="SETTINGS" value="Ops&#xe6;tning" />
-            <entry key="Email" value="Email" />
-            <entry key="REPEAT_RULE" value="Gentag" />
             <entry key="DONE" value="Afslutttet" />
-            <entry key="DUE_DATE_HELP" value="" />
+            <entry key="REPEAT_RULE" value="Gentag" />
+            <entry key="Email" value="Email" />
+            <entry key="SETTINGS" value="Ops&#xe6;tning" />
             <entry key="EFFORT_ACTUAL" value="Arbejdet" />
+            <entry key="DUE_DATE_HELP" value="" />
         </lang>
     </l10n>
     <theme name="MyTheme">
@@ -267,7 +267,10 @@
         <val key="OnOffSwitch.derive" value="OnOffSwitch" />
         <val key="OnOffSwitch.transparency" value="0" />
         <val key="StickyHeader.bgColor" value="9999ff" />
-        <val key="StickyHeader.fgColor" value="f2f1f1" />
+        <val key="StickyHeader.dis#derive" value="StickyHeader" />
+        <val key="StickyHeader.fgColor" value="ffffff" />
+        <val key="StickyHeader.press#derive" value="StickyHeader" />
+        <val key="StickyHeader.sel#derive" value="StickyHeader" />
         <val key="StickyHeader.transparency" value="255" />
         <val key="SwipeButton.align" value="4" />
         <val key="SwipeButton.bgColor" value="ffff00" />

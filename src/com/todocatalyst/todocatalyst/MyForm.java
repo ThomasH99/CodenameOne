@@ -2154,15 +2154,15 @@ public abstract class MyForm extends Form {
      * destroyed later on). Does nothing in screens with no new edits. Saved
      * items must be read back in constructor of the screen.
      */
-    public void saveLocallyEditedValuesOnAppExit() {
+    public void saveEditedValuesLocallyOnAppExit() {
 
     }
 
-    public boolean restoreLocallyEditedValuesOnAppExit() {
+    public boolean restoreEditedValuesSavedLocallyOnAppExit() {
         return false;
     }
 
-    public void deleteLocallyEditedValuesOnAppExit() {
+    public void deleteEditedValuesSavedLocallyOnAppExit() {
 
     }
 

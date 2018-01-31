@@ -6794,6 +6794,59 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getUpdatedAt();
     }
 
+//public void setNewFieldValue(Item newItem, String field, Item itemBefore, Item itemAfter) {
+    @Override
+    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
+        Item newItem = (Item) this;
+        Item itemBefore = (Item) objectBefore;
+        Item itemAfter = (Item) objectAfter;
+        switch (fieldParseId) {
+            case Item.PARSE_CHALLENGE:
+                newItem.setChallenge(itemBefore.getChallenge()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_PRIORITY:
+//            int diffPrio = itemAfter.getPriority() -itemBefore.getPriority() ;
+//            newItem.setPriority(itemBefore.getPriority()+diffPrio/2);
+                newItem.setPriority(itemBefore.getPriority()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_DREAD_FUN_VALUE:
+                newItem.setDreadFunValue(itemBefore.getDreadFunValue()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_IMPORTANCE:
+                newItem.setImportance(itemBefore.getImportance()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_URGENCY:
+                newItem.setUrgency(itemBefore.getUrgency()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_EARNED_VALUE:
+                newItem.setEarnedValue(itemBefore.getEarnedValue()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_EFFORT_ESTIMATE:
+                newItem.setEffortEstimate(itemBefore.getEffortEstimate()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_ACTUAL_EFFORT:
+                newItem.setActualEffort(itemBefore.getActualEffort()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_REMAINING_EFFORT:
+                newItem.setRemainingEffort(itemBefore.getRemainingEffort()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_INTERRUPTED_TASK:
+                newItem.setInteruptOrInstantTask(itemBefore.isInteruptOrInstantTask()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_STARRED:
+                newItem.setStarred(itemBefore.isStarred()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_STATUS:
+                newItem.setStatus(itemBefore.getStatus()); //UI: same prio as item just before
+                break;
+            case Item.PARSE_ALARM_DATE: //TODO!!! do same for all date fields
+                newItem.setAlarmDate(itemBefore.getAlarmDateD()); //UI: same prio as item just before
+                break;
+        }
+    }
+
+    
+    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public Date getFinishTime(ItemAndListCommonInterface subtask) {

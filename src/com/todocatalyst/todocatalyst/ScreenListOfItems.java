@@ -1510,7 +1510,8 @@ public class ScreenListOfItems extends MyForm {
                     myTree.expandNode(false, swipCont, true);
                 }
             }
-        } : new Button();
+//        } : new Button();
+        } : null;
 //            subTasksButton.setUIID("Label");
         if (subTasksButton != null) {
             subTasksButton.setUIID("ListOfItemsSubtasks");
@@ -1982,7 +1983,7 @@ public class ScreenListOfItems extends MyForm {
                                 //                                finishTimeLabel != null ? finishTimeLabel : (isDone ? completedDateLabel : dueDateLabel)),
                                 BorderLayout.east(isDone ? completedDateLabel : (finishTimeLabel != null ? finishTimeLabel : dueDateLabel))),
                         //                        BoxLayout.encloseY(starButton, subTasksButton),
-                        subTasksButton,
+                        subTasksButton!=null?subTasksButton:new Label(),
                         editItemButton))
                 );
 

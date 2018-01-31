@@ -1096,8 +1096,8 @@ public class ScreenTimer extends MyForm {
 
             buildContentPane();
 
-            boolean valuesRestored = restoreLocallyEditedValuesOnAppExit(); //restore any previously saved values
-            deleteLocallyEditedValuesOnAppExit();
+            boolean valuesRestored = restoreEditedValuesSavedLocallyOnAppExit(); //restore any previously saved values
+            deleteEditedValuesSavedLocallyOnAppExit();
 
             if (timerRunningForPushedEntry) { //Timer was running when app was Paused/Exited
                 timerStack.currEntry.updateAndStoreElapseTimerDurationOnPause(); //force it to pause so timer can be re-started normally
@@ -2663,7 +2663,7 @@ public class ScreenTimer extends MyForm {
     }
 
     @Override
-    public void saveLocallyEditedValuesOnAppExit() {
+    public void saveEditedValuesLocallyOnAppExit() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (item.getObjectIdP() == null) { //new item, save everything locally and restore next time
 ////            Storage.getInstance().writeObject(SCREEN_TITLE + "- EDITED ITEM", item); //save date
@@ -2699,7 +2699,7 @@ public class ScreenTimer extends MyForm {
     }
 
     @Override
-    public boolean restoreLocallyEditedValuesOnAppExit() {
+    public boolean restoreEditedValuesSavedLocallyOnAppExit() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Item itemLS = null;
 //        //if editing of item was ongoing when app was stopped, then recover saved item
@@ -2750,7 +2750,7 @@ public class ScreenTimer extends MyForm {
     }
 
     @Override
-    public void deleteLocallyEditedValuesOnAppExit() {
+    public void deleteEditedValuesSavedLocallyOnAppExit() {
 //        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEM); //delete in case one was 
         Storage.getInstance().deleteStorageFile("ScreenTimerLocalEdit.description"); //save 
         Storage.getInstance().deleteStorageFile("ScreenTimerLocalEdit.comment"); //save 

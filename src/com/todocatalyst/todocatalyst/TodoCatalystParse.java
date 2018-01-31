@@ -941,7 +941,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         }
         ASSERT.that(current instanceof MyForm, "on stop(), current=" + current + " (NOT Form or Component)");
         if (current instanceof MyForm) {
-            ((MyForm) current).saveLocallyEditedValuesOnAppExit(); //save any ongoing edits
+            ((MyForm) current).saveEditedValuesLocallyOnAppExit(); //save any ongoing edits
         }
 //        ScreenTimer.getInstance().saveTimerStatusOnAppStop();
 //        ScreenTimer.getInstance().onDestroy(); //called here because destroy doesn't seem to be called

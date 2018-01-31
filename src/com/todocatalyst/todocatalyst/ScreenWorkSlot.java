@@ -1,21 +1,19 @@
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.components.SpanButton;
+import com.codename1.io.Storage;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
-import com.codename1.ui.FontImage;
-import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
-import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
-import static com.todocatalyst.todocatalyst.MyForm.layout;
+import static com.todocatalyst.todocatalyst.MyForm.putEditedValues2;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -34,6 +32,7 @@ public class ScreenWorkSlot extends MyForm {
 //    MyForm previousForm;
     WorkSlot workSlot;
     static String SCREEN_TITLE = "Workslot";
+    private String FILE_LOCAL_EDITED_WORKSLOT = "ScreenWorkSlot-EditedItem";
     private RepeatRuleParseObject locallyEditedRepeatRule;
     private RepeatRuleParseObject repeatRuleCopyBeforeEdit;
 //    private UpdateField updateActionOnDone;
@@ -332,4 +331,38 @@ public class ScreenWorkSlot extends MyForm {
         
         return content;
     }
+    
+    @Override
+    public void saveEditedValuesLocallyOnAppExit() {
+        localSave = true;
+        putEditedValues2(parseIdMap2);
+        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_WORKSLOT, item); //save 
+        localSave = false;
+    }
+
+    @Override
+    public boolean restoreEditedValuesSavedLocallyOnAppExit() {
+//        Item itemLS = null;
+        boolean savedValues;
+        //if editing of item was ongoing when app was stopped, then recover saved item
+        ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM) || ReplayLog.getInstance().isReplayInProgress()); //local item => replay must/should be Ongoing
+        if (ReplayLog.getInstance().isReplayInProgress() && Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM)) {
+            itemLS = (Item) Storage.getInstance().readObject(FILE_LOCAL_EDITED_ITEM); //read in when initializing the Timer - from here on it is only about saving updates
+            savedValues = true;
+        } else {
+//            itemLS = this.item; //it no locally saved edits, then use item to 'feed' the edits fields
+            ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM));
+            deleteEditedValuesSavedLocallyOnAppExit();
+            savedValues = false;
+        }
+//        return itemLS;
+        return savedValues;
+    }
+
+    @Override
+    public void deleteEditedValuesSavedLocallyOnAppExit() {
+        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEM); //delete in case one was 
+    }
+
+    
 }

@@ -428,7 +428,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //                    } else {
 //                        workTime = wt;
 //                    }
-                        workTime.addWorkTime(wt);
+                    workTime.addWorkTime(wt);
                 }
             }
         }
@@ -542,12 +542,13 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 ////        return getWorkTimeAllocator().getAllocatedWorkTime(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
-
     /**
-     * allocate workTime from this element's WorkTimeDefinition to itemOrList with duration remainingDuration.
+     * allocate workTime from this element's WorkTimeDefinition to itemOrList
+     * with duration remainingDuration.
+     *
      * @param itemOrList
      * @param remainingDuration
-     * @return 
+     * @return
      */
     default public WorkTime allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
 //        return getWorkTimeAllocator().getAllocatedWorkTime(itemOrList);
@@ -619,6 +620,21 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     default public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
         throw new Error("Not supported yet."); //should never be called for ItemLists/Categories?!
     }
+
+    /**
+     * sets an appropriate new value for this object based on the values for the
+     * field in the objects before and after. Used when inserting a new object
+     * into a sorted list to insert it (approximately) in the right place. The
+     * new field value may be the same as the before object (simplest solution)
+     * or be calculated in some other way based on the values before/after, e.g.
+     * as the median value between the two.
+     *
+     * @param newObject
+     * @param fieldParseId
+     * @param objectBefore
+     * @param objectAfter
+     */
+    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter);
 
 //    default public long getWorkTimeRequiredFromOwner() {
 ////        return getRemainingEffort(); //for lists and categories, we use the standard remaining, for Items it's a special impl

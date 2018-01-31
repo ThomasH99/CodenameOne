@@ -109,7 +109,7 @@ public class ScreenItem extends MyForm {
     private String FILE_LOCAL_EDITED_OWNER = "ScreenItem-EditedOwner";
     private String FILE_LOCAL_EDITED_CATEGORIES = "ScreenItem-EditedCategories";
     private String FILE_LOCAL_EDITED_REPEAT_RULE = "ScreenItem-EditedRepeatRule";
-    private boolean localSave; //true when save of item is only local (on app pause/exit)
+    private boolean localSave; //true when save of item is only local (on app pause/exit). Hack to reuse putEditedValues2!
     private boolean remainingEffortSetManually; //true when reaminingEffort has been edited to a different value than the original one from item
     private boolean effortEstimateSetManually; //true when reaminingEffort has been edited to a different value than the original one from item
 
@@ -149,7 +149,7 @@ public class ScreenItem extends MyForm {
 
         //RESTORE locally edited value (if stored on app pause/exit)
 //        itemLS = (Item) restoreLocallyEditedValuesOnAppExit();
-        boolean valuesRestored = restoreLocallyEditedValuesOnAppExit();
+        boolean valuesRestored = restoreEditedValuesSavedLocallyOnAppExit();
 //        if (itemLS != null && this.item.getObjectIdP() == null) {
         if (valuesRestored && this.item.getObjectIdP() == null) {
             this.item = itemLS; //if item is a new item, then we completely ignore that Item and continue with the previously locally saved values
@@ -2000,7 +2000,7 @@ public class ScreenItem extends MyForm {
     }
 
     @Override
-    public void saveLocallyEditedValuesOnAppExit() {
+    public void saveEditedValuesLocallyOnAppExit() {
 //        if (item.getObjectIdP() == null) { //new item, save everything locally and restore next time
 ////            Storage.getInstance().writeObject(SCREEN_TITLE + "- EDITED ITEM", item); //save date
 //            Storage.getInstance().writeObject(FILE_LOCAL_EDITED_ITEM, item); //save 
@@ -2015,7 +2015,7 @@ public class ScreenItem extends MyForm {
     }
 
     @Override
-    public boolean restoreLocallyEditedValuesOnAppExit() {
+    public boolean restoreEditedValuesSavedLocallyOnAppExit() {
 //        Item itemLS = null;
         boolean savedValues;
         //if editing of item was ongoing when app was stopped, then recover saved item
@@ -2026,7 +2026,7 @@ public class ScreenItem extends MyForm {
         } else {
 //            itemLS = this.item; //it no locally saved edits, then use item to 'feed' the edits fields
             ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM));
-            deleteLocallyEditedValuesOnAppExit();
+            deleteEditedValuesSavedLocallyOnAppExit();
             savedValues = false;
         }
 //        return itemLS;
@@ -2034,7 +2034,7 @@ public class ScreenItem extends MyForm {
     }
 
     @Override
-    public void deleteLocallyEditedValuesOnAppExit() {
+    public void deleteEditedValuesSavedLocallyOnAppExit() {
         Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEM); //delete in case one was 
     }
 
