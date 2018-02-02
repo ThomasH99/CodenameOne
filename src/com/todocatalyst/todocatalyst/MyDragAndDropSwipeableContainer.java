@@ -675,7 +675,9 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
     /**
      * This callback method indicates that a component drag has just entered
-     * this component
+     * this component.
+     * 
+     * THJ:called on dropTarget in pointerDragged(x,y) and in dragFinishedImpl(x,y) (itself called from pointerReleased(int x, int y))
      *
      * @param dragged the component being dragged
      */
