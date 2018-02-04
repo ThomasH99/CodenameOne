@@ -333,6 +333,7 @@ public class DAO {
     public int getDueAndOrWaitingTodayCount(boolean includeWaiting, boolean includeStartingToday) {
         //DONE!!!! include Waiting expiring today (OrQuery)
 //        int count = 0;
+//TODO!!! this is called on app exit/stop(), don't send a query then
         ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
         try {
             int count = query.count();
@@ -3728,21 +3729,30 @@ public class DAO {
 //    }
 //</editor-fold>
     public void cacheAllData(Date afterDate, Date beforeDate) {
+        Log.p("Caching Items");
         cacheAllItemsFromParse(afterDate, beforeDate);
+        Log.p("Caching Categories");
         cacheAllCategoriesFromParse(afterDate, beforeDate);
+        Log.p("Caching ItemLists");
         cacheAllItemListsFromParse(afterDate, beforeDate);
+        Log.p("Caching WorkSlots");
         cacheAllWorkSlotsFromParse(afterDate, beforeDate);
+        Log.p("Caching Filters");
         cacheAllFilterSortDefsFromParse(afterDate, beforeDate);
 //        getAllCategoriesFromParse();
 //        getAllCategoriesFromParse(reloadUpdateAfterThis, now);
 //        getAllItemListsFromParse();
 //        getAllItemListsFromParse(reloadUpdateAfterThis, now);
+        Log.p("Caching RepeatRules");
         cacheAllRepeatRulesFromParse(afterDate, beforeDate);
 //        getCategoryList(); //will cache the list of Categories
 //        getItemListList(); //will cache the list of ItemLists
 //        getTemplateList(); //will cache the list of Templates
+        Log.p("Caching CategoryList");
         cacheCategoryList(afterDate, beforeDate); //will cache the list of Categories
+        Log.p("Caching ItemListList");
         cacheItemListList(afterDate, beforeDate); //will cache the list of ItemLists
+        Log.p("Caching TemplateList");
         cacheTemplateList(afterDate, beforeDate); //will cache the list of Templates
 //        cacheUpdateAllCategoryItemReferences(categoryList);
 //        cacheUpdateAllItemListItemReferences(itemListLists);

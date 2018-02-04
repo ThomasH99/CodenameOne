@@ -334,34 +334,34 @@ public class ScreenWorkSlot extends MyForm {
     
     @Override
     public void saveEditedValuesLocallyOnAppExit() {
-        localSave = true;
-        putEditedValues2(parseIdMap2);
-        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_WORKSLOT, item); //save 
-        localSave = false;
+//        localSave = true;
+//        putEditedValues2(parseIdMap2);
+//        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_WORKSLOT, item); //save 
+//        localSave = false;
     }
 
     @Override
     public boolean restoreEditedValuesSavedLocallyOnAppExit() {
 //        Item itemLS = null;
-        boolean savedValues;
+        boolean savedValues=false;
         //if editing of item was ongoing when app was stopped, then recover saved item
-        ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM) || ReplayLog.getInstance().isReplayInProgress()); //local item => replay must/should be Ongoing
-        if (ReplayLog.getInstance().isReplayInProgress() && Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM)) {
-            itemLS = (Item) Storage.getInstance().readObject(FILE_LOCAL_EDITED_ITEM); //read in when initializing the Timer - from here on it is only about saving updates
-            savedValues = true;
-        } else {
-//            itemLS = this.item; //it no locally saved edits, then use item to 'feed' the edits fields
-            ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM));
-            deleteEditedValuesSavedLocallyOnAppExit();
-            savedValues = false;
-        }
+//        ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM) || ReplayLog.getInstance().isReplayInProgress()); //local item => replay must/should be Ongoing
+//        if (ReplayLog.getInstance().isReplayInProgress() && Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM)) {
+//            itemLS = (Item) Storage.getInstance().readObject(FILE_LOCAL_EDITED_ITEM); //read in when initializing the Timer - from here on it is only about saving updates
+//            savedValues = true;
+//        } else {
+////            itemLS = this.item; //it no locally saved edits, then use item to 'feed' the edits fields
+//            ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM));
+//            deleteEditedValuesSavedLocallyOnAppExit();
+//            savedValues = false;
+//        }
 //        return itemLS;
         return savedValues;
     }
 
     @Override
     public void deleteEditedValuesSavedLocallyOnAppExit() {
-        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEM); //delete in case one was 
+//        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEM); //delete in case one was 
     }
 
     

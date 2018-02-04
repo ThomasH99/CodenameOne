@@ -6,15 +6,19 @@ import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
 import com.codename1.ui.Button;
+import com.codename1.ui.CN;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.Display;
+import com.codename1.ui.Form;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.util.Resources;
 import com.codename1.ui.validation.Constraint;
 import com.codename1.ui.validation.RegexConstraint;
+import com.codename1.util.EasyThread;
 import com.parse4cn1.ParseACL;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
@@ -80,7 +84,27 @@ public class ScreenLogin2 extends MyForm {
                 Log.p("Count of Item in Parse = " + count, Log.DEBUG);
             }
             //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
-            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+            EasyThread thread = EasyThread.start("cacheUpdate");
+//            if (true) {
+//                thread.run(() -> {
+//                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//                });
+//            } else {
+//                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//            }
+            thread.run((success) -> {
+                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//                success.onSucess(success); //CN1 Support: is there an error in CN1 for the run(r,t) call?!!!
+            }, (myResult) -> {
+                Form f = Display.getInstance().getCurrent();
+                //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
+                if (f instanceof MyForm && !(f instanceof ScreenLogin2) &&!(f instanceof ScreenMain)&&!(f instanceof ScreenItem)) {
+                    //TODO!!! show "Running" symbyl after like 2 seconds
+//                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
+                    ((MyForm) f).refreshAfterEdit();
+                    thread.kill();
+                }
+            });
 
             //ALARMS - initialize
             AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background

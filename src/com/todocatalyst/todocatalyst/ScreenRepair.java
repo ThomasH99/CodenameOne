@@ -172,7 +172,7 @@ public class ScreenRepair extends MyForm {
     private Form showDeviceInfo() {
         Form hi = new Form("Device info");
 //        getToolbar().setBackCommand(Command.create("", null, (e) -> this.show()));
-        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.show()));
+        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
 //        hi.getToolbar().addCommandToLeftBar(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
         Display d = Display.getInstance();
         String density = "";
@@ -334,7 +334,7 @@ public class ScreenRepair extends MyForm {
 
     private Form showLocalizationInfo() {
         Form hi = new Form("L10N", new TableLayout(16, 2));
-        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.show()));
+        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
 
         L10NManager l10n = L10NManager.getInstance();
         hi.add("format(double)").add(l10n.format(11.11)).
@@ -384,7 +384,7 @@ public class ScreenRepair extends MyForm {
         return false;
     }
 
-    public void setInsertItemValues(Object obj, Object sortField, Object objBefore, Object objAfter, getValueFunction, makeNewValueFunction) {
+    public void setInsertItemValues(Object obj, Object sortField, Object objBefore, Object objAfter) {//, getValueFunction, makeNewValueFunction) {
         if (obj instanceof Item) {
             Item item = (Item) obj;
 
@@ -399,6 +399,8 @@ public class ScreenRepair extends MyForm {
         fPinchOut = new Form(new BorderLayout()) {
             @Override
             public void pointerDragged(int[] x, int[] y) {
+                    ItemList itemList = null;
+                    int pos = 0; //TODO find position of *lowest* container (==highest index, == thumb position == most 'stable' position)
                 if (x.length > 1) { //PINCH == TWO FINGERS
                     //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
                     //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
@@ -408,8 +410,6 @@ public class ScreenRepair extends MyForm {
                     Component finger1Comp = findDropTargetAt(x[0], y[0]); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
                     Component finger2Comp = findDropTargetAt(x[1], y[1]);
                     Container containerList = null; //TODO find container (==srollable list?)
-                    ItemList itemList = null;
-                    int pos = 0; //TODO find position of *lowest* container (==highest index, == thumb position == most 'stable' position)
                     if (newPinchContainer == null) {
                         if (!pinchIncreasing) { //Pinch IN - to delete a just inserted container (or any other item? NO, don't make Delete easy)
                             Component pinchedInComp = null; //TODO find a possible pinchContainer between the 
@@ -593,7 +593,7 @@ public class ScreenRepair extends MyForm {
                 initPinch();
                 pointerDragged(new int[]{50, 100}, new int[]{50, 100});
                 fPinchOut.setToolbar(new Toolbar());
-                fPinchOut.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.show()));
+                fPinchOut.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
                 initPinch();
                 fPinchOut.show();
             }
@@ -724,7 +724,7 @@ public class ScreenRepair extends MyForm {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 Form form = new Form("Local notifiations");
-                form.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.show()));
+                form.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
                 LocalNotificationsShadowList list = AlarmHandler.getInstance().getLocalNotificationsTEST();
                 for (int i = 0, size = list.size(); i < size; i++) {
                     form.addComponent(new SpanLabel(list.get(i).toString()));
