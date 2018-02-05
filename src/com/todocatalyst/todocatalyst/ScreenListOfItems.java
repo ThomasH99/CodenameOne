@@ -263,6 +263,7 @@ public class ScreenListOfItems extends MyForm {
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
         setLayout(new BorderLayout());
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        addShowListener((e) -> { //DOESN'T WORK since animate doesn't trigger onShow
 //            if (InsertNewTaskContainer.lastInsertNewTaskContainer != null) {
 //                setEditOnShow(InsertNewTaskContainer.lastInsertNewTaskContainer.getTextField());
@@ -272,13 +273,14 @@ public class ScreenListOfItems extends MyForm {
 //        if (filterSortDef != null) {
 //            this.filterSortDef = filterSortDef;
 //        } else {
-////            filterSortDef = FilterSortDef.fetchFilterSortDef(SCREEN_ID, itemList, new FilterSortDef(SCREEN_ID, itemList)); 
+////            filterSortDef = FilterSortDef.fetchFilterSortDef(SCREEN_ID, itemList, new FilterSortDef(SCREEN_ID, itemList));
 ////            this.filterSortDef = FilterSortDef.fetchFilterSortDef(SCREEN_ID, itemListOrg, null); //if no filter previously defined/saved, then don't create one until the user either edits the filter or turns Sort on
 //            this.filterSortDef = itemListOrg.getFilterSortDef(); //if no filter previously defined/saved, then don't create one until the user either edits the filter or turns Sort on
 //        }
 //        this.filterSortDef = itemListOrg.getFilterSortDef(); //if no filter previously defined/saved, then don't create one until the user either edits the filter or turns Sort on
 //        this.filterSortDef = filterSortDef;
 //        optionUnmodifiableFilter = !filterCanBeModified;
+//</editor-fold>
         expandedObjects = new HashSet();
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
@@ -286,7 +288,7 @@ public class ScreenListOfItems extends MyForm {
             String text = (String) e.getSource();
             Container compList = null;
             compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-            if (true) {
+            if (compList!=null) {
 //            boolean showAll = text == null || text.length() == 0;
                 int labelCount = 0;
                 int nonLabelCount = 0;
@@ -1460,6 +1462,7 @@ public class ScreenListOfItems extends MyForm {
 
         }; //D&D
         swipCont.setGrabsPointerEvents(true); //when swiping on task description, it also activated the button to show tasks details
+        if (Test.DEBUG) swipCont.setName(item.getText());
 
         if (myForm.keepPos != null) {
             myForm.keepPos.testItemToKeepInSameScreenPosition(item, swipCont);
@@ -1528,6 +1531,7 @@ public class ScreenListOfItems extends MyForm {
 //                    east.addComponent(subTasksButton);
             }
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        } else {
 ////        Button showSubtasks = makeSubtaskButton(item, swipCont);
 //            showSubtasksXXX = makeSubtaskButton(item, () -> {
@@ -1552,7 +1556,7 @@ public class ScreenListOfItems extends MyForm {
 //                }
 //            }
 //        }
-
+//</editor-fold>
         //ITEM TEXT
         MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(
                 item.getText()
@@ -1828,7 +1832,8 @@ public class ScreenListOfItems extends MyForm {
         );
         editItemButton.setCommand(editItemCmd);
 
-        mainCont.putClientProperty("item", item);
+//        mainCont.putClientProperty("item", item);
+        swipCont.putClientProperty("element", item);
 //        editItemButton.setUIID("IconEdit");
         editItemButton.setUIID("ListOfItemsEditItemIcon");
 //        editItemButton.setGrabsPointerEvents(true);

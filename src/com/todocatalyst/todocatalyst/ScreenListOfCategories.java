@@ -4,7 +4,6 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.l10n.L10NManager;
 //import com.codename1.ui.*;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
@@ -12,16 +11,8 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.Button;
 import com.codename1.ui.Label;
-import com.codename1.ui.InfiniteContainer;
-import com.codename1.ui.Image;
-import static com.codename1.ui.Component.LEFT;
-import com.codename1.ui.Form;
-import com.codename1.ui.SwipeableContainer;
-import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
-import com.parse4cn1.ParseObject;
 import java.util.HashSet;
 import java.util.List;
 //import com.java4less.rchart.*;
@@ -76,6 +67,7 @@ public class ScreenListOfCategories extends MyForm {
         super(SCREEN_TITLE, previousForm, () -> updateItemListOnDone.update(categoryList));
 //        setUpdateItemListOnDone(updateItemListOnDone);
         this.categoryList = categoryList;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        this.previousForm = previousForm;
 //        this.updateItemListOnDone = updateItemListOnDone;
 
@@ -85,8 +77,9 @@ public class ScreenListOfCategories extends MyForm {
 //        setToolbar(new Toolbar());
 //        setTitle(title);
 //        addCommandsToToolbar(getToolbar(), theme);
-//        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own scrolling 
+//        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own scrolling
 //        getContentPane().setScrollableY(true);
+//</editor-fold>
         setScrollable(false);
         setLayout(new BorderLayout());
         expandedObjects = new HashSet();
@@ -149,6 +142,7 @@ public class ScreenListOfCategories extends MyForm {
 
         //NEW CATEGORY
         toolbar.addCommandToRightBar(makeNewCategoryCmd(categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                new Command("", iconNew) {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
@@ -161,10 +155,12 @@ public class ScreenListOfCategories extends MyForm {
 //                }).show();
 //            }
 //        });
+//</editor-fold>
 
         //BACK
 //        toolbar.addCommandToLeftBar(makeDoneCommand("", FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle())));
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                new Command("", iconDone) {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
@@ -174,7 +170,8 @@ public class ScreenListOfCategories extends MyForm {
 //            }
 //        });
 
-        //CANCEL - not relevant, all edits are done immediately so not possible to cancel
+//CANCEL - not relevant, all edits are done immediately so not possible to cancel
+//</editor-fold>
     }
 
     /**
@@ -228,6 +225,7 @@ public class ScreenListOfCategories extends MyForm {
                 return null;
             }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            public Object removeFromOwner() {
 //                categoryList.remove(category);
 //                return categoryList;
@@ -242,7 +240,11 @@ public class ScreenListOfCategories extends MyForm {
 //            public Object insertBelow(Movable element) {
 //                return insertIntoOwnerAtPositionOf(element);
 //            }
+//</editor-fold>
         };
+                swipCont.putClientProperty("element", category);
+
+        if (Test.DEBUG) swipCont.setName(category.getText());
 
         if (keepPos != null) {
             keepPos.testItemToKeepInSameScreenPosition(category, swipCont);
@@ -478,24 +480,28 @@ public class ScreenListOfCategories extends MyForm {
         dt = new MyTree2(itemLists, expandedObjects) {
             Category category;
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            protected Component createNode(Object node, int depth) {
 //                return createNode(node, depth, null);
 //            }
+//</editor-fold>
             @Override
             protected Component createNode(Object node, int depth, Category category) {
                 Container cmp = null;
                 if (node instanceof Item) {
-//                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.refresh(), 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.refresh(),
 //                            false, //selectionMode not allowed for Categories??
 //                            null); //TODO any reason to support operations on multiple selected categories?
-                    //TODO!!! store expanded itemLists:
+//TODO!!! store expanded itemLists:
 //                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> refreshAfterEdit(),
 ////                    cmp = ScreenListOfItems.buildItemContainer((Item) node, () -> true, () -> refreshAfterEdit(),
 //                            false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??
 //                            null, //selected objects
 ////                            category, keepPos, expandedObjects, ()->animateMyForm(), false); //hack: get access to the latest category (the one above the items in the Tree list)
 //                            category, keepPos, expandedObjects, ()->animateMyForm(), false, false); //hack: get access to the latest category (the one above the items in the Tree list)
+//</editor-fold>
                     cmp = ScreenListOfItems.buildItemContainer(ScreenListOfCategories.this, (Item) node, null, category); //hack: get access to the latest category (the one above the items in the Tree list)
                 } else if (node instanceof Category) {
                     cmp = buildCategoryContainer((Category) node, categoryList, keepPos, () -> refreshAfterEdit()); //, (ItemList) treeParent);

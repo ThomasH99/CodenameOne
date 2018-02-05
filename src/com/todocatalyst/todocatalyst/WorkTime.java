@@ -254,7 +254,8 @@ public class WorkTime {
      */
     public long getFinishTime() {
 //        return nextWorkTime == null ? finishTime : Math.max(finishTime, nextWorkTime.getFinishTime()); //must call getFinishTime() to get value recursively (although very rarely needed)
-        ASSERT.that(workSlotSlices != null && workSlotSlices.size() > 0, "no workSlotSlices in WorkTime:" + this);
+        ASSERT.that(workSlotSlices != null , "workSlotSlices==null in WorkTime:" + this);
+        ASSERT.that(true || workSlotSlices == null || workSlotSlices.size() > 0, "workSlotSlices.size()==0 in WorkTime:" + this); //normal case with empty list, e.g. ??
         return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(workSlotSlices.size() - 1).getEndTime() : MyDate.MAX_DATE;
     }
 

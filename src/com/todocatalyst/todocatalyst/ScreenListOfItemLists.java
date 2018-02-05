@@ -292,6 +292,9 @@ public class ScreenListOfItemLists extends MyForm {
             }
 
         }; //use filtered/sorted ItemList for Timer
+                swipCont.putClientProperty("element", itemList);
+
+        if (Test.DEBUG) swipCont.setName(itemList.getText());
 
         if (keepPos != null) {
             keepPos.testItemToKeepInSameScreenPosition(itemList, swipCont);

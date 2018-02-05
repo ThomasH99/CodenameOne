@@ -1600,4 +1600,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        return getWorkTimeAllocator().getWorkTime(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
+
+    @Override
+    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

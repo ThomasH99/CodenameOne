@@ -121,6 +121,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return cloneMe();
     }
 
+    @Override
+    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     interface MySaveFunction {
 
         public boolean save();

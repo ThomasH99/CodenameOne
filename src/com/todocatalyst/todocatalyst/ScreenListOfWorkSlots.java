@@ -331,6 +331,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //            if(showOwner)south.addComponent(new Label("For: " + workSlot.getOwner().getText()));
         south.addComponent(new Label(("\"" + workSlot.getText() + "\"")));
 //        }
+        cont.putClientProperty("element", workSlot);
 
         return cont;
     }

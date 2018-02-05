@@ -377,7 +377,7 @@ public class ScreenRepair extends MyForm {
     Label cont2Label;//= new Label();
     Label dropTarget1Label;// = new Label();
     Label dropTarget2Label;//= new Label();
-    InlineInsertNewTaskContainer newPinchContainer;
+    private InlineInsertNewTaskContainer pinchContainer;
     Item pinchItem;
 
     private boolean minimumPinchSizeReached() {
@@ -395,6 +395,8 @@ public class ScreenRepair extends MyForm {
         }
     }
 
+    private int pinchInitialYDistance=-1;
+    
     private void initPinch() {
         fPinchOut = new Form(new BorderLayout()) {
             @Override
@@ -410,22 +412,22 @@ public class ScreenRepair extends MyForm {
                     Component finger1Comp = findDropTargetAt(x[0], y[0]); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
                     Component finger2Comp = findDropTargetAt(x[1], y[1]);
                     Container containerList = null; //TODO find container (==srollable list?)
-                    if (newPinchContainer == null) {
+                    if (pinchContainer == null) {
                         if (!pinchIncreasing) { //Pinch IN - to delete a just inserted container (or any other item? NO, don't make Delete easy)
                             Component pinchedInComp = null; //TODO find a possible pinchContainer between the 
                             if (pinchedInComp instanceof InlineInsertNewTaskContainer) {
-                                newPinchContainer = (InlineInsertNewTaskContainer) pinchedInComp;
+                                pinchContainer = (InlineInsertNewTaskContainer) pinchedInComp;
                             }
                         } else {
 
                             pinchItem = new Item();
-                            newPinchContainer = new InlineInsertNewTaskContainer(ScreenRepair.this, pinchItem, itemList) {
+                            pinchContainer = new InlineInsertNewTaskContainer(ScreenRepair.this, pinchItem, itemList) {
                                 public Dimension getPreferredSize() {
                                     return new Dimension(getPreferredW(), Math.min(getPreferredH(), y[0] - y[1]));
                                 }
                             };
                             //insert 
-                            containerList.addComponent(pos, newPinchContainer);
+                            containerList.addComponent(pos, pinchContainer);
                             ScreenRepair.this.refreshAfterEdit(); //really necessary?
                         }
                     }
@@ -444,7 +446,7 @@ public class ScreenRepair extends MyForm {
                     display(x, y, true);
                 } else {
                     //PinchOut is (maybe) finished (newPinchContainer!=null means a pinch was ongoing before)
-                    if (newPinchContainer != null) { //a pinch container is either created or found (on PinchInToDelete)
+                    if (pinchContainer != null) { //a pinch container is either created or found (on PinchInToDelete)
 
                         if (minimumPinchSizeReached()) { //TODO implement
                             //add new item into underlying list
@@ -452,10 +454,10 @@ public class ScreenRepair extends MyForm {
                         } else {
                             //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
                             Container list = null;
-                            list.removeComponent(newPinchContainer);
+                            list.removeComponent(pinchContainer);
                             ScreenRepair.this.refreshAfterEdit();
                         }
-                        newPinchContainer = null; //indicates done with this container
+                        pinchContainer = null; //indicates done with this container
                     }
                     display(x, y, false);
                 }
