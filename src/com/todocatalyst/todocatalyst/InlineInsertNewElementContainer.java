@@ -7,6 +7,7 @@ package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
+import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
@@ -20,7 +21,7 @@ import com.parse4cn1.ParseObject;
  *
  * @author Thomas
  */
-public class InlineInsertNewTaskContainer extends Container {
+public class InlineInsertNewElementContainer extends Container {
 
 //    private Container oldNewTaskCont=null;
     private boolean insertAsSubtask = false; //true if the user has selected to insert new task as a subtask of the preceding task
@@ -37,10 +38,19 @@ public class InlineInsertNewTaskContainer extends Container {
     private final static String ENTER_TASK = "New task, ->for subtask)"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
     private final static String ENTER_TASK_NO_SWIPE_RIGHT = "New task"; //"Task (swipe right: subtask)"
 
-    interface InsertNewTaskFunc {
+    /**
+     * will create a new element to insert (Item, ItemList, Category, ...)
+     */
+    interface InsertNewElementFunc {
 
 //        Component make(Item item);
-        InlineInsertNewTaskContainer make(Item item, ItemAndListCommonInterface itemOrItemList);
+        /**
+         * checks on element and if it corresponds to the previous element created by the Insert function, returns a new container to enter another element inline
+         * @param element the element which determines if a new insertContainer should be inserted *after* the container for element
+         * @param targetList list into which a new element will be inserted
+         * @return 
+         */
+        Component make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -79,7 +89,16 @@ public class InlineInsertNewTaskContainer extends Container {
 //    public InlineInsertNewTaskContainer(Item item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
 //        
 //    }
-    public InlineInsertNewTaskContainer(MyForm myForm, Item item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
+    /**
+     * create a new Container and a new Item 
+     * @param myForm
+     * @param itemOrItemListForNewTasks2 
+     */
+    public InlineInsertNewElementContainer(MyForm myForm, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
+        this(myForm, new Item(), itemOrItemListForNewTasks2);
+    }
+    
+    public InlineInsertNewElementContainer(MyForm myForm, Item item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
         this.myForm = myForm;
 //        ASSERT.that(item2 != null, "why item==null here?"); //Can be null when an empty insertNewTaskContainer is created in an empty list
         this.item = item2;
@@ -553,7 +572,7 @@ public class InlineInsertNewTaskContainer extends Container {
      * @param itemOrItemList
      * @return
      */
-    public InlineInsertNewTaskContainer getInsertNewTaskContainerFromForm(Item item, ItemAndListCommonInterface itemOrItemList) {
+    public InlineInsertNewElementContainer getInsertNewTaskContainerFromForm(Item item, ItemAndListCommonInterface itemOrItemList) {
 //        if (lastInsertNewTaskContainer == null) { //TODO Optimization: called for every container, replace by local variable?
 //            return null;
 //        } else {
@@ -567,7 +586,7 @@ public class InlineInsertNewTaskContainer extends Container {
             return null;
         } else {
             if (item == myForm.lastInsertNewTaskContainer.newItem) {
-                return new InlineInsertNewTaskContainer(myForm, myForm.lastInsertNewTaskContainer.newItem, itemOrItemList);
+                return new InlineInsertNewElementContainer(myForm, myForm.lastInsertNewTaskContainer.newItem, itemOrItemList);
             } else {
                 return null;
             }

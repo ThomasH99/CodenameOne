@@ -9,6 +9,7 @@ import ca.weblite.codename1.json.JSONObject;
 import com.codename1.io.CacheMap;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
+import com.codename1.util.EasyThread;
 import com.parse4cn1.ParseBatch;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
@@ -1662,16 +1663,44 @@ public class DAO {
         save(anyParseObject, true);
     }
 
+    EasyThread backgroundThread = null; //thread with background task
+
 //    public void save(ItemAndListCommonInterface anyParseObject) {
 //        save((ParseObject)anyParseObject, true);
 //    }
     /**
-     * save in background. Used when . All saveInBackground must be saved in
+     * returns immediately, save takes place in background so not guaranteed that the object has been saved on return from this call. 
+     * Multiple calls will ensure that each is saved before the next (all saves happens on same thread). 
      *
      * @param anyParseObject
      */
     public void saveInBackground(ParseObject anyParseObject) {
-        saveImpl(anyParseObject);
+//        saveImpl(anyParseObject);
+        if (backgroundThread == null) {
+            backgroundThread = EasyThread.start("DAO.backgroundSave");
+        }
+        backgroundThread.run(() -> {
+            saveImpl(anyParseObject);
+        });
+    }
+
+    /**
+     * saves the list of ParseObjects in the background but in sequential order
+     * so it is guaranteed that eg. new ParseObjects are saved before the lists
+     * in which they are added.
+     *
+     * @param parseObjects
+     */
+    public void saveInBackgroundSequential(ParseObject... parseObjects) {
+//        saveImpl(anyParseObject);
+        if (backgroundThread == null) {
+            backgroundThread = EasyThread.start("DAO.backgroundSave");
+        }
+        backgroundThread.run(() -> {
+            for (ParseObject parseObject : parseObjects) {
+                saveImpl(parseObject);
+            }
+        });
     }
 
     /**
@@ -1957,18 +1986,20 @@ public class DAO {
     }
 
     /**
-     * get all workslots that have at least some available time within the interval between startDate and endDate. 
-     *after* startDate and NOT after endTime. E.g. slot.endDate is bigger or equial to startDate and slot.startTime is 
-     * smaller than endDate.
+     * get all workslots that have at least some available time within the
+     * interval between startDate and endDate. after* startDate and NOT after
+     * endTime. E.g. slot.endDate is bigger or equial to startDate and
+     * slot.startTime is smaller than endDate.
+     *
      * @param startDate
      * @param endDate
-     * @return 
+     * @return
      */
 //    public WorkSlotList getWorkSlots(Date startDate, Date endDate) {
     public WorkSlotList getWorkSlots(Date startDate) {
-        return getWorkSlots(startDate,new Date(MyDate.MAX_DATE));
+        return getWorkSlots(startDate, new Date(MyDate.MAX_DATE));
     }
-    
+
     public WorkSlotList getWorkSlots(Date startDate, Date endDate) {
 
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);

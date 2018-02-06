@@ -43,10 +43,10 @@ import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.tree.Tree;
 import com.codename1.ui.util.EventDispatcher;
-import com.todocatalyst.todocatalyst.InlineInsertNewTaskContainer.InsertNewTaskFunc;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import com.todocatalyst.todocatalyst.InlineInsertNewElementContainer.InsertNewElementFunc;
 
 /**
  * <p>
@@ -98,7 +98,7 @@ public class MyTree2 extends ContainerScrollY {
 //    private boolean multilineMode;
     private HashSet expandedObjects; // = new HashSet();
 //    private FilterSortDef itemListFilteredSorted;
-    private InsertNewTaskFunc insertNewTaskFunc = null;
+    private InsertNewElementFunc insertNewElementFunc = null;
 
     StickyHeaderGenerator stickyHeaderGen;
 
@@ -140,7 +140,7 @@ public class MyTree2 extends ContainerScrollY {
      * @param insertNewTask function to determine a newTaskContainer should be
      * insert below an Item
      */
-    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewTaskFunc insertNewTask) {
+    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask) {
         super();
         this.model = model;
         setUIID("MyTree2");
@@ -151,7 +151,7 @@ public class MyTree2 extends ContainerScrollY {
 //        }
         this.expandedObjects = expandedObjects;
 //        this.itemListFilteredSorted = itemListFilteredSorted;
-        this.insertNewTaskFunc = insertNewTask;
+        this.insertNewElementFunc = insertNewTask;
 
         FilterSortDef itemListFilteredSorted;
         if (model instanceof ItemList && (itemListFilteredSorted = ((ItemList) model).getFilterSortDef()) != null && itemListFilteredSorted.isSortOn()) {
@@ -638,13 +638,13 @@ public class MyTree2 extends ContainerScrollY {
 
             //check if a new insertNewTask container should be created for current and if so insert it:
 //            if (insertNewTask != null && current instanceof Item && model instanceof ItemAndListCommonInterface) {
-            if (insertNewTaskFunc != null && current instanceof Item //instanceof false if current==null!
+            if (insertNewElementFunc != null && current instanceof Item //instanceof false if current==null!
                     && (parent instanceof ItemAndListCommonInterface
                     || (parent == null && model instanceof ItemAndListCommonInterface))) {
 //                Component insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) model);
 //                InsertNewTaskContainer insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) parent);
-                InlineInsertNewTaskContainer insertNewTask
-                        = insertNewTaskFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
+                InlineInsertNewElementContainer insertNewTask
+                        = insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
                 if (insertNewTask != null) {
                     destination.add(insertNewTask);
 //                    getComponentForm().setEditOnShow(insertNewTask.getTextField()); //ComponentForm should never be undefined here since MyTree should already be in a form

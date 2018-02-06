@@ -421,7 +421,7 @@ public class ScreenListOfItems extends MyForm {
 //            this.keepPos.setNewScrollYPosition();
 //        }
         restoreKeepPos();
-        InlineInsertNewTaskContainer.setTextFieldEditableOnShowStatic(this); //if there is a InlineInsertNewTaskContainer then focus the input field
+        InlineInsertNewElementContainer.setTextFieldEditableOnShowStatic(this); //if there is a InlineInsertNewTaskContainer then focus the input field
 
 //        revalidate(); //TODO: needed? YES
 //        animateHierarchy(300); not good since it visibly refreshes the screen
@@ -2136,7 +2136,7 @@ refreshAfterEdit();
 //                    }
 //                    InsertNewTaskContainer insertNewTaskContainer = new InsertNewTaskContainer(item, orgItemOrItemList, myForm);
 //</editor-fold>
-                    InlineInsertNewTaskContainer insertNewTaskContainer = new InlineInsertNewTaskContainer(myForm, item, ownerItemOrItemList);
+                    InlineInsertNewElementContainer insertNewTaskContainer = new InlineInsertNewElementContainer(myForm, item, ownerItemOrItemList);
 //                    ((ScreenListOfItems) myForm).lastInsertNewTaskContainer = insertNewTaskContainer;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //find place to insert container
@@ -3315,7 +3315,7 @@ refreshAfterEdit();
             return myTree;
         } else {
 //            return new InsertNewTaskContainer(null, listOfItems, ScreenListOfItems.this);
-            return new InlineInsertNewTaskContainer(this, null, listOfItems);
+            return new InlineInsertNewElementContainer(this, null, listOfItems);
         }
 
     }
