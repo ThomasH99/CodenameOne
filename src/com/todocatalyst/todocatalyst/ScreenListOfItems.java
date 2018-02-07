@@ -425,6 +425,7 @@ public class ScreenListOfItems extends MyForm {
 
 //        revalidate(); //TODO: needed? YES
 //        animateHierarchy(300); not good since it visibly refreshes the screen
+super.refreshAfterEdit();
     }
 
     /**

@@ -9,6 +9,7 @@ import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
+import com.codename1.ui.Display;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
@@ -425,7 +426,7 @@ public class InlineInsertNewElementContainer extends Container {
         })));
     }
 
-    public MyTextField2 getTextField() {
+    public MyTextField2 getTextFieldXXX() {
 //        getComponentForm().setEditOnShow(taskTextEntryField2); //UI: start editing this field, only if empty (to avoid keyboard popping up)
         return taskTextEntryField2; //UI: start editing this field, only if empty (to avoid keyboard popping up)
 //        taskTextEntryField2.requestFocus(); //enter edit mode??
@@ -608,6 +609,7 @@ public class InlineInsertNewElementContainer extends Container {
     }
 
     public static void setTextFieldEditableOnShowStatic(MyForm f) {
+//        f.addShowListener((e)->taskTextEntryField2.startEditingAsync());
 //        if (lastInsertNewTaskContainer != null && f.equals(lastInsertNewTaskContainer.getComponentForm())
 //        if (lastInsertNewTaskContainer != null && lastInsertNewTaskContainer.taskTextEntryField2 != null) {
         if (f.lastInsertNewTaskContainer != null) {
