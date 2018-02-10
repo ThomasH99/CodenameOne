@@ -89,11 +89,11 @@ public class Category extends ItemList { //Flatten { //implements ExpandableInte
     /**
      * Creates new category string
      *
-     * @param string name of category (used in lists etc)
+     * @param categoryName name of category (used in lists etc)
      */
-    public Category(String string) {
+    public Category(String categoryName) {
         this();
-        setText(string);
+        setText(categoryName);
 //        description = string;
         //setSave(true); // always save created categories //-no, keep same interface everywhere
         //itemList = new ItemList();

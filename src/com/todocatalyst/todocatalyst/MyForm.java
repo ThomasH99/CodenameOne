@@ -86,13 +86,15 @@ public abstract class MyForm extends Form {
 //    private static boolean showDetailsForAllTasks = false;
 //    private static HashSet tasksWithDetailsShown;
     protected HashSet showDetails = new HashSet(); //set of Items etc expanded to show task details
-    protected InlineInsertNewElementContainer lastInsertNewTaskContainer;
-    private TextArea editFieldOnShowOrRefresh;
+//    protected InlineInsertNewElementContainer lastInsertNewElementContainer;
+    protected InsertNewElementFunc lastInsertNewElementContainer;
+//    private TextArea editFieldOnShowOrRefresh;
+    private InsertNewElementFunc inlineInsertContainer;
     private BooleanFunction testIfEdit;
 
-    public TextArea getEditFieldOnShowOrRefresh() {
-        return editFieldOnShowOrRefresh;
-    }
+//    public TextArea getEditFieldOnShowOrRefresh() {
+//        return editFieldOnShowOrRefresh;
+//    }
 
     interface BooleanFunction {
 
@@ -104,16 +106,35 @@ public abstract class MyForm extends Form {
      *
      * @param editFieldOnShowOrRefresh
      */
-    public void setEditOnShowOrRefresh(TextArea editFieldOnShowOrRefresh, BooleanFunction testIfEdit) {
-        this.editFieldOnShowOrRefresh = editFieldOnShowOrRefresh;
-        this.testIfEdit = testIfEdit;
-        setEditOnShow(editFieldOnShowOrRefresh);
+    public InsertNewElementFunc getInlineInsertContainer() {
+        return inlineInsertContainer;
     }
 
-    public void setEditOnShowOrRefresh(TextArea editFieldOnShowOrRefresh) {
-        setEditOnShowOrRefresh(editFieldOnShowOrRefresh, null);
+    public void setInlineInsertContainer(InsertNewElementFunc inlineInsertContainer) {
+        //if resetting to null, remove previous container with animation
+//        if (inlineInsertContainer == null && this.inlineInsertContainer != null && this.inlineInsertContainer instanceof Component) {
+//            Container parent = ((Component) this.inlineInsertContainer).getParent();
+//            parent.removeComponent((Component) this.inlineInsertContainer);
+//            parent.animateLayout(300);
+//        }
+        if (inlineInsertContainer == null) { //) && this.inlineInsertContainer != null ) {
+            setEditOnShow(null); //remove old textArea
+        }
+        if (inlineInsertContainer != null && inlineInsertContainer.getTextArea() != null) {
+            setEditOnShow(inlineInsertContainer.getTextArea());
+        }
+        this.inlineInsertContainer = inlineInsertContainer;
     }
 
+//    public void setEditOnShowOrRefresh(TextArea editFieldOnShowOrRefresh) { //, BooleanFunction testIfEdit) {
+//        this.editFieldOnShowOrRefresh = editFieldOnShowOrRefresh;
+////        this.testIfEdit = testIfEdit;
+//        setEditOnShow(editFieldOnShowOrRefresh);
+//    }
+//
+//    public void setEditOnShowOrRefresh(TextArea editFieldOnShowOrRefresh) {
+//        setEditOnShowOrRefresh(editFieldOnShowOrRefresh, null);
+//    }
     String SCREEN_TITLE = "";
     //TODO: move titles into Screens
     static final String SCREEN_LISTS_TITLE = "Lists";
@@ -1092,8 +1113,10 @@ public abstract class MyForm extends Form {
      * of the entire list)
      */
     public void refreshAfterEdit() {
-        if (editFieldOnShowOrRefresh != null && (testIfEdit == null || testIfEdit.test())) {
-            editFieldOnShowOrRefresh.startEditingAsync();
+//        if (editFieldOnShowOrRefresh != null) { // && (testIfEdit == null || testIfEdit.test())) {
+        if (inlineInsertContainer != null && inlineInsertContainer.getTextArea() != null) { // && (testIfEdit == null || testIfEdit.test())) {
+//            editFieldOnShowOrRefresh.startEditingAsync();
+            inlineInsertContainer.getTextArea().startEditingAsync();
         }
     }
 
@@ -2227,7 +2250,7 @@ public abstract class MyForm extends Form {
     }
 
     private int pinchDistance;
-    private boolean pinchOut;
+//    private boolean pinchOut;
 
     private void insertNewContainer() {
         //find position where to insert in list
@@ -2254,6 +2277,7 @@ public abstract class MyForm extends Form {
 //        pointerDragged(x[0], y[0]);
     }
 
+    //DEBUG:
     private Form fPinchOut;// = new Form(new BorderLayout());
     private Container disp1;// = new Container(BoxLayout.y());
     private Label title;//= new Label();
@@ -2266,12 +2290,14 @@ public abstract class MyForm extends Form {
     private Label cont2Label;//= new Label();
     private Label dropTarget1Label;// = new Label();
     private Label dropTarget2Label;//= new Label();
-    private Container pinchContainer; //Container holding the pinchComponent (and implementing the resize)
-    private Component pinchComponent;
-    private Component prevComponentAbove;
-    private Component prevComponentBelow;
-    private Item pinchItem;
+    private Component pinchContainer; //Container holding the pinchComponent (and implementing the resize)
+//    private Component pinchComponent;
+//    private Component prevComponentAbove;
+//    private Component prevComponentBelow;
+//    private Item pinchItem;
+
     private boolean pinchInsertEnabled;
+    private int pinchInitialYDistance = Integer.MIN_VALUE;
 
     private void initPinch() {
 //fPinchOut.setScrollableY(true);
@@ -2303,23 +2329,19 @@ public abstract class MyForm extends Form {
     private void display(int[] x, int[] y, boolean inPinch) {
         title.setText(inPinch ? "***PINCH***" : "MOVE");
         xLabel.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
-        if (x.length > 1) {
-            yLabel.setText("(x[1],y[1])=(" + x[1] + "," + y[1] + ")");
-            distLabel.setText("dist=" + distance(x, y));
-        }
-
         Component comp1 = getComponentAt(x[0], y[0]);
-        comp1Label.setText("Comp1=" + comp1);
+        comp1Label.setText("Comp1=" + comp1.getName());
         if (comp1 instanceof Container) {
             Container cont1 = (Container) comp1;
             cont1Label.setText("Cont1=" + cont1);
             Component dropTarget1 = cont1.findDropTargetAt(x[0], y[0]);
             dropTarget1Label.setText("dropTarget1=" + dropTarget1);
         }
-
         if (x.length > 1) {
+            yLabel.setText("(x[1],y[1])=(" + x[1] + "," + y[1] + ")");
+            distLabel.setText("dist=" + distance(x, y));
             Component comp2 = getComponentAt(x[1], y[1]);
-            comp1Label.setText("Comp2=" + comp2);
+            comp1Label.setText("Comp2=" + comp2.getName());
             if (comp2 instanceof Container) {
                 Container cont2 = (Container) comp2;
                 cont2Label.setText("Cont2=" + cont2);
@@ -2354,9 +2376,6 @@ public abstract class MyForm extends Form {
         return null;
     }
 
-    private String PinchInsertComponent = "PinchInsertComponent";
-    private int pinchInitialYDistance = Integer.MIN_VALUE;
-
     /**
      * inserts insertObj at the appropriate position
      *
@@ -2364,10 +2383,9 @@ public abstract class MyForm extends Form {
      * @param componentBelow
      * @param insertObj
      */
-    private void insertPinchContainer(MyDragAndDropSwipeableContainer componentAbove, MyDragAndDropSwipeableContainer componentBelow, Object insertObj) {
-        insertPinchContainer(componentAbove, componentBelow, insertObj, false);
-    }
-
+//    private void insertPinchContainer(MyDragAndDropSwipeableContainer componentAbove, MyDragAndDropSwipeableContainer componentBelow, Object insertObj) {
+//        insertPinchContainer(componentAbove, componentBelow, insertObj, false);
+//    }
     /**
      * return true if an insert is possible with the given components
      *
@@ -2375,26 +2393,24 @@ public abstract class MyForm extends Form {
      * @param componentBelow
      * @return
      */
-    private boolean canInsertPinchContainer(MyDragAndDropSwipeableContainer componentAbove, MyDragAndDropSwipeableContainer componentBelow) {
-        return insertPinchContainer(componentAbove, componentBelow, null, true);
-    }
-
+//    private boolean canInsertPinchContainer(MyDragAndDropSwipeableContainer componentAbove, MyDragAndDropSwipeableContainer componentBelow) {
+//        return insertPinchContainer(componentAbove, componentBelow, null, true);
+//    }
     interface IntFunction {
 
         int get(int orgH);
     }
 
-    private Container wrap(Component pinchComponent, IntFunction getHeigth) {
+    private Container wrap(final Component pinchComponent) {
+        Container pinchContainer = null;
         if (pinchComponent != null) { //pinchOut makes sense here, a new pinchInsert container with the right type of element is created and inserted
             pinchContainer = new Container(BorderLayout.center()) {
                 public Dimension calcPreferredSize() {
-//                                    Dimension orgPrefSize = super.calcPreferredSize();
                     Dimension orgPrefSize = pinchComponent.getPreferredSize();
-//                                    if (oldPinchContainer != null && oldPinchContainer == Container.this) { //I am now the old pinchContainer
-//                                        return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
                     //if I'm old pinchContainer, and reduced to zero size
-//                                    } else {
-                    return new Dimension(orgPrefSize.getWidth(), getHeigth.get(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
+                    //TODO!! do like Clear app: if pinching further out than the size show some 'elastic' empty space around the container 
+                    int h = Math.max(0, Math.min(pinchDistance, orgPrefSize.getHeight())); //cannot become bigger than preferredHeight of the component
+                    return new Dimension(orgPrefSize.getWidth(), h); //Math.max(0, since pinch distance may become negative when fingers cross vertically
                 }
             };
             pinchContainer.add(BorderLayout.CENTER, pinchComponent);
@@ -2402,15 +2418,25 @@ public abstract class MyForm extends Form {
         return pinchContainer;
     }
 
-    private Component createInsertContainer(ItemAndListCommonInterface elementType, ItemAndListCommonInterface list) {
-        if (elementType instanceof Item) {
-            return wrap(xxx);
+    private Component createInsertContainer(ItemAndListCommonInterface elementType) {
+        return createInsertContainer(elementType, elementType.getOwner());
+    }
 
+    private Component createInsertContainer(ItemAndListCommonInterface elementType, ItemAndListCommonInterface list) {
+        if (elementType instanceof Item && list instanceof Category) {
+            Item newItem = new Item();
+//            newItem.addCategoryToItem((Category)list, false); //add category in InlineInsertNewItemContainer2
+            return wrap(new InlineInsertNewItemContainer2(MyForm.this, (Item) elementType));
+        } else if (elementType instanceof Item && list instanceof ItemList) {
+            return wrap(new InlineInsertNewItemContainer2(MyForm.this, (Item) elementType));
         } else if (elementType instanceof Category) {
-            else if (elementType instanceof ItemList) {
-                        
-                    }
+            return wrap(new InlineInsertNewCategoryContainer(MyForm.this, (Item) elementType));
+//        } else if (elementType instanceof ItemList) {
+//            return wrap(new InlineInsertNewItemListContainer(MyForm.this, (Item) elementType));
+//        } else if (elementType instanceof WorkSlot) {
+//            return wrap(new InlineInsertNewWorkSlotContainer(MyForm.this, (Item) elementType));
         }
+        return null;
     }
 
     /**
@@ -2428,16 +2454,19 @@ public abstract class MyForm extends Form {
      * @return
      */
 //    private boolean insertPinchContainer(MyDragAndDropSwipeableContainer componentAbove, MyDragAndDropSwipeableContainer componentBelow, Object insertObj, boolean checkValidity) {
-    private boolean insertPinchContainer(Container containerAbove, Container containerBelow, Object insertObj, boolean checkValidity) {
-        Container parentAbove = containerAbove.getParent();
-        Container parentBelow = containerBelow.getParent();
+    private Component createAndInsertPinchContainer(int[] x, int[] y) {
+        Component containerAbove = y[0] < y[1] ? getComponentAt(y[0], x[0]) : getComponentAt(y[1], x[1]);
+        Component containerBelow = y[0] < y[1] ? getComponentAt(y[1], x[1]) : getComponentAt(y[0], x[0]);
+        Container parentContainerAbove = containerAbove.getParent();
+        Container parentContainerBelow = containerBelow.getParent();
         MyDragAndDropSwipeableContainer dropComponentAbove = findDropContainerIn(containerAbove);
         MyDragAndDropSwipeableContainer dropComponentBelow = findDropContainerIn(containerBelow);
         ItemAndListCommonInterface objAbove = (ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
 //        List objAboveOwnerList = null;
         ItemAndListCommonInterface objBelow = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
 //        List objBelowOwnerList = null;
-        Component insertContainer;
+        Component insertContainer = null;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (dropComponentAbove != null) {
 //            objAbove = (ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
 //            objAboveOwnerList = objAbove.getOwner().getList();
@@ -2447,22 +2476,22 @@ public abstract class MyForm extends Form {
 //            objBelow = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
 //            objBelowOwnerList = objBelow.getOwner().getList();
 //        }
+//</editor-fold>
         if (dropComponentAbove == null) { //pull down on top-most item, insert before the first item
-            if (checkValidity) {
-                return true;
-            }
+//            if (checkValidity) {                return true;            }
 //            if (false) {                objBelowOwnerList.add(0, insertObj);            }
-            insertContainer = createInsertContainer(objBelow, null); //create insertContainer
-            parentBelow.addComponent(0, insertContainer); //insert insertContainer at beginning of list that the other pinch finger touches
-            return true;
+            insertContainer = createInsertContainer(objBelow); //create insertContainer
+            parentContainerBelow.addComponent(0, insertContainer); //insert insertContainer at beginning of list that the other pinch finger touches
         } else if (dropComponentBelow == null) { //pull down on bottom-most item, insert at the end of the list
 //            if (checkValidity) {                return true;            }
 //            if (false) {                objAboveOwnerList.add(insertObj);            }
             insertContainer = createInsertContainer(objAbove, null); //create insertContainer
-            parentBelow.addComponent(parentBelow.getComponentCount(), insertContainer); //insert insertContainer at end of list that the other pinch finger touches
-            return true;
+            parentContainerBelow.addComponent(parentContainerBelow.getComponentCount(), insertContainer); //insert insertContainer at end of list that the other pinch finger touches
 //        } else if (objAboveOwnerList == objBelowOwnerList) { //we're inserting in the same list
-        } else if (parentAbove == parentBelow) { //we're inserting in the same list, insert just below the containerAbove
+        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
+//            assert objAbove.getClass()==objBelow.getClass():"";
+            ASSERT.that(objAbove.getClass() == objBelow.getClass()); //should always be of same class if in same list (TODO!!!! what about Today view?!
+            //Covers both Items, ItemList, Category, createInsertContainer will create the right container
 //            if (checkValidity) {                return true;            }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            int insertIndex = objBelowOwnerList.indexOf(objBelow);
@@ -2470,16 +2499,17 @@ public abstract class MyForm extends Form {
 //            objAboveOwnerList.add(insertIndex, insertObj);
 //</editor-fold>
             insertContainer = createInsertContainer(objAbove, null); //create insertContainer
-            parentAbove.addComponent(parentAbove.getComponentIndex(containerAbove) + 1, insertContainer); //insert insertContainer at end of list that the other pinch finger touches
-            return true;
-        } else if ((objAbove instanceof Category ||objAbove instanceof ItemList) && objBelow instanceof Item) { //insert above the Item (instanceof ItemList also matches Category)
+            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
+            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert insertContainer at end of list that the other pinch finger touches
+        } else if (objBelow instanceof Item && (objAbove instanceof Category || objAbove instanceof ItemList)) { //insert above the Item (instanceof ItemList also matches Category)
             if (((Category) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (checkValidity) {                     return true;                }
 //                int insertIndex = objBelowOwnerList.indexOf(objBelow);
 //                objBelowOwnerList.add(insertIndex, insertObj);
-                insertContainer = createInsertContainer(objBelow, null); //create insertContainer
-                parentBelow.addComponent(0, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
-                return true;
+//</editor-fold>
+                insertContainer = createInsertContainer(objBelow, objBelow.getOwner()); //create insertContainer
+                parentContainerBelow.addComponent(0, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        } else if (objAbove instanceof ItemList && objBelow instanceof Item) { //insert above the Item (instanceof ItemList also matches Category)
@@ -2490,107 +2520,138 @@ public abstract class MyForm extends Form {
 //                return true;
 //            }
 //</editor-fold>
-        } else if (objAbove instanceof Item && (objBelow instanceof ItemList||objBelow instanceof ItemList)) { //insert *below* (+1) the objAbove Item 
+        } else if (objAbove instanceof Item && (objBelow instanceof ItemList || objBelow instanceof ItemList)) { //insert *below* (+1) the objAbove Item 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (checkValidity) {                return true;            }
 //            int insertIndex = objAboveOwnerList.indexOf(objAbove) + 1;
 //            objBelowOwnerList.add(insertIndex, insertObj);
-                insertContainer = createInsertContainer(objAbove, null); //create insertContainer
-                parentAbove.addComponent(parentAbove.getComponentCount(), insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
-            return true;
+//</editor-fold>
+            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
+            parentContainerAbove.addComponent(parentContainerAbove.getComponentCount(), insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
         } else if (objAbove instanceof Item && objBelow instanceof Item) { //both objects are Items but not in same list, insert below (+1) objAbove
-            if (checkValidity) {
-                return true;
-            }
-            int insertIndex = objAboveOwnerList.indexOf(objAbove) + 1;
-            objBelowOwnerList.add(insertIndex, insertObj);
-            return true;
-        } else { //insert *after* objAbove
+//            if (checkValidity) {                return true;            }
+//            ItemAndListCommonInterface owner = ((ItemAndListCommonInterface) objAbove).getOwner();
+//            int insertIndex = owner.getList().indexOf(objAbove) + 1;
+//            owner.getList().add(insertIndex, insert);
+            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
+            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
+            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+        } else if (objAbove != null) { //insert *after* objAbove
             ASSERT.that(objAbove != null);
-            if (checkValidity) {
-                return true;
-            }
-            int insertIndex = objAboveOwnerList.indexOf(objAbove);
-            objAboveOwnerList.add(insertIndex, insertObj);
-            return true;
+//            if (checkValidity) {                return true;            }
+            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
+            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
+            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
         }
-        return wrap()
-        return false;
+        return insertContainer;
     }
 
-    private int getInsertContainerHeight(int preferredHeight) {
-        if (pinchOut) {
-            //TODO!! do like Clear app: if pinching further out than the size show some 'elastic' empty space around the container 
-            return Math.min(pinchDistance, preferredHeight); //cannot become bigger than preferredHeight of the component
-        } else {
-            return Math.max(0, preferredHeight - pinchDistance); //must not get below 0
-        }
-    }
-
-    interface CreateElementComponent {
-
-        Component createFinalComponent(Object insertElement);
-    }
-    CreateElementComponent createElementComponent;
-
-    interface PinchContainerSize {
-
-        Dimension calcPreferredSize();
-    }
-
-    interface CreateInsertElementContainer {
-
-        Component createAndInsert(int[] x, int[] y, boolean onlyTestButNoInsert);
-
-//        CreateInsertElementContainer create(MyForm myForm, boolean createNewOnEnter, List elementList, PinchContainerSize size);
-//
-//        ItemAndListCommonInterface getElement();
-    }
-    CreateInsertElementContainer createAndInsertPinchComponent;
-
-    public void initPinchInsert(CreateElementComponent createElementComponent) {
-        this.createElementComponent = createElementComponent;
-    }
-
-    /**
-     * returns true if comp is visually between
-     *
-     * @param x
-     * @param y
-     * @param comp
-     * @return
-     */
-    public boolean isComponentBetween(int[] x, int[] y, Component cmp) {
-        Container cont;
-        cont.contains(cmp);
-//    public boolean contains(Component cmp) {
-        if (cmp == null) {
-            return false;
-        }
-        cmp = cmp.getParent();
-        while (cmp != null) {
-            if (cmp == this) {
-                return true;
-            }
-            cmp = cmp.getParent();
-        }
-        return false;
-//            comp.getX();
-//        int count = getComponentCount();
-//        for (int i = count - 1; i >= 0; i--) {
-//            Component cmp = getComponentAt(i);
-//            if (cmp.contains(x, y)) {
-//                if (cmp.isDropTarget()) {
-//                    return cmp;
-//                }
-//                if (cmp instanceof Container) {
-//                    Component component = ((Container) cmp).findDropTargetAt(x, y);
-//                    if(component != null) {
-//                        return component;
-//                    }
-//                }
-//            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private int getInsertContainerHeight(int preferredHeight) {
+//        if (pinchOut) {
+//            //TODO!! do like Clear app: if pinching further out than the size show some 'elastic' empty space around the container
+//            return Math.min(pinchDistance, preferredHeight); //cannot become bigger than preferredHeight of the component
+//        } else {
+//            return Math.max(0, preferredHeight - pinchDistance); //must not get below 0
 //        }
-//        return null;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    interface CreateElementComponent {
+//
+//        Component createFinalComponent(Object insertElement);
+//    }
+//    CreateElementComponent createElementComponent;
+//
+//    interface PinchContainerSize {
+//
+//        Dimension calcPreferredSize();
+//    }
+//
+//    interface CreateInsertElementContainer {
+//
+//        Component createAndInsert(int[] x, int[] y, boolean onlyTestButNoInsert);
+//
+////        CreateInsertElementContainer create(MyForm myForm, boolean createNewOnEnter, List elementList, PinchContainerSize size);
+////
+////        ItemAndListCommonInterface getElement();
+//    }
+//    CreateInsertElementContainer createAndInsertPinchComponent;
+//
+//    public void initPinchInsert(CreateElementComponent createElementComponent) {
+//        this.createElementComponent = createElementComponent;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//     * returns true if comp is visually between
+//     *
+//     * @param x
+//     * @param y
+//     * @param comp
+//     * @return
+//     */
+//    public boolean isComponentBetween(int[] x, int[] y, Component cmp) {
+//        Container cont;
+//        cont.contains(cmp);
+////    public boolean contains(Component cmp) {
+//        if (cmp == null) {
+//            return false;
+//        }
+//        cmp = cmp.getParent();
+//        while (cmp != null) {
+//            if (cmp == this) {
+//                return true;
+//            }
+//            cmp = cmp.getParent();
+//        }
+//        return false;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            comp.getX();
+////        int count = getComponentCount();
+////        for (int i = count - 1; i >= 0; i--) {
+////            Component cmp = getComponentAt(i);
+////            if (cmp.contains(x, y)) {
+////                if (cmp.isDropTarget()) {
+////                    return cmp;
+////                }
+////                if (cmp instanceof Container) {
+////                    Component component = ((Container) cmp).findDropTargetAt(x, y);
+////                    if(component != null) {
+////                        return component;
+////                    }
+////                }
+////            }
+////        }
+////        return null;
+////</editor-fold>
+//    }
+//</editor-fold>
+    private static MyDragAndDropSwipeableContainer findDropContainerIn(Component comp) {
+//        int count = cont.getComponentCount();
+//        for (int i = count - 1; i >= 0; i--) {
+        if (comp instanceof MyDragAndDropSwipeableContainer) {
+            return (MyDragAndDropSwipeableContainer) comp;
+        } else if (comp instanceof Container) {
+            Container cont = (Container) comp;
+            for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+                Component cmp = cont.getComponentAt(i);
+                if (cmp instanceof MyDragAndDropSwipeableContainer) {
+                    return (MyDragAndDropSwipeableContainer) cmp;
+                }
+            }
+            //for performance reasons, avoid diving into hierarchy of each sub Container, test top-level first
+            for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+                Component cmp = cont.getComponentAt(i);
+                if (cmp instanceof Container) {
+                    Component component = findDropContainerIn((Container) cmp);
+                    if (component != null) {
+                        return (MyDragAndDropSwipeableContainer) component;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public Component getComponentOn(Container comp, int x, int y, boolean onlyDropTarget) {
@@ -2601,113 +2662,116 @@ public abstract class MyForm extends Form {
         }
     }
 
-    private Component create(int[] x, int[] y, boolean checkValidity) {
-        int yMin = y[1] <= y[0] ? y[1] : y[0];
-        int yMax = y[1] > y[0] ? y[1] : y[0];
-        int xMin = y[1] <= y[0] ? x[1] : x[0]; //xMin is the x[n] corresponding to the minimal y[n] 
-        int xMax = y[1] > y[0] ? x[1] : x[0];
-
-        MyDragAndDropSwipeableContainer componentAbove = getComponentOn(disp1, xMin, yMin, focusScrolling);
-        MyDragAndDropSwipeableContainer componentBelow = getComponentOn(disp1, xMax, yMax, focusScrolling);
-//        Container parentAbove = componentAbove.getParent().getParent();
-//        Container parentBelow = componentBelow.getParent().getParent();
-        ItemAndListCommonInterface objAbove = null;
-        List objAboveOwnerList = null;
-        ItemAndListCommonInterface objBelow = null;
-        List objBelowOwnerList = null;
-        if (componentAbove != null) {
-            objAbove = (ItemAndListCommonInterface) componentAbove.getDragAndDropObject();
-            objAboveOwnerList = objAbove.getOwner().getList();
-        }
-        if (componentBelow != null) {
-            objBelow = (ItemAndListCommonInterface) componentBelow.getDragAndDropObject();
-            objBelowOwnerList = objBelow.getOwner().getList();
-            if (objAbove instanceof Item) {
-
-            }
-        } else if (componentAbove == null) { //pull down on top-most item, insert before the first item
-            if (checkValidity) {
-                return true;
-            }
-            objBelowOwnerList.add(0, insertObj);
-            return true;
-        } else if (componentBelow == null) { //pull down on bottom-most item, insert at the end of the list
-            if (checkValidity) {
-                return true;
-            }
-            objAboveOwnerList.add(insertObj);
-            return true;
-        } else if (objAboveOwnerList == objBelowOwnerList) { //we're inserting in the same list
-            if (checkValidity) {
-                return true;
-            }
-//            int insertIndex = objBelowOwnerList.indexOf(objBelow);
-            int insertIndex = objAboveOwnerList.indexOf(objAbove); //insert below the top-most object
-            objAboveOwnerList.add(insertIndex, insertObj);
-            return true;
-        } else if (objAbove instanceof Category && objBelow instanceof Item) { //insert above the Item (instanceof ItemList also matches Category)
-            if (((Category) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
-                if (checkValidity) {
-                    return true;
-                }
-                int insertIndex = objBelowOwnerList.indexOf(objBelow);
-                objBelowOwnerList.add(insertIndex, insertObj);
-                return true;
-            }
-        } else if (objAbove instanceof ItemList && objBelow instanceof Item) { //insert above the Item (instanceof ItemList also matches Category)
-            if (((ItemList) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
-                if (checkValidity) {
-                    return true;
-                }
-                int insertIndex = objBelowOwnerList.indexOf(objBelow);
-                objBelowOwnerList.add(insertIndex, insertObj);
-                return true;
-            }
-        } else if (objAbove instanceof Item && objBelow instanceof ItemList) { //insert *below* (+1) the objAbove Item 
-            if (checkValidity) {
-                return true;
-            }
-            int insertIndex = objAboveOwnerList.indexOf(objAbove) + 1;
-            objBelowOwnerList.add(insertIndex, insertObj);
-            return true;
-        } else if (objAbove instanceof Item && objBelow instanceof Item) { //both objects are Items but not in same list, insert below (+1) objAbove
-            if (checkValidity) {
-                return true;
-            }
-            int insertIndex = objAboveOwnerList.indexOf(objAbove) + 1;
-            objBelowOwnerList.add(insertIndex, insertObj);
-            return true;
-        } else { //insert *after* objAbove
-            ASSERT.that(objAbove != null);
-            if (checkValidity) {
-                return true;
-            }
-            int insertIndex = objAboveOwnerList.indexOf(objAbove);
-            objAboveOwnerList.add(insertIndex, insertObj);
-            return true;
-        }
-        return false;
-        return null;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Component create(int[] x, int[] y, boolean checkValidity) {
+//        int yMin = y[1] <= y[0] ? y[1] : y[0];
+//        int yMax = y[1] > y[0] ? y[1] : y[0];
+//        int xMin = y[1] <= y[0] ? x[1] : x[0]; //xMin is the x[n] corresponding to the minimal y[n]
+//        int xMax = y[1] > y[0] ? x[1] : x[0];
+//
+//        MyDragAndDropSwipeableContainer componentAbove = getComponentOn(disp1, xMin, yMin, focusScrolling);
+//        MyDragAndDropSwipeableContainer componentBelow = getComponentOn(disp1, xMax, yMax, focusScrolling);
+////        Container parentAbove = componentAbove.getParent().getParent();
+////        Container parentBelow = componentBelow.getParent().getParent();
+//        ItemAndListCommonInterface objAbove = null;
+//        List objAboveOwnerList = null;
+//        ItemAndListCommonInterface objBelow = null;
+//        List objBelowOwnerList = null;
+//        if (componentAbove != null) {
+//            objAbove = (ItemAndListCommonInterface) componentAbove.getDragAndDropObject();
+//            objAboveOwnerList = objAbove.getOwner().getList();
+//        }
+//        if (componentBelow != null) {
+//            objBelow = (ItemAndListCommonInterface) componentBelow.getDragAndDropObject();
+//            objBelowOwnerList = objBelow.getOwner().getList();
+//            if (objAbove instanceof Item) {
+//
+//            }
+//        } else if (componentAbove == null) { //pull down on top-most item, insert before the first item
+//            if (checkValidity) {
+//                return true;
+//            }
+//            objBelowOwnerList.add(0, insertObj);
+//            return true;
+//        } else if (componentBelow == null) { //pull down on bottom-most item, insert at the end of the list
+//            if (checkValidity) {
+//                return true;
+//            }
+//            objAboveOwnerList.add(insertObj);
+//            return true;
+//        } else if (objAboveOwnerList == objBelowOwnerList) { //we're inserting in the same list
+//            if (checkValidity) {
+//                return true;
+//            }
+////            int insertIndex = objBelowOwnerList.indexOf(objBelow);
+//            int insertIndex = objAboveOwnerList.indexOf(objAbove); //insert below the top-most object
+//            objAboveOwnerList.add(insertIndex, insertObj);
+//            return true;
+//        } else if (objAbove instanceof Category && objBelow instanceof Item) { //insert above the Item (instanceof ItemList also matches Category)
+//            if (((Category) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
+//                if (checkValidity) {
+//                    return true;
+//                }
+//                int insertIndex = objBelowOwnerList.indexOf(objBelow);
+//                objBelowOwnerList.add(insertIndex, insertObj);
+//                return true;
+//            }
+//        } else if (objAbove instanceof ItemList && objBelow instanceof Item) { //insert above the Item (instanceof ItemList also matches Category)
+//            if (((ItemList) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
+//                if (checkValidity) {
+//                    return true;
+//                }
+//                int insertIndex = objBelowOwnerList.indexOf(objBelow);
+//                objBelowOwnerList.add(insertIndex, insertObj);
+//                return true;
+//            }
+//        } else if (objAbove instanceof Item && objBelow instanceof ItemList) { //insert *below* (+1) the objAbove Item
+//            if (checkValidity) {
+//                return true;
+//            }
+//            int insertIndex = objAboveOwnerList.indexOf(objAbove) + 1;
+//            objBelowOwnerList.add(insertIndex, insertObj);
+//            return true;
+//        } else if (objAbove instanceof Item && objBelow instanceof Item) { //both objects are Items but not in same list, insert below (+1) objAbove
+//            if (checkValidity) {
+//                return true;
+//            }
+//            int insertIndex = objAboveOwnerList.indexOf(objAbove) + 1;
+//            objBelowOwnerList.add(insertIndex, insertObj);
+//            return true;
+//        } else { //insert *after* objAbove
+//            ASSERT.that(objAbove != null);
+//            if (checkValidity) {
+//                return true;
+//            }
+//            int insertIndex = objAboveOwnerList.indexOf(objAbove);
+//            objAboveOwnerList.add(insertIndex, insertObj);
+//            return true;
+//        }
+//        return false;
+//        return null;
+//    }
+//</editor-fold>
     @Override
     public void pointerDragged(int[] x, int[] y) {
         if (!pinchInsertEnabled) {
             super.pointerDragged(x, y);
         } else { //pinchInsertEnabled
 //            } else { //pinchContainer != null) => we already have a pinchContainer (either being inserted or inserted previously)
-            if (x.length <= 1) { //PinchOut is (maybe) finished (newPinchContainer!=null means a pinch was ongoing before)
+            if (x.length <= 1) { //PinchOut is either finished or not ongoing (newPinchContainer!=null means a pinch was ongoing before)
                 if (pinchContainer == null) { //no previous pinchContainer, do nothing
                     super.pointerDragged(x, y);
-                } else { //a pinch container already exists
+                } else { //a pinch container already exists, do nothing, insertContainer already in place
                     if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
-                        //add new item into underlying list - NO, done in the pinchConatiner itself when hitting Enter or [>]
+//<editor-fold defaultstate="collapsed" desc="comment">
+//add new item into underlying list - NO, done in the pinchConatiner itself when hitting Enter or [>]
 //                    itemList.addItemAtIndex(pinchItem, pos);
-                        //insert pinchContainer into the displayed list at the right position
+//insert pinchContainer into the displayed list at the right position
 //                        insertPinchContainer(prevComponentAbove, prevComponentBelow, pinchContainer); //ALREADY inserted when growing, just leave it in place
-                        //replace pinchContainer by (temporary) new Element container to quickly update (before regenerating the list) - NO, done in pinchContainer itself as well
+//replace pinchContainer by (temporary) new Element container to quickly update (before regenerating the list) - NO, done in pinchContainer itself as well
 //                        pinchContainer.getParent().replace(pinchContainer, createElementComponent.createFinalComponent(itemList), null); //TODO!!! add meaningful animation
 //                        pinchContainer = null; //keep the container if there's a later pinchIn
+//</editor-fold>
                     } else {
                         //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
                         Label emptyLabel = new Label();
@@ -2716,7 +2780,7 @@ public abstract class MyForm extends Form {
                         pinchContainerParent.removeComponent(emptyLabel);
                         pinchContainer = null; //indicates done with this container
 //                        MyForm.this.refreshAfterEdit();
-                        MyForm.this.revalidate();
+                        MyForm.this.revalidate(); //necessary after using replace()??
                     }
                     pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
                 }
@@ -2728,201 +2792,185 @@ public abstract class MyForm extends Form {
                 int yMax = y[1] > y[0] ? y[1] : y[0];
                 int xMin = y[1] <= y[0] ? x[1] : x[0]; //xMin is the x[n] corresponding to the minimal y[n] 
                 int xMax = y[1] > y[0] ? x[1] : x[0];
-
-                int newDist = yMax - yMin;
+                int newYDist = yMax - yMin;
+//                if (newYDist<0)newYDist=0; //should not be allowed to become negative
                 if (pinchInitialYDistance == Integer.MIN_VALUE) {
-                    pinchInitialYDistance = newDist; //Math.abs(y[1]-y[0]);
+                    pinchInitialYDistance = newYDist; //Math.abs(y[1]-y[0]);
                 }
-                pinchDistance = newDist - pinchInitialYDistance;
-                pinchOut = pinchDistance > 0;
+                pinchDistance = newYDist - pinchInitialYDistance;
+                if (pinchDistance < 0) {
+                    pinchDistance = 0; //should not be allowed to become negative
+                }
+//                pinchOut = pinchDistance > 0;
 
                 if (pinchContainer == null) {
                     //for now: simply decrease the size of the existing container
-                    if (pinchOut) {
+//                    if (pinchOut) {
+                    if (pinchDistance > 0) { //as soon as we have a positive pinchOut, create and insert the insertContainer
                         //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
-                        pinchComponent = createAndInsertPinchComponent.createAndInsert(x, y, true, () -> pinchDistance);
-                        if (pinchComponent != null) { //pinchOut makes sense here, a new pinchInsert container with the right type of element is created and inserted
-                            pinchContainer = new Container(BorderLayout.center()) {
-                                public Dimension calcPreferredSize() {
-//                                    Dimension orgPrefSize = super.calcPreferredSize();
-                                    Dimension orgPrefSize = pinchComponent.getPreferredSize();
-//                                    if (oldPinchContainer != null && oldPinchContainer == Container.this) { //I am now the old pinchContainer
-//                                        return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
-                                    //if I'm old pinchContainer, and reduced to zero size
-//                                    } else {
-                                    return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
-                                }
-                            };
-                            pinchContainer.add(BorderLayout.CENTER, pinchComponent);
-
-                        }
-//                        MyForm.this.refreshAfterEdit(); //really necessary? //no, should only be done once the new element is effectively inserted (so, should be done by the InsertContainer itself)
-                        MyForm.this.revalidate(); //refresh
-
-                    } else {
-                        //DO NOTHING (don't create a new pinchContainer if pinching it)
-                        //TODO!! is the pinch container between the fingers??
-                        //reduce size of existing container
-                    }
-                } else { //pinchContainer != null
-                    //we already have a pinchContainer (either being inserted or inserted previously
-                    if (!pinchOut) {
-//Pinch IN - to delete a just inserted container (or any other item? NO, don't make Delete easy)
-                        //TODO!!!!! check if dropTargets are MyDragAndDropSwipeableContainer
-//                        MyDragAndDropSwipeableContainer fingerAboveComp = (MyDragAndDropSwipeableContainer) findDropTargetAt(xMin, yMin); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
-//                        MyDragAndDropSwipeableContainer fingerBelowComp = (MyDragAndDropSwipeableContainer) findDropTargetAt(xMax, yMax);
-                        Component pinchedInComp = null; //TODO find a possible pinchContainer between the 
-                        int firstIndex = fingerAboveComp.getParent().getComponentIndex(fingerAboveComp);
-                        int lastIndex = 0;
-                        if (fingerAboveComp.getParent() == fingerBelowComp.getParent()) {
-                            lastIndex = fingerBelowComp.getParent().getComponentIndex(fingerBelowComp);
-                        } else {
-                            lastIndex = fingerBelowComp.getParent().getComponentCount();
-                        }
-                        Container parentList = null;
-                        for (int i = firstIndex, size = lastIndex; i >= size; i++) {
-                            Component comp = parentList.getComponentAt(i);
-                            if (comp.getClientProperty("element")) {
-                                pinchContainer = comp;
-                            }
-                        }
-                        if (pinchedInComp instanceof InlineInsertNewElementContainer) {
-                            pinchContainer = (InlineInsertNewElementContainer) pinchedInComp;
-                        }
-                    } else {
-                    }
-
-                    Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
-                    display(x, y, true);
-                }
-            }
-        }
-        //            super.pointerDragged(x[0], y[0]);
-        super.pointerDragged(x, y);
-
-    }
-
-    public void pointerDraggedADVANCED(int[] x, int[] y) {
-        if (!pinchInsertEnabled) {
-            super.pointerDragged(x, y);
-        } else { //pinchInsertEnabled
-//            } else { //pinchContainer != null) => we already have a pinchContainer (either being inserted or inserted previously)
-            if (x.length <= 1) { //PinchOut is (maybe) finished (newPinchContainer!=null means a pinch was ongoing before)
-                if (pinchContainer == null) { //no previous pinchContainer, do nothing
-                    super.pointerDragged(x, y);
-                } else { //a pinch container already exists
-                    ItemList itemList = null;
-                    int pos = 0; //TODO find position of *lowest* container (==highest index, == thumb position == most 'stable' position)
-                    if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
-                        //add new item into underlying list - NO, done in the pinchConatiner itself when hitting Enter or [>]
-//                    itemList.addItemAtIndex(pinchItem, pos);
-                        //insert pinchContainer into the displayed list at the right position
-                        insertPinchContainer(componentAbove, componentBelow, pinchContainer);
-                        //replace pinchContainer by (temporary) new Element container to quickly update (before regenerating the list) - NO, done in pinchContainer itself as well
-//                        pinchContainer.getParent().replace(pinchContainer, createElementComponent.createFinalComponent(itemList), null); //TODO!!! add meaningful animation
-//                        pinchContainer = null; //keep the container if there's a later pinchIn
-                    } else {
-                        //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
-                        Container list = null;
-                        Label emptyLabel = new Label();
-                        Container pinchContainerParent = pinchContainer.getParent();
-                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
-                        pinchContainerParent.removeComponent(emptyLabel);
-                        pinchContainer = null; //indicates done with this container
-                        MyForm.this.refreshAfterEdit();
-                    }
-                    pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
-                }
-                display(x, y, false);
-            } else { // (x.length > 1) => PINCH == TWO FINGERS 
-                //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
-                //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
-                int yMin = y[1] <= y[0] ? y[1] : y[0];
-                int yMax = y[1] > y[0] ? y[1] : y[0];
-                int xMin = y[1] <= y[0] ? x[1] : x[0]; //xMin is the x[n] corresponding to the minimal y[n] 
-                int xMax = y[1] > y[0] ? x[1] : x[0];
-
-                int newDist = yMax - yMin;
-                if (pinchInitialYDistance == Integer.MIN_VALUE) {
-                    pinchInitialYDistance = newDist; //Math.abs(y[1]-y[0]);
-                }
-                pinchDistance = newDist - pinchInitialYDistance;
-                pinchOut = pinchDistance > 0;
-
-                if (pinchContainer != null) { //we already have a pinchContainer (either being inserted or inserted previously
-                    //for now: simply decrease the size of the existing container
-                    if (pinchOut) {
-                        //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
-                        //do nothing (insert container is already there)
-                    } else {
-                        //TODO!! is the pinch container between the fingers??
-                        //reduce size of existing container
-                    }
-                } else { //pinchContainer == null
-                    if (pinchOut) {  //pinch increasing (normal case) (if no previous insert container and pinchIn, do nothing
-//            Component fingerAboveComp = findDropTargetAt(x[0], y[0]); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
-//            Component fingerBelowComp = findDropTargetAt(x[1], y[1]);
-                        //TODO!!!!! check if dropTargets are MyDragAndDropSwipeableContainer
-                        MyDragAndDropSwipeableContainer fingerAboveComp = (MyDragAndDropSwipeableContainer) findDropTargetAt(xMin, yMin); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
-                        MyDragAndDropSwipeableContainer fingerBelowComp = (MyDragAndDropSwipeableContainer) findDropTargetAt(xMax, yMax);
-                        if (canInsertPinchContainer(fingerAboveComp, fingerBelowComp)) { //makes sense to insert here
-                            //create the appropriate type of insert container (Item, Category, ItemList, WorkSlow(?)
-                            pinchContainer = createAndInsertPinchComponent.create(MyForm.this, true, elementList,
-                                    () -> {
-                                        Dimension orgPrefSize = super.calcPreferredSize();
-                                        return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight()));
-                                    });
+//                        pinchComponent = createAndInsertPinchComponent.createAndInsert(x, y, true, () -> pinchDistance);
+//                        pinchComponent = createAndInsert(x, y, true, () -> pinchDistance);
+                        pinchContainer = createAndInsertPinchContainer(x, y);
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                            pinchContainer = new InlineInsertNewTaskContainer(MyForm.this, itemList) {
+//                        if (pinchComponent != null) { //pinchOut makes sense here, a new pinchInsert container with the right type of element is created and inserted
+//                            pinchContainer = new Container(BorderLayout.center()) {
 //                                public Dimension calcPreferredSize() {
-//                                    Dimension orgPrefSize = super.calcPreferredSize();
-////                                return new Dimension(getPreferredW(), Math.min(getPreferredH(), Math.max(0, y[0] - y[1]))); //Math.max(0, since pinch distance may become negative when fingers cross vertically
+////                                    Dimension orgPrefSize = super.calcPreferredSize();
+//                                    Dimension orgPrefSize = pinchComponent.getPreferredSize();
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                                    if (oldPinchContainer != null && oldPinchContainer == Container.this) { //I am now the old pinchContainer
+////                                        return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
+////if I'm old pinchContainer, and reduced to zero size
+////                                    } else {
+////</editor-fold>
 //                                    return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
 //                                }
 //                            };
+//                            pinchContainer.add(BorderLayout.CENTER, pinchComponent);
+//                        }
 //</editor-fold>
-                        }
-
-                        Container containerList = null; //TODO find container (==srollable list?)
-                        pinchItem = new Item();
-                        //insert 
-                        containerList.addComponent(pos, pinchContainer);
-                        MyForm.this.refreshAfterEdit(); //really necessary?
-                    } else { //Pinch IN - to delete a just inserted container (or any other item? NO, don't make Delete easy)
-                        Component pinchedInComp = null; //TODO find a possible pinchContainer between the 
-                        int firstIndex = fingerAboveComp.getParent().getComponentIndex(fingerAboveComp);
-                        int lastIndex = 0;
-                        if (fingerAboveComp.getParent() == fingerBelowComp.getParent()) {
-                            lastIndex = fingerBelowComp.getParent().getComponentIndex(fingerBelowComp);
-                        } else {
-                            lastIndex = fingerBelowComp.getParent().getComponentCount();
-                        }
-                        Container parentList = null;
-                        for (int i = firstIndex, size = lastIndex; i >= size; i++) {
-                            Component comp = parentList.getComponentAt(i);
-                            if (comp.getClientProperty("element")) {
-                                pinchContainer = comp;
-                            }
-                        }
-                        if (pinchedInComp instanceof InlineInsertNewElementContainer) {
-                            pinchContainer = (InlineInsertNewElementContainer) pinchedInComp;
-                        }
+//                        MyForm.this.refreshAfterEdit(); //really necessary? //no, should only be done once the new element is effectively inserted (so, should be done by the InsertContainer itself)
+                        MyForm.this.revalidate(); //refresh
+                    } else {
+                        //reduce size of existing container
+                        //DO NOTHING (don't create a new pinchContainer if pinching in)
                     }
-
+                } else { //pinchContainer != null
+//                    if (pinchDistance > 0) { //as soon as we have a positive pinchOut, create and insert the insertContainer
+                        //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
+                    //TODO!! check if the pinch container is between the two fingers and only decrease it then??
+                    //we already have a pinchContainer (either being inserted or inserted previously), so do nothing other than resize
                     Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
+                    MyForm.this.revalidate(); //refresh with new size of pinchContainer
                     display(x, y, true);
-                }else { 
-            if (pinchContainer == null) { 
-                
-        }
-    }
+                }
             }
         }
         //            super.pointerDragged(x[0], y[0]);
-        super.pointerDragged(x, y);
-
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void pointerDraggedADVANCED(int[] x, int[] y) {
+//        if (!pinchInsertEnabled) {
+//            super.pointerDragged(x, y);
+//        } else { //pinchInsertEnabled
+////            } else { //pinchContainer != null) => we already have a pinchContainer (either being inserted or inserted previously)
+//            if (x.length <= 1) { //PinchOut is (maybe) finished (newPinchContainer!=null means a pinch was ongoing before)
+//                if (pinchContainer == null) { //no previous pinchContainer, do nothing
+//                    super.pointerDragged(x, y);
+//                } else { //a pinch container already exists
+//                    ItemList itemList = null;
+//                    int pos = 0; //TODO find position of *lowest* container (==highest index, == thumb position == most 'stable' position)
+//                    if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
+//                        //add new item into underlying list - NO, done in the pinchConatiner itself when hitting Enter or [>]
+////                    itemList.addItemAtIndex(pinchItem, pos);
+//                        //insert pinchContainer into the displayed list at the right position
+//                        insertPinchContainer(componentAbove, componentBelow, pinchContainer);
+//                        //replace pinchContainer by (temporary) new Element container to quickly update (before regenerating the list) - NO, done in pinchContainer itself as well
+////                        pinchContainer.getParent().replace(pinchContainer, createElementComponent.createFinalComponent(itemList), null); //TODO!!! add meaningful animation
+////                        pinchContainer = null; //keep the container if there's a later pinchIn
+//                    } else {
+//                        //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
+//                        Container list = null;
+//                        Label emptyLabel = new Label();
+//                        Container pinchContainerParent = pinchContainer.getParent();
+//                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
+//                        pinchContainerParent.removeComponent(emptyLabel);
+//                        pinchContainer = null; //indicates done with this container
+//                        MyForm.this.refreshAfterEdit();
+//                    }
+//                    pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
+//                }
+//                display(x, y, false);
+//            } else { // (x.length > 1) => PINCH == TWO FINGERS
+//                //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
+//                //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
+//                int yMin = y[1] <= y[0] ? y[1] : y[0];
+//                int yMax = y[1] > y[0] ? y[1] : y[0];
+//                int xMin = y[1] <= y[0] ? x[1] : x[0]; //xMin is the x[n] corresponding to the minimal y[n]
+//                int xMax = y[1] > y[0] ? x[1] : x[0];
+//
+//                int newDist = yMax - yMin;
+//                if (pinchInitialYDistance == Integer.MIN_VALUE) {
+//                    pinchInitialYDistance = newDist; //Math.abs(y[1]-y[0]);
+//                }
+//                pinchDistance = newDist - pinchInitialYDistance;
+//                pinchOut = pinchDistance > 0;
+//
+//                if (pinchContainer != null) { //we already have a pinchContainer (either being inserted or inserted previously
+//                    //for now: simply decrease the size of the existing container
+//                    if (pinchOut) {
+//                        //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
+//                        //do nothing (insert container is already there)
+//                    } else {
+//                        //TODO!! is the pinch container between the fingers??
+//                        //reduce size of existing container
+//                    }
+//                } else { //pinchContainer == null
+//                    if (pinchOut) {  //pinch increasing (normal case) (if no previous insert container and pinchIn, do nothing
+////            Component fingerAboveComp = findDropTargetAt(x[0], y[0]); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
+////            Component fingerBelowComp = findDropTargetAt(x[1], y[1]);
+//                        //TODO!!!!! check if dropTargets are MyDragAndDropSwipeableContainer
+//                        MyDragAndDropSwipeableContainer fingerAboveComp = (MyDragAndDropSwipeableContainer) findDropTargetAt(xMin, yMin); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
+//                        MyDragAndDropSwipeableContainer fingerBelowComp = (MyDragAndDropSwipeableContainer) findDropTargetAt(xMax, yMax);
+//                        if (canInsertPinchContainer(fingerAboveComp, fingerBelowComp)) { //makes sense to insert here
+//                            //create the appropriate type of insert container (Item, Category, ItemList, WorkSlow(?)
+//                            pinchContainer = createAndInsertPinchComponent.create(MyForm.this, true, elementList,
+//                                    () -> {
+//                                        Dimension orgPrefSize = super.calcPreferredSize();
+//                                        return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight()));
+//                                    });
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                            pinchContainer = new InlineInsertNewTaskContainer(MyForm.this, itemList) {
+////                                public Dimension calcPreferredSize() {
+////                                    Dimension orgPrefSize = super.calcPreferredSize();
+//////                                return new Dimension(getPreferredW(), Math.min(getPreferredH(), Math.max(0, y[0] - y[1]))); //Math.max(0, since pinch distance may become negative when fingers cross vertically
+////                                    return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
+////                                }
+////                            };
+////</editor-fold>
+//                        }
+//
+//                        Container containerList = null; //TODO find container (==srollable list?)
+//                        pinchItem = new Item();
+//                        //insert
+//                        containerList.addComponent(pos, pinchContainer);
+//                        MyForm.this.refreshAfterEdit(); //really necessary?
+//                    } else { //Pinch IN - to delete a just inserted container (or any other item? NO, don't make Delete easy)
+//                        Component pinchedInComp = null; //TODO find a possible pinchContainer between the
+//                        int firstIndex = fingerAboveComp.getParent().getComponentIndex(fingerAboveComp);
+//                        int lastIndex = 0;
+//                        if (fingerAboveComp.getParent() == fingerBelowComp.getParent()) {
+//                            lastIndex = fingerBelowComp.getParent().getComponentIndex(fingerBelowComp);
+//                        } else {
+//                            lastIndex = fingerBelowComp.getParent().getComponentCount();
+//                        }
+//                        Container parentList = null;
+//                        for (int i = firstIndex, size = lastIndex; i >= size; i++) {
+//                            Component comp = parentList.getComponentAt(i);
+//                            if (comp.getClientProperty("element")) {
+//                                pinchContainer = comp;
+//                            }
+//                        }
+//                        if (pinchedInComp instanceof InlineInsertNewElementContainer) {
+//                            pinchContainer = (InlineInsertNewElementContainer) pinchedInComp;
+//                        }
+//                    }
+//
+//                    Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
+//                    display(x, y, true);
+//                }else {
+//            if (pinchContainer == null) {
+//
+//        }
+//    }
+//            }
+//        }
+//        //            super.pointerDragged(x[0], y[0]);
+//        super.pointerDragged(x, y);
+//
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //     public Component findScrollableChild(Container c) { //NOT needed, use Component.getScrollable()
 ////         return super.findScrollableChild( c) ;

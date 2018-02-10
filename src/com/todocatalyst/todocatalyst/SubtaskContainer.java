@@ -55,8 +55,10 @@ public class SubtaskContainer extends Container {
     static public MyTree2 makeMyTree2ForSubTasks(MyForm myForm, ItemAndListCommonInterface listOfItems,
             HashSet<ItemAndListCommonInterface> expandedObjects) {
 //        if (listOfItems != null && listOfItems.size() > 0) {
+//        MyTree2 myTree = new MyTree2(listOfItems, expandedObjects,
+//                myForm.lastInsertNewElementContainer != null ? (item, itemOrItemList) -> myForm.lastInsertNewElementContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList) : null) {
         MyTree2 myTree = new MyTree2(listOfItems, expandedObjects,
-                myForm.lastInsertNewTaskContainer != null ? (item, itemOrItemList) -> myForm.lastInsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList) : null) {
+                myForm.getInlineInsertContainer()) {
             @Override
             protected Component createNode(Object node, int depth, Category category) {
 //                    return createNode(node, depth, itemListOrg, category);

@@ -4857,7 +4857,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     /**
      * adds category to this item's categories if not already there (no
-     * duplicates)
+     * duplicates). Does not save category
      */
     public void addCategoryToItem(Category category, boolean addItemToCategory) {
         if (category != null) {

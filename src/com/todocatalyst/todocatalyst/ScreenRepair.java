@@ -26,11 +26,8 @@ import com.codename1.ui.table.TableLayout;
 import com.codename1.util.StringUtil;
 import com.parse4cn1.ParseBatch;
 import com.parse4cn1.ParseException;
-import com.sun.javafx.print.PrintHelper;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -377,7 +374,7 @@ public class ScreenRepair extends MyForm {
     Label cont2Label;//= new Label();
     Label dropTarget1Label;// = new Label();
     Label dropTarget2Label;//= new Label();
-    private InlineInsertNewElementContainer pinchContainer;
+    private InlineInsertNewItemContainer2 pinchContainer;
     Item pinchItem;
 
     private boolean minimumPinchSizeReached() {
@@ -415,13 +412,16 @@ public class ScreenRepair extends MyForm {
                     if (pinchContainer == null) {
                         if (!pinchIncreasing) { //Pinch IN - to delete a just inserted container (or any other item? NO, don't make Delete easy)
                             Component pinchedInComp = null; //TODO find a possible pinchContainer between the 
-                            if (pinchedInComp instanceof InlineInsertNewElementContainer) {
-                                pinchContainer = (InlineInsertNewElementContainer) pinchedInComp;
+//                            if (pinchedInComp instanceof InlineInsertNewElementContainer) {
+//                                pinchContainer = (InlineInsertNewElementContainer) pinchedInComp;
+                            if (pinchedInComp instanceof InlineInsertNewItemContainer2) {
+                                pinchContainer = (InlineInsertNewItemContainer2) pinchedInComp;
                             }
                         } else {
 
                             pinchItem = new Item();
-                            pinchContainer = new InlineInsertNewElementContainer(ScreenRepair.this, pinchItem, itemList) {
+//                            pinchContainer = new InlineInsertNewElementContainer(ScreenRepair.this, pinchItem, itemList) {
+                            pinchContainer = new InlineInsertNewItemContainer2(ScreenRepair.this, pinchItem, itemList) {
                                 public Dimension getPreferredSize() {
                                     return new Dimension(getPreferredW(), Math.min(getPreferredH(), y[0] - y[1]));
                                 }

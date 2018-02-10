@@ -421,7 +421,7 @@ public class ScreenListOfItems extends MyForm {
 //            this.keepPos.setNewScrollYPosition();
 //        }
         restoreKeepPos();
-        InlineInsertNewElementContainer.setTextFieldEditableOnShowStatic(this); //if there is a InlineInsertNewTaskContainer then focus the input field
+//        InlineInsertNewElementContainer.setTextFieldEditableOnShowStatic(this); //if there is a InlineInsertNewTaskContainer then focus the input field
 
 //        revalidate(); //TODO: needed? YES
 //        animateHierarchy(300); not good since it visibly refreshes the screen
@@ -2028,7 +2028,7 @@ refreshAfterEdit();
 //        if (myForm instanceof ScreenItem || myForm instanceof ScreenListOfItems) { //TODO!!!! only activate in manually sorted (and persisted) lists
         boolean insertSwipeNewTaskCont = (myForm instanceof ScreenListOfItems && !((ScreenListOfItems) myForm).isSortOn())
                 || (myForm instanceof ScreenItem); //TODO!!!! only activate in manually sorted (and persisted) lists
-        if (insertSwipeNewTaskCont) { //TODO!!!! only activate in manually sorted (and persisted) lists
+        if (false && insertSwipeNewTaskCont) { //TODO!!!! only activate in manually sorted (and persisted) lists
 //            buttonSwipeContainer.add(new Label("  "));
             swipeActionContainer.add(new Label("  "));
             //TODO!!!! can projectEditMode only be used/launched on a top-level project or also on a sub-project?? (if sub-project, must find another way to test if trying to move the top-level)
@@ -2137,7 +2137,8 @@ refreshAfterEdit();
 //                    }
 //                    InsertNewTaskContainer insertNewTaskContainer = new InsertNewTaskContainer(item, orgItemOrItemList, myForm);
 //</editor-fold>
-                    InlineInsertNewElementContainer insertNewTaskContainer = new InlineInsertNewElementContainer(myForm, item, ownerItemOrItemList);
+//                    InlineInsertNewElementContainer insertNewTaskContainer = new InlineInsertNewElementContainer(myForm, item, ownerItemOrItemList);
+                    InsertNewElementFunc insertNewTaskContainer = new InlineInsertNewItemContainer2(myForm, item, ownerItemOrItemList);
 //                    ((ScreenListOfItems) myForm).lastInsertNewTaskContainer = insertNewTaskContainer;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //find place to insert container
@@ -2165,7 +2166,7 @@ refreshAfterEdit();
 //                    ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
 //</editor-fold>
                     myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                    listAndIndex.list.addComponent(listAndIndex.index + 1, insertNewTaskContainer);
+                    listAndIndex.list.addComponent(listAndIndex.index + 1, (Component)insertNewTaskContainer);
 //                    myForm.setEditOnShow(insertNewTaskContainer.getTextField());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    ((ScreenListOfItems) myForm).indexOfSwipContParentParent = newTaskContainer;
@@ -2179,9 +2180,9 @@ refreshAfterEdit();
                     if (false) {
                         myForm.animateMyForm(); //DOES this redraw the entire screen?
                     }
-                    insertNewTaskContainer.setTextFieldEditableOnShow(myForm);
+//                    insertNewTaskContainer.setTextFieldEditableOnShow(myForm);
                     myForm.restoreKeepPos(); //THIS IS NEEDED to keep the position
-                    myForm.scrollComponentToVisible(insertNewTaskContainer); //necessary in the (rare) case that an expanded project w many subtasks is swiped so insertTask is added after the subtasks, outside the visible screen
+//                    myForm.scrollComponentToVisible(insertNewTaskContainer); //necessary in the (rare) case that an expanded project w many subtasks is swiped so insertTask is added after the subtasks, outside the visible screen
 //                    myForm.show(); //TODO: need to 
                 }
 //                else if (swipCont.isOpenedToRight()) {
@@ -3226,7 +3227,13 @@ refreshAfterEdit();
 //            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, itemListOrg.getFilterSortDef(), (item, itemOrItemList) -> InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) //<editor-fold defaultstate="collapsed" desc="comment">
 //            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, (item, itemOrItemList) -> InlineInsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) //<editor-fold defaultstate="collapsed" desc="comment">
             MyTree2 myTree = new MyTree2(listOfItems, expandedObjects,
-                    lastInsertNewTaskContainer != null ? (item, itemOrItemList) -> lastInsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList) : null) //<editor-fold defaultstate="collapsed" desc="comment">
+//                    lastInsertNewElementContainer != null ? 
+//            (getInlineInsertContainer() != null ? 
+////                            (item, itemOrItemList) -> lastInsertNewElementContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)
+////                            (item, itemOrItemList) -> lastInsertNewElementContainer.make(item, itemOrItemList)
+//                            (item, itemOrItemList) -> getInlineInsertContainer().make(item, itemOrItemList)
+//                            : null)) //<editor-fold defaultstate="collapsed" desc="comment">
+                    getInlineInsertContainer())
             //            {
             //
             ////                if (lastInsertNewTaskContainer == null) {
@@ -3316,7 +3323,8 @@ refreshAfterEdit();
             return myTree;
         } else {
 //            return new InsertNewTaskContainer(null, listOfItems, ScreenListOfItems.this);
-            return new InlineInsertNewElementContainer(this, null, listOfItems);
+//            return new InlineInsertNewElementContainer(this, null, listOfItems);
+            return new InlineInsertNewItemContainer2(this, null, listOfItems);
         }
 
     }

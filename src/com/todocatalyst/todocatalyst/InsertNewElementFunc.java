@@ -6,6 +6,8 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Component;
+import com.codename1.ui.Container;
+import com.codename1.ui.TextArea;
 
 /**
  *
@@ -23,5 +25,17 @@ public interface InsertNewElementFunc {
      * @param targetList list into which a new element will be inserted
      * @return
      */
-    Component make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList);
+    InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList);
+
+    /**
+     * close and remove the insertContainer
+     *
+     * @param saveAnyEnteredElement is true, create and save any element already
+     * entered
+     * @return the created element (Item, ItemList, Category, ...)
+     */
+//    public ItemAndListCommonInterface close(boolean saveAnyEnteredElement);
+    public void close(boolean saveAnyEnteredElement);
+    public TextArea getTextArea();
+
 }

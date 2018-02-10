@@ -34,7 +34,7 @@ public class MyTextField2 extends TextField {
               timer.cancel();
               timer = null;
 //              doubleTapEvent();
-                  Log.p("singletap");
+                  Log.p("doubletap");
            }
        }
     

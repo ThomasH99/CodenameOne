@@ -39,14 +39,12 @@ import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
-import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.plaf.Style;
-import com.codename1.ui.tree.Tree;
 import com.codename1.ui.util.EventDispatcher;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import com.todocatalyst.todocatalyst.InlineInsertNewElementContainer.InsertNewElementFunc;
+//import com.todocatalyst.todocatalyst.InlineInsertNewElementContainer.InsertNewElementFunc;
 
 /**
  * <p>
@@ -165,8 +163,8 @@ public class MyTree2 extends ContainerScrollY {
             stickyHeaderGen = (item) -> null;
         }
 
-        BoxLayout layout ;
-        layout= new BoxLayout(BoxLayout.Y_AXIS);
+        BoxLayout layout;
+        layout = new BoxLayout(BoxLayout.Y_AXIS);
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
 //        FlowLayout layout ;
 //        layout =(new FlowLayout(Component.CENTER));
@@ -643,12 +641,18 @@ public class MyTree2 extends ContainerScrollY {
                     || (parent == null && model instanceof ItemAndListCommonInterface))) {
 //                Component insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) model);
 //                InsertNewTaskContainer insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) parent);
-                InlineInsertNewElementContainer insertNewTask
-                        = insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
-                if (insertNewTask != null) {
-                    destination.add(insertNewTask);
+//                InlineInsertNewElementContainer insertNewTask = insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
+                MyForm myForm = (MyForm) getComponentForm();
+                InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
+                if (insertNewElement != null) {
+                    InsertNewElementFunc newInsertContainer = insertNewElement.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
+                    if (newInsertContainer != null) {
+//                    destination.add(insertNewElement);
+                        destination.add((Component) newInsertContainer);
+                        myForm.setInlineInsertContainer(newInsertContainer);
 //                    getComponentForm().setEditOnShow(insertNewTask.getTextField()); //ComponentForm should never be undefined here since MyTree should already be in a form
 //                    destination.getComponentForm().setEditOnShow(insertNewTask.getTextField()); //UI: set for edit
+                    }
                 }
             }
         }
