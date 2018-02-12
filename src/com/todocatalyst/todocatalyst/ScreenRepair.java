@@ -392,145 +392,146 @@ public class ScreenRepair extends MyForm {
         }
     }
 
-    private int pinchInitialYDistance=-1;
-    
-    private void initPinch() {
-        fPinchOut = new Form(new BorderLayout()) {
-            @Override
-            public void pointerDragged(int[] x, int[] y) {
-                    ItemList itemList = null;
-                    int pos = 0; //TODO find position of *lowest* container (==highest index, == thumb position == most 'stable' position)
-                if (x.length > 1) { //PINCH == TWO FINGERS
-                    //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
-                    //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
-                    //INIT pinch out
-                    boolean templateEditMode = false;
-                    boolean pinchIncreasing = false;
-                    Component finger1Comp = findDropTargetAt(x[0], y[0]); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
-                    Component finger2Comp = findDropTargetAt(x[1], y[1]);
-                    Container containerList = null; //TODO find container (==srollable list?)
-                    if (pinchContainer == null) {
-                        if (!pinchIncreasing) { //Pinch IN - to delete a just inserted container (or any other item? NO, don't make Delete easy)
-                            Component pinchedInComp = null; //TODO find a possible pinchContainer between the 
-//                            if (pinchedInComp instanceof InlineInsertNewElementContainer) {
-//                                pinchContainer = (InlineInsertNewElementContainer) pinchedInComp;
-                            if (pinchedInComp instanceof InlineInsertNewItemContainer2) {
-                                pinchContainer = (InlineInsertNewItemContainer2) pinchedInComp;
-                            }
-                        } else {
-
-                            pinchItem = new Item();
-//                            pinchContainer = new InlineInsertNewElementContainer(ScreenRepair.this, pinchItem, itemList) {
-                            pinchContainer = new InlineInsertNewItemContainer2(ScreenRepair.this, pinchItem, itemList) {
-                                public Dimension getPreferredSize() {
-                                    return new Dimension(getPreferredW(), Math.min(getPreferredH(), y[0] - y[1]));
-                                }
-                            };
-                            //insert 
-                            containerList.addComponent(pos, pinchContainer);
-                            ScreenRepair.this.refreshAfterEdit(); //really necessary?
-                        }
-                    }
-
-                    double currentDis = distance(x, y);
-
-                    // prevent division by 0
-                    if (pinchDistance <= 0) {
-                        pinchDistance = currentDis;
-                    }
-                    double scale = currentDis / pinchDistance;
-                    if (pinch((float) scale)) {
-                        return;
-                    }
-                    Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
-                    display(x, y, true);
-                } else {
-                    //PinchOut is (maybe) finished (newPinchContainer!=null means a pinch was ongoing before)
-                    if (pinchContainer != null) { //a pinch container is either created or found (on PinchInToDelete)
-
-                        if (minimumPinchSizeReached()) { //TODO implement
-                            //add new item into underlying list
-                            itemList.addItemAtIndex(pinchItem, pos);
-                        } else {
-                            //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
-                            Container list = null;
-                            list.removeComponent(pinchContainer);
-                            ScreenRepair.this.refreshAfterEdit();
-                        }
-                        pinchContainer = null; //indicates done with this container
-                    }
-                    display(x, y, false);
-                }
-                super.pointerDragged(x[0], y[0]);
-            }
-        };
-        fPinchOut.setScrollableY(true);
-        disp1 = new Container(BoxLayout.y());
-        title = new Label("XX");
-        xLabel = new Label("XX");
-        yLabel = new Label("XX");
-        distLabel = new Label("XX");
-        comp1Label = new Label("XX");
-        comp2Label = new Label("XX");
-        cont1Label = new Label("XX");
-        cont2Label = new Label("XX");
-        dropTarget1Label = new Label("XX");
-        dropTarget2Label = new Label("XX");
-//        disp1.removeAll();
-        disp1.addAll(title, xLabel, yLabel, distLabel, comp1Label, comp2Label, cont1Label, cont2Label, dropTarget1Label, dropTarget2Label);
-        fPinchOut.addComponent(BorderLayout.SOUTH, disp1);
-
-        Container labelCont = new Container(BoxLayout.y());
-        labelCont.setScrollableY(true);
-        for (int i = 0, size = 40; i < size; i++) {
-            Label l = new Label("Label " + i);
-            l.setName("Label" + i);
-            labelCont.add(l);
-        }
-        fPinchOut.addComponent(BorderLayout.CENTER, labelCont);
-    }
-
-    private double distance(int[] x, int[] y) {
-        int disx = x[0] - x[1];
-        int disy = y[0] - y[1];
-        return Math.sqrt(disx * disx + disy * disy);
-    }
-
-    private void display(int[] x, int[] y, boolean inPinch) {
-        title.setText(inPinch ? "***PINCH***" : "MOVE");
-        xLabel.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
-        if (x.length > 1) {
-            yLabel.setText("(x[1],y[1])=(" + x[1] + "," + y[1] + ")");
-            distLabel.setText("dist=" + distance(x, y));
-        }
-
-        Component comp1 = getComponentAt(x[0], y[0]);
-        comp1Label.setText("Comp1=" + comp1);
-        if (comp1 instanceof Container) {
-            Container cont1 = (Container) comp1;
-            cont1Label.setText("Cont1=" + cont1);
-            Component dropTarget1 = cont1.findDropTargetAt(x[0], y[0]);
-            dropTarget1Label.setText("dropTarget1=" + dropTarget1);
-        }
-
-        if (x.length > 1) {
-            Component comp2 = getComponentAt(x[1], y[1]);
-            comp1Label.setText("Comp2=" + comp2);
-            if (comp2 instanceof Container) {
-                Container cont2 = (Container) comp2;
-                cont2Label.setText("Cont2=" + cont2);
-                Component dropTarget2 = cont2.findDropTargetAt(x[1], y[1]);
-                dropTarget2Label.setText("dropTarget2=" + dropTarget2);
-            }
-        } else {
-            comp1Label.setText("Comp2=");
-            cont2Label.setText("Cont2=");
-            dropTarget2Label.setText("dropTarget2=");
-        }
-
-        fPinchOut.revalidate();
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private int pinchInitialYDistance = -1;
+//
+//    private void initPinch() {
+//        fPinchOut = new Form(new BorderLayout()) {
+//            @Override
+//            public void pointerDragged(int[] x, int[] y) {
+//                ItemList itemList = null;
+//                int pos = 0; //TODO find position of *lowest* container (==highest index, == thumb position == most 'stable' position)
+//                if (x.length > 1) { //PINCH == TWO FINGERS
+//                    //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
+//                    //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
+//                    //INIT pinch out
+//                    boolean templateEditMode = false;
+//                    boolean pinchIncreasing = false;
+//                    Component finger1Comp = findDropTargetAt(x[0], y[0]); //TODO!!!! find right ocmponent (should work in any list with any type of objects actually! WorkSlots, ...
+//                    Component finger2Comp = findDropTargetAt(x[1], y[1]);
+//                    Container containerList = null; //TODO find container (==srollable list?)
+//                    if (pinchContainer == null) {
+//                        if (!pinchIncreasing) { //Pinch IN - to delete a just inserted container (or any other item? NO, don't make Delete easy)
+//                            Component pinchedInComp = null; //TODO find a possible pinchContainer between the
+////                            if (pinchedInComp instanceof InlineInsertNewElementContainer) {
+////                                pinchContainer = (InlineInsertNewElementContainer) pinchedInComp;
+//                            if (pinchedInComp instanceof InlineInsertNewItemContainer2) {
+//                                pinchContainer = (InlineInsertNewItemContainer2) pinchedInComp;
+//                            }
+//                        } else {
+//
+//                            pinchItem = new Item();
+////                            pinchContainer = new InlineInsertNewElementContainer(ScreenRepair.this, pinchItem, itemList) {
+//                            pinchContainer = new InlineInsertNewItemContainer2(ScreenRepair.this, pinchItem, itemList) {
+//                                public Dimension getPreferredSize() {
+//                                    return new Dimension(getPreferredW(), Math.min(getPreferredH(), y[0] - y[1]));
+//                                }
+//                            };
+//                            //insert
+//                            containerList.addComponent(pos, pinchContainer);
+//                            ScreenRepair.this.refreshAfterEdit(); //really necessary?
+//                        }
+//                    }
+//
+//                    double currentDis = distance(x, y);
+//
+//                    // prevent division by 0
+//                    if (pinchDistance <= 0) {
+//                        pinchDistance = currentDis;
+//                    }
+//                    double scale = currentDis / pinchDistance;
+//                    if (pinch((float) scale)) {
+//                        return;
+//                    }
+//                    Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
+//                    display(x, y, true);
+//                } else {
+//                    //PinchOut is (maybe) finished (newPinchContainer!=null means a pinch was ongoing before)
+//                    if (pinchContainer != null) { //a pinch container is either created or found (on PinchInToDelete)
+//
+//                        if (minimumPinchSizeReached()) { //TODO implement
+//                            //add new item into underlying list
+//                            itemList.addItemAtIndex(pinchItem, pos);
+//                        } else {
+//                            //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
+//                            Container list = null;
+//                            list.removeComponent(pinchContainer);
+//                            ScreenRepair.this.refreshAfterEdit();
+//                        }
+//                        pinchContainer = null; //indicates done with this container
+//                    }
+//                    display(x, y, false);
+//                }
+//                super.pointerDragged(x[0], y[0]);
+//            }
+//        };
+//        fPinchOut.setScrollableY(true);
+//        disp1 = new Container(BoxLayout.y());
+//        title = new Label("XX");
+//        xLabel = new Label("XX");
+//        yLabel = new Label("XX");
+//        distLabel = new Label("XX");
+//        comp1Label = new Label("XX");
+//        comp2Label = new Label("XX");
+//        cont1Label = new Label("XX");
+//        cont2Label = new Label("XX");
+//        dropTarget1Label = new Label("XX");
+//        dropTarget2Label = new Label("XX");
+////        disp1.removeAll();
+//        disp1.addAll(title, xLabel, yLabel, distLabel, comp1Label, comp2Label, cont1Label, cont2Label, dropTarget1Label, dropTarget2Label);
+//        fPinchOut.addComponent(BorderLayout.SOUTH, disp1);
+//
+//        Container labelCont = new Container(BoxLayout.y());
+//        labelCont.setScrollableY(true);
+//        for (int i = 0, size = 40; i < size; i++) {
+//            Label l = new Label("Label " + i);
+//            l.setName("Label" + i);
+//            labelCont.add(l);
+//        }
+//        fPinchOut.addComponent(BorderLayout.CENTER, labelCont);
+//    }
+//
+//    private double distance(int[] x, int[] y) {
+//        int disx = x[0] - x[1];
+//        int disy = y[0] - y[1];
+//        return Math.sqrt(disx * disx + disy * disy);
+//    }
+//
+//    private void display(int[] x, int[] y, boolean inPinch) {
+//        title.setText(inPinch ? "***PINCH***" : "MOVE");
+//        xLabel.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
+//        if (x.length > 1) {
+//            yLabel.setText("(x[1],y[1])=(" + x[1] + "," + y[1] + ")");
+//            distLabel.setText("dist=" + distance(x, y));
+//        }
+//
+//        Component comp1 = getComponentAt(x[0], y[0]);
+//        comp1Label.setText("Comp1=" + comp1);
+//        if (comp1 instanceof Container) {
+//            Container cont1 = (Container) comp1;
+//            cont1Label.setText("Cont1=" + cont1);
+//            Component dropTarget1 = cont1.findDropTargetAt(x[0], y[0]);
+//            dropTarget1Label.setText("dropTarget1=" + dropTarget1);
+//        }
+//
+//        if (x.length > 1) {
+//            Component comp2 = getComponentAt(x[1], y[1]);
+//            comp1Label.setText("Comp2=" + comp2);
+//            if (comp2 instanceof Container) {
+//                Container cont2 = (Container) comp2;
+//                cont2Label.setText("Cont2=" + cont2);
+//                Component dropTarget2 = cont2.findDropTargetAt(x[1], y[1]);
+//                dropTarget2Label.setText("dropTarget2=" + dropTarget2);
+//            }
+//        } else {
+//            comp1Label.setText("Comp2=");
+//            cont2Label.setText("Cont2=");
+//            dropTarget2Label.setText("dropTarget2=");
+//        }
+//
+//        fPinchOut.revalidate();
+//    }
+//</editor-fold>
     /**
      * If this Component is focused, the pointer dragged event will call this
      * method
@@ -538,27 +539,53 @@ public class ScreenRepair extends MyForm {
      * @param x the pointer x coordinate
      * @param y the pointer y coordinate
      */
-    public void pointerDragged(int[] x, int[] y) {
-        if (x.length > 1) {
-            double currentDis = distance(x, y);
-
-            // prevent division by 0
-            if (pinchDistance <= 0) {
-                pinchDistance = currentDis;
-            }
-            double scale = currentDis / pinchDistance;
-            if (pinch((float) scale)) {
-                return;
-            }
-//            Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
-            display(x, y, true);
-        } else {
-            display(x, y, false);
-        }
-        pointerDragged(x[0], y[0]);
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void pointerDragged(int[] x, int[] y) {
+//        if (x.length > 1) {
+//            double currentDis = distance(x, y);
+//
+//            // prevent division by 0
+//            if (pinchDistance <= 0) {
+//                pinchDistance = currentDis;
+//            }
+//            double scale = currentDis / pinchDistance;
+//            if (pinch((float) scale)) {
+//                return;
+//            }
+////            Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
+//            display(x, y, true);
+//        } else {
+//            display(x, y, false);
+//        }
+//        pointerDragged(x[0], y[0]);
+//    }
+//</editor-fold>
     double pinchDistance;
+
+    /**
+     * display a container in a meaningful for debug
+     * @param comp
+     * @return 
+     */
+    private String disp(Component comp) {
+        if (comp == null) {
+            return "nullx";
+        } else if (comp.getName() != null) {
+            return comp.getName();
+        } else if (comp instanceof Container) {
+            String s = "Container(";
+            String sep="";
+            for (int i = 0, size = ((Container) comp).getComponentCount(); i < size; i++) {
+                s += sep+disp(((Container) comp).getComponentAt(i));
+                sep=", ";
+            }
+            s += ")";
+            return s;
+        } else {
+            return comp.toString();
+        }
+
+    }
 
     //////////////////////////////////////////////////////////
     /**
@@ -589,15 +616,87 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
+        Label labelCoord = new Label("LabelCoord");
+        SpanLabel labelInfo = new SpanLabel("LabelInfo\nline2\nline3\nline4\nLine5\nLine6\nLine7");
+
         content.add(new Button(new Command("Test Pinch") {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                initPinch();
-                pointerDragged(new int[]{50, 100}, new int[]{50, 100});
-                fPinchOut.setToolbar(new Toolbar());
-                fPinchOut.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
-                initPinch();
-                fPinchOut.show();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                initPinch();
+//                pointerDragged(new int[]{50, 100}, new int[]{50, 100});
+//                fPinchOut.setToolbar(new Toolbar());
+//                fPinchOut.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
+//                initPinch();
+//                fPinchOut.show();
+//</editor-fold>
+                MyForm pinchForm = new MyForm("TestPinch", ScreenRepair.this, () -> {
+                }) {
+
+                    @Override
+                    protected void display(int[] x, int[] y, boolean inPinch) {
+                        Component compAbove2 = getContentPane().getComponentAt(x[0], y[0]);
+                        Component compAbove3 = getComponentForm().getComponentAt(x[0], y[0]);
+                        Component compAbove1 = getComponentAt(x[0], y[0]);
+                        Component compAbove = findDropTargetAt(x[0], y[0]);
+                        Component responder = getResponderAt(x[0], y[0]);
+                        Component dropTarget = findDropTargetAt(x[0], y[0]);
+                        Component closest = getClosestComponentTo(x[0], y[0]);
+                        Container parentContAbove = compAbove != null ? compAbove.getParent() : null;
+//                        MyDragAndDropSwipeableContainer dropComponentAbove = MyForm.findDropContainerIn(compAbove);
+                        MyDragAndDropSwipeableContainer dropCompAbove = MyForm.findDropContainerIn(parentContAbove);
+                        ItemAndListCommonInterface objAbove = dropCompAbove != null
+                                ? (ItemAndListCommonInterface) dropCompAbove.getDragAndDropObject()
+                                : null;
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                        String txt = "cont=" + (compAbove != null ? compAbove.getName() : "nullx")
+//                                + "\ndropTarget=" + (dropTarget != null ? dropTarget.getName() : "nullx")
+//                                + "\nresponder=" + (responder != null ? responder.getName() : "nullx")
+//                                + "\nclosest=" + (closest != null ? closest.getName() : "nullx")
+//                                + "\nparent=" + (parentContAbove != null ? parentContAbove.getName() : "nullx")
+//                                + "\ndrop=" + (dropCompAbove != null ? dropCompAbove.getName() : "nullx")
+//                                + "\nelt.text=" + (objAbove != null ? objAbove.getText() : "nullx");
+//</editor-fold>
+                        String txt = "cont=" + disp(compAbove)
+                                + "\ndropTarget=" + disp(dropTarget)
+                                + "\nresponder=" + disp(responder)
+                                + "\nclosest=" + disp(closest)
+                                + "\nparent=" + disp(parentContAbove)
+                                + "\ndrop=" + disp(dropCompAbove)
+                                + "\nelt.text=" + (objAbove != null ? objAbove.getText() : "nullx");
+                        labelInfo.setText(txt);
+                        labelCoord.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
+//                        fPinchOut.revalidate();
+//                        getComponentForm().revalidate();
+                        labelCoord.repaint();
+                        labelInfo.repaint();
+                    }
+                };
+                pinchForm.setLayout(BorderLayout.center());
+                pinchForm.setPinchInsertEnabled(false);
+                pinchForm.getContentPane().setName("ContentPane");
+                Container cont = new Container(BoxLayout.y());
+                cont.setScrollableY(true);
+                cont.setName("Container.y");
+                for (Item item : new Item[]{new Item("item1 5m", true), new Item("item22 2h1", true), new Item("item3", true), 
+                    new Item("item4 3h", true), new Item("item5 5min",true)}) {
+                    Component itemCont = ScreenListOfItems.buildItemContainer(ScreenRepair.this, item, null, null);
+                    itemCont.setName("itemCont:" + item.getText());
+                    Container contCont = new Container(BorderLayout.center());
+                    contCont.setName("WrapContNorth (" + item.getText() + ")");
+                    contCont.addComponent(BorderLayout.NORTH, itemCont);
+                    cont.addComponent(contCont);
+                }
+                pinchForm.addComponent(BorderLayout.CENTER, cont);
+
+                Container south = new Container(BoxLayout.y());
+                south.setName("SouthCont");
+                south.addAll(labelCoord, labelInfo);
+                pinchForm.addComponent(BorderLayout.SOUTH, south);
+                labelCoord.setName("LabelCoord");
+                labelInfo.setName("LabelInfo");
+                pinchForm.show();
             }
         }));
 

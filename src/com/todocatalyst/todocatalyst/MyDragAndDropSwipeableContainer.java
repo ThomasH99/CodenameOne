@@ -26,11 +26,51 @@ import java.util.List;
  */
 class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Movable2 {
 
+    int draggedWidth = 0;
+    int draggedHeight = 0;
+
     MyDragAndDropSwipeableContainer(Component bottomLeft, Component bottomRight, Component top) {
         super(bottomLeft, bottomRight, top);
         setDropTarget(true); //containers are both dropTargets and draggable
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
+        addDragOverListener((e) -> {
+            Component drag = e.getDraggedComponent();
+            MyDragAndDropSwipeableContainer dragged = null;
+            if (drag instanceof MyDragAndDropSwipeableContainer) {
+                dragged = (MyDragAndDropSwipeableContainer) drag;
+                if (dragged == this) {
+                    draggedWidth = getWidth();
+                    draggedHeight = getHeight();
+                    setHidden(true); //once we have the Height/Width, hide the component
+                }
+                Component newDropPlaceholder = new Component() {
+
+                    @Override
+                    public int getWidth() {
+                        return draggedWidth;
+                    }
+
+                    @Override
+                    public int getHeight() {
+                        return draggedHeight;
+                    }
+
+                    @Override
+                    public void drop(Component dragged, int x, int y) {
+                        Log.p("Comp.drop, element=" + getName());
+                        MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
+                    }
+
+                };
+                if (dropPlaceholder != null) {
+                    dropPlaceholder.getParent().replace(dropPlaceholder, newDropPlaceholder, null);
+                } else {
+                    getParent().addComponent(getParent().getComponentIndex(this), newDropPlaceholder);
+                }
+                dropPlaceholder = newDropPlaceholder;
+            }
+        });
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -703,8 +743,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      *
      * @param dragged the component being dragged
      */
-    @Override
-    protected void dragEnter(Component dragged) {
+//    @Override
+    protected void dragEnterXXX(Component dragged) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (dropPlaceholder == null) {
 //            dropPlaceholder = new Component() {
@@ -779,7 +819,6 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                    draggedCont.dropPlaceholder=makeDragPlaceholder();
 //</editor-fold>
 //            draggedCont.dropPlaceholder = new Component() {
-
             Component newDropPlaceholder = new Component() {
 
                 @Override
@@ -790,7 +829,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                            return dragged.getWidth(); //placeholder takes same size as dragged element
 //                            return draggedWidth; //placeholder takes same size as dragged element
 //</editor-fold>
-                            return draggedCont.getDragImage().getWidth(); //placeholder takes same size as dragged element
+                    return draggedCont.getDragImage().getWidth(); //placeholder takes same size as dragged element
 //                    return dragged.getWidth(); //placeholder takes same size as dragged element
                 }
 
@@ -802,7 +841,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                            return draggedHeigth;
 //</editor-fold>
 //                    return dragged.getHeight();
-                            return draggedCont.getDragImage().getHeight(); //placeholder takes same size as dragged element
+                    return draggedCont.getDragImage().getHeight(); //placeholder takes same size as dragged element
                 }
 
                 @Override
@@ -862,7 +901,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 //the first time we start dragging, the component will enter itself
                 draggedCont.dragImage = getDragImage(); //store image before hiding
 //                draggedCont.setHidden(true); //this prevents us from ever enter the dragged container again
-                        Log.p("MyDragAndD.dragEnter: hiding dragged element=" + draggedCont.getName() );
+                Log.p("MyDragAndD.dragEnter: hiding dragged element=" + draggedCont.getName());
 
                 draggedCont.oldComp = actuallyDraggedElement; //dragged.getParent();
                 draggedCont.oldParent = actuallyDraggedElementsParent; //dragged.getParent();
@@ -893,10 +932,10 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 }
 //                        parent.revalidate();
 //            actuallyDraggedElementsParent.animateLayout(150);
-                if (getAnimationManager().isAnimating()){
-                    getAnimationManager().flushAnimation(()->{
-                    actualDropTargetElementParent.animateLayout(300);
-                });
+                if (getAnimationManager().isAnimating()) {
+                    getAnimationManager().flushAnimation(() -> {
+                        actualDropTargetElementParent.animateLayout(300);
+                    });
                 }
 //                getComponentForm().animateHierarchy(300);
             }
@@ -1025,7 +1064,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        }
 //</editor-fold>
 //        Log.p("dragFinished-MyDragAndD");
-        Log.p("MyDragAndD.dragFinished, element=" + getName() );
+        Log.p("MyDragAndD.dragFinished, element=" + getName());
 
         boolean animate = false;
         //if drag failed, restore the old dragged container in its original position

@@ -67,7 +67,7 @@ import java.util.Vector;
  */
 //abstract public class MyForm extends Form {
 //public class MyScreen extends ParseObject {
-public abstract class MyForm extends Form {
+public class MyForm extends Form {
 
     //TODO copy graphical format from e.g. lignesd'azur on iPhone
     protected Map<Object, UpdateField> parseIdMap2; // = new HashMap<Object, UpdateField>();
@@ -95,7 +95,6 @@ public abstract class MyForm extends Form {
 //    public TextArea getEditFieldOnShowOrRefresh() {
 //        return editFieldOnShowOrRefresh;
 //    }
-
     interface BooleanFunction {
 
         boolean test();
@@ -2297,6 +2296,14 @@ public abstract class MyForm extends Form {
 //    private Item pinchItem;
 
     private boolean pinchInsertEnabled;
+
+    public boolean isPinchInsertEnabled() {
+        return pinchInsertEnabled;
+    }
+
+    public void setPinchInsertEnabled(boolean pinchInsertEnabled) {
+        this.pinchInsertEnabled = pinchInsertEnabled;
+    }
     private int pinchInitialYDistance = Integer.MIN_VALUE;
 
     private void initPinch() {
@@ -2326,7 +2333,7 @@ public abstract class MyForm extends Form {
         fPinchOut.addComponent(BorderLayout.CENTER, labelCont);
     }
 
-    private void display(int[] x, int[] y, boolean inPinch) {
+    protected void display(int[] x, int[] y, boolean inPinch) {
         title.setText(inPinch ? "***PINCH***" : "MOVE");
         xLabel.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
         Component comp1 = getComponentAt(x[0], y[0]);
@@ -2361,21 +2368,23 @@ public abstract class MyForm extends Form {
         return pinchYDistance > pinchContainer.getPreferredH() / 2; //true if over half the required size has been pinched out
     }
 
-    public void setInsertItemValues(Object obj, Object sortField, Object objBefore, Object objAfter) {//, getValueFunction, makeNewValueFunction) {
-        if (obj instanceof Item) {
-            Item item = (Item) obj;
-
-        } else if (obj instanceof WorkSlot) {
-        } else if (obj instanceof Category) {
-        } else if (obj instanceof ItemList) {
-
-        }
-    }
-
-    public Component createInsertComponent() {
-        return null;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void setInsertItemValues(Object obj, Object sortField, Object objBefore, Object objAfter) {//, getValueFunction, makeNewValueFunction) {
+//        if (obj instanceof Item) {
+//            Item item = (Item) obj;
+//
+//        } else if (obj instanceof WorkSlot) {
+//        } else if (obj instanceof Category) {
+//        } else if (obj instanceof ItemList) {
+//
+//        }
+//    }
+//
+//    public Component createInsertComponent() {
+//        return null;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * inserts insertObj at the appropriate position
      *
@@ -2396,11 +2405,11 @@ public abstract class MyForm extends Form {
 //    private boolean canInsertPinchContainer(MyDragAndDropSwipeableContainer componentAbove, MyDragAndDropSwipeableContainer componentBelow) {
 //        return insertPinchContainer(componentAbove, componentBelow, null, true);
 //    }
-    interface IntFunction {
-
-        int get(int orgH);
-    }
-
+//    interface IntFunction {
+//
+//        int get(int orgH);
+//    }
+//</editor-fold>
     private Container wrap(final Component pinchComponent) {
         Container pinchContainer = null;
         if (pinchComponent != null) { //pinchOut makes sense here, a new pinchInsert container with the right type of element is created and inserted
@@ -2627,7 +2636,8 @@ public abstract class MyForm extends Form {
 ////</editor-fold>
 //    }
 //</editor-fold>
-    private static MyDragAndDropSwipeableContainer findDropContainerIn(Component comp) {
+    protected static MyDragAndDropSwipeableContainer findDropContainerIn(Component comp) {
+        if (comp==null) return null;
 //        int count = cont.getComponentCount();
 //        for (int i = count - 1; i >= 0; i--) {
         if (comp instanceof MyDragAndDropSwipeableContainer) {
@@ -2649,6 +2659,34 @@ public abstract class MyForm extends Form {
                         return (MyDragAndDropSwipeableContainer) component;
                     }
                 }
+            }
+        } else {
+            Container parent = comp.getParent();
+            while (parent != null) {
+                Container cont = parent; //(Container) comp;
+                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+                    Component cmp = cont.getComponentAt(i);
+                    if (cmp == comp) {
+                        continue;
+                    }
+                    if (cmp instanceof MyDragAndDropSwipeableContainer) {
+                        return (MyDragAndDropSwipeableContainer) cmp;
+                    }
+                }
+                //for performance reasons, avoid diving into hierarchy of each sub Container, test top-level first
+                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+                    Component cmp = cont.getComponentAt(i);
+                    if (cmp == comp) {
+                        continue;
+                    }
+                    if (cmp instanceof Container) {
+                        Component component = findDropContainerIn((Container) cmp);
+                        if (component != null) {
+                            return (MyDragAndDropSwipeableContainer) component;
+                        }
+                    }
+                }
+                parent = cont.getParent(); //
             }
         }
         return null;
@@ -2755,12 +2793,12 @@ public abstract class MyForm extends Form {
     @Override
     public void pointerDragged(int[] x, int[] y) {
         if (!pinchInsertEnabled) {
-            super.pointerDragged(x, y);
+//            super.pointerDragged(x, y);
         } else { //pinchInsertEnabled
 //            } else { //pinchContainer != null) => we already have a pinchContainer (either being inserted or inserted previously)
             if (x.length <= 1) { //PinchOut is either finished or not ongoing (newPinchContainer!=null means a pinch was ongoing before)
                 if (pinchContainer == null) { //no previous pinchContainer, do nothing
-                    super.pointerDragged(x, y);
+//                    super.pointerDragged(x, y);
                 } else { //a pinch container already exists, do nothing, insertContainer already in place
                     if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2784,14 +2822,14 @@ public abstract class MyForm extends Form {
                     }
                     pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
                 }
-                display(x, y, false);
+//                display(x, y, false);
             } else { // (x.length > 1) => PINCH ONGOING
                 //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
                 //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
                 int yMin = y[1] <= y[0] ? y[1] : y[0];
                 int yMax = y[1] > y[0] ? y[1] : y[0];
-                int xMin = y[1] <= y[0] ? x[1] : x[0]; //xMin is the x[n] corresponding to the minimal y[n] 
-                int xMax = y[1] > y[0] ? x[1] : x[0];
+//                int xMin = y[1] <= y[0] ? x[1] : x[0]; //xMin is the x[n] corresponding to the minimal y[n] 
+//                int xMax = y[1] > y[0] ? x[1] : x[0];
                 int newYDist = yMax - yMin;
 //                if (newYDist<0)newYDist=0; //should not be allowed to become negative
                 if (pinchInitialYDistance == Integer.MIN_VALUE) {
@@ -2837,15 +2875,17 @@ public abstract class MyForm extends Form {
                     }
                 } else { //pinchContainer != null
 //                    if (pinchDistance > 0) { //as soon as we have a positive pinchOut, create and insert the insertContainer
-                        //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
+                    //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
                     //TODO!! check if the pinch container is between the two fingers and only decrease it then??
                     //we already have a pinchContainer (either being inserted or inserted previously), so do nothing other than resize
                     Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
                     MyForm.this.revalidate(); //refresh with new size of pinchContainer
-                    display(x, y, true);
+//                    display(x, y, true);
                 }
             }
         }
+        super.pointerDragged(x, y);
+        display(x, y, true);
         //            super.pointerDragged(x[0], y[0]);
     }
 
