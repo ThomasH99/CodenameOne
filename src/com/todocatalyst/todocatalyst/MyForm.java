@@ -2334,6 +2334,7 @@ public class MyForm extends Form {
     }
 
     protected void display(int[] x, int[] y, boolean inPinch) {
+        if (false){
         title.setText(inPinch ? "***PINCH***" : "MOVE");
         xLabel.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
         Component comp1 = getComponentAt(x[0], y[0]);
@@ -2362,6 +2363,7 @@ public class MyForm extends Form {
         }
 
         fPinchOut.revalidate();
+    }
     }
 
     private static boolean minimumPinchSizeReached(int pinchYDistance, Component pinchContainer) {
