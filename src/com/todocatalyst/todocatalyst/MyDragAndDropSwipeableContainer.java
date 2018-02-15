@@ -26,8 +26,8 @@ import java.util.List;
  */
 class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Movable2 {
 
-    int draggedWidth = 0;
-    int draggedHeight = 0;
+    int draggedWidth = -1;
+    int draggedHeight = -1;
 
     MyDragAndDropSwipeableContainer(Component bottomLeft, Component bottomRight, Component top) {
         super(bottomLeft, bottomRight, top);
@@ -38,27 +38,33 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             Component drag = e.getDraggedComponent();
             Component dropTarget = e.getDropTarget();
 
+            Log.p("----------------START MyDragAndDropSwipeableContainer ------------------------------------");
 //            MyDragAndDropSwipeableContainer dragged = null;
-            if (true || drag instanceof MyDragAndDropSwipeableContainer) {
+            if (!(drag instanceof MyDragAndDropSwipeableContainer)) {
+                Log.p("addDragOverListener: drag (" + drag.getName() + ") NOT instanceof MyDragAndDropSwipeableContainer");
+            } else {
                 MyDragAndDropSwipeableContainer dragged = (MyDragAndDropSwipeableContainer) drag;
 //                if (dragged.lastDraggedOver == MyDragAndDropSwipeableContainer.this) {
                 if (dragged.lastDraggedOver == dropTarget) {
 //                    e.consume(); 
-                    Log.p("IGNORE DragOverListener, dropTarget == dragged.lastDraggedOver, dropTarget=" + dropTarget.getName() + ", dragged=" + dragged.getName());
+                    Log.p("addDragOverListener: IGNORE DragOverListener, dropTarget == dragged.lastDraggedOver, dropTarget=" + dropTarget.getName() + ", dragged=" + dragged.getName());
 //                    getComponentForm().revalidate();
+                    Log.p("---------------- END MyDragAndDropSwipeableContainer() ------------------------------------");
+
                     return; //skip if still over the same 
-                } else {
-                    Log.p("DragOverListener, dragged.lastDraggedOver (" + (dragged.lastDraggedOver != null ? dragged.lastDraggedOver.getName() : "null")
+                } else { // dragged.lastDraggedOver != dropTarget <=>
+                    Log.p("addDragOverListener: dragged.lastDraggedOver (" + (dragged.lastDraggedOver != null ? dragged.lastDraggedOver.getName() : "null")
                             + ") *!=* dropTarget (" + dropTarget.getName() + ") so setting dragged.lastDraggedOver=dropTarget, dragged=" + dragged.getName());
 //                    dragged.lastDraggedOver = MyDragAndDropSwipeableContainer.this; //store first time we're over this
-                    if (dragged.lastDraggedOver == null) {
+//                    if (dragged.lastDraggedOver == null) {
+                    if (dragged.draggedWidth == -1) {
                         dragged.draggedWidth = dragged.getWidth();
                         dragged.draggedHeight = dragged.getHeight();
-                        Log.p("dragged draggedWidth/draggedHeigth, w=" + dragged.draggedWidth + ", h=" + dragged.draggedHeight + "for dragged=" + dragged.getName() + " now HIDDEN");
+                        Log.p("addDragOverListener: dragged dragged.getWidth/getHeigth, w=" + dragged.draggedWidth + ", h=" + dragged.draggedHeight + ", for dragged=" + dragged.getName());
                     }
-                    if (dragged.lastDraggedOver != dragged && dragged.lastDraggedOver != dragged && !dragged.isHidden()) {
+                    if (dragged.lastDraggedOver != null && dragged.lastDraggedOver != dragged && !dragged.isHidden()) {
                         dragged.setHidden(true); //only hide once we've dragged on top of another object than dragged. Once we have the Height/Width, hide the component
-                        Log.p("dragged=" + dragged.getName() + " now HIDDEN");
+                        Log.p("addDragOverListener: dragged=" + dragged.getName() + " now HIDDEN");
                     }
                     dragged.lastDraggedOver = dropTarget; //store every time we're above a new object
                 }
@@ -77,59 +83,104 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
                     @Override
                     public int getWidth() {
+                        if (draggedWidth <= 0) {
+                            Log.p("Comp.getWidth()==" + draggedWidth + "!!!");
+                        }
                         return draggedWidth;
                     }
 
                     @Override
                     public int getHeight() {
+                        if (draggedHeight <= 0) {
+                            Log.p("Comp.getHeight()=" + draggedHeight + "!!!");
+                        }
                         return draggedHeight;
                     }
 
                     @Override
-                    public void drop(Component dragged, int x, int y) {
-                        Log.p("**********Comp.drop, dropTarget=" + dropTarget1.getName() + ", dragged=" + dragged.getName());
+                    public void drop(Component drag1, int x, int y) {
+                        Log.p("**********Comp.drop, dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName());
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
-                        if (false) {
-                            MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
-                        }
+//                        if (false) {
+//                            MyDragAndDropSwipeableContainer.this.drop(drag1, x, y); //when dropping on placeholder, call drop on original droptarget
+//                        }
 //                        dropTarget.drop(dragged, x, y);
-                        dropTarget1.drop(dragged, x, y);
+//</editor-fold>
+                        dropTarget1.drop(drag1, x, y);
                     }
 
-                    protected int getDragRegionStatus(int x, int y) {
-                        return DRAG_REGION_LIKELY_DRAG_XY;
+                    protected Image getDragImageXXX() {
+                        if (!isHidden()) {
+                            ASSERT.that(!isHidden(), "***Calling getDragImage() on " + getName() + " while it's hidden"
+                                    + ", w=" + getWidth() + ", h=" + getHeight());
+                        } else {
+                            Log.p("Calling getDragImage() on " + getName() + " (not hidden)"
+                                    + ", w=" + getWidth() + ", h=" + getHeight());
+                        }
+                        if (dragImage == null) {
+                            dragImage = super.getDragImage();
+                        }
+                        return dragImage;
                     }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    @Override
+//                    protected int getDragRegionStatus(int x, int y) {
+//                        return DRAG_REGION_LIKELY_DRAG_XY;
+//                    }
+//</editor-fold>
                 };
 
                 newDropPlaceholder.setUIID("DropTargetPlaceholder");
                 newDropPlaceholder.setDropTarget(true);
                 if (Test.DEBUG) {
-                    newDropPlaceholder.setName("dropPlaceholder for " + dropTarget.getName() + ", w=" + newDropPlaceholder.getWidth() + ", h=" + newDropPlaceholder.getHeight());
+                    newDropPlaceholder.setName("Comp.dropPlaceholder for " + dropTarget.getName() + ", w=" + newDropPlaceholder.getWidth() + ", h=" + newDropPlaceholder.getHeight());
                 }
 
                 if (dragged.dropPlaceholder != null) {
                     if (dragged.dropPlaceholder.getParent() != null) {
+                        Log.p("addDragOverListener: dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder)");
                         dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder);
                     } else {
-                        Log.p("**should remove old dropPlaceholder, but it has no parent, dropPlaceholder=" + dragged.dropPlaceholder.getName());
+                        Log.p("addDragOverListener: **should remove old dropPlaceholder, but it has no parent, dropPlaceholder=" + dragged.dropPlaceholder.getName());
                     }
+                } else {
+                    Log.p("addDragOverListener: dragged.dropPlaceholder==null!!");
                 }
 //                Container parent = getParent().getParent();
-                Container parent = dropTarget.getParent();
-                Container treeList = parent.getParent();
-                ASSERT.that(treeList instanceof MyTree2);
+                Container dropParent = dropTarget.getParent();
+                Container treeList = null;
+                if (dropParent != null) {
+                    treeList = dropParent.getParent();
+                    if (treeList != null) {
 //                int index = parent.getComponentIndex(this); //get my current position
 //                int index = parent.getComponentIndex(dropTarget); //get my current position
-                int index = treeList.getComponentIndex(parent); //get my current position
-                treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
+                        int index = treeList.getComponentIndex(dropParent); //get my current position
+                        treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
+                        dragged.dropPlaceholder = newDropPlaceholder; //save new placeholder
+                        getComponentForm().revalidate();
+                        Log.p("addDragOverListener: treeList: newDropPlaceholder=" + newDropPlaceholder.getName() + " inserted at index=" + index + " for dropTarget=" + dropTarget.getName());
+//                        Log.p("addDragOverListener: new dropPlaceholder=" + newDropPlaceholder.getName() + ", inserted position=" + index + ", for dropTarget=" + dropTarget.getName());
+                    } else {
+                        Log.p("addDragOverListener: treeList==null!!! for dropTarget=" + dropTarget.getName());
+//                        ASSERT.that(treeList instanceof MyTree2, "treeList not instanceof MyTree2, treelist="
+//                                + (treeList != null ? treeList.getName() : "nullx") + ", for dropTarget=" + dropTarget.getName());
+//                        Log.p("addDragOverListener: treeList==null for dropTarget=" + dropTarget.getName());
+                    }
+                } else {
+                    Log.p("addDragOverListener: treeList: dropParent == null!! for dropTarget=" + dropTarget.getName());
+                }
 //                } else {
 //                    getParent().addComponent(getParent().getComponentIndex(this), newDropPlaceholder);
 //                }
-                dragged.dropPlaceholder = newDropPlaceholder; //save new placeholder
-                Log.p("new dropPlaceholder=" + newDropPlaceholder.getName() + ", inserted position=" + index);
-                getComponentForm().revalidate();
+                if (false) {
+                    dragged.dropPlaceholder = newDropPlaceholder; //save new placeholder
+                    getComponentForm().revalidate();
 //                e.consume(); //consume the event, otherwise it repeats(?)
+                }
             }
+            Log.p("---------------- END MyDragAndDropSwipeableContainer() ------------------------------------");
+
         });
     }
 
@@ -193,10 +244,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         super.pointerReleased(x, y);
         Log.p("MyDragAndDropSwipeableContainer.pointerReleased (D&D) x=" + x + " y=" + y);
     }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public void refreshAfterDrop() {
 //        ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
 //    }
+//</editor-fold>
+
     /**
      * returns true if dropped elements should be inserted *below* the item it
      * is dropped on. Eg if dropped of right-hand third of the dropTarget
@@ -656,6 +709,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      */
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
+//    @Override
 //    protected Image getDragImage() {
 //        if (true) {
 //            return super.getDragImage();
@@ -711,6 +765,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 ////            dropPlaceholder.setUIID("DropTargetPlaceholder");
 ////            //TODO!!! change to look like a subtask when moving to the right
 ////</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    }
 //    private boolean orgHiddenState = false;
     /**
@@ -718,51 +773,61 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * the parent container for the case of a component that doesn't support
      * scrolling. THJ:
      */
-    protected void dragInitiatedXXX() { //only hide in dragEnter to avoid hiding invisible container
-//         if (dragged == this) {
-        Log.p("MyDragAndD.dragInitiated for=" + getName() + ", w=" + getWidth() + ", h=" + getHeight());
+//    protected void dragInitiatedXXX() { //only hide in dragEnter to avoid hiding invisible container
+////         if (dragged == this) {
+//        Log.p("MyDragAndD.dragInitiated for=" + getName() + ", w=" + getWidth() + ", h=" + getHeight());
+//
+//        draggedWidth = getWidth();
+//        draggedHeight = getHeight();
+//        setHidden(true); //once we have the Height/Width, hide the component
+//        super.dragInitiated();
+////                }
+////        orgHiddenState = isHidden();
+////        setHidden(true); //hide the original container (CN1 just makes it invisible to leave a blank space in original position)
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void drawDraggedImageXXX(Graphics g) {
+////        if (dragImage == null) {
+////            dragImage = getDragImage();
+////        }
+////        drawDraggedImage(g, dragImage, draggedx, draggedy);
+//    }
+//</editor-fold>
+    Image dragImage = null;
 
-        draggedWidth = getWidth();
-        draggedHeight = getHeight();
-        setHidden(true); //once we have the Height/Width, hide the component
-        super.dragInitiated();
-//                }
-//        orgHiddenState = isHidden();
-//        setHidden(true); //hide the original container (CN1 just makes it invisible to leave a blank space in original position)
-    }
-
-    public void drawDraggedImageXXX(Graphics g) {
-//        if (dragImage == null) {
-//            dragImage = getDragImage();
-//        }
-//        drawDraggedImage(g, dragImage, draggedx, draggedy);
-    }
-
-    Image dragImage;
-
-    protected Image getDragImageXXX() {
+    @Override
+    protected Image getDragImage() {
+        if (!isHidden()) {
+            ASSERT.that(!isHidden(), "***Calling getDragImage() on " + getName() + " while it's hidden"
+                    + ", w=" + getWidth() + ", h=" + getHeight());
+        } else {
+            Log.p("Calling getDragImage() on " + getName() + " (not hidden)"
+                    + ", w=" + getWidth() + ", h=" + getHeight());
+        }
         if (dragImage == null) {
             dragImage = super.getDragImage();
         }
         return dragImage;
     }
 
-    /**
-     * Draws the given image at x/y, this method can be overriden to draw
-     * additional information such as positive or negative drop indication
-     *
-     * @param g the graphics context
-     * @param img the image
-     * @param x x position
-     * @param y y position
-     */
-    protected void drawDraggedImageXXX(Graphics g, Image img, int x, int y) {
-//        g.drawImage(img, x - getWidth() / 2, y - getHeight() / 2);
-        g.drawImage(img, x, y);
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//     * Draws the given image at x/y, this method can be overriden to draw
+//     * additional information such as positive or negative drop indication
+//     *
+//     * @param g the graphics context
+//     * @param img the image
+//     * @param x x position
+//     * @param y y position
+//     */
+//    protected void drawDraggedImageXXX(Graphics g, Image img, int x, int y) {
+////        g.drawImage(img, x - getWidth() / 2, y - getHeight() / 2);
+//        g.drawImage(img, x, y);
+//    }
+//</editor-fold>
     private Component dropPlaceholder = null;
-    private int dropPlaceholderOldIndex = -1;
+//    private int dropPlaceholderOldIndex = -1;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    int dropPlaceholderIndex = -1;
 //    int oldDropPlaceholderIndex = -1;
@@ -770,50 +835,53 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //    Component dropOriginalDropTarget;
 //    private int draggedWidth;
 //    private int draggedHeigth;
+//    private int oldPos = -1;
+//    private Container oldParent;
+//    private Component oldComp;
+//    private boolean oldDraggedContVisible = true;
 //</editor-fold>
-    private int oldPos = -1;
-    private Container oldParent;
-    private Component oldComp;
-    private boolean oldDraggedContVisible = true;
     private Component lastDraggedOver = null;
 
-    private Component makeDragPlaceholderXXX() {
-        Component dropPlaceholder = new Component() {
-            @Override
-            public int getWidth() {
-                return MyDragAndDropSwipeableContainer.this.getWidth(); //placeholder takes same size as dragged element
-            }
-
-            @Override
-            public int getHeight() {
-                return MyDragAndDropSwipeableContainer.this.getHeight();
-            }
-
-            @Override
-            public void drop(Component dragged, int x, int y) {
-                MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
-            }
-        };
-        dropPlaceholder.setUIID("DropTargetPlaceholder");
-        //TODO!!! change to look like a subtask when moving to the right
-//            wasHidden = isHidden();
-//            setHidden(true); //completely hide the container for the dragged element (default is to set it invisible in Component.pointerDragged(final int x, final int y)
-        return dropPlaceholder;
-    }
-
-    private void removeOldPlaceholderXXX(MyDragAndDropSwipeableContainer dropPlaceholder) {
-//        if (oldDropPlaceholderIndex != -1 && dropPlaceholderCont != null) {
-//            dropPlaceholderCont.removeComponent(dropPlaceholder);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Component makeDragPlaceholderXXX() {
+//        Component dropPlaceholder = new Component() {
+//            @Override
+//            public int getWidth() {
+//                return MyDragAndDropSwipeableContainer.this.getWidth(); //placeholder takes same size as dragged element
+//            }
+//
+//            @Override
+//            public int getHeight() {
+//                return MyDragAndDropSwipeableContainer.this.getHeight();
+//            }
+//
+//            @Override
+//            public void drop(Component dragged, int x, int y) {
+//                MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
+//            }
+//        };
+//        dropPlaceholder.setUIID("DropTargetPlaceholder");
+//        //TODO!!! change to look like a subtask when moving to the right
+////            wasHidden = isHidden();
+////            setHidden(true); //completely hide the container for the dragged element (default is to set it invisible in Component.pointerDragged(final int x, final int y)
+//        return dropPlaceholder;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void removeOldPlaceholderXXX(MyDragAndDropSwipeableContainer dropPlaceholder) {
+////        if (oldDropPlaceholderIndex != -1 && dropPlaceholderCont != null) {
+////            dropPlaceholderCont.removeComponent(dropPlaceholder);
+////        }
+////        oldDropPlaceholderIndex = -1;
+////        dropPlaceholderCont = null;
+//        if (dropPlaceholder != null && dropPlaceholder.getParent() != null) {
+//            dropPlaceholder.getParent().removeComponent(dropPlaceholder);
+//            ASSERT.that("removing placeholder from parent");
 //        }
-//        oldDropPlaceholderIndex = -1;
-//        dropPlaceholderCont = null;
-        if (dropPlaceholder != null && dropPlaceholder.getParent() != null) {
-            dropPlaceholder.getParent().removeComponent(dropPlaceholder);
-            ASSERT.that("removing placeholder from parent");
-        }
-        dropPlaceholder = null;
-    }
-
+//        dropPlaceholder = null;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * This callback method indicates that a component drag has just entered
      * this component.
@@ -824,207 +892,207 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param dragged the component being dragged
      */
 //    @Override
-    protected void dragEnterXXX(Component dragged) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (dropPlaceholder == null) {
-//            dropPlaceholder = new Component() {
+//    protected void dragEnterXXX(Component dragged) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (dropPlaceholder == null) {
+////            dropPlaceholder = new Component() {
+////                @Override
+////                public int getWidth() {
+////                    return dragged.getWidth();
+////                }
+////
+////                @Override
+////                public int getHeight() {
+////                    return dragged.getHeight();
+////                }
+////
+////                public void drop(Component dragged, int x, int y) {
+////                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
+////                }
+////            };
+////            dropPlaceholder.setUIID("DropTargetPlaceholder");
+////            //TODO!!! change to look like a subtask when moving to the right
+////        }
+////</editor-fold>
+////        Log.p("dragEnter-MyDragAndD");
+//        Log.p("MyDragAndD.dragEnter, element=" + getName());
+//
+//        if (dragged instanceof MyDragAndDropSwipeableContainer) {
+////            if (dragged == this) {
+////                this.setHidden(true);
+////            }
+//            MyDragAndDropSwipeableContainer draggedCont = (MyDragAndDropSwipeableContainer) dragged;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            draggedWidth = dragged.getWidth();
+////            draggedHeigth = dragged.getHeight();
+////            if (false && draggedCont == this) {// && !draggedCont.isHidden()) {
+////                //the first time we start dragging, the component will enter itself
+//////                draggedWidth = dragged.getWidth();
+//////                draggedHeigth = dragged.getHeight();
+//////                draggedCont.orgHiddenState = draggedCont.isHidden();
+////                dragged.setHidden(true); //this prevents us from ever enter the dragged container again
+////            }
+////            draggedCont.setDragPlaceholder();
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            while (!(parent instanceof MyTree2) && parent.getParent() != null) {
+////                element = parent;
+////                parent = parent.getParent();
+////            }
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////remove old placeholder - do in dragExit()
+////            if (false && draggedCont.dropPlaceholder != null
+////                    && draggedCont.dropPlaceholder.getParent() != null
+////                    && draggedCont.dropPlaceholder.getParent() != actuallyDraggedElementsParent) {
+////                draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder);
+////                Log.p("removing placeholder from parent");
+////            }
+////</editor-fold>
+//            //remove old dropPlaceholder before creating and inserting a new one below
+//            if (draggedCont.dropPlaceholder != null //                    && draggedCont.dropPlaceholder.getParent() != null //shouldnt happen
+//                    //                    && draggedCont.dropPlaceholder.getParent() != draggedParent
+//                    ) {
+////                Log.p("dragEnter-removeOldDropPlaceholder-MyDragAndD");
+//                Log.p("MyDragAndD.dragEnter (removing oldDropPlaceholder), element=" + draggedCont.dropPlaceholder.getName());
+//                draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder);
+//                draggedCont.dropPlaceholder = null;
+//            }
+//
+//            //<editor-fold defaultstate="collapsed" desc="comment">
+//            //remove old placeholder (even if no new place found) //TODO!!! How to remove when eg dropping back on original position?
+////            if (actuallyDraggedElementsParent != null && actuallyDraggedElement != null) {
+////                if (dropPlaceholderIndex > -1) {
+////set new placholder
+////                    draggedCont.dropPlaceholder=makeDragPlaceholder();
+////</editor-fold>
+////            draggedCont.dropPlaceholder = new Component() {
+//            Component newDropPlaceholder = new Component() {
+//
 //                @Override
 //                public int getWidth() {
-//                    return dragged.getWidth();
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                            return MyDragAndDropSwipeableContainer.this.getWidth(); //placeholder takes same size as dragged element
+////                            return MyDragAndDropSwipeableContainer.this.getDragImage().getWidth(); //placeholder takes same size as dragged element
+////                            return dragged.getWidth(); //placeholder takes same size as dragged element
+////                            return draggedWidth; //placeholder takes same size as dragged element
+////</editor-fold>
+//                    return draggedCont.getDragImage().getWidth(); //placeholder takes same size as dragged element
+////                    return dragged.getWidth(); //placeholder takes same size as dragged element
 //                }
 //
 //                @Override
 //                public int getHeight() {
-//                    return dragged.getHeight();
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                            return MyDragAndDropSwipeableContainer.this.getDragImage().getHeight();
+////                            return dragged.getHeight();
+////                            return draggedHeigth;
+////</editor-fold>
+////                    return dragged.getHeight();
+//                    return draggedCont.getDragImage().getHeight(); //placeholder takes same size as dragged element
 //                }
 //
+//                @Override
 //                public void drop(Component dragged, int x, int y) {
+////                    Log.p("drop-Comp");
+//                    Log.p("Comp.drop, element=" + getName());
 //                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
 //                }
+//
+//                @Override
+//                protected void dragEnter(Component dragged) {
+//                    //do nothing when drag enters the placeholder container
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                            if (this == draggedCont.dropPlaceholder) {
+////                                return;
+////                            } else {
+////                            MyDragAndDropSwipeableContainer.this.dragEnter(dragged);
+////                            }
+////</editor-fold>
+////                    Log.p("dragEnter-Comp");
+//                    Log.p("Comp.dragEnter, element=" + getName());
+//                }
+//
+//                @Override
+//                protected void dragExit(Component dragged) {
+////        if (dropPlaceholder!=null)
+//                    if (dragged instanceof MyDragAndDropSwipeableContainer) {
+//                        MyDragAndDropSwipeableContainer draggedCont = (MyDragAndDropSwipeableContainer) dragged;
+//                        if (draggedCont.dropPlaceholder != null) {// && draggedCont.dropPlaceholder.getParent() != null) {
+//                            draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder);
+//                            draggedCont.dropPlaceholder = null;
+//                        }
+//                    }
+//                    Log.p("Comp.dragExit, element=" + getName());
+//                }
+//
 //            };
-//            dropPlaceholder.setUIID("DropTargetPlaceholder");
-//            //TODO!!! change to look like a subtask when moving to the right
-//        }
-//</editor-fold>
-//        Log.p("dragEnter-MyDragAndD");
-        Log.p("MyDragAndD.dragEnter, element=" + getName());
-
-        if (dragged instanceof MyDragAndDropSwipeableContainer) {
-//            if (dragged == this) {
-//                this.setHidden(true);
-//            }
-            MyDragAndDropSwipeableContainer draggedCont = (MyDragAndDropSwipeableContainer) dragged;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            draggedWidth = dragged.getWidth();
-//            draggedHeigth = dragged.getHeight();
-//            if (false && draggedCont == this) {// && !draggedCont.isHidden()) {
-//                //the first time we start dragging, the component will enter itself
-////                draggedWidth = dragged.getWidth();
-////                draggedHeigth = dragged.getHeight();
-////                draggedCont.orgHiddenState = draggedCont.isHidden();
-//                dragged.setHidden(true); //this prevents us from ever enter the dragged container again
-//            }
-//            draggedCont.setDragPlaceholder();
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            while (!(parent instanceof MyTree2) && parent.getParent() != null) {
-//                element = parent;
-//                parent = parent.getParent();
-//            }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//remove old placeholder - do in dragExit()
-//            if (false && draggedCont.dropPlaceholder != null
-//                    && draggedCont.dropPlaceholder.getParent() != null
-//                    && draggedCont.dropPlaceholder.getParent() != actuallyDraggedElementsParent) {
-//                draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder);
-//                Log.p("removing placeholder from parent");
-//            }
-//</editor-fold>
-            //remove old dropPlaceholder before creating and inserting a new one below
-            if (draggedCont.dropPlaceholder != null //                    && draggedCont.dropPlaceholder.getParent() != null //shouldnt happen
-                    //                    && draggedCont.dropPlaceholder.getParent() != draggedParent
-                    ) {
-//                Log.p("dragEnter-removeOldDropPlaceholder-MyDragAndD");
-                Log.p("MyDragAndD.dragEnter (removing oldDropPlaceholder), element=" + draggedCont.dropPlaceholder.getName());
-                draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder);
-                draggedCont.dropPlaceholder = null;
-            }
-
-            //<editor-fold defaultstate="collapsed" desc="comment">
-            //remove old placeholder (even if no new place found) //TODO!!! How to remove when eg dropping back on original position?
-//            if (actuallyDraggedElementsParent != null && actuallyDraggedElement != null) {
-//                if (dropPlaceholderIndex > -1) {
-//set new placholder
-//                    draggedCont.dropPlaceholder=makeDragPlaceholder();
-//</editor-fold>
-//            draggedCont.dropPlaceholder = new Component() {
-            Component newDropPlaceholder = new Component() {
-
-                @Override
-                public int getWidth() {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                            return MyDragAndDropSwipeableContainer.this.getWidth(); //placeholder takes same size as dragged element
-//                            return MyDragAndDropSwipeableContainer.this.getDragImage().getWidth(); //placeholder takes same size as dragged element
-//                            return dragged.getWidth(); //placeholder takes same size as dragged element
-//                            return draggedWidth; //placeholder takes same size as dragged element
-//</editor-fold>
-                    return draggedCont.getDragImage().getWidth(); //placeholder takes same size as dragged element
-//                    return dragged.getWidth(); //placeholder takes same size as dragged element
-                }
-
-                @Override
-                public int getHeight() {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                            return MyDragAndDropSwipeableContainer.this.getDragImage().getHeight();
-//                            return dragged.getHeight();
-//                            return draggedHeigth;
-//</editor-fold>
-//                    return dragged.getHeight();
-                    return draggedCont.getDragImage().getHeight(); //placeholder takes same size as dragged element
-                }
-
-                @Override
-                public void drop(Component dragged, int x, int y) {
-//                    Log.p("drop-Comp");
-                    Log.p("Comp.drop, element=" + getName());
-                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
-                }
-
-                @Override
-                protected void dragEnter(Component dragged) {
-                    //do nothing when drag enters the placeholder container
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                            if (this == draggedCont.dropPlaceholder) {
-//                                return;
-//                            } else {
-//                            MyDragAndDropSwipeableContainer.this.dragEnter(dragged);
-//                            }
-//</editor-fold>
-//                    Log.p("dragEnter-Comp");
-                    Log.p("Comp.dragEnter, element=" + getName());
-                }
-
-                @Override
-                protected void dragExit(Component dragged) {
-//        if (dropPlaceholder!=null)
-                    if (dragged instanceof MyDragAndDropSwipeableContainer) {
-                        MyDragAndDropSwipeableContainer draggedCont = (MyDragAndDropSwipeableContainer) dragged;
-                        if (draggedCont.dropPlaceholder != null) {// && draggedCont.dropPlaceholder.getParent() != null) {
-                            draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder);
-                            draggedCont.dropPlaceholder = null;
-                        }
-                    }
-                    Log.p("Comp.dragExit, element=" + getName());
-                }
-
-            };
-            newDropPlaceholder.setUIID("DropTargetPlaceholder");
-            newDropPlaceholder.setDropTarget(true);
-            if (Test.DEBUG) {
-                newDropPlaceholder.setName(MyDragAndDropSwipeableContainer.this.getName());
-            }
+//            newDropPlaceholder.setUIID("DropTargetPlaceholder");
 //            newDropPlaceholder.setDropTarget(true);
-            //TODO!!! change to look like a subtask when moving to the right
-
-//            Component actuallyDraggedElement = null; //stores the element for which to find index in parent
-//            Container actuallyDraggedElementsParent = null; //.getParent();
-//            int dropPlaceholderIndex = actuallyDraggedElementsParent.getComponentIndex(actuallyDraggedElement);
-//            actuallyDraggedElementsParent.addComponent(dropPlaceholderIndex, draggedCont.dropPlaceholder); //insert new one
-            if (draggedCont == this) {
-//                Log.p("draggedCont == this");
-                Log.p("MyDragAndD.dragEnter, draggedCont == this, element=" + getName());
-                //get the Container holding the list of elements
-                //The dragged container is wrapped into a Container at NORTH SOUTH being used to show expanded children
-                Component actuallyDraggedElement = draggedCont.getParent(); //the parent of MyDragAndDrop (NB!! This is because MyTree2 wraps MyDragAndDrop inside a BorderLayout)
-                Container actuallyDraggedElementsParent = actuallyDraggedElement.getParent();
-                //the first time we start dragging, the component will enter itself
-                draggedCont.dragImage = getDragImage(); //store image before hiding
-//                draggedCont.setHidden(true); //this prevents us from ever enter the dragged container again
-                Log.p("MyDragAndD.dragEnter: hiding dragged element=" + draggedCont.getName());
-
-                draggedCont.oldComp = actuallyDraggedElement; //dragged.getParent();
-                draggedCont.oldParent = actuallyDraggedElementsParent; //dragged.getParent();
-                draggedCont.oldPos = actuallyDraggedElementsParent.getComponentIndex(actuallyDraggedElement); //dragged.getParent().getComponentIndex(dragged);
-                draggedCont.oldDraggedContVisible = true;
-//                        dragged.getParent().removeComponent(dragged); //this prevents us from ever enter the dragged container again
-//                actuallyDraggedElementsParent.removeComponent(actuallyDraggedElement); //this prevents us from ever enter the dragged container again
-//                actuallyDraggedElementsParent.addComponent(draggedCont.oldPos, draggedCont.dropPlaceholder); //insert new one
-//                actuallyDraggedElementsParent.animateLayout(150);
-            } else { //normal case - the drag enters another element
-//                Log.p("draggedCont != this");
-                Log.p("MyDragAndD.dragEnter, draggedCont != this, this=" + getName() + ", dragged=" + draggedCont.getName());
-
-                Container actualDropTargetElement = this.getParent(); //as above: get the container wrapped around the MyDragAndDrop...
-                Container actualDropTargetElementParent = actualDropTargetElement.getParent();
-                int dropPlaceholderIndex = actualDropTargetElementParent.getComponentIndex(actualDropTargetElement);
-                draggedCont.dropPlaceholder = newDropPlaceholder;
-                if (draggedCont.dropPlaceholder != null && draggedCont.dropPlaceholderOldIndex != -1 && draggedCont.dropPlaceholderOldIndex <= dropPlaceholderIndex) {
-                    dropPlaceholderIndex += 1; //add +1 when dragging down
-                }
-                draggedCont.dropPlaceholderOldIndex = dropPlaceholderIndex; //save index for next time - to track if we're dragging up or down
-
-                actualDropTargetElementParent.addComponent(dropPlaceholderIndex, draggedCont.dropPlaceholder); //insert new one
-                if (draggedCont.oldDraggedContVisible) {
-//                    draggedCont.oldParent.removeComponent(draggedCont.oldComp); //this prevents us from ever enter the dragged container again
-//                    draggedCont.oldComp.setHidden(true);
-                    draggedCont.oldDraggedContVisible = false;
-                }
-//                        parent.revalidate();
-//            actuallyDraggedElementsParent.animateLayout(150);
-                if (getAnimationManager().isAnimating()) {
-                    getAnimationManager().flushAnimation(() -> {
-                        actualDropTargetElementParent.animateLayout(300);
-                    });
-                }
-//                getComponentForm().animateHierarchy(300);
-            }
-//            Log.p("parent=" + actuallyDraggedElementsParent + ", " + actuallyDraggedElementsParent.getComponentCount() + ", index=" + actuallyDraggedElementsParent.getComponentIndex(this));
-//        }
+//            if (Test.DEBUG) {
+//                newDropPlaceholder.setName(MyDragAndDropSwipeableContainer.this.getName());
 //            }
-        }
-    }
-
+////            newDropPlaceholder.setDropTarget(true);
+//            //TODO!!! change to look like a subtask when moving to the right
+//
+////            Component actuallyDraggedElement = null; //stores the element for which to find index in parent
+////            Container actuallyDraggedElementsParent = null; //.getParent();
+////            int dropPlaceholderIndex = actuallyDraggedElementsParent.getComponentIndex(actuallyDraggedElement);
+////            actuallyDraggedElementsParent.addComponent(dropPlaceholderIndex, draggedCont.dropPlaceholder); //insert new one
+//            if (draggedCont == this) {
+////                Log.p("draggedCont == this");
+//                Log.p("MyDragAndD.dragEnter, draggedCont == this, element=" + getName());
+//                //get the Container holding the list of elements
+//                //The dragged container is wrapped into a Container at NORTH SOUTH being used to show expanded children
+//                Component actuallyDraggedElement = draggedCont.getParent(); //the parent of MyDragAndDrop (NB!! This is because MyTree2 wraps MyDragAndDrop inside a BorderLayout)
+//                Container actuallyDraggedElementsParent = actuallyDraggedElement.getParent();
+//                //the first time we start dragging, the component will enter itself
+//                draggedCont.dragImage = getDragImage(); //store image before hiding
+////                draggedCont.setHidden(true); //this prevents us from ever enter the dragged container again
+//                Log.p("MyDragAndD.dragEnter: hiding dragged element=" + draggedCont.getName());
+//
+//                draggedCont.oldComp = actuallyDraggedElement; //dragged.getParent();
+//                draggedCont.oldParent = actuallyDraggedElementsParent; //dragged.getParent();
+//                draggedCont.oldPos = actuallyDraggedElementsParent.getComponentIndex(actuallyDraggedElement); //dragged.getParent().getComponentIndex(dragged);
+//                draggedCont.oldDraggedContVisible = true;
+////                        dragged.getParent().removeComponent(dragged); //this prevents us from ever enter the dragged container again
+////                actuallyDraggedElementsParent.removeComponent(actuallyDraggedElement); //this prevents us from ever enter the dragged container again
+////                actuallyDraggedElementsParent.addComponent(draggedCont.oldPos, draggedCont.dropPlaceholder); //insert new one
+////                actuallyDraggedElementsParent.animateLayout(150);
+//            } else { //normal case - the drag enters another element
+////                Log.p("draggedCont != this");
+//                Log.p("MyDragAndD.dragEnter, draggedCont != this, this=" + getName() + ", dragged=" + draggedCont.getName());
+//
+//                Container actualDropTargetElement = this.getParent(); //as above: get the container wrapped around the MyDragAndDrop...
+//                Container actualDropTargetElementParent = actualDropTargetElement.getParent();
+//                int dropPlaceholderIndex = actualDropTargetElementParent.getComponentIndex(actualDropTargetElement);
+//                draggedCont.dropPlaceholder = newDropPlaceholder;
+//                if (draggedCont.dropPlaceholder != null && draggedCont.dropPlaceholderOldIndex != -1 && draggedCont.dropPlaceholderOldIndex <= dropPlaceholderIndex) {
+//                    dropPlaceholderIndex += 1; //add +1 when dragging down
+//                }
+//                draggedCont.dropPlaceholderOldIndex = dropPlaceholderIndex; //save index for next time - to track if we're dragging up or down
+//
+//                actualDropTargetElementParent.addComponent(dropPlaceholderIndex, draggedCont.dropPlaceholder); //insert new one
+//                if (draggedCont.oldDraggedContVisible) {
+////                    draggedCont.oldParent.removeComponent(draggedCont.oldComp); //this prevents us from ever enter the dragged container again
+////                    draggedCont.oldComp.setHidden(true);
+//                    draggedCont.oldDraggedContVisible = false;
+//                }
+////                        parent.revalidate();
+////            actuallyDraggedElementsParent.animateLayout(150);
+//                if (getAnimationManager().isAnimating()) {
+//                    getAnimationManager().flushAnimation(() -> {
+//                        actualDropTargetElementParent.animateLayout(300);
+//                    });
+//                }
+////                getComponentForm().animateHierarchy(300);
+//            }
+////            Log.p("parent=" + actuallyDraggedElementsParent + ", " + actuallyDraggedElementsParent.getComponentCount() + ", index=" + actuallyDraggedElementsParent.getComponentIndex(this));
+////        }
+////            }
+//        }
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    protected void dragEnterXXX(Component dragged) {
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -1093,6 +1161,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        }
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * This callback method provides an indication for a drop target that a drag
      * operation is exiting the bounds of this component and it should clear all
@@ -1103,24 +1172,24 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param dragged the component being dragged
      */
 //    @Override
-    protected void dragExitXXX(Component dragged) {
-//        if (dropPlaceholder!=null)
-        if (false && dragged instanceof MyDragAndDropSwipeableContainer) {
-            MyDragAndDropSwipeableContainer draggedCont = (MyDragAndDropSwipeableContainer) dragged;
-            if (draggedCont.dropPlaceholder != null) {// && draggedCont.dropPlaceholder.getParent() != null) {
-                draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder);
-                draggedCont.dropPlaceholder = null;
-            }
-//            Log.p("dragExit");
-            Log.p("MyDragAndD.dragEnter, draggedCont != this, this=" + getName() + ", dragged=" + draggedCont.getName());
-
-        } else {
-//            Log.p("dragExit");
-            Log.p("MyDragAndD.dragExit, element=" + getName() + ", dragged=" + dragged.getName());
-
-        }
-    }
-
+//    protected void dragExitXXX(Component dragged) {
+////        if (dropPlaceholder!=null)
+//        if (false && dragged instanceof MyDragAndDropSwipeableContainer) {
+//            MyDragAndDropSwipeableContainer draggedCont = (MyDragAndDropSwipeableContainer) dragged;
+//            if (draggedCont.dropPlaceholder != null) {// && draggedCont.dropPlaceholder.getParent() != null) {
+//                draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder);
+//                draggedCont.dropPlaceholder = null;
+//            }
+////            Log.p("dragExit");
+//            Log.p("MyDragAndD.dragEnter, draggedCont != this, this=" + getName() + ", dragged=" + draggedCont.getName());
+//
+//        } else {
+////            Log.p("dragExit");
+//            Log.p("MyDragAndD.dragExit, element=" + getName() + ", dragged=" + dragged.getName());
+//
+//        }
+//    }
+//</editor-fold>
     /**
      * Callback indicating that the drag has finished either via drop or by
      * releasing the component. THJ: called in last line of
@@ -1145,37 +1214,42 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
 //        Log.p("dragFinished-MyDragAndD");
         Log.p("MyDragAndD.dragFinished for element=" + getName() + ", UNHIDE, remove dropPlaceholder=" + dropPlaceholder != null ? dropPlaceholder.getName() : "nullx");
-
-        boolean animate = false;
-        //if drag failed, restore the old dragged container in its original position
-        if (false && oldParent != null && !oldDraggedContVisible) { //set to null if drop succeeded, so !=null means failed, so we reinsert the old container at its old position
-//            oldParent.addComponent(oldPos, oldComp); //reinsert
-            oldComp.setHidden(false);
-            oldParent = null;
-            oldComp = null;
-            oldPos = -1;
-            oldDraggedContVisible = true;
-            animate = true;
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        boolean animate = false;
+//        //if drag failed, restore the old dragged container in its original position
+//        if (false && oldParent != null && !oldDraggedContVisible) { //set to null if drop succeeded, so !=null means failed, so we reinsert the old container at its old position
+////            oldParent.addComponent(oldPos, oldComp); //reinsert
+//            oldComp.setHidden(false);
+//            oldParent = null;
+//            oldComp = null;
+//            oldPos = -1;
+//            oldDraggedContVisible = true;
+//            animate = true;
+//        }
+//</editor-fold>
         //if there is still a dropPlaceholder inserted, remove it
         if (dropPlaceholder != null) {
             if (dropPlaceholder.getParent() != null) {//remove the old placeholder ( not done in successful drop)
+                Log.p("MyDragAndD.dragFinished: removing dropPlaceholder=" + dropPlaceholder.getName() + " from parent=" + dropPlaceholder.getParent().getName());
                 dropPlaceholder.getParent().removeComponent(dropPlaceholder); //remove the old placeholder ( not done in successful drop)
             } else {
                 Log.p("MyDragAndD.dragFinished: no parent() for dropPlaceholder=" + dropPlaceholder.getName());
             }
-
             dropPlaceholder = null;
-            animate = true;
+//            animate = true;
         }
-
+        lastDraggedOver = null;
+        draggedHeight = -1;
+        draggedWidth = -1;
+        dragImage = null;
         setHidden(false); //unhide (set hidden in dragEnter/dragListener)
-
-        if (false && animate) {
-            getComponentForm().animateHierarchy(400);
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false && animate) {
+//            getComponentForm().animateHierarchy(400);
+//        }
 //        refreshAfterDrop();
 //        getComponentForm().animateLayout(300);
+//</editor-fold>
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
