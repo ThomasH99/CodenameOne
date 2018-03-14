@@ -69,7 +69,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    private List<WorkSlot> workSlotListBuffer;
     private WorkSlotList workSlotListBuffer;
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
-    private  WorkTimeAllocator wtd; //calculated when needed
+    private WorkTimeAllocator wtd; //calculated when needed
 
     /**
      * used to save the underlying list when ItemList is not a ParseObject
@@ -987,6 +987,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
         addItemAtIndex((E) subItemOrList, index);
+        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+//        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
+        subItemOrList.setOwner(this);
+//        DAO.getInstance().save((ParseObject)subtask);
+        return true;
+    }
+
+    @Override
+    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
+        int index = indexOf(item);
+        addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
         ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
@@ -3188,8 +3199,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     /**
      * use this to check if a WorkTimeDefinition exists *before* calling
- getWorkTimeAllocator() since otherwise it will create a new
- WorkTimeDefinition
+     * getWorkTimeAllocator() since otherwise it will create a new
+     * WorkTimeDefinition
      *
      * @return true if a WorkTimeDefinition is defined in this list
      */
@@ -3304,7 +3315,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public String getObjectId() {
         return CLASS_NAME;
     }
-    
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
@@ -3323,7 +3333,5 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        return new WorkTime(getWorkSlotList()); //a list can only get workTime allocated via its workslots
 //        throw new Error("Not supported yet."); 
 //    }
-
-
 } // Class ItemList
 

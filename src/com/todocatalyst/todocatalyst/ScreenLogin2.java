@@ -93,17 +93,23 @@ public class ScreenLogin2 extends MyForm {
 //                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
 //            }
             thread.run((success) -> {
-                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+                 if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+                     success.onSucess(null);
+                 }
+                 thread.kill();
 //                success.onSucess(success); //CN1 Support: is there an error in CN1 for the run(r,t) call?!!!
-            }, (myResult) -> {
-                Form f = Display.getInstance().getCurrent();
-                //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
-                if (f instanceof MyForm && !(f instanceof ScreenLogin2) &&!(f instanceof ScreenMain)&&!(f instanceof ScreenItem)) {
-                    //TODO!!! show "Running" symbyl after like 2 seconds
+            }, (notUsed) -> {
+//                if (newDataLoaded) {
+                    Form f = Display.getInstance().getCurrent();
+                    //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
+                    if (f instanceof MyForm && !(f instanceof ScreenLogin2) && !(f instanceof ScreenMain) && !(f instanceof ScreenItem)) {
+                        //TODO!!! show "Running" symbyl after like 2 seconds
 //                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
-                    ((MyForm) f).refreshAfterEdit();
-                    thread.kill();
-                }
+                        ((MyForm) f).refreshAfterEdit();
+                        Log.p("Screen "+getComponentForm().getTitle()+" refreshed after loading new data from network" );
+                    }
+//                    thread.kill();
+//                }
             });
 
             //ALARMS - initialize

@@ -142,6 +142,7 @@ public class MyTree2 extends ContainerScrollY {
         super();
         this.model = model;
         setUIID("MyTree2");
+        if (Test.DEBUG) setName("MyTree2");
 //        if (expandedObjects != null) {
 //            this.expandedObjects = new HashSet(expandedObjects);
 //        } else {

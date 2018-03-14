@@ -1536,6 +1536,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
+    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem){
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
     public boolean removeFromList(ItemAndListCommonInterface subItemOrList) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

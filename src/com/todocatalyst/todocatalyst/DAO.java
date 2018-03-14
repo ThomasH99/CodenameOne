@@ -552,7 +552,8 @@ public class DAO {
 //        return (List<Category>) getAll(Category.CLASS_NAME);
     }
 
-    public void cacheCategoryList(Date reloadUpdateAfterThis, Date now) {
+    public boolean cacheCategoryList(Date reloadUpdateAfterThis, Date now) {
+        boolean result = false;
         ParseQuery<CategoryList> query = ParseQuery.getQuery(CategoryList.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
@@ -565,13 +566,16 @@ public class DAO {
                 fetchAllItemsIn(categoryList);
                 cache.put(categoryList.getObjectIdP(), categoryList); //may fetchFromCacheOnly by objectId via getOwner
                 cache.put(CategoryList.CLASS_NAME, categoryList);
+                result = true;
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
+        return result;
     }
 
-    public void cacheItemListList(Date reloadUpdateAfterThis, Date now) {
+    public boolean cacheItemListList(Date reloadUpdateAfterThis, Date now) {
+        boolean result = false;
         ParseQuery<ItemListList> query = ParseQuery.getQuery(ItemListList.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
@@ -583,13 +587,16 @@ public class DAO {
                 fetchAllItemsIn(itemListList);
                 cache.put(itemListList.getObjectIdP(), itemListList); //may fetchFromCacheOnly by objectId via getOwner
                 cache.put(ItemListList.CLASS_NAME, itemListList);
+                result = true;
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
+        return result;
     }
 
-    public void cacheTemplateList(Date reloadUpdateAfterThis, Date now) {
+    public boolean cacheTemplateList(Date reloadUpdateAfterThis, Date now) {
+        boolean result = false;
         ParseQuery<TemplateList> query = ParseQuery.getQuery(TemplateList.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
@@ -601,10 +608,12 @@ public class DAO {
                 fetchAllItemsIn(templateList);
                 cache.put(templateList.getObjectIdP(), templateList); //may fetchFromCacheOnly by objectId via getOwner
                 cache.put(TemplateList.CLASS_NAME, templateList);
+                result = true;
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
+        return result;
     }
 
     public List<Category> getAllCategoriesFromParse() {
@@ -1669,8 +1678,10 @@ public class DAO {
 //        save((ParseObject)anyParseObject, true);
 //    }
     /**
-     * returns immediately, save takes place in background so not guaranteed that the object has been saved on return from this call. 
-     * Multiple calls will ensure that each is saved before the next (all saves happens on same thread). 
+     * returns immediately, save takes place in background so not guaranteed
+     * that the object has been saved on return from this call. Multiple calls
+     * will ensure that each is saved before the next (all saves happens on same
+     * thread).
      *
      * @param anyParseObject
      */
@@ -3340,8 +3351,9 @@ public class DAO {
         cacheAllItemsFromParse(new Date(MyDate.MIN_DATE), new Date());
     }
 
-    private void cacheAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
+    private boolean cacheAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        boolean result = false;
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
@@ -3353,6 +3365,7 @@ public class DAO {
             //TODO!!!! show spinner
             for (ParseObject o : results) {
                 cache.put(o.getObjectIdP(), o);
+                result = true;
             }
         } catch (ParseException ex) {
             Log.e(ex);
@@ -3361,14 +3374,16 @@ public class DAO {
 //        for (ParseObject o : results) {
 //            cacheItem((Item) o);
 //        }
+        return result;
     }
 
-    private void cacheAllWorkSLotsFromParse() {
-        cacheAllWorkSlotsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
+    private boolean cacheAllWorkSLotsFromParse() {
+        return cacheAllWorkSlotsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
-    private void cacheAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
+    private boolean cacheAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        boolean result = false;
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, afterDate);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, beforeDate);
@@ -3385,6 +3400,7 @@ public class DAO {
                 } else {
                     cache.put(o.getObjectIdP(), o);
                 }
+                result = true;
             }
         } catch (ParseException ex) {
             Log.e(ex);
@@ -3393,14 +3409,16 @@ public class DAO {
 //        for (ParseObject o : results) {
 //            cacheItem((Item) o);
 //        }
+        return result;
     }
 
     private void cacheAllRepeatRulesFromParse() {
         cacheAllRepeatRulesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
-    private void cacheAllRepeatRulesFromParse(Date reloadUpdateAfterThis, Date now) {
+    private boolean cacheAllRepeatRulesFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        boolean result = false;
         ParseQuery<RepeatRuleParseObject> query = ParseQuery.getQuery(RepeatRuleParseObject.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
@@ -3412,6 +3430,7 @@ public class DAO {
 //                ASSERT.that(o.isDataAvailable(), "RepeatRule with no data ObjId"+o.getObjectId());
 //                cache.put(o.getObjectId(), o);
                 cache.put(o.getObjectIdP(), o);
+                result = true;
 //                cacheWorkSlots.put(o.getObjectId(), o); //cache WorkSlots in both caches (to avoid any weird edge cases)
             }
         } catch (ParseException ex) {
@@ -3421,14 +3440,16 @@ public class DAO {
 //        for (ParseObject o : results) {
 //            cacheItem((Item) o);
 //        }
+        return result;
     }
 
-    private void cacheAllFilterSortDefsFromParse() {
-        cacheAllFilterSortDefsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
+    private boolean cacheAllFilterSortDefsFromParse() {
+        return cacheAllFilterSortDefsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
-    private void cacheAllFilterSortDefsFromParse(Date reloadUpdateAfterThis, Date now) {
+    private boolean cacheAllFilterSortDefsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        boolean result = false;
         ParseQuery<FilterSortDef> query = ParseQuery.getQuery(FilterSortDef.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
@@ -3439,6 +3460,7 @@ public class DAO {
             for (ParseObject o : results) {
 //                assert (o.isDataAvailable());
                 cache.put(o.getObjectIdP(), o);
+                result = true;
             }
         } catch (ParseException ex) {
             Log.e(ex);
@@ -3447,6 +3469,7 @@ public class DAO {
 //        for (ParseObject o : results) {
 //            cacheItem((Item) o);
 //        }
+        return result;
     }
 
     /**
@@ -3467,12 +3490,13 @@ public class DAO {
 ////        if (item.getOwner() instanceof Item && (temp=(Item)cache.get(item.getOwner()))!=null)
 ////            item.setOwner((Item)temp);
 //    }
-    private List<Category> cacheAllCategoriesFromParse() {
+    private boolean cacheAllCategoriesFromParse() {
         return cacheAllCategoriesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
-    private List<Category> cacheAllCategoriesFromParse(Date reloadUpdateAfterThis, Date now) {
+    private boolean cacheAllCategoriesFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        boolean result = false;
         ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
@@ -3483,21 +3507,23 @@ public class DAO {
             for (ParseObject o : results) {
 //                assert (o.isDataAvailable());
                 cache.put(o.getObjectIdP(), o);
+                result = true;
 //                assert (o instanceof Category);
 //                cacheItemListOrCategory((ItemList) o);
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return results;
+        return result;
     }
 
-    private List<ItemList> cacheAllItemListsFromParse() {
+    private boolean cacheAllItemListsFromParse() {
         return cacheAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
-    private List<ItemList> cacheAllItemListsFromParse(Date reloadUpdateAfterThis, Date now) {
+    private boolean cacheAllItemListsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        boolean result = false;
         ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
@@ -3511,6 +3537,7 @@ public class DAO {
                 }
 //                if (o.isDataAvailable()) {
                 cache.put(o.getObjectIdP(), o);
+                result = true;
 //                }
 //                assert (o instanceof Category);
 //                cacheItemListOrCategory((ItemList) o); //replaced by a call cacheUpdateListToCachedObjects inside the getList() methods of Categories/ItemLists
@@ -3518,7 +3545,7 @@ public class DAO {
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return results;
+        return result;
     }
 
     /**
@@ -3706,7 +3733,7 @@ public class DAO {
         cacheLoadDataChangedOnServer(true);
     }
 
-    public void cacheLoadDataChangedOnServer(boolean loadChangedDataFromParseServer) {
+    public boolean cacheLoadDataChangedOnServer(boolean loadChangedDataFromParseServer) {
         //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
 //        initAndConfigureCache(); //now done in DAO constructor
 ////\        loadCacheToMemory(); //first load 
@@ -3721,8 +3748,9 @@ public class DAO {
                 }
                 Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
             }
-            cacheAllData(lastCacheRefreshDate, now);
+            return cacheAllData(lastCacheRefreshDate, now);
         }
+        return false;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3759,37 +3787,38 @@ public class DAO {
 //        }
 //    }
 //</editor-fold>
-    public void cacheAllData(Date afterDate, Date beforeDate) {
+    public boolean cacheAllData(Date afterDate, Date beforeDate) {
+        boolean result;
         Log.p("Caching Items");
-        cacheAllItemsFromParse(afterDate, beforeDate);
+        result = cacheAllItemsFromParse(afterDate, beforeDate);
         Log.p("Caching Categories");
-        cacheAllCategoriesFromParse(afterDate, beforeDate);
+        result = result || cacheAllCategoriesFromParse(afterDate, beforeDate);
         Log.p("Caching ItemLists");
-        cacheAllItemListsFromParse(afterDate, beforeDate);
+        result = result || cacheAllItemListsFromParse(afterDate, beforeDate);
         Log.p("Caching WorkSlots");
-        cacheAllWorkSlotsFromParse(afterDate, beforeDate);
+        result = result || cacheAllWorkSlotsFromParse(afterDate, beforeDate);
         Log.p("Caching Filters");
-        cacheAllFilterSortDefsFromParse(afterDate, beforeDate);
+        result = result || cacheAllFilterSortDefsFromParse(afterDate, beforeDate);
 //        getAllCategoriesFromParse();
 //        getAllCategoriesFromParse(reloadUpdateAfterThis, now);
 //        getAllItemListsFromParse();
 //        getAllItemListsFromParse(reloadUpdateAfterThis, now);
         Log.p("Caching RepeatRules");
-        cacheAllRepeatRulesFromParse(afterDate, beforeDate);
+        result = result || cacheAllRepeatRulesFromParse(afterDate, beforeDate);
 //        getCategoryList(); //will cache the list of Categories
 //        getItemListList(); //will cache the list of ItemLists
 //        getTemplateList(); //will cache the list of Templates
         Log.p("Caching CategoryList");
-        cacheCategoryList(afterDate, beforeDate); //will cache the list of Categories
+        result = result || cacheCategoryList(afterDate, beforeDate); //will cache the list of Categories
         Log.p("Caching ItemListList");
-        cacheItemListList(afterDate, beforeDate); //will cache the list of ItemLists
+        result = result || cacheItemListList(afterDate, beforeDate); //will cache the list of ItemLists
         Log.p("Caching TemplateList");
-        cacheTemplateList(afterDate, beforeDate); //will cache the list of Templates
+        result = result || cacheTemplateList(afterDate, beforeDate); //will cache the list of Templates
 //        cacheUpdateAllCategoryItemReferences(categoryList);
 //        cacheUpdateAllItemListItemReferences(itemListLists);
 //        cacheUpdateAllItemReferences();
-        Log.p("cacheAllData FINISHED updating cache");
-
+        Log.p("cacheAllData FINISHED updating cache" + (result ? " NEW DATA LOADED" : " no data loaded"));
+        return result;
     }
 
 }

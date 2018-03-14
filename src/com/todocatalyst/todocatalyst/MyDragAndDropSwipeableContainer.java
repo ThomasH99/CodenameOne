@@ -12,6 +12,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Form;
 import com.codename1.ui.Graphics;
 import com.codename1.ui.Image;
+import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.geom.Dimension;
@@ -29,45 +30,85 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     int draggedWidth = -1;
     int draggedHeight = -1;
 
+    interface Call {
+
+        void call();
+    }
+    private Call dropActionCall;
+    private Call dropAsSubtaskActionCall;
+
     MyDragAndDropSwipeableContainer(Component bottomLeft, Component bottomRight, Component top) {
         super(bottomLeft, bottomRight, top);
         setDropTarget(true); //containers are both dropTargets and draggable
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
+        //NB!!! dragOverListener is called on the **DRAGGED** object (not the dropTarget as I originally assumed)
         addDragOverListener((e) -> {
-            Component drag = e.getDraggedComponent();
+//            Component drag = e.getDraggedComponent();
+            Component drag = (Component) e.getSource();
             Component dropTarget = e.getDropTarget();
+//            Component dropTarget = this;
 
-            Log.p("----------------START MyDragAndDropSwipeableContainer ------------------------------------");
+//            Log.p("----------------START MyDragAndDropSwipeableContainer ------------------------------------");
 //            MyDragAndDropSwipeableContainer dragged = null;
             if (!(drag instanceof MyDragAndDropSwipeableContainer)) {
-                Log.p("addDragOverListener: drag (" + drag.getName() + ") NOT instanceof MyDragAndDropSwipeableContainer");
-            } else {
-                MyDragAndDropSwipeableContainer dragged = (MyDragAndDropSwipeableContainer) drag;
+//                Log.p("***addDragOverListener: drag (" + drag.getName() + ") NOT instanceof MyDragAndDropSwipeableContainer");
+                return;
+            } //else {
+            if (!(dropTarget instanceof MyDragAndDropSwipeableContainer)) {
+//                Log.p("***addDragOverListener: dropTarget (" + dropTarget.getName() + ") NOT instanceof MyDragAndDropSwipeableContainer");
+                return;
+            } //else {
+            if (false) {
+                e.consume();
+            }
+            MyDragAndDropSwipeableContainer dragged = (MyDragAndDropSwipeableContainer) drag;
+//            if (dragged == dropTarget || dragged.lastDraggedOver == dropTarget) { //over myself or same as on last dropActionCall to listener
+            if (dragged.lastDraggedOver == dropTarget) { //over myself or same as on last dropActionCall to listener
 //                if (dragged.lastDraggedOver == MyDragAndDropSwipeableContainer.this) {
-                if (dragged.lastDraggedOver == dropTarget) {
 //                    e.consume(); 
-                    Log.p("addDragOverListener: IGNORE DragOverListener, dropTarget == dragged.lastDraggedOver, dropTarget=" + dropTarget.getName() + ", dragged=" + dragged.getName());
-//                    getComponentForm().revalidate();
-                    Log.p("---------------- END MyDragAndDropSwipeableContainer() ------------------------------------");
+//                Log.p("addDragOverListener: IGNORE DragOverListener, dropTarget == dragged.lastDraggedOver, dropTarget=" + dropTarget.getName() + ", dragged=" + dragged.getName());
+////                    getComponentForm().revalidate();
+//                Log.p("---------------- END MyDragAndDropSwipeableContainer() ------------------------------------");
+                return; //skip if still over the same 
+            } else {
+                //over a new container
+                Log.p("----------------START MyDragAndDropSwipeableContainer ------------------------------------");
+                int oldDropPlaceholderIndex = -1; //used to keep track of whether we drag upwards or downwards (to insert new dropPlaceholder in right position)
+                //first time we drag over another element than dragged:
+                if (!dragged.isHidden()) { //dragged.draggedWidth == -1) {// && dragged!=dragged.lastDraggedOver) {
+//                    oldDropPlaceholderIndex=dragged.getParent().getComponentIndex(dragged); //initialize oldIndex to position of dragged
+                    dragged.draggedWidth = dragged.getWidth();
+                    dragged.draggedHeight = dragged.getHeight();
+                    dragImage2 = getDragImage(); //save dragImage before hiding
+                    Log.p("addDragOverListener: dragged over NEW dropTarget (" + dropTarget.getName() + "), STORING dragged.getWidth/getHeigth, w=" + dragged.draggedWidth + ", h=" + dragged.draggedHeight + ", HIDING dragged=" + dragged.getName());
+                    dragged.setHidden(true); //only hide once we've dragged on top of another object than dragged. Once we have the Height/Width, hide the component
+                }
 
-                    return; //skip if still over the same 
-                } else { // dragged.lastDraggedOver != dropTarget <=>
-                    Log.p("addDragOverListener: dragged.lastDraggedOver (" + (dragged.lastDraggedOver != null ? dragged.lastDraggedOver.getName() : "null")
-                            + ") *!=* dropTarget (" + dropTarget.getName() + ") so setting dragged.lastDraggedOver=dropTarget, dragged=" + dragged.getName());
+                if (true || dragged.lastDraggedOver != dropTarget) { // implicitly: || dragged.lastDraggedOver==null 
+                    Log.p("addDragOverListener: initialize dragged.lastDraggedOver to dropTarget(" + dropTarget.getName() + "), dragged=" + dragged.getName());
+                    dragged.lastDraggedOver = dropTarget;
+//                return;
+                }
+
+                // dragged.lastDraggedOver != dropTarget <=>
+//            Log.p("addDragOverListener: dragged.lastDraggedOver (" + (dragged.lastDraggedOver != null ? dragged.lastDraggedOver.getName() : "null")
+//                    + ") *!=* dropTarget (" + dropTarget.getName() + ") so setting dragged.lastDraggedOver=dropTarget, dragged=" + dragged.getName());
 //                    dragged.lastDraggedOver = MyDragAndDropSwipeableContainer.this; //store first time we're over this
 //                    if (dragged.lastDraggedOver == null) {
-                    if (dragged.draggedWidth == -1) {
-                        dragged.draggedWidth = dragged.getWidth();
-                        dragged.draggedHeight = dragged.getHeight();
-                        Log.p("addDragOverListener: dragged dragged.getWidth/getHeigth, w=" + dragged.draggedWidth + ", h=" + dragged.draggedHeight + ", for dragged=" + dragged.getName());
-                    }
-                    if (dragged.lastDraggedOver != null && dragged.lastDraggedOver != dragged && !dragged.isHidden()) {
-                        dragged.setHidden(true); //only hide once we've dragged on top of another object than dragged. Once we have the Height/Width, hide the component
-                        Log.p("addDragOverListener: dragged=" + dragged.getName() + " now HIDDEN");
-                    }
-                    dragged.lastDraggedOver = dropTarget; //store every time we're above a new object
-                }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (dragged.draggedWidth == -1) {
+//                    dragged.draggedWidth = dragged.getWidth();
+//                    dragged.draggedHeight = dragged.getHeight();
+//                    Log.p("addDragOverListener: dragged dragged.getWidth/getHeigth, w=" + dragged.draggedWidth + ", h=" + dragged.draggedHeight + ", for dragged=" + dragged.getName());
+//                }
+//                if (dragged.lastDraggedOver != null && dragged.lastDraggedOver != dragged && !dragged.isHidden()) {
+//                    dragged.setHidden(true); //only hide once we've dragged on top of another object than dragged. Once we have the Height/Width, hide the component
+//                    Log.p("addDragOverListener: dragged=" + dragged.getName() + " now HIDDEN");
+//                }
+//</editor-fold>
+//            dragged.lastDraggedOver = dropTarget; //store every time we're above a new object
+//                }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                Log.p("DragOverListener, dragged=" + dragged.getName() + ", over=" + MyDragAndDropSwipeableContainer.this.getName() + ", dropTarget=" + e.getDropTarget().getName());
 //                if (dragged == this) {
@@ -76,12 +117,410 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                    setHidden(true); //once we have the Height/Width, hide the component
 //                }
 //</editor-fold>
-                Component newDropPlaceholder = new Component() {
-                    int draggedWidth = dragged.draggedWidth;
-                    int draggedHeight = dragged.draggedHeight;
+//                //Create new dropPlaceholder
+//                Label newDropPlaceholder = new Label() {
+//                    int draggedWidth = dragged.draggedWidth;
+//                    int draggedHeight = dragged.draggedHeight;
+////                    Dimension prefSize = dragged.getPreferredSize();
+//                    Component dropTarget1 = dropTarget;
+//
+////                    @Override
+//                    public int getWidth() {
+//                        if (draggedWidth <= 0) {
+//                            Log.p("Comp.getWidth()==" + draggedWidth + "!!!");
+//                        }
+//                        return draggedWidth;
+//                    }
+//
+////                    @Override
+//                    public int getHeight() {
+//                        if (draggedHeight <= 0) {
+//                            Log.p("Comp.getHeight()=" + draggedHeight + "!!!");
+//                        }
+//                        return draggedHeight;
+//                    }
+//
+//                    @Override
+//                    public Dimension getPreferredSize() {
+//                        if (draggedHeight <= 0) {
+//                            Log.p("Comp.getHeight()=" + draggedHeight + "!!!");
+//                        }
+//                        return new Dimension(draggedWidth, draggedHeight);
+////                        return prefSize;
+//                    }
+//
+//                    @Override
+//                    public void drop(Component drag1, int x, int y) {
+//                        Log.p("**********Comp.drop, dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName());
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                        MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
+////                        if (false) {
+////                            MyDragAndDropSwipeableContainer.this.drop(drag1, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
+////                        }
+////                        dropTarget.drop(dragged, x, y);
+////</editor-fold>
+////                        dropTarget1.drop(drag1, x, y);
+//                        if (getDragAndDropObject() instanceof Category) {
+//                            MyDragAndDropSwipeableContainer beforeCont;
+//                            MyDragAndDropSwipeableContainer afterCont;
+//                            dropCategory(before, after, (Category) getDragAndDropObject());
+//                        }
+//                    }
+//
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    protected Image getDragImageXXX() {
+////                        if (!isHidden()) {
+////                            ASSERT.that(!isHidden(), "***Calling getDragImage() on " + getName() + " while it's hidden"
+////                                    + ", w=" + getWidth() + ", h=" + getHeight());
+////                        } else {
+////                            Log.p("Calling getDragImage() on " + getName() + " (not hidden)"
+////                                    + ", w=" + getWidth() + ", h=" + getHeight());
+////                        }
+////                        if (dragImage == null) {
+////                            dragImage = super.getDragImage();
+////                        }
+////                        return dragImage;
+////                    }
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    @Override
+////                    protected int getDragRegionStatus(int x, int y) {
+////                        return DRAG_REGION_LIKELY_DRAG_XY;
+////                    }
+////</editor-fold>
+//                };
+//                Label newDropPlaceholderOLD = new Label() {
+//                    int draggedWidth = dragged.draggedWidth;
+//                    int draggedHeight = dragged.draggedHeight;
+////                    Dimension prefSize = dragged.getPreferredSize();
+//                    Component dropTarget1 = dropTarget;
+//
+////                    @Override
+//                    public int getWidth() {
+//                        if (draggedWidth <= 0) {
+//                            Log.p("Comp.getWidth()==" + draggedWidth + "!!!");
+//                        }
+//                        return draggedWidth;
+//                    }
+//
+////                    @Override
+//                    public int getHeight() {
+//                        if (draggedHeight <= 0) {
+//                            Log.p("Comp.getHeight()=" + draggedHeight + "!!!");
+//                        }
+//                        return draggedHeight;
+//                    }
+//
+//                    @Override
+//                    public Dimension getPreferredSize() {
+//                        if (draggedHeight <= 0) {
+//                            Log.p("Comp.getHeight()=" + draggedHeight + "!!!");
+//                        }
+//                        return new Dimension(draggedWidth, draggedHeight);
+////                        return prefSize;
+//                    }
+//
+//                    @Override
+//                    public void drop(Component drag1, int x, int y) {
+//                        Log.p("**********Comp.drop, dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName());
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                        MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
+////                        if (false) {
+////                            MyDragAndDropSwipeableContainer.this.drop(drag1, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
+////                        }
+////                        dropTarget.drop(dragged, x, y);
+////</editor-fold>
+//                        dropTarget1.drop(drag1, x, y);
+//                    }
+//
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    protected Image getDragImageXXX() {
+////                        if (!isHidden()) {
+////                            ASSERT.that(!isHidden(), "***Calling getDragImage() on " + getName() + " while it's hidden"
+////                                    + ", w=" + getWidth() + ", h=" + getHeight());
+////                        } else {
+////                            Log.p("Calling getDragImage() on " + getName() + " (not hidden)"
+////                                    + ", w=" + getWidth() + ", h=" + getHeight());
+////                        }
+////                        if (dragImage == null) {
+////                            dragImage = super.getDragImage();
+////                        }
+////                        return dragImage;
+////                    }
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    @Override
+////                    protected int getDragRegionStatus(int x, int y) {
+////                        return DRAG_REGION_LIKELY_DRAG_XY;
+////                    }
+////</editor-fold>
+//                };
+//                newDropPlaceholder.setUIID("DropTargetPlaceholder");
+//                newDropPlaceholder.setDropTarget(true);
+//                newDropPlaceholder.setText("DropPlaceholder (" + dropTarget.getName() + ")");
+//                if (Test.DEBUG) {
+//                    newDropPlaceholder.setName("Comp.dropPlaceholder for " + dropTarget.getName() + ", w=" + newDropPlaceholder.getWidth() + ", h=" + newDropPlaceholder.getHeight());
+//                }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//if (dragged.dropPlaceholder != null) {
+//    if (dragged.dropPlaceholder.getParent() != null) {
+//        Log.p("addDragOverListener: dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder)");
+//        dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder);
+//    } else {
+//        Log.p("addDragOverListener: **should remove old dropPlaceholder, but it has no parent, dropPlaceholder=" + dragged.dropPlaceholder.getName());
+//    }
+//} else {
+//    Log.p("addDragOverListener: dragged.dropPlaceholder==null!!");
+//}
+//</editor-fold>
+//                dropActionCall = null; //reset
+//                dropAsSubtaskActionCall = null; //reset
+//                if (getDragAndDropObject() instanceof Category) {
+//                    if (afterCont.getDragAndDropObject() instanceof Category) { //can always drop a Category before another Category
+//                        dropActionCall = () -> {
+//                            ((Category) afterCont.getDragAndDropObject()).getOwner().removeFromList((ItemAndListCommonInterface) afterCont.getDragAndDropObject());
+//                            ((Category) afterCont.getDragAndDropObject()).getOwner().addToList((ItemAndListCommonInterface) afterCont.getDragAndDropObject(), (Category) getDragAndDropObject(), true);
+//                        };
+//                    } else if (afterCont.getDragAndDropObject() == null) {//or at the end of the list (after either a Catgory and any expanded Item)
+//                        dropActionCall = () -> {
+//                            ((Category) afterCont.getDragAndDropObject()).getOwner().removeFromList((ItemAndListCommonInterface) afterCont.getDragAndDropObject());
+//                            ((Category) afterCont.getDragAndDropObject()).getOwner().addToList((Category) getDragAndDropObject()); //add to end of CategoryList
+//                        };
+//                    }
+//                } else if (getDragAndDropObject() instanceof Item) {
+//                    if (getDragAndDropCategory() != null) { //dragged object belongs to a category
+//                        //we can always drop *after* another Item which also has a Category (doesn't affect expanded subtasks since they return null for getDragAndDropCategory())
+//                        if (beforeCont.getDragAndDropObject() instanceof Item && beforeCont.getDragAndDropCategory() != null) {
+//                            dropActionCall = () -> {
+//                                boolean sameCategory = getDragAndDropCategory() == beforeCont.getDragAndDropCategory();
+//                                getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+//                                beforeCont.getDragAndDropCategory().addToList((Item) beforeCont.getDragAndDropObject(), (Item) getDragAndDropObject(), true);
+//                            };
+//                            //dropping item right after a Category
+//                        } else if (beforeCont.getDragAndDropObject() instanceof Category) {
+//                            dropActionCall = () -> {
+//                                boolean sameCategory = getDragAndDropCategory() == beforeCont.getDragAndDropCategory();
+//                                getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+//                                ((Category) beforeCont.getDragAndDropObject()).addToList(0, (Item) getDragAndDropObject()); //insert item at beginning of category's list of items
+//                            };
+//                            //we drop *before* another Item in a Category (eg when the subtasks of the previous item in the cateogry are expanded)
+//                        }
+//                        if (afterCont.getDragAndDropObject() instanceof Item && afterCont.getDragAndDropCategory() != null) {
+//                            dropActionCall = () -> {
+//                                boolean sameCategory = getDragAndDropCategory() == afterCont.getDragAndDropCategory();
+//                                getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+//                                afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the 
+//                            };
+//                        }
+//                    } else { //dragging an item that does NOT belong to a category, only dropping as subtasks (not under categories since the logic is really unintutive!) //TODO!!! consider adding this again after all
+//                        //assert: 
+//                        //dropping after an Item
+//                        if (beforeCont.getDragAndDropObject() instanceof Item) {// && ((Item)beforeCont.getDragAndDropObject()).getOwner()==((Item)getDragAndDropObject()).getOwner())
+//                            dropActionCall = () -> {
+//                                ((Item) getDragAndDropObject()).removeFromList((Item) getDragAndDropObject()); //remove item from old owner list
+//                                //Insert after the previous/before Item
+//                                ((Item) beforeCont.getDragAndDropObject()).getOwner().addToList(((Item) beforeCont.getDragAndDropObject()), (Item) getDragAndDropObject(), true); //insert *before* the 
+//                            };
+//                            dropAsSubtaskActionCall = () -> {
+////                                getDragAndDropList().removeFromList((Item) getDragAndDropObject()); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+//                                ((Item) getDragAndDropObject()).removeFromList((Item) getDragAndDropObject()); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+////                                afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the 
+//                                ((Item) beforeCont.getDragAndDropObject()).addToList(0, (Item) getDragAndDropObject()); //insert as the first subtask of the item before
+//                            };
+//
+//                        }
+//                    }
+//                }
+                //Insert new dropPlaceholder:
+//                Container parent = getParent().getParent();
+                Container treeList = dropTarget.getParent(); //treeList = the list in which to insert the dropPlaceholder
+                Component dropParent = dropTarget;
+                while (!(treeList instanceof MyTree2) && treeList != null) {
+                    dropParent = treeList;
+                    treeList = treeList.getParent();
+                }
+
+                //remove old dropPlaceholder
+                if (dragged.dropPlaceholder != null) {
+                    if (dragged.dropPlaceholder.getParent() != null) {
+                        Log.p("addDragOverListener: REMOVING old dragged.dropPlaceholder (" + dragged.dropPlaceholder.getName() + ")");
+                        oldDropPlaceholderIndex = dragged.dropPlaceholder.getParent().getComponentIndex(dragged.dropPlaceholder);
+                        dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder);
+                    } else {
+                        Log.p("addDragOverListener: **should remove old dropPlaceholder, but it has no parent, dropPlaceholder=" + dragged.dropPlaceholder.getName());
+                    }
+                } else {
+                    oldDropPlaceholderIndex = treeList.getComponentIndex(dropParent); //initilize old index to position of dragged (when no value defined for dropPlaceholder)
+                    Log.p("addDragOverListener: dragged.dropPlaceholder==null!!");
+                }
+
+                oldDropPlaceholderIndex = dragged.dropPlaceholder != null ? dragged.dropPlaceholder.getParent().getComponentIndex(dragged.dropPlaceholder) : treeList.getComponentIndex(dropParent);
+
+//                Container dropParent = dropTarget.getParent();
+//                if (dropParent != null) {
+//                    treeList = dropParent.getParent();
+                if (treeList != null) {
+                    MyDragAndDropSwipeableContainer beforeCont;
+                    MyDragAndDropSwipeableContainer afterCont;
+
+//                int index = parent.getComponentIndex(this); //get my current position
+//                int index = parent.getComponentIndex(dropTarget); //get my current position
+//                        int index = treeList.getComponentIndex(dropParent); //get my current position
+                    int index = treeList.getComponentIndex(dropParent); //get my current position
+                    boolean draggingUpwards = index <= oldDropPlaceholderIndex; //NB. Also works for dropPlaceholder 'under' dragged when initiating drag
+                    if (draggingUpwards) {
+                        beforeCont = (MyDragAndDropSwipeableContainer) dropTarget;
+                        afterCont = index == 0 ? null : findDropTargetIn((Container) treeList.getComponentAt(index - 1));
+                    } else {
+                        afterCont = (MyDragAndDropSwipeableContainer) dropTarget;
+                        beforeCont = index >= treeList.getComponentCount() ? null : findDropTargetIn((Container) treeList.getComponentAt(index));
+                    }
+
+                    dropActionCall = null; //reset
+                    dropAsSubtaskActionCall = null; //reset
+                    if (getDragAndDropObject() instanceof Category) {
+                        if (afterCont.getDragAndDropObject() instanceof Category) { //can always drop a Category before another Category
+                            dropActionCall = () -> {
+                                ((Category) afterCont.getDragAndDropObject()).getOwner().removeFromList((ItemAndListCommonInterface) afterCont.getDragAndDropObject());
+                                ((Category) afterCont.getDragAndDropObject()).getOwner().addToList((ItemAndListCommonInterface) afterCont.getDragAndDropObject(), (Category) getDragAndDropObject(), true);
+                            };
+                        } else if (afterCont.getDragAndDropObject() == null) {//or at the end of the list (after either a Catgory and any expanded Item)
+                            dropActionCall = () -> {
+                                ((Category) afterCont.getDragAndDropObject()).getOwner().removeFromList((ItemAndListCommonInterface) afterCont.getDragAndDropObject());
+                                ((Category) afterCont.getDragAndDropObject()).getOwner().addToList((Category) getDragAndDropObject()); //add to end of CategoryList
+                            };
+                        }
+                    } else if (getDragAndDropObject() instanceof Item) {
+                        if (getDragAndDropCategory() != null) { //dragged object belongs to a category
+                            //we can always drop *after* another Item which also has a Category (doesn't affect expanded subtasks since they return null for getDragAndDropCategory())
+                            if (beforeCont.getDragAndDropObject() instanceof Item && beforeCont.getDragAndDropCategory() != null) {
+                                dropActionCall = () -> {
+                                    boolean sameCategory = getDragAndDropCategory() == beforeCont.getDragAndDropCategory();
+                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+                                    beforeCont.getDragAndDropCategory().addToList((Item) beforeCont.getDragAndDropObject(), (Item) getDragAndDropObject(), true);
+                                };
+                                //dropping item right after a Category
+                            } else if (beforeCont.getDragAndDropObject() instanceof Category) {
+                                dropActionCall = () -> {
+                                    boolean sameCategory = getDragAndDropCategory() == beforeCont.getDragAndDropCategory();
+                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+                                    ((Category) beforeCont.getDragAndDropObject()).addToList(0, (Item) getDragAndDropObject()); //insert item at beginning of category's list of items
+                                };
+                                //we drop *before* another Item in a Category (eg when the subtasks of the previous item in the cateogry are expanded)
+                            }
+                            if (afterCont.getDragAndDropObject() instanceof Item && afterCont.getDragAndDropCategory() != null) {
+                                dropActionCall = () -> {
+                                    boolean sameCategory = getDragAndDropCategory() == afterCont.getDragAndDropCategory();
+                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+                                    afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the 
+                                };
+                            }
+                        } else { //dragging an item that does NOT belong to a category, only dropping as subtasks (not under categories since the logic is really unintutive!) //TODO!!! consider adding this again after all
+                            //assert: 
+                            //dropping after an Item
+                            if (beforeCont.getDragAndDropObject() instanceof Item) {// && ((Item)beforeCont.getDragAndDropObject()).getOwner()==((Item)getDragAndDropObject()).getOwner())
+                                dropActionCall = () -> {
+                                    ((Item) getDragAndDropObject()).removeFromList((Item) getDragAndDropObject()); //remove item from old owner list
+                                    //Insert after the previous/before Item
+                                    ((Item) beforeCont.getDragAndDropObject()).getOwner().addToList(((Item) beforeCont.getDragAndDropObject()), (Item) getDragAndDropObject(), true); //insert *before* the 
+                                };
+                                dropAsSubtaskActionCall = () -> {
+//                                getDragAndDropList().removeFromList((Item) getDragAndDropObject()); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+                                    ((Item) getDragAndDropObject()).removeFromList((Item) getDragAndDropObject()); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+//                                afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the 
+                                    ((Item) beforeCont.getDragAndDropObject()).addToList(0, (Item) getDragAndDropObject()); //insert as the first subtask of the item before
+                                };
+
+                            }
+                        }
+                    }
+
+                    //if a drop action is possible at this position
+                    if (dropActionCall != null || dropAsSubtaskActionCall != null) {
+                        
+                                        //Create new dropPlaceholder
+                Label newDropPlaceholder = new Label() {
+//                    int draggedWidth = dragged.draggedWidth;
+//                    int draggedHeight = dragged.draggedHeight;
+//                    Dimension prefSize = dragged.getPreferredSize();
                     Component dropTarget1 = dropTarget;
 
+//                    @Override
+                    public int getWidth() {
+//                        if (draggedWidth <= 0) {
+//                            Log.p("Comp.getWidth()==" + draggedWidth + "!!!");
+//                        }
+//                        return draggedWidth;
+                        return dragged.draggedWidth;
+                    }
+
+//                    @Override
+                    public int getHeight() {
+//                        if (draggedHeight <= 0) {
+//                            Log.p("Comp.getHeight()=" + draggedHeight + "!!!");
+//                        }
+//                        return draggedHeight;
+                        return dragged.draggedHeight;
+                    }
+
                     @Override
+                    public Dimension getPreferredSize() {
+//                        if (draggedHeight <= 0) {
+//                            Log.p("Comp.getHeight()=" + draggedHeight + "!!!");
+//                        }
+//                        return new Dimension(draggedWidth, draggedHeight);
+                        return new Dimension(dragged.draggedWidth, dragged.draggedHeight);
+//                        return prefSize;
+                    }
+
+                    @Override
+                    public void drop(Component drag1, int x, int y) {
+                        Log.p("**********Comp.drop, dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName());
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                        MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
+//                        if (false) {
+//                            MyDragAndDropSwipeableContainer.this.drop(drag1, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
+//                        }
+//                        dropTarget.drop(dragged, x, y);
+//</editor-fold>
+//                        dropTarget1.drop(drag1, x, y);
+                        if (getDragAndDropObject() instanceof Category) {
+                            MyDragAndDropSwipeableContainer beforeCont;
+                            MyDragAndDropSwipeableContainer afterCont;
+                            dropCategory(before, after, (Category) getDragAndDropObject());
+                        }
+                    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    protected Image getDragImageXXX() {
+//                        if (!isHidden()) {
+//                            ASSERT.that(!isHidden(), "***Calling getDragImage() on " + getName() + " while it's hidden"
+//                                    + ", w=" + getWidth() + ", h=" + getHeight());
+//                        } else {
+//                            Log.p("Calling getDragImage() on " + getName() + " (not hidden)"
+//                                    + ", w=" + getWidth() + ", h=" + getHeight());
+//                        }
+//                        if (dragImage == null) {
+//                            dragImage = super.getDragImage();
+//                        }
+//                        return dragImage;
+//                    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    @Override
+//                    protected int getDragRegionStatus(int x, int y) {
+//                        return DRAG_REGION_LIKELY_DRAG_XY;
+//                    }
+//</editor-fold>
+                };
+                Label newDropPlaceholderOLD = new Label() {
+                    int draggedWidth = dragged.draggedWidth;
+                    int draggedHeight = dragged.draggedHeight;
+//                    Dimension prefSize = dragged.getPreferredSize();
+                    Component dropTarget1 = dropTarget;
+
+//                    @Override
                     public int getWidth() {
                         if (draggedWidth <= 0) {
                             Log.p("Comp.getWidth()==" + draggedWidth + "!!!");
@@ -89,7 +528,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         return draggedWidth;
                     }
 
-                    @Override
+//                    @Override
                     public int getHeight() {
                         if (draggedHeight <= 0) {
                             Log.p("Comp.getHeight()=" + draggedHeight + "!!!");
@@ -98,31 +537,42 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                     }
 
                     @Override
+                    public Dimension getPreferredSize() {
+                        if (draggedHeight <= 0) {
+                            Log.p("Comp.getHeight()=" + draggedHeight + "!!!");
+                        }
+                        return new Dimension(draggedWidth, draggedHeight);
+//                        return prefSize;
+                    }
+
+                    @Override
                     public void drop(Component drag1, int x, int y) {
                         Log.p("**********Comp.drop, dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName());
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                        MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
+//                        MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
 //                        if (false) {
-//                            MyDragAndDropSwipeableContainer.this.drop(drag1, x, y); //when dropping on placeholder, call drop on original droptarget
+//                            MyDragAndDropSwipeableContainer.this.drop(drag1, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
 //                        }
 //                        dropTarget.drop(dragged, x, y);
 //</editor-fold>
                         dropTarget1.drop(drag1, x, y);
                     }
 
-                    protected Image getDragImageXXX() {
-                        if (!isHidden()) {
-                            ASSERT.that(!isHidden(), "***Calling getDragImage() on " + getName() + " while it's hidden"
-                                    + ", w=" + getWidth() + ", h=" + getHeight());
-                        } else {
-                            Log.p("Calling getDragImage() on " + getName() + " (not hidden)"
-                                    + ", w=" + getWidth() + ", h=" + getHeight());
-                        }
-                        if (dragImage == null) {
-                            dragImage = super.getDragImage();
-                        }
-                        return dragImage;
-                    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    protected Image getDragImageXXX() {
+//                        if (!isHidden()) {
+//                            ASSERT.that(!isHidden(), "***Calling getDragImage() on " + getName() + " while it's hidden"
+//                                    + ", w=" + getWidth() + ", h=" + getHeight());
+//                        } else {
+//                            Log.p("Calling getDragImage() on " + getName() + " (not hidden)"
+//                                    + ", w=" + getWidth() + ", h=" + getHeight());
+//                        }
+//                        if (dragImage == null) {
+//                            dragImage = super.getDragImage();
+//                        }
+//                        return dragImage;
+//                    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    @Override
 //                    protected int getDragRegionStatus(int x, int y) {
@@ -130,36 +580,32 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                    }
 //</editor-fold>
                 };
-
                 newDropPlaceholder.setUIID("DropTargetPlaceholder");
                 newDropPlaceholder.setDropTarget(true);
+                newDropPlaceholder.setText("DropPlaceholder (" + dropTarget.getName() + ")");
                 if (Test.DEBUG) {
                     newDropPlaceholder.setName("Comp.dropPlaceholder for " + dropTarget.getName() + ", w=" + newDropPlaceholder.getWidth() + ", h=" + newDropPlaceholder.getHeight());
                 }
 
-                if (dragged.dropPlaceholder != null) {
-                    if (dragged.dropPlaceholder.getParent() != null) {
-                        Log.p("addDragOverListener: dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder)");
-                        dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder);
-                    } else {
-                        Log.p("addDragOverListener: **should remove old dropPlaceholder, but it has no parent, dropPlaceholder=" + dragged.dropPlaceholder.getName());
-                    }
-                } else {
-                    Log.p("addDragOverListener: dragged.dropPlaceholder==null!!");
-                }
-//                Container parent = getParent().getParent();
-                Container dropParent = dropTarget.getParent();
-                Container treeList = null;
-                if (dropParent != null) {
-                    treeList = dropParent.getParent();
-                    if (treeList != null) {
-//                int index = parent.getComponentIndex(this); //get my current position
-//                int index = parent.getComponentIndex(dropTarget); //get my current position
-                        int index = treeList.getComponentIndex(dropParent); //get my current position
+                        
+                        //remove old dropPlaceholder (if any)
+                        if (dragged.dropPlaceholder != null) {
+                            dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder);
+                        }
+
+                        //insert new dropPlaceholder
                         treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
+//                    if (index <= oldDropPlaceholderIndex) {
+//                        treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
+//                        Log.p("addDragOverListener: treeList: INSERT newDropPlaceholder=" + newDropPlaceholder.getName() + " at index   =" + index + " for dropTarget=" + dropTarget.getName());
+//                    } else {
+////                        treeList.addComponent(index + 1, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
+//                        treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
+//                        Log.p("addDragOverListener: treeList: INSERT newDropPlaceholder=" + newDropPlaceholder.getName() + " at index+1 =" + index + 1 + " for dropTarget=" + dropTarget.getName());
+//                    }
                         dragged.dropPlaceholder = newDropPlaceholder; //save new placeholder
-                        getComponentForm().revalidate();
-                        Log.p("addDragOverListener: treeList: newDropPlaceholder=" + newDropPlaceholder.getName() + " inserted at index=" + index + " for dropTarget=" + dropTarget.getName());
+//                    getComponentForm().revalidate();
+                        dropTarget.getComponentForm().animateLayout(300);
 //                        Log.p("addDragOverListener: new dropPlaceholder=" + newDropPlaceholder.getName() + ", inserted position=" + index + ", for dropTarget=" + dropTarget.getName());
                     } else {
                         Log.p("addDragOverListener: treeList==null!!! for dropTarget=" + dropTarget.getName());
@@ -167,9 +613,10 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                                + (treeList != null ? treeList.getName() : "nullx") + ", for dropTarget=" + dropTarget.getName());
 //                        Log.p("addDragOverListener: treeList==null for dropTarget=" + dropTarget.getName());
                     }
-                } else {
-                    Log.p("addDragOverListener: treeList: dropParent == null!! for dropTarget=" + dropTarget.getName());
                 }
+//                } else {
+//                    Log.p("addDragOverListener: treeList: dropParent == null!! for dropTarget=" + dropTarget.getName());
+//                }
 //                } else {
 //                    getParent().addComponent(getParent().getComponentIndex(this), newDropPlaceholder);
 //                }
@@ -178,10 +625,38 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                     getComponentForm().revalidate();
 //                e.consume(); //consume the event, otherwise it repeats(?)
                 }
+//            }
+                Log.p("---------------- END MyDragAndDropSwipeableContainer() ------------------------------------");
             }
-            Log.p("---------------- END MyDragAndDropSwipeableContainer() ------------------------------------");
-
         });
+    }
+
+    private static MyDragAndDropSwipeableContainer findDropTargetIn(Container cont) {
+        int count = cont.getComponentCount();
+        for (int i = count - 1; i >= 0; i--) {
+            Component cmp = cont.getComponentAt(i);
+//            if (cmp.isDropTarget()) {
+            if (cmp instanceof MyDragAndDropSwipeableContainer) {
+                return (MyDragAndDropSwipeableContainer) cmp;
+            }
+            if (cmp instanceof Container) {
+                MyDragAndDropSwipeableContainer component = findDropTargetIn((Container) cmp);
+                if (component != null) {
+                    return component;
+                }
+            }
+        }
+        return null;
+    }
+
+    private int getContainerIndexInTreeList(MyDragAndDropSwipeableContainer dropTarget) {
+        Container treeList = dropTarget.getParent(); //treeList = the list in which to insert the dropPlaceholder
+        Component dropParent = dropTarget;
+        while (!(treeList instanceof MyTree2) && treeList != null) {
+            dropParent = treeList;
+            treeList = treeList.getParent();
+        }
+        return treeList != null ? treeList.getComponentIndex(dropParent) : -1;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -210,6 +685,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //    }
 //</editor-fold>
     @Override
+
     public Category getDragAndDropCategory() {
         Container parent = getParent();
         //iterate up the container hierarchy for an Item to see if the above object is a category
@@ -260,6 +736,82 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      */
     private boolean insertBelow(int x) {
         return x > this.getWidth() / 3 * 2;
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+    public boolean dropItemInCategoryView(ItemAndListCommonInterface before, ItemAndListCommonInterface after, ItemAndListCommonInterface dragged,
+            Category beforeCategory, Category afterCategory, Item draggedItem, boolean insertBelow) {
+
+        if (beforeCategory == null) {
+
+        } else if (afterCategory == null) {
+            //Cat1
+            // T1
+            //  t11
+            //    t111
+            //    t112
+            //  t12
+            //T2
+            //T3        
+        }
+        return true;
+    }
+
+    public boolean dropCategory(ItemAndListCommonInterface before, ItemAndListCommonInterface after, Category dragged) {
+        //TODO support subcategories
+        if (before == null && after instanceof Category) { //inserting at the very top of the list (dropTargetContainer is *before* the first element on the screen)
+            //insert in the same list as after
+            after.getOwner().addToList(0, dragged);
+        } else if (after == null && before instanceof Category) { //inserting at the very end of the list (dropTargetContainer is *after* the last element on the screen)
+            //insert in the same list as before
+            before.getOwner().addToList(dragged);
+        } else if (before instanceof Category && after instanceof Category) {
+            //else insert after 'after' (e.g. before is subtask11 (a subtask to Task1) and after is Task2, so added is added *after* subtask11)
+            int index = before.getOwner().getList().indexOf(before);
+            before.getOwner().addToList(index + 1, dragged);
+        } else if (before instanceof Category) {
+            int index = before.getOwner().getList().indexOf(before);
+            before.getOwner().addToList(index + 1, dragged);
+        } else if (after instanceof Category) {
+            int index = after.getOwner().getList().indexOf(after);
+            after.getOwner().addToList(index, dragged);
+        } else {
+            //dropping Catgory in between something other than categories (eg between two Items)
+            return false;
+        }
+        return true;
+    }
+
+    public boolean dropBetweenItems(Item before, Item after, Item dragged, boolean insertBelow) {
+
+        if (before == null) { //inserting at the very top of the list (dropTargetContainer is *before* the first element on the screen)
+            //insert in the same list as after
+            after.getOwner().addToList(0, dragged);
+        } else if (after == null) { //inserting at the very end of the list (dropTargetContainer is *after* the last element on the screen)
+            if (!insertBelow) {
+                //insert in the same list as before
+                before.getOwner().addToList(dragged);
+            } else {
+
+            }
+        } else {
+            if (before.getOwner() == after.getOwner() || after.getOwner() == before) { //before and after belong to same owner, insert in between them (<=> after before)
+                if (!insertBelow) {
+                    int index = before.getOwner().getList().indexOf(after);
+                    before.getOwner().addToList(index, dragged);
+                } else {
+
+                }
+            } else { //else insert after 'after' (e.g. before is subtask11 (a subtask to Task1) and after is Task2, so added is added *after* subtask11)
+                if (!insertBelow) {
+                    int index = after.getOwner().getList().indexOf(after);
+                    after.getOwner().addToList(index + 1, dragged);
+                } else {
+
+                }
+            }
+        }
+        return true;
     }
 
     @Override
@@ -759,7 +1311,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 ////                }
 ////
 ////                public void drop(Component dragged, int x, int y) {
-////                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
+////                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
 ////                }
 ////            };
 ////            dropPlaceholder.setUIID("DropTargetPlaceholder");
@@ -794,7 +1346,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 ////        drawDraggedImage(g, dragImage, draggedx, draggedy);
 //    }
 //</editor-fold>
-    Image dragImage = null;
+    private Image dragImage2 = null;
 
     @Override
     protected Image getDragImage() {
@@ -805,10 +1357,10 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             Log.p("Calling getDragImage() on " + getName() + " (not hidden)"
                     + ", w=" + getWidth() + ", h=" + getHeight());
         }
-        if (dragImage == null) {
-            dragImage = super.getDragImage();
+        if (dragImage2 == null) {
+            dragImage2 = super.getDragImage();
         }
-        return dragImage;
+        return dragImage2;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -857,7 +1409,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //
 //            @Override
 //            public void drop(Component dragged, int x, int y) {
-//                MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
+//                MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
 //            }
 //        };
 //        dropPlaceholder.setUIID("DropTargetPlaceholder");
@@ -907,7 +1459,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 ////                }
 ////
 ////                public void drop(Component dragged, int x, int y) {
-////                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
+////                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
 ////                }
 ////            };
 ////            dropPlaceholder.setUIID("DropTargetPlaceholder");
@@ -996,7 +1548,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                public void drop(Component dragged, int x, int y) {
 ////                    Log.p("drop-Comp");
 //                    Log.p("Comp.drop, element=" + getName());
-//                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
+//                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
 //                }
 //
 //                @Override
@@ -1109,7 +1661,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 ////                }
 ////
 ////                public void drop(Component dragged, int x, int y) {
-////                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, call drop on original droptarget
+////                    MyDragAndDropSwipeableContainer.this.drop(dragged, x, y); //when dropping on placeholder, dropActionCall drop on original droptarget
 ////                }
 ////            };
 ////            dropPlaceholder.setUIID("DropTargetPlaceholder");
@@ -1238,10 +1790,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             dropPlaceholder = null;
 //            animate = true;
         }
+        oldDraggedIndex
+                oldDraggedParent=
         lastDraggedOver = null;
         draggedHeight = -1;
         draggedWidth = -1;
-        dragImage = null;
+        dragImage2 = null;
         setHidden(false); //unhide (set hidden in dragEnter/dragListener)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && animate) {

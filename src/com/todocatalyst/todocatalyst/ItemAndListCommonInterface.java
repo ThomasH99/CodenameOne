@@ -230,7 +230,26 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      */
     public boolean addToList(ItemAndListCommonInterface subItemOrList);
 
+    /**
+     * add subItemOrList to the list of subtasks at position index and setsubItemOrList's owner to this.
+     * adds subitem to the list (gets the list from Parse, adds the element,
+     * sets the list). Makes this Item/ItemList the owner of the inserted
+     * element. Owner must be null before insert!
+     *
+     * @param index
+     * @param subItemOrList
+     * @return 
+     */
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
+    
+    /**
+     * 
+     * @param item
+     * @param subItemOrList
+     * @param addAfterItem if true, add subItemOrList *after* the position of item
+     * @return 
+     */
+    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem);
 
     /**
      * remove the subitem from the list (gets the list from Parse, removes the

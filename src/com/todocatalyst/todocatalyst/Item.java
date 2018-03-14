@@ -2159,17 +2159,32 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return addToList(MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : getList().size(), subItemOrList); //TODO!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
         return addToList(getList().size(), subItemOrList); //DONE!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
     }
-
+@Override
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
         List subtasks = getList();
         boolean status = true;
-        try {
+//        try {
             subtasks.add(index, subItemOrList);
             assert subItemOrList.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
             subItemOrList.setOwner(this);
-        } catch (Exception e) {
-            status = false;
-        }
+//        } catch (Exception e) {
+//            status = false;
+//        }
+        setList(subtasks);
+        return status;
+    }
+@Override
+    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
+        List subtasks = getList();
+        boolean status = true;
+//        try {
+int index = subtasks.indexOf(item);
+            subtasks.add(index+(addAfterItem?1:0), subItemOrList);
+            assert subItemOrList.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
+            subItemOrList.setOwner(this);
+//        } catch (Exception e) {
+//            status = false;
+//        }
         setList(subtasks);
         return status;
     }
