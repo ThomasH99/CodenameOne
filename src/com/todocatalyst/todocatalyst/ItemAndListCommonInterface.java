@@ -120,7 +120,13 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      */
     public ItemAndListCommonInterface getOwner();
 
-    public ItemList getOwnerList();
+    /**
+     * will return the list that owns a task/project, or the task that owns a subtask
+     * @return
+     */
+    default public List<? extends ItemAndListCommonInterface>  getOwnerList(){
+        return getOwner().getList();
+    };
 //    public ParseObject getOwner();
 
     /**
@@ -253,12 +259,23 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 
     /**
      * remove the subitem from the list (gets the list from Parse, removes the
-     * element, sets the list)
+     * element, sets the list, sets Owner for subItemOrList to null)
      *
      * @param subItemOrList
      * @return
      */
     public boolean removeFromList(ItemAndListCommonInterface subItemOrList);
+    
+    /**
+     * remove this from its owner and set this.owner=null;
+     */
+    default public void removeMeFromOwner(){
+        List ownerList = getOwner().getList();
+//        getOwnerList().removeItem(this);
+        ownerList.remove(this);
+        getOwner().setList(ownerList);
+        setOwner(null);
+    }
 
     /**
      * returns the index of the subitem/subtask in the list of subtasks, or the

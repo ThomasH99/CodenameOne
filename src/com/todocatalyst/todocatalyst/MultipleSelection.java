@@ -37,7 +37,7 @@ public class MultipleSelection {
 
     static ItemOperation moveTo(Item newProject) {
         return (item) -> {
-            item.removeFromOwner();
+            item.removeMeFromOwner();
             if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
                 newProject.getList().add(0, item);
             } else {
@@ -48,7 +48,7 @@ public class MultipleSelection {
 
     static ItemOperation moveTo(ItemList newItemList) {
         return (item) -> {
-            item.removeFromOwner();
+            item.removeMeFromOwner();
             if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
                 newItemList.getList().add(0, item);
             } else {

@@ -995,8 +995,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
-        int index = indexOf(item);
+    public boolean addToList(ItemAndListCommonInterface positionItem, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
+        int index = indexOf(positionItem);
         addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
         ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
@@ -1438,10 +1438,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     }
 
-    @Override
-    public ItemList getOwnerList() {
-        return null; //TODO return useful value?
-    }
+//    @Override
+//    public ItemList getOwnerList() {
+//        return null; //TODO return useful value?
+//    }
 
     /**
      * set and save filter (and resets the filtered/sorted list)

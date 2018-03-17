@@ -114,14 +114,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        this(taskText, remainingEffortInMinutes, dueDate, false);
         this();
         setText(taskText);
-        setRemainingEffort(((long)remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+        setRemainingEffort(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
         setDueDate(dueDate);
     }
 
     public Item(String taskText, int remainingEffortInMinutes, Date dueDate, boolean saveToDAO) {
         this();
         setText(taskText);
-        setRemainingEffort(((long)remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+        setRemainingEffort(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
         setDueDate(dueDate);
         if (saveToDAO) {
             DAO.getInstance().save(this);
@@ -207,26 +207,25 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
 //    @Override
-    public Object removeFromOwner() {
-//        ItemAndListCommonInterface owner = getOwner(); //TODO simplify code by adding getOwner to ItemAndListCommonInterface
-        ItemList ownerList = getOwnerList();
-        if (ownerList != null) {
-            boolean successfullyRemoved = ownerList.remove(this);
-            assert successfullyRemoved : "item " + this + " not successfully removed from ownerList " + ownerList;
-            DAO.getInstance().save(ownerList);
-            return ownerList;
-        } else {
-            Item ownerItem = getOwnerItem();
-            if (ownerItem != null) {
-//                ownerItem.getItemList().remove(this);
-                ownerItem.getList().remove(this);
-                DAO.getInstance().save(ownerItem);
-                return ownerItem;
-            }
-        }
-        return null;
-    }
-
+//    public Object removeFromOwnerXXX() {
+////        ItemAndListCommonInterface owner = getOwner(); //TODO simplify code by adding getOwner to ItemAndListCommonInterface
+//        ItemList ownerList = getOwnerList();
+//        if (ownerList != null) {
+//            boolean successfullyRemoved = ownerList.remove(this);
+//            assert successfullyRemoved : "item " + this + " not successfully removed from ownerList " + ownerList;
+//            DAO.getInstance().save(ownerList);
+//            return ownerList;
+//        } else {
+//            Item ownerItem = getOwnerItem();
+//            if (ownerItem != null) {
+////                ownerItem.getItemList().remove(this);
+//                ownerItem.getList().remove(this);
+//                DAO.getInstance().save(ownerItem);
+//                return ownerItem;
+//            }
+//        }
+//        return null;
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public List getInsertNewRepeatInstancesIntoListXXX() {
 //        Object owner = getOwner();
@@ -911,9 +910,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String SOURCE = "Copy of"; //Template or Task that this one is a copy of, "Task copy of"
     final static String SOURCE_HELP = "Shows the task was copied from. E.g. for tasks created using templates, automatically repeating tasks or copy/paste. Can be useful for example to find all instances of a given template. "; //Template or Task that this one is a copy of, "Task copy of"
     final static String OBJECT_ID = "Id"; //"Unique id"
-            final static String OBJECT_ID_HELP = "An internal unique identifier. This may be useful if requesting support"; //"Unique id"
+    final static String OBJECT_ID_HELP = "An internal unique identifier. This may be useful if requesting support"; //"Unique id"
     final static String STARRED = "Starred"; //"Unique id"
-            final static String STARRED_HELP = "Tasks can be marked with a Star to emphasize them**"; //"Unique id"
+    final static String STARRED_HELP = "Tasks can be marked with a Star to emphasize them**"; //"Unique id"
 
     final static int ITEM_CHANGED_ALARM_DATE = 0;
 
@@ -1146,12 +1145,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return owner; //TODO: Parsify
 //        ParseObject owner = getParseObject(PARSE_OWNER);
         ItemList ownerList = (ItemList) getParseObject(PARSE_OWNER_LIST);
-        if (ownerList == null && getOwnerItem() != null) {
-            return getOwnerItem().getOwnerList();
-        } else {
+        if (ownerList != null) {
+//        if (ownerList == null && getOwnerItem() != null) {
+//            return getOwnerItem().getOwnerList();
+//        } else {
             ownerList = (ItemList) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(ownerList);
-            return ownerList;
         }
+        return ownerList;
 //        return (status == null) ? ItemStatus.STATUS_CREATED : ItemStatus.valueOf(status); //Created is initial value
     }
 
@@ -2159,29 +2159,31 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return addToList(MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : getList().size(), subItemOrList); //TODO!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
         return addToList(getList().size(), subItemOrList); //DONE!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
     }
-@Override
+
+    @Override
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
         List subtasks = getList();
         boolean status = true;
 //        try {
-            subtasks.add(index, subItemOrList);
-            assert subItemOrList.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
-            subItemOrList.setOwner(this);
+        subtasks.add(index, subItemOrList);
+        assert subItemOrList.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
+        subItemOrList.setOwner(this);
 //        } catch (Exception e) {
 //            status = false;
 //        }
         setList(subtasks);
         return status;
     }
-@Override
+
+    @Override
     public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
         List subtasks = getList();
         boolean status = true;
 //        try {
-int index = subtasks.indexOf(item);
-            subtasks.add(index+(addAfterItem?1:0), subItemOrList);
-            assert subItemOrList.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
-            subItemOrList.setOwner(this);
+        int index = subtasks.indexOf(item);
+        subtasks.add(index + (addAfterItem ? 1 : 0), subItemOrList);
+        assert subItemOrList.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
+        subItemOrList.setOwner(this);
 //        } catch (Exception e) {
 //            status = false;
 //        }
@@ -4527,7 +4529,7 @@ int index = subtasks.indexOf(item);
 //            return remainingEffort;
             Long remainingEffort = getLong(PARSE_REMAINING_EFFORT);
             if (useDefaultEstimateForZeroEstimates && MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() != 0 && (remainingEffort == null || remainingEffort == 0)) {
-                return ((long)MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
+                return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
             } else {
                 return (remainingEffort == null) ? 0L : remainingEffort;
             }
@@ -4589,7 +4591,7 @@ int index = subtasks.indexOf(item);
             for (int i = 0, size = getItemListSize(); i < size; i++) {
 //                Item item = (Item) getItemList().getItemAt(i);
                 Item item = (Item) getList().get(i);
-                if (true ||!item.isDone()) { // /** || includeDone */) { //ALWAYS include actual even for Done tasks so project Actual is exhaustive
+                if (true || !item.isDone()) { // /** || includeDone */) { //ALWAYS include actual even for Done tasks so project Actual is exhaustive
                     subItemSum += item.getActualEffort(forSubtasks);
                 }
             }
@@ -5964,7 +5966,7 @@ int index = subtasks.indexOf(item);
 //</editor-fold>
             EstimateResult res = getEffortEstimateFromTaskText(txt);
             txt = res.cleaned;
-            item.setEffortEstimate(((long)res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, true, true); //update remaining, set for project-level
+            item.setEffortEstimate(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, true, true); //update remaining, set for project-level
         }
         return txt;
     }
@@ -6458,7 +6460,9 @@ int index = subtasks.indexOf(item);
     @Override
 //    public long getWorkTimeRequiredFromOwner() {
     public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
-        if (false)Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
+        if (false) {
+            Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
+        }
 
         if (isDone()) {
             return 0;
@@ -6860,8 +6864,6 @@ int index = subtasks.indexOf(item);
         }
     }
 
-    
-    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public Date getFinishTime(ItemAndListCommonInterface subtask) {
