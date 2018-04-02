@@ -20,9 +20,9 @@ public interface Movable2 {
      * @param draggedObject
      * @return
      */
-    default public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
-        return true;
-    };
+//    default public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
+//        return true;
+//    };
 
     /**
      * returns the list that the dragged element belongs to
@@ -30,18 +30,18 @@ public interface Movable2 {
      * @return
      */
 //    public List getDragAndDropList();
-    default public ItemAndListCommonInterface getDragAndDropList(){
-        return null;
-    };
+//    default public ItemAndListCommonInterface getDragAndDropList(){
+//        return null;
+//    };
 
     /**
      * return the subList of the element onto which another element is dropped
      *
      * @return
      */
-    default public List getDragAndDropSubList(){
-        return null;
-    };
+//    default public List getDragAndDropSubList(){
+//        return null;
+//    };
 
     /**
      * returns the object in the dragged or dropped
@@ -56,7 +56,7 @@ public interface Movable2 {
      * save the underlying list that is changed when an item is removed/added during drag&drop
      * @return
      */
-    default public void saveDragged(){};
+//    default public void saveDragged(){};
 
     /**
      * returns the Category to which the specific Item container comes from.

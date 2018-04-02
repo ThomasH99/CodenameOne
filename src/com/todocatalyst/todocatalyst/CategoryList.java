@@ -26,7 +26,7 @@ public class CategoryList extends ItemList {
 
     public static String CLASS_NAME = "CategoryList";
 
-    final static String PARSE_CATEGORY_LIST = "categoryList";
+    final static String PARSE_CATEGORY_LIST = ItemList.PARSE_ITEMLIST; //reuse column name from ItemList to ensure any non-overwritten calls (notably getListFull()) works, was: "categoryList";
     private static CategoryList INSTANCE = null;
 
     /**
@@ -51,11 +51,15 @@ public class CategoryList extends ItemList {
 //        return (Category) getParseObject(PARSE_CATEGORY_LIST);
         List<Category> list = getList(PARSE_CATEGORY_LIST);
         if (list != null) {
-           DAO.getInstance().cacheUpdateListToCachedObjects(list);
+           DAO.getInstance().fetchListElements(list);
            return list;
         } else {
             return new ArrayList();
         }
+    }
+    @Override
+    public List<Category> getListFull() {
+        return getList();
     }
 
     public void setList(List categoryList) {

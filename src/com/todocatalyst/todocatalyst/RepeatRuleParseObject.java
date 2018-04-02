@@ -267,7 +267,7 @@ public class RepeatRuleParseObject
         List list = getList(PARSE_REPEAT_INSTANCE_ITEMLIST);
         if (list != null) {
 //            DAO.getInstance().fetchAllItemsIn(list, false);
-            DAO.getInstance().cacheUpdateListToCachedObjects(list);
+            DAO.getInstance().fetchListElements(list);
         } else {
             list = new ArrayList();
         }

@@ -1417,43 +1417,43 @@ super.refreshAfterEdit();
 //</editor-fold>
         SwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(swipeActionContainer, buttonSwipeContainer, mainCont) {
 
-            @Override
-            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
-                return draggedObject.getDragAndDropObject() instanceof Item;
-            }
+//            @Override
+//            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
+//                return draggedObject.getDragAndDropObject() instanceof Item;
+//            }
 
-            @Override
-            public ItemAndListCommonInterface getDragAndDropList() {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                if (ownerList != null) {
-//                    return ownerList;
+//            @Override
+//            public ItemAndListCommonInterface getDragAndDropList() {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (ownerList != null) {
+////                    return ownerList;
+////                } else {
+//////                return ((Item)getDragAndDropObject()).getOwnerList(); //returns the owner of
+////                    return item.getOwner(); //returns the owner of
+////                }
+////</editor-fold>
+//                if (ownerItemOrItemList != null && ownerItemOrItemList instanceof Category) { //special case to allow drag&drop 
+//                    return ownerItemOrItemList;
 //                } else {
-////                return ((Item)getDragAndDropObject()).getOwnerList(); //returns the owner of
-//                    return item.getOwner(); //returns the owner of
+//                    return item.getOwner(); //returns the owner of 
 //                }
-//</editor-fold>
-                if (ownerItemOrItemList != null && ownerItemOrItemList instanceof Category) { //special case to allow drag&drop 
-                    return ownerItemOrItemList;
-                } else {
-                    return item.getOwner(); //returns the owner of 
-                }
-            }
+//            }
 
-            @Override
-            public List getDragAndDropSubList() {
-//                return ((Item) getDragAndDropObject()).getList(); //returns the list of subtasks
-                return item.getList(); //returns the list of subtasks
-            }
+//            @Override
+//            public List getDragAndDropSubList() {
+////                return ((Item) getDragAndDropObject()).getList(); //returns the list of subtasks
+//                return item.getList(); //returns the list of subtasks
+//            }
 
             @Override
             public Object getDragAndDropObject() {
                 return item;
             }
 
-            @Override
-            public void saveDragged() {
-                DAO.getInstance().save(item);
-            }
+//            @Override
+//            public void saveDragged() {
+//                DAO.getInstance().save(item);
+//            }
 
             @Override
             public Category getDragAndDropCategory() {

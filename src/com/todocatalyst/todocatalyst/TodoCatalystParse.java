@@ -621,7 +621,9 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             //"There was a network error, would you like to retry?"
             //"There is no network connection, please retry when the network is available again (your changes will be lost if the app is stopped before the network is available)"
 //            if (Dialog.show("Network Error", "There was a network error, would you like to retry?", "Retry", "Cancel")) {
-            if (Dialog.show("Network Error", "There is no network connection, please retry when the network is available again. The just made changes will be lost unless you retry successfully before the exiting app.", "Retry", null)) {
+//            if (Dialog.show("Network Error", "There is no network connection, please retry when the network is available again. The just made changes will be lost unless you retry successfully before the exiting app.", "Retry", null)) {
+            if (Dialog.show("Network Error", "No network connection. Please Retry when available again. "
+                    +"\n\nIf you exit the app before a successful Retry, any changes just made will be lost.", "Retry", null)) {
                 e.consume();
                 ConnectionRequest conReq = e.getConnectionRequest();
                 conReq.retry();

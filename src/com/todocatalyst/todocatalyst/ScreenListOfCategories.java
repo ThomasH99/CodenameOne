@@ -193,33 +193,33 @@ public class ScreenListOfCategories extends MyForm {
         mainCont.setUIID("CategoryContainer");
 
         Container swipCont = new MyDragAndDropSwipeableContainer(null, null, mainCont) {
-            @Override
-            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
-                return draggedObject.getDragAndDropObject() instanceof Category
-                        || draggedObject.getDragAndDropObject() instanceof Item;
-            }
+//            @Override
+//            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
+//                return draggedObject.getDragAndDropObject() instanceof Category
+//                        || draggedObject.getDragAndDropObject() instanceof Item;
+//            }
 
-            @Override
-            public ItemAndListCommonInterface getDragAndDropList() {
-                return categoryList;
-            }
+//            @Override
+//            public ItemAndListCommonInterface getDragAndDropList() {
+//                return categoryList;
+//            }
 
-            @Override
-            public List getDragAndDropSubList() {
-//                return category.getList();
-//                return null; //should never be used whend dropping onto a Category
-                return category; //should never be used whend dropping onto a Category
-            }
+//            @Override
+//            public List getDragAndDropSubList() {
+////                return category.getList();
+////                return null; //should never be used whend dropping onto a Category
+//                return category; //should never be used whend dropping onto a Category
+//            }
 
             @Override
             public Object getDragAndDropObject() {
                 return category;
             }
 
-            @Override
-            public void saveDragged() {
-                DAO.getInstance().save(categoryList);
-            }
+//            @Override
+//            public void saveDragged() {
+//                DAO.getInstance().save(categoryList);
+//            }
 
             public Category getDragAndDropCategory() {
                 return null;

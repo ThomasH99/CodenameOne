@@ -1729,7 +1729,8 @@ public class ScreenItem extends MyForm {
                     //                });
                     //</editor-fold>
                     = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(),
-                            DAO.getInstance().getItemListList(),
+//                            DAO.getInstance().getItemListList(),
+                            ItemListList.getInstance(),
                             projects,
                             locallyEditedOwner, ScreenItem.this,
                             () -> {

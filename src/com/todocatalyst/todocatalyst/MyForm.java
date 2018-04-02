@@ -1117,6 +1117,9 @@ public class MyForm extends Form {
 //            editFieldOnShowOrRefresh.startEditingAsync();
             inlineInsertContainer.getTextArea().startEditingAsync();
         }
+        if (Test.DEBUG) {
+            Log.p("calling " + getTitle() + ".refreshAfterEdit");
+        }
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -2334,36 +2337,36 @@ public class MyForm extends Form {
     }
 
     protected void display(int[] x, int[] y, boolean inPinch) {
-        if (false){
-        title.setText(inPinch ? "***PINCH***" : "MOVE");
-        xLabel.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
-        Component comp1 = getComponentAt(x[0], y[0]);
-        comp1Label.setText("Comp1=" + comp1.getName());
-        if (comp1 instanceof Container) {
-            Container cont1 = (Container) comp1;
-            cont1Label.setText("Cont1=" + cont1);
-            Component dropTarget1 = cont1.findDropTargetAt(x[0], y[0]);
-            dropTarget1Label.setText("dropTarget1=" + dropTarget1);
-        }
-        if (x.length > 1) {
-            yLabel.setText("(x[1],y[1])=(" + x[1] + "," + y[1] + ")");
-            distLabel.setText("dist=" + distance(x, y));
-            Component comp2 = getComponentAt(x[1], y[1]);
-            comp1Label.setText("Comp2=" + comp2.getName());
-            if (comp2 instanceof Container) {
-                Container cont2 = (Container) comp2;
-                cont2Label.setText("Cont2=" + cont2);
-                Component dropTarget2 = cont2.findDropTargetAt(x[1], y[1]);
-                dropTarget2Label.setText("dropTarget2=" + dropTarget2);
+        if (false) {
+            title.setText(inPinch ? "***PINCH***" : "MOVE");
+            xLabel.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
+            Component comp1 = getComponentAt(x[0], y[0]);
+            comp1Label.setText("Comp1=" + comp1.getName());
+            if (comp1 instanceof Container) {
+                Container cont1 = (Container) comp1;
+                cont1Label.setText("Cont1=" + cont1);
+                Component dropTarget1 = cont1.findDropTargetAt(x[0], y[0]);
+                dropTarget1Label.setText("dropTarget1=" + dropTarget1);
             }
-        } else {
-            comp1Label.setText("Comp2=");
-            cont2Label.setText("Cont2=");
-            dropTarget2Label.setText("dropTarget2=");
-        }
+            if (x.length > 1) {
+                yLabel.setText("(x[1],y[1])=(" + x[1] + "," + y[1] + ")");
+                distLabel.setText("dist=" + distance(x, y));
+                Component comp2 = getComponentAt(x[1], y[1]);
+                comp1Label.setText("Comp2=" + comp2.getName());
+                if (comp2 instanceof Container) {
+                    Container cont2 = (Container) comp2;
+                    cont2Label.setText("Cont2=" + cont2);
+                    Component dropTarget2 = cont2.findDropTargetAt(x[1], y[1]);
+                    dropTarget2Label.setText("dropTarget2=" + dropTarget2);
+                }
+            } else {
+                comp1Label.setText("Comp2=");
+                cont2Label.setText("Cont2=");
+                dropTarget2Label.setText("dropTarget2=");
+            }
 
-        fPinchOut.revalidate();
-    }
+            fPinchOut.revalidate();
+        }
     }
 
     private static boolean minimumPinchSizeReached(int pinchYDistance, Component pinchContainer) {
@@ -2639,7 +2642,9 @@ public class MyForm extends Form {
 //    }
 //</editor-fold>
     protected static MyDragAndDropSwipeableContainer findDropContainerIn(Component comp) {
-        if (comp==null) return null;
+        if (comp == null) {
+            return null;
+        }
 //        int count = cont.getComponentCount();
 //        for (int i = count - 1; i >= 0; i--) {
         if (comp instanceof MyDragAndDropSwipeableContainer) {

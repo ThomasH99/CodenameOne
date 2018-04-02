@@ -49,23 +49,35 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      *
      * @param oldList
      * @param newList
-     * @param item
+     * @param itemOrItemList
      * @param newPos
      */
-    private void moveItemAndSave(ItemAndListCommonInterface oldList, ItemAndListCommonInterface newList, ItemAndListCommonInterface item, int newPos) {
+    private void moveItemOrItemListAndSave(ItemAndListCommonInterface oldList, ItemAndListCommonInterface newList, ItemAndListCommonInterface itemOrItemList, int newPos) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//Container draggedParent;
+//        MyDragAndDropSwipeableContainer dragged = null;
+//        int indexAdjustment = 0;
+//        if (dragged != null && dragged.getParent() == newList) {
+//            int draggedIndex = dragged.getParent().getComponentIndex(dragged);
+//            if (newPos > draggedIndex) {
+//                indexAdjustment = 1; //need to
+//            }
+//        }
+//</editor-fold>
         if (oldList == newList) {
-            if (oldList.getItemIndex(item) <= newPos) {
-                oldList.removeFromList(item);
-                newList.addToList(newPos - 1, item);
-            } else {
-                oldList.removeFromList(item);
-                newList.addToList(newPos, item);
+            if (newPos > oldList.getItemIndex(itemOrItemList)) {
+                oldList.removeFromList(itemOrItemList);
+                newList.addToList(newPos - 1, itemOrItemList);
+            } else { //newPos <= oldList.getItemIndex(itemOrItemList)
+                oldList.removeFromList(itemOrItemList);
+                newList.addToList(newPos, itemOrItemList);
             }
-            DAO.getInstance().saveInBackgroundSequential((ParseObject) oldList, (ParseObject) item);
+//            DAO.getInstance().saveInBackgroundSequential((ParseObject) oldList, (ParseObject) itemOrItemList);
+            DAO.getInstance().saveInBackgroundSequential((ParseObject) oldList); //no need to save itemOrItemList since owner is the same
         } else {
-            oldList.removeFromList(item);
-            newList.addToList(newPos, item);
-            DAO.getInstance().saveInBackgroundSequential((ParseObject) oldList, (ParseObject) newList, (ParseObject) item);
+            oldList.removeFromList(itemOrItemList);
+            newList.addToList(newPos, itemOrItemList);
+            DAO.getInstance().saveInBackgroundSequential((ParseObject) oldList, (ParseObject) newList, (ParseObject) itemOrItemList);
         }
     }
 
@@ -78,7 +90,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param newPos
      */
     private void moveCategoryAndSave(ItemAndListCommonInterface categoryList, Category category, int newPos) {
-        if (categoryList.getItemIndex(category) <= newPos) {
+        if (newPos > categoryList.getItemIndex(category)) {
             categoryList.removeFromList(category);
             categoryList.addToList(newPos - 1, category);
         } else {
@@ -90,7 +102,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
     private void moveItemBetweenCategoriesAndSave(Category oldList, Category newList, Item item, int newPos) {
         if (oldList == newList) {
-            if (oldList.getItemIndex(item) <= newPos) {
+            if (newPos > oldList.getItemIndex(item)) {
                 oldList.removeItemFromCategory(item, false); //false: keep the position of the category in the item's list of categories
                 newList.addItemToCategory(item, newPos - 1, false); //false: keep the position of the category in the item's list of categories
             } else {
@@ -119,11 +131,11 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
 //            Log.p("----------------START MyDragAndDropSwipeableContainer ------------------------------------");
 //            MyDragAndDropSwipeableContainer dragged = null;
-            if (!(drag instanceof MyDragAndDropSwipeableContainer)) {
+            if (false && !(drag instanceof MyDragAndDropSwipeableContainer)) {
 //                Log.p("***addDragOverListener: drag (" + drag.getName() + ") NOT instanceof MyDragAndDropSwipeableContainer");
                 return;
             } //else {
-            if (!(dropTarget instanceof MyDragAndDropSwipeableContainer)) {
+            if (false && !(dropTarget instanceof MyDragAndDropSwipeableContainer)) {
 //                Log.p("***addDragOverListener: dropTarget (" + dropTarget.getName() + ") NOT instanceof MyDragAndDropSwipeableContainer");
                 return;
             } //else {
@@ -141,13 +153,16 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                Log.p("---------------- END MyDragAndDropSwipeableContainer() ------------------------------------");
 //</editor-fold>
                 return; //skip if still over the same 
+            } else if (!(dropTarget instanceof MyDragAndDropSwipeableContainer)) { //if we're over a dropTarget store that as lastDraggedOver
+                dragged.lastDraggedOver = dropTarget;
+                return;
             } else {
                 //over a new container
                 Log.p("----------------START MyDragAndDropSwipeableContainer ------------------------------------");
                 int oldDropPlaceholderIndex = -1; //used to keep track of whether we drag upwards or downwards (to insert new dropPlaceholder in right position)
                 //need to set treeList *before* removing dragged from its parent:
                 Container treeList = dropTarget.getParent(); //treeList = the list in which to insert the dropPlaceholder
-                Component dropParent = dropTarget;
+                Component dropTargetTopLevelParent = dropTarget;
                 //first time we drag over another element than dragged:
                 if (!dragged.isHidden()) { //dragged.draggedWidth == -1) {// && dragged!=dragged.lastDraggedOver) {
 //                    oldDropPlaceholderIndex=dragged.getParent().getComponentIndex(dragged); //initialize oldIndex to position of dragged
@@ -418,7 +433,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                Container treeList = dropTarget.getParent(); //treeList = the list in which to insert the dropPlaceholder
 //                Component dropParent = dropTarget;
                 while (!(treeList instanceof MyTree2) && treeList != null) {
-                    dropParent = treeList;
+                    dropTargetTopLevelParent = treeList;
                     treeList = treeList.getParent();
                 }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -442,44 +457,61 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                    treeList = dropParent.getParent();
 //</editor-fold>
                 if (treeList != null) {
-                    MyDragAndDropSwipeableContainer beforeCont;
-                    MyDragAndDropSwipeableContainer afterCont;
+                    MyDragAndDropSwipeableContainer beforeCont; //top-level container in treelist, *before* the dropPlaceholder (null if over first element in list)
+                    MyDragAndDropSwipeableContainer afterCont; //top-level container in treelist *after* the dropPlaceholder (null if over last element in list)
 
                     oldDropPlaceholderIndex = dragged.dropPlaceholder != null
-                            ? dragged.dropPlaceholder.getParent().getComponentIndex(dragged.dropPlaceholder)
-                            : treeList.getComponentIndex(dropParent);
+                            ? dragged.dropPlaceholder.getParent().getComponentIndex(dragged.dropPlaceholder) //assumes that dropPlaceholder is inserted into treeList!!
+                            : treeList.getComponentIndex(dropTargetTopLevelParent);
 
 //                int index = parent.getComponentIndex(this); //get my current position
 //                int index = parent.getComponentIndex(dropTarget); //get my current position
 //                        int index = treeList.getComponentIndex(dropParent); //get my current position
-                    int index = treeList.getComponentIndex(dropParent); //get my current position
-                    boolean draggingUpwards = index <= oldDropPlaceholderIndex; //NB. Also works for dropPlaceholder 'under' dragged when initiating drag
-                    if (draggingUpwards) {
-                        beforeCont = (MyDragAndDropSwipeableContainer) dropTarget;
-                        afterCont = index == 0 ? null : findDropTargetIn((Container) treeList.getComponentAt(index - 1));
+                    int dropPlaceholderInsertionIndex = treeList.getComponentIndex(dropTargetTopLevelParent); //get my current position
+                    boolean draggingUpwardsOrOverInitialDraggedEltPosition = dropPlaceholderInsertionIndex <= oldDropPlaceholderIndex; //NB. Also works for dropPlaceholder 'under' dragged when initiating drag
+                    boolean draggingDownwards = !draggingUpwardsOrOverInitialDraggedEltPosition;
+                    if (draggingUpwardsOrOverInitialDraggedEltPosition) {
+                        beforeCont
+                                = dropPlaceholderInsertionIndex == 0 ? null : findDropTargetIn((Container) treeList.getComponentAt(dropPlaceholderInsertionIndex - 1));
+                        afterCont
+                                = (MyDragAndDropSwipeableContainer) dropTarget;
                     } else {
-                        afterCont = (MyDragAndDropSwipeableContainer) dropTarget;
-                        beforeCont = index >= treeList.getComponentCount() ? null : findDropTargetIn((Container) treeList.getComponentAt(index));
+                        beforeCont
+                                = (MyDragAndDropSwipeableContainer) dropTarget;
+                        afterCont
+                                = dropPlaceholderInsertionIndex >= treeList.getComponentCount() ? null : findDropTargetIn((Container) treeList.getComponentAt(dropPlaceholderInsertionIndex + 1));
                     }
-                    /**
-                     * DOCUMENTATION OF WHERE INSERTS/DROPS ARE POSSIBLE Cat1
-                     * Cat2 Cat3 * Cat1 T1 T2 Cat2 T3
-                     *
+                    int addOneOnDownwardsDrag = (draggingUpwardsOrOverInitialDraggedEltPosition) ? 0 : 1; //adjust index by +1 when dragging downwards
+//<editor-fold defaultstate="collapsed" desc="comment">
+/*
+DOCUMENTATION OF WHERE INSERTS/DROPS ARE POSSIBLE
+Cat1
+Cat2
+Cat3
+
+Cat1
+  T1
+  T2
+Cat2
+T3
                      */
+//</editor-fold>
 
                     dropActionCall = null; //reset
                     dropAsSubtaskActionCall = null; //reset
                     if (getDragAndDropObject() instanceof Category) { //dragging a Category
-                        if (afterCont.getDragAndDropObject() instanceof Category || afterCont.getDragAndDropObject() == null) { //can always drop a Category before another Category
+//                        if (afterCont != null && (afterCont.getDragAndDropObject() instanceof Category || afterCont.getDragAndDropObject() == null)) { //can always drop a Category before another Category
+                        if ((afterCont != null && afterCont.getDragAndDropObject() instanceof Category)) { //can always drop a Category before another Category
                             dropActionCall = () -> {
                                 ItemAndListCommonInterface categoryOwnerList = (ItemAndListCommonInterface) ((Category) getDragAndDropObject()).getOwner();
-//                                categoryOwnerList.removeFromList((ItemAndListCommonInterface) afterCont.getDragAndDropObject());
-//                                categoryOwnerList.addToList((ItemAndListCommonInterface) afterCont.getDragAndDropObject(), (Category) getDragAndDropObject(), true);
-//                                DAO.getInstance().saveInBackground((ParseObject) categoryOwnerList);
-                                int indexCatList = afterCont.getDragAndDropObject() != null
-                                        ? categoryOwnerList.getItemIndex((ItemAndListCommonInterface) afterCont.getDragAndDropObject())
-                                        : categoryOwnerList.size();
-                                moveCategoryAndSave(categoryOwnerList, (Category) getDragAndDropObject(), indexCatList);
+                                int indexCatList =  categoryOwnerList.getItemIndex((ItemAndListCommonInterface) afterCont.getDragAndDropObject());
+                                moveCategoryAndSave(categoryOwnerList, (Category) getDragAndDropObject(), indexCatList); //+ addOneOnDownwardsDrag
+                            };
+                        } else if (afterCont == null) {
+                            dropActionCall = () -> {
+                                ItemAndListCommonInterface categoryOwnerList = (ItemAndListCommonInterface) ((Category) getDragAndDropObject()).getOwner();
+                                int indexCatList = categoryOwnerList.size();
+                                moveCategoryAndSave(categoryOwnerList, (Category) getDragAndDropObject(), indexCatList); //+ addOneOnDownwardsDrag
                             };
                         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -492,44 +524,69 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                            };
 //                        }
 //</editor-fold>
+                    } else if (getDragAndDropObject() instanceof ItemList) {
+                        if (afterCont != null && afterCont.getDragAndDropObject() instanceof ItemList) { //drop *before* an ItemList
+                            dropActionCall = () -> {
+                                ItemAndListCommonInterface listOwner = ((ItemList) getDragAndDropObject()).getOwner(); //currenly only one single ItemListList to which all ItemLists belong
+                                int indexItem = listOwner.getItemIndex((ItemList) afterCont.getDragAndDropObject()); //+1 drop at position *after* beforeItem
+                                moveItemOrItemListAndSave(listOwner, listOwner, (ItemList) getDragAndDropObject(), indexItem); //+ addOneOnDownwardsDrag
+                            };
+                        } else if (afterCont == null) { //drop after last element in list (even if it's an Item from an expanded ItemList)
+                            dropActionCall = () -> {
+                                ItemAndListCommonInterface listOwner = ((ItemList) getDragAndDropObject()).getOwner(); //currenly only one single ItemListList to which all ItemLists belong
+                                int indexItem = listOwner.size(); // insert at the end of ItemListList --listOwner.getItemIndex((ItemList) beforeCont.getDragAndDropObject()); //+1 drop at position *after* beforeItem
+                                moveItemOrItemListAndSave(listOwner, listOwner, (ItemList) getDragAndDropObject(), indexItem); //+ addOneOnDownwardsDrag
+                            };
+                        }
                     } else if (getDragAndDropObject() instanceof Item) {
-                        if (getDragAndDropCategory() != null) { //dragged object belongs to a category
+                        if (getDragAndDropCategory() != null) { //dragged object belongs to a category, so drag may move it to another category, but can also only reposition it within the same category
                             //we can always drop *after* another 'before' Item which also has a Category (isn't triggered for expanded subtasks since they return null for getDragAndDropCategory())
-                            if (beforeCont.getDragAndDropObject() instanceof Item && beforeCont.getDragAndDropCategory() != null) {
+                            if (beforeCont != null && beforeCont.getDragAndDropObject() instanceof Item && beforeCont.getDragAndDropCategory() != null) {
                                 dropActionCall = () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                                    boolean sameCategory = getDragAndDropCategory() == beforeCont.getDragAndDropCategory();
 //                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
 //                                    beforeCont.getDragAndDropCategory().addToList((Item) beforeCont.getDragAndDropObject(), (Item) getDragAndDropObject(), true);
 //                                    DAO.getInstance().saveInBackgroundSequential((ParseObject) getDragAndDropCategory(), beforeCont.getDragAndDropCategory(), (ParseObject) getDragAndDropObject());
-                                    int indexItem = ((ItemAndListCommonInterface) beforeCont.getDragAndDropCategory()).getItemIndex((Item) beforeCont.getDragAndDropObject()) + 1;
-                                    moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), beforeCont.getDragAndDropCategory(), (Item) getDragAndDropObject(), indexItem);
+//</editor-fold>
+                                    int indexItem = ((ItemAndListCommonInterface) beforeCont.getDragAndDropCategory()).getItemIndex((Item) beforeCont.getDragAndDropObject()) + 1; //+1 drop at position *after* beforeItem
+                                    moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), beforeCont.getDragAndDropCategory(), (Item) getDragAndDropObject(), indexItem); //+ addOneOnDownwardsDrag
                                 };
                                 //dropping item right after a Category => move to that category
-                            } else if (beforeCont.getDragAndDropObject() instanceof Category) {
+                            } else if (beforeCont != null && beforeCont.getDragAndDropObject() instanceof Category) {
                                 dropActionCall = () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                                    boolean sameCategory = getDragAndDropCategory() == beforeCont.getDragAndDropCategory();
 //                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
 //                                    ((Category) beforeCont.getDragAndDropObject()).addToList(0, (Item) getDragAndDropObject()); //insert item at beginning of category's list of items
 //                                    DAO.getInstance().saveInBackgroundSequential((ParseObject) getDragAndDropCategory(), (ParseObject) beforeCont.getDragAndDropObject(), (ParseObject) getDragAndDropObject());
-                                    int indexItem = 0; //insert item at beginning of category's list of items
+//</editor-fold>
+                                    //DONE!! if category is NOT expanded, should an item be inserted at the beginning of the subtask list or at the end?? At the beginning like if it was expanded? Create an setting
+                                    //insert item at beginning of category's list of items (or at the end if setting is false
+                                    boolean insertAtHeadOfSubitemList = afterCont.getDragAndDropObject() instanceof Item //<=> category is expanded and afterCont is an Item
+                                            || MyPrefs.dropItemAtBeginningOfUnexpandedCategorySubtaskList.getBoolean();
+                                    int indexItem = insertAtHeadOfSubitemList ? 0 : ((Category) beforeCont.getDragAndDropObject()).getList().size() + 1;
                                     moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), (Category) beforeCont.getDragAndDropObject(), (Item) getDragAndDropObject(), indexItem);
                                 };
                                 //we drop *before* another Item in a Category (eg when the subtasks of the previous item in the cateogry are expanded)
-                            } else if (afterCont.getDragAndDropObject() instanceof Item && afterCont.getDragAndDropCategory() != null) {
+                            } else if (afterCont != null && afterCont.getDragAndDropObject() instanceof Item && afterCont.getDragAndDropCategory() != null) {
                                 dropActionCall = () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                                    boolean sameCategory = getDragAndDropCategory() == afterCont.getDragAndDropCategory();
 //                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
-//                                    afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the 
+//                                    afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the
 //                                    DAO.getInstance().saveInBackgroundSequential((ParseObject) getDragAndDropCategory(), (ParseObject) afterCont.getDragAndDropCategory(), (ParseObject) getDragAndDropObject());
+//</editor-fold>
                                     int indexItem = ((ItemAndListCommonInterface) afterCont.getDragAndDropCategory()).getItemIndex((Item) afterCont.getDragAndDropObject());
                                     moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), beforeCont.getDragAndDropCategory(), (Item) getDragAndDropObject(), indexItem);
                                 };
                             }
-                        } else { //dragging an item that does NOT belong to a category, only dropping as subtasks (not under categories since the logic is really unintutive!) //TODO!!! consider adding this again after all
-                            //assert: 
-                            //dropping *after* a 'before' Item
-                            if (beforeCont.getDragAndDropObject() instanceof Item) {// && ((Item)beforeCont.getDragAndDropObject()).getOwner()==((Item)getDragAndDropObject()).getOwner())
+                        } else { //dragging an item that does NOT belong to a category, only dropping as subtasks (not under categories since the logic is really unintutive!) 
+                            //TODO!!! consider adding this again after all
+                            //dropping *after* a 'before' Item (could be at the very end of a list)
+                            if (beforeCont != null && beforeCont.getDragAndDropObject() instanceof Item) {// && ((Item)beforeCont.getDragAndDropObject()).getOwner()==((Item)getDragAndDropObject()).getOwner())
                                 dropActionCall = () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 ////                                    ((Item) getDragAndDropObject()).removeFromList((Item) getDragAndDropObject()); //remove item from old owner list
 ////                                    ((Item) getDragAndDropObject()).getOwner().removeFromList((Item) getDragAndDropObject()); //remove item from old owner list
 ////                                    ((Item) getDragAndDropObject()).removeMeFromOwner(); //remove item from old owner list
@@ -539,15 +596,17 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                                    int index2 = newOwner.getItemIndex(((Item) beforeCont.getDragAndDropObject())); //get index before removing since oldOwner and newOwner may be the same list
 //                                    oldOwner.removeFromList((Item) getDragAndDropObject());
 //                                    //Insert after the previous/before Item
-////                                    ((Item) beforeCont.getDragAndDropObject()).getOwner().addToList(((Item) beforeCont.getDragAndDropObject()), (Item) getDragAndDropObject(), true); //insert *before* the 
-////                                    newOwner.addToList(((Item) beforeCont.getDragAndDropObject()), (Item) getDragAndDropObject(), false); //insert *after* the 
-//                                    newOwner.addToList(index2, (Item) getDragAndDropObject()); //insert *after* the 
+////                                    ((Item) beforeCont.getDragAndDropObject()).getOwner().addToList(((Item) beforeCont.getDragAndDropObject()), (Item) getDragAndDropObject(), true); //insert *before* the
+////                                    newOwner.addToList(((Item) beforeCont.getDragAndDropObject()), (Item) getDragAndDropObject(), false); //insert *after* the
+//                                    newOwner.addToList(index2, (Item) getDragAndDropObject()); //insert *after* the
 //                                    DAO.getInstance().saveInBackgroundSequential((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) getDragAndDropObject());
-                                    ItemAndListCommonInterface newOwner = ((Item) beforeCont.getDragAndDropObject()).getOwner(); //remove item from old owner list
-                                    int indexI = newOwner.getItemIndex(((Item) beforeCont.getDragAndDropObject())); 
-                                    moveItemAndSave(((Item) getDragAndDropObject()).getOwner(), newOwner, (Item)getDragAndDropObject(), indexI);
+//</editor-fold>
+                                    ItemAndListCommonInterface newOwner = ((Item) beforeCont.getDragAndDropObject()).getOwner();
+                                    int indexI = newOwner.getItemIndex(((Item) beforeCont.getDragAndDropObject())) + 1; //+1 drop *after* beforeItem
+                                    moveItemOrItemListAndSave(((Item) getDragAndDropObject()).getOwner(), newOwner, (Item) getDragAndDropObject(), indexI);
                                 };
                                 dropAsSubtaskActionCall = () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 ////                                getDragAndDropList().removeFromList((Item) getDragAndDropObject()); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
 ////                                    ((Item) getDragAndDropObject()).getOwner().removeFromList((Item) getDragAndDropObject()); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
 ////                                    ((Item) getDragAndDropObject()).removeMeFromOwner(); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
@@ -555,34 +614,38 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                                    ItemAndListCommonInterface oldOwner = ((Item) getDragAndDropObject()).getOwner(); //remove item from old owner list
 //                                    ItemAndListCommonInterface newOwner = ((Item) beforeCont.getDragAndDropObject()).getOwner(); //remove item from old owner list
 //                                    oldOwner.removeFromList((Item) getDragAndDropObject());
-////                                afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the 
+////                                afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the
 //                                    newOwner.addToList(0, (Item) getDragAndDropObject()); //insert as the first subtask of the item before
 ////                                    DAO.getInstance().saveInBackgroundSequential((ParseObject) ((Item) getDragAndDropObject()).getOwner(),
 ////                                            (ParseObject) ((Item) beforeCont.getDragAndDropObject()).getOwner(), ((Item) beforeCont.getDragAndDropObject()), (ParseObject) getDragAndDropObject());
 //                                    DAO.getInstance().saveInBackgroundSequential((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) getDragAndDropObject());
-                                    ItemAndListCommonInterface newOwnerPrj = ((Item) beforeCont.getDragAndDropObject()); 
-                                    int indexI = 0;
-                                    moveItemAndSave(((Item) getDragAndDropObject()).getOwner(), newOwnerPrj, (Item)getDragAndDropObject(), indexI);
+//</editor-fold>
+                                    ItemAndListCommonInterface newOwnerPrj = ((Item) beforeCont.getDragAndDropObject());
+                                    int indexI = 0; //when dropping as subtask on an time, always insert at top of list (otherwise insert idrectly in expanded subtask list
+                                    moveItemOrItemListAndSave(((Item) getDragAndDropObject()).getOwner(), newOwnerPrj, (Item) getDragAndDropObject(), indexI);
                                 };
 
-                            } else if (afterCont.getDragAndDropObject() instanceof Item) { //dropping *before* an item
+                            } else if (afterCont != null && afterCont.getDragAndDropObject() instanceof Item) { //dropping *before* an item (eg at the very top of a list). beforeElt is either null or not an Item
                                 dropActionCall = () -> {
-                                    //NB: get the two owners first, since object may be dropped on itself in which case removing it from its old owner will be a pb
+//<editor-fold defaultstate="collapsed" desc="comment">
+//NB: get the two owners first, since object may be dropped on itself in which case removing it from its old owner will be a pb
 //                                    ItemAndListCommonInterface oldOwner = ((Item) getDragAndDropObject()).getOwner(); //remove item from old owner list
 //                                    ItemAndListCommonInterface newOwner = ((Item) afterCont.getDragAndDropObject()).getOwner(); //remove item from old owner list
 //                                    oldOwner.removeFromList((Item) getDragAndDropObject());
 //                                    //Insert after the previous/before Item
-////                                    ((Item) beforeCont.getDragAndDropObject()).getOwner().addToList(((Item) beforeCont.getDragAndDropObject()), (Item) getDragAndDropObject(), true); //insert *before* the 
-//                                    newOwner.addToList(((Item) afterCont.getDragAndDropObject()), (Item) getDragAndDropObject(), true); //insert *before* the 
+////                                    ((Item) beforeCont.getDragAndDropObject()).getOwner().addToList(((Item) beforeCont.getDragAndDropObject()), (Item) getDragAndDropObject(), true); //insert *before* the
+//                                    newOwner.addToList(((Item) afterCont.getDragAndDropObject()), (Item) getDragAndDropObject(), true); //insert *before* the
 //                                    DAO.getInstance().saveInBackgroundSequential((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) getDragAndDropObject());
+//</editor-fold>
                                     ItemAndListCommonInterface newOwnerB = ((Item) afterCont.getDragAndDropObject()).getOwner(); //remove item from old owner list
-                                    int indexBef = newOwnerB.getItemIndex(((Item) afterCont.getDragAndDropObject())); 
-                                    moveItemAndSave(((Item) getDragAndDropObject()).getOwner(), newOwnerB, (Item)getDragAndDropObject(), indexBef);
+                                    int indexBef = newOwnerB.getItemIndex(((Item) afterCont.getDragAndDropObject()));
+                                    moveItemOrItemListAndSave(((Item) getDragAndDropObject()).getOwner(), newOwnerB, (Item) getDragAndDropObject(), indexBef);
                                 };
 //                                dropAsSubtaskActionCall = () -> {}; //CANNOT drop as subtask *before* an item
-                            }
+                            } //else: situation not handled, do nothing (and do not show a dropPlaceholder container at this position either)
                         }
                     }
+
                     //remove old dropPlaceholder (if any) - remove even if no new dropPosition since we don't want the old dropPlaceholder to hang as we drag further one
                     if (dragged.dropPlaceholder != null) {
                         dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder);
@@ -618,14 +681,13 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                                     dropActionCall.call();
                                 }
 //                                dragged.dropSucceeded = true;
-                                getComponentForm().animateHierarchy(300);
+//                                getComponentForm().animateHierarchy(300);
 
                                 dragged.setDraggable(false); //set draggable false once the drop (activated by longPress) is completed
                                 dragged.setFocusable(false); //set focusable false once the drop (activated by longPress) is completed
                                 ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //simply keep same position as whereto the list was scrolled during the drag, then inserted element should 'stay in place'
                                 super.drop(dragged, x, y); //Container.drop implements the first quick move of the container itself
                                 ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
-
                             }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    protected Image getDragImageXXX() {
@@ -725,7 +787,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         }
 
                         //insert new dropPlaceholder
-                        treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
+                        treeList.addComponent(dropPlaceholderInsertionIndex, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (index <= oldDropPlaceholderIndex) {
 //                        treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
@@ -740,7 +802,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                    getComponentForm().revalidate();
 //                        dropTarget.getComponentForm().animateLayout(300);
 //                        newDropPlaceholder.getComponentForm().animateLayout(300); //CANNOT use dropTarget.getComponentForm() since when dropTarget==dragged, it is removed from its form
-                        newDropPlaceholder.getComponentForm().animateHierarchy(300); //CANNOT use dropTarget.getComponentForm() since when dropTarget==dragged, it is removed from its form
+//                        newDropPlaceholder.getComponentForm().animateHierarchy(300); //CANNOT use dropTarget.getComponentForm() since when dropTarget==dragged, it is removed from its form
+                        newDropPlaceholder.getComponentForm().revalidate(); //CANNOT use dropTarget.getComponentForm() since when dropTarget==dragged, it is removed from its form
 //                        Log.p("addDragOverListener: new dropPlaceholder=" + newDropPlaceholder.getName() + ", inserted position=" + index + ", for dropTarget=" + dropTarget.getName());
                     } else {
                         Log.p("addDragOverListener: treeList==null!!! for dropTarget=" + dropTarget.getName());
@@ -749,23 +812,24 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                        Log.p("addDragOverListener: treeList==null for dropTarget=" + dropTarget.getName());
                     }
                 }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                } else {
-//                    Log.p("addDragOverListener: treeList: dropParent == null!! for dropTarget=" + dropTarget.getName());
-//                }
-//                } else {
-//                    getParent().addComponent(getParent().getComponentIndex(this), newDropPlaceholder);
-//                }
-//                if (false) {
-//                    dragged.dropPlaceholder = newDropPlaceholder; //save new placeholder
-//                    getComponentForm().revalidate();
-////                e.consume(); //consume the event, otherwise it repeats(?)
-//                }
-//            }
-//</editor-fold>
+                //<editor-fold defaultstate="collapsed" desc="comment">
+                //                } else {
+                //                    Log.p("addDragOverListener: treeList: dropParent == null!! for dropTarget=" + dropTarget.getName());
+                //                }
+                //                } else {
+                //                    getParent().addComponent(getParent().getComponentIndex(this), newDropPlaceholder);
+                //                }
+                //                if (false) {
+                //                    dragged.dropPlaceholder = newDropPlaceholder; //save new placeholder
+                //                    getComponentForm().revalidate();
+                ////                e.consume(); //consume the event, otherwise it repeats(?)
+                //                }
+                //            }
+                //</editor-fold>
                 Log.p("---------------- END MyDragAndDropSwipeableContainer() ------------------------------------");
             }
-        });
+        }
+        );
     }
 
     private static MyDragAndDropSwipeableContainer findDropTargetIn(Container cont) {
@@ -840,8 +904,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         return null;
     }
 
-    @Override
-    public void pointerReleased(int x, int y) {
+//    @Override
+    public void pointerReleasedxxx(int x, int y) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (pointerReleasedListeners != null && pointerReleasedListeners.hasListeners()) {
 //            ActionEvent ev = new ActionEvent(this, ActionEvent.Type.PointerReleased, x, y);
@@ -875,7 +939,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
-    public boolean dropItemInCategoryView(ItemAndListCommonInterface before, ItemAndListCommonInterface after, ItemAndListCommonInterface dragged,
+    private boolean dropItemInCategoryViewXXX(ItemAndListCommonInterface before, ItemAndListCommonInterface after, ItemAndListCommonInterface dragged,
             Category beforeCategory, Category afterCategory, Item draggedItem, boolean insertBelow) {
 
         if (beforeCategory == null) {
@@ -893,7 +957,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         return true;
     }
 
-    public boolean dropCategory(ItemAndListCommonInterface before, ItemAndListCommonInterface after, Category dragged) {
+    private boolean dropCategoryXXX(ItemAndListCommonInterface before, ItemAndListCommonInterface after, Category dragged) {
         //TODO support subcategories
         if (before == null && after instanceof Category) { //inserting at the very top of the list (dropTargetContainer is *before* the first element on the screen)
             //insert in the same list as after
@@ -918,244 +982,247 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         return true;
     }
 
-    public boolean dropBetweenItems(Item before, Item after, Item dragged, boolean insertBelow) {
-
-        if (before == null) { //inserting at the very top of the list (dropTargetContainer is *before* the first element on the screen)
-            //insert in the same list as after
-            after.getOwner().addToList(0, dragged);
-        } else if (after == null) { //inserting at the very end of the list (dropTargetContainer is *after* the last element on the screen)
-            if (!insertBelow) {
-                //insert in the same list as before
-                before.getOwner().addToList(dragged);
-            } else {
-
-            }
-        } else {
-            if (before.getOwner() == after.getOwner() || after.getOwner() == before) { //before and after belong to same owner, insert in between them (<=> after before)
-                if (!insertBelow) {
-                    int index = before.getOwner().getList().indexOf(after);
-                    before.getOwner().addToList(index, dragged);
-                } else {
-
-                }
-            } else { //else insert after 'after' (e.g. before is subtask11 (a subtask to Task1) and after is Task2, so added is added *after* subtask11)
-                if (!insertBelow) {
-                    int index = after.getOwner().getList().indexOf(after);
-                    after.getOwner().addToList(index + 1, dragged);
-                } else {
-
-                }
-            }
-        }
-        return true;
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private boolean dropBetweenItemsXXX(Item before, Item after, Item dragged, boolean insertBelow) {
+//
+//        if (before == null) { //inserting at the very top of the list (dropTargetContainer is *before* the first element on the screen)
+//            //insert in the same list as after
+//            after.getOwner().addToList(0, dragged);
+//        } else if (after == null) { //inserting at the very end of the list (dropTargetContainer is *after* the last element on the screen)
+//            if (!insertBelow) {
+//                //insert in the same list as before
+//                before.getOwner().addToList(dragged);
+//            } else {
+//
+//            }
+//        } else {
+//            if (before.getOwner() == after.getOwner() || after.getOwner() == before) { //before and after belong to same owner, insert in between them (<=> after before)
+//                if (!insertBelow) {
+//                    int index = before.getOwner().getList().indexOf(after);
+//                    before.getOwner().addToList(index, dragged);
+//                } else {
+//
+//                }
+//            } else { //else insert after 'after' (e.g. before is subtask11 (a subtask to Task1) and after is Task2, so added is added *after* subtask11)
+//                if (!insertBelow) {
+//                    int index = after.getOwner().getList().indexOf(after);
+//                    after.getOwner().addToList(index + 1, dragged);
+//                } else {
+//
+//                }
+//            }
+//        }
+//        return true;
+//    }
+//</editor-fold>
 
     @Override
     public void drop(Component dragged, int x, int y) {
         //do nothing if dropped on this container
     }
 
-    public void dropXXX(Component dragged, int x, int y) {
-//        Log.p("drop-MyDragAndD");
-        Log.p("MyDragAndD.drop, dropTarget=" + getName() + ", dragged=" + dragged.getName());
-
-        if (dragged == this || !isValidDropTarget((MyDragAndDropSwipeableContainer) dragged)) { //do nothing if dropped on itself //TODO remove isValidDropTarget checks as code below should check valid conditions and do nothing if not
-//            dragged.setHidden(false); // was set hidden in dragEnter
-            return;
-        }
-        boolean dropExecuted = false;
-
-        if (dragged instanceof MyDragAndDropSwipeableContainer) {
-            MyDragAndDropSwipeableContainer draggedCont = (MyDragAndDropSwipeableContainer) dragged;
-            Object dropTarget = getDragAndDropObject();
-            Object draggedObject = draggedCont.getDragAndDropObject();
-            ItemAndListCommonInterface insertIntoList = null;
-            ItemAndListCommonInterface removeFromList = null;
-            int index = -1;
-            if (dropTarget instanceof Item && (draggedObject instanceof ItemList || draggedObject instanceof Category)) {
-                return; //do nothing if dragging an ItemList or a Category onto an Item
-            }
-            if (dropTarget instanceof Category) { //D&D onto a Category1
-
-                if (draggedObject instanceof Category) { //D&D ... of a Category2 => move to position of Category1
-
-                    Category draggedCategory = (Category) draggedObject;
-                    Category dropTargetCategory = (Category) dropTarget;
-//                    removeFromList = draggedCont.getDragAndDropList();
-
-                    draggedCont.getDragAndDropList().removeFromList(draggedCategory);
-//                    insertIntoList = getDragAndDropList(); //UI:
-                    index = getDragAndDropList().getItemIndex(dropTargetCategory); //get index where to drop
-                    getDragAndDropList().addToList(index, draggedCategory);
-
-                    DAO.getInstance().save((ParseObject) getDragAndDropList()); //save the list of categories
-                    dropExecuted = true;
-
-                } else if (draggedObject instanceof Item) { //D&D ... of an Item onto a Category
-
-//                    Category addToCategory = getDragAndDropCategory(); //UI: 
-                    Category addToCategory = (Category) dropTarget; //UI: 
-                    Category removeFromCategory = draggedCont.getDragAndDropCategory(); //either a category or null (eg if an expanded subtask)
-//                    if (addToCategory != null && removeFromCategory!=null) {
-//                    index = addToCategory.getList().indexOf(dropTarget);
-                    Item item = ((Item) draggedObject);
-
-                    item.addCategoryToItem(addToCategory, true); //true => add item to category as well
-                    if (removeFromCategory != null) { //if dragged is an expanded subtask, it may not be in any category
-                        item.removeCategoryFromItem(removeFromCategory, true); //no effect if (Category)removeFromList == null, true => remove item from category as well
-//                        DAO.getInstance().save(draggedCont.getDragAndDropCategory()); //save category that item was removed from (can be null if no category)
-                        DAO.getInstance().save(removeFromCategory); //save the categoy (removeFromCategory may be the same as addToCategory, but second save will just be ignored)
-                    }
-
-                    DAO.getInstance().save(addToCategory); //save the categoy that item was added to (can be null if no category, eg a subtask dragged onto an item in a category)
-                    DAO.getInstance().save(item); //save the dragged Item (the categories are saved below via saveDragged)
-                    dropExecuted = true;
-                } else {
-                    assert false : "shouldn't happen (eg ItemList should never appear in same list as Category)";
-//                    index = -1;
-                }
-
-            } else if (dropTarget instanceof Item) {
-
-                if (draggedObject instanceof Item) {
-                    Item targetItem = ((Item) dropTarget);
-                    Item draggedItem = ((Item) draggedObject);
-
-                    if (insertBelow(x)) { //dropping item2 as a subtask of item1
-//                        Item targetItem = ((Item) dropTarget);
-//                        Item draggedItem = ((Item) draggedObject);
-                        ItemAndListCommonInterface owner = draggedCont.getDragAndDropList();
-                        if (owner != null && !(owner instanceof Category)) { //check on Category to avoid removing a subtask which is dragged from a Category
-//                        draggedCont.getDragAndDropList().removeFromList(draggedItem); //remove subtask from previous list (remove first to remove Owner)
-                            owner.removeFromList(draggedItem); //remove subtask from previous list (remove first to remove Owner)
-                            DAO.getInstance().save((ParseObject) owner); //save the list from which subtask was removed
-                        }
-                        targetItem.addToList(0, draggedItem); //insert at head of sublist
-
-                        DAO.getInstance().save(targetItem); //save project onto which subtask was dropped
-//                        DAO.getInstance().save((ParseObject) draggedCont.getDragAndDropList()); //save the list from which subtask was removed
-                        DAO.getInstance().save(draggedItem); //save the dragged Item (the categories are saved below via saveDragged)
-                        dropExecuted = true;
-
-                    } else if (getDragAndDropCategory() != null) { //D&D item1 from category1 onto an item2 in category1 OR category2  => insert item1 into category2 at item2's position
-                        //TODO!!!! if both items in same Category, just move
-//                        if (targetItem)
-                        //D&D ... of an item2 in category2 => insert item2 into category1 at item1's position and remove item2 from category2
-                        Category addToCategory = getDragAndDropCategory(); //UI: 
-                        Item item = ((Item) draggedObject);
-                        Category removeFromCategory = draggedCont.getDragAndDropCategory(); //either a category or null (eg if an expanded subtask)
-                        if (removeFromCategory != null) {
-                            item.removeCategoryFromItem(removeFromCategory, true); //no effect if (Category)removeFromList == null, true => remove item from category as well
-                            DAO.getInstance().save(removeFromCategory); //save the categoy (removeFromCategory may be the same as addToCategory, but second save will just be ignored)
-//                        item.addCategoryToItem(addToCategory, true); //true => add item to category as well //NO GOOD, since doesn't add as position 'index'
-                        }
-                        index = addToCategory.getList().indexOf(targetItem); //get index *after* removing the item, in case we're D&D inside the same category
-//                        addToCategory.add(index, item); //true => add item to category as well //NO GOOD, since doesn't add as position 'index'
-                        addToCategory.addItemToCategory(item, index, true); //true => add item to category as well //NO GOOD, since doesn't add as position 'index'
-//                        DAO.getInstance().save(draggedCont.getDragAndDropCategory()); //save category that item was removed from (can be null if no category)
-
-                        DAO.getInstance().save(addToCategory); //save the categoy that item was added to (can be null if no category, eg a subtask dragged onto an item in a category)
-                        DAO.getInstance().save(item); //save the dragged Item (the categories are saved below via saveDragged)
-                        dropExecuted = true;
-
-                    } else { //'normal' D&D of item2 onto item1: move item2 from previous list and insert into item1's list at item1's position
-                        insertIntoList = getDragAndDropList();
-                        if (insertIntoList != null) { //eg in a ParseQuery list there may be items without an owner
-                            removeFromList = draggedCont.getDragAndDropList();
-                            if (removeFromList != null) {
-                                removeFromList.removeFromList(draggedItem); //if same list, remove *before* calculating index 
-                                index = insertIntoList.getItemIndex(targetItem);
-
-                                if (insertIntoList instanceof Category) {
-                                    ((Category) insertIntoList).addItemToCategory(draggedItem, index, true);
-                                } else {
-                                    insertIntoList.addToList(index, draggedItem);
-                                }
-
-                                DAO.getInstance().save((ParseObject) removeFromList);
-                                if (insertIntoList != removeFromList) {
-                                    DAO.getInstance().save((ParseObject) insertIntoList); //save the dragged Item (the categories are saved below via saveDragged)
-                                }
-                                DAO.getInstance().save(draggedItem); //save the dragged Item (the categories are saved below via saveDragged)
-                                dropExecuted = true;
-                            }
-                        }
-                    }
-                } // else do nothing if dragging eg an ItemList or a Category onto an Item. //DONE: consider if dragging a Category onto an item should add the category to it (NO, less intuitive than dragging the item onto the Category)
-
-            } else if (dropTarget instanceof ItemList) {
-
-                if (draggedObject instanceof Item) { //insert dragged item into head of ItemList
-                    ItemList dropTargetItemList = (ItemList) dropTarget;
-                    Item draggedItem = (Item) draggedObject;
-
-                    dropTargetItemList.addToList(0, draggedItem); // 0 => insert into head of itemList when dropped on the container of the list itself
-                    removeFromList = draggedCont.getDragAndDropList();
-                    removeFromList.removeFromList(draggedItem); //if same list, remove before index
-
-                    DAO.getInstance().save(dropTargetItemList); //save new list
-                    DAO.getInstance().save((ParseObject) removeFromList); //save previous lsit
-                    DAO.getInstance().save(draggedItem); //save item, has changed owner
-
-                } else if (draggedObject instanceof ItemList) { //itemList onto ItemList => insert
-                    ItemList dropTargetItemList = (ItemList) dropTarget;
-                    ItemList draggedItemList = (ItemList) draggedObject;
-
-                    removeFromList = draggedCont.getDragAndDropList();
-                    removeFromList.removeFromList(draggedItemList);
-
-                    insertIntoList = getDragAndDropList();
-                    index = insertIntoList.getItemIndex(dropTargetItemList);
-//                    getDragAndDropList().addToList(index, draggedItemList); // 0 => insert into head of itemList when dropped on the container of the list itself
-                    insertIntoList.addToList(index, draggedItemList); // 0 => insert into head of itemList when dropped on the container of the list itself
-
-                    DAO.getInstance().save((ParseObject) insertIntoList); //save updated list of ItemLists
-                    dropExecuted = true;
-
-                } else {
-                    assert false;
-                }
-            }
-
-            dragged.setDraggable(false); //set draggable false once the drop (activated by longPress) is completed
-            dragged.setFocusable(false); //set focusable false once the drop (activated by longPress) is completed
-            if (dropExecuted) {
-                ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //simply keep same position as whereto the list was scrolled during the drag, then inserted element should 'stay in place'
-
-                //moved the dragged container to new position to quickly refresh the screen  
-                if (false) {
-                    Container draggedParentContainer = dragged.getParent();
-                    draggedParentContainer.removeComponent(this);
-                    int droppedParentIndex = getParent().getComponentIndex(this);
-                    getParent().addComponent(droppedParentIndex, dragged);
-                    getComponentForm().animateHierarchy(400);
-                }
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                dragged.setHidden(false); //set hidden in dragEnter
-//ALL this done in dragFinished!
-//                draggedCont.oldParent = null; //reset on successful drop
-//                draggedCont.oldComp = null; //reset on successful drop
-//                draggedCont.oldPos = -1; //reset
-//                if (draggedCont.dropPlaceholder != null&&draggedCont.dropPlaceholder.getParent()!=null) {
-//                    draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder); //remove the old placeholder on successful drop
-//                    draggedCont.dropPlaceholder = null;
-//                }
-//</editor-fold>
-                super.drop(dragged, x, y); //Container.drop implements the first quick move of the container itself
-//                removePlaceholder(); //do *before* setting dropPlaceholder=null!
-//                dropPlaceholder = null; //reset placeholder
-            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (false) { //now done in dragFinished()
-//            removePlaceholder(); //do *before* setting dropPlaceholder=null!
-//            refreshAfterDrop();
-//</editor-fold>
-            ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
-
+//    public void dropXXX(Component dragged, int x, int y) {
+////        Log.p("drop-MyDragAndD");
+//        Log.p("MyDragAndD.drop, dropTarget=" + getName() + ", dragged=" + dragged.getName());
+//
+//        if (dragged == this || !isValidDropTarget((MyDragAndDropSwipeableContainer) dragged)) { //do nothing if dropped on itself //TODO remove isValidDropTarget checks as code below should check valid conditions and do nothing if not
+////            dragged.setHidden(false); // was set hidden in dragEnter
+//            return;
+//        }
+//        boolean dropExecuted = false;
+//
+//        if (dragged instanceof MyDragAndDropSwipeableContainer) {
+//            MyDragAndDropSwipeableContainer draggedCont = (MyDragAndDropSwipeableContainer) dragged;
+//            Object dropTarget = getDragAndDropObject();
+//            Object draggedObject = draggedCont.getDragAndDropObject();
+//            ItemAndListCommonInterface insertIntoList = null;
+//            ItemAndListCommonInterface removeFromList = null;
+//            int index = -1;
+//            if (dropTarget instanceof Item && (draggedObject instanceof ItemList || draggedObject instanceof Category)) {
+//                return; //do nothing if dragging an ItemList or a Category onto an Item
 //            }
-        }
-    }
-
+//            if (dropTarget instanceof Category) { //D&D onto a Category1
+//
+//                if (draggedObject instanceof Category) { //D&D ... of a Category2 => move to position of Category1
+//
+//                    Category draggedCategory = (Category) draggedObject;
+//                    Category dropTargetCategory = (Category) dropTarget;
+////                    removeFromList = draggedCont.getDragAndDropList();
+//
+//                    draggedCont.getDragAndDropList().removeFromList(draggedCategory);
+////                    insertIntoList = getDragAndDropList(); //UI:
+//                    index = getDragAndDropList().getItemIndex(dropTargetCategory); //get index where to drop
+//                    getDragAndDropList().addToList(index, draggedCategory);
+//
+//                    DAO.getInstance().save((ParseObject) getDragAndDropList()); //save the list of categories
+//                    dropExecuted = true;
+//
+//                } else if (draggedObject instanceof Item) { //D&D ... of an Item onto a Category
+//
+////                    Category addToCategory = getDragAndDropCategory(); //UI:
+//                    Category addToCategory = (Category) dropTarget; //UI:
+//                    Category removeFromCategory = draggedCont.getDragAndDropCategory(); //either a category or null (eg if an expanded subtask)
+////                    if (addToCategory != null && removeFromCategory!=null) {
+////                    index = addToCategory.getList().indexOf(dropTarget);
+//                    Item item = ((Item) draggedObject);
+//
+//                    item.addCategoryToItem(addToCategory, true); //true => add item to category as well
+//                    if (removeFromCategory != null) { //if dragged is an expanded subtask, it may not be in any category
+//                        item.removeCategoryFromItem(removeFromCategory, true); //no effect if (Category)removeFromList == null, true => remove item from category as well
+////                        DAO.getInstance().save(draggedCont.getDragAndDropCategory()); //save category that item was removed from (can be null if no category)
+//                        DAO.getInstance().save(removeFromCategory); //save the categoy (removeFromCategory may be the same as addToCategory, but second save will just be ignored)
+//                    }
+//
+//                    DAO.getInstance().save(addToCategory); //save the categoy that item was added to (can be null if no category, eg a subtask dragged onto an item in a category)
+//                    DAO.getInstance().save(item); //save the dragged Item (the categories are saved below via saveDragged)
+//                    dropExecuted = true;
+//                } else {
+//                    assert false : "shouldn't happen (eg ItemList should never appear in same list as Category)";
+////                    index = -1;
+//                }
+//
+//            } else if (dropTarget instanceof Item) {
+//
+//                if (draggedObject instanceof Item) {
+//                    Item targetItem = ((Item) dropTarget);
+//                    Item draggedItem = ((Item) draggedObject);
+//
+//                    if (insertBelow(x)) { //dropping item2 as a subtask of item1
+////                        Item targetItem = ((Item) dropTarget);
+////                        Item draggedItem = ((Item) draggedObject);
+//                        ItemAndListCommonInterface owner = draggedCont.getDragAndDropList();
+//                        if (owner != null && !(owner instanceof Category)) { //check on Category to avoid removing a subtask which is dragged from a Category
+////                        draggedCont.getDragAndDropList().removeFromList(draggedItem); //remove subtask from previous list (remove first to remove Owner)
+//                            owner.removeFromList(draggedItem); //remove subtask from previous list (remove first to remove Owner)
+//                            DAO.getInstance().save((ParseObject) owner); //save the list from which subtask was removed
+//                        }
+//                        targetItem.addToList(0, draggedItem); //insert at head of sublist
+//
+//                        DAO.getInstance().save(targetItem); //save project onto which subtask was dropped
+////                        DAO.getInstance().save((ParseObject) draggedCont.getDragAndDropList()); //save the list from which subtask was removed
+//                        DAO.getInstance().save(draggedItem); //save the dragged Item (the categories are saved below via saveDragged)
+//                        dropExecuted = true;
+//
+//                    } else if (getDragAndDropCategory() != null) { //D&D item1 from category1 onto an item2 in category1 OR category2  => insert item1 into category2 at item2's position
+//                        //TODO!!!! if both items in same Category, just move
+////                        if (targetItem)
+//                        //D&D ... of an item2 in category2 => insert item2 into category1 at item1's position and remove item2 from category2
+//                        Category addToCategory = getDragAndDropCategory(); //UI:
+//                        Item item = ((Item) draggedObject);
+//                        Category removeFromCategory = draggedCont.getDragAndDropCategory(); //either a category or null (eg if an expanded subtask)
+//                        if (removeFromCategory != null) {
+//                            item.removeCategoryFromItem(removeFromCategory, true); //no effect if (Category)removeFromList == null, true => remove item from category as well
+//                            DAO.getInstance().save(removeFromCategory); //save the categoy (removeFromCategory may be the same as addToCategory, but second save will just be ignored)
+////                        item.addCategoryToItem(addToCategory, true); //true => add item to category as well //NO GOOD, since doesn't add as position 'index'
+//                        }
+//                        index = addToCategory.getList().indexOf(targetItem); //get index *after* removing the item, in case we're D&D inside the same category
+////                        addToCategory.add(index, item); //true => add item to category as well //NO GOOD, since doesn't add as position 'index'
+//                        addToCategory.addItemToCategory(item, index, true); //true => add item to category as well //NO GOOD, since doesn't add as position 'index'
+////                        DAO.getInstance().save(draggedCont.getDragAndDropCategory()); //save category that item was removed from (can be null if no category)
+//
+//                        DAO.getInstance().save(addToCategory); //save the categoy that item was added to (can be null if no category, eg a subtask dragged onto an item in a category)
+//                        DAO.getInstance().save(item); //save the dragged Item (the categories are saved below via saveDragged)
+//                        dropExecuted = true;
+//
+//                    } else { //'normal' D&D of item2 onto item1: move item2 from previous list and insert into item1's list at item1's position
+//                        insertIntoList = getDragAndDropList();
+//                        if (insertIntoList != null) { //eg in a ParseQuery list there may be items without an owner
+//                            removeFromList = draggedCont.getDragAndDropList();
+//                            if (removeFromList != null) {
+//                                removeFromList.removeFromList(draggedItem); //if same list, remove *before* calculating index
+//                                index = insertIntoList.getItemIndex(targetItem);
+//
+//                                if (insertIntoList instanceof Category) {
+//                                    ((Category) insertIntoList).addItemToCategory(draggedItem, index, true);
+//                                } else {
+//                                    insertIntoList.addToList(index, draggedItem);
+//                                }
+//
+//                                DAO.getInstance().save((ParseObject) removeFromList);
+//                                if (insertIntoList != removeFromList) {
+//                                    DAO.getInstance().save((ParseObject) insertIntoList); //save the dragged Item (the categories are saved below via saveDragged)
+//                                }
+//                                DAO.getInstance().save(draggedItem); //save the dragged Item (the categories are saved below via saveDragged)
+//                                dropExecuted = true;
+//                            }
+//                        }
+//                    }
+//                } // else do nothing if dragging eg an ItemList or a Category onto an Item. //DONE: consider if dragging a Category onto an item should add the category to it (NO, less intuitive than dragging the item onto the Category)
+//
+//            } else if (dropTarget instanceof ItemList) {
+//
+//                if (draggedObject instanceof Item) { //insert dragged item into head of ItemList
+//                    ItemList dropTargetItemList = (ItemList) dropTarget;
+//                    Item draggedItem = (Item) draggedObject;
+//
+//                    dropTargetItemList.addToList(0, draggedItem); // 0 => insert into head of itemList when dropped on the container of the list itself
+//                    removeFromList = draggedCont.getDragAndDropList();
+//                    removeFromList.removeFromList(draggedItem); //if same list, remove before index
+//
+//                    DAO.getInstance().save(dropTargetItemList); //save new list
+//                    DAO.getInstance().save((ParseObject) removeFromList); //save previous lsit
+//                    DAO.getInstance().save(draggedItem); //save item, has changed owner
+//
+//                } else if (draggedObject instanceof ItemList) { //itemList onto ItemList => insert
+//                    ItemList dropTargetItemList = (ItemList) dropTarget;
+//                    ItemList draggedItemList = (ItemList) draggedObject;
+//
+//                    removeFromList = draggedCont.getDragAndDropList();
+//                    removeFromList.removeFromList(draggedItemList);
+//
+//                    insertIntoList = getDragAndDropList();
+//                    index = insertIntoList.getItemIndex(dropTargetItemList);
+////                    getDragAndDropList().addToList(index, draggedItemList); // 0 => insert into head of itemList when dropped on the container of the list itself
+//                    insertIntoList.addToList(index, draggedItemList); // 0 => insert into head of itemList when dropped on the container of the list itself
+//
+//                    DAO.getInstance().save((ParseObject) insertIntoList); //save updated list of ItemLists
+//                    dropExecuted = true;
+//
+//                } else {
+//                    assert false;
+//                }
+//            }
+//
+//            dragged.setDraggable(false); //set draggable false once the drop (activated by longPress) is completed
+//            dragged.setFocusable(false); //set focusable false once the drop (activated by longPress) is completed
+//            if (dropExecuted) {
+//                ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //simply keep same position as whereto the list was scrolled during the drag, then inserted element should 'stay in place'
+//
+//                //moved the dragged container to new position to quickly refresh the screen
+//                if (false) {
+//                    Container draggedParentContainer = dragged.getParent();
+//                    draggedParentContainer.removeComponent(this);
+//                    int droppedParentIndex = getParent().getComponentIndex(this);
+//                    getParent().addComponent(droppedParentIndex, dragged);
+//                    getComponentForm().animateHierarchy(400);
+//                }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                dragged.setHidden(false); //set hidden in dragEnter
+////ALL this done in dragFinished!
+////                draggedCont.oldParent = null; //reset on successful drop
+////                draggedCont.oldComp = null; //reset on successful drop
+////                draggedCont.oldPos = -1; //reset
+////                if (draggedCont.dropPlaceholder != null&&draggedCont.dropPlaceholder.getParent()!=null) {
+////                    draggedCont.dropPlaceholder.getParent().removeComponent(draggedCont.dropPlaceholder); //remove the old placeholder on successful drop
+////                    draggedCont.dropPlaceholder = null;
+////                }
+////</editor-fold>
+//                super.drop(dragged, x, y); //Container.drop implements the first quick move of the container itself
+////                removePlaceholder(); //do *before* setting dropPlaceholder=null!
+////                dropPlaceholder = null; //reset placeholder
+//            }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (false) { //now done in dragFinished()
+////            removePlaceholder(); //do *before* setting dropPlaceholder=null!
+////            refreshAfterDrop();
+////</editor-fold>
+//            ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
+//
+////            }
+//        }
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void dropXXX(Component dragged, int x, int y) {
 //        if (dragged == this || !isValidDropTarget((MyDragAndDropSwipeableContainer) dragged)) { //do nothing if dropped on itself
@@ -1901,7 +1968,10 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        }
 //</editor-fold>
 //        Log.p("dragFinished-MyDragAndD");
-        Log.p("MyDragAndD.dragFinished for element=" + getName() + ", UNHIDE, remove dropPlaceholder=" + dropPlaceholder != null ? dropPlaceholder.getName() : "nullx");
+        Log.p("MyDragAndD.dragFinished for element=" + (getName() != null ? getName() : "") + ", UNHIDE, remove dropPlaceholder="
+                + ((dropPlaceholder != null
+                && dropPlaceholder.getName() != null)
+                ? dropPlaceholder.getName() : "nullx"));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        boolean animate = false;
 //        //if drag failed, restore the old dragged container in its original position
@@ -1918,8 +1988,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         //if there is still a dropPlaceholder inserted, remove it
         if (dropPlaceholder != null) {
             if (dropPlaceholder.getParent() != null) {//remove the old placeholder ( not done in successful drop)
+                Form f = dropPlaceholder.getComponentForm();
                 Log.p("MyDragAndD.dragFinished: removing dropPlaceholder=" + dropPlaceholder.getName() + " from parent=" + dropPlaceholder.getParent().getName());
                 dropPlaceholder.getParent().removeComponent(dropPlaceholder); //remove the old placeholder ( not done in successful drop)
+                if (f != null) {
+                    f.animateHierarchy(300); //refresh after hiding dropPlaceholder
+                }
             } else {
                 Log.p("MyDragAndD.dragFinished: no parent() for dropPlaceholder=" + dropPlaceholder.getName());
             }

@@ -97,7 +97,7 @@ public class ScreenListOfItemLists extends MyForm {
             for (int i = 0, size = this.itemListList.size(); i < size; i++) {
                 //TODO!!! compare same case (upper/lower)
                 //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                compList.getComponentAt(i).setHidden(((ItemList) itemListList.get(i)).getText().toLowerCase().indexOf(text) < 0);
+                compList.getComponentAt(i).setHidden(((ItemList) this.itemListList.get(i)).getText().toLowerCase().indexOf(text) < 0);
             }
             compList.animateLayout(150);
         });
@@ -263,33 +263,33 @@ public class ScreenListOfItemLists extends MyForm {
 //                }
 //            }
 //</editor-fold>
-            @Override
-            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
-//                return !(draggedObject.getDragAndDropObject() instanceof CategoryList) && draggedObject.getDragAndDropObject() instanceof ItemList
-                return draggedObject.getDragAndDropObject() instanceof ItemList || draggedObject.getDragAndDropObject() instanceof Item;
-            }
+//            @Override
+//            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
+////                return !(draggedObject.getDragAndDropObject() instanceof CategoryList) && draggedObject.getDragAndDropObject() instanceof ItemList
+//                return draggedObject.getDragAndDropObject() instanceof ItemList || draggedObject.getDragAndDropObject() instanceof Item;
+//            }
 
-            @Override
-            public ItemAndListCommonInterface getDragAndDropList() {
-//                return ((ItemList) getDragAndDropObject()).getOwnerList().getList(); //returns the owner of 
-                return itemList.getOwner(); //returns the owner of 
-            }
+//            @Override
+//            public ItemAndListCommonInterface getDragAndDropList() {
+////                return ((ItemList) getDragAndDropObject()).getOwnerList().getList(); //returns the owner of 
+//                return itemList.getOwner(); //returns the owner of 
+//            }
 
-            @Override
-            public List getDragAndDropSubList() {
-//                return getDragAndDropList(); //returns the list of subtasks
-                return itemList.getList();
-            }
+//            @Override
+//            public List getDragAndDropSubList() {
+////                return getDragAndDropList(); //returns the list of subtasks
+//                return itemList.getList();
+//            }
 
             @Override
             public Object getDragAndDropObject() {
                 return itemList;
             }
 
-            @Override
-            public void saveDragged() {
-                DAO.getInstance().save(itemList);
-            }
+//            @Override
+//            public void saveDragged() {
+//                DAO.getInstance().save(itemList);
+//            }
 
         }; //use filtered/sorted ItemList for Timer
                 swipCont.putClientProperty("element", itemList);
@@ -539,33 +539,33 @@ public class ScreenListOfItemLists extends MyForm {
         Container leftSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 
         MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(leftSwipeContainer, null, mainCont) {
-            @Override
-            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
-//                return !(draggedObject.getDragAndDropObject() instanceof CategoryList) && draggedObject.getDragAndDropObject() instanceof ItemList
-                return draggedObject.getDragAndDropObject() instanceof ItemList || draggedObject.getDragAndDropObject() instanceof Item;
-            }
+//            @Override
+//            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
+////                return !(draggedObject.getDragAndDropObject() instanceof CategoryList) && draggedObject.getDragAndDropObject() instanceof ItemList
+//                return draggedObject.getDragAndDropObject() instanceof ItemList || draggedObject.getDragAndDropObject() instanceof Item;
+//            }
 
-            @Override
-            public ItemAndListCommonInterface getDragAndDropList() {
-//                return ((ItemList) getDragAndDropObject()).getOwnerList().getList(); //returns the owner of 
-                return itemList.getOwner(); //returns the owner of 
-            }
+//            @Override
+//            public ItemAndListCommonInterface getDragAndDropList() {
+////                return ((ItemList) getDragAndDropObject()).getOwnerList().getList(); //returns the owner of 
+//                return itemList.getOwner(); //returns the owner of 
+//            }
 
-            @Override
-            public List getDragAndDropSubList() {
-//                return getDragAndDropList(); //returns the list of subtasks
-                return itemList.getList();
-            }
+//            @Override
+//            public List getDragAndDropSubList() {
+////                return getDragAndDropList(); //returns the list of subtasks
+//                return itemList.getList();
+//            }
 
             @Override
             public Object getDragAndDropObject() {
                 return itemList;
             }
 
-            @Override
-            public void saveDragged() {
-                DAO.getInstance().save(itemList);
-            }
+//            @Override
+//            public void saveDragged() {
+//                DAO.getInstance().save(itemList);
+//            }
 
         }; //use filtered/sorted ItemList for Timer
 

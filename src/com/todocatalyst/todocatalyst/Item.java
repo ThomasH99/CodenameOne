@@ -2138,7 +2138,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public List getList() {
         List<Item> list = getList(PARSE_SUBTASKS);
         if (list != null) {
-            DAO.getInstance().cacheUpdateListToCachedObjects(list);
+            DAO.getInstance().fetchListElements(list);
             return list;
         } else {
             return new ArrayList();
@@ -2246,6 +2246,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param subitem
      * @return
      */
+    @Override
     public int getItemIndex(ItemAndListCommonInterface subitem) {
         return getList().indexOf(subitem);
     }
@@ -4773,7 +4774,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return (categories == null) ? new HashSet() : new HashSet(categories);
 //        return (categories == null) ? new ArrayList() : categories;
         if (categories != null) {
-            DAO.getInstance().cacheUpdateListToCachedObjects(categories);
+            DAO.getInstance().fetchListElements(categories);
             return categories;
         } else {
             return new ArrayList();

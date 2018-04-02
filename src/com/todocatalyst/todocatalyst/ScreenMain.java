@@ -177,7 +177,8 @@ public class ScreenMain extends MyForm {
         Command lists = MyReplayCommand.create(SCREEN_LISTS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
 //                new ScreenListOfItemLists("Lists", new ItemList(DAO.getInstance().getAllItemLists()), ScreenMain.this, (i)->{}).show();                     //null: do nothing, lists are saved if edited
 //                new ScreenListOfItemLists(SCREEN_LISTS_TITLE, DAO.getInstance().getAllItemLists(), ScreenMain.this, (i) -> {
-                    new ScreenListOfItemLists(SCREEN_LISTS_TITLE, DAO.getInstance().getItemListList(), ScreenMain.this, (i) -> {
+//                    new ScreenListOfItemLists(SCREEN_LISTS_TITLE, DAO.getInstance().getItemListList(), ScreenMain.this, (i) -> {
+                    new ScreenListOfItemLists(SCREEN_LISTS_TITLE, ItemListList.getInstance(), ScreenMain.this, (i) -> {
                     }).show();                     //null: do nothing, lists are saved if edited
                 }
         );

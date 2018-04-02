@@ -610,7 +610,7 @@ public class ScreenRepair extends MyForm {
             public void actionPerformed(ActionEvent evt) {
 //                DAO.getInstance().cacheClearAndRefreshAllData();
 //                DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(true);
-//TODO!!!! show waiting turning symbol
+//TODO!!!! show waiting turning symbol + message: "Do not make changes to data on the server while refreshing locally stored data"
                 DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
                 Dialog.show("Info", "Finished updating cache", "OK", null);
             }
@@ -724,10 +724,21 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
+        content.add(new Button(new Command("Repair list of Categories") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                DAO.getInstance().setExecuteCleanup(true);
+                DAO.getInstance().cleanUpAllCategoriesFromParse();
+                DAO.getInstance().setExecuteCleanup(false);
+            }
+        }));
+
         content.add(new Button(new Command("Repair list of ItemLists") {
             @Override
             public void actionPerformed(ActionEvent evt) {
+                DAO.getInstance().setExecuteCleanup(true);
                 DAO.getInstance().cleanUpAllItemListsInParse();
+                DAO.getInstance().setExecuteCleanup(false);
             }
         }));
 
@@ -1067,7 +1078,8 @@ public class ScreenRepair extends MyForm {
             public void actionPerformed(ActionEvent evt) {
                 Item i;
 
-                ItemListList ilist = DAO.getInstance().getItemListList();
+//                ItemListList ilist = DAO.getInstance().getItemListList();
+                ItemListList ilist = ItemListList.getInstance();
 
                 ItemList list2 = new ItemList("testList2", false);
                 DAO.getInstance().save(list2);

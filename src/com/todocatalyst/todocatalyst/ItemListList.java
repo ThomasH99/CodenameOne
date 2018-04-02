@@ -4,6 +4,10 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import static com.todocatalyst.todocatalyst.CategoryList.PARSE_CATEGORY_LIST;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * stores the (manually sorted) list of ItemLists defined by the user. Updated
  * whenever a ItemList is created or deleted or if the order of categories is
@@ -18,6 +22,8 @@ public class ItemListList extends ItemList {
 //    public static String CLASS_NAME = "ItemItemList"; //DONE!!!!! change to "ItemListList" before production
 
 //    final static String PARSE_ITEMLIST_LIST = "itemListList";
+    final static String PARSE_ITEMLIST_LIST = ItemList.PARSE_ITEMLIST; //reuse column name from ItemList to ensure any non-overwritten calls (notably getListFull()) works, was: "categoryList";
+;
 //    final static String PARSE_ITEMLIST_LIST = "itemList";
 
     private static ItemListList INSTANCE = null;
@@ -33,6 +39,35 @@ public class ItemListList extends ItemList {
         return INSTANCE;
     }
 
+        @Override
+    public List<Category> getList() {
+//        return (Category) getParseObject(PARSE_CATEGORY_LIST);
+        List<Category> list = getList(PARSE_ITEMLIST_LIST);
+        if (list != null) {
+           DAO.getInstance().fetchListElements(list);
+           return list;
+        } else {
+            return new ArrayList();
+        }
+    }
+    @Override
+    public List<Category> getListFull() {
+        return getList();
+    }
+
+    public void setList(List categoryList) {
+//        if (has(PARSE_CATEGORY_LIST) || categoryList != null) {
+//            put(PARSE_CATEGORY_LIST, categoryList);
+//        }
+        if (categoryList != null && !categoryList.isEmpty()) {
+            put(PARSE_ITEMLIST_LIST, categoryList);
+        } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
+            remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
+        }
+    }
+
+
+    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public List<ItemList> getList() {
 //    @Override
@@ -42,7 +77,7 @@ public class ItemListList extends ItemList {
 ////        List<ItemList> list = getList(PARSE_ITEMLIST);
 //        List list = getList(PARSE_ITEMLIST);
 //        if (list != null) {
-//            DAO.getInstance().cacheUpdateListToCachedObjects(list);
+//            DAO.getInstance().fetchListElements(list);
 //            return list;
 //        } else {
 //            return new ArrayList();

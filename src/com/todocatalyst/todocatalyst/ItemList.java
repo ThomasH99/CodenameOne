@@ -230,6 +230,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                }
 //            });
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    protected SumVector remainingEffortSumVector
 //            = new SumVector(
 //                    () -> ItemList.this.getSize(),
@@ -250,6 +251,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            return sourceItemList.getSourceItemList(); //recurse up to the original
 //        }
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * the object that contains, or 'owns', this object. An object can have no
@@ -942,7 +944,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            if (list != null) {
 ////            for (E o:list) {ParseObject.fetchFromCacheOnly(o)};
 ////            ParseQuery. //include the linked
-//                DAO.getInstance().cacheUpdateListToCachedObjects(list);
+//                DAO.getInstance().fetchListElements(list);
 //                FilterSortDef filterSortDef = getFilterSortDef();
 //                if (filterSortDef != null && filteredList == null) { //buffer the sorted list
 //                    filteredList = filterSortDef.filterAndSortItemList(list);
@@ -975,7 +977,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
             List<E> list = getList(PARSE_ITEMLIST);
             if (list != null) {
-                DAO.getInstance().cacheUpdateListToCachedObjects(list);
+                DAO.getInstance().fetchListElements(list);
                 return list;
             } else {
 //            return null; //returning null would mean every user must check for null and create a list. And returning a new empty ArrayList and saving it doesn't have any side-effect since a new empty list isn't actually saved
@@ -1568,7 +1570,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             DAO.getInstance().save(itemList);
         }
 
-        ItemListList itemListList = DAO.getInstance().getItemListList();
+//        ItemListList itemListList = DAO.getInstance().getItemListList();
+        ItemListList itemListList = ItemListList.getInstance();
         itemListList.remove(this);
         DAO.getInstance().save(itemListList);
 

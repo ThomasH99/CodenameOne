@@ -51,6 +51,9 @@ public class MyPrefs {
     static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
             = new PrefEntry("**","insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task"); //"at the end"
 
+    static PrefEntry dropItemAtBeginningOfUnexpandedCategorySubtaskList
+            = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks","dropItemAtBeginningOfUnexpandedCategorySubtaskList", true, "**"); 
+
     //TIMER
     static PrefEntry timerAutomaticallyStartTimer
             = new PrefEntry("Automatically start timer for a task", "automaticallyStartTimer", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)

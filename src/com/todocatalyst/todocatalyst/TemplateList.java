@@ -35,7 +35,7 @@ public class TemplateList extends ItemList {
 //        return (ItemList) getParseObject(PARSE_ITEMLIST_LIST);
         List<ItemList> list = getList(PARSE_ITEMLIST_LIST);
         if (list != null) {
-           DAO.getInstance().cacheUpdateListToCachedObjects(list);            
+           DAO.getInstance().fetchListElements(list);            
             return list;
         } else {
             return new ArrayList();
