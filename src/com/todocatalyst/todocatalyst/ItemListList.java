@@ -44,7 +44,7 @@ public class ItemListList extends ItemList {
 //        return (Category) getParseObject(PARSE_CATEGORY_LIST);
         List<Category> list = getList(PARSE_ITEMLIST_LIST);
         if (list != null) {
-           DAO.getInstance().fetchListElements(list);
+           DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
            return list;
         } else {
             return new ArrayList();
@@ -77,7 +77,7 @@ public class ItemListList extends ItemList {
 ////        List<ItemList> list = getList(PARSE_ITEMLIST);
 //        List list = getList(PARSE_ITEMLIST);
 //        if (list != null) {
-//            DAO.getInstance().fetchListElements(list);
+//            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
 //            return list;
 //        } else {
 //            return new ArrayList();

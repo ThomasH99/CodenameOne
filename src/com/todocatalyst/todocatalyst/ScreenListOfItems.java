@@ -509,7 +509,7 @@ super.refreshAfterEdit();
                 addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
 //                    ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 setKeepPos(new KeepInSameScreenPosition());
-//                DAO.getInstance().fetchAllItemsIn(item, true);
+//                DAO.getInstance().fetchAllElementsInSublist(item, true);
                 new ScreenItem(item, ScreenListOfItems.this, () -> {
 ////                    DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        boolean addToList = (itemListOrg != null && itemListOrg.getObjectId() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server

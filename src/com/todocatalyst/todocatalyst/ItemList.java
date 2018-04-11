@@ -944,7 +944,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            if (list != null) {
 ////            for (E o:list) {ParseObject.fetchFromCacheOnly(o)};
 ////            ParseQuery. //include the linked
-//                DAO.getInstance().fetchListElements(list);
+//                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
 //                FilterSortDef filterSortDef = getFilterSortDef();
 //                if (filterSortDef != null && filteredList == null) { //buffer the sorted list
 //                    filteredList = filterSortDef.filterAndSortItemList(list);
@@ -977,7 +977,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
             List<E> list = getList(PARSE_ITEMLIST);
             if (list != null) {
-                DAO.getInstance().fetchListElements(list);
+                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
                 return list;
             } else {
 //            return null; //returning null would mean every user must check for null and create a list. And returning a new empty ArrayList and saving it doesn't have any side-effect since a new empty list isn't actually saved
@@ -2707,7 +2707,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    @Override
 //    public List getChildren() {
 //        List itemList = getList();
-//        DAO.getInstance().fetchAllItemsIn(itemList, false);
+//        DAO.getInstance().fetchAllElementsInSublist(itemList, false);
 //        return itemList; //see JavaDoc of getChildren: null should return the tree roots
 //    }
 //
@@ -2723,7 +2723,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                return new ArrayList();
 //            } else {
             List itemList = getList();
-//                DAO.getInstance().fetchAllItemsIn(itemList, false);
+//                DAO.getInstance().fetchAllElementsInSublist(itemList, false);
 //                return new Vector(itemList); //see JavaDoc of getChildren: null should return the tree roots
             return itemList; //see JavaDoc of getChildren: null should return the tree roots
 //            }
@@ -2743,7 +2743,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                return new Vector();
 //            } else {
 //                List itemList = getList();
-////                DAO.getInstance().fetchAllItemsIn(itemList, false);
+////                DAO.getInstance().fetchAllElementsInSublist(itemList, false);
 //                return new Vector(itemList); //see JavaDoc of getChildren: null should return the tree roots
 //            }
 //        } else {

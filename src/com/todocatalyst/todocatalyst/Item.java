@@ -142,7 +142,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    @Override
 //    public List getChildrenList() {
 //        List itemList = getList();
-//        DAO.getInstance().fetchAllItemsIn(itemList, false);
+//        DAO.getInstance().fetchAllElementsInSublist(itemList, false);
 //        return itemList;
 //    }
 //    @Override
@@ -158,13 +158,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                return new ArrayList();
 //            } else {
             List itemList = getList();
-//                DAO.getInstance().fetchAllItemsIn(itemList, false);
-//                DAO.getInstance().fetchAllItemsIn(itemList);
+//                DAO.getInstance().fetchAllElementsInSublist(itemList, false);
+//                DAO.getInstance().fetchAllElementsInSublist(itemList);
             return itemList; //see JavaDoc of getChildren: null should return the tree roots
 //            }
         } else {
 //            List itemList = ((Item) parent).getList();
-//            DAO.getInstance().fetchAllItemsIn(itemList, false);
+//            DAO.getInstance().fetchAllElementsInSublist(itemList, false);
 ////            return new Vector(itemList);
 //            return itemList;
             return ((MyTreeModel) subTaskInThisProject).getChildrenList(null);
@@ -178,8 +178,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return list;
         } else {
             List itemList = ((Item) parent).getList();
-//            DAO.getInstance().fetchAllItemsIn(itemList, false);
-            DAO.getInstance().fetchAllItemsIn(itemList);
+//            DAO.getInstance().fetchAllElementsInSublist(itemList, false);
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(itemList);
 //            return new Vector(itemList);
             return itemList;
         }
@@ -193,7 +193,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return vector;
 //        } else {
 //            List itemList = ((Item) parent).getList();
-//            DAO.getInstance().fetchAllItemsIn(itemList, false);
+//            DAO.getInstance().fetchAllElementsInSublist(itemList, false);
 //            return new Vector(itemList);
 //        }
 //    }
@@ -1717,7 +1717,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     subtaskCopy = new ArrayList();
                 }
                 List<Item> orgSubtasks = getList();
-//                DAO.getInstance().fetchAllItemsIn(orgSubtasks, true);
+//                DAO.getInstance().fetchAllElementsInSublist(orgSubtasks, true);
 
                 for (int i = 0, size = orgSubtasks.size(); i < size; i++) {
 //                    Item copy = orgSubtasks.get(i).cloneMe(copyFieldDefintion, copyExclusions);
@@ -2138,7 +2138,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public List getList() {
         List<Item> list = getList(PARSE_SUBTASKS);
         if (list != null) {
-            DAO.getInstance().fetchListElements(list);
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
             return list;
         } else {
             return new ArrayList();
@@ -4774,7 +4774,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return (categories == null) ? new HashSet() : new HashSet(categories);
 //        return (categories == null) ? new ArrayList() : categories;
         if (categories != null) {
-            DAO.getInstance().fetchListElements(categories);
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(categories);
             return categories;
         } else {
             return new ArrayList();

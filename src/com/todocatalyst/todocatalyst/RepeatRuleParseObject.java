@@ -266,8 +266,8 @@ public class RepeatRuleParseObject
     public List getListOfUndoneRepeatInstances() {
         List list = getList(PARSE_REPEAT_INSTANCE_ITEMLIST);
         if (list != null) {
-//            DAO.getInstance().fetchAllItemsIn(list, false);
-            DAO.getInstance().fetchListElements(list);
+//            DAO.getInstance().fetchAllElementsInSublist(list, false);
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
         } else {
             list = new ArrayList();
         }

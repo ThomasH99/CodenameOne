@@ -354,7 +354,7 @@ public class ScreenListOfItemLists extends MyForm {
             editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemListProperties-" + itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
                 MyForm f = ((MyForm) mainCont.getComponentForm());
                 f.setKeepPos(new KeepInSameScreenPosition());
-//                DAO.getInstance().fetchAllItemsIn((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
+//                DAO.getInstance().fetchAllElementsInSublist((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
 //                new ScreenListOfItems(itemList.getText(), itemList, ScreenListOfItemLists.this, (iList) -> {
                 new ScreenListOfItems(itemList.getText(), itemList, (MyForm) mainCont.getComponentForm(), (iList) -> {
                     if (true) {

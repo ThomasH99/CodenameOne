@@ -890,7 +890,8 @@ public class Category extends ItemList { //Flatten { //implements ExpandableInte
             DAO.getInstance().save(category);
         }
 
-        CategoryList categoriesList = DAO.getInstance().getCategoryList();
+//        CategoryList categoriesList = DAO.getInstance().getCategoryList();
+        CategoryList categoriesList = CategoryList.getInstance();
         categoriesList.remove(this);
         DAO.getInstance().save(categoriesList);
 
