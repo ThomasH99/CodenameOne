@@ -48,7 +48,7 @@ public interface Movable2 {
      *
      * @return
      */
-    default public Object getDragAndDropObject(){
+    default public ItemAndListCommonInterface getDragAndDropObject(){
         return null;
     };
 

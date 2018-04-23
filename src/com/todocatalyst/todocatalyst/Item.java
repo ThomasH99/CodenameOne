@@ -6741,20 +6741,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 for (ItemAndListCommonInterface prov : providers) {
                     //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
 //                if (prov != owner) {
-//                    WorkTimeAllocator wtd = prov.getWorkTimeAllocator(reset);
+                    WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocator(reset);
 //                    if (true ||wtd != null) {
 //                        ASSERT.that(wtd!=null,"WTD should never ne null for a workTimeProvider");
-                    WorkTime wt = prov.getWorkTimeAllocator(reset).getAllocatedWorkTime(this, remaining);
+//                    WorkTime wt = prov.getWorkTimeAllocator(reset).getAllocatedWorkTime(this, remaining);
+                    if (workTimeAllocator != null) {
+                        WorkTime wt = workTimeAllocator.getAllocatedWorkTime(this, remaining);
 //                        remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
-                    if (workTime == null || noCache) {
-                        workTime = new WorkTime();
-                    }
-                    if (wt != null) {
-                        workTime.addWorkTime(wt);
-                    }
-                    remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
-                    if (wt != null && remaining == 0) {
-                        break;
+                        if (workTime == null || noCache) {
+                            workTime = new WorkTime();
+                        }
+                        if (wt != null) {
+                            workTime.addWorkTime(wt);
+                        }
+                        remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
+                        if (wt != null && remaining == 0) {
+                            break;
+                        }
                     }
                 }
             }
