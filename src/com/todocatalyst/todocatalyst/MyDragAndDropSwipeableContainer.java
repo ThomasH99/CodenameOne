@@ -9,6 +9,7 @@ import com.codename1.io.Log;
 import com.codename1.ui.AnimationManager;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
+import com.codename1.ui.Display;
 import com.codename1.ui.Form;
 import com.codename1.ui.Graphics;
 import com.codename1.ui.Image;
@@ -43,15 +44,85 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         void call();
     }
     private Call dropActionCall = null; //function containing the drop action to execute on a normal drop
-    private Call dropAsSubtaskActionCall = null; //function containing the drop action to execute when dropping as a subtask
+    private Call dropAsSubtaskActionCall = null; //function containing the drop action to execute when dropping as a subtask (right-hand side of screen)
+    private Call dropAsSuperTaskActionCall = null; //function containing the drop action to execute when dropping as a super/meta-task  (left-hand side of screen)
 
     interface InsertComp {
 
 //        void insert(Component dropPlaceholder);//, int index);
-        void insert(Component dropPlaceholder, boolean asSubtask);
+        void insert(Component dropPlaceholder);
+//        void insert(Component dropPlaceholder, boolean asSubtask);
     }
     private InsertComp insertDropPlaceholder = null; //function containing the drop action to execute on a normal drop
+    private InsertComp insertDropPlaceholderForSubtask = null; //function containing the drop action to execute on a normal drop
+    private InsertComp insertDropPlaceholderForSupertask = null; //function containing the drop action to execute on a normal drop
     private int lastX; //x value for last component this was dragged over
+
+    public enum InsertAsType {
+        //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
+        NORMAL,
+        SUBTASK,
+        SUPERTASK
+    };
+
+    InsertAsType lastInsertAsType = null;
+
+    private InsertAsType insertType(int x) {
+//        return x > this.getWidth() / 3 * 2;
+        int screenWidthPixelsPercent = Display.getInstance().getDisplayWidth() / 100;
+        if (x <= screenWidthPixelsPercent * 15) { //position in left 15%
+            return InsertAsType.SUPERTASK;
+        }
+        if (x >= screenWidthPixelsPercent / 100 * 85) { //position in right 15%
+            return InsertAsType.SUBTASK;
+        } else {
+            return InsertAsType.NORMAL; //position in middle 70%
+        }
+    }
+
+    /**
+    if x position has changed into a new zone where the dragged task will be inserted differently, then move the dropPlaceholder to the corresponding position (if defined)
+    @param newXPos 
+     */
+    private void refreshDropPlaceholderContainer(int newXPos) {
+        InsertAsType newInsertAsType = insertType(newXPos);
+        if (newInsertAsType != lastInsertAsType) {
+            switch (newInsertAsType) {
+                case SUBTASK:
+                    if (insertDropPlaceholderForSubtask != null) {
+                        dropPlaceholder.getParent().removeComponent(dropPlaceholder);
+                        insertDropPlaceholderForSubtask.insert(dropPlaceholder);
+                    }
+                    break;
+                case SUPERTASK:
+                    if (insertDropPlaceholderForSupertask != null) {
+                        dropPlaceholder.getParent().removeComponent(dropPlaceholder);
+                        insertDropPlaceholderForSupertask.insert(dropPlaceholder);
+                    }
+                    break;
+                case NORMAL:
+                    if (insertDropPlaceholder != null) {
+                        dropPlaceholder.getParent().removeComponent(dropPlaceholder);
+                        insertDropPlaceholder.insert(dropPlaceholder);
+                    }
+                    break;
+            }
+            lastInsertAsType = newInsertAsType;
+        }
+    }
+
+    /**
+     returns true if dropped elements should be inserted *below* the item it
+     is dropped on. Eg if dropped of right-hand third of the dropTarget
+     container.
+
+     @param x
+     @return
+     */
+    private boolean insertBelow(int x) {
+//        return x > this.getWidth() / 3 * 2;
+        return insertType(x) == InsertAsType.SUBTASK;
+    }
 
     /**
      move between ItemLists or Items (projects)
@@ -92,6 +163,15 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
     private void moveItemOrItemListAndSave(ItemAndListCommonInterface newList, ItemAndListCommonInterface itemOrItemList, int newPos) {
         moveItemOrItemListAndSave(itemOrItemList.getOwner(), newList, itemOrItemList, newPos);
+    }
+
+    /**
+    insert at *end of* newList
+    @param newList
+    @param itemOrItemList 
+     */
+    private void moveItemOrItemListAndSave(ItemAndListCommonInterface newList, ItemAndListCommonInterface itemOrItemList) {
+        moveItemOrItemListAndSave(itemOrItemList.getOwner(), newList, itemOrItemList, Integer.MAX_VALUE);
     }
 
     /**
@@ -429,7 +509,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     @param getContainerBeforeComp if true, will return the container 'before' comp, otherwise the one after
     @return 
      */
-    private MyDragAndDropSwipeableContainer findCont(MyDragAndDropSwipeableContainer comp, boolean getContainerBeforeComp) {
+    private MyDragAndDropSwipeableContainer findContXXXX(MyDragAndDropSwipeableContainer comp, boolean getContainerBeforeComp) {
         if (getContainerBeforeComp) {
             return findPreviousDDContainerXXX(comp);
         } else {
@@ -522,7 +602,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     @param dragged
     @return true if inserted, false otherwise
      */
-    private boolean insertBefore(MyDragAndDropSwipeableContainer dropDD, MyDragAndDropSwipeableContainer dragged) {
+    private void insertBefore(MyDragAndDropSwipeableContainer dropDD, MyDragAndDropSwipeableContainer dragged) {
         Component dropTargetTopLevelParent = dropDD;
         Container dropCont = dropTargetTopLevelParent.getParent(); //treeList = the list in which to insert the dropPlaceholder
 
@@ -536,11 +616,20 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 int idx = dropCont.getComponentIndex(dropTargetTopLevelParent);
                 if (idx > 0) { //if dropTarget is NOT first element in the list (idx>0)
                     Container prevCont = (Container) dropCont.getComponentAt(idx - 1); //get previous element
-                    return insertIntoPreviousWithSameOwner(prevCont, dragged); //try to insert
+//                    return insertIntoPreviousWithSameOwner(prevCont, dragged); //try to insert
+                    if (insertIntoPreviousWithSameOwner(prevCont, dragged)) { //try to insert
+                        return;
+                    }
                 }
             }
         }
-        return false;
+        //else no previous so intert at top of list
+        Item dropTargetItem = (Item) dropDD.getDragAndDropObject();
+        ItemAndListCommonInterface newOwnerPrj = dropTargetItem.getOwner();
+        int insertIndex = newOwnerPrj.getItemIndex(dropTargetItem);
+        moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), insertIndex);
+
+//        return false;
     }
 
     private boolean insertIntoNextWithSameOwner(Container cont, MyDragAndDropSwipeableContainer dragged) {
@@ -550,8 +639,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             Component north = ((BorderLayout) cont.getLayout()).getNorth();
             Container center = (Container) ((BorderLayout) cont.getLayout()).getCenter();
             if (center instanceof ContainerScrollY && ((Container) center).getComponentCount() > 0) { //if subtasks expanded, insert at start of the list
-                ItemAndListCommonInterface dropTargetItem = ((MyDragAndDropSwipeableContainer) north).getDragAndDropObject();
-                moveItemOrItemListAndSave(dropTargetItem, draggedItem, 0);
+                dropActionCall = () -> {
+                    ItemAndListCommonInterface dropTargetItem = ((MyDragAndDropSwipeableContainer) north).getDragAndDropObject();
+                    moveItemOrItemListAndSave(dropTargetItem, draggedItem, 0);
+                };
+                insertDropPlaceholder = (dropPlaceholder) -> {
+                };
                 return true;
             } else if (center instanceof ContainerScrollY && ((Container) center).getComponentCount() > 0) { //if non-empty sublist
                 return insertIntoPreviousWithSameOwner((Container) center.getComponentAt(center.getComponentCount() - 1), dragged); //return last container of last element
@@ -561,12 +654,17 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     }
 
     /**
-    if dragged belongs to the hierarchy of the element *before* dropDD, then insert at under the common owner at the end of its list
+    if dragged belongs to the hierarchy of the element *after* dropDD, then insert at under the common owner at the end of its list.
+    Different cases: (* => dropTarget)
+    1) dropTarget's subtasks are expanded, T1* -> S1, S2
+    2) dropTarget's subtasks are NOT expanded and dropTarget is either last element in a list or the next element is at the same level (same parent): T1*;T2 or T0;T1*
+    3) the next element is a higher level element T1 -> S1, S2 -> S21;S22*; T2
+    3) 
     @param dropDD
     @param dragged
     @return true if inserted, false otherwise
      */
-    private boolean insertAfter(MyDragAndDropSwipeableContainer dropDD, MyDragAndDropSwipeableContainer dragged) {
+    private void insertAfter(MyDragAndDropSwipeableContainer dropDD, MyDragAndDropSwipeableContainer dragged) {
         ItemAndListCommonInterface draggedElt = dragged.getDragAndDropObject();
         ItemAndListCommonInterface dropTargetElt = dropDD.getDragAndDropObject();
         Component dropTargetTopLevelParent = dropDD;
@@ -575,13 +673,24 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         ContainerScrollY subtaskCont;
         if ((subtaskCont = getSubtaskContainerFromTaskContainer(dropDD)) != null) {
             //if subtasks are expanded, insert at the top of the list
-            getTaskContainer((Container) subtaskCont.getComponentAt(0)).getDragAndDropObject().addToList(draggedElt);
-            moveItemOrItemListAndSave(draggedElt, draggedElt, CENTER);
+            dropActionCall = () -> {
+                getTaskContainer((Container) subtaskCont.getComponentAt(0)).getDragAndDropObject().addToList(0, draggedElt);
+                moveItemOrItemListAndSave(draggedElt, draggedElt, CENTER);
+            };
+            insertDropPlaceholder = (dropPlaceholder) -> {
+                subtaskCont.addComponent(0, dropPlaceholder); //insert dropPlaceholder at top of list of expanded subtasks
+            };
+            return;
         } else if (isNotLastElement(this)) {
             // insert *after* the dropTarget (and before the following element in the list)
-            ItemAndListCommonInterface newOwner = dropTargetElt.getOwner();
-            int insertIndex = newOwner.getItemIndex(dropTargetElt);
-            moveItemOrItemListAndSave(newOwner, draggedElt, insertIndex);
+            dropActionCall = () -> {
+                ItemAndListCommonInterface newOwner = dropTargetElt.getOwner();
+                int insertIndex = newOwner.getItemIndex(dropTargetElt);
+                moveItemOrItemListAndSave(newOwner, draggedElt, insertIndex);
+            };
+            insertDropPlaceholder = (dropPlaceholder) -> {
+            };
+            return;
         } else {
             //insert into common owner
             while (dropCont != null) {
@@ -591,15 +700,36 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                     dropCont = dropTargetTopLevelParent.getParent();
                 }
                 if (dropCont != null) {
-                    int idx = dropCont.getComponentIndex(dropTargetTopLevelParent);
-                    if (idx + 1 >= dropCont.getComponentCount()) { //if dropTarget is the last element in the list (idx==size)
-                        Container prevCont = (Container) dropCont.getComponentAt(idx - 1); //get previous element
-                        return insertIntoNextWithSameOwner(prevCont, dragged); //try to insert
-                    }
+                    final Container dropCont2 = dropCont;
+                    final Component dropTargetTopLevelParent2 = dropTargetTopLevelParent;
+                    dropActionCall = () -> {
+                        int idx = dropCont2.getComponentIndex(dropTargetTopLevelParent2);
+                        if (idx + 1 >= dropCont2.getComponentCount()) { //if dropTarget is the last element in the list (idx==size)
+                            Container prevCont = (Container) dropCont2.getComponentAt(idx - 1); //get previous element
+                            if (insertIntoNextWithSameOwner(prevCont, dragged)) {//try to insert
+                                return;
+                            }
+                        }
+                    };
+                    insertDropPlaceholder = (dropPlaceholder) -> {
+
+                    };
+                } else {
+                    //???
                 }
             }
         }
-        return false;
+//        else
+        dropActionCall = () -> {
+            Item dropTargetItem = (Item) dropDD.getDragAndDropObject();
+            ItemAndListCommonInterface newOwnerPrj = dropTargetItem.getOwner();
+            int insertIndex = newOwnerPrj.getItemIndex(dropTargetItem) + 1;
+            moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), insertIndex);
+        };
+        insertDropPlaceholder = (dropPlaceholder) -> {
+
+        };
+        return;//false;
     }
 
     MyDragAndDropSwipeableContainer(Component bottomLeft, Component bottomRight, Component top) {
@@ -639,10 +769,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 ////                    getComponentForm().revalidate();
 //                Log.p("---------------- END MyDragAndDropSwipeableContainer() ------------------------------------");
 //</editor-fold>
+                refreshDropPlaceholderContainer(x);
                 return; //skip if still over the same 
             }
             if (!(dropTarget instanceof MyDragAndDropSwipeableContainer)) { //if we're over a dropTarget store that as lastDraggedOver
                 dragged.lastDraggedOver = dropTarget;
+                refreshDropPlaceholderContainer(x);
                 return;
             } //else {
             //over a new container
@@ -998,10 +1130,10 @@ T3
             draggingUpwardsOrOverInitialDraggedEltPosition = movingUpwardsOrOverDragged((MyDragAndDropSwipeableContainer) dropTarget);
             if (draggingUpwardsOrOverInitialDraggedEltPosition) {
                 afterMyDDCont = (MyDragAndDropSwipeableContainer) dropTarget;
-                beforeMyDDCont = findCont(afterMyDDCont, true);
+                beforeMyDDCont = findContXXXX(afterMyDDCont, true);
             } else { //dragging downwards
                 beforeMyDDCont = (MyDragAndDropSwipeableContainer) dropTarget;
-                afterMyDDCont = findCont(beforeMyDDCont, false);
+                afterMyDDCont = findContXXXX(beforeMyDDCont, false);
             }
             Log.p("---beforeMyDDCont.D&Dobj=" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"));
             Log.p("---afterMyDDCont.D&Dobj= " + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"));
@@ -1010,7 +1142,10 @@ T3
 
             dropActionCall = null; //reset
             dropAsSubtaskActionCall = null; //reset
+            dropAsSuperTaskActionCall = null; //reset
             insertDropPlaceholder = null; //reset
+            insertDropPlaceholderForSupertask = null; //reset
+            insertDropPlaceholderForSubtask = null; //reset
             if (getDragAndDropObject() instanceof Category) { //dragging a Category
 //<editor-fold defaultstate="collapsed" desc="Category dragged">
 //                        if (afterCont != null && (afterCont.getDragAndDropObject() instanceof Category || afterCont.getDragAndDropObject() == null)) { //can always drop a Category before another Category
@@ -1182,79 +1317,206 @@ T3
 //</editor-fold>
                         //dropping *after* an Item
                     } else if (dropDD.getDragAndDropObject() instanceof Item) {
-                        Item dropTargetItem = (Item) dropDD.getDragAndDropObject();
-                        boolean insertBefore = draggingUpwardsOrOverInitialDraggedEltPosition;
-                        dropActionCall = () -> {
-                            if (insertBefore) {
-                                if (!insertBefore(dropDD, dragged)) {
-                                    ItemAndListCommonInterface newOwnerPrj = dropTargetItem.getOwner();
-                                    int insertIndex = newOwnerPrj.getItemIndex(dropTargetItem);
-                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), insertIndex);
-                                }
-                            } else { //insertAfter
-                                if (!insertAfter(dropDD, dragged)) {
-                                    ItemAndListCommonInterface newOwnerPrj = dropTargetItem.getOwner();
-                                    int insertIndex = newOwnerPrj.getItemIndex(dropTargetItem) + 1;
-                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), insertIndex);
-                                }
-                            }
-                        };
+//                        Item dropTargetItem = (Item) dropDD.getDragAndDropObject();
+                        ItemAndListCommonInterface afterItem;
+                        ItemAndListCommonInterface beforeItem;
+                        Item draggedItem = (Item) dragged.getDragAndDropObject();
 
-                    } else if (beforeMyDDCont != null && beforeMyDDCont.getDragAndDropObject() instanceof Item) {
-                        Item beforeItem = (Item) beforeMyDDCont.getDragAndDropObject();
-                        //dropping *between* two Items
-                        //if dropping beteen an item and its expanded subtask, insert before subtask
-                        if (afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Item) {
-                            if (((Item) afterMyDDCont.getDragAndDropObject()).getOwner() == beforeItem) {
-                                Log.p("1. beteen an item and its expanded subtask");
+                        MyDragAndDropSwipeableContainer before;
+                        MyDragAndDropSwipeableContainer after;
+                        if (draggingUpwardsOrOverInitialDraggedEltPosition) {
+                            before = dropDD;
+                            after = findNextDDContainerXXX(before);
+                        } else {
+                            before = findPreviousDDContainerXXX(dropDD);
+                            after = dropDD;
+                        }
+                        beforeItem = before.getDragAndDropObject();
+                        afterItem = after.getDragAndDropObject();
+
+                        if (before == null) {
+                            //insert at top of list
+                            dropActionCall = () -> {
+//                                item.getOwner().addToList(dragged.getDragAndDropObject(), item, false);
+                                moveItemOrItemListAndSave(afterItem.getOwner(), draggedItem, 0);
+                            };
+                            insertDropPlaceholder = (dropPh) -> {
+                                addDropPlaceholderToRightParentCont(before, dropPh, 1);
+                            };
+                        } else if (before.getDragAndDropObject() == after.getDragAndDropObject()) {
+                            //dropping between a task and it's expanded subtask
+                            dropActionCall = () -> {
+//                                after.getDragAndDropObject().addToList(0, dropTargetItem);
+                                moveItemOrItemListAndSave(beforeItem, draggedItem, 0);
+                            };
+                            insertDropPlaceholder = (dropPh) -> {
+                                addDropPlaceholderToRightParentCont(after, dropPh, 0);
+                            };
+                        } else { //dropping either between two siblings or between an expanded subtask (any level of depth) and a following task at a lower level of depth, e.g. T1; S1; > T2;
+                            if (before.getDragAndDropObject().getList().size() == 1 && before.getDragAndDropObject().getList().contains(dragged.getDragAndDropObject())) {
+                                //first treat special case of dropping a single subtask back under the task it tasks it belonged to before starting dragging it around:
+                                dropActionCall = null;//do nothing since it is already a subtask of previous
+                                insertDropPlaceholder = (dropPh) -> {
+                                    //insert as a subtask container
+                                    BorderLayout borderLayout = (BorderLayout) before.getLayout(); //if dragged is already a subtask of previous, then we can assume the center container for subtasks already exists
+                                    Container centerCont = (Container) borderLayout.getCenter();
+                                    centerCont.addComponent(dropPh); //add to end of center list (to avoid changing the index of original hidden container)
+                                };
+
+                                dropAsSubtaskActionCall = null; // doesn't make sense here since after is already a subtask
+
+                                dropAsSuperTaskActionCall = () -> {
+                                    // can drop left to insert as a sibling task instead of a subtask
+                                    ItemAndListCommonInterface newOwnerPrj = beforeItem.getOwner();
+                                    int insertIndex = newOwnerPrj.getItemIndex(beforeItem) + 1;
+                                    moveItemOrItemListAndSave(newOwnerPrj, draggedItem, insertIndex);
+                                };
+                                insertDropPlaceholderForSupertask = (dropPh) -> {
+                                    addDropPlaceholderToRightParentCont(before, dropPh, 0);
+                                };
+
+                            } else if (beforeItem == afterItem.getOwner()) {
+                                //inserting between a task and its expanded subtask => always insert as subtask
                                 dropActionCall = () -> {
-                                    ItemAndListCommonInterface newOwnerPrj = ((Item) afterMyDDCont.getDragAndDropObject()).getOwner();
-                                    int indexI = 0; //when dropping as subtask on an time, always insert at top of list (otherwise insert idrectly in expanded subtask list
-                                    moveItemOrItemListAndSave(((Item) getDragAndDropObject()).getOwner(), newOwnerPrj, (Item) getDragAndDropObject(), indexI);
+                                    // can drop left to insert as a sibling task instead of a subtask
+                                    ItemAndListCommonInterface newOwnerPrj = beforeItem.getOwner();
+                                    int insertIndex = newOwnerPrj.getItemIndex(beforeItem) + 1;
+                                    moveItemOrItemListAndSave(newOwnerPrj, draggedItem, insertIndex);
                                 };
-                                insertDropPlaceholder = (dropPh, asSubtask) -> {
-                                    addDropPlaceholderToRightParentCont(afterMyDDCont, dropPh, 0);
+                                insertDropPlaceholder = (dropPh) -> {
+                                    addDropPlaceholderToRightParentCont(after, dropPh, 0);
                                 };
-                                //dropping between two items with same owner <=> siblings
-                            } else if (((Item) afterMyDDCont.getDragAndDropObject()).getOwner() == beforeItem.getOwner()) {
-                                Log.p("2. between two items with same owner");
-                                dropActionCall = () -> {
-                                    Item afterItem = (Item) afterMyDDCont.getDragAndDropObject();
-                                    ItemAndListCommonInterface newOwnerPrj = afterItem.getOwner();
-                                    int indexI = newOwnerPrj.getItemIndex(afterItem); //insert at the position of the second item
-                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), indexI);
-                                };
-                                dropAsSubtaskActionCall = () -> {
-                                    ItemAndListCommonInterface newOwnerPrj = beforeItem;
-                                    int indexI = beforeItem.size(); //when dropping as subtask on an time, always insert at end of list (otherwise insert idrectly in expanded subtask list
-                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), indexI);
-                                };
-                                insertDropPlaceholder = (dropPh, asSubtask) -> {
-                                    addDropPlaceholderToRightParentCont(afterMyDDCont, dropPh, 0);
-                                };
+                                dropAsSubtaskActionCall = null; // doesn't make sense here since dropping already make dragged a subtask
+
+                                dropAsSuperTaskActionCall = null; //does not make sense 
                             } else {
-                                //dropping between a subtask and following task at a higher level (only option left at this point in the code?!)
-                                Log.p("3. between a subtask and following task at a higher level");
-                                Log.p("3. beforeItem=" + beforeItem + "; afterItem=" + afterMyDDCont.getDragAndDropObject());
-                                Log.p("3. beforeItem.owner=" + beforeItem.getOwner() + "; afterItem.owner=" + ((ItemAndListCommonInterface) afterMyDDCont.getDragAndDropObject()).getOwner());
+                                MyDragAndDropSwipeableContainer sibling = findSibling(before);
+                                if (sibling != null) {
+                                    assert sibling.getDragAndDropObject().getOwner() == draggedItem.getOwner() : "sibling does not have same owner as draggedItem";
+                                    //if there is a sibling up the hierarchy, then insert after that
+                                    dropActionCall = () -> {
+                                        ItemAndListCommonInterface siblingItem = sibling.getDragAndDropObject();
+                                        ItemAndListCommonInterface newOwner = siblingItem.getOwner();
+                                        int insertIndex = newOwner.getItemIndex(siblingItem) + 1;
+                                        moveItemOrItemListAndSave(newOwner, draggedItem, insertIndex);
+                                    };
+                                    insertDropPlaceholder = (dropPh) -> {
+                                        addDropPlaceholderToRightParentCont(sibling, dropPh, 1);
+                                    };
+                                } else {
+                                    //no sibling found, so simply insert after 'before' (after the subtask)
+                                    dropActionCall = () -> {
+                                        ItemAndListCommonInterface newOwnerPrj = beforeItem.getOwner();
+                                        moveItemOrItemListAndSave(newOwnerPrj, draggedItem);
+                                    };
+                                    insertDropPlaceholder = (dropPh) -> {
+                                        addDropPlaceholderToRightParentCont(before, dropPh, 1);
+                                    };
 
-                                dropActionCall = () -> {
-                                    ItemAndListCommonInterface precedingSibling = findPrecedingSibling((Item) getDragAndDropObject(), beforeItem);
-                                    if (true || precedingSibling != null) {
-                                        ItemAndListCommonInterface owner = precedingSibling.getOwner(); //remove item from old owner list
-                                        int indexBef = owner.getItemIndex(precedingSibling);
-                                        moveItemOrItemListAndSave(owner, (Item) getDragAndDropObject(), indexBef);
-                                    }
+                                }
+                                //in any case, support insert as subtask or supertask
+                                dropAsSubtaskActionCall = () -> { // doesn't make sense here since after is already a subtask
+                                    ItemAndListCommonInterface newOwnerPrj = beforeItem;
+                                    int insertIndex = newOwnerPrj.getItemIndex(afterItem);
+                                    moveItemOrItemListAndSave(newOwnerPrj, draggedItem, 0); //UI: 0 means insert at head of subtask list
+
                                 };
-                                dropAsSubtaskActionCall = () -> {
-                                    ItemAndListCommonInterface newOwnerPrj = ((Item) beforeMyDDCont.getDragAndDropObject());
-                                    int indexI = newOwnerPrj.size(); //UI: when dropping as subtask, add as last subtask
-                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), indexI);
+                                insertDropPlaceholderForSubtask = (dropPh) -> {
+                                    addDropPlaceholderToRightParentCont(before, dropPh, 1);
                                 };
-                                insertDropPlaceholder = (dropPh, asSubtask) -> {
-                                    addDropPlaceholderToRightParentCont(beforeMyDDCont, dropPh, Integer.MAX_VALUE);
+
+                                dropAsSuperTaskActionCall = () -> {
+                                    //drop left to insert as a super task at same level as 'after'
+                                    ItemAndListCommonInterface newOwnerPrj = afterItem.getOwner();
+                                    int insertIndex = newOwnerPrj.getItemIndex(afterItem);
+                                    moveItemOrItemListAndSave(newOwnerPrj, draggedItem, insertIndex);
+                                };
+                                insertDropPlaceholderForSupertask = (dropPh) -> {
+                                    addDropPlaceholderToRightParentCont(after, dropPh, 0);
                                 };
                             }
+                        }
+                        }
+
+//<editor-fold defaultstate="collapsed" desc="old algos">
+//                        if (draggingUpwardsOrOverInitialDraggedEltPosition) {
+//                            insertBefore(dropDD, dragged);
+////                            dropActionCall = () -> {
+////                                if (!insertBefore(dropDD, dragged)) {
+////                                    ItemAndListCommonInterface newOwnerPrj = dropTargetItem.getOwner();
+////                                    int insertIndex = newOwnerPrj.getItemIndex(dropTargetItem);
+////                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), insertIndex);
+////                                }
+////
+////                            };
+//                        } else {
+//                            insertAfter(dropDD, dragged);
+////                            dropActionCall = () -> {
+////                                //insertAfter
+////                                if (!insertAfter(dropDD, dragged)) {
+////                                    ItemAndListCommonInterface newOwnerPrj = dropTargetItem.getOwner();
+////                                    int insertIndex = newOwnerPrj.getItemIndex(dropTargetItem) + 1;
+////                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), insertIndex);
+////                                }
+////                            };
+//                        }
+//
+//                    } else if (beforeMyDDCont != null && beforeMyDDCont.getDragAndDropObject() instanceof Item) {
+//                        Item beforeItem = (Item) beforeMyDDCont.getDragAndDropObject();
+//                        //dropping *between* two Items
+//                        //if dropping beteen an item and its expanded subtask, insert before subtask
+//                        if (afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Item) {
+//                            if (((Item) afterMyDDCont.getDragAndDropObject()).getOwner() == beforeItem) {
+//                                Log.p("1. beteen an item and its expanded subtask");
+//                                dropActionCall = () -> {
+//                                    ItemAndListCommonInterface newOwnerPrj = ((Item) afterMyDDCont.getDragAndDropObject()).getOwner();
+//                                    int indexI = 0; //when dropping as subtask on an time, always insert at top of list (otherwise insert idrectly in expanded subtask list
+//                                    moveItemOrItemListAndSave(((Item) getDragAndDropObject()).getOwner(), newOwnerPrj, (Item) getDragAndDropObject(), indexI);
+//                                };
+//                                insertDropPlaceholder = (dropPh, asSubtask) -> {
+//                                    addDropPlaceholderToRightParentCont(afterMyDDCont, dropPh, 0);
+//                                };
+//                                //dropping between two items with same owner <=> siblings
+//                            } else if (((Item) afterMyDDCont.getDragAndDropObject()).getOwner() == beforeItem.getOwner()) {
+//                                Log.p("2. between two items with same owner");
+//                                dropActionCall = () -> {
+//                                    Item afterItem = (Item) afterMyDDCont.getDragAndDropObject();
+//                                    ItemAndListCommonInterface newOwnerPrj = afterItem.getOwner();
+//                                    int indexI = newOwnerPrj.getItemIndex(afterItem); //insert at the position of the second item
+//                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), indexI);
+//                                };
+//                                dropAsSubtaskActionCall = () -> {
+//                                    ItemAndListCommonInterface newOwnerPrj = beforeItem;
+//                                    int indexI = beforeItem.size(); //when dropping as subtask on an time, always insert at end of list (otherwise insert idrectly in expanded subtask list
+//                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), indexI);
+//                                };
+//                                insertDropPlaceholder = (dropPh, asSubtask) -> {
+//                                    addDropPlaceholderToRightParentCont(afterMyDDCont, dropPh, 0);
+//                                };
+//                            } else {
+//                                //dropping between a subtask and following task at a higher level (only option left at this point in the code?!)
+//                                Log.p("3. between a subtask and following task at a higher level");
+//                                Log.p("3. beforeItem=" + beforeItem + "; afterItem=" + afterMyDDCont.getDragAndDropObject());
+//                                Log.p("3. beforeItem.owner=" + beforeItem.getOwner() + "; afterItem.owner=" + ((ItemAndListCommonInterface) afterMyDDCont.getDragAndDropObject()).getOwner());
+//
+//                                dropActionCall = () -> {
+//                                    ItemAndListCommonInterface precedingSibling = findPrecedingSibling((Item) getDragAndDropObject(), beforeItem);
+//                                    if (true || precedingSibling != null) {
+//                                        ItemAndListCommonInterface owner = precedingSibling.getOwner(); //remove item from old owner list
+//                                        int indexBef = owner.getItemIndex(precedingSibling);
+//                                        moveItemOrItemListAndSave(owner, (Item) getDragAndDropObject(), indexBef);
+//                                    }
+//                                };
+//                                dropAsSubtaskActionCall = () -> {
+//                                    ItemAndListCommonInterface newOwnerPrj = ((Item) beforeMyDDCont.getDragAndDropObject());
+//                                    int indexI = newOwnerPrj.size(); //UI: when dropping as subtask, add as last subtask
+//                                    moveItemOrItemListAndSave(newOwnerPrj, (Item) getDragAndDropObject(), indexI);
+//                                };
+//                                insertDropPlaceholder = (dropPh, asSubtask) -> {
+//                                    addDropPlaceholderToRightParentCont(beforeMyDDCont, dropPh, Integer.MAX_VALUE);
+//                                };
+//                            }
+//</editor-fold>
                         } else {
                             Log.p("4. !!!!!after an Item, but no suitable if statement");
                         }
@@ -1605,18 +1867,6 @@ T3
 //        ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
 //    }
 //</editor-fold>
-
-    /**
-     returns true if dropped elements should be inserted *below* the item it
-     is dropped on. Eg if dropped of right-hand third of the dropTarget
-     container.
-
-     @param x
-     @return
-     */
-    private boolean insertBelow(int x) {
-        return x > this.getWidth() / 3 * 2;
-    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     private boolean dropItemInCategoryViewXXX(ItemAndListCommonInterface before, ItemAndListCommonInterface after, ItemAndListCommonInterface dragged,
@@ -2123,7 +2373,7 @@ T3
 ////</editor-fold>
 //                insertIntoList.addToList(index, (ItemAndListCommonInterface) draggedObject);
 //            }
-//            //remove AFTER insertion to avoid that index changes if adding/removing from the same list
+//            //remove NORMAL insertion to avoid that index changes if adding/removing from the same list
 //            //SAVE both
 //            saveDragged();
 //            draggedCont.saveDragged();

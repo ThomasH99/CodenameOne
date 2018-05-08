@@ -142,7 +142,9 @@ public class MyTree2 extends ContainerScrollY {
         super();
         this.model = model;
         setUIID("MyTree2");
-        if (Test.DEBUG) setName("MyTree2");
+        if (Test.DEBUG) {
+            setName("MyTree2");
+        }
 //        if (expandedObjects != null) {
 //            this.expandedObjects = new HashSet(expandedObjects);
 //        } else {
@@ -374,6 +376,28 @@ public class MyTree2 extends ContainerScrollY {
         return cont;
     }
 
+    /**
+    insert a 
+    @param parent
+    @return 
+    */
+    static ContainerScrollY insertSubtaskContainer(Container parent) {
+        ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
+        dest.setUIID("ExpandedList");
+        parent.addComponent(BorderLayout.CENTER, dest);
+        return dest;
+    }
+    
+    /**
+    insert a subtask into a parent container. Called when dragging a subtask back under its original owner. 
+    @param parent
+    @param subtaskComp 
+    */
+    static void insertSubtaskXXX(Container parent, Component subtaskComp) {
+        ContainerScrollY dest = insertSubtaskContainer(parent);
+        dest.addComponent(subtaskComp);
+    }
+
     private Container expandNodeImpl(boolean animate, Component c, boolean expandAllLevels) {
         Container p = c.getParent().getLeadParent();
         if (p != null) {
@@ -384,9 +408,10 @@ public class MyTree2 extends ContainerScrollY {
         int depth = ((Integer) c.getClientProperty(KEY_DEPTH)).intValue();
         Container parent = c.getParent();
         Object o = c.getClientProperty(KEY_OBJECT);
-        ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
-        dest.setUIID("ExpandedList");
-        parent.addComponent(BorderLayout.CENTER, dest);
+//        ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
+//        dest.setUIID("ExpandedList");
+//        parent.addComponent(BorderLayout.CENTER, dest);
+        ContainerScrollY dest = insertSubtaskContainer(parent);
         buildBranch(o, depth, dest, expandAllLevels);
 //        if (isInitialized() && animate) {
 //            // prevent a race condition on node expansion contraction
