@@ -708,7 +708,7 @@ public class ScreenItem extends MyForm {
         MyTextField description = new MyTextField(Item.DESCRIPTION_HINT, 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
                 () -> itemLS.getText(), (s) -> item.setText(s));
         description.setUIID("Text");
-        description.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically
+        description.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
 //        MyCheckBox status = new MyCheckBox(null, parseIdMap2, () -> item.isDone(), (b) -> item.setDone(b));
         tabs.addSelectionListener(new SelectionListener() {
             @Override
@@ -1502,6 +1502,7 @@ public class ScreenItem extends MyForm {
 //                            || item.getRemainingEffortNoDefault() == 0
 //                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: when to auto-update estimates
                     remainingEffort.setTime(effortEstimate.getTime() - actualEffort.getTime()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
+                    remainingEffortSetManually=false; //must reset since the actionlistener on remainingEffort does not distinguish between setting via manual user input and auto-setting based on changed effortEstimate
                     remainingEffort.repaint();
 //                    }
                 }

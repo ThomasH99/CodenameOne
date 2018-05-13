@@ -1446,7 +1446,7 @@ super.refreshAfterEdit();
 //            }
 
             @Override
-            public Object getDragAndDropObject() {
+            public ItemAndListCommonInterface getDragAndDropObject() {
                 return item;
             }
 

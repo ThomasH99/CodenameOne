@@ -212,7 +212,7 @@ public class ScreenListOfCategories extends MyForm {
 //            }
 
             @Override
-            public Object getDragAndDropObject() {
+            public ItemAndListCommonInterface getDragAndDropObject() {
                 return category;
             }
 

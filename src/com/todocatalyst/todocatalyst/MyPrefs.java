@@ -54,6 +54,9 @@ public class MyPrefs {
     static PrefEntry dropItemAtBeginningOfUnexpandedCategorySubtaskList
             = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks","dropItemAtBeginningOfUnexpandedCategorySubtaskList", true, "**"); 
 
+    static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
+            = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)","dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 15, "**"); 
+
     //TIMER
     static PrefEntry timerAutomaticallyStartTimer
             = new PrefEntry("Automatically start timer for a task", "automaticallyStartTimer", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)

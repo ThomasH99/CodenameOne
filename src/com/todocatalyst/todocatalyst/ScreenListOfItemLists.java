@@ -282,7 +282,7 @@ public class ScreenListOfItemLists extends MyForm {
 //            }
 
             @Override
-            public Object getDragAndDropObject() {
+            public ItemAndListCommonInterface getDragAndDropObject() {
                 return itemList;
             }
 
@@ -558,7 +558,7 @@ public class ScreenListOfItemLists extends MyForm {
 //            }
 
             @Override
-            public Object getDragAndDropObject() {
+            public ItemAndListCommonInterface getDragAndDropObject() {
                 return itemList;
             }
 

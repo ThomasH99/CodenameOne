@@ -200,7 +200,7 @@ public class MyCacheMap {
      * when storageCacheContent is used as persistent storage for cached items, load as many as possible to memory
      * to speed up access. 
      */
-    public void loadCacheToMemory() {
+    synchronized public void loadCacheToMemory() {
         Vector storageCacheContent = getStorageCacheContent();
         boolean oldAlwaysStore = alwaysStore;
         alwaysStore = false; //avoid to persist to StorageCache (very slow)
