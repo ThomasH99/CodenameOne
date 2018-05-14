@@ -28,7 +28,7 @@ import java.util.List;
  @author Thomas
  */
 class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Movable2 {
-    
+
     int draggedWidth = -1;
     int draggedHeight = -1;
 //    boolean dropSucceeded = false; //keeps track of whether drop succeeded (to add the dragged container if not)
@@ -38,9 +38,9 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private Component dropPlaceholder = null;
 //    private int dropPlaceholderOldIndex = -1;
     private Component lastDraggedOver = null;
-    
+
     interface Call {
-        
+
         void call();
     }
     private Call dropActionCall = null; //function containing the drop action to execute on a normal drop
@@ -56,7 +56,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private InsertComp insertDropPlaceholder = null; //function containing the drop action to execute on a normal drop
     private InsertComp insertDropPlaceholderForSubtask = null; //function containing the drop action to execute on a normal drop
     private InsertComp insertDropPlaceholderForSupertask = null; //function containing the drop action to execute on a normal drop
-    private int lastX; //x value for last component this was dragged over
+    private int lastY = -1; //x value for last component this was dragged over
 
     public enum InsertAsType {
         //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
@@ -64,13 +64,9 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         SUBTASK,
         SUPERTASK
     };
-    
+
     InsertAsType lastInsertAsType = null;
-    
-    private InsertAsType insertTypeXXX(int x) {
-        return insertType(x, Display.getInstance().getCurrent());
-    }
-    
+
     private InsertAsType insertType(int x, Component dropTarget) {
 //        int borderDropZoneWidthInPercent = 15;
         int borderDropZoneWidthInPercent = MyPrefs.dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask.getInt();
@@ -109,19 +105,6 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     }
 
     /**
-     returns true if dropped elements should be inserted *below* the item it
-     is dropped on. Eg if dropped of right-hand third of the dropTarget
-     container.
-
-     @param x
-     @return
-     */
-    private boolean insertBelowXXX(int x) {
-//        return x > this.getWidth() / 3 * 2;
-        return insertTypeXXX(x) == InsertAsType.SUBTASK;
-    }
-
-    /**
      move between ItemLists or Items (projects)
 
      @param oldList
@@ -157,7 +140,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             DAO.getInstance().saveInBackgroundSequential((ParseObject) oldList, (ParseObject) newList, (ParseObject) itemOrItemList);
         }
     }
-    
+
     private void moveItemOrItemListAndSave(ItemAndListCommonInterface newList, ItemAndListCommonInterface itemOrItemList, int newPos) {
         moveItemOrItemListAndSave(itemOrItemList.getOwner(), newList, itemOrItemList, newPos);
     }
@@ -189,7 +172,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         }
         DAO.getInstance().saveInBackgroundSequential((ParseObject) categoryList, (ParseObject) category);
     }
-    
+
     private void moveItemBetweenCategoriesAndSave(Category oldCategory, Category newCategory, Item item, int newPos) {
         if (oldCategory == newCategory) {
             if (newPos > oldCategory.getItemIndex(item)) {
@@ -238,20 +221,41 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             return false;
         }
     }
-    
-    private boolean movingUpwardsOrOverDragged(MyDragAndDropSwipeableContainer over) {
+
+    private boolean movingUpwardsOrOverDragged(MyDragAndDropSwipeableContainer newDropTarget) {
 //        boolean upwardsOrOverDragged = false;
-        if (lastX < 0 || over.getX() <= lastX) {
-            if (lastX != over.lastX) {
-                Log.p("Now dragging UP");
+        int newY = newDropTarget.getAbsoluteY();
+        Log.p("dragDirection: newDropTarget.getAbsoluteY()=" + newDropTarget.getAbsoluteY() + ", getY=" + newDropTarget.getY() + " getScrollY=" + newDropTarget.getScrollY());
+        Log.p("dragDirection: lastY=" + lastY + ", newY=" + newY + " over=" + newDropTarget.getName());
+        if (lastY < 0 || newY <= lastY) {
+            if (lastY != newY) {
+                Log.p("dragDirection: Now dragging UP");
             }
-            lastX = over.lastX;
+            lastY = newY;
             return true;
         } else {
-            if (lastX != over.lastX) {
+            if (lastY != newY) {
+                Log.p("dragDirection: Now dragging DOWN");
+            }
+            lastY = newY;
+            return false;
+        }
+    }
+
+    private boolean movingUpwardsOrOverDraggedXXX(MyDragAndDropSwipeableContainer over) {
+//        boolean upwardsOrOverDragged = false;
+        Log.p("dragDirection: lastX=" + lastY + ", over.x=" + over.getX() + " over=" + over.getName());
+        if (lastY < 0 || over.getX() <= lastY) {
+            if (lastY != over.lastY) {
+                Log.p("Now dragging UP");
+            }
+            lastY = over.lastY;
+            return true;
+        } else {
+            if (lastY != over.lastY) {
                 Log.p("Now dragging DOWN");
             }
-            lastX = over.lastX;
+            lastY = over.lastY;
             return false;
         }
     }
@@ -361,15 +365,16 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         }
         return null;
     }
-    
+
     private ContainerScrollY getScrollYContainerWithSubtasks(MyDragAndDropSwipeableContainer cont) {
         Layout layout;
         Component center;
         Container contParent = cont.getParent();
-        
+
         if (contParent != null && (layout = contParent.getLayout()) instanceof BorderLayout
                 && (center = ((BorderLayout) layout).getCenter()) instanceof ContainerScrollY
-                && (((ContainerScrollY) center)).getComponentCount() > 0) {
+                && (((ContainerScrollY) center)).getComponentCount() > (0 + getPositionInContainerScrollY(((ContainerScrollY) center), this) >= 0 ? 1 : 0)) {
+            //if dragged hidden container is the only one in center, then there must be at least 2 elements in container to return it, this is ensured by this expression: getPositionInContainerScrollY(((ContainerScrollY) center), this) >= 0 ? 1 : 0)
             return (ContainerScrollY) center;
         }
         return null;
@@ -391,6 +396,14 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         return null;
     }
 
+//    private int indexForHiddenDraggedCont(ContainerScrollY scrollYContainer, MyDragAndDropSwipeableContainer cont) {
+//        return scrollYContainer.getComponentIndex(cont.getParent());
+//
+//    }
+    private int getPositionInContainerScrollY(ContainerScrollY scrollYContainerWithSubtask, MyDragAndDropSwipeableContainer eltCont) {
+        return scrollYContainerWithSubtask.getComponentIndex(eltCont.getParent());
+    }
+
     /**
     find and return the *last* MyDragAndDropSwipeableContainer in the hierarchy of expanded subtasks inside/below cont
     @param cont (can be null)
@@ -398,9 +411,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      */
     private MyDragAndDropSwipeableContainer findLastDDContainer(MyDragAndDropSwipeableContainer cont) {
         ContainerScrollY scrollYContainerWithSubtask = getScrollYContainerWithSubtasks(cont);
+        int indexOfHiddenDraggedCont = getPositionInContainerScrollY(scrollYContainerWithSubtask, this); //this==dragged
         if (scrollYContainerWithSubtask != null) {
+            int compCount = scrollYContainerWithSubtask.getComponentCount();
+            int adjIndex = indexOfHiddenDraggedCont == compCount - 1 ? compCount - 2 : compCount - 1; //if the last container is the dragged hidden one, take the one just before
 //            return findLastDDContainer(getTaskContainer(scrollYContainerWithSubtask.getComponentAt(scrollYContainerWithSubtask.getComponentCount()-1)));
-            Component res = scrollYContainerWithSubtask.getComponentAt(scrollYContainerWithSubtask.getComponentCount() - 1);
+            Component res = scrollYContainerWithSubtask.getComponentAt(adjIndex);
             if (res instanceof Container) {
                 return findLastDDContainer(getTaskContainer((Container) res));
             }
@@ -423,21 +439,30 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        return null;
 //</editor-fold>
     }
-    
-    private int getPositionInContainerScrollY(ContainerScrollY scrollYContainerWithSubtask, MyDragAndDropSwipeableContainer eltCont) {
-        return scrollYContainerWithSubtask.getComponentIndex(eltCont.getParent());
-    }
-    
+
     private MyDragAndDropSwipeableContainer findPrecedingDDCont(MyDragAndDropSwipeableContainer cont) {
         //find a preceding sibling if any
 //        MyDragAndDropSwipeableContainer precedingSibling = findSiblingUpwardsInHierarchy(cont, cont);
         ContainerScrollY parentScrollYContainer = getParentScrollYContainer(cont);
-        int index;
-        if (parentScrollYContainer != null && (index = getPositionInContainerScrollY(parentScrollYContainer, cont)) > 0) {
-            //if it has an earlier subelements, find and return the last
-            Component c = parentScrollYContainer.getComponentAt(index - 1);
+        //Examples of lists with (H)idden element: H T1 T2: preceding(T1)=null (a), preceding(T2)=T1 (b); T1 H T2: preceding(T2)=T1 (c)
+        //                                        idx(H)=0            idx=1
+//        if (parentScrollYContainer != null && (index = getPositionInContainerScrollY(parentScrollYContainer, cont)) > 0) {
+        int indexOfHiddenDraggedCont = getPositionInContainerScrollY(parentScrollYContainer, this); //this==dragged
+        int index = -1;
+        if (parentScrollYContainer != null) {
+            index = getPositionInContainerScrollY(parentScrollYContainer, cont);
+            if (index == indexOfHiddenDraggedCont) { //if index points to the hidden container, take the one before the hidden as in case (b) and (c) (or index becomes negative in case (a) above)
+                index = index - 1 - 1;
+            } else {
+                index = index - 1;
+            }
+        }
+        if (index >= 0) {
+            //if it has an earlier subelements, find and return the preceding one
+//            Component c = parentScrollYContainer.getComponentAt(index - 1);
+            Component c = parentScrollYContainer.getComponentAt(index);
 //            if (c instanceof Container) {
-            return findLastDDContainer(getTaskContainer((Container) c));
+            return findLastDDContainer(getTaskContainer((Container) c)); //return the very last element (eg last expanded subtask at deepest level of expansion)
 //            }
         }
         //if there are no preceding items in the same list, the preceding element is necessarily the expanded parent task
@@ -473,26 +498,65 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      */
     private MyDragAndDropSwipeableContainer findNextDDCont(MyDragAndDropSwipeableContainer comp) {
         //first check if there are expanded subtasks then return the first one
-        ContainerScrollY scrollYContainerWithSubtask = getScrollYContainerWithSubtasks(comp);
         int index;
-        if (scrollYContainerWithSubtask != null && scrollYContainerWithSubtask.getComponentCount() > 0) {
-            //if it has earlier subelements, find and return the last
-            Container c = (Container) scrollYContainerWithSubtask.getComponentAt(0); //get next element in the list
-            return getTaskContainer(c); //get the first element
+        int indexOfHiddenDraggedCont;
+        int adjIndex;
+
+        ContainerScrollY scrollYContainerWithSubtask = getScrollYContainerWithSubtasks(comp);
+        indexOfHiddenDraggedCont = getPositionInContainerScrollY(scrollYContainerWithSubtask, this); //this==dragged
+        adjIndex = indexOfHiddenDraggedCont != 0 ? 1 : 0;
+        if (scrollYContainerWithSubtask != null && scrollYContainerWithSubtask.getComponentCount() > 0 + adjIndex) { //must container at least 2 elements if the hidden is one of them
+            //if it has expanded subtasks, rturn the first (unless it is the hidden one)
+            adjIndex = indexOfHiddenDraggedCont == 0 ? 1 : 0; //if hidden is first element, take the one after
+            Container c = (Container) scrollYContainerWithSubtask.getComponentAt(0 + adjIndex); //get first element in the list
+            return getTaskContainer(c);
         } else {
             //if there is a following sibling, return it
             ContainerScrollY parentScrollYContainer = getParentScrollYContainer(comp);
-            if (parentScrollYContainer != null && (index = getPositionInContainerScrollY(parentScrollYContainer, comp)) < parentScrollYContainer.getComponentCount() - 1) {
-                Container c = (Container) parentScrollYContainer.getComponentAt(index + 1); //get next element in the list
-                return getTaskContainer(c); //return the element
+            if (parentScrollYContainer != null) {
+                //Examples of lists with (H)idden element: T1 H T2: next(T1)=T2 (a); T1 T2 H: next(T2)=null (c)
+                indexOfHiddenDraggedCont = getPositionInContainerScrollY(parentScrollYContainer, this); //this==dragged
+                index = getPositionInContainerScrollY(parentScrollYContainer, comp);
+                adjIndex = index + 1 + (index + 1 == indexOfHiddenDraggedCont ? 1 : 0); //if the next cont is the hidden dragged one, then take the next again (or none if hidden is at the end of the list)
+//            if (parentScrollYContainer != null
+//                    && (index = getPositionInContainerScrollY(parentScrollYContainer, comp)) < parentScrollYContainer.getComponentCount() - 1) {
+                if (adjIndex <= parentScrollYContainer.getComponentCount() - 1) {
+//                    Container c = (Container) parentScrollYContainer.getComponentAt(index + 1); //get next element in the list
+                    Container c = (Container) parentScrollYContainer.getComponentAt(adjIndex); //get next element in the list
+                    return getTaskContainer(c); //return the element
+                }
             }
-            
+
+            //if no expanded subtask, and no following sibling, then iterate up the hierarchy to find a task that follows
+            //this is a really tricky case!!!
+            // example: T1 -> S1, S2 -> S21, S22, S3, T2
+            // T1
+            //   S1
+            //   S2
+            //     S21
+            //     S22
+            // T2
+            // next(S22)==T2
+            // 
+            // T1
+            //   S1
+            //   S2
+            //     S21
+            //     S22
+            //   S3
+            // T2
+            // next(S22)==S3, next(S3)==T2
             MyDragAndDropSwipeableContainer parentComp = comp;
-            ContainerScrollY parentScrollYCont = getParentScrollYContainer(parentComp); //treeList = the list in which to insert the dropPlaceholder
+            ContainerScrollY parentScrollYCont = getParentScrollYContainer(parentComp);
 //            ContainerScrollY contY=getParentScrollYContainer(comp);
             while (parentScrollYCont != null) {
-                if ((index = getPositionInContainerScrollY(parentScrollYCont, parentComp)) < parentScrollYCont.getComponentCount() - 1) {
-                    return getTaskContainer((Container) parentScrollYCont.getComponentAt(index + 1));
+                indexOfHiddenDraggedCont = getPositionInContainerScrollY(parentScrollYCont, this); //this==dragged
+                index = getPositionInContainerScrollY(parentScrollYCont, comp);
+                adjIndex = index + 1 + (index + 1 == indexOfHiddenDraggedCont ? 1 : 0); //if the next cont is the hidden dragged one, then take the next again (or none if hidden is at the end of the list)
+//                if ((index = getPositionInContainerScrollY(parentScrollYCont, parentComp)) < parentScrollYCont.getComponentCount() - 1) {
+                if (adjIndex <= parentScrollYCont.getComponentCount() - 1) {
+//                    return getTaskContainer((Container) parentScrollYCont.getComponentAt(adjIndex + 1));
+                    return getTaskContainer((Container) parentScrollYCont.getComponentAt(adjIndex));
                 }
                 parentComp = getParentMyDDCont(parentComp);
                 parentScrollYCont = getParentScrollYContainer(parentComp);
@@ -938,6 +1002,23 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        return;//false;
 //    }
 //</editor-fold>
+    private InsertAsType insertTypeXXX(int x) {
+        return insertType(x, Display.getInstance().getCurrent());
+    }
+
+    /**
+     returns true if dropped elements should be inserted *below* the item it
+     is dropped on. Eg if dropped of right-hand third of the dropTarget
+     container.
+
+     @param x
+     @return
+     */
+    private boolean insertBelowXXX(int x) {
+//        return x > this.getWidth() / 3 * 2;
+        return insertTypeXXX(x) == InsertAsType.SUBTASK;
+    }
+
     MyDragAndDropSwipeableContainer(Component bottomLeft, Component bottomRight, Component top) {
         super(bottomLeft, bottomRight, top);
         setDropTarget(true); //containers are both dropTargets and draggable
@@ -970,10 +1051,11 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             InsertAsType newInsertAsType = insertType(x, dropTarget);
             refreshDropPlaceholderContainer(lastInsertAsType, newInsertAsType);
             if (lastInsertAsType != newInsertAsType) {
+//                Log.p("InsertAsType now = " + newInsertAsType+" (before="+(lastInsertAsType!=null?lastInsertAsType.toString().toLowerCase():"<null>")+")", Log.DEBUG);
                 Log.p("InsertAsType now = " + newInsertAsType, Log.DEBUG);
+                lastInsertAsType = newInsertAsType;
             }
-            lastInsertAsType = newInsertAsType;
-            
+
             MyDragAndDropSwipeableContainer dragged = (MyDragAndDropSwipeableContainer) drag;
 //            if (dragged == dropTarget || dragged.lastDraggedOver == dropTarget) { //over myself or same as on last dropActionCall to listener
             if (dropTarget == dragged.lastDraggedOver) { //over myself or same as on last dropActionCall to listener
@@ -988,7 +1070,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 return; //skip if still over the same 
             }
             if (!(dropTarget instanceof MyDragAndDropSwipeableContainer)) { //if we're over a dropTarget store that as lastDraggedOver
-                Log.p("addDragOverListener: dragged.lastDraggedOver = " + dropTarget.getName() , Log.DEBUG);
+                Log.p("addDragOverListener: dragged.lastDraggedOver = " + dropTarget.getName(), Log.DEBUG);
                 dragged.lastDraggedOver = dropTarget;
 //                refreshDropPlaceholderContainer(x);
                 return;
@@ -1002,15 +1084,16 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 dragged.draggedWidth = dragged.getWidth();
                 dragged.draggedHeight = dragged.getHeight();
                 dragImage2 = getDragImage(); //save dragImage before hiding
-                Log.p("dragging of "+dragged.getName()+" started (setHidden);  dropTarget.getName() + " + dropTarget.getName(), Log.DEBUG);
+                Log.p("dragging of " + dragged.getName() + " started (setHidden);  dropTarget= " + dropTarget.getName(), Log.DEBUG);
                 dragged.setHidden(true); //only hide once we've dragged on top of another object than dragged. Once we have the Height/Width, hide the component
 //                    dragged.draggedOrgParent = drag.getParent();
 //                    dragged.draggedOrgIndex = dragged.draggedOrgParent.getComponentIndex(drag);
 //                    dragged.draggedOrgParent.removeComponent(drag); //remove the dragged component
             }
-            
+
             if (true || dragged.lastDraggedOver != dropTarget) { // implicitly: || dragged.lastDraggedOver==null 
-                Log.p("addDragOverListener: dragged.lastDraggedOver = " + dropTarget.getName() , Log.DEBUG);
+                Log.p("addDragOverListener: new dropTarget = " + dropTarget.getName() + ", old dropTarget="
+                        + dragged != null && dragged.lastDraggedOver != null ? dragged.lastDraggedOver.getName() : "<null>", Log.DEBUG);
                 dragged.lastDraggedOver = dropTarget; //store every time we're above a new object
 //                return;
             }
@@ -1299,7 +1382,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             if (dragged.dropPlaceholder != null) {
                 dragged.dropPlaceholder.getParent().removeComponent(dragged.dropPlaceholder);
             }
-            
+
             boolean draggingUpwardsOrOverInitialDraggedEltPosition;
 //            if (treeList != null) {
             MyDragAndDropSwipeableContainer beforeMyDDCont; //top-level container in treelist, *before* the dropPlaceholder (null if over first element in list)
@@ -1344,26 +1427,26 @@ T3
              */
 //</editor-fold>
             draggingUpwardsOrOverInitialDraggedEltPosition = movingUpwardsOrOverDragged((MyDragAndDropSwipeableContainer) dropTarget);
+
             if (draggingUpwardsOrOverInitialDraggedEltPosition) {
                 afterMyDDCont = (MyDragAndDropSwipeableContainer) dropTarget;
 //                beforeMyDDCont = findCont(afterMyDDCont, true);
                 beforeMyDDCont = findPrecedingDDCont(afterMyDDCont);
-                Log.p("---beforeMyDDCont.D&Dobjn (calculated)=" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
-                Log.p("---afterMyDDCont.D&Dobj= " + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                Log.p("---before (calc)= \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                Log.p("---after        = \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
             } else { //dragging downwards
                 beforeMyDDCont = (MyDragAndDropSwipeableContainer) dropTarget;
 //                afterMyDDCont = findCont(beforeMyDDCont, false);
                 afterMyDDCont = findNextDDCont(beforeMyDDCont);
-                Log.p("---beforeMyDDCont.D&Dobj=" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
-                Log.p("---afterMyDDCont.D&Dobj (calculated)= " + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                Log.p("---before      = \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                Log.p("---after (calc)= \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
             }
-            
+
             ItemAndListCommonInterface afterElement = afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : null;
             ItemAndListCommonInterface beforeElement = beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : null;
             ItemAndListCommonInterface draggedElement = dragged.getDragAndDropObject();
-            
-            MyDragAndDropSwipeableContainer dropDD = ((MyDragAndDropSwipeableContainer) dropTarget);
 
+//            MyDragAndDropSwipeableContainer dropDD = ((MyDragAndDropSwipeableContainer) dropTarget);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            MyDragAndDropSwipeableContainer beforeMyDDCont;
 //            MyDragAndDropSwipeableContainer afterMyDDCont;
@@ -1399,7 +1482,7 @@ T3
                     insertDropPlaceholder = (dropPh) -> {
 //                            afterCont.getParent().addComponent(afterCont.getParent().getComponentIndex(afterCont), dropPh);
 //                            findParentContForDropPlaceholder(afterCont).addComponent(afterCont.getParent().getComponentIndex(afterCont), dropPh);
-                        addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 1);
+                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
                     };
 //                    } else if (afterMyDDCont == null) {
 //                } else if (afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Category) { //drop *before* an ItemList
@@ -1426,7 +1509,7 @@ T3
                         moveCategoryAndSave(listOwner, (Category) draggedElement, insertIndex); //+ addOneOnDownwardsDrag
                     };
                     insertDropPlaceholder = (dropPh) -> {
-                        addDropPlaceholderToAppropriateParentCont(this, dropPh, Integer.MAX_VALUE);
+                        addDropPlaceholderToAppropriateParentCont(this, dropPh, Integer.MAX_VALUE); //'this' because we cannot get the container holding the categories from neither before, nor after
                     };
                 }
 //</editor-fold>
@@ -1490,8 +1573,8 @@ T3
 //</editor-fold>
 //            } else if (getDragAndDropObject() instanceof Item) {
             } else if (draggedElement instanceof Item) {
-//<editor-fold defaultstate="collapsed" desc="if dragging an Item inside a Category list">
                 if (getDragAndDropCategory() != null) { //dragged object belongs to a category, so drag may move it to another category, but can also only reposition it within the same category
+//<editor-fold defaultstate="collapsed" desc="if dragging an Item inside a Category list">
                     //we can always drop *after* another 'before' Item which also has a Category (isn't triggered for expanded subtasks since they return null for getDragAndDropCategory())
 //                    if (beforeMyDDCont != null && beforeMyDDCont.getDragAndDropObject() instanceof Item && beforeMyDDCont.getDragAndDropCategory() != null) {
                     if (beforeElement instanceof Item && beforeMyDDCont.getDragAndDropCategory() != null) {
@@ -1557,8 +1640,8 @@ T3
                     }
 //</editor-fold>
                 } else { //dragging an Item that does NOT belong to a category, only dropping as subtasks (not under categories since the logic is really unintutive!) 
-                    //TODO!!! consider adding this again after all
 //<editor-fold defaultstate="collapsed" desc="dropping *before* the first item">
+                    //TODO!!! consider adding this again after all
                     //dropping *before* the first item (eg at the very top of a list). beforeElt is either null or not an Item
 //                    if (beforeMyDDCont == null && afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Item) {
                     if (beforeElement == null && afterElement instanceof Item) {
@@ -1605,8 +1688,8 @@ T3
 //                    } else if (dropDD.getDragAndDropObject() instanceof Item) {
 //</editor-fold>
                     } else if (beforeElement instanceof Item) { //dropping an item *after* another item
-//                        Item dropTargetItem = (Item) dropDD.getDragAndDropObject();
 //<editor-fold defaultstate="collapsed" desc="comment">
+//                        Item dropTargetItem = (Item) dropDD.getDragAndDropObject();
 //                        if (false) {
 ////                            MyDragAndDropSwipeableContainer before;
 ////                            MyDragAndDropSwipeableContainer after;
@@ -1619,7 +1702,6 @@ T3
 //                            }
 //                        }
 //</editor-fold>
-
 //dropping either between two siblings or between an expanded subtask (any level of depth) and a following task at a lower level of depth, e.g. T1; S1; > T2;
 //                            if (beforeMyDDCont.getDragAndDropObject().getList().size() == 1 && beforeMyDDCont.getDragAndDropObject().getList().contains(dragged.getDragAndDropObject())) {
                         if (beforeElement.getList().size() == 1 && beforeElement.getList().contains(dragged.getDragAndDropObject())) {
@@ -1632,7 +1714,7 @@ T3
                                 Container centerCont = (Container) borderLayout.getCenter();
                                 centerCont.addComponent(dropPh); //add to end of center list (to avoid changing the index of original hidden container)
                             };
-                            
+
                             dropAsSubtaskActionCall = null; // doesn't make sense here since after is already a subtask
 
                             dropAsSuperTaskActionCall = () -> {
@@ -1644,7 +1726,7 @@ T3
                             insertDropPlaceholderForSupertask = (dropPh) -> {
                                 addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 0);
                             };
-                            
+
                         } else if (beforeElement == afterElement.getOwner()) {
                             //inserting between a task and its expanded subtask => always insert as subtask
                             dropActionCall = () -> {
@@ -1883,22 +1965,22 @@ T3
                 //Create new dropPlaceholder
                 Label newDropPlaceholder = new Label() {
                     Component dropTarget1 = dropTarget;
-                    
+
                     @Override
                     public int getWidth() {
                         return dragged.draggedWidth;
                     }
-                    
+
                     @Override
                     public int getHeight() {
                         return dragged.draggedHeight;
                     }
-                    
+
                     @Override
                     public Dimension getPreferredSize() {
                         return new Dimension(dragged.draggedWidth, dragged.draggedHeight);
                     }
-                    
+
                     @Override
                     public void drop(Component drag1, int x, int y) {
                         Log.p("**********Comp.drop, dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
@@ -2029,6 +2111,8 @@ T3
                 } else if (lastInsertAsType == InsertAsType.SUPERTASK && insertDropPlaceholderForSupertask != null) {
                     insertDropPlaceholderForSupertask.insert(newDropPlaceholder);
                 } //else no drop action possible here
+                Log.p(dropActionCall != null ? "dropActionCall " : "" + dropAsSubtaskActionCall != null ? "dropAsSubtaskActionCall " : "" + dropAsSuperTaskActionCall != null ? "dropAsSuperTaskActionCall " : "");
+                Log.p(insertDropPlaceholder != null ? "insertDropPlaceholder " : "" + insertDropPlaceholderForSubtask != null ? "insertDropPlaceholderForSubtask " : "" + insertDropPlaceholderForSupertask != null ? "insertDropPlaceholderForSupertask " : "");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (index <= oldDropPlaceholderIndex) {
 //                        treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
@@ -2076,7 +2160,7 @@ T3
         }
         ); //end of dragOverListener
     }
-    
+
     private int getContainerIndexInTreeListXXX(MyDragAndDropSwipeableContainer dropTarget) {
         Container treeList = dropTarget.getParent(); //treeList = the list in which to insert the dropPlaceholder
         Component dropParent = dropTarget;
@@ -2156,9 +2240,9 @@ T3
 //<editor-fold defaultstate="collapsed" desc="comment">
     private boolean dropItemInCategoryViewXXX(ItemAndListCommonInterface before, ItemAndListCommonInterface after, ItemAndListCommonInterface dragged,
             Category beforeCategory, Category afterCategory, Item draggedItem, boolean insertBelow) {
-        
+
         if (beforeCategory == null) {
-            
+
         } else if (afterCategory == null) {
             //Cat1
             // T1
@@ -2171,7 +2255,7 @@ T3
         }
         return true;
     }
-    
+
     private boolean dropCategoryXXX(ItemAndListCommonInterface before, ItemAndListCommonInterface after, Category dragged) {
         //TODO support subcategories
         if (before == null && after instanceof Category) { //inserting at the very top of the list (dropTargetContainer is *before* the first element on the screen)
@@ -3221,6 +3305,7 @@ T3
         lastDraggedOver = null;
         draggedHeight = -1;
         draggedWidth = -1;
+        lastY = -1;
         dragImage2 = null;
         setHidden(false); //unhide (set hidden in dragEnter/dragListener) //done in Component.dragFinishedImpl(int x, int y)
 //<editor-fold defaultstate="collapsed" desc="comment">

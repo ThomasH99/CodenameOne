@@ -55,7 +55,8 @@ public class MyPrefs {
             = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks","dropItemAtBeginningOfUnexpandedCategorySubtaskList", true, "**"); 
 
     static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
-            = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)","dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 15, "**"); 
+            = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
+                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 10, "**"); 
 
     //TIMER
     static PrefEntry timerAutomaticallyStartTimer
