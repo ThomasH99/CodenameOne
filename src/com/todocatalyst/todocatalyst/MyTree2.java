@@ -393,7 +393,7 @@ public class MyTree2 extends ContainerScrollY {
     @param parent
     @param subtaskComp 
     */
-    static void insertSubtaskXXX(Container parent, Component subtaskComp) {
+    static void insertSubtask(Container parent, Component subtaskComp) {
         ContainerScrollY dest = insertSubtaskContainer(parent);
         dest.addComponent(subtaskComp);
     }

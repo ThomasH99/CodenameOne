@@ -57,6 +57,9 @@ public class MyPrefs {
     static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
             = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
                     "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 10, "**"); 
+    
+    static PrefEntry insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList
+                                                                = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", "insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList", false, "**");
 
     //TIMER
     static PrefEntry timerAutomaticallyStartTimer
