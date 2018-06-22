@@ -259,8 +259,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     @param relativeIndex
     @return 
      */
-    private static boolean addDropPlaceholderAsFirstSubtask(MyDragAndDropSwipeableContainer refComp, Component dropPh) {
+    private static boolean addDropPlaceholderAsFirstSubtask(MyDragAndDropSwipeableContainer refComp, Component dropPh, ItemAndListCommonInterface ownerToExpand) {
         MyTree2.insertSubtask(refComp.getParent(), dropPh);
+        Form f = Display.getInstance().getCurrent();
+        if (f instanceof MyForm && ((MyForm)f).expandedObjects!=null) {
+            ((MyForm)f).expandedObjects.add(ownerToExpand);
+        }
         return true;
     }
 
@@ -1812,7 +1816,7 @@ T3
                     //TODO!!! consider adding this again after all
                     //dropping *before* the first item (eg at the very top of a list). beforeElt is either null or not an Item
 //                    if (beforeMyDDCont == null && afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Item) {
-                    if (beforeElement == null && afterElement instanceof Item) {
+                    if ((beforeElement == null || !(beforeElement instanceof Item)) && afterElement instanceof Item) {
                         Log.p("-INSERT \"" + draggedElement.getText() + "\" before \"" + afterElement.getText() + "\"", Log.DEBUG);
                         dropActionCall = () -> {
 //                            ItemAndListCommonInterface newOwnerPrj = ((Item) afterMyDDCont.getDragAndDropObject()).getOwner();
@@ -1904,7 +1908,7 @@ T3
                                 addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
                             };
 //</editor-fold>
-                        } else if (afterElement != null && beforeElement == afterElement.getOwner()) {
+                        } else if (afterElement instanceof Item&& beforeElement == afterElement.getOwner()) {
 //<editor-fold defaultstate="collapsed" desc="inserting between a task and its expanded subtask">
                             //inserting between a task and its expanded subtask => always insert as subtask
                             Log.p("-INSERT \"" + draggedElement.getText() + "\" between \"" + beforeElement.getText() + "\" and expanded subtask \"" + afterElement.getText() + "\"", Log.DEBUG);
@@ -1917,7 +1921,7 @@ T3
                             dropAsSubtaskActionCall = null; // doesn't make sense here since dropping already make dragged a subtask
                             dropAsSuperTaskActionCall = null; //does not make sense
 //</editor-fold>
-                        } else if (afterElement != null && afterElement.getOwner() == beforeElement.getOwner()) {
+                        } else if (afterElement instanceof Item && afterElement.getOwner() == beforeElement.getOwner()) {
 //<editor-fold defaultstate="collapsed" desc="insert between two siblings">
                             //insert between two siblings at same level
                             Log.p("-INSERT \"" + draggedElement.getText() + "\" between two siblings with same owner \"" + beforeElement.getText() + "\" and \"" + afterElement.getText() + "\"", Log.DEBUG);
@@ -1939,7 +1943,7 @@ T3
 
                             };
                             insertDropPlaceholderForSubtask = (dropPh) -> {
-                                addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh);
+                                addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
                             };
 
                             dropAsSuperTaskActionCall = null;
@@ -1999,7 +2003,7 @@ T3
                                 };
                                 insertDropPlaceholderForSubtask = (dropPh) -> {
                                     //                                addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
-                                    addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh);
+                                    addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
                                 };
                             }
                             //in any case, support insert as subtask or supertask
