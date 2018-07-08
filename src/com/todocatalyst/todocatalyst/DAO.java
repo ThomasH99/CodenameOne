@@ -24,9 +24,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -91,24 +93,6 @@ public class DAO {
 //        }
 //    }
 //</editor-fold>
-//    private void cacheList(List<ParseObject> list) {
-//    private void cacheList(List<ParseObject> list) {
-    private void cacheList(List list) {
-        if (list == null) {
-            return;
-        }
-        for (Object o : list) {
-//            if (true || o instanceof ParseObject) { // && o.isDataAvailable() //NOT necessary
-//                if (o instanceof WorkSlot) {
-//                    cacheWorkSlots.put(((ParseObject) o).getObjectIdP(), o);
-//                } else {
-//                    cache.put(((ParseObject) o).getObjectIdP(), o);
-//                }
-            cachePut((ParseObject) o);
-//            }
-        }
-    }
-
     /**
      * will cache a parseObject unless it has already been cached (to avoid
      * duplicate instances if the same parseObject is fetched multiple times)
@@ -129,6 +113,24 @@ public class DAO {
             cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
         } else {
             cache.put(parseObject.getObjectIdP(), parseObject);
+        }
+    }
+
+//    private void cacheList(List<ParseObject> list) {
+//    private void cacheList(List<ParseObject> list) {
+    private void cacheList(List list) {
+        if (list == null) {
+            return;
+        }
+        for (Object o : list) {
+//            if (true || o instanceof ParseObject) { // && o.isDataAvailable() //NOT necessary
+//                if (o instanceof WorkSlot) {
+//                    cacheWorkSlots.put(((ParseObject) o).getObjectIdP(), o);
+//                } else {
+//                    cache.put(((ParseObject) o).getObjectIdP(), o);
+//                }
+            cachePut((ParseObject) o);
+//            }
         }
     }
 
@@ -238,6 +240,237 @@ public class DAO {
             Log.e(ex);
         }
         return itemList;
+    }
+
+    /**
+     * will run through list and look up every element in cache (same
+     * ParseObjectId) and if found replace with cached element. If an element is
+     * not found in cache, will fetch it from Parse and cache it.
+     *
+     * @param list
+     */
+    public void fetchListElementsIfNeededReturnCachedIfAvail(List list) {
+        assert (list != null) : "updating null list from cache";
+        for (int i = 0, size = list.size(); i < size; i++) {
+//            Object cachedObject;
+            if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
+                ASSERT.that((list.get(i) != null) && (list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " is null");
+                list.remove(i); //UI: clean up elements that don't exist anymore
+                i--;
+                size--;
+            } else {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                ParseObject listElt = (ParseObject) list.get(i);
+//                String objId = listElt.getObjectIdP();
+////            if (objId != null && (cachedObject = cache.get(objId)) != null && cachedObject != p) {
+////                if (objId != null && (cachedObject = cacheGet(objId)) != null && cachedObject != p) {
+//                if ((cachedObject = cacheGet(listElt)) != null && cachedObject != listElt) {
+//                    list.set(i, cachedObject);
+//                } else {
+//                    cachedObject = fetchIfNeededReturnCachedIfAvail(listElt); //NB! will possibly replace the parseObjects in the list with cached ones
+//                    cachePut(listElt); //put new
+//                    list.set(i, cachedObject);
+//                }
+//</editor-fold>
+                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i)));
+            }
+        }
+    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public ParseObject fetchIfNeededReturnCachedIfAvailOLDXXX(ParseObject parseObject) {
+//        if (parseObject == null) {
+//            return null;
+//        }
+//        try {
+//            ParseObject temp;
+//            if (parseObject != null && parseObject.getObjectIdP() != null) {
+//                if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
+//                    return temp;
+//                } else if ((temp = (ParseObject) cacheWorkSlots.get(parseObject.getObjectIdP())) != null) {
+//                    return temp;
+//                } else {
+//                    parseObject.fetchIfNeeded();
+//                    cache.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
+//                    return parseObject;
+//                }
+//            }
+//        } catch (ParseException ex) {
+////            Log.e(ex);
+//            return null;
+//        }
+//        return null;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public ParseObject fetchIfNeededXXX(ParseObject parseObject) {
+//        try {
+//            ParseObject fetched = parseObject.fetchIfNeeded();
+//            if (fetched instanceof WorkSlot) {
+//                cacheWorkSlots.put(parseObject.getObjectIdP(), fetched);
+//            } else {
+//                cache.put(parseObject.getObjectIdP(), fetched);
+//            }
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        return null;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public ParseObject fetchIfNeededOrgXXX(ParseObject parseObject) {
+//        try {
+//            if (parseObject != null) {
+//                parseObject.fetchIfNeeded();
+//                cache.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
+//                return parseObject;
+//            }
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        return null;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+    //    public void fetchAllElementsInSublist(ParseObject listOrCategory, boolean recursively) {
+//        try {
+//            listOrCategory.fetchIfNeeded();
+//            fetchAllElementsInSublist(listOrCategory, recursively);
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//    }
+//    public void fetchAllElementsInSublist(ParseObject listOrCategory, boolean recursively) {
+//</editor-fold>
+
+    /**
+     * NB! Not the usual semantic of fetchFromCacheOnly, since it may return an
+     * existing instance of the parseObject instead of simply fetching the data
+     * for the passed parseObject (to avoid multiple parallel copies of the same
+     * ParseObject, e.g. when using getOnwerList, a new instance of the
+     * ownerList is returned and any changes to this will not be reflected until
+     * the list is saved and fetched again).
+     *
+     * @param parseObject
+     * @return null if object does not (or no longer) exist on server
+     */
+    public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObject) {
+        if (parseObject == null || parseObject.getObjectIdP() == null) {
+            return null;
+        }
+        ParseObject temp;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (parseObject.getObjectIdP() != null) {
+//            if (parseObject instanceof WorkSlot && (obj = cacheWorkSlots.get(parseObject.getObjectIdP())) != null) {
+////            if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
+//                return (WorkSlot) obj;
+//            } else if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
+//                return temp;
+//            } else
+//</editor-fold>
+        if ((temp = (ParseObject) cacheGet(parseObject)) != null) {
+            return temp;
+        } else {
+            try {
+                parseObject.fetchIfNeeded();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    if (parseObject instanceof WorkSlot) {
+////                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
+//                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
+//                    } else {
+////                        cache.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
+//                        cache.put(parseObject.getObjectIdP(), parseObject);
+//                    }
+//</editor-fold>
+                cachePut(parseObject);
+                //NO need to fetch lists within the object, they are updated when they are used first time (in getList() using fetchListElementsIfNeededReturnCachedIfAvail()...)
+//                if (parseObject instanceof ItemAndListCommonInterface) {
+//                    List list;
+//                    if ((list = ((ItemAndListCommonInterface) parseObject).getList()) != null) {
+//                        fetchAllElementsInSublist(list);
+//                    }
+//                }
+                return parseObject;
+            } catch (ParseException ex) {
+//            Log.e(ex);
+                return null;
+            }
+        }
+    }
+
+    public void fetchAllElementsInSublist(ItemAndListCommonInterface itemOrItemListOrCategoryOrList) {
+        fetchAllElementsInSublist((ParseObject) itemOrItemListOrCategoryOrList, false);
+    }
+
+//    public void fetchAllElementsInSublist(List itemOrItemListOrCategoryOrList) {
+//        fetchAllElementsInSublist(itemOrItemListOrCategoryOrList, false);
+//    }
+    public void fetchAllElementsInSublist(ParseObject itemOrItemListOrCategoryOrList, boolean recursively) {
+        assert itemOrItemListOrCategoryOrList != null : "fetchAllItemsIn called with null list";
+//        List<ParseObject> list = null;
+        List list = null;
+//        List<ItemAndListCommonInterface> list = null;
+        try {
+//            ParseBatch batch = ParseBatch.create();
+            //TODO!!! find more efficient way to fetchFromCacheOnly all the objects - use ParseBatch once switched to new version of parse4cn1!!
+
+            if (false && itemOrItemListOrCategoryOrList instanceof ParseObject && ((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP() != null) {
+//                 if ((temp = cache.get(((ParseObject) itemOrListOrCategory).getObjectId())) != null) {
+//            return temp;
+//        }
+                //assume that object has been fully fetched:
+                ((ParseObject) itemOrItemListOrCategoryOrList).fetchIfNeeded(); //fetch the top-level object if needed (may be the case when fetching recursively)
+//                if (itemOrItemListOrCategoryOrList instanceof WorkSlot) {
+//                    cacheWorkSlots.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
+//                } else {
+//                    cache.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
+//                }
+                cachePut((ParseObject) itemOrItemListOrCategoryOrList);
+            }
+
+            if (itemOrItemListOrCategoryOrList instanceof ItemAndListCommonInterface) {
+                list = ((ItemAndListCommonInterface) itemOrItemListOrCategoryOrList).getList();
+                for (int i = 0, size = list.size(); i < size; i++) {
+                    list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
+//                    if (recursively) {
+//                        fetchAllElementsInSublist((ParseObject) list.get(i), recursively);
+//                    }
+                }
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (itemOrItemListOrCategoryOrList instanceof Item) {
+////                list = (List<Item>)((Item) itemOrItemListOrCategoryOrList).getList();
+//                list = ((Item) itemOrItemListOrCategoryOrList).getList();
+////                list = ((List<Item>) itemOrItemListOrCategoryOrList).getList();
+//            } else if (itemOrItemListOrCategoryOrList instanceof Category) {
+//                list = ((Category) itemOrItemListOrCategoryOrList).getList();
+//            } else if (itemOrItemListOrCategoryOrList instanceof ItemList) {
+//                list = ((ItemList) itemOrItemListOrCategoryOrList).getList();
+//            } else if (itemOrItemListOrCategoryOrList instanceof List) {
+//                list = (List) itemOrItemListOrCategoryOrList;
+//            } else {
+//                assert false : "unknow type of element to fetch=" + itemOrItemListOrCategoryOrList;
+//            }
+////            for (ParseObject item : list) {
+//            for (int i = 0, size = list.size(); i < size; i++) {
+////                ((Item) item).fetchIfNeeded();
+////                item.fetchIfNeeded();
+////                fetchIfNeeded(item);
+//                list.set(i, fetchIfNeededReturnCachedIfAvail(list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
+//                if (recursively) {
+//                    fetchAllElementsInSublist(list.get(i), recursively);
+//                }
+//            }
+//</editor-fold>
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        if (itemOrItemListOrCategoryOrList instanceof Item) {
+            ((Item) itemOrItemListOrCategoryOrList).setList(list);
+        } else if (itemOrItemListOrCategoryOrList instanceof Category) {
+            ((Category) itemOrItemListOrCategoryOrList).setList(list);
+        } else if (itemOrItemListOrCategoryOrList instanceof ItemList) {
+            ((ItemList) itemOrItemListOrCategoryOrList).setList(list);
+        };
     }
 
     public int getItemCount(boolean onlyDone) {
@@ -622,6 +855,7 @@ public class DAO {
     }
 
     public boolean cacheCategoryList(Date reloadUpdateAfterThis, Date now) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        boolean result = false;
 //        ParseQuery<CategoryList> query = ParseQuery.getQuery(CategoryList.CLASS_NAME);
 //        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
@@ -642,10 +876,12 @@ public class DAO {
 //            Log.e(ex);
 //        }
 //        return result;
+//</editor-fold>
         return getCategoryList(true) != null;
     }
 
     public boolean cacheItemListList(Date reloadUpdateAfterThis, Date now) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        boolean result = false;
 //        ParseQuery<ItemListList> query = ParseQuery.getQuery(ItemListList.CLASS_NAME);
 //        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
@@ -665,10 +901,12 @@ public class DAO {
 //            Log.e(ex);
 //        }
 //        return result;
+//</editor-fold>
         return getItemListList(true) != null;
     }
 
     public boolean cacheTemplateList(Date reloadUpdateAfterThis, Date now) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        boolean result = false;
 //        ParseQuery<TemplateList> query = ParseQuery.getQuery(TemplateList.CLASS_NAME);
 //        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
@@ -688,6 +926,7 @@ public class DAO {
 //            Log.e(ex);
 //        }
 //        return result;
+//</editor-fold>
         return getTemplateList(true) != null;
     }
 
@@ -756,11 +995,11 @@ public class DAO {
     }
 
 //    private final static String ALL_TEMPLATES_KEY = "ALL_TEMPLATES_KEY";
-    public List<Item> getTemplatesFromParse() {
+    public List<Item> getTopLevelTemplatesFromParse() {
         List<Item> results = null;
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //only top-level templates
-        query.whereExists(Item.PARSE_TEMPLATE); //only top-level templates
+        query.whereExists(Item.PARSE_TEMPLATE);
 
 //        query.whereExists(Item.PARSE_TEMPLATE); //fetch only templates
 //        query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude all subtasks
@@ -772,6 +1011,25 @@ public class DAO {
         try {
             results = query.find();
             cacheList(results);
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return new ArrayList();
+    }
+
+//    private final static String ALL_TEMPLATES_KEY = "ALL_TEMPLATES_KEY";
+    public List<Item> getAllTemplateTasksFromParse() {
+        List<Item> results = null;
+        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//        query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //only top-level templates
+        query.whereExists(Item.PARSE_TEMPLATE);
+
+        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
+        query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+        try {
+            results = query.find();
+//            cacheList(results);
             return results;
         } catch (ParseException ex) {
             Log.e(ex);
@@ -954,6 +1212,7 @@ public class DAO {
         } catch (ParseException ex) {
             Log.e(ex);
         }
+        cacheList(results);
         return results;
 //        return (List<Item>) getAll(Item.CLASS_NAME);
     }
@@ -1354,6 +1613,22 @@ public class DAO {
         return null;
     }
 
+    public List<RepeatRuleParseObject> getAllRepeatRulesFromParse() {
+//        List<ItemList> results = null;
+        ParseQuery<RepeatRuleParseObject> query = ParseQuery.getQuery(RepeatRuleParseObject.CLASS_NAME);
+//        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadAfterThisDate);
+//        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, reloadUpToAndIncludingThisDate);
+        try {
+            List<RepeatRuleParseObject> results = query.find();
+//            cacheList(results);
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+//        return null;
+        return new ArrayList();
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public List<ItemList> getAllItemListsOld() {
 //        ParseQuery<ItemList> query2 = ParseQuery.getQuery(ItemList.CLASS_NAME);
@@ -1662,7 +1937,8 @@ public class DAO {
      *
      * @param anyParseObject
      */
-    static public void saveBatch(List<ParseObject> listOfParseObjectsToBatchSave) {
+//    static public void saveBatch(List<ParseObject> listOfParseObjectsToBatchSave) {
+    public void saveBatch(List<ParseObject> listOfParseObjectsToBatchSave) {
         if (!listOfParseObjectsToBatchSave.isEmpty()) {
             try {
                 ParseBatch parseBatch = ParseBatch.create();
@@ -1670,6 +1946,9 @@ public class DAO {
                 parseBatch.execute();
             } catch (ParseException ex) {
                 Log.e(ex);
+            }
+            for (ParseObject o : listOfParseObjectsToBatchSave) {
+                cachePut(o);
             }
         }
 //        save(anyParseObject, true);
@@ -1681,6 +1960,7 @@ public class DAO {
         } catch (ParseException ex) {
             Log.e(ex);
         }
+        cachePut(anyParseObject);
     }
 
     /**
@@ -1827,13 +2107,14 @@ public class DAO {
 //                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
 //                if (workSlot != null) {
 //</editor-fold>
-                    Object owner = workSlot.getOwner();
-                    //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
-                    if (owner != null && owner.equals(itemWithWorkSlots)) {
-                        RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
-                        if (repeatRule != null
-                                && workSlot.getEndTime() < System.currentTimeMillis()
-                                && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
+                    if (workSlot != null) {
+                        Object owner = workSlot.getOwner();
+                        //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
+                        if (owner != null && owner.equals(itemWithWorkSlots)) {
+                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+                            if (repeatRule != null
+                                    && workSlot.getEndTime() < System.currentTimeMillis()
+                                    && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (workSlot.getRepeatRule()!=null) { //if repeating workslot
 //                        RepeatRuleParseObject repeatRule =workSlot.getRepeatRule();
@@ -1847,14 +2128,15 @@ public class DAO {
 //                        if (workSlot.getEndTime() < System.currentTimeMillis()) { //if workSlot has expired
 //                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
 //                            if (repeatRule != null) { //if repeating workslot
-                            //DONE!!!! continue generating new instances until we get enough future ones as defined by repeatRule
+                                //DONE!!!! continue generating new instances until we get enough future ones as defined by repeatRule
 //                            if (repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
 //</editor-fold>
-                            repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
-                            reload = true;
-                            break; //exit the for loop to reload workslots
-                        } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
-                            results.add(workSlot);
+                                repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
+                                reload = true;
+                                break; //exit the for loop to reload workslots
+                            } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
+                                results.add(workSlot);
+                            }
                         }
                     }
                 }
@@ -1908,11 +2190,9 @@ public class DAO {
 //            }
 //</editor-fold>
         }
-//        Collections.sort(results, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTime(), i2.getStartTime()));
-//        WorkSlot.sortWorkSlotList(results);
         results.sortWorkSlotList();
-//        return results;
         //TODO!!! any way/need to check if workslots have been cached?! (empty results cannot be used since there may simply be no workslots)
+//<editor-fold defaultstate="collapsed" desc="comment">
         if (false && (itemWithWorkSlots instanceof ParseObject && ((ParseObject) itemWithWorkSlots).getObjectIdP() != null)) { //Parse doesn't support queries on just created (not saved) objects
             ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
             query.whereEqualTo(WorkSlot.PARSE_OWNER_LIST, itemWithWorkSlots);
@@ -1932,11 +2212,12 @@ public class DAO {
 //                results = (List<WorkSlot>) query.find();
 //                results = (WorkSlotList) query.find();
                 results = new WorkSlotList(query.find());
-                //no point in caching workslots, they're only used for a single List/Item and caching will only help the second time displaying them
+//no point in caching workslots, they're only used for a single List/Item and caching will only help the second time displaying them
             } catch (ParseException ex) {
                 Log.e(ex);
             }
         }
+//</editor-fold>
 //        }
         if (results == null || results.size() == 0) {
             return null;
@@ -2034,7 +2315,7 @@ public class DAO {
      *
      * get all filterSortDefs (including past/expired) ones
      *
-     * @return null if no filterSortDefs defined
+     * @return empty list if no filterSortDefs defined
      */
     public List<FilterSortDef> getAllFilterSortDefsFromParse() {
         List<FilterSortDef> results = null;
@@ -2042,10 +2323,11 @@ public class DAO {
         try {
             results = (List<FilterSortDef>) query.find();
 //            cacheList(results);
+            return results;
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return results;
+        return new ArrayList();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2169,7 +2451,7 @@ public class DAO {
      * @param maxNumberItemsToRetrieve
      * @return
      */
-    public static List<Item> getItemsWithFutureAlarms(int maxNumberItemsToRetrieve) {
+    public List<Item> getItemsWithFutureAlarms(int maxNumberItemsToRetrieve) {
         //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
         //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
 
@@ -2580,11 +2862,16 @@ public class DAO {
         }
     }
 
-    //CLEAN UP
+    //////////////////////////   CLEAN UP    /////////////////////////////
 //    private boolean badReference(ItemAndListCommonInterface parseObject) {
 //        return badReference((ParseObject)parseObject);
 //    }
-    private boolean fetchFails(ParseObject parseObject) {
+    /**
+    returns true if trying to fetch the parseObject from Parse fails (meaning the object does not exists on the server)
+    @param parseObject
+    @return 
+     */
+    private boolean notOnParseServer(ParseObject parseObject) {
         if (parseObject == null) {
             return false;
         }
@@ -2657,7 +2944,7 @@ public class DAO {
      * @param description
      * @param list
      */
-    private void cleanUpDuplicatesInList(String description, List list, boolean executeCleanup) {
+    private boolean cleanUpDuplicatesInList(String description, List list, boolean executeCleanup) {
         //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
         //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
         ArrayList cleanList = new ArrayList();
@@ -2669,10 +2956,12 @@ public class DAO {
                 cleanList.add(elt);
             }
         }
+        boolean deletes = list.size() != cleanList.size();
         if (executeCleanup) {
             list.clear();
             list.addAll(cleanList);
         }
+        return deletes;
     }
 
     /**
@@ -2707,36 +2996,39 @@ public class DAO {
      * owner's list
      */
     private void cleanUpBadObjectReferencesItem(Item item) { //, boolean checkOwner) {
-        boolean checkOwner = true;
-        //Check that if an owner is defined, it exists, and that it contains the item in its list
-        if (checkOwner && item.getOwner() != null) {
-            if (fetchFails((ParseObject) item.getOwner())) {
+//        boolean checkOwner = true;
+        //Check that if an owner is defined, it exists, and that it contains the item in its list. NB! ItemLists must then only check that their items point the themselves and not another list
+//        if (checkOwner && item.getOwner() != null) {
+        ItemAndListCommonInterface owner = item.getOwner();
+        if (owner != null) {
+            if (notOnParseServer((ParseObject) owner)) {
                 Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to Owner objectId=" + ((ParseObject) item.getOwner()).getObjectIdP(), logLevel);
                 if (executeCleanup) {
                     item.setOwner(null);
                 }
-            } else if (item.getOwner().getItemIndex(item) == -1) {
-                Log.p("CLEANUP: Item \"" + item.getText() + "\"'s Owner:\"" + item.getOwner() + "\" does not include item", logLevel);
+            } else if (owner.getItemIndex(item) == -1) {
+                Log.p("CLEANUP: Item \"" + item.getText() + "\"'s Owner:\"" + owner + "\" does not include item", logLevel);
                 if (executeCleanup) {
-                    ItemAndListCommonInterface owner = item.getOwner();
+                    //an item's listed owner takes precedence (so, objects determine their owner, it is not (one of) the owner that changes the item's owner to themselve
                     item.setOwner(null); //hack to avoid that addToList below complains that owner is already defined
 //                    item.getOwner().addToList(item);
                     owner.addToList(item);
 //                    item.getOwner().getList(item);
                 }
             }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (item.getOwner() != null && !item.getOwner().getList().contains(item))
-//                    cleanUpMissingInclusionInList("Item \"" + item + "\" owner's \"" + item.getOwner() + "\" does not reference the item (owner's list=" + item.getOwner().getList() + ")", 
+//                    cleanUpMissingInclusionInList("Item \"" + item + "\" owner's \"" + item.getOwner() + "\" does not reference the item (owner's list=" + item.getOwner().getList() + ")",
 //                            item, item.getOwner().getList())) {
 //                if (executeCleanup) {
 //                    DAO.getInstance().save((ParseObject) item.getOwner());
 //                }
 //            };
+//</editor-fold>
         }
 
         //Check repeat rule exists
-        if (item.getRepeatRule() != null && fetchFails((ParseObject) item.getRepeatRule())) {
+        if (item.getRepeatRule() != null && notOnParseServer((ParseObject) item.getRepeatRule())) {
             Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) item.getRepeatRule()).getObjectIdP(), logLevel);
             if (executeCleanup) {
                 item.setRepeatRule(null); //remove reference to inexisting RepeatRule
@@ -2744,7 +3036,7 @@ public class DAO {
         }
 
         //INterrupted tasks
-        if (item.getTaskInterrupted() != null && fetchFails((ParseObject) item.getTaskInterrupted())) {
+        if (item.getTaskInterrupted() != null && notOnParseServer((ParseObject) item.getTaskInterrupted())) {
             Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to TaskInterrupted, objectId=" + ((ParseObject) item.getTaskInterrupted()).getObjectIdP(), logLevel);
             if (executeCleanup) {
                 item.setTaskInterrupted(null); //remove reference to inexisting Item
@@ -2752,10 +3044,18 @@ public class DAO {
         }
 
         //Dependent tasks
-        if (item.getDependingOnTask() != null && fetchFails((ParseObject) item.getDependingOnTask())) {
+        if (item.getDependingOnTask() != null && notOnParseServer((ParseObject) item.getDependingOnTask())) {
             Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to DependingOnTask, objectId=" + ((ParseObject) item.getDependingOnTask()).getObjectIdP(), logLevel);
             if (executeCleanup) {
                 item.setDependingOnTask(null); //remove reference to inexisting Item
+            }
+        }
+
+        //Original source (eg when copied from template)
+        if (item.getSource() != null && notOnParseServer((ParseObject) item.getSource())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to Original source, objectId=" + ((ParseObject) item.getSource()).getObjectIdP(), logLevel);
+            if (executeCleanup) {
+                item.setSource(null); //remove reference to inexisting Item
             }
         }
 
@@ -2784,9 +3084,10 @@ public class DAO {
                 }
             }
         }
+
         List list3 = item.getCategories();
-        cleanUpDuplicatesInList("Item \"" + item + "\" (ObjId=" + item.getObjectIdP() + ") list of categories", list3, executeCleanup);
-        if (executeCleanup) {
+        if (cleanUpDuplicatesInList("Item \"" + item + "\" (ObjId=" + item.getObjectIdP() + ") list of categories", list3, executeCleanup) && executeCleanup) {
+//        if (executeCleanup) {
             item.setCategories(list3);
         }
 
@@ -2797,14 +3098,16 @@ public class DAO {
         while (i < subtasks.size()) {
             Item subtask = subtasks.get(i);
             if (subtask.getOwner() == null) {
-                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has owner=null", logLevel);
+                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has owner==null", logLevel);
                 if (executeCleanup) {
                     subtask.setOwner(item);
                     DAO.getInstance().save(subtask);
                 }
 //                i++;
-            } else if (!subtask.getOwner().equals(item)) {
-                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has another owner=\"" + subtask.getOwner() + "\"", logLevel);
+//            } else if (!subtask.getOwner().equals(item)) {
+            }
+            if (false && !subtask.getOwner().equals(item)) { //do not this this for subtasks - incompatible with the check above
+                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has another owner==\"" + subtask.getOwner() + "\"", logLevel);
                 if (executeCleanup) {
 //                    subtasks.remove(subtask); //
                     subtask.setOwner(item); //force owner of subtask to this item
@@ -2817,23 +3120,30 @@ public class DAO {
             }
             i++;
         }
+
         cleanUpDuplicatesInList("Item \"" + item + "\" has duplicated subtask (subtasks=" + subtasks + ")", subtasks, executeCleanup);
+
+        //finally save
         if (executeCleanup) {
             item.setList(subtasks);
-        }
-
-        if (executeCleanup) {
             save(item);
         }
+
+        //Workslots : WorkSlots point to their owner, NOT the other way around, so nothing to clean up here 
     }
     //    private void cleanUpBadObjectReferencesCategory(Category category) {
 
+    /**
+    cleans up a Category or ItemList. checks that each item in the list is on the server, adn that they refer back to the list/category
+    @param itemListOrCategory 
+     */
     private void cleanUpBadObjectReferencesItemListOrCategory(ItemList itemListOrCategory) {
         int i = 0;
         while (i < itemListOrCategory.size()) {
             boolean moveToNextIndex = true; //hack to make sure we don't skip an i when an element in the list is removed
-            Object elt = itemListOrCategory.get(i);
-            if (elt instanceof ParseObject && fetchFails((ParseObject) elt)) {
+            Object elt = itemListOrCategory.getFull(i);
+            //if not on server, simply remove the element
+            if (elt instanceof ParseObject && notOnParseServer((ParseObject) elt)) {
 //                    logError(itemListOrCategory, (ParseObject)elt);
                 if (itemListOrCategory instanceof Category) {
                     Log.p("CLEANUP: Category \"" + itemListOrCategory + "\" bad ref to ObjId \"" + ((ParseObject) elt).getObjectIdP());
@@ -2846,12 +3156,12 @@ public class DAO {
                     moveToNextIndex = false;
                 }
 
-            } else if (elt instanceof Item) {
+            } else if (elt instanceof Item) { // if on the server AND and item
                 Item item = (Item) elt;
 
                 //Category refers to elt, but elt does not have Category in its list
                 if (itemListOrCategory instanceof Category) {
-                    if (!item.getCategories().contains(itemListOrCategory)) {
+                    if (!item.getCategories().contains(itemListOrCategory)) { //if item does not reference the catogry, then add the category
                         Log.p("CLEANUP: Category \"" + itemListOrCategory + "\" references Item \"" + item + "\" but no reference back (" + item.getCategories() + ")");
                         if (executeCleanup) {
                             item.addCategoryToItem((Category) itemListOrCategory, false); //add missing ref
@@ -2860,25 +3170,30 @@ public class DAO {
                     }
                     //ItemList refers to elt, but elt does not have Category in its list
                 } else if (itemListOrCategory instanceof ItemList) {
-                    if (item.getOwner() == null || !item.getOwner().equals(itemListOrCategory)) {
+//                    if (item.getOwner() == null || !item.getOwner().equals(itemListOrCategory)) { 
+                    if (item.getOwner() == null) { //IF ever an item is referenced from multiple lists or projects, the first one 'wins' and becomes the owner
                         Log.p("CLEANUP: ItemList \"" + itemListOrCategory + "\" references Item \"" + item + "\" but is not Owner (owner=" + item.getOwner() + ")");
                         if (executeCleanup) {
-                            if (item.getOwner() == null) {
-                                item.setOwner((ItemList) itemListOrCategory); //if null, add ItemList as owner
-                                save(item);
-                            } else {
-//                                itemListOrCategory.remove(i); //if another is owner, remove item from this list
-                                itemListOrCategory.removeItem(i); //if another is owner, remove item from this list
-                                moveToNextIndex = false;
-                            }
+//                            if (item.getOwner() == null) {
+                            item.setOwner((ItemList) itemListOrCategory); //if null, add ItemList as owner
+                            save(item);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                            } else {
+////                                itemListOrCategory.remove(i); //if another is owner, remove item from this list
+//                                itemListOrCategory.removeItem(i); //if another is owner, remove item from this list
+//                                moveToNextIndex = false;
+//                            }
+//</editor-fold>
                         }
-                    }
+                    } // else: if owner is not null, then if the owner is wrong, it will be fixed when fixing the item itself elsewhere
                 }
             }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (itemListOrCategory instanceof ParseObject && executeCleanup) {
-            if (executeCleanup) {
-                save((ParseObject) itemListOrCategory);
-            }
+//            if (executeCleanup) {
+//                save((ParseObject) itemListOrCategory);
+//            }
+//</editor-fold>
             if (moveToNextIndex) {
                 i++;
             }
@@ -2886,6 +3201,30 @@ public class DAO {
         if (executeCleanup) {
             save(itemListOrCategory);
         }
+    }
+
+    private boolean cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(RepeatRuleParseObject repeatRule, List<ItemAndListCommonInterface> instanceList) {
+        int i = 0;
+        boolean listUpdated = false;
+        while (i < instanceList.size()) {
+            Object elt = instanceList.get(i);
+            //if not on server, simply remove the element
+            if (elt instanceof ParseObject && notOnParseServer((ParseObject) elt)) {
+                if (elt instanceof Item) {
+                    Log.p("CLEANUP: Item \"" + elt + "\" not on server for RepeatRule instance list for RepeatRule " + repeatRule);
+                } else if (elt instanceof WorkSlot) {
+                    Log.p("CLEANUP: WorkSlot \"" + elt + "\" not on server for RepeatRule instance list for RepeatRule " + repeatRule);
+                }
+                if (executeCleanup) {
+                    instanceList.remove(i);
+                    listUpdated = true;
+                    i--;
+                }
+            }
+            i++; //continue with next element
+        }
+//        if (executeCleanup) {  save(instanceList);  }
+        return listUpdated;
     }
 
     private void logError(Object list, ParseObject element) {
@@ -2898,6 +3237,11 @@ public class DAO {
         }
     }
 
+    private boolean hasTemplateParent(Item item) {
+        ItemAndListCommonInterface owner = item.getOwner();
+        return (owner instanceof Item && ((Item) owner).isTemplate() || hasTemplateParent((Item) owner));
+    }
+
 //    private void cleanUpBadObjectReferences(List<ParseObject> list) {
     /**
      * for every list or category in list, check if a category or itemlist
@@ -2905,12 +3249,12 @@ public class DAO {
      *
      * @param list list of categories or itemlists
      */
-    private void cleanUpBadObjectReferencesInListOfItems(List<Item> list) {
+    private void cleanUpBadObjectReferencesInItems(List<Item> list) {
         Log.p("CLEANUP: number elements in list = " + list.size(), logLevel);
         int i = 0;
         while (i < list.size()) {
             Item item = list.get(i);
-            if (fetchFails(item)) {
+            if (notOnParseServer(item)) {
                 logError(list, item);
                 if (executeCleanup) {
                     list.remove(i);
@@ -2920,6 +3264,13 @@ public class DAO {
                 }
             } else {
                 cleanUpBadObjectReferencesItem(item);
+                if (!hasTemplateParent(item)) {
+                    Log.p("CLEANUP: Task \"" + item.getText() + "\" wrongfully marked as Template although no parent task is a template", logLevel);
+                    if (executeCleanup) {
+                        item.setTemplate(false);
+                        save(item);
+                    }
+                }
                 i++;
             }
         }
@@ -2955,69 +3306,105 @@ public class DAO {
         }
     }
 
-    private void makeAllSubTaskTemplates(Item template, boolean markNonTemplatesAsTemplates) {
-        List<Item> list = template.getList();
-        if (list != null && list.size() > 0) {
-            for (Item item : list) {
+    private boolean makeAllSubTaskTemplatesAndRemoveDuplicates(Item template, boolean executeCleanup) {
+        boolean changed = false;
+        List<Item> subtasks = template.getList();
+        if (subtasks != null && subtasks.size() > 0) {
+            for (Item item : subtasks) {
                 if (!item.isTemplate()) {
                     Log.p("CLEANUP: non-template \"" + item + "\" inside template \"" + item + " parseId=" + ((ParseObject) item).getObjectIdP());
-                    if (markNonTemplatesAsTemplates) {
+                    if (executeCleanup) {
                         item.setTemplate(true);
                         DAO.getInstance().save(item);
                     }
                 }
-                makeAllSubTaskTemplates(item, markNonTemplatesAsTemplates); //iterate down the hierarchy
+                makeAllSubTaskTemplatesAndRemoveDuplicates(item, executeCleanup); //iterate down the hierarchy
+            }
+            if (cleanUpDuplicatesInList("ItemList " + template.getText(), subtasks, executeCleanup) && executeCleanup) {
+                template.setList(subtasks);
+                changed = true;
             }
         }
+        return changed;
     }
 
-    private void cleanUpTemplateList(TemplateList templateList, List<Item> templatesFromParse, boolean executeCleanup) {
+    /**
+    clean up all templates in TemplateList, make it a template, clean up duplicates in its subtasks, make all subtasks templates
+    @param template
+    @param executeCleanup 
+     */
+    private void cleanUpTemplateList(TemplateList templateList, List<Item> topLevelTemplatesFromParse, boolean executeCleanup) {
 //        if (templatesFromParse.size()!=templateList.size()) {
-        //add any stored (top-level) templates to the list
-        List items = templateList.getList();
-        for (int i = 0, size = templatesFromParse.size(); i < size; i++) {
-            if (!items.contains(templatesFromParse.get(i))) {
-                items.add(templatesFromParse.get(i));
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        List templates = templateList.getList();
+//        for (int i = 0, size = topLevelTemplatesFromParse.size(); i < size; i++) {
+//            if (!templates.contains(topLevelTemplatesFromParse.get(i))) {
+//                templates.add(topLevelTemplatesFromParse.get(i));
+//            }
+//        }
+//</editor-fold>
+        //add any missing stored (top-level) templates to the list
+        for (int i = 0, size = topLevelTemplatesFromParse.size(); i < size; i++) {
+            if (!templateList.contains(topLevelTemplatesFromParse.get(i))) {
+                templateList.add(topLevelTemplatesFromParse.get(i));
             }
         }
-//        }
+
+        //for all top-level templates
         int i = 0;
-        while (i < items.size()) {
-            Object elt = items.get(i);
-            if (elt instanceof ParseObject && fetchFails((ParseObject) elt)) {
-                Log.p("CLEANUP: TemplateList \"" + templateList + "\" bad ref to ObjId \"" + ((ParseObject) elt).getObjectIdP());
+        while (i < templateList.size()) {
+
+            Object template = templateList.get(i);
+            //remove any objects not stored on parse server
+            if (template instanceof ParseObject && notOnParseServer((ParseObject) template)) {
+                Log.p("CLEANUP: TemplateList \"" + templateList + "\" bad ref to ObjId \"" + ((ParseObject) template).getObjectIdP());
                 if (executeCleanup) {
-                    items.remove(i);
-                    i -= 1;
+                    templateList.remove(i);
+//                    i -= 1;
                 }
             }
 
-//TODO!!! check that full hierarchy of subtasks below top-level template are also marked as templates
-            if (elt instanceof Item) { // && !((Item) elt).isTemplate()) {
+            //set any items not already a template as templates:
+            if (template instanceof Item) { // && !((Item) elt).isTemplate()) {
                 //non-template item in TemplateList, 
-                if (!((Item) elt).isTemplate()) {
-                    Log.p("CLEANUP: template Item in TemplateList is not a template \"" + elt + " objId=" + ((ParseObject) elt).getObjectIdP());
+                if (!((Item) template).isTemplate()) {
+                    Log.p("CLEANUP: template Item in TemplateList is not a template \"" + template + " objId=" + ((ParseObject) template).getObjectIdP());
                     if (executeCleanup) {
-                        ((Item) elt).setTemplate(true);
+                        ((Item) template).setTemplate(true);
+                        save((Item) template);
                     }
                 }
-                makeAllSubTaskTemplates((Item) elt, executeCleanup);
+                //check that full hierarchy of subtasks below top-level template are also marked as templates
+                makeAllSubTaskTemplatesAndRemoveDuplicates((Item) template, executeCleanup);
                 i++;
+            } else { //non-Item in list
+                Log.p("CLEANUP: TemplateList \"" + templateList + "\" contains non-Item" + template + ", ObjId \"" + (template instanceof ParseObject ? ((ParseObject) template).getObjectIdP() : "<not an ParseObect>"));
+                if (executeCleanup) {
+                    templateList.remove(i);
+//                    i -= 1;
+                }
             }
+        }
 
 //        List items = templateList.getList();
-            cleanUpDuplicatesInList("Templates " + ((ItemAndListCommonInterface) templateList).getText(), items, executeCleanup);
-            if (executeCleanup) {
-                templateList.setList(items);
-                save((ParseObject) templateList);
-            }
+//        if (cleanUpDuplicatesInList("Templates " + ((ItemAndListCommonInterface) templateList).getText(), templateList, executeCleanup) && executeCleanup) {
+        cleanUpDuplicatesInList("Templates " + ((ItemAndListCommonInterface) templateList).getText(), templateList, executeCleanup);
+        if (executeCleanup) {
+//            templateList.setList(templateList);
+            save((ParseObject) templateList);
         }
     }
 
-    public void cleanUpTemplateListInParse() {
-        cleanUpTemplateList(DAO.getInstance().getTemplateList(), getTemplatesFromParse(), true);
+    public void cleanUpTemplateListInParse(boolean executeCleanup) {
+//        cleanUpTemplateList(DAO.getInstance().getTemplateList(), getTopLevelTemplatesFromParse(), true);
+        cleanUpTemplateList(TemplateList.getInstance(), getTopLevelTemplatesFromParse(), executeCleanup);
     }
 
+    /**
+    cleans up duplicates in the category
+    @param category 
+     */
     private void cleanUpCategory(Category category) {
         cleanUpBadObjectReferencesItemListOrCategory(category);
         List items = category.getList();
@@ -3028,14 +3415,20 @@ public class DAO {
         }
     }
 
+//    private void cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(List<List<ParseObject>> listOfList) {
+    private void cleanUpBadObjectReferencesInListOfCategories() {
+        cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(getCategoryList());
+    }
+
     private void cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(List<List<ParseObject>> listOfList) {
+//        List<List<ParseObject>> listOfList = getCategoryList();
         Log.p("CLEANUP: number elements in list = " + listOfList.size(), logLevel);
 //        for (int i = 0, size = listOfList.size(); i < size; i++) {
         int i = 0;
         while (i < listOfList.size()) {
             //TODO!!!! change for loop to a construction that works if the list is being altered as it is traversed: http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
             Object catOrItemList = listOfList.get(i);
-            if (fetchFails((ParseObject) catOrItemList)) {
+            if (notOnParseServer((ParseObject) catOrItemList)) {
 //                if (listOfList instanceof ItemAndListCommonInterface) {
                 Log.p("CLEANUP: Bad ref in \"" + ((ItemAndListCommonInterface) listOfList).getText() + "\" to objectId=" + ((ParseObject) listOfList).getObjectIdP(), logLevel);
 //                } else {
@@ -3066,34 +3459,41 @@ public class DAO {
     }
 
     /**
-     * cleans up the full list of Categories or ItemLists directly from Parse
+     * cleans up the full list of Categories or ItemLists directly from Parse, 
+    repair raw list of Categories first (will attach any (non-empty??) categories to CategoryList before cleaning up those categories
+
      *
      * @param catOrItemList
      */
-    void cleanUpAllCategoriesFromParse() {
+//    void cleanUpAllCategoriesFromParse() {
+//        CategoryList categoryList = getCategoryList(true);
+//        cleanUpAllCategoriesFromParse(getAllCategoriesFromParse(), categoryList);
+//    }
+//    private void cleanUpAllCategoriesFromParse(List<Category> listOfCategories, CategoryList categoryList) {
+    private void cleanUpAllCategoriesFromParse() {
         CategoryList categoryList = getCategoryList(true);
-        cleanUpAllCategoriesFromParse(getAllCategoriesFromParse(), categoryList);
-    }
+        List<Category> listOfCategoriesFromParse = getAllCategoriesFromParse();
 
-    private void cleanUpAllCategoriesFromParse(List<Category> listOfCategories, CategoryList categoryList) {
-        Log.p("CLEANUP: number Categories in Parse = " + listOfCategories.size(), logLevel);
+        Log.p("CLEANUP: number Categories in Parse = " + listOfCategoriesFromParse.size(), logLevel);
         Log.p("CLEANUP: number Categories in CategoryList = " + categoryList.size(), logLevel);
-        for (int i = 0, size = listOfCategories.size(); i < size; i++) {
-            Category cat = listOfCategories.get(i);
+
+        //check that every category in Parse is in the stored list of categories
+        for (int i = 0, size = listOfCategoriesFromParse.size(); i < size; i++) {
+            Category cat = listOfCategoriesFromParse.get(i);
             if (cat.getOwner() == null) {
                 Log.p("CLEANUP: Missing owner (CategoryList) in Category \"" + cat.getText()
                         + "\" ObjId=" + cat.getObjectIdP()
                         + " size=" + cat.size() + ", to its owner ListOfCategories (which contains(cat)=" + categoryList.contains(cat) + ")", logLevel);
-                if (categoryList.contains(cat)) {
-                    if (executeCleanup) {
-                        cat.setOwner(categoryList);
-                        save(cat);
-                    }
-                } else if (cat.getList().size() == 0) { //a lost category, empty, not visible to user, so probably safe to delete
-                    if (executeCleanup) {
-                        delete(cat); //nothing in cateogyr, safe to delete
-                    }
-                } else //a lost category, with content, so should probably be kept
+//                if (false &&  categoryList.contains(cat)) {
+//                    if (executeCleanup) {
+//                        cat.setOwner(categoryList);
+//                        save(cat);
+//                    }
+////                } else if (cat.getList().size() == 0) { //a lost category, empty, not visible to user, so probably safe to delete. NO, better to recover it
+////                    if (executeCleanup) {
+////                        delete(cat); //nothing in cateogyr, safe to delete
+////                    }
+//                } else //a lost category, with content, so should probably be kept
                 if (executeCleanup) {
                     cat.setOwner(categoryList);
                     save(cat);
@@ -3125,7 +3525,7 @@ public class DAO {
                         itemList.setOwner(itemListList);
                         save(itemList);
                     }
-                } else if (itemList.getList().size() == 0) { //a lost ItemList, empty, not visible to user, so probably safe to delete
+                } else if (itemList.getListFull().size() == 0) { //a lost ItemList, empty, not visible to user, so probably safe to delete
                     if (executeCleanup) {
                         delete(itemList); //nothing in ItemList, safe to delete
                     }
@@ -3166,37 +3566,71 @@ public class DAO {
         cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(itemListList); //Clean up links to removed Categories
     }
 
-    private void cleanUpFilterSortDefs(List<FilterSortDef> listOfFilters) {
+//    private boolean belongsTo(FilterSortDef filter, )
+    /**
+    remove any filters from Parse server which are not pointing to both a 
+    @param listOfFilters 
+     */
+    private void cleanUpFilterSortDefs() {
+        List<FilterSortDef> listOfFilters = getAllFilterSortDefsFromParse();
         Log.p("CLEANUP: number elements in list = " + listOfFilters.size(), logLevel);
 
+        //construct hashmpas to effectively search for elements that point to a filter
+        Map<FilterSortDef, Category> catsWithFilter = new HashMap();
+        for (Category cat : CategoryList.getInstance().getList()) {
+            if (cat.getFilterSortDef() != null) {
+                catsWithFilter.put(cat.getFilterSortDef(), cat);
+            }
+        }
+        Map<FilterSortDef, ItemList> itemListsWithFilter = new HashMap<>();
+        for (ItemList itemList : ItemListList.getInstance().getList()) {
+            if (itemList.getFilterSortDef() != null) {
+                itemListsWithFilter.put(itemList.getFilterSortDef(), itemList);
+            }
+        }
+        //TODO Items do not implement filters yet
+        Map<FilterSortDef, Item> itemsWithFilter = new HashMap<>();
+        for (Item item : getAllItems()) {
+            if (item.getFilterSortDef() != null) {
+                itemsWithFilter.put(item.getFilterSortDef(), item);
+            }
+        }
+
+        //for every filter, check if it is referenced and if not delete it
         for (int i = 0, size = listOfFilters.size(); i < size; i++) {
             FilterSortDef filter = listOfFilters.get(i);
-            boolean clean = false;
-            if (filter.getFilteredObjectId() == null || filter.getFilteredObjectId().equals("")) {
-                Log.p("CLEANUP: FilterSortDef (ObjId=" + filter.getObjectIdP() + ") without valid ref to FilteredObjectId (" + filter.getFilteredObjectId() + ")", logLevel);
-                clean = true;
-            }
-            if (filter.getScreenId() == null || filter.getScreenId().equals("")) {
-                Log.p("CLEANUP: FilterSortDef (ObjId=" + filter.getObjectIdP() + ") without valid ref to ScreenId (" + filter.getScreenId() + ")", logLevel);
-                clean = true;
-            }
-            if (clean && executeCleanup) {
-//                try {
-//                    filter.delete(); //delete filters without ref to both objectId and Screen
-                delete(filter); //delete filters without ref to both objectId and Screen
-//                } catch (ParseException ex) {
-//                    Log.e(ex);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (filter.getFilteredObjectId() == null || filter.getFilteredObjectId().equals("")) {
+//                Log.p("CLEANUP: FilterSortDef (ObjId=" + filter.getObjectIdP() + ") without valid ref to FilteredObjectId (" + filter.getFilteredObjectId() + ")", logLevel);
+//                if (executeCleanup) {
+//                    delete(filter); //delete filters without ref to both objectId and Screen
 //                }
-            }
+//            } else {
+//</editor-fold>
+            if (catsWithFilter.get(filter) == null && itemListsWithFilter.get(filter) == null && itemsWithFilter.get(filter) == null) { //no refs to filter
+                Log.p("CLEANUP: FilterSortDef (ObjId=" + filter.getObjectIdP() + ") is not referenced by any Category or ItemList", logLevel);
+                if (executeCleanup) {
+                    delete(filter); //delete filters without ref to both objectId and Screen
+                }
+            };
+//            }
         }
     }
 
 //    private void cleanUpWorkSlots(List<WorkSlot> listOfWorkSlots) {
-    private void cleanUpWorkSlots(WorkSlotList listOfWorkSlots) {
+//    private void cleanUpWorkSlots(WorkSlotList listOfWorkSlots) {
+    private void cleanUpWorkSlots() {
+        WorkSlotList listOfWorkSlots = getAllWorkSlotsFromParse();
         Log.p("CLEANUP: number elements in list = " + listOfWorkSlots.size(), logLevel);
         for (int i = 0, size = listOfWorkSlots.size(); i < size; i++) {
             WorkSlot workSlot = listOfWorkSlots.get(i);
+            //test if workSlot has multiple owners (Category, Item, ItemList) - NOT necessary since the priority is defined by getOwner()
+//            if (workSlot.getOwner())
+
             boolean deleteWorkSlot = true; //if all owners are missing, then remove
+            boolean noOwner = false; //if all owners are missing, then remove
+            boolean noRepeatRule = false; //if all owners are missing, then remove
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (workSlot.getOwnerList() != null) {// || workSlot.getOwnerList().equals("")) {
 ////                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerList(" + workSlot.getOwnerList() + ")", logLevel);
 //                clean = false;
@@ -3205,15 +3639,19 @@ public class DAO {
 ////                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
 //                clean = false;
 //            }
-            if (workSlot.getOwner() != null) {// || workSlot.getOwnerItem().equals("")) {
+//</editor-fold>
+            if (workSlot.getOwner() == null) {// || workSlot.getOwnerItem().equals("")) {
 //                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
-                deleteWorkSlot = false;
+//                deleteWorkSlot = false;
+                noOwner = true;
             }
-            if (workSlot.getRepeatRule() != null) {// || workSlot.getRepeatRule().equals("")) {
+            if (workSlot.getRepeatRule() == null) {// || workSlot.getRepeatRule().equals("")) {
 //                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
-                deleteWorkSlot = false;
+//                deleteWorkSlot = false;
+                noRepeatRule = true;
             }
-            if (deleteWorkSlot) {
+//            if (deleteWorkSlot) {
+            if (noOwner && noRepeatRule) {
                 Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", duration(minutes)=" + workSlot.getDurationAdjustedInMinutes(), logLevel);
 //                try {
                 if (executeCleanup) {
@@ -3221,6 +3659,56 @@ public class DAO {
                 }//                } catch (ParseException ex) {
 //                    Log.e(ex);
 //                }
+            }
+        }
+    }
+
+    /**
+    cleans up duplicates in the category
+    @param category 
+     */
+    private void cleanUpRepeatRules() {
+        List<RepeatRuleParseObject> allRepeatRules = getAllRepeatRulesFromParse();
+
+        //delete repeat rules not referenced by any Item or WorkSlot
+        //construct hashmpas to effectively search for elements that point to a filter
+        Map<RepeatRuleParseObject, Item> itemsWithRepeatRule = new HashMap<>();
+        for (Item item : getAllItems()) {
+            if (item.getRepeatRule() != null) {
+                itemsWithRepeatRule.put(item.getRepeatRule(), item);
+            }
+        }
+
+        Map<RepeatRuleParseObject, WorkSlot> workSlotsWithFilter = new HashMap<>();
+        for (WorkSlot workSlot : getAllWorkSlotsFromParse()) {
+            if (workSlot.getRepeatRule() != null) {
+                workSlotsWithFilter.put(workSlot.getRepeatRule(), workSlot);
+            }
+        }
+//        for (int i = 0, size = allRepeatRules.size(); i < size; i++) {
+//            RepeatRuleParseObject repeatRule = allRepeatRules.get(i);
+        for (RepeatRuleParseObject repeatRule : allRepeatRules) {
+
+            //for every repeatRule, check if it is referenced and if not delete it
+            if (workSlotsWithFilter.get(repeatRule) == null && workSlotsWithFilter.get(repeatRule) == null) { //no refs to repeatRule
+                Log.p("CLEANUP: RepeatRule (ObjId=" + repeatRule.getObjectIdP() + ") is not referenced by any Item or WorkSlot", logLevel);
+                if (executeCleanup) {
+                    delete(repeatRule); //delete filters without ref to both objectId and Screen
+                    allRepeatRules.remove(repeatRule);
+                }
+            };
+
+            //clean up wrong references in list of repeat instances
+            List<ItemAndListCommonInterface> repeatInstanceList = repeatRule.getListOfUndoneRepeatInstances();
+
+            cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(repeatRule, repeatInstanceList);
+
+            //clean up duplicates in list of repeat instances
+            cleanUpDuplicatesInList("RepeatRule instances " + repeatRule, repeatInstanceList, executeCleanup);
+            
+            if (executeCleanup) {
+                repeatRule.setListOfUndoneRepeatInstances(repeatInstanceList);
+                save(repeatRule);
             }
         }
     }
@@ -3245,15 +3733,17 @@ public class DAO {
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: ITEMS", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
-        cleanUpBadObjectReferencesInListOfItems(getAllItems(true)); //Clean up all Items and their pointers first
+        cleanUpBadObjectReferencesInItems(getAllItems(true)); //Clean up all Items and their pointers first, true=includeTemplates
 
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: CATEGORIES", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
-        CategoryList categoryList = getCategoryList();
-        cleanUpAllCategoriesFromParse(getAllCategoriesFromParse(), categoryList); //repair raw list of Categories first (will attach any non-empty categories to CategoryList before cleaning up those categories
+//        CategoryList categoryList = getCategoryList();
+//        cleanUpAllCategoriesFromParse(getAllCategoriesFromParse(), categoryList); 
+        cleanUpAllCategoriesFromParse();
 //        cleanUpAllCategoriesFromParse(); //repair raw list of Categories first (will attach any non-empty categories to CategoryList before cleaning up those categories
-        cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(categoryList); //Clean up links to removed Categories
+//        cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(categoryList); //Clean up links to removed Categories
+        cleanUpBadObjectReferencesInListOfCategories(); //Clean up links to removed Categories
 
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: ITEMLISTS", logLevel);
@@ -3263,28 +3753,32 @@ public class DAO {
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: FILTERS", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
-        cleanUpFilterSortDefs(getAllFilterSortDefsFromParse()); //Clean up links to removed ItemLists
+        cleanUpFilterSortDefs(); //Clean up links to removed ItemLists
+//        cleanUpFilterSortDefs(getAllFilterSortDefsFromParse()); //Clean up links to removed ItemLists
 
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: WORKSLOTS", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
-        cleanUpWorkSlots(getAllWorkSlotsFromParse()); //Clean up links to removed ItemLists
+        cleanUpWorkSlots(); //Clean up links to removed ItemLists
+//        cleanUpWorkSlots(getAllWorkSlotsFromParse()); //Clean up links to removed ItemLists
 
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: TEMPLATES", logLevel);
         //TODO!!!: check that tasks in AllTemplates list are all marked as templates!!
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
+        cleanUpTemplateListInParse(executeCleanup);
 //        cleanUpWorkSlots(getAllWorkSlotsFromParse()); //Clean up links to removed ItemLists
 //        TemplateList templateList = getTemplateList();
 //        cleanUpAllItemListsFromParse(getAllTemplatesByQuery(), templateList); //repair raw list of Categories first (will attach any non-empty categories to CategoryList before cleaning up those categories
 //        cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(templateList); //Clean up links to removed Categories
-        Log.p("CLEANUP: NOT DONE YET", logLevel);
-        Log.p("CLEANUP: -----------------------------------------------------", logLevel);
+//        Log.p("CLEANUP: NOT DONE YET", logLevel);
+//        Log.p("CLEANUP: -----------------------------------------------------", logLevel);
 
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: REPEATRULES", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
-        Log.p("CLEANUP: NOT DONE YET", logLevel);
+        cleanUpRepeatRules();
+        
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: FINISHED --------------------------------------------", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
@@ -3604,237 +4098,6 @@ public class DAO {
 //                }
             }
         }
-    }
-
-    /**
-     * will run through list and look up every element in cache (same
-     * ParseObjectId) and if found replace with cached element. If an element is
-     * not found in cache, will fetch it from Parse and cache it.
-     *
-     * @param list
-     */
-    public void fetchListElementsIfNeededReturnCachedIfAvail(List list) {
-        assert (list != null) : "updating null list from cache";
-        for (int i = 0, size = list.size(); i < size; i++) {
-//            Object cachedObject;
-            if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
-                ASSERT.that((list.get(i) != null) && (list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " is null");
-                list.remove(i); //UI: clean up elements that don't exist anymore
-                i--;
-                size--;
-            } else {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                ParseObject listElt = (ParseObject) list.get(i);
-//                String objId = listElt.getObjectIdP();
-////            if (objId != null && (cachedObject = cache.get(objId)) != null && cachedObject != p) {
-////                if (objId != null && (cachedObject = cacheGet(objId)) != null && cachedObject != p) {
-//                if ((cachedObject = cacheGet(listElt)) != null && cachedObject != listElt) {
-//                    list.set(i, cachedObject);
-//                } else {
-//                    cachedObject = fetchIfNeededReturnCachedIfAvail(listElt); //NB! will possibly replace the parseObjects in the list with cached ones
-//                    cachePut(listElt); //put new
-//                    list.set(i, cachedObject);
-//                }
-//</editor-fold>
-                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i)));
-            }
-        }
-    }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public ParseObject fetchIfNeededReturnCachedIfAvailOLDXXX(ParseObject parseObject) {
-//        if (parseObject == null) {
-//            return null;
-//        }
-//        try {
-//            ParseObject temp;
-//            if (parseObject != null && parseObject.getObjectIdP() != null) {
-//                if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
-//                    return temp;
-//                } else if ((temp = (ParseObject) cacheWorkSlots.get(parseObject.getObjectIdP())) != null) {
-//                    return temp;
-//                } else {
-//                    parseObject.fetchIfNeeded();
-//                    cache.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
-//                    return parseObject;
-//                }
-//            }
-//        } catch (ParseException ex) {
-////            Log.e(ex);
-//            return null;
-//        }
-//        return null;
-//    }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public ParseObject fetchIfNeededXXX(ParseObject parseObject) {
-//        try {
-//            ParseObject fetched = parseObject.fetchIfNeeded();
-//            if (fetched instanceof WorkSlot) {
-//                cacheWorkSlots.put(parseObject.getObjectIdP(), fetched);
-//            } else {
-//                cache.put(parseObject.getObjectIdP(), fetched);
-//            }
-//        } catch (ParseException ex) {
-//            Log.e(ex);
-//        }
-//        return null;
-//    }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public ParseObject fetchIfNeededOrgXXX(ParseObject parseObject) {
-//        try {
-//            if (parseObject != null) {
-//                parseObject.fetchIfNeeded();
-//                cache.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
-//                return parseObject;
-//            }
-//        } catch (ParseException ex) {
-//            Log.e(ex);
-//        }
-//        return null;
-//    }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-    //    public void fetchAllElementsInSublist(ParseObject listOrCategory, boolean recursively) {
-//        try {
-//            listOrCategory.fetchIfNeeded();
-//            fetchAllElementsInSublist(listOrCategory, recursively);
-//        } catch (ParseException ex) {
-//            Log.e(ex);
-//        }
-//    }
-//    public void fetchAllElementsInSublist(ParseObject listOrCategory, boolean recursively) {
-//</editor-fold>
-
-    /**
-     * NB! Not the usual semantic of fetchFromCacheOnly, since it may return an
-     * existing instance of the parseObject instead of simply fetching the data
-     * for the passed parseObject (to avoid multiple parallel copies of the same
-     * ParseObject, e.g. when using getOnwerList, a new instance of the
-     * ownerList is returned and any changes to this will not be reflected until
-     * the list is saved and fetched again).
-     *
-     * @param parseObject
-     * @return null if object does not (or no longer) exist on server
-     */
-    public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObject) {
-        if (parseObject == null || parseObject.getObjectIdP() == null) {
-            return null;
-        }
-        ParseObject temp;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (parseObject.getObjectIdP() != null) {
-//            if (parseObject instanceof WorkSlot && (obj = cacheWorkSlots.get(parseObject.getObjectIdP())) != null) {
-////            if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
-//                return (WorkSlot) obj;
-//            } else if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
-//                return temp;
-//            } else
-//</editor-fold>
-        if ((temp = (ParseObject) cacheGet(parseObject)) != null) {
-            return temp;
-        } else {
-            try {
-                parseObject.fetchIfNeeded();
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (parseObject instanceof WorkSlot) {
-////                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
-//                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
-//                    } else {
-////                        cache.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
-//                        cache.put(parseObject.getObjectIdP(), parseObject);
-//                    }
-//</editor-fold>
-                cachePut(parseObject);
-                //NO need to fetch lists within the object, they are updated when they are used first time (in getList() using fetchListElementsIfNeededReturnCachedIfAvail()...)
-//                if (parseObject instanceof ItemAndListCommonInterface) {
-//                    List list;
-//                    if ((list = ((ItemAndListCommonInterface) parseObject).getList()) != null) {
-//                        fetchAllElementsInSublist(list);
-//                    }
-//                }
-                return parseObject;
-            } catch (ParseException ex) {
-//            Log.e(ex);
-                return null;
-            }
-        }
-    }
-
-    public void fetchAllElementsInSublist(ItemAndListCommonInterface itemOrItemListOrCategoryOrList) {
-        fetchAllElementsInSublist((ParseObject) itemOrItemListOrCategoryOrList, false);
-    }
-
-//    public void fetchAllElementsInSublist(List itemOrItemListOrCategoryOrList) {
-//        fetchAllElementsInSublist(itemOrItemListOrCategoryOrList, false);
-//    }
-    public void fetchAllElementsInSublist(ParseObject itemOrItemListOrCategoryOrList, boolean recursively) {
-        assert itemOrItemListOrCategoryOrList != null : "fetchAllItemsIn called with null list";
-//        List<ParseObject> list = null;
-        List list = null;
-//        List<ItemAndListCommonInterface> list = null;
-        try {
-//            ParseBatch batch = ParseBatch.create();
-            //TODO!!! find more efficient way to fetchFromCacheOnly all the objects - use ParseBatch once switched to new version of parse4cn1!!
-
-            if (false && itemOrItemListOrCategoryOrList instanceof ParseObject && ((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP() != null) {
-//                 if ((temp = cache.get(((ParseObject) itemOrListOrCategory).getObjectId())) != null) {
-//            return temp;
-//        }
-                //assume that object has been fully fetched:
-                ((ParseObject) itemOrItemListOrCategoryOrList).fetchIfNeeded(); //fetch the top-level object if needed (may be the case when fetching recursively)
-//                if (itemOrItemListOrCategoryOrList instanceof WorkSlot) {
-//                    cacheWorkSlots.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
-//                } else {
-//                    cache.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
-//                }
-                cachePut((ParseObject) itemOrItemListOrCategoryOrList);
-            }
-
-            if (itemOrItemListOrCategoryOrList instanceof ItemAndListCommonInterface) {
-                list = ((ItemAndListCommonInterface) itemOrItemListOrCategoryOrList).getList();
-                for (int i = 0, size = list.size(); i < size; i++) {
-                    list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
-//                    if (recursively) {
-//                        fetchAllElementsInSublist((ParseObject) list.get(i), recursively);
-//                    }
-                }
-            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (itemOrItemListOrCategoryOrList instanceof Item) {
-////                list = (List<Item>)((Item) itemOrItemListOrCategoryOrList).getList();
-//                list = ((Item) itemOrItemListOrCategoryOrList).getList();
-////                list = ((List<Item>) itemOrItemListOrCategoryOrList).getList();
-//            } else if (itemOrItemListOrCategoryOrList instanceof Category) {
-//                list = ((Category) itemOrItemListOrCategoryOrList).getList();
-//            } else if (itemOrItemListOrCategoryOrList instanceof ItemList) {
-//                list = ((ItemList) itemOrItemListOrCategoryOrList).getList();
-//            } else if (itemOrItemListOrCategoryOrList instanceof List) {
-//                list = (List) itemOrItemListOrCategoryOrList;
-//            } else {
-//                assert false : "unknow type of element to fetch=" + itemOrItemListOrCategoryOrList;
-//            }
-////            for (ParseObject item : list) {
-//            for (int i = 0, size = list.size(); i < size; i++) {
-////                ((Item) item).fetchIfNeeded();
-////                item.fetchIfNeeded();
-////                fetchIfNeeded(item);
-//                list.set(i, fetchIfNeededReturnCachedIfAvail(list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
-//                if (recursively) {
-//                    fetchAllElementsInSublist(list.get(i), recursively);
-//                }
-//            }
-//</editor-fold>
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        if (itemOrItemListOrCategoryOrList instanceof Item) {
-            ((Item) itemOrItemListOrCategoryOrList).setList(list);
-        } else if (itemOrItemListOrCategoryOrList instanceof Category) {
-            ((Category) itemOrItemListOrCategoryOrList).setList(list);
-        } else if (itemOrItemListOrCategoryOrList instanceof ItemList) {
-            ((ItemList) itemOrItemListOrCategoryOrList).setList(list);
-        };
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

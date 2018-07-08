@@ -51,7 +51,7 @@ public class MyPrefs {
     static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
             = new PrefEntry("**","insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task"); //"at the end"
 
-    static PrefEntry dropItemAtBeginningOfUnexpandedCategorySubtaskList
+    static PrefEntry dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList
             = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks","dropItemAtBeginningOfUnexpandedCategorySubtaskList", true, "**"); 
 
     static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
@@ -129,6 +129,9 @@ public class MyPrefs {
 
     static PrefEntry commentMaxSizeInChars
             = new PrefEntry("**","commentMaxSizeInChars", 512,"**"); //TODO make max comment size a PRO subscription dependendant setting
+    
+    static PrefEntry showCategoryDescriptionInCategoryList
+            = new PrefEntry("**","showCategoryDescriptionInCategoryList", false,"Show Category description in category lists"); 
 
     //ALARMS
 //    static PrefEntry alarmLastDateUptoWhichAlarmsHaveBeenSet = new PrefEntry("alarmLastDateUptoWhichAlarmsHaveBeenSet", new Date(0));

@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import java.util.ArrayList;
@@ -124,9 +125,11 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * will return the list that owns a task/project, or the task that owns a subtask
      * @return
      */
-    default public List<? extends ItemAndListCommonInterface>  getOwnerList(){
+    default public List<? extends ItemAndListCommonInterface> getOwnerList() {
         return getOwner().getList();
-    };
+    }
+
+    ;
 //    public ParseObject getOwner();
 
     /**
@@ -247,7 +250,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return 
      */
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
-    
+
     /**
      * 
      * @param item
@@ -265,11 +268,11 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return
      */
     public boolean removeFromList(ItemAndListCommonInterface subItemOrList);
-    
+
     /**
      * remove this from its owner and set this.owner=null;
      */
-    default public void removeMeFromOwner(){
+    default public void removeMeFromOwner() {
         List ownerList = getOwner().getList();
 //        getOwnerList().removeItem(this);
         ownerList.remove(this);
@@ -633,7 +636,13 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     default public long getFinishTime() {
 //        return getAllocatedWorkTime().getFinishTime();
         WorkTime wt = getAllocatedWorkTime();
-        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
+        Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (wt != null ? wt.toString() : "<null>") + ", returning=" + new Date(wt != null
+                ? wt.getFinishTime() : MyDate.MAX_DATE));
+
+//        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
+//        ASSERT.that(wt.getAllocatedDuration() == getRemainingEffort() || wt.getAllocatedDuration() < getRemainingEffort(), "allocated too much time");
+        ASSERT.that(wt==null||!(wt.getAllocatedDuration() > getRemainingEffort()), "allocated too much time");
+        return wt != null && wt.getAllocatedDuration() >= getRemainingEffort() ? wt.getFinishTime() : MyDate.MAX_DATE;
     }
 
     /**

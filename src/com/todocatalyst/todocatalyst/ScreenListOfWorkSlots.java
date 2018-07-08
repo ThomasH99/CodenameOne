@@ -384,7 +384,8 @@ public class ScreenListOfWorkSlots extends MyForm {
         if (workSlotList != null) {
             for (WorkSlot workSlot : workSlotList) {
 
-                if (Test.DEBUG || workSlot.getEndTime() <= now) { //ignore workSlots in the past
+//                if (Test.DEBUG || workSlot.getEndTime() <= now) { //ignore workSlots in the past
+                if (Test.DEBUG || workSlot.getEndTime() >= now) { //ignore workSlots in the past
 //                    cont.add(buildWorkSlotContainer(workSlot, () -> refreshAfterEdit(), keepPos));
 //                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, keepPos, false));
                     cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, null, false, showOwner));

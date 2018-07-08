@@ -25,9 +25,10 @@ class WorkSlotSlice {
 
     @Override
     public String toString() {
-        return "Slice: " + MyDate.formatDateTimeNew(new Date(startTime)) + "-" + MyDate.formatTimeNew(new Date(endTime))
-                + (workSlot != null && workSlot.getOwner() != null ? " Owner:" + workSlot.getOwner().getText() : "-")
-                + " AllocTo:" + (allocatedTo != null ? allocatedTo.getText() : "-");
+        return "Slice[" + MyDate.formatDateTimeNew(new Date(startTime)) + "-" + MyDate.formatTimeNew(new Date(endTime))
+                + " Owner:" +(workSlot != null && workSlot.getOwner() != null ?  workSlot.getOwner().getText() : "<null>")
+                + " AllocTo:" + (allocatedTo != null ? allocatedTo.getText() : "<null>")
+                +"]";
 //                + " of "
 //                + (workSlot != null ? new Date(workSlot.getDurationAdjusted()) : "null") + "-"
 //                + (workSlot != null ? new Date(workSlot.getEndTime()) : "null");

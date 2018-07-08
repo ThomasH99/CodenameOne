@@ -1399,6 +1399,7 @@ super.refreshAfterEdit();
             myFormScreenListOfItems = (ScreenListOfItems) myForm;
         }
         boolean oldFormat = false;
+        boolean showInDetails = true;
         boolean isDone = item.isDone();
 //    public static Container buildItemContainer(Item item, List itemList, MyForm.GetBoolean isDragEnabled, MyForm.Action refreshOnItemEdits, boolean selectionModeAllowed, HashSet<Item> selectedObjects) {
         Container mainCont = new Container(new BorderLayout());
@@ -1571,12 +1572,13 @@ super.refreshAfterEdit();
                     if (enabled && subTasksButton != null) {
                         Object e = swipCont.getClientProperty(KEY_EXPANDED);
                         if (e != null && e.equals("true")) { //                            subTasksButton.getCommand().actionPerformed(null);
-                            subTasksButton.pressed();//siulate pressing the button
+                            subTasksButton.pressed();//simulate pressing the button
                             subTasksButton.released(); //trigger the actionLIstener to collapse
                         }
                     }
                     return enabled;
                 }); //D&D
+        
         itemLabel.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
 //        itemLabel.actualButton.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
             @Override
@@ -1746,7 +1748,7 @@ super.refreshAfterEdit();
             long due = item.getDueDate();
             if (finishTime != MyDate.MAX_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
                 finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
-                        finishTime > due ? "FinishTimeOverdue" : "FinishTime");
+                        due!=0&&finishTime > due ? "FinishTimeOverdue" : "FinishTime");
                 if (oldFormat) {
                     east.add(finishTimeLabel);
                 }
@@ -1771,8 +1773,9 @@ super.refreshAfterEdit();
         }
 
         //TODO!!!! define lambde functions to refresh the parts of an Item container that may change when the 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        ActionListener t = (e) -> {
-//            //Actual effort may be 
+//            //Actual effort may be
 //            if (actualEffortLabel != null) {
 //                actualEffortLabel.setText(MyDate.formatTimeDuration(item.getActualEffort()));
 //            }
@@ -1784,6 +1787,7 @@ super.refreshAfterEdit();
 //            keepPos.testItemToKeepInSameScreenPosition(item, swipCont);
 //        }
 ////        if (keepPos!=null) keepPos.
+//</editor-fold>
 //EDIT Item in list
         Button editItemButton = new Button() {
             @Override
@@ -1885,15 +1889,29 @@ super.refreshAfterEdit();
         Label priorityLabel = new Label();
         if (item.getPriority() != 0) {
             priorityLabel = new Label("P" + item.getPriority());
-            if (oldFormat) {
+            if (showInDetails) {
                 southDetailsContainer.add(priorityLabel);
             }
         }
         //IMPORTANCE/URGENCY
         Label impUrgLabel; // = new Label();
         impUrgLabel = new Label(item.getImpUrgPrioValueAsString());
-        if (oldFormat) {
+        if (showInDetails) {
             southDetailsContainer.add(impUrgLabel);
+        }
+
+        //DREAD/FUN
+        Label funDreadLabel; // = new Label();
+        funDreadLabel = new Label(item.getDreadFunValue().toString());
+        if (showInDetails) {
+            southDetailsContainer.add(funDreadLabel);
+        }
+
+        //CHALLENGE
+        Label challengeLabel; // = new Label();
+        challengeLabel = new Label(item.getChallenge().toString());
+        if (showInDetails) {
+            southDetailsContainer.add(challengeLabel);
         }
 
         //DUE DATE or COMPLETED DATE
@@ -1917,7 +1935,7 @@ super.refreshAfterEdit();
 //            south.addComponent(new Label((Image) (item.getAlarmDate() != 0 ? Icons.get().iconAlarmSetLabelStyle : null)));
             alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), (Image) Icons.get().iconAlarmSetLabelStyle);
             alarmLabel.getStyle().setAlignment(Component.RIGHT);
-            if (oldFormat) {
+            if (showInDetails) {
                 southDetailsContainer.addComponent(alarmLabel);
             }
         }
@@ -1928,7 +1946,7 @@ super.refreshAfterEdit();
         if (item.getHideUntilDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowHideUntilDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
             hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD()));
-            if (oldFormat) {
+            if (showInDetails) {
                 southDetailsContainer.addComponent(hideUntilLabel);
             }
         }
@@ -1937,7 +1955,7 @@ super.refreshAfterEdit();
         if (item.getStartByDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowStartByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
             startByLabel = new Label("S:" + MyDate.formatDateNew(item.getStartByDateD()));
-            if (oldFormat) {
+            if (showInDetails) {
                 southDetailsContainer.addComponent(startByLabel);
             }
         }
@@ -1946,7 +1964,7 @@ super.refreshAfterEdit();
         if (item.getExpiresOnDateD().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
             expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()));
-            if (oldFormat) {
+            if (showInDetails) {
                 southDetailsContainer.addComponent(expireByLabel);
             }
         }
@@ -1955,7 +1973,7 @@ super.refreshAfterEdit();
         if (item.getWaitingTillDateD().getTime() != 0 && MyPrefs.itemListWaitingTillDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
             waitingTillLabel = new Label("W:" + MyDate.formatDateNew(item.getWaitingTillDateD()));
-            if (oldFormat) {
+            if (showInDetails) {
                 southDetailsContainer.addComponent(waitingTillLabel);
             }
         }

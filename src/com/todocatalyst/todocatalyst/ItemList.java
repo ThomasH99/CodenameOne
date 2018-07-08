@@ -489,6 +489,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return getItemAt(index);
         return getList().get(index);
     }
+    public Object getFull(int index) {
+//        return getItemAt(index);
+        return getListFull().get(index);
+    }
 
     @Override
     public Object set(int index, Object element) {
@@ -3220,7 +3224,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             WorkSlotList workSlots = getWorkSlotList();
             if (workSlots != null && workSlots.hasComingWorkSlots()) {
 //                wtd = new WorkTimeDefinition(((<? extends ItemAndListCommonInterface>)getList(), workSlots);
-                wtd = new WorkTimeAllocator((List<ItemAndListCommonInterface>) getList(), new WorkTime(workSlots), this);
+//                wtd = new WorkTimeAllocator((List<ItemAndListCommonInterface>) getList(), new WorkTime(workSlots), this);
+                wtd = new WorkTimeAllocator( new WorkTime(workSlots), this);
             }
         }
         return wtd;

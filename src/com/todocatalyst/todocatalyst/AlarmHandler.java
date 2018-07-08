@@ -130,7 +130,7 @@ public class AlarmHandler {
         }
 //        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
         notificationList.cancelAndRemoveAllAvailableLocalNotifications();
-        List<Item> newAlarmsList = DAO.getItemsWithFutureAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+        List<Item> newAlarmsList = DAO.getInstance().getItemsWithFutureAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
 
         Item item;
         while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {

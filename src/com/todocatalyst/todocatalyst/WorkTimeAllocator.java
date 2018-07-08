@@ -105,7 +105,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
      */
 //    private WorkSlotList workSlots;// = new ItemList(); //lazy
     private WorkTime workTime;// = new ItemList(); //lazy
-    private List<ItemAndListCommonInterface> items;
+    private List<ItemAndListCommonInterface> items; //**
     List<WorkTime> workTimeCache = new ArrayList();
     private boolean cacheActive = true;
     private ItemAndListCommonInterface owner;// = new ItemList(); //lazy
@@ -115,8 +115,10 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 
 //    private Hashtable<ItemAndListCommonInterface, WorkTimeInfo> workSlotInfoHashTable; // = new Hashtable();
 //    WorkTimeDefinition(List<ItemAndListCommonInterface> listOfItemsOrItemListsFilteredSorted, WorkSlotList workSlots) {
-    WorkTimeAllocator(List<ItemAndListCommonInterface> listOfItemsOrItemListsFilteredSorted, WorkTime workTime, ItemAndListCommonInterface owner) {
-        this.items = listOfItemsOrItemListsFilteredSorted;
+//    WorkTimeAllocator(List<ItemAndListCommonInterface> listOfItemsOrItemListsFilteredSorted, WorkTime workTime, ItemAndListCommonInterface owner) {
+    WorkTimeAllocator(WorkTime workTime, ItemAndListCommonInterface owner) {
+//        this.items = listOfItemsOrItemListsFilteredSorted;
+        this.items = (List<ItemAndListCommonInterface>) owner.getList();
 //        this.orgItemOrList = orgItemOrList;
         this.workTime = workTime;
         this.owner = owner;
@@ -124,6 +126,12 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //        workSlotInfoList = new ArrayList();
 //        workSlotInfoHashTable = new Hashtable();
     }
+    
+        public String toString() {
+        return "WorkTimeAllocator for owner:" + (owner != null ? (owner.getText() + ", workTime= " + workTime.toString()) : "noOwner");
+    }
+
+
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    WorkTimeDefinition(WorkTime workTime) {
@@ -526,10 +534,6 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 
     private void resetCachedValuesOnItemChange(int itemIndex) {
         resetCache(itemIndex);
-    }
-
-    public String toString() {
-        return "WTA for:" + (owner != null ? owner.getText() + ", " + workTime : "noOwner");
     }
 
 }
