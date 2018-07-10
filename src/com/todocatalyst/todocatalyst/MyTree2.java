@@ -1101,7 +1101,7 @@ public class MyTree2 extends ContainerScrollY {
                         newStr = getDiffStr(newStickyStr, Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDate()));
                         break;
                     case Item.PARSE_WAITING_TILL_DATE:
-                        newStr = getDiffStr(newStickyStr, Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDate()));
+                        newStr = getDiffStr(newStickyStr, Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDateD().getTime()));
                         break;
                     case Item.PARSE_IMPORTANCE_URGENCY:
                         newStr = getDiffStr(newStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());

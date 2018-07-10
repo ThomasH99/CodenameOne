@@ -44,7 +44,7 @@ import java.util.Vector;
 public class MyCacheMap {
 
     private int cacheSize = 10;
-    private Hashtable memoryCache = new Hashtable();
+    private Hashtable memoryCache = new Hashtable(); //THJ: structure key -> Object[], [0]: (Long) currentAge, [1]: referenced object
     private Hashtable weakCache = new Hashtable();
 
     private int storageCacheSize = 0;
@@ -144,16 +144,19 @@ public class MyCacheMap {
         weakCache.remove(key);
         Vector storageCacheContent = getStorageCacheContent();
         int s = storageCacheContent.size();
-        for (int iter = 0; iter < s; iter++) {
+//        for (int iter = 0; iter < s; iter++) {
+        int iter = 0;
+        while (iter < s) {
             Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
             if (obj[1].equals(key)) {
                 Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + key.toString());
-                obj[0] = new Long(Long.MIN_VALUE);
-                obj[1] = obj[0]; //THJ: obj[1] = obj[0] seems like a dirty way of deleting the index entry, is Vector.remove(index) so expensive??
-//                storageCacheContent.remove(iter);
+//                obj[0] = new Long(Long.MIN_VALUE);
+//                obj[1] = obj[0]; //THJ: obj[1] = obj[0] seems like a dirty way of deleting the index entry, is Vector.remove(index) so expensive?? ACTUALLY, ERROR: this corrupts the idx since the obj[1] value gets included in getKeysInCache!!!
+                storageCacheContent.remove(iter); //THJ, not allowed with for loop
                 Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
                 return;
             }
+            iter++;
         }
     }
 
@@ -197,8 +200,8 @@ public class MyCacheMap {
     }
 
     /**
-     * when storageCacheContent is used as persistent storage for cached items, load as many as possible to memory
-     * to speed up access. 
+     * when storageCacheContent is used as persistent storage for cached items,
+     * load as many as possible to memory to speed up access.
      */
     synchronized public void loadCacheToMemory() {
         Vector storageCacheContent = getStorageCacheContent();

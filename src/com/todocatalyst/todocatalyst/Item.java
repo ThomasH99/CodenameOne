@@ -1009,7 +1009,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             case FIELD_STARTED_ON_DATE:
                 return getStartedOnDate();
             case FIELD_START_BY_TIME:
-                return getStartByDate();
+                return getStartByDateD().getTime();
 //            case FIELD_START_WORK_TIME:
 //                return getStartTime();
             case FIELD_FINISH_WORK_TIME:
@@ -1130,7 +1130,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     public boolean isWaiting() {
-        return getStatus() == ItemStatus.WAITING && (System.currentTimeMillis() < getWaitingTillDate() || getWaitingTillDate() == 0);
+        return getStatus() == ItemStatus.WAITING && (System.currentTimeMillis() < getWaitingTillDateD().getTime() || getWaitingTillDateD().getTime() == 0);
 //    ItemStatus status = getStatus();
 //        if (statusreturn getStatus() == ItemStatus.WAITING && (System.currentTimeMillis()<getWaitingTillDate()||getWaitingTillDate()==0 && ); 
     }
@@ -1752,7 +1752,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             destination.setStartedOnDate(getStartedOnDate());
             destination.setCompletedDate(getCompletedDate());
 //            destination.setCreatedDate(getCreatedDate());
-            destination.setWaitingTillDate(getWaitingTillDate());
+            destination.setWaitingTillDate(getWaitingTillDateD().getTime());
             destination.setDateWhenSetWaiting(getDateWhenSetWaiting());
             destination.setRemainingEffort(getRemainingEffort());
             destination.setActualEffort(getActualEffort());
@@ -1776,7 +1776,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
             //START BY DATE
             if ((copyExclusions & COPY_EXCLUDE_START_BY_DATE) == 0) {
-                destination.setStartByDate(getStartByDate());
+                destination.setStartByDate(getStartByDateD().getTime());
             }
             //HIDE UNTIL DATE (NOT:SHOW FROM DATE)
 //            if ((copyExclusions & COPY_EXCLUDE_SHOW_FROM_DATE) == 0) {
@@ -1846,8 +1846,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (referenceItem.getHideUntilDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
                 setHideUntilDate(new Date(referenceItem.getHideUntilDateD().getTime() + delta));
             }
-            if (referenceItem.getStartByDate() != 0) { //only update if a value was defined for the referenceItem
-                setStartByDate(referenceItem.getStartByDate() + delta);
+            if (referenceItem.getStartByDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
+                setStartByDate(referenceItem.getStartByDateD().getTime() + delta);
             }
             if (referenceItem.getExpiresOnDate() != 0) { //only update if a value was defined for the referenceItem
                 setExpiresOnDate(referenceItem.getExpiresOnDate() + delta);
@@ -1883,9 +1883,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setHideUntilDate(new Date(newDueDate - (oldDueDate - getHideUntilDateD().getTime())));
                 setHideUntilDate(new Date(getHideUntilDateD().getTime() + delta));
             }
-            if (getStartByDate() != 0) { //only update if a value was defined for the referenceItem
+            if (getStartByDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
 //                setStartByDate(newDueDate - (oldDueDate - getStartByDate()));
-                setStartByDate(getStartByDate() + delta);
+                setStartByDate(getStartByDateD().getTime() + delta);
             }
             if (getExpiresOnDate() != 0) { //only update if a value was defined for the referenceItem
 //                setExpiresOnDate(newDueDate - (oldDueDate - getExpiresOnDate()));
@@ -2414,19 +2414,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return challengeValues;
 //    }
     public Challenge getChallenge() {
+        return getChallenge(true);
+    }
+    public Challenge getChallenge(boolean useInheritedValue) {
 //        String challenge = getString(PARSE_CHALLENGE);
 //        return (challenge == null) ? Challenge.AVERAGE.getDescription() : challenge;
 //        String challenge = getString(PARSE_CHALLENGE);
 //        return (challenge == null) ? "" : challenge;
         String challenge = getString(PARSE_CHALLENGE);
-        if (challenge == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()) {
+        if (challenge == null && useInheritedValue&&MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()) {
             if (getOwnerItem() != null) {
                 return getOwnerItem().getChallenge();
             }
         }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
         return (challenge == null) ? null : Challenge.valueOf(challenge); //Created is initial value
-
     }
 
     public void setChallenge(Challenge challenge) {
@@ -2468,8 +2470,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public boolean isStarred() {
+        return isStarred(true);
+    }
+    public boolean isStarred(boolean useInheritedValue) {
         Boolean b = getBoolean(PARSE_STARRED);
-        if (b == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()) {
+        if (b == null && useInheritedValue&&MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()) {
             if (getOwnerItem() != null) {
                 return getOwnerItem().isStarred();
             }
@@ -2478,8 +2483,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public int getPriority() {
+        return getPriority(true);
+    }
+    public int getPriority(boolean useInheritedValue) {
         Integer i = getInt(PARSE_PRIORITY);
-        if (i == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()) {
+        if (i == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()) {
             if (getOwnerItem() != null) {
                 return getOwnerItem().getPriority();
             }
@@ -2490,8 +2498,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Priority getPriorityObject() {
+        return getPriorityObject(true);
+    }
+    public Priority getPriorityObject(boolean useInheritedValue) {
 //        return priority;
-        return new Priority(getPriority());
+        return new Priority(getPriority(useInheritedValue));
     }
 
     public void setPriority(int prio) {
@@ -2544,8 +2555,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     public DreadFunValue getDreadFunValue() {
+        return getDreadFunValue(true);
+    }
+    public DreadFunValue getDreadFunValue(boolean useInheritedValue) {
         String dreadFunValue = getString(PARSE_DREAD_FUN_VALUE);
-        if (dreadFunValue == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean()) {
+        if (dreadFunValue == null && useInheritedValue&&MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean()) {
             if (getOwnerItem() != null) {
                 return getOwnerItem().getDreadFunValue();
             }
@@ -2601,12 +2615,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
 //    public HighMediumLow getImportance() {
     public HighMediumLow getImportance() {
+        return getImportance(true);
+    }
+    public HighMediumLow getImportance(boolean useInheritedValue) {
 //        String importance = getString(PARSE_IMPORTANCE);
 ////        return (importance == null) ? HighMediumLow.LOW : HighMediumLow.valueOf(importance); //Created is initial value
 ////        return (importance == null) ? HighMediumLow.LOW.toString() : importance; //Created is initial value
 //        return (importance == null) ? "" : importance; //Created is initial value
         String imp = getString(PARSE_IMPORTANCE);
-        if (imp == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()) {
+        if (imp == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()) {
             if (getOwnerItem() != null) {
                 return getOwnerItem().getImportance();
             }
@@ -2635,12 +2652,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
 //    public HighMediumLow getUrgency() {
     public HighMediumLow getUrgency() {
+        return getUrgency(true);
+    }
+    public HighMediumLow getUrgency(boolean useInheritedValue) {
 //        String urgency = getString(PARSE_URGENCY);
 ////        return (status == null) ? HighMediumLow.LOW : HighMediumLow.valueOf(status); //Created is initial value
 ////        return (status == null) ? HighMediumLow.LOW.toString() : status; //Created is initial value
 //        return (urgency == null) ? "" : urgency; //Created is initial value
         String urgency = getString(PARSE_URGENCY);
-        if (urgency == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectUrgency.getBoolean()) {
+        if (urgency == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectUrgency.getBoolean()) {
             if (getOwnerItem() != null) {
                 return getOwnerItem().getUrgency();
             }
@@ -3847,7 +3867,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setDateWhenSetWaiting(MyDate.getNow()); //always save
                 setDateWhenSetWaiting(System.currentTimeMillis()); //always save
             }
-            if (false && (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && getWaitingTillDate() != 0L)) { //reset WaitingTillDate
+            if (false && (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && getWaitingTillDateD().getTime() != 0L)) { //reset WaitingTillDate
                 setWaitingTillDate(0); //reset waitingTill date
                 if (getWaitingAlarmDate() != 0) { //automatically turn off
                     setWaitingAlarmDate(0);
@@ -3940,7 +3960,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setDateWhenSetWaiting(MyDate.getNow()); //always save
                 setDateWhenSetWaiting(System.currentTimeMillis()); //always save
             }
-            if (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && getWaitingTillDate() != 0L) { //reset WaitingTillDate
+            if (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && getWaitingTillDateD().getTime() != 0L) { //reset WaitingTillDate
                 setWaitingTillDate(0); //reset waitingTill date
                 if (getWaitingAlarmDate() != 0) { //automatically turn off
                     setWaitingAlarmDate(0);
@@ -4134,6 +4154,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Date getDueDateD() {
+        return getDueDateD(true);
+    }
+    public Date getDueDateD(boolean useInheritedValue) {
 //        return dueDate;
         Date date = getDate(PARSE_DUE_DATE);
         if (date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()) {
@@ -4193,17 +4216,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    public long getStartByDate() {
-//        return startByDate;
-//        Date date = getDate(PARSE_START_BY_DATE);
-//        return (date == null) ? 0L : date.getTime();
-        return getStartByDateD().getTime();
-    }
+//    public long getStartByDate() {
+////        return startByDate;
+////        Date date = getDate(PARSE_START_BY_DATE);
+////        return (date == null) ? 0L : date.getTime();
+//        return getStartByDateD().getTime();
+//    }
 
     public Date getStartByDateD() {
+        return getStartByDateD(true);
+    }
+    public Date getStartByDateD(boolean useInheritedValue) {
 //        return new Date(getStartByDate());
         Date date = getDate(PARSE_START_BY_DATE);
-        if (date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartDate.getBoolean()) {
+        if (date == null && useInheritedValue&&MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartDate.getBoolean()) {
             if (getOwnerItem() != null) {
                 return getOwnerItem().getStartByDateD();
             }
@@ -4247,8 +4273,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Date getWaitingTillDateD() {
+        return getWaitingTillDateD(true);
+    }
+    public Date getWaitingTillDateD(boolean useInheritedValue) {
         Date date = getDate(PARSE_WAITING_TILL_DATE);
-        if (date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()) {
+        if (date == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()) {
             if (getOwnerItem() != null) {
                 return getOwnerItem().getWaitingTillDateD();
             }
@@ -4256,12 +4285,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return (date == null) ? new Date(0) : date;
     }
 
-    public long getWaitingTillDate() {
-//        return waitingTillDate;
-//        Date date = getDate(PARSE_WAITING_TILL_DATE);
-//        return (date == null) ? 0L : date.getTime();
-        return getWaitingAlarmDateD().getTime();
-    }
+//    public long getWaitingTillDate() {
+////        return waitingTillDate;
+////        Date date = getDate(PARSE_WAITING_TILL_DATE);
+////        return (date == null) ? 0L : date.getTime();
+//        return getWaitingAlarmDateD().getTime();
+//    }
 
     public void setWaitingTillDate(long waitingTillDate) {
 //        this.dueDate = val;

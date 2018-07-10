@@ -114,8 +114,8 @@ public class MultipleSelection {
             if (itm.getHideUntilDateD().getTime() != 0) {
                 item.setHideUntilDate(itm.getHideUntilDateD());
             }
-            if (itm.getStartByDate() != 0) {
-                item.setStartByDate(itm.getStartByDate());
+            if (itm.getStartByDateD().getTime() != 0) {
+                item.setStartByDate(itm.getStartByDateD().getTime());
             }
             if (itm.getPriority() != 0) {
                 item.setPriority(itm.getPriority());

@@ -788,16 +788,16 @@ public class FilterSortDef extends ParseObject {
                         : (i1, i2) -> compareDouble(i2.getEarnedValue(), i1.getEarnedValue());
             case Item.PARSE_START_BY_DATE:
                 return sortDescending
-                        ? (i1, i2) -> compareLong(i2.getStartByDate(), i1.getStartByDate())
-                        : (i1, i2) -> compareLong(i1.getStartByDate(), i2.getStartByDate());
+                        ? (i1, i2) -> compareLong(i2.getStartByDateD().getTime(), i1.getStartByDateD().getTime())
+                        : (i1, i2) -> compareLong(i1.getStartByDateD().getTime(), i2.getStartByDateD().getTime());
             case Item.PARSE_STARTED_ON_DATE:
                 return sortDescending
                         ? (i1, i2) -> compareLong(i2.getStartedOnDate(), i1.getStartedOnDate())
                         : (i1, i2) -> compareLong(i1.getStartedOnDate(), i2.getStartedOnDate());
             case Item.PARSE_WAITING_TILL_DATE:
                 return sortDescending
-                        ? (i1, i2) -> compareLong(i2.getWaitingTillDate(), i1.getWaitingTillDate())
-                        : (i1, i2) -> compareLong(i1.getWaitingTillDate(), i2.getWaitingTillDate());
+                        ? (i1, i2) -> compareLong(i2.getWaitingTillDateD().getTime(), i1.getWaitingTillDateD().getTime())
+                        : (i1, i2) -> compareLong(i1.getWaitingTillDateD().getTime(), i2.getWaitingTillDateD().getTime());
             case Item.PARSE_UPDATED_AT:
                 return sortDescending
                         ? (i1, i2) -> compareDate(i2.getUpdatedAt(), i1.getUpdatedAt())

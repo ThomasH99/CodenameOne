@@ -119,11 +119,14 @@ public class DAO {
     private void cachePut(ParseObject parseObject) {
 //        if (cache.get(objectId)==null)
         if (parseObject instanceof CategoryList) {
-            cache.put(CategoryList.CLASS_NAME, parseObject.getObjectIdP());
+//            cache.put(CategoryList.CLASS_NAME, parseObject.getObjectIdP());
+            cache.put(CategoryList.CLASS_NAME, parseObject);
         } else if (parseObject instanceof ItemListList) {
-            cache.put(ItemListList.CLASS_NAME, parseObject.getObjectIdP());
+//            cache.put(ItemListList.CLASS_NAME, parseObject.getObjectIdP());
+            cache.put(ItemListList.CLASS_NAME, parseObject);
         } else if (parseObject instanceof TemplateList) {
-            cache.put(TemplateList.CLASS_NAME, parseObject.getObjectIdP());
+//            cache.put(TemplateList.CLASS_NAME, parseObject.getObjectIdP());
+            cache.put(TemplateList.CLASS_NAME, parseObject);
         }
         if (parseObject instanceof WorkSlot) {
             cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
@@ -135,12 +138,12 @@ public class DAO {
     private ParseObject cacheGet(String objectId) {
         Object temp;
         if ((temp = cache.get(objectId)) != null || (temp = cacheWorkSlots.get(objectId)) != null) {
-            if (temp instanceof String) {
-                //handle named key like CategoryList.CLASS_NAME where the named key points to the Parse ObjectId so need a second get to fecth actual parseObject
-                return (ParseObject) cache.get(temp);
-            } else {
+//            if (temp instanceof String) {
+//                //handle named key like CategoryList.CLASS_NAME where the named key points to the Parse ObjectId so need a second get to fecth actual parseObject
+//                return (ParseObject) cache.get(temp);
+//            } else {
                 return (ParseObject) temp;
-            }
+//            }
         } else {
             return null;
         }
@@ -521,28 +524,30 @@ public class DAO {
 //        return count;
 //    }
 //</editor-fold>
-    public List getAll(String parseClassName) {
-        ParseQuery query = ParseQuery.getQuery(parseClassName);
-        List<ParseObject> results = null;
-        try {
-            results = query.find();
-            //TODO!!!! need to split getAll into a 'refreshCache' version and a getAllCached
-            for (ParseObject o : results) {
-                if (true || o.isDataAvailable()) { //NB. Always cache, even empty objects!!
-//                    if (o instanceof WorkSlot) {
-//                        cacheWorkSlots.put(o.getObjectIdP(), o);
-//                    } else {
-//                        cache.put(o.getObjectIdP(), o);
-//                    }
-                    cachePut(o);
-                }
-            }
-//            cacheList(results);
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        return results;
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List getAll(String parseClassName) {
+//        ParseQuery query = ParseQuery.getQuery(parseClassName);
+//        List<ParseObject> results = null;
+//        try {
+//            results = query.find();
+//            //TODO!!!! need to split getAll into a 'refreshCache' version and a getAllCached
+//            for (ParseObject o : results) {
+//                if (true || o.isDataAvailable()) { //NB. Always cache, even empty objects!!
+////                    if (o instanceof WorkSlot) {
+////                        cacheWorkSlots.put(o.getObjectIdP(), o);
+////                    } else {
+////                        cache.put(o.getObjectIdP(), o);
+////                    }
+//                    cachePut(o);
+//                }
+//            }
+////            cacheList(results);
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        return results;
+//    }
+//</editor-fold>
 
     /**
      * returns list of all defined categories (or empty list if none)
@@ -1827,6 +1832,8 @@ public class DAO {
 //                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
 //                if (workSlot != null) {
 //</editor-fold>
+                    ASSERT.that(workSlot != null, "WorkSlot in cache for key=\"" + key + "\" is null. Key type="
+                            +(key instanceof String?"String":(key instanceof Integer?"Integer":(key instanceof Long?"Long":"other"))));
                     Object owner = workSlot.getOwner();
                     //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
                     if (owner != null && owner.equals(itemWithWorkSlots)) {
@@ -3570,41 +3577,43 @@ public class DAO {
 //        }
 //    }
 //</editor-fold>
-    public void cacheUpdateListToCachedObjectsOLDXXX(List list) {
-//        for (Item o:list) {
-        assert (list != null) : "updating null list from cache";
-//        if (list == null) {
-//            return;
-//        }
-        for (int i = 0, size = list.size(); i < size; i++) {
-//            ParseObject cachedObject;
-            Object cachedObject;
-//            ASSERT.that((list.get(i) != null) && (list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + list + " is null");
-            ASSERT.that((list.get(i) != null) && (list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " is null");
-//            if (((ParseObject) list.get(i)).getObjectId() != null && (cachedObject = (ParseObject) cache.get(((ParseObject) list.get(i)).getObjectId())) != null) {
-            if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
-                list.remove(i); //UI: clean up elements that don't exist anymore
-                i--;
-                size--;
-            } else {
-                ParseObject listElt = (ParseObject) list.get(i);
-                String objId = listElt.getObjectIdP();
-//            if (objId != null && (cachedObject = cache.get(objId)) != null && cachedObject != p) {
-//                if (objId != null && (cachedObject = cacheGet(objId)) != null && cachedObject != p) {
-                if ((cachedObject = cacheGet(listElt)) != null && cachedObject != listElt) {
-                    list.set(i, cachedObject);
-                } else {
-                    cachedObject = fetchIfNeededReturnCachedIfAvail(listElt); //NB! will possibly replace the parseObjects in the list with cached ones
-                    cachePut(listElt); //put new
-                    list.set(i, cachedObject);
-                }
-//                else {
-//                    list.remove(i); //UI: clean up elements that don't exist anymore
-//                    i--;size--;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void cacheUpdateListToCachedObjectsOLDXXX(List list) {
+////        for (Item o:list) {
+//        assert (list != null) : "updating null list from cache";
+////        if (list == null) {
+////            return;
+////        }
+//        for (int i = 0, size = list.size(); i < size; i++) {
+////            ParseObject cachedObject;
+//            Object cachedObject;
+////            ASSERT.that((list.get(i) != null) && (list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + list + " is null");
+//            ASSERT.that((list.get(i) != null) && (list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " is null");
+////            if (((ParseObject) list.get(i)).getObjectId() != null && (cachedObject = (ParseObject) cache.get(((ParseObject) list.get(i)).getObjectId())) != null) {
+//            if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
+//                list.remove(i); //UI: clean up elements that don't exist anymore
+//                i--;
+//                size--;
+//            } else {
+//                ParseObject listElt = (ParseObject) list.get(i);
+//                String objId = listElt.getObjectIdP();
+////            if (objId != null && (cachedObject = cache.get(objId)) != null && cachedObject != p) {
+////                if (objId != null && (cachedObject = cacheGet(objId)) != null && cachedObject != p) {
+//                if ((cachedObject = cacheGet(listElt)) != null && cachedObject != listElt) {
+//                    list.set(i, cachedObject);
+//                } else {
+//                    cachedObject = fetchIfNeededReturnCachedIfAvail(listElt); //NB! will possibly replace the parseObjects in the list with cached ones
+//                    cachePut(listElt); //put new
+//                    list.set(i, cachedObject);
 //                }
-            }
-        }
-    }
+////                else {
+////                    list.remove(i); //UI: clean up elements that don't exist anymore
+////                    i--;size--;
+////                }
+//            }
+//        }
+//    }
+//</editor-fold>
 
     /**
      * will run through list and look up every element in cache (same
@@ -3761,81 +3770,83 @@ public class DAO {
         }
     }
 
-    public void fetchAllElementsInSublist(ItemAndListCommonInterface itemOrItemListOrCategoryOrList) {
-        fetchAllElementsInSublist((ParseObject) itemOrItemListOrCategoryOrList, false);
-    }
-
-//    public void fetchAllElementsInSublist(List itemOrItemListOrCategoryOrList) {
-//        fetchAllElementsInSublist(itemOrItemListOrCategoryOrList, false);
-//    }
-    public void fetchAllElementsInSublist(ParseObject itemOrItemListOrCategoryOrList, boolean recursively) {
-        assert itemOrItemListOrCategoryOrList != null : "fetchAllItemsIn called with null list";
-//        List<ParseObject> list = null;
-        List list = null;
-//        List<ItemAndListCommonInterface> list = null;
-        try {
-//            ParseBatch batch = ParseBatch.create();
-            //TODO!!! find more efficient way to fetchFromCacheOnly all the objects - use ParseBatch once switched to new version of parse4cn1!!
-
-            if (false && itemOrItemListOrCategoryOrList instanceof ParseObject && ((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP() != null) {
-//                 if ((temp = cache.get(((ParseObject) itemOrListOrCategory).getObjectId())) != null) {
-//            return temp;
-//        }
-                //assume that object has been fully fetched:
-                ((ParseObject) itemOrItemListOrCategoryOrList).fetchIfNeeded(); //fetch the top-level object if needed (may be the case when fetching recursively)
-//                if (itemOrItemListOrCategoryOrList instanceof WorkSlot) {
-//                    cacheWorkSlots.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
-//                } else {
-//                    cache.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
-//                }
-                cachePut((ParseObject) itemOrItemListOrCategoryOrList);
-            }
-
-            if (itemOrItemListOrCategoryOrList instanceof ItemAndListCommonInterface) {
-                list = ((ItemAndListCommonInterface) itemOrItemListOrCategoryOrList).getList();
-                for (int i = 0, size = list.size(); i < size; i++) {
-                    list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
-//                    if (recursively) {
-//                        fetchAllElementsInSublist((ParseObject) list.get(i), recursively);
-//                    }
-                }
-            }
 //<editor-fold defaultstate="collapsed" desc="comment">
-//            if (itemOrItemListOrCategoryOrList instanceof Item) {
-////                list = (List<Item>)((Item) itemOrItemListOrCategoryOrList).getList();
-//                list = ((Item) itemOrItemListOrCategoryOrList).getList();
-////                list = ((List<Item>) itemOrItemListOrCategoryOrList).getList();
-//            } else if (itemOrItemListOrCategoryOrList instanceof Category) {
-//                list = ((Category) itemOrItemListOrCategoryOrList).getList();
-//            } else if (itemOrItemListOrCategoryOrList instanceof ItemList) {
-//                list = ((ItemList) itemOrItemListOrCategoryOrList).getList();
-//            } else if (itemOrItemListOrCategoryOrList instanceof List) {
-//                list = (List) itemOrItemListOrCategoryOrList;
-//            } else {
-//                assert false : "unknow type of element to fetch=" + itemOrItemListOrCategoryOrList;
+//    public void fetchAllElementsInSublist(ItemAndListCommonInterface itemOrItemListOrCategoryOrList) {
+//        fetchAllElementsInSublist((ParseObject) itemOrItemListOrCategoryOrList, false);
+//    }
+//
+////    public void fetchAllElementsInSublist(List itemOrItemListOrCategoryOrList) {
+////        fetchAllElementsInSublist(itemOrItemListOrCategoryOrList, false);
+////    }
+//    public void fetchAllElementsInSublist(ParseObject itemOrItemListOrCategoryOrList, boolean recursively) {
+//        assert itemOrItemListOrCategoryOrList != null : "fetchAllItemsIn called with null list";
+////        List<ParseObject> list = null;
+//        List list = null;
+////        List<ItemAndListCommonInterface> list = null;
+//        try {
+////            ParseBatch batch = ParseBatch.create();
+//            //TODO!!! find more efficient way to fetchFromCacheOnly all the objects - use ParseBatch once switched to new version of parse4cn1!!
+//
+//            if (false && itemOrItemListOrCategoryOrList instanceof ParseObject && ((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP() != null) {
+////                 if ((temp = cache.get(((ParseObject) itemOrListOrCategory).getObjectId())) != null) {
+////            return temp;
+////        }
+//                //assume that object has been fully fetched:
+//                ((ParseObject) itemOrItemListOrCategoryOrList).fetchIfNeeded(); //fetch the top-level object if needed (may be the case when fetching recursively)
+////                if (itemOrItemListOrCategoryOrList instanceof WorkSlot) {
+////                    cacheWorkSlots.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
+////                } else {
+////                    cache.put(((ParseObject) itemOrItemListOrCategoryOrList).getObjectIdP(), itemOrItemListOrCategoryOrList);
+////                }
+//                cachePut((ParseObject) itemOrItemListOrCategoryOrList);
 //            }
-////            for (ParseObject item : list) {
-//            for (int i = 0, size = list.size(); i < size; i++) {
-////                ((Item) item).fetchIfNeeded();
-////                item.fetchIfNeeded();
-////                fetchIfNeeded(item);
-//                list.set(i, fetchIfNeededReturnCachedIfAvail(list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
-//                if (recursively) {
-//                    fetchAllElementsInSublist(list.get(i), recursively);
+//
+//            if (itemOrItemListOrCategoryOrList instanceof ItemAndListCommonInterface) {
+//                list = ((ItemAndListCommonInterface) itemOrItemListOrCategoryOrList).getList();
+//                for (int i = 0, size = list.size(); i < size; i++) {
+//                    list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
+////                    if (recursively) {
+////                        fetchAllElementsInSublist((ParseObject) list.get(i), recursively);
+////                    }
 //                }
 //            }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (itemOrItemListOrCategoryOrList instanceof Item) {
+//////                list = (List<Item>)((Item) itemOrItemListOrCategoryOrList).getList();
+////                list = ((Item) itemOrItemListOrCategoryOrList).getList();
+//////                list = ((List<Item>) itemOrItemListOrCategoryOrList).getList();
+////            } else if (itemOrItemListOrCategoryOrList instanceof Category) {
+////                list = ((Category) itemOrItemListOrCategoryOrList).getList();
+////            } else if (itemOrItemListOrCategoryOrList instanceof ItemList) {
+////                list = ((ItemList) itemOrItemListOrCategoryOrList).getList();
+////            } else if (itemOrItemListOrCategoryOrList instanceof List) {
+////                list = (List) itemOrItemListOrCategoryOrList;
+////            } else {
+////                assert false : "unknow type of element to fetch=" + itemOrItemListOrCategoryOrList;
+////            }
+//////            for (ParseObject item : list) {
+////            for (int i = 0, size = list.size(); i < size; i++) {
+//////                ((Item) item).fetchIfNeeded();
+//////                item.fetchIfNeeded();
+//////                fetchIfNeeded(item);
+////                list.set(i, fetchIfNeededReturnCachedIfAvail(list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
+////                if (recursively) {
+////                    fetchAllElementsInSublist(list.get(i), recursively);
+////                }
+////            }
+////</editor-fold>
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        if (itemOrItemListOrCategoryOrList instanceof Item) {
+//            ((Item) itemOrItemListOrCategoryOrList).setList(list);
+//        } else if (itemOrItemListOrCategoryOrList instanceof Category) {
+//            ((Category) itemOrItemListOrCategoryOrList).setList(list);
+//        } else if (itemOrItemListOrCategoryOrList instanceof ItemList) {
+//            ((ItemList) itemOrItemListOrCategoryOrList).setList(list);
+//        };
+//    }
 //</editor-fold>
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        if (itemOrItemListOrCategoryOrList instanceof Item) {
-            ((Item) itemOrItemListOrCategoryOrList).setList(list);
-        } else if (itemOrItemListOrCategoryOrList instanceof Category) {
-            ((Category) itemOrItemListOrCategoryOrList).setList(list);
-        } else if (itemOrItemListOrCategoryOrList instanceof ItemList) {
-            ((ItemList) itemOrItemListOrCategoryOrList).setList(list);
-        };
-    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void cacheAllDataOLDXXX() {
