@@ -342,9 +342,10 @@ public class ScreenListOfItemLists extends MyForm {
 //        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText()+(itemList.getWorkSlotList()!=null?"#":""), swipCont, () -> true); //D&D
         WorkSlotList wSlots = itemList.getWorkSlotList(false);
 //        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotList(false).size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
-        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (wSlots != null && wSlots.size() > 0 ? "[W]" : ""), swipCont, () -> true); //D&D
+        MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (wSlots != null && wSlots.size() > 0 ? "[W]" : ""), 
+                swipCont, () -> true); //D&D
 
-        mainCont.addComponent(BorderLayout.CENTER, itemLabel);
+        mainCont.addComponent(BorderLayout.CENTER, itemListLabel);
 
         Button editItemListPropertiesButton = null;
         if (!statisticsMode) { //don't edit properties of the (temporary) ItemLists generated to display the results
@@ -501,7 +502,7 @@ public class ScreenListOfItemLists extends MyForm {
                     }
                 }
             };
-            itemLabel.addActionListener(detailActionListener); //UI: touch task name to show/hide details
+            itemListLabel.addActionListener(detailActionListener); //UI: touch task name to show/hide details
 
             boolean showDetails = MyPrefs.getBoolean(MyPrefs.statisticsShowDetailsForAllLists); // || (myForm.showDetails != null && myForm.showDetails.contains(itemList)); //hide details by default
             if (showDetails) {
@@ -573,9 +574,10 @@ public class ScreenListOfItemLists extends MyForm {
             keepPos.testItemToKeepInSameScreenPosition(itemList, swipCont);
         }
 
-        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotList(false).size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
+        MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotList(false).size() > 0 ? "%" : ""), 
+                swipCont, () -> true); //D&D
 
-        mainCont.addComponent(BorderLayout.CENTER, itemLabel);
+        mainCont.addComponent(BorderLayout.CENTER, itemListLabel);
 
         Button editItemListPropertiesButton = null;
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -625,7 +627,7 @@ public class ScreenListOfItemLists extends MyForm {
                 }
             }
         };
-        itemLabel.addActionListener(detailActionListener); //UI: touch task name to show/hide details
+        itemListLabel.addActionListener(detailActionListener); //UI: touch task name to show/hide details
 
         boolean showDetails = MyPrefs.getBoolean(MyPrefs.statisticsShowDetailsForAllLists); // || (myForm.showDetails != null && myForm.showDetails.contains(itemList)); //hide details by default
         if (showDetails) {

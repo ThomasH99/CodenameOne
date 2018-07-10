@@ -250,7 +250,8 @@ public class ScreenItem extends MyForm {
                 Item template = new Item();
                 item.copyMeInto(template, Item.CopyMode.COPY_TO_TEMPLATE);
                 DAO.getInstance().save(template);
-                TemplateList templateList = DAO.getInstance().getTemplateList();
+//                TemplateList templateList = DAO.getInstance().getTemplateList();
+                TemplateList templateList = TemplateList.getInstance();
                 if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
                     templateList.add(0, template);
                 } else {
@@ -263,7 +264,8 @@ public class ScreenItem extends MyForm {
 //                        DAO.getInstance().save(template);
 //                    }).show();
 //                }
-                new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, DAO.getInstance().getTemplateList(), ScreenItem.this, (i) -> {
+//                new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, DAO.getInstance().getTemplateList(), ScreenItem.this, (i) -> {
+                new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, TemplateList.getInstance(), ScreenItem.this, (i) -> {
                 }, ScreenListOfItems.OPTION_TEMPLATE_EDIT// | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                 ).show();
             });
@@ -283,7 +285,8 @@ public class ScreenItem extends MyForm {
                             ((Dialog) f).dispose();
                         }
                     }
-                    new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, DAO.getInstance().getTemplateList(), selectedTemplates, ScreenItem.this, () -> {
+//                    new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, DAO.getInstance().getTemplateList(), selectedTemplates, ScreenItem.this, () -> {
+                    new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), selectedTemplates, ScreenItem.this, () -> {
                         if (selectedTemplates.size() >= 1) {
                             Item template = (Item) selectedTemplates.get(0);
                             Dialog ip = new InfiniteProgress().showInifiniteBlocking();

@@ -174,6 +174,11 @@ public class ScreenListOfCategories extends MyForm {
 //</editor-fold>
     }
 
+    @Override
+    protected boolean isDragAndDropEnabled() {
+        return true; //TODO implement test for when drag and drop is possible (for the moment lists are never sorted)
+    }
+
     /**
      *
      * @param content
@@ -332,8 +337,8 @@ public class ScreenListOfCategories extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, editItemButton);
 //        cont.addComponent(BorderLayout.CENTER, new Label(category.getText()));
 //</editor-fold>
-        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(category.getText(), swipCont, () -> true); //D&D
-        mainCont.addComponent(BorderLayout.CENTER, itemLabel);
+        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText(), swipCont, () -> true); //D&D
+        mainCont.addComponent(BorderLayout.CENTER, categoryLabel);
 
         Button editItemPropertiesButton = new Button();
         editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCatProps"+category.getObjectIdP(), "",Icons.iconEditPropertiesToolbarStyle, (e) -> {
@@ -376,7 +381,7 @@ public class ScreenListOfCategories extends MyForm {
 
         east.addComponent(editItemPropertiesButton);
 
-        if (!category.getComment().equals("")) {
+        if (MyPrefs.showCategoryDescriptionInCategoryList.getBoolean() && !category.getComment().equals("")) {
             mainCont.addComponent(BorderLayout.SOUTH,
                     new Container(BoxLayout.x()).add(
                             new Label("(" + category.getComment() + ")")));

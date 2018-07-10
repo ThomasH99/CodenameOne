@@ -961,6 +961,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_FIRST_ALARM = "firstAlarm"; //first-coming/next-coming alarm (to allow easy search in Parse)
     final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
     final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the 
+    final static String PARSE_FILTER_SORT_DEF = "filterSort";
 //    final static String PARSE_ = "";
 
     /**
@@ -4909,13 +4910,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void addCategoryToItem(Category category, boolean addItemToCategory) {
         if (category != null) {
             if (!getCategories().contains(category)) {
-                List cats = getCategories();
+                List<Category> cats = getCategories();
                 cats.add(category);
                 setCategories(cats);
             }
-        }
-        if (addItemToCategory) {
-            category.addItemToCategory(this, false);
+            if (addItemToCategory) {
+                category.addItemToCategory(this, false);
+            }
         }
 //        this.addUniqueToArrayField(PARSE_CATEGORIES, category); //TODO: will addUniqueToArrayField create the list if not already existing?
     }
@@ -4928,8 +4929,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public void removeCategoryFromItem(Category category, boolean removeItemFromCategory) {
         if (category != null) {
-            List cats = getCategories();
-            cats.remove(this);
+            List<Category> cats = getCategories();
+//            cats.remove(this);
+            cats.remove(category);
             setCategories(cats);
             if (removeItemFromCategory) {
                 category.removeItemFromCategory(this, false);
@@ -6425,13 +6427,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public WorkTimeAllocator getWorkTimeAllocator(boolean reset) {
         if (true || wtd == null || reset) {
+            Log.p("-> .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"");
+
 //            WorkTime availableWorkTime = getAvailableWorkTime();
             WorkTime availableWorkTime = getAllocatedWorkTime();
             if (availableWorkTime != null) {
 //                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), availableWorkTime);
-                wtd = new WorkTimeAllocator(getList(), availableWorkTime, this);
+//                wtd = new WorkTimeAllocator(getList(), availableWorkTime, this);
+                wtd = new WorkTimeAllocator(availableWorkTime, this);
             }
         }
+        Log.p("<  .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"returning=" + wtd.toString());
         return wtd;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -6497,8 +6503,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (isDone()) {
             return 0;
         }
+        Log.p("-> .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\"");
+
         long required = 0;
-        //get the amount of worktime the subtasks require from me (their mother project)
+
+        //get the amount of worktime the subtasks require from this (their mother project)
         List<ItemAndListCommonInterface> subtasks = getList();
         if (subtasks != null && subtasks.size() > 0) {
             for (ItemAndListCommonInterface subtask : subtasks) { //starts from the *last* element in the list!!!
@@ -6516,23 +6525,29 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             for (ItemAndListCommonInterface prov : providers) {
 //                prov = providers.get(i);
                 if (prov.equals(provider)) { //prov == provider) {
-                    break; // return what is remaining for provider
+                    Log.p("   .getWorkTimeRequiredFromProvider - break since reached prov=\"" + prov+ "\"");
+                    break; // stop iteration when we get to provider itself and return what is remaining for provider to deliver
                 } else {
                     ASSERT.that(!prov.equals(provider), "duplicate object instances for prov=" + prov + ", this=" + this);
                     if (prov instanceof Category && ((Category) prov).isOwnerOfItemInCategoryBeforeItem(this)) {
+                        Log.p("-> .getWorkTimeRequiredFromProvider - trying to get worktime from Category (" + prov + ") AND isOwnerOfItemInCategoryBeforeItem(" + this + "\") is true");
                         return 0;
                     }
                     WorkTime wt = prov.getWorkTimeAllocator(false).getAllocatedWorkTime(this, required);
 //                    if (wt != null) {
                     required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
 //                    }
+                    Log.p("-> .getWorkTimeRequiredFromProvider - got workTime from (" + prov + ") allocated=="+MyDate.formatTimeDuration(wt.getAllocatedDuration())+ ", remaining==" + MyDate.formatTimeDuration(required));
                 }
+
                 assert required >= 0;
                 if (required == 0) { //other higher prio providers allocated all required worktime
                     return 0;//required; //return here, don't go through other providers
                 }
             }
         }
+        Log.p("<  .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\" returning " + required);
+
         return required;
     }
 
@@ -6743,8 +6758,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * returns workTime for the item at index itemIndex and for an effort of
      * remainingTime
      *
-     * @param itemIndex
-     * @param desiredDuration
      * @return null if no workTime
      */
     public WorkTime getAllocatedWorkTime(boolean reset) {
@@ -6753,7 +6766,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return workTime;
 //        } else {
 
-            //Get remaining time
+            Log.p("-> .getAllocatedWorkTime(" + reset + ") for Item \"" + this + "\"");
+            
+            //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
             long remaining = 0;
             List<? extends ItemAndListCommonInterface> subtasks = getList();
             if (subtasks != null && subtasks.size() > 0) { //I'm a project
@@ -6765,6 +6780,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 remaining = getRemainingEffort(); //how much total workTime is required?
             }
 
+            //now iterate over workTimeProviders (returned by prio order) and get as much as possible from each
             List<ItemAndListCommonInterface> providers = getWorkTimeProvidersInPrioOrder();
             if (providers != null) {
                 for (ItemAndListCommonInterface prov : providers) {
@@ -6791,6 +6807,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
         }
+        Log.p("<  .getAllocatedWorkTime(" + reset + ") for Item \"" + this.toString() + "\" returning " + (workTime != null ? workTime.toString() : "<null>"));
+
         return workTime;
     }
 
@@ -6805,6 +6823,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public long getFinishTime() {
+
         long latestFinishTime = MyDate.MIN_DATE;
         if (isProject()) { //UI: for projects, finishTime is ALWAYS latest finishTime for subtasks (or undefined if all subtasks are Done)
             for (Object subtask : getList()) {
@@ -6897,6 +6916,34 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+        /**
+     * set and save filter (and resets the filtered/sorted list)
+     *
+     * @param filterSortDef
+     */
+    public void setFilterSortDef(FilterSortDef filterSortDef) {
+        if (filterSortDef != null) {
+            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved
+                DAO.getInstance().save(filterSortDef); //
+            }
+            put(PARSE_FILTER_SORT_DEF, filterSortDef);
+        } else {
+            remove(PARSE_FILTER_SORT_DEF);
+        }
+    }
+
+    public FilterSortDef getFilterSortDef() {
+        FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
+        filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
+//        if (filterSortDef != null) {
+//            return filterSortDef;
+//        } else {
+//            return null;
+//        }
+        return filterSortDef;
+    }
+
+    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public Date getFinishTime(ItemAndListCommonInterface subtask) {

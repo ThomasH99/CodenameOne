@@ -215,7 +215,8 @@ public class ScreenMain extends MyForm {
 
         Command templates = MyReplayCommand.create(SCREEN_TEMPLATES_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
 //                new ScreenListOfItems("Templates", new ItemList(DAO.getInstance().getAllTemplates()), ScreenMain.this, (i) -> {}, null, false, true).show();
-                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, DAO.getInstance().getTemplateList(), ScreenMain.this, (i) -> {
+//                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, DAO.getInstance().getTemplateList(), ScreenMain.this, (i) -> {
+                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, TemplateList.getInstance(), ScreenMain.this, (i) -> {
                     }, ScreenListOfItems.OPTION_TEMPLATE_EDIT// | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                     ).show();
 //                new ScreenListOfItems("Templates", new ItemList(DAO.getInstance().getAllTemplates()), ScreenMain.this, (i) -> {
@@ -324,7 +325,7 @@ public class ScreenMain extends MyForm {
 //        }
 //</editor-fold>
         Command cleanTemplates = MyReplayCommand.create("Clean up templates", Icons.get().iconSettingsLabelStyle, (e) -> {
-            DAO.getInstance().cleanUpTemplateListInParse();
+            DAO.getInstance().cleanUpTemplateListInParse(true);
         }
         );
         makeAndAddButtons(cleanTemplates, toolbar, cont, "**");

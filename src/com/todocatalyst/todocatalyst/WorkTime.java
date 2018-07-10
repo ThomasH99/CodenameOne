@@ -30,7 +30,7 @@ public class WorkTime {
     public String toString() {
         String res = "";
         for (WorkSlotSlice workSlot : workSlotSlices) {
-            res += workSlot + ", ";
+            res += workSlot.toString() + ", ";
         }
         return res;
     }
@@ -317,6 +317,7 @@ public class WorkTime {
      * @return
      */
     WorkTime getWorkTime(long remainingDuration) {
+//        return getWorkTime(getStartTime(), remainingDuration); //default is startTime of this WorkTime
         return getWorkTime(getStartTime(), remainingDuration); //default is startTime of this WorkTime
     }
 

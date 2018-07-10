@@ -24,11 +24,21 @@ import java.util.List;
 public class TemplateList extends ItemList {
 
     public static String CLASS_NAME = "TemplateList";
-
     final static String PARSE_ITEMLIST_LIST = "templateList";
+    private static TemplateList INSTANCE = null;
 
     public TemplateList() {
         super(CLASS_NAME);
+    }
+
+    static public TemplateList getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = DAO.getInstance().getTemplateList();
+//            if (INSTANCE == null) {
+//                INSTANCE = new CategoryList();
+//            }
+        }
+        return INSTANCE;
     }
 
     public List<ItemList> getList() {

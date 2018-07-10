@@ -283,13 +283,14 @@ class KeepInSameScreenPosition {
 //        }
 //</editor-fold>
     /**
-     * called when rebuilding a tree
+     * called when rebuilding a tree. Called when rebuilding the tree to find the (new) component which corresponds to the item that should be kept in the same position. 
      *
      * @param item
      * @param possibleNewComponent
      */
     void testItemToKeepInSameScreenPosition(Object item, Component possibleNewComponent) {
-        if (item != null && item == itemOrg) {
+//        if (item != null && item == itemOrg) {
+        if (itemOrg != null && item == itemOrg) {
             this.newComponent = possibleNewComponent;
             itemOrg = null;
         }
@@ -311,44 +312,50 @@ class KeepInSameScreenPosition {
         if (Test.DEBUG) {
 //            Form currentForm = Display.getInstance().getCurrent();
         }
-        if (true) {
+//        if (true) {
 //            Form currentForm = Display.getInstance().getCurrent();
 //            if (currentForm != null) {
 //                if (currentForm.getContentPane() != null) {
 //                    return findScrollableChild(currentForm.getContentPane());
 //                }
 //            }
-            if (newComponent != null) {
-                return findScrollableChild(newComponent.getComponentForm().getContentPane());
-            }
-        } else {
-            if (newComponent != null) {
-                return getScrollableContainer(newComponent);
-            } else { //we didn't find newComponent so must find the scrollable container in some other way
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            Container scrollableCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y
-//            if (Test.DEBUG) {
-//                Container parent = scrollableCont.getParent();
-//            }
-//            if (scrollableCont.isScrollableY()) {
-//                return scrollableCont;
-//            } else {
-//                //is the ContentPane a BorderLayout with a scrollable CENTER?
-//                Layout layout = scrollableCont.getLayout();
-//                if (layout instanceof BorderLayout) {
-//                    Component centerComp = ((BorderLayout) layout).getCenter();
-//                    if (centerComp instanceof Container && centerComp.isScrollableY()) {
-////                        scrollableCont = ((Container) centerComp); //if usual construction with scrollable center container
-//                        return ((Container) centerComp); //if usual construction with scrollable center container
-//                    }
-//                }
-//            }
-//            return null;
-//</editor-fold>
-                return getScrollableContainer(someComponent);
-            }
+        if (newComponent != null) { //if we found the new component
+            return findScrollableChild(newComponent.getComponentForm().getContentPane());
+        } else if (someComponent != null) { //else lets use some other component from the form
+            return findScrollableChild(someComponent.getComponentForm().getContentPane());
+        } else { //otherwise we'll simply get the form
+//                return findScrollableChild(Display.getInstance().getCurrent().getContentPane());
+            return findScrollableChild(Display.getInstance().getCurrent());
         }
-        return null;
+
+//        } else {
+//            if (newComponent != null) {
+//                return getScrollableContainer(newComponent);
+//            } else { //we didn't find newComponent so must find the scrollable container in some other way
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            Container scrollableCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y
+////            if (Test.DEBUG) {
+////                Container parent = scrollableCont.getParent();
+////            }
+////            if (scrollableCont.isScrollableY()) {
+////                return scrollableCont;
+////            } else {
+////                //is the ContentPane a BorderLayout with a scrollable CENTER?
+////                Layout layout = scrollableCont.getLayout();
+////                if (layout instanceof BorderLayout) {
+////                    Component centerComp = ((BorderLayout) layout).getCenter();
+////                    if (centerComp instanceof Container && centerComp.isScrollableY()) {
+//////                        scrollableCont = ((Container) centerComp); //if usual construction with scrollable center container
+////                        return ((Container) centerComp); //if usual construction with scrollable center container
+////                    }
+////                }
+////            }
+////            return null;
+////</editor-fold>
+//                return getScrollableContainer(someComponent);
+//            }
+//        }
+//        return null;
     }
 
     private Container findScrollableContainerOLD() {

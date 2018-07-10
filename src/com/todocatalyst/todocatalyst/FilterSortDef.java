@@ -82,12 +82,12 @@ public class FilterSortDef extends ParseObject {
     }
 
 //    public FilterSortDef(String screenId, String filteredObjectId) {
-    public FilterSortDef(String screenId, ParseObject filteredObject) {
-        this();
-        setScreenId(screenId);
-        setFilteredObjectId(filteredObject.getObjectIdP());
-        setFilteredObject(filteredObject);
-    }
+//    public FilterSortDef(String screenId, ParseObject filteredObject) {
+//        this();
+//        setScreenId(screenId);
+//        setFilteredObjectId(filteredObject.getObjectIdP());
+//        setFilteredObject(filteredObject);
+//    }
 
     public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortDescending) {
         this();
@@ -163,47 +163,47 @@ public class FilterSortDef extends ParseObject {
 //    private String sortFieldId = Item.PARSE_DUE_DATE; //UI: default sort on DueDate (??)
 //    private boolean sortAscending = true;
 //    private boolean sortOn = false;
-    public String getScreenId() {
-        return getString(PARSE_SCREEN_ID);
-    }
+//    public String getScreenId() {
+//        return getString(PARSE_SCREEN_ID);
+//    }
+//
+//    public void setScreenId(String screenId) {
+//        put(PARSE_SCREEN_ID, screenId);
+//    }
 
-    public void setScreenId(String screenId) {
-        put(PARSE_SCREEN_ID, screenId);
-    }
-
-    public String getFilteredObjectId() {
-        String objId = getString(PARSE_FILTERED_OBJECT_ID);
-        if (objId != null) {
-            return objId;
-        } else {
-            return "";
-        }
-    }
-
-    public void setFilteredObjectId(String filteredObjectId) {
-        if (filteredObjectId != null) {
-            put(PARSE_FILTERED_OBJECT_ID, filteredObjectId);
-        } else {
-            remove(PARSE_FILTERED_OBJECT_ID);
-        }
-    }
-
-    public ParseObject getFilteredObject() {
-        Object parseObject = get(PARSE_FILTERED_OBJECT);
-        if (parseObject != null && parseObject instanceof ParseObject) {
-            return (ParseObject) parseObject;
-        } else {
-            return null;
-        }
-    }
-
-    public void setFilteredObject(ParseObject filteredObject) {
-        if (filteredObject != null) {
-            put(PARSE_FILTERED_OBJECT, filteredObject);
-        } else {
-            remove(PARSE_FILTERED_OBJECT);
-        }
-    }
+//    public String getFilteredObjectId() {
+//        String objId = getString(PARSE_FILTERED_OBJECT_ID);
+//        if (objId != null) {
+//            return objId;
+//        } else {
+//            return "";
+//        }
+//    }
+//
+//    public void setFilteredObjectId(String filteredObjectId) {
+//        if (filteredObjectId != null) {
+//            put(PARSE_FILTERED_OBJECT_ID, filteredObjectId);
+//        } else {
+//            remove(PARSE_FILTERED_OBJECT_ID);
+//        }
+//    }
+//
+//    public ParseObject getFilteredObject() {
+//        Object parseObject = get(PARSE_FILTERED_OBJECT);
+//        if (parseObject != null && parseObject instanceof ParseObject) {
+//            return (ParseObject) parseObject;
+//        } else {
+//            return null;
+//        }
+//    }
+//
+//    public void setFilteredObject(ParseObject filteredObject) {
+//        if (filteredObject != null) {
+//            put(PARSE_FILTERED_OBJECT, filteredObject);
+//        } else {
+//            remove(PARSE_FILTERED_OBJECT);
+//        }
+//    }
 
     public String getFilterName() {
         return getString(PARSE_FILTER_NAME);

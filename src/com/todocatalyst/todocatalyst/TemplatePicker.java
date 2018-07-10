@@ -15,7 +15,8 @@ import java.util.List;
  */
     class TemplatePicker extends Picker {
 
-        List<Item> templateList = DAO.getInstance().getTemplateList();
+//        List<Item> templateList = DAO.getInstance().getTemplateList();
+        List<Item> templateList = TemplateList.getInstance();
         String[] stringArray = new String[templateList.size()];
 
         TemplatePicker() {

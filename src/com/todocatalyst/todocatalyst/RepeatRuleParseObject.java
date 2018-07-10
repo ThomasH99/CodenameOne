@@ -248,7 +248,7 @@ public class RepeatRuleParseObject
         return repeatRule;
     }
 
-    private void setListOfUndoneRepeatInstances(List list) {
+    public void setListOfUndoneRepeatInstances(List list) {
         if (list != null && !list.isEmpty()) {
             put(PARSE_REPEAT_INSTANCE_ITEMLIST, list);
         } else {
