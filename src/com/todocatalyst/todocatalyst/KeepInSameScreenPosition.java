@@ -325,7 +325,12 @@ class KeepInSameScreenPosition {
             return findScrollableChild(someComponent.getComponentForm().getContentPane());
         } else { //otherwise we'll simply get the form
 //                return findScrollableChild(Display.getInstance().getCurrent().getContentPane());
-            return findScrollableChild(Display.getInstance().getCurrent());
+            Form f = Display.getInstance().getCurrent();
+            if (f != null) {
+                return findScrollableChild(f);
+            } else {
+                return null;
+            }
         }
 
 //        } else {

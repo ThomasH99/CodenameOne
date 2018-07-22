@@ -214,7 +214,7 @@ public class WorkSlotList extends ArrayList<WorkSlot> {
             Iterator<WorkSlot> it = workSlots.iterator();
             WorkSlot workSlot = null;
             //for all elements, efficient when elements are removed (it skips going through elements that that start *after* endTime)
-            while (it.hasNext() && (workSlot = it.next()).getStartTime() < endTime) { //if workSlot.getStartTime() > endTime, then the workSlot is definitely outside the desired interval
+            while (it.hasNext() && (workSlot = it.next()).getStartTimeD().getTime() < endTime) { //if workSlot.getStartTime() > endTime, then the workSlot is definitely outside the desired interval
                 if (workSlot.hasDurationInInterval(startTime, endTime)) {
                     result.add(workSlot);
                     if (false) { //don't remove since some workSlots may fall within different intervals, eg if stretching over midnight
@@ -229,7 +229,7 @@ public class WorkSlotList extends ArrayList<WorkSlot> {
                 WorkSlot workSlot = it.next();
                 if (workSlot.hasDurationInInterval(startTime, endTime)) {
                     result.add(workSlot);
-                    if (false && workSlot.getDurationAdjusted(startTime, endTime) == workSlot.getDuration()) { //do not remove if some of the workSlots falls outside the interval (meaning it should also be return for the other interval)
+                    if (false && workSlot.getDurationAdjusted(startTime, endTime) == workSlot.getDurationInMillis()) { //do not remove if some of the workSlots falls outside the interval (meaning it should also be return for the other interval)
                         it.remove();
                     }
                 }

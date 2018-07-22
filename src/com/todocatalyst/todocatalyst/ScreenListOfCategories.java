@@ -110,6 +110,7 @@ public class ScreenListOfCategories extends MyForm {
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
+        categoryList.resetWorkTimeDefinition();
         getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(categoryList));
         revalidate();
 //        if (this.keepPos != null) {

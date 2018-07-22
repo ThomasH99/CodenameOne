@@ -233,9 +233,9 @@ public class ScreenItem extends MyForm {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotList(), item, ScreenItem.this, null, //(iList) -> {
-//                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
-//                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
-                 null, false).show();
+                        //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
+                        //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
+                        null, false).show();
             }
         });
 //        }
@@ -708,8 +708,12 @@ public class ScreenItem extends MyForm {
 
 //        MyTextField(String title, String hint, int columns, int constraint, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
 //        MyTextField description = new MyTextField("Task", 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2, () -> item.getText(), (s) -> item.setText(s));
-        MyTextField description = new MyTextField(Item.DESCRIPTION_HINT, 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
+//        MyTextField description = new MyTextField(Item.DESCRIPTION_HINT, 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
+//                () -> itemLS.getText(), (s) -> item.setText(s));
+        MyTextArea description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
                 () -> itemLS.getText(), (s) -> item.setText(s));
+        //https://stackoverflow.com/questions/34531047/how-to-add-donelistener-to-textarea-in-codename-one: "putClientProperty("searchField", true);, putClientProperty("sendButton", true);and putClientProperty("goButton", true); would place a button on the keyboard"
+        description.putClientProperty("goButton", true);
         description.setUIID("Text");
         description.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
 //        MyCheckBox status = new MyCheckBox(null, parseIdMap2, () -> item.isDone(), (b) -> item.setDone(b));
@@ -730,10 +734,10 @@ public class ScreenItem extends MyForm {
         //need to declare already here to use in actionListener below
         MyDurationPicker effortEstimate;
         if (item.isProject()) {
-            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS, 
-                    (i) -> item.setEffortEstimate(((long)i) * MyDate.MINUTE_IN_MILLISECONDS, false, true));
+            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS,
+                    (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false, true));
         } else {
-            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS, 
+            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS,
                     (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
         }
 
@@ -806,6 +810,7 @@ public class ScreenItem extends MyForm {
 //        MyTextField comment = new MyTextField("Details", "Comments", 20, TextArea.ANY, parseIdMap, item, Item.PARSE_COMMENT);
         MyTextArea comment = new MyTextArea(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
                 () -> itemLS.getComment(), (s) -> item.setComment(s));
+        comment.putClientProperty("goButton", true);
 //        comment.setUIID("Comment");
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////        Button addTimeStampToComment = new Button(Command.create(null, Icons.iconAddTimeStampToCommentLabelStyle, (e) -> {
@@ -858,12 +863,14 @@ public class ScreenItem extends MyForm {
 
         //FINISH_TIME
 //        WorkTime workTime = item.getAllocatedWorkTime();
-        Date workTime = item.getFinishTimeD();
-        if (workTime.getTime() != MyDate.MAX_DATE) {
-            Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(workTime), null, (e) -> {
-                new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
-            }));
-            mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true));
+        if (!item.isDone()) {
+            Date workTime = item.getFinishTimeD();
+            if (workTime.getTime() != MyDate.MAX_DATE) {
+                Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(workTime), null, (e) -> {
+                    new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
+                }));
+                mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true));
+            }
         }
 
 //        MyDateAndTimePicker alarmDate = new MyDateAndTimePicker("<click to set an alarm>", parseIdMap, item, Item.PARSE_ALARM_DATE);
@@ -1215,14 +1222,14 @@ public class ScreenItem extends MyForm {
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
                     Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
             //get the effort for the project task itself:
-            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS, 
+            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS,
                     (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,
-                    false, true));
+                            false, true));
 //            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
 //            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {            }, true, true, false));
             timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP));
 
-            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort(true) / MyDate.MINUTE_IN_MILLISECONDS, 
+            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort(true) / MyDate.MINUTE_IN_MILLISECONDS,
                     (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort.makeContainerWithClearButton(), actualExplanation));
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP, true, false, false));
@@ -1234,7 +1241,7 @@ public class ScreenItem extends MyForm {
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate, Item.EFFORT_ESTIMATE_PROJECT_HELP));
         } else {
 //            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getActualEffortInMinutes(), (i) -> item.setActualEffortInMinutes((int) i));
-            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort() / MyDate.MINUTE_IN_MILLISECONDS, 
+            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort() / MyDate.MINUTE_IN_MILLISECONDS,
                     (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            timeCont.add(new Label(Item.EFFORT_ACTUAL)).add(addTimePickerWithClearButton(actualEffort)).add(actualExplanation);
@@ -1252,7 +1259,7 @@ public class ScreenItem extends MyForm {
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP));
 
 //            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
-            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS, 
+            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,
                     (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            timeCont.add(new Label(Item.EFFORT_REMAINING)).add(addTimePickerWithClearButton(remainingEffort));
@@ -1440,9 +1447,9 @@ public class ScreenItem extends MyForm {
                     earnedValuePerHour.setText(""
                             + Item.calculateEarnedValuePerHour(
                                     Item.getTotalExpectedEffort(
-                                            ((long)remainingEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
-                                            ((long)actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
-                                            ((long)effortEstimate.getTime()) * MyDate.MINUTE_IN_MILLISECONDS),
+                                            ((long) remainingEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
+                                            ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
+                                            ((long) effortEstimate.getTime()) * MyDate.MINUTE_IN_MILLISECONDS),
                                     Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())));
                     earnedValuePerHour.animate(); //TODO: needed?
                 }
@@ -1505,7 +1512,7 @@ public class ScreenItem extends MyForm {
 //                            || item.getRemainingEffortNoDefault() == 0
 //                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: when to auto-update estimates
                     remainingEffort.setTime(effortEstimate.getTime() - actualEffort.getTime()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
-                    remainingEffortSetManually=false; //must reset since the actionlistener on remainingEffort does not distinguish between setting via manual user input and auto-setting based on changed effortEstimate
+                    remainingEffortSetManually = false; //must reset since the actionlistener on remainingEffort does not distinguish between setting via manual user input and auto-setting based on changed effortEstimate
                     remainingEffort.repaint();
 //                    }
                 }
@@ -1676,7 +1683,7 @@ public class ScreenItem extends MyForm {
 //                    if (item.getStartedOnDate()==0 && startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
                     if (item.getStartedOnDate() == 0 || startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
 //                        startedOnDate.setDate(new Date());
-                        startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long)actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
+                        startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
                     }
                 }
 
@@ -1733,7 +1740,7 @@ public class ScreenItem extends MyForm {
                     //                });
                     //</editor-fold>
                     = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(),
-//                            DAO.getInstance().getItemListList(),
+                            //                            DAO.getInstance().getItemListList(),
                             ItemListList.getInstance(),
                             projects,
                             locallyEditedOwner, ScreenItem.this,

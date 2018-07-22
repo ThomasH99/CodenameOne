@@ -1665,6 +1665,7 @@ public class MyDate extends Date {
         if (showSeconds) {
             s += ":" + (seconds < 10 ? "0" + seconds : "" + seconds);
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        } else {
 //            int minutes = (int) restAfterHours / MyDate.MINUTE_IN_MILLISECONDS; //60000;
 //            int restAfterMinutes = (int) restAfterHours % MyDate.MINUTE_IN_MILLISECONDS; //60000;
@@ -1678,6 +1679,7 @@ public class MyDate extends Date {
 //                s = minutes + "m";
 //            }
 //        }
+//</editor-fold>
         return s;
     }
 

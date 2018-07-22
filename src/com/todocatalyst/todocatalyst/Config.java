@@ -13,6 +13,6 @@ public abstract class Config {
     /**
      * set to true during testing. Setting false will remove test code from the app. 
      */
-    public static final boolean TEST = true;
+    public static final boolean TEST = false;
     public static final boolean ENABLELOGGING = true;
 }

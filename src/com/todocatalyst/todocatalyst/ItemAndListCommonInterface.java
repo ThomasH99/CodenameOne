@@ -290,9 +290,9 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     public int getItemIndex(ItemAndListCommonInterface subItemOrList);
 
     /**
-     * returns the list of subObjects (tasks)
+     * returns the filtered and sorted list of sub-Objects (tasks). Never returns a null list.
      *
-     * @return
+     * @return never null
      */
     public List<? extends ItemAndListCommonInterface> getList();
 
@@ -424,7 +424,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
         }
 
         ItemAndListCommonInterface owner = getOwner();
-        if (owner != null && owner.hasWorkTime()) {
+        if (false && owner != null && owner.hasWorkTime()) { //NB - do 
             return true;
         }
 //        for (Category cat:getCa|| getAllocatedWorkTime() != null;
@@ -447,7 +447,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 
         //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
         List<ItemAndListCommonInterface> providers = getWorkTimeProvidersInPrioOrder();
-        if (providers != null) {
+//        if (providers != null) {
             for (ItemAndListCommonInterface prov : getWorkTimeProvidersInPrioOrder()) {
 //            ItemAndListCommonInterface prov;
 //            List<ItemAndListCommonInterface> providers = getWorkTimeProvidersInPrioOrder(true);
@@ -470,7 +470,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
                     workTime.addWorkTime(wt);
                 }
             }
-        }
+//        }
         return workTime;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -636,13 +636,24 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     default public long getFinishTime() {
 //        return getAllocatedWorkTime().getFinishTime();
         WorkTime wt = getAllocatedWorkTime();
-        Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (wt != null ? wt.toString() : "<null>") + ", returning=" + new Date(wt != null
-                ? wt.getFinishTime() : MyDate.MAX_DATE));
+        long finishTime = wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
+        if (Test.DEBUG) {
+            Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (wt != null ? wt.toString() : "<null>") + ", returning=" + new Date(finishTime));
+        }
 
 //        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
 //        ASSERT.that(wt.getAllocatedDuration() == getRemainingEffort() || wt.getAllocatedDuration() < getRemainingEffort(), "allocated too much time");
-        ASSERT.that(wt==null||!(wt.getAllocatedDuration() > getRemainingEffort()), "allocated too much time");
-        return wt != null && wt.getAllocatedDuration() >= getRemainingEffort() ? wt.getFinishTime() : MyDate.MAX_DATE;
+        if (wt != null) {
+            long remainingEffort = getRemainingEffort();
+            long allocatedDuration = wt.getAllocatedDuration();
+            if (Test.DEBUG) {
+                ASSERT.that(wt == null || !(allocatedDuration > remainingEffort), "allocated too much time");
+            }
+//        return wt != null &&  allocatedDuration>= remainingEffort ? finishTime : MyDate.MAX_DATE;
+            return allocatedDuration >= remainingEffort ? finishTime : MyDate.MAX_DATE;
+        } else {
+            return MyDate.MAX_DATE; //cannot allocate enough time
+        }
     }
 
     /**

@@ -69,7 +69,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    private List<WorkSlot> workSlotListBuffer;
     private WorkSlotList workSlotListBuffer;
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
-    private WorkTimeAllocator wtd; //calculated when needed
+    private WorkTimeAllocator workTimeAllocator; //calculated when needed
 
     /**
      * used to save the underlying list when ItemList is not a ParseObject
@@ -489,6 +489,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return getItemAt(index);
         return getList().get(index);
     }
+
     public Object getFull(int index) {
 //        return getItemAt(index);
         return getListFull().get(index);
@@ -923,12 +924,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    List<E> getList(int index, int amount) {
 //        DAO.getInstance().get
 //    }
-    /**
-     * returns the underlying list, or null if none (so creating a new list has
-     * to be done explicitly
-     *
-     * @return never null
-     */
 //    @Override
     @Override
 //    public List<E> getList() {
@@ -974,6 +969,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return list;
     }
 
+    /**
+    returns the full (manually sorted) list, with no sorting or filtering
+    @return never null
+     */
     public List<E> getListFull() {
         {
 //            if (false && !isDataAvailable()) {
@@ -1448,7 +1447,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    public ItemList getOwnerList() {
 //        return null; //TODO return useful value?
 //    }
-
     /**
      * set and save filter (and resets the filtered/sorted list)
      *
@@ -1875,7 +1873,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
 //        return -1;
-        return getListFull().indexOf(item);
+//        return getListFull().indexOf(item);
+        return getList().indexOf(item);
     }
 
     /**
@@ -2881,31 +2880,46 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
-        if (o == this) {
+        if (obj == this) {
             return true;
         }
-        if (this.getClass() != o.getClass()) {
+//        if (this.getClass() != o.getClass()) {
+//            return false;
+//        }
+        if (!(obj instanceof ItemList)) {
             return false;
         }
 
-        ItemList o2 = (ItemList) o;
+        ItemList itemList = (ItemList) obj;
 
-        if (!this.getClassName().equals(o2.getClassName())) {
-            return false; //different ParseObject class, different object
-        }
+//        if (!this.getClassName().equals(o2.getClassName())) {
+//            return false; //different ParseObject class, different object
+//        }
 //        if (o2.isNoSave() && isNoSave() && o2.getText().equals(getText())) {
 //            return true; //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
 //        }
 //        return (this.getObjectIdP() != null && this.getObjectIdP().equals(o2.getObjectIdP()));
-        if (this.getObjectIdP() != null) {
-            return this.getObjectIdP().equals(o2.getObjectIdP());
-        } else {
-            return (o2.isNoSave() && isNoSave() && o2.getText().equals(getText())); //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
+        if (false) {
+            if (this.getObjectIdP() != null) {
+                return this.getObjectIdP().equals(itemList.getObjectIdP());
+            } else {
+                return (itemList.isNoSave() && isNoSave() && itemList.getText().equals(getText())); //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
+            }
         }
+
+        if (getObjectIdP() != null && itemList.getObjectIdP() != null) {
+            //compare isDirty in case we have two instances of the same 
+            ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(), "comparing dirty and not dirty instance of same object=" + this);
+            if (getObjectIdP().equals(itemList.getObjectIdP())) {
+                return true;
+            }
+        }
+        return false;
+
 //        if (this.getObjectIdP() != null && this.getObjectIdP().equals(o2.getObjectIdP())) {
 //            return true; //same ParseObject, same object
 //        }
@@ -3201,7 +3215,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         //TODO currently not stored in ItemList but get from DAO
 //        workSlotListBuffer = null;
         workSlotListBuffer = workSlotList;
-        wtd = null;
+        workTimeAllocator = null;
     }
 
     /**
@@ -3219,23 +3233,24 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
     @Override
     public WorkTimeAllocator getWorkTimeAllocator(boolean reset) {
-        if (wtd == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotList(true), itemListFilteredSorted);
+        if (workTimeAllocator == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotList(true), itemListFilteredSorted);
 //            wtd = new WorkTimeDefinition(getList(), this);
+            long now = System.currentTimeMillis(); //this is the common value of 'now' used during all the allocations
             WorkSlotList workSlots = getWorkSlotList();
             if (workSlots != null && workSlots.hasComingWorkSlots()) {
 //                wtd = new WorkTimeDefinition(((<? extends ItemAndListCommonInterface>)getList(), workSlots);
 //                wtd = new WorkTimeAllocator((List<ItemAndListCommonInterface>) getList(), new WorkTime(workSlots), this);
-                wtd = new WorkTimeAllocator( new WorkTime(workSlots), this);
+                workTimeAllocator = new WorkTimeAllocator(new WorkTime(workSlots, now), this);
             }
         }
-        return wtd;
+        return workTimeAllocator;
     }
 
     /**
      * forces a recalculation of workTime
      */
     public void resetWorkTimeDefinition() {
-        wtd = null;
+        workTimeAllocator = null;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

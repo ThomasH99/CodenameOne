@@ -1133,6 +1133,9 @@ public class MyForm extends Form {
 //    public String getListAsCommaSeparatedString(Set<Category> setOrList) {
 //    public static String getListAsCommaSeparatedString(List<Category> setOrList) {
     public static String getListAsCommaSeparatedString(List<ItemAndListCommonInterface> setOrList) {
+        return getListAsCommaSeparatedString(setOrList, false);
+    }
+    public static String getListAsCommaSeparatedString(List<ItemAndListCommonInterface> setOrList, boolean showObjIds) {
         String str = "";
         String separator = "";
         if (setOrList != null) {
@@ -1140,7 +1143,7 @@ public class MyForm extends Form {
             for (ItemAndListCommonInterface itemCategoryOrList : setOrList) {
 //                str = itemCategoryOrList.toString() + separator + str;
 //                str = itemCategoryOrList.getText() + separator + str;
-                str = str + separator + itemCategoryOrList.getText();
+                str = str + separator + itemCategoryOrList.getText()+(showObjIds?"/"+itemCategoryOrList.getObjectIdP():"");
                 separator = ", ";
             }
         }

@@ -10,7 +10,9 @@ package com.todocatalyst.todocatalyst;
  * @author Thomas
  */
 public class Test {
+    //TODO remove this class and only use Config
+//    public final static boolean DEBUG=false; //true: activates various test code in test version (non-production version)
+    public final static boolean DEBUG=Config.TEST; //true: activates various test code in test version (non-production version)
     
-    public final static boolean DEBUG=true; //true: activates various test code in test version (non-production version)
     
 }

@@ -37,7 +37,8 @@ public class ScreenListOfWorkTime extends MyForm {
     ScreenListOfWorkTime(String nameOfOwner, WorkTime workTime, MyForm previousForm) {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm, () -> updateItemListOnDone.update(workTime));
-        super(SCREEN_TITLE + nameOfOwner, previousForm, ()->{});
+        super(SCREEN_TITLE + nameOfOwner, previousForm, () -> {
+        });
 //        setUpdateItemListOnDone(updateItemListOnDone);
 //        this.workSlotList = workSLotList;
         this.owner = owner;
@@ -62,13 +63,16 @@ public class ScreenListOfWorkTime extends MyForm {
         Container cont = getContentPane();
         cont.removeAll();
         for (WorkSlotSlice workSlice : workTime.getWorkSlotSlices()) {
+            if (false && workSlice.getDuration() == 0) { //don't filter these since they are used for 
+                continue;
+            }
             Container sliceCont = new Container(new FlowLayout());
             sliceCont
                     .add(new Label((workSlice.workSlot.getOwner().getText()) + " "
-                    +MyDate.formatDateTimeNew(new Date(workSlice.getStartTime()))+"-"
-                    +MyDate.formatTimeNew(new Date(workSlice.getEndTime()))));
+                            + MyDate.formatDateTimeNew(new Date(workSlice.getStartTime())) + "-"
+                            + MyDate.formatTimeNew(new Date(workSlice.getEndTime()))));
 //                    .add(new Label(MyDate.formatDateNew(workSlice.getStartTime())))
-//                    .add(new Label(MyDate.formatTimeDuration(workSlice.getDuration())));
+//                    .add(new Label(MyDate.formatTimeDuration(workSlice.getDurationInMillis())));
             cont.add(sliceCont);
         }
 //        return cont;

@@ -117,6 +117,7 @@ public class DAO {
         } else {
             cache.put(parseObject.getObjectIdP(), parseObject);
         }
+        ASSERT.that(parseObject instanceof ParseObject, "trying to store non-ParseObject in cache: parseObject=" + parseObject);
     }
 
 //    private void cacheList(List<ParseObject> list) {
@@ -137,14 +138,17 @@ public class DAO {
         }
     }
 
-    private ParseObject cacheGet(String objectId) {
+    private ParseObject cacheGet(String parseObjectId) {
         Object temp;
-        if ((temp = cache.get(objectId)) != null || (temp = cacheWorkSlots.get(objectId)) != null) {
+        if ((temp = cache.get(parseObjectId)) != null || (temp = cacheWorkSlots.get(parseObjectId)) != null) {
 //            if (temp instanceof String) {
 //                //handle named key like CategoryList.CLASS_NAME where the named key points to the Parse ObjectId so need a second get to fecth actual parseObject
 //                return (ParseObject) cache.get(temp);
 //            } else {
-                return (ParseObject) temp;
+            if (Test.DEBUG) {
+                ASSERT.that(temp instanceof ParseObject, "getting a non-ParseObject from cache: returned obj=" + temp + ", objectId=" + parseObjectId);
+            }
+            return (ParseObject) temp;
 //            }
         } else {
             return null;
@@ -257,10 +261,17 @@ public class DAO {
         for (int i = 0, size = list.size(); i < size; i++) {
 //            Object cachedObject;
             if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
-                ASSERT.that((list.get(i) != null) && (list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " is null");
+//                ASSERT.that((list.get(i) != null) , "entry nb=" + i + " in list  with size" + size+", name="+(list instanceof ItemList ? ((ItemList) list).getText() : "") + " == null");
+                if (Test.DEBUG) {
+                    ASSERT.that((list.get(i) != null), "entry nb=" + i + " in list  with size" + size + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == null");
+                }
+                if (Test.DEBUG) {
+                    ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list  with size" + size + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
+                }
+//                ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " == JSONObject.NULL");
                 list.remove(i); //UI: clean up elements that don't exist anymore
-                i--;
-                size--;
+                i--; //neutralize the i++ in the loop
+                size--; //update size to match actual size of loop
             } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                ParseObject listElt = (ParseObject) list.get(i);
@@ -781,7 +792,6 @@ public class DAO {
 //        return results;
 //    }
 //</editor-fold>
-
     /**
      * returns list of all defined categories (or empty list if none)
      *
@@ -2113,7 +2123,7 @@ public class DAO {
 //                if (workSlot != null) {
 //</editor-fold>
                     ASSERT.that(workSlot != null, "WorkSlot in cache for key=\"" + key + "\" is null. Key type="
-                            +(key instanceof String?"String":(key instanceof Integer?"Integer":(key instanceof Long?"Long":"other"))));
+                            + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
                     Object owner = workSlot.getOwner();
                     //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
                     if (owner != null && owner.equals(itemWithWorkSlots)) {
@@ -2134,19 +2144,19 @@ public class DAO {
 //                        if (workSlot.getEndTime() < System.currentTimeMillis()) { //if workSlot has expired
 //                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
 //                            if (repeatRule != null) { //if repeating workslot
-                                //DONE!!!! continue generating new instances until we get enough future ones as defined by repeatRule
+                            //DONE!!!! continue generating new instances until we get enough future ones as defined by repeatRule
 //                            if (repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
 //</editor-fold>
-                                repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
-                                reload = true;
-                                break; //exit the for loop to reload workslots
-                            } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
-                                results.add(workSlot);
-                            }
+                            repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
+                            reload = true;
+                            break; //exit the for loop to reload workslots
+                        } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
+                            results.add(workSlot);
                         }
                     }
                 }
             }
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            else {
 //                Vector keys = cache.getKeysInCache();
@@ -2195,7 +2205,7 @@ public class DAO {
 //                }
 //            }
 //</editor-fold>
-        }
+//        }
         results.sortWorkSlotList();
         //TODO!!! any way/need to check if workslots have been cached?! (empty results cannot be used since there may simply be no workslots)
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3476,7 +3486,7 @@ public class DAO {
 //        cleanUpAllCategoriesFromParse(getAllCategoriesFromParse(), categoryList);
 //    }
 //    private void cleanUpAllCategoriesFromParse(List<Category> listOfCategories, CategoryList categoryList) {
-    private void cleanUpAllCategoriesFromParse() {
+    public void cleanUpAllCategoriesFromParse() {
         CategoryList categoryList = getCategoryList(true);
         List<Category> listOfCategoriesFromParse = getAllCategoriesFromParse();
 
@@ -3658,7 +3668,7 @@ public class DAO {
             }
 //            if (deleteWorkSlot) {
             if (noOwner && noRepeatRule) {
-                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", duration(minutes)=" + workSlot.getDurationAdjustedInMinutes(), logLevel);
+                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationAdjusted() / MyDate.MINUTE_IN_MILLISECONDS, logLevel);
 //                try {
                 if (executeCleanup) {
                     delete(workSlot); //delete filters without ref to both objectId and Screen
@@ -3711,7 +3721,7 @@ public class DAO {
 
             //clean up duplicates in list of repeat instances
             cleanUpDuplicatesInList("RepeatRule instances " + repeatRule, repeatInstanceList, executeCleanup);
-            
+
             if (executeCleanup) {
                 repeatRule.setListOfUndoneRepeatInstances(repeatInstanceList);
                 save(repeatRule);
@@ -3784,7 +3794,7 @@ public class DAO {
         Log.p("CLEANUP: REPEATRULES", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         cleanUpRepeatRules();
-        
+
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: FINISHED --------------------------------------------", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
@@ -4107,41 +4117,42 @@ public class DAO {
 //        }
 //    }
 //</editor-fold>
-
-    /**
-     * will run through list and look up every element in cache (same
-     * ParseObjectId) and if found replace with cached element. If an element is
-     * not found in cache, will fetch it from Parse and cache it.
-     *
-     * @param list
-     */
-    public void fetchListElementsIfNeededReturnCachedIfAvail(List list) {
-        assert (list != null) : "updating null list from cache";
-        for (int i = 0, size = list.size(); i < size; i++) {
-//            Object cachedObject;
-            if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
-                ASSERT.that((list.get(i) != null) && (list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " is null");
-                list.remove(i); //UI: clean up elements that don't exist anymore
-                i--;
-                size--;
-            } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                ParseObject listElt = (ParseObject) list.get(i);
-//                String objId = listElt.getObjectIdP();
-////            if (objId != null && (cachedObject = cache.get(objId)) != null && cachedObject != p) {
-////                if (objId != null && (cachedObject = cacheGet(objId)) != null && cachedObject != p) {
-//                if ((cachedObject = cacheGet(listElt)) != null && cachedObject != listElt) {
-//                    list.set(i, cachedObject);
-//                } else {
-//                    cachedObject = fetchIfNeededReturnCachedIfAvail(listElt); //NB! will possibly replace the parseObjects in the list with cached ones
-//                    cachePut(listElt); //put new
-//                    list.set(i, cachedObject);
-//                }
+//    /**
+//     * will run through list and look up every element in cache (same
+//     * ParseObjectId) and if found replace with cached element. If an element is
+//     * not found in cache, will fetch it from Parse and cache it.
+//     *
+//     * @param list
+//     */
+//    public void fetchListElementsIfNeededReturnCachedIfAvail(List list) {
+//        assert (list != null) : "updating null list from cache";
+//        for (int i = 0, size = list.size(); i < size; i++) {
+////            Object cachedObject;
+//            if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
+//                ASSERT.that((list.get(i) != null) && (list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " is null");
+//                list.remove(i); //UI: clean up elements that don't exist anymore
+//                i--;
+//                size--;
+//            } else {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                ParseObject listElt = (ParseObject) list.get(i);
+////                String objId = listElt.getObjectIdP();
+//////            if (objId != null && (cachedObject = cache.get(objId)) != null && cachedObject != p) {
+//////                if (objId != null && (cachedObject = cacheGet(objId)) != null && cachedObject != p) {
+////                if ((cachedObject = cacheGet(listElt)) != null && cachedObject != listElt) {
+////                    list.set(i, cachedObject);
+////                } else {
+////                    cachedObject = fetchIfNeededReturnCachedIfAvail(listElt); //NB! will possibly replace the parseObjects in the list with cached ones
+////                    cachePut(listElt); //put new
+////                    list.set(i, cachedObject);
+////                }
+////</editor-fold>
+//                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i)));
+//            }
+//        }
+//    }
 //</editor-fold>
-                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i)));
-            }
-        }
-    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public ParseObject fetchIfNeededReturnCachedIfAvailOLDXXX(ParseObject parseObject) {
 //        if (parseObject == null) {
@@ -4207,62 +4218,62 @@ public class DAO {
 //    }
 //    public void fetchAllElementsInSublist(ParseObject listOrCategory, boolean recursively) {
 //</editor-fold>
-
-    /**
-     * NB! Not the usual semantic of fetchFromCacheOnly, since it may return an
-     * existing instance of the parseObject instead of simply fetching the data
-     * for the passed parseObject (to avoid multiple parallel copies of the same
-     * ParseObject, e.g. when using getOnwerList, a new instance of the
-     * ownerList is returned and any changes to this will not be reflected until
-     * the list is saved and fetched again).
-     *
-     * @param parseObject
-     * @return null if object does not (or no longer) exist on server
-     */
-    public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObject) {
-        if (parseObject == null || parseObject.getObjectIdP() == null) {
-            return null;
-        }
-        ParseObject temp;
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        if (parseObject.getObjectIdP() != null) {
-//            if (parseObject instanceof WorkSlot && (obj = cacheWorkSlots.get(parseObject.getObjectIdP())) != null) {
-////            if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
-//                return (WorkSlot) obj;
-//            } else if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
-//                return temp;
-//            } else
+//    /**
+//     * NB! Not the usual semantic of fetchFromCacheOnly, since it may return an
+//     * existing instance of the parseObject instead of simply fetching the data
+//     * for the passed parseObject (to avoid multiple parallel copies of the same
+//     * ParseObject, e.g. when using getOnwerList, a new instance of the
+//     * ownerList is returned and any changes to this will not be reflected until
+//     * the list is saved and fetched again).
+//     *
+//     * @param parseObject
+//     * @return null if object does not (or no longer) exist on server
+//     */
+//    public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObject) {
+//        if (parseObject == null || parseObject.getObjectIdP() == null) {
+//            return null;
+//        }
+//        ParseObject temp;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (parseObject.getObjectIdP() != null) {
+////            if (parseObject instanceof WorkSlot && (obj = cacheWorkSlots.get(parseObject.getObjectIdP())) != null) {
+//////            if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
+////                return (WorkSlot) obj;
+////            } else if ((temp = (ParseObject) cache.get(parseObject.getObjectIdP())) != null) {
+////                return temp;
+////            } else
+////</editor-fold>
+//        if ((temp = (ParseObject) cacheGet(parseObject)) != null) {
+//            return temp;
+//        } else {
+//            try {
+//                parseObject.fetchIfNeeded();
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    if (parseObject instanceof WorkSlot) {
+//////                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
+////                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
+////                    } else {
+//////                        cache.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
+////                        cache.put(parseObject.getObjectIdP(), parseObject);
+////                    }
+////</editor-fold>
+//                cachePut(parseObject);
+//                //NO need to fetch lists within the object, they are updated when they are used first time (in getList() using fetchListElementsIfNeededReturnCachedIfAvail()...)
+////                if (parseObject instanceof ItemAndListCommonInterface) {
+////                    List list;
+////                    if ((list = ((ItemAndListCommonInterface) parseObject).getList()) != null) {
+////                        fetchAllElementsInSublist(list);
+////                    }
+////                }
+//                return parseObject;
+//            } catch (ParseException ex) {
+////            Log.e(ex);
+//                return null;
+//            }
+//        }
+//    }
 //</editor-fold>
-        if ((temp = (ParseObject) cacheGet(parseObject)) != null) {
-            return temp;
-        } else {
-            try {
-                parseObject.fetchIfNeeded();
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (parseObject instanceof WorkSlot) {
-////                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
-//                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
-//                    } else {
-////                        cache.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
-//                        cache.put(parseObject.getObjectIdP(), parseObject);
-//                    }
-//</editor-fold>
-                cachePut(parseObject);
-                //NO need to fetch lists within the object, they are updated when they are used first time (in getList() using fetchListElementsIfNeededReturnCachedIfAvail()...)
-//                if (parseObject instanceof ItemAndListCommonInterface) {
-//                    List list;
-//                    if ((list = ((ItemAndListCommonInterface) parseObject).getList()) != null) {
-//                        fetchAllElementsInSublist(list);
-//                    }
-//                }
-                return parseObject;
-            } catch (ParseException ex) {
-//            Log.e(ex);
-                return null;
-            }
-        }
-    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void fetchAllElementsInSublist(ItemAndListCommonInterface itemOrItemListOrCategoryOrList) {
 //        fetchAllElementsInSublist((ParseObject) itemOrItemListOrCategoryOrList, false);
@@ -4340,7 +4351,6 @@ public class DAO {
 //        };
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void cacheAllDataOLDXXX() {
 //        cacheAllItemsFromParse();
@@ -4435,7 +4445,7 @@ public class DAO {
 //    }
 //</editor-fold>
     public void resetAndDeleteAndReloadAllCachedData() {
-        Dialog ip = new InfiniteProgress().showInifiniteBlocking();
+        Dialog ip = new InfiniteProgress().showInfiniteBlocking();
         Storage.getInstance().deleteStorageFile(FILE_DATE_FOR_LAST_CACHE_REFRESH); //delete date so all data will be reloaded in cacheLoadDataChangedOnServer()
         if (cache != null) {
 //            cache.clearStorageCache(); //delete any locally cached data/files
@@ -4444,7 +4454,7 @@ public class DAO {
         }
 //        initAndConfigureCache(true);
         initAndConfigureCache();
-        cacheLoadDataChangedOnServer();
+        cacheLoadDataChangedOnServer(true);
         ip.dispose();
     }
 
@@ -4465,22 +4475,24 @@ public class DAO {
      * last update. First time called will cache everything. Assumes that local
      * cache is large enough to hold everything, if not, ???
      */
-    public void cacheLoadDataChangedOnServer() {
-        cacheLoadDataChangedOnServer(false);
-    }
-
+//    public void cacheLoadDataChangedOnServer() {
+//        cacheLoadDataChangedOnServer(true);
+//    }
     /**
      *
-     * @param doNOTloadChangedDataFromParseServer skip checking server for
-     * updates to optimize app startup time during testing
-     * @return
+     * @param loadChangedDataFromParseServer skip checking server for
+     * updates to optimize app startup time during testing.
+     * will initialize (or reset if resetAndDeleteAllCachedData) the cache and
+     * update cache with objects that have been changed on Parse server since
+     * last update. First time called will cache everything. Assumes that local
+     * cache is large enough to hold everything, if not, ???
      */
-    public boolean cacheLoadDataChangedOnServer(boolean doNOTloadChangedDataFromParseServer) {
+    public boolean cacheLoadDataChangedOnServer(boolean loadChangedDataFromParseServer) {
         //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
 //        initAndConfigureCache(); //now done in DAO constructor
 ////\        loadCacheToMemory(); //first load 
         cache.loadCacheToMemory(); //first load 
-        if (!doNOTloadChangedDataFromParseServer) {
+        if (loadChangedDataFromParseServer) {
             Date now = new Date(); //UI: only cache data that was already changed when update was launched
             Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
             if (MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active

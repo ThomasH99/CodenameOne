@@ -296,18 +296,18 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        west.add(L10NManager.getInstance().formatDateTimeShort(workSlot.getStartTime()));
 //        west.add(MyDate.formatDateTimeNew(workSlot.getStartTimeD())+" - "+MyDate.formatDateTimeNew(new Date(workSlot.getEndTime())));
 //</editor-fold>
-        String startTimeStr = workSlot.getStartAdjusted() != workSlot.getStartTime() ? "Now" : MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted())); //UI: for ongoing workSlot, show 'now' instead of startTime
+        String startTimeStr = workSlot.getStartAdjusted() != workSlot.getStartTimeD().getTime() ? "Now" : MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted())); //UI: for ongoing workSlot, show 'now' instead of startTime
         west.add(startTimeStr
                 + "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
                 + (workSlot.getRepeatRule() != null ? "*" : "")
-        //                + " " + MyDate.formatTimeDuration(workSlot.getDuration())// + ")"
+        //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
         //                + " " + MyDate.formatTimeDuration(workSlot.getDurationAdjusted())// + ")" //DON'T show duration since end-time is shown
         );
 //            static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate, boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat) {
 
 //        east.addComponent(new Label("[" + workSlot.getDurationAdjustedInMinutes(now) + "]"));
-//        west.add(MyDate.formatTime(workSlot.getDuration()));
-//        west.add("(" + MyDate.formatTimeDuration(workSlot.getDuration()) + ")");
+//        west.add(MyDate.formatTime(workSlot.getDurationInMillis()));
+//        west.add("(" + MyDate.formatTimeDuration(workSlot.getDurationInMillis()) + ")");
 //        cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getText() + (workSlot.getRepeatRule() != null ? "*" : "")));
         if (showOwner && workSlot.getOwner() != null) {
             cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getOwner().getText()));
@@ -329,7 +329,9 @@ public class ScreenListOfWorkSlots extends MyForm {
 
 //        if (workSlot.getOwner() != null) {
 //            if(showOwner)south.addComponent(new Label("For: " + workSlot.getOwner().getText()));
-        south.addComponent(new Label(("\"" + workSlot.getText() + "\"")));
+        if (workSlot.getText() != null && workSlot.getText().length() > 0) {
+            south.addComponent(new Label(("\"" + workSlot.getText() + "\"")));
+        }
 //        }
         cont.putClientProperty("element", workSlot);
 

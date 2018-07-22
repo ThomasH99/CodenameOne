@@ -36,7 +36,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     public static String CLASS_NAME = "WorkSlot";
 
 //    public static int MINUTES_IN_MILLISECONDS = MyDate.MINUTE_IN_MILLISECONDS; //60 * 1000;
-
     final static String WORKSLOT = "Workslot";
     final static String DESCRIPTION = "Description";//"Name";
     final static String INACTIVE = "Inactive";
@@ -86,11 +85,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        setTypeId(BaseItemTypes.WORKSLOT);
     }
 
-    public WorkSlot(String description, Date start, long duration, RepeatRuleParseObject myRepeatRule) {//, boolean importedFromPIM) {
+    public WorkSlot(String description, Date start, int durationInMinutes, RepeatRuleParseObject myRepeatRule) {//, boolean importedFromPIM) {
         this();
         setText(description);
         setStartTime(start);
-        setDuration(duration);
+        setDurationInMinutes(durationInMinutes);
         setRepeatRule(myRepeatRule);
     }
 
@@ -117,14 +116,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      * @param workSlot
      */
 //    public WorkSlot(WorkSlot workSlot) {
-//        this(workSlot.getText(), workSlot.getStartTime(), workSlot.getDuration(), workSlot.getRepeatRule()); //, workSlot.isImportedFromPIM());
+//        this(workSlot.getText(), workSlot.getStartTime(), workSlot.getDurationInMillis(), workSlot.getRepeatRule()); //, workSlot.isImportedFromPIM());
 //    }
 //</editor-fold>
     /**
      * used to create repeat copies of a WorkSlot, e.g. for Repeat instances
      */
     public WorkSlot(WorkSlot sourceWorkSlot, Date startDate) {
-        this(sourceWorkSlot.getText(), startDate, sourceWorkSlot.getDuration(), sourceWorkSlot.getRepeatRule());
+        this(sourceWorkSlot.getText(), startDate, sourceWorkSlot.getDurationInMinutes(), sourceWorkSlot.getRepeatRule());
 //        if (sourceWorkSlot.getMyRepeatRule()!=null)
 //            this.repeatRule=sourceWorkSlot.getMyRepeatRule();
     }
@@ -243,53 +242,54 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         }
     }
 
-    /**
-     * returns an Object containing the value of the given field (Object, since
-     * this is used in Expr for filtering)
-     *
-     * @param fieldId
-     * @return
-     */
-    public Object getFilterField(int fieldId) {
-        switch (fieldId) {  //optimization: organize this list so most frequntly used fields appear left in switch
-            case FIELD_DESCRIPTION:
-                return getText(); //optimization: replace by variable description directly
-//            case FIELD_INACTIVE:
-//                return new Boolean(isActive());
-            case FIELD_START_TIME:
-                return new Long(getStartTimeD().getTime());
-            case FIELD_DURATION:
-                return new Long(getDuration());
-            case FIELD_REPEAT_DEFINITION:
-                return getRepeatRule();
-            default:
-                ASSERT.that("Item: Field Identifier not defined " + fieldId);
-        }
-        return null;
-    }
-
-    public void setFilterField(int fieldId, Object fieldValue) {
-        switch (fieldId) {  //optimization: organize this list so most frequntly used fields appear left in switch
-            case FIELD_DESCRIPTION:
-                setText((String) fieldValue);
-                break;
-//            case FIELD_INACTIVE:
-//                setActive((Boolean) fieldValue);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//     * returns an Object containing the value of the given field (Object, since
+//     * this is used in Expr for filtering)
+//     *
+//     * @param fieldId
+//     * @return
+//     */
+//    public Object getFilterField(int fieldId) {
+//        switch (fieldId) {  //optimization: organize this list so most frequntly used fields appear left in switch
+//            case FIELD_DESCRIPTION:
+//                return getText(); //optimization: replace by variable description directly
+////            case FIELD_INACTIVE:
+////                return new Boolean(isActive());
+//            case FIELD_START_TIME:
+//                return getStartTimeD().getTime();
+//            case FIELD_DURATION:
+//                return new Long(getDurationInMillis());
+//            case FIELD_REPEAT_DEFINITION:
+//                return getRepeatRule();
+//            default:
+//                ASSERT.that("Item: Field Identifier not defined " + fieldId);
+//        }
+//        return null;
+//    }
+//
+//    public void setFilterField(int fieldId, Object fieldValue) {
+//        switch (fieldId) {  //optimization: organize this list so most frequntly used fields appear left in switch
+//            case FIELD_DESCRIPTION:
+//                setText((String) fieldValue);
 //                break;
-            case FIELD_START_TIME:
-                setStartTime((Date) fieldValue);
-                break;
-            case FIELD_DURATION:
-                setDuration((Long) fieldValue);
-                break;
-            case FIELD_REPEAT_DEFINITION:
-                setRepeatRule((RepeatRuleParseObject) fieldValue);
-                break;
-            default:
-                ASSERT.that("Item.setFilterField: Field Identifier not defined " + fieldId);
-        }
-    }
-
+////            case FIELD_INACTIVE:
+////                setActive((Boolean) fieldValue);
+////                break;
+//            case FIELD_START_TIME:
+//                setStartTime((Date) fieldValue);
+//                break;
+//            case FIELD_DURATION:
+//                setDuration((Long) fieldValue);
+//                break;
+//            case FIELD_REPEAT_DEFINITION:
+//                setRepeatRule((RepeatRuleParseObject) fieldValue);
+//                break;
+//            default:
+//                ASSERT.that("Item.setFilterField: Field Identifier not defined " + fieldId);
+//        }
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * used to store a copy of the text of the work
@@ -475,7 +475,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     ////        start = Math.min(slotA.getStart(), slotB.getStart());
     ////        end = Math.max(slotA.getEnd(), slotB.getEnd());
     //        this(Math.min(slotA.getStart(), slotB.getStart()), Math.max(slotA.getEnd(), slotB.getEnd()));
-    //        ASSERT.that(getDuration() <= slotA.getDuration() + slotB.getDuration(), "Slot A [" + slotA + "] and Slot B [" + slotB + "] are disjoint (not overlapping)");
+    //        ASSERT.that(getDurationInMillis() <= slotA.getDurationInMillis() + slotB.getDurationInMillis(), "Slot A [" + slotA + "] and Slot B [" + slotB + "] are disjoint (not overlapping)");
     ////        sourceSlots=new Vector(2);
     ////        //add WorkSlot with smallest start first (or A if both slots start at same time)
     ////        sourceSlots.addElement(slotA.getStart()<=slotB.getStart()? slotA: slotB);
@@ -566,7 +566,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     void copyMeInto(WorkSlot destination, CopyMode copyFieldDefinition) {
-        destination.setDuration(getDuration());
+        destination.setDurationInMinutes(getDurationInMinutes());
         destination.setText(getText());
         destination.setStartTime(getStartTimeD());
         destination.setOwner(getOwner()); //need to set owner here, since not done eg when creating repeat copies
@@ -589,7 +589,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        Util.writeObject(getText(), dos);
 //        dos.writeLong(getStartTimeD().getTime());
 //
-//        dos.writeLong(getDuration());
+//        dos.writeLong(getDurationInMillis());
 ////        dos.writeLong(consumedDuration);
 ////        dos.writeBoolean(negativeSlot);
 ////        dos.writeBoolean(isNegativeSlot());
@@ -725,13 +725,13 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     public String toString() {
-//        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDuration()) + "]";
-        return MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatTimeDuration(getDuration()) + " " + getText() + (getOwner() != null ? " Owner:" + getOwner().getText() : "");
+//        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
+        return MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatTimeDuration(getDurationInMinutes()) + " " + getText() + (getOwner() != null ? " Owner:" + getOwner().getText() : "");
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public String shortString() {
-//        return "SLOT(" + getText() + ";S=" + new MyDate(getStartTime()).formatDate(true) + ";E=" + new MyDate(getEndTime()).formatDate(true) + ";D=" + Duration.formatDuration(getDuration()) + ")";
+//        return "SLOT(" + getText() + ";S=" + new MyDate(getStartTime()).formatDate(true) + ";E=" + new MyDate(getEndTime()).formatDate(true) + ";D=" + Duration.formatDuration(getDurationInMillis()) + ")";
 //    }
 //    @Override
 //    public long getSumField(int fieldId) {
@@ -761,10 +761,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return startTime;
     }
 
-    public long getStartTime() {
-        return getStartTimeD().getTime();
-    }
-
+//    public long getStartTime() {
+//        return getStartTimeD().getTime();
+//    }
     /**
      * adjusts start in case the slot covers the current time, or in case some
      * of the duration has already been consumed (this is necessary to make it
@@ -806,20 +805,24 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         } else {
             remove(PARSE_START_TIME);
         }
-        updateEndTimeWithNewStartTime(start == null ? new Date(0) : start);
+//        updateEndTimeWithNewStartTime(start == null ? new Date(0) : start);
+        setEndTime(start == null ? new Date(0) : new Date(start.getTime() + getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS));
 
     }
 
-    private final void updateEndTimeWithNewDuration(long newDuration) {
-//        put(PARSE_END_TIME, new Date(getStartTimeD().getTime() + newDuration));
-        setEndTime(new Date(getStartTimeD().getTime() + newDuration));
-    }
-
-    private final void updateEndTimeWithNewStartTime(Date newStartTime) {
-//        put(PARSE_END_TIME, new Date(newStartTime.getTime() + getDuration()));
-        setEndTime(new Date(newStartTime.getTime() + getDuration()));
-    }
-
+//    private final void updateEndTimeWithNewDuration(long newDuration) {
+////        put(PARSE_END_TIME, new Date(getStartTimeD().getTime() + newDuration));
+//        setEndTime(new Date(getStartTimeD().getTime() + newDuration));
+//    }
+//
+//    private final void updateEndTimeWithNewStartTime(Date newStartTime) {
+////        put(PARSE_END_TIME, new Date(newStartTime.getTime() + getDurationInMillis()));
+//        setEndTime(new Date(newStartTime.getTime() + getDurationInMillis()));
+//    }
+    /**
+    even though redundant (can be calculated from startTime and duration) we need to store endTime explicitly to allow Parse searches on its value
+    @param endTime 
+     */
     private final void setEndTime(Date endTime) {
         if ((endTime != null && endTime.getTime() != 0)) {
             put(PARSE_END_TIME, endTime);
@@ -836,11 +839,15 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     public long getEndTime() {
 //        return end!=0L?end:start+duration;
 //        return start + duration;
-        return getStartTimeD().getTime() + getDuration(); //unchanged, even as start is in the past, or consumedDuration>0
+        return getStartTimeD().getTime() + getDurationInMillis(); //unchanged, even as start is in the past, or consumedDuration>0
     }
 
-    public void setEnd(long end) {
-        setDuration((int) (end - getStartTimeD().getTime()));
+    /**
+    does't make sense because time is in minutes, so setting a specific endTime will be very imprecise!!
+    @param endTimeInMillis 
+     */
+    public void setEndXXX(long endTimeInMillis) {
+        setDuration((int) (endTimeInMillis - getStartTimeD().getTime()));
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -878,7 +885,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      *
      * @return
      */
-    public long getDuration() {
+    public long getDurationInMillis() {
 // <editor-fold defaultstate="collapsed" desc="comment">
 //        if (start != 0L && end != 0L) {
 //            return (int) (end - start);
@@ -902,7 +909,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     public int getDurationInMinutes() {
-//        return getDuration() / MINUTES_IN_MILLISECONDS;
+//        return getDurationInMillis() / MINUTES_IN_MILLISECONDS;
         Integer duration = getInt(PARSE_DURATION); //only store the time as minutues (more readable in parse)
         if (duration != null) {
             return duration; //only store the time as minutues (more readable in parse)
@@ -929,7 +936,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return getDurationAdjusted(System.currentTimeMillis()) / MyDate.MINUTE_IN_MILLISECONDS;
     }
 
-    public long getDurationAdjustedInMinutes(long now) {
+    public long getDurationAdjustedInMinutesXXX(long now) {
         return getDurationAdjusted(now) / MyDate.MINUTE_IN_MILLISECONDS;
     }
 
@@ -944,24 +951,24 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //                || (!inactive && consumedDuration>=duration) //inactive if time has been consumed// </editor-fold>
         long startTime = getStartTimeD().getTime();
 //        long now = new Date().getTime();
-        long duration = getDuration();
-        if (startTime + duration < now) {
+        long durationInMillis = getDurationInMillis();
+        if (startTime + durationInMillis < now) {
             return 0; //workslot is entirely in the past
-        } else if (now > startTime) {
-            return duration - (now - startTime); //workslot starttime is already passed so deduct the already passed part of the workslot
-        } else {
-            return duration;
+        } else if (now > startTime) { //part of workslot is in the past
+            return durationInMillis - (now - startTime); //workslot starttime is already passed so deduct the already passed part of the workslot
+        } else { //workslot in the future
+            return durationInMillis;
         }
 //        return inactive ? 0
 //        return !isActive() ? 0
-////                : startTime == 0 ? getDuration() - consumedDuration
-//                : startTime == 0 ? getDuration() 
+////                : startTime == 0 ? getDurationInMillis() - consumedDuration
+//                : startTime == 0 ? getDurationInMillis() 
 //                        : //for undated slots, workSlot can only be reduced by consuming it, not by the passing of time
-////                        getDuration() - Math.max(consumedDuration, //0 unless set
-//                        getDuration() - ( //0 unless set
+////                        getDurationInMillis() - Math.max(consumedDuration, //0 unless set
+//                        getDurationInMillis() - ( //0 unless set
 //                                Settings.getInstance().adjustWorkSlotsWhenStartIsInThePast()
 //                                        ? //only
-//                                        ((int) Math.min(getDuration(), //with min() ensures that can never get bigger than duration
+//                                        ((int) Math.min(getDurationInMillis(), //with min() ensures that can never get bigger than duration
 //                                                Math.max(0, (MyDate.getNow() - startTime)))) : 0); //now-start==what is eaten out of duration if start is in the past; min(duration,*) to avoid that now-start can get bigger than int
     }
 
@@ -976,7 +983,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     public long getDurationAdjusted(long fromTime, long toTime) {
         if (Config.TEST) {
             Date actualEnd = new Date(
-                    Math.min(getStartTimeD().getTime() + getDuration(), toTime)
+                    Math.min(getStartTimeD().getTime() + getDurationInMillis(), toTime)
             ); //get the earliest endDate
             Date actualStart = new Date(
                     Math.max(getStartTimeD().getTime(), fromTime)
@@ -986,7 +993,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             long finalDuration = Math.max(0, duration);
         }
         return Math.max(0,
-                Math.min(getStartTimeD().getTime() + getDuration(), toTime)
+                Math.min(getStartTimeD().getTime() + getDurationInMillis(), toTime)
                 - Math.max(getStartTimeD().getTime(), fromTime)
         );
     }
@@ -1023,7 +1030,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        setDuration(durationInMinutes * MINUTES_IN_MILLISECONDS);
         if (durationInMinutes != 0) {
             put(PARSE_DURATION, durationInMinutes); //store duration in minutes for readability
-            updateEndTimeWithNewDuration(((long)durationInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+//            updateEndTimeWithNewDuration(((long)durationInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+            setEndTime(new Date(getStartTimeD().getTime() + getDurationInMillis()));
         } else {
             remove(PARSE_DURATION);
         }
@@ -1333,9 +1341,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         }
         for (int i = 0, size = workSlots.size(); i < size; i++) {
             WorkSlot workSlot = workSlots.get(i);
-            long startTime = newWorkSlot.getStartTime();
+            long startTime = newWorkSlot.getStartTimeD().getTime();
             long endTime = newWorkSlot.getEndTime();
-            if ((startTime >= workSlot.getStartTime() && startTime <= workSlot.getEndTime()) || (endTime >= workSlot.getStartTime() && endTime <= workSlot.getEndTime())) {
+            if ((startTime >= workSlot.getStartTimeD().getTime() && startTime <= workSlot.getEndTime()) || (endTime >= workSlot.getStartTimeD().getTime() && endTime <= workSlot.getEndTime())) {
                 return workSlot;
             }
         }
@@ -1348,7 +1356,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     public boolean hasSaveableData() {
-        return true || (getStartTime() != 0 || getDuration() != 0); //TODO! should also check for new/changed repeat rule
+        return true || (getStartTimeD().getTime() != 0 || getDurationInMinutes() != 0); //TODO! should also check for new/changed repeat rule
     }
 
     /**
@@ -1359,6 +1367,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      * @return
      */
     public List<Item> getItemsInWorkSlot() {
+        return getItemsInWorkSlot(false);
+    }
+
+    public List<Item> getItemsInWorkSlot(boolean includeDoneTasks) {
         ItemAndListCommonInterface owner = getOwner();
         List<Item> items = new ArrayList<>();
         if (owner != null) {
@@ -1370,7 +1382,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
                         List<WorkSlotSlice> slices = wTime.getWorkSlotSlices();
                         if (slices != null) {
                             for (WorkSlotSlice slice : slices) {
-                                if (slice.workSlot == this && !items.contains(item)) {
+//                                if (slice.workSlot == this && !items.contains(item)) {
+                                if (slice.workSlot == this && !items.contains(item) && slice.getDuration() > 0 && (!item.isDone() || includeDoneTasks)) {
                                     items.add(item);
                                 }
                             }
@@ -1536,7 +1549,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem){
+    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -1605,7 +1618,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        return getWorkTimeAllocator().getWorkTime(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
-
     @Override
     public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

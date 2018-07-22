@@ -88,7 +88,7 @@ public class ReplayLog {
 //        if (replayCommand != screenCommands.get(getPreviousCmdToReplayLog())) { //do not store command if it is the command being replayed
 //        if (nextIndex == -1 || nextIndex < logList.size()) { //do not store command if it is the command being replayed
         if (!replayingNow) { //do not store command if it is the command being replayed
-            ASSERT.that(!logList.contains(replayCommand.getCmdUniqueID()), "Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list");
+            ASSERT.that(!logList.contains(replayCommand.getCmdUniqueID()), "Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list: "+logList);
             logList.add(replayCommand.getCmdUniqueID());
             Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, logList);
             Log.p("+ ReplayCommand: " + replayCommand.getCmdUniqueID());

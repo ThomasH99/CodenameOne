@@ -288,7 +288,7 @@ public class ScreenListOfItems extends MyForm {
             String text = (String) e.getSource();
             Container compList = null;
             compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-            if (compList!=null) {
+            if (compList != null) {
 //            boolean showAll = text == null || text.length() == 0;
                 int labelCount = 0;
                 int nonLabelCount = 0;
@@ -425,7 +425,7 @@ public class ScreenListOfItems extends MyForm {
 
 //        revalidate(); //TODO: needed? YES
 //        animateHierarchy(300); not good since it visibly refreshes the screen
-super.refreshAfterEdit();
+        super.refreshAfterEdit();
     }
 
     /**
@@ -1422,7 +1422,6 @@ super.refreshAfterEdit();
 //            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
 //                return draggedObject.getDragAndDropObject() instanceof Item;
 //            }
-
 //            @Override
 //            public ItemAndListCommonInterface getDragAndDropList() {
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -1439,13 +1438,11 @@ super.refreshAfterEdit();
 //                    return item.getOwner(); //returns the owner of 
 //                }
 //            }
-
 //            @Override
 //            public List getDragAndDropSubList() {
 ////                return ((Item) getDragAndDropObject()).getList(); //returns the list of subtasks
 //                return item.getList(); //returns the list of subtasks
 //            }
-
             @Override
             public ItemAndListCommonInterface getDragAndDropObject() {
                 return item;
@@ -1455,7 +1452,6 @@ super.refreshAfterEdit();
 //            public void saveDragged() {
 //                DAO.getInstance().save(item);
 //            }
-
             @Override
             public Category getDragAndDropCategory() {
                 return category;
@@ -1464,7 +1460,9 @@ super.refreshAfterEdit();
 
         }; //D&D
         swipCont.setGrabsPointerEvents(true); //when swiping on task description, it also activated the button to show tasks details
-        if (Test.DEBUG) swipCont.setName(item.getText());
+        if (Test.DEBUG) {
+            swipCont.setName(item.getText());
+        }
 
         if (myForm.keepPos != null) {
             myForm.keepPos.testItemToKeepInSameScreenPosition(item, swipCont);
@@ -1578,7 +1576,7 @@ super.refreshAfterEdit();
                     }
                     return enabled;
                 }); //D&D
-        
+
         itemLabel.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
 //        itemLabel.actualButton.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
             @Override
@@ -1748,7 +1746,7 @@ super.refreshAfterEdit();
             long due = item.getDueDate();
             if (finishTime != MyDate.MAX_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
                 finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
-                        due!=0&&finishTime > due ? "FinishTimeOverdue" : "FinishTime");
+                        due != 0 && finishTime > due ? "FinishTimeOverdue" : "FinishTime");
                 if (oldFormat) {
                     east.add(finishTimeLabel);
                 }
@@ -1901,17 +1899,21 @@ super.refreshAfterEdit();
         }
 
         //DREAD/FUN
-        Label funDreadLabel; // = new Label();
-        funDreadLabel = new Label(item.getDreadFunValue().toString());
-        if (showInDetails) {
-            southDetailsContainer.add(funDreadLabel);
+        if (item.getDreadFunValue() != null) {
+            Label funDreadLabel; // = new Label();
+            funDreadLabel = new Label(item.getDreadFunValue().toString());
+            if (showInDetails) {
+                southDetailsContainer.add(funDreadLabel);
+            }
         }
 
         //CHALLENGE
-        Label challengeLabel; // = new Label();
-        challengeLabel = new Label(item.getChallenge().toString());
-        if (showInDetails) {
-            southDetailsContainer.add(challengeLabel);
+        if (item.getChallenge() != null) {
+            Label challengeLabel; // = new Label();
+            challengeLabel = new Label(item.getChallenge().toString());
+            if (showInDetails) {
+                southDetailsContainer.add(challengeLabel);
+            }
         }
 
         //DUE DATE or COMPLETED DATE
@@ -1977,7 +1979,8 @@ super.refreshAfterEdit();
                 southDetailsContainer.addComponent(waitingTillLabel);
             }
         }
-        //ACTUAL
+//<editor-fold defaultstate="collapsed" desc="comment">
+//ACTUAL
 //        long actual = item.getActualEffort();
 //        if (actual != 0) {
 //            String s;
@@ -1989,8 +1992,9 @@ super.refreshAfterEdit();
 //            actualEffortLabel=new Label("A:" + s));
 //            if (oldFormat) southDetailsContainer.addComponent(new Label("A:" + s));
 //        }
-        //CATEGORIES
+//CATEGORIES
 //                            categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "<set>")); //"<click to set categories>"
+//</editor-fold>
         List cats = item.getCategories();
         if (cats != null && cats.size() > 0) {
             southDetailsContainer.addComponent(new SpanLabel("Cat: " + getListAsCommaSeparatedString(cats)));
@@ -2007,7 +2011,7 @@ super.refreshAfterEdit();
                                 //                                finishTimeLabel != null ? finishTimeLabel : (isDone ? completedDateLabel : dueDateLabel)),
                                 BorderLayout.east(isDone ? completedDateLabel : (finishTimeLabel != null ? finishTimeLabel : dueDateLabel))),
                         //                        BoxLayout.encloseY(starButton, subTasksButton),
-                        subTasksButton!=null?subTasksButton:new Label(),
+                        subTasksButton != null ? subTasksButton : new Label(),
                         editItemButton))
                 );
 
@@ -2184,7 +2188,7 @@ refreshAfterEdit();
 //                    ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
 //</editor-fold>
                     myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                    listAndIndex.list.addComponent(listAndIndex.index + 1, (Component)insertNewTaskContainer);
+                    listAndIndex.list.addComponent(listAndIndex.index + 1, (Component) insertNewTaskContainer);
 //                    myForm.setEditOnShow(insertNewTaskContainer.getTextField());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    ((ScreenListOfItems) myForm).indexOfSwipContParentParent = newTaskContainer;
@@ -3245,14 +3249,13 @@ refreshAfterEdit();
 //            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, itemListOrg.getFilterSortDef(), (item, itemOrItemList) -> InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) //<editor-fold defaultstate="collapsed" desc="comment">
 //            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, (item, itemOrItemList) -> InlineInsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) //<editor-fold defaultstate="collapsed" desc="comment">
             MyTree2 myTree = new MyTree2(listOfItems, expandedObjects,
-//                    lastInsertNewElementContainer != null ? 
-//            (getInlineInsertContainer() != null ? 
-////                            (item, itemOrItemList) -> lastInsertNewElementContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)
-////                            (item, itemOrItemList) -> lastInsertNewElementContainer.make(item, itemOrItemList)
-//                            (item, itemOrItemList) -> getInlineInsertContainer().make(item, itemOrItemList)
-//                            : null)) //<editor-fold defaultstate="collapsed" desc="comment">
-                    getInlineInsertContainer())
-            //            {
+                    //                    lastInsertNewElementContainer != null ? 
+                    //            (getInlineInsertContainer() != null ? 
+                    ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)
+                    ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.make(item, itemOrItemList)
+                    //                            (item, itemOrItemList) -> getInlineInsertContainer().make(item, itemOrItemList)
+                    //                            : null)) //<editor-fold defaultstate="collapsed" desc="comment">
+                    getInlineInsertContainer()) //            {
             //
             ////                if (lastInsertNewTaskContainer == null) {
             ////                InsertNewTaskContainer lastInsertNewTaskContainer = (InsertNewTaskContainer) getClientProperty(InsertNewTaskContainer.LAST_INSERTED_NEW_TASK_CONTAINER);

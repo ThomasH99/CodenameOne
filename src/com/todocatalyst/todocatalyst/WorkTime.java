@@ -32,6 +32,9 @@ public class WorkTime {
         for (WorkSlotSlice workSlot : workSlotSlices) {
             res += workSlot.toString() + ", ";
         }
+        if (workSlotSlices.size() == 0) {
+            res = "WorkTime empty";
+        }
         return res;
     }
 
@@ -113,13 +116,21 @@ public class WorkTime {
 //</editor-fold>
     }
 
-    WorkTime(WorkSlotList workSlots) {
+//    WorkTime(WorkSlotList workSlots) {
+//        
+//    }
+    /**
+    
+    @param workSlots
+    @param now ensure the same 'now' is used everywhere during the calculation
+     */
+    WorkTime(WorkSlotList workSlots, long now) {
         if (workSlots != null && workSlots.size() > 0) {
 //            for (WorkSlot workSlot : workSlots) {
             WorkSlot workSlot;
             for (int i = 0, size = workSlots.size(); i < size; i++) {
                 workSlot = workSlots.get(i);
-                workSlotSlices.add(new WorkSlotSlice(workSlot));
+                workSlotSlices.add(new WorkSlotSlice(workSlot, now));
             }
         }
     }
@@ -226,14 +237,15 @@ public class WorkTime {
 //        this.workSlots = workSlots;
 //    }
     /**
-     *
+     * returns allocated startTime (NOT adjusted to 'now' - the adjustment is done in WorkSlot.getStartTimeAdjusted()
      * @return MyDate.MAX_DATE if no slices available
      */
     public long getStartTime() {
 //        return Math.max(startTime, workSlots != null && workSlots.size() > 0 ? workSlots.get(0).getStartAdjusted() : Long.MIN_VALUE);
 //        return nextWorkTime == null ? startTime : Math.min(startTime, nextWorkTime.getStartTime());
 //        return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(0).getStartTime() : MyDate.MIN_DATE;
-        return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(0).getStartTime() : MyDate.MAX_DATE;
+//        return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(0).getStartTime() : MyDate.MAX_DATE;
+        return  workSlotSlices.size() > 0 ? workSlotSlices.get(0).getStartTime() : MyDate.MAX_DATE;
     }
 
     /**
@@ -249,14 +261,19 @@ public class WorkTime {
 //    }
     /**
      *
-     * @return MyDate.MAX_DATE if no slides available (meaning will never
-     * finish)
+     * @return MyDate.MAX_DATE if no slices available (meaning no defined/calculated finish time)
      */
     public long getFinishTime() {
 //        return nextWorkTime == null ? finishTime : Math.max(finishTime, nextWorkTime.getFinishTime()); //must call getFinishTime() to get value recursively (although very rarely needed)
-        ASSERT.that(workSlotSlices != null , "workSlotSlices==null in WorkTime:" + this);
-        ASSERT.that(true || workSlotSlices == null || workSlotSlices.size() > 0, "workSlotSlices.size()==0 in WorkTime:" + this); //normal case with empty list, e.g. ??
-        return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(workSlotSlices.size() - 1).getEndTime() : MyDate.MAX_DATE;
+//        if (Test.DEBUG) {
+//            ASSERT.that(workSlotSlices != null, "workSlotSlices==null in WorkTime:" + this);
+//        }
+        if (Test.DEBUG) {
+//            ASSERT.that(true || workSlotSlices == null || workSlotSlices.size() > 0, "workSlotSlices.size()==0 in WorkTime:" + this); //normal case with empty list, e.g. ??
+//            ASSERT.that(true || workSlotSlices == null || workSlotSlices.size() > 0, "workSlotSlices.size()==0 in WorkTime:" + this); //normal case with empty list, e.g. ??
+        }
+//        return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(workSlotSlices.size() - 1).getEndTime() : MyDate.MAX_DATE;
+        return workSlotSlices.size() > 0 ? workSlotSlices.get(workSlotSlices.size() - 1).getEndTime() : MyDate.MAX_DATE;
     }
 
     public long getFinishTimeWithNullsXXX() {
@@ -289,7 +306,8 @@ public class WorkTime {
      */
     public long getRemainingDuration() {
 //        return nextWorkTime == null ? finishTime : Math.max(finishTime, nextWorkTime.getFinishTime()); //must call getFinishTime() to get value recursively (although very rarely needed)
-        return workSlotSlices != null && workSlotSlices.size() > 0 ? workSlotSlices.get(workSlotSlices.size() - 1).getMissingDuration() : 0;
+        return  workSlotSlices.size() > 0 ? workSlotSlices.get(workSlotSlices.size() - 1).getMissingDuration() : 0;
+//    }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -304,10 +322,15 @@ public class WorkTime {
 //        this.nextWorkTime = nextWorkTime;
 //    }
 //</editor-fold>
+    WorkTime getWorkTime(long remainingDuration) {
+//        return getWorkTime(getStartTime(), remainingDuration); //default is startTime of this WorkTime
+        return getWorkTime(getStartTime(), remainingDuration); //default is startTime of this WorkTime
+    }
+
     /**
-     * get a new WorkTime based on workslots in this worktime. if
-     * remainingDuration is 0 then return an empty slice of the last(!)
-     * workSlotSlice (to ensure that xero-duration tasks don't break the
+     * get a new WorkTime based on workslots in this worktime which starts at time startTime with duration remainingDuration.  Special case  if
+     * remainingDuration is 0 (either Done tasks, in the middle or end of a subtask list, or tasks with zero estimate) then return an empty slice of the last(!)
+     * workSlotSlice (to ensure that zero-duration tasks don't break the
      * continuation of the allocated time (the current algorithm depends on
      * this). If there are no
      *
@@ -316,21 +339,17 @@ public class WorkTime {
      * @param remainingDuration duration required
      * @return
      */
-    WorkTime getWorkTime(long remainingDuration) {
-//        return getWorkTime(getStartTime(), remainingDuration); //default is startTime of this WorkTime
-        return getWorkTime(getStartTime(), remainingDuration); //default is startTime of this WorkTime
-    }
-
     WorkTime getWorkTime(long startTime, long remainingDuration) {
-        WorkSlotSlice slice;
         //special case if requestedDuration is zero: 
-        if (remainingDuration == 0 && workSlotSlices.size() > 0) {
-            slice = workSlotSlices.get(workSlotSlices.size() - 1);
-            WorkSlotSlice newSlice = slice.getSlice(startTime, 0); //allocate empty slice of last workslot
+        if (false && remainingDuration == 0 && workSlotSlices.size() > 0) {
+            WorkSlotSlice lastSlice = workSlotSlices.get(workSlotSlices.size() - 1);
+            WorkSlotSlice newSlice = lastSlice.getSlice(startTime, 0); //allocate empty slice of last workslot, see reason in javadoc above
 //            newWorkSlotSlices.add(newSlice);
             return new WorkTime(newSlice);
         }
+
         List<WorkSlotSlice> newWorkSlotSlices = new ArrayList<WorkSlotSlice>();
+
         int index = 0;
         int size = workSlotSlices.size();
         //find first slice with appropriate startTime (skip slides that start *after* startTime or end *before* startTime (<=> no overlap)
@@ -338,6 +357,8 @@ public class WorkTime {
         while (index < size && !(startTime >= workSlotSlices.get(index).getStartTime() && startTime <= workSlotSlices.get(index).getEndTime())) {
             index++;
         }
+
+        WorkSlotSlice slice;
         while (index < size) {
             slice = workSlotSlices.get(index);
             WorkSlotSlice newSlice = slice.getSlice(startTime, remainingDuration);
