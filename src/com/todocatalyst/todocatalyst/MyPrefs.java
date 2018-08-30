@@ -178,7 +178,7 @@ public class MyPrefs {
     static PrefEntry waitingAskToSetWaitingDateWhenMarkingTaskWaiting
             = new PrefEntry("Popup to set " + Item.WAIT_UNTIL_DATE + " and " + Item.WAITING_ALARM_DATE + " when setting a task to " + ItemStatus.WAITING, "waitingAskToSetWaitingDateWhenMarkingTaskWaiting", true, "**does nothing if both of the waiting dates are already set");
 
-    static PrefEntry updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem
+    static PrefEntry updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem
             = new PrefEntry("Copy initial values between " + Item.EFFORT_ESTIMATE + " and " + Item.EFFORT_REMAINING + " the first time these values are being edited for a task",
                     "updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem", true, "**");
 

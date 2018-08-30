@@ -5,6 +5,7 @@ import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
+import com.codename1.l10n.L10NManager;
 import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
@@ -110,8 +111,10 @@ public class ScreenItem extends MyForm {
     private String FILE_LOCAL_EDITED_CATEGORIES = "ScreenItem-EditedCategories";
     private String FILE_LOCAL_EDITED_REPEAT_RULE = "ScreenItem-EditedRepeatRule";
     private boolean localSave; //true when save of item is only local (on app pause/exit). Hack to reuse putEditedValues2!
-    private boolean remainingEffortSetManually; //true when reaminingEffort has been edited to a different value than the original one from item
-    private boolean effortEstimateSetManually; //true when reaminingEffort has been edited to a different value than the original one from item
+    private boolean remainingEffortSetManually = false; //true when reaminingEffort has been edited to a different value than the original one from item
+    private boolean remainingEffortSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
+    private boolean effortEstimateSetManually = false; //true when effortEstimate has been edited to a different value than the original one from item
+    private boolean effortEstimateSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
 
 //    ScreenItem(Item item, MyForm previousForm) { //throws ParseException, IOException {
 //        this(item, previousForm, ()->{});
@@ -154,7 +157,7 @@ public class ScreenItem extends MyForm {
         if (valuesRestored && this.item.getObjectIdP() == null) {
             this.item = itemLS; //if item is a new item, then we completely ignore that Item and continue with the previously locally saved values
         } else {
-            itemLS = this.item; //it no locally saved edits, then use item to 'feed' the edits fields
+            itemLS = this.item; //if no locally saved edits, then use item to 'feed' the edits fields
         }
         //restore locally edited Owner
         locallyEditedOwner = restoreNewOwner_N();
@@ -232,7 +235,7 @@ public class ScreenItem extends MyForm {
         toolbar.addCommandToOverflowMenu(new Command("Work time", Icons.iconSettingsApplicationLabelStyle) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotList(), item, ScreenItem.this, null, //(iList) -> {
+                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotListN(), item, ScreenItem.this, null, //(iList) -> {
                         //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
                         //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
                         null, false).show();
@@ -265,7 +268,7 @@ public class ScreenItem extends MyForm {
 //                    }).show();
 //                }
 //                new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, DAO.getInstance().getTemplateList(), ScreenItem.this, (i) -> {
-                new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, TemplateList.getInstance(), ScreenItem.this, (i) -> {
+                new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, () -> TemplateList.getInstance(), ScreenItem.this, (i) -> {
                 }, ScreenListOfItems.OPTION_TEMPLATE_EDIT// | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                 ).show();
             });
@@ -741,6 +744,21 @@ public class ScreenItem extends MyForm {
                     (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
         }
 
+//get the effort for the project task itself:
+        MyDurationPicker remainingEffort;
+        if (item.isProject()) {
+//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS,
+            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort() / MyDate.MINUTE_IN_MILLISECONDS, //getRemainingEffort(true, true): need to show same sum here as in the list showing the project
+                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,
+                            false, true));
+//            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
+//            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {            }, true, true, false));
+        } else {
+            //            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
+            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,
+                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
+        }
+
 //        description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
         description.addActionListener((e) -> {
 //            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
@@ -750,11 +768,13 @@ public class ScreenItem extends MyForm {
 //            if (item.getEffortEstimate()==0 || effortEstimate.getTime() == 0||res.minutes*MyDate.MINUTE_IN_MILLISECONDS!=item.getEffortEstimate()) { //UI: use value in text if either no previous value set, or manual value entered in picker or new text value entered into text
             if (res.minutes != 0) { //UI: alwyas use value in text to override previous value
                 //TODO!!!!! call the same actionListener as when EsitmatePicker is changed 
-                effortEstimate.setTime(res.minutes);
-                effortEstimateSetManually = true;
+//                effortEstimate.setTime(res.minutes); //will set effortEstimate, even if text is changed multiple times. However, manually changing remaining
+                //UI: entering an estimate in the text of an item is used to set remaining effort (and not effort estimate) since this is more useful, e.g. as an easy way to update remaining while editing the item
+                remainingEffort.setTime(res.minutes); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
+                remainingEffort.repaint();
+//                effortEstimateSetManually = true; //NOT necessary
                 description.setText(res.cleaned); //DON'T update text while 
                 description.repaint();
-                effortEstimate.repaint();
             }
             setTitle(getScreenTitle(item.isTemplate(), description.getText()));
         }); //update the form title when text is changed
@@ -779,6 +799,7 @@ public class ScreenItem extends MyForm {
                 starred.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
             }
             starred.setIcon(starred.getIcon() == Icons.iconStarSelectedLabelStyle ? Icons.iconStarUnselectedLabelStyle : Icons.iconStarSelectedLabelStyle);
+            starred.repaint();
 //            DAO.getInstance().save(item); //??
         });
         parseIdMap2.put(starred, () -> item.setStarred(starred.getIcon() == Icons.iconStarSelectedLabelStyle));
@@ -862,12 +883,14 @@ public class ScreenItem extends MyForm {
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
 
         //FINISH_TIME
-//        WorkTime workTime = item.getAllocatedWorkTime();
-        if (!item.isDone()) {
-            Date workTime = item.getFinishTimeD();
-            if (workTime.getTime() != MyDate.MAX_DATE) {
-                Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(workTime), null, (e) -> {
-                    new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTime(), ScreenItem.this).show();
+//        WorkTimeSlices workTime = item.getAllocatedWorkTimeN();
+        if (!item.isDone() || Config.WORKTIME_TEST) { //TEST: show the artificial/helper workSlice allocated to done tasks
+//            WorkTimeSlices workTime = item.getAllocatedWorkTimeN();
+            Date finishTime = item.getFinishTimeD();
+            if (finishTime.getTime() != MyDate.MAX_DATE || Config.WORKTIME_TEST) {
+                Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(finishTime), null, (e) -> {
+//                    new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTimeN(), ScreenItem.this).show();
+                    new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTimeN(), ScreenItem.this).show();
                 }));
                 mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true));
             }
@@ -889,7 +912,6 @@ public class ScreenItem extends MyForm {
         mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)))); //, true, false, false));
         int remainingIndex = mainCont.getComponentCount() - 1; //store the index at which to insert remainingEffort
 
-        MyDurationPicker remainingEffort;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (!item.isProject()) {
 //            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
@@ -901,7 +923,6 @@ public class ScreenItem extends MyForm {
 //            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffort(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //        }
 //</editor-fold>
-
         //Categories
         if (locallyEditedCategories == null) {
             locallyEditedCategories = new ArrayList(itemLS.getCategories()); //create a copy of the categories that we can edit locally in this screen; only initialize once to keep value between calling categoryPicker
@@ -1207,7 +1228,8 @@ public class ScreenItem extends MyForm {
 //            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getRemainingEffortNoDefault()), "Button"), "**", false, true, true)); //hack to insert after alarmDate field
 //</editor-fold>
 //            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"), "**", false, true, true)); //hack to insert after alarmDate field
-            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"),
+//            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"),
+            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
                     "**", true, true, false)); //hack to insert after alarmDate field
 
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getActualEffort()), "Button"), Item.EFFORT_ACTUAL_SUBTASKS_HELP, false, true, false));
@@ -1221,20 +1243,19 @@ public class ScreenItem extends MyForm {
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"), Item.EFFORT_ESTIMATE_SUBTASKS, false, true, true));
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
                     Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
-            //get the effort for the project task itself:
-            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS,
-                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,
-                            false, true));
-//            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
-//            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {            }, true, true, false));
-            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP));
 
-            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort(true) / MyDate.MINUTE_IN_MILLISECONDS,
-                    (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false, true));
+            if (false) { //false: makes no sense to show remaining for project itself, just confusing
+                timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP));
+            }
+
+            if (true) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
+                actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort(true) / MyDate.MINUTE_IN_MILLISECONDS,
+                        (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort.makeContainerWithClearButton(), actualExplanation));
 //            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP, true, false, false));
-            timeCont.add(layoutN(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP));
-
+                timeCont.add(layoutN(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP));
+            }
+            
 //            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) item.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate(i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate.makeContainerWithClearButton(), "**"));
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate, Item.EFFORT_ESTIMATE_PROJECT_HELP, true, false, false));
@@ -1258,9 +1279,6 @@ public class ScreenItem extends MyForm {
 //            timeCont.add(layout(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP, true, false, false));
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP));
 
-//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
-            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,
-                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            timeCont.add(new Label(Item.EFFORT_REMAINING)).add(addTimePickerWithClearButton(remainingEffort));
 //            timeCont.add(new Label(Item.EFFORT_REMAINING)).add(remainingEffort.makeContainerWithClearButton());
@@ -1277,7 +1295,8 @@ public class ScreenItem extends MyForm {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getTime(), item.getStatus(), status.getStatus()));
-                status.animate();
+//                status.animate();
+                status.repaint();
             }
         });
 
@@ -1292,7 +1311,8 @@ public class ScreenItem extends MyForm {
 //            }
 //            ItemStatus oldStatus = status.getStatus();
                 status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getTime(), item.getStatus(), status.getStatus()));
-                status.animate();
+//                status.animate();
+                status.repaint();
             });
         }
 
@@ -1428,10 +1448,12 @@ public class ScreenItem extends MyForm {
         prioCont.add(layoutN(Item.EARNED_POINTS, earnedValue, Item.EARNED_POINTS_HELP, true, false, true));
 
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("<set>", parseIdMap2, () -> item.getEarnedValuePerHour(), (d) -> {
-        MyNumericTextField earnedValuePerHour = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValuePerHour(), (d) -> {
-        });
-//        earnedValuePerHour.setConstraint(TextArea.UNEDITABLE);
-        earnedValuePerHour.setEditable(false);
+//        MyNumericTextField earnedValuePerHour = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValuePerHour(), (d) -> {
+//        });
+////        earnedValuePerHour.setConstraint(TextArea.UNEDITABLE);
+//        earnedValuePerHour.setEditable(false);
+        
+        Label earnedValuePerHour = new Label(L10NManager.getInstance().format(itemLS.getEarnedValuePerHour(), 2));
         earnedValuePerHour.setUIID("LabelFixed");
 //        prioCont.add(new Label(Item.EARNED_POINTS_PER_HOUR)).add(earnedValuePerHour).add(new SpanLabel("Value per hour is calculated as Value divided by the Estimate, or the sum of Remaining and Actual effort - once work has started."));
 //                add(new SpanLabel(Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_POINTS + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."));
@@ -1444,14 +1466,23 @@ public class ScreenItem extends MyForm {
             public void actionPerformed(ActionEvent e) {
                 //redo the calculation done by Item but manually (without updating Item since the values may be Cancelled)
                 if (earnedValue.getText().length() > 0) {
-                    earnedValuePerHour.setText(""
-                            + Item.calculateEarnedValuePerHour(
+//                    earnedValuePerHour.setText(""
+//                    earnedValuePerHour.setVal(
+//                            Item.calculateEarnedValuePerHour(
+//                                    Item.getTotalExpectedEffort(
+//                                            ((long) remainingEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
+//                                            ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
+//                                            ((long) effortEstimate.getTime()) * MyDate.MINUTE_IN_MILLISECONDS),
+//                                    Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())));
+                    earnedValuePerHour.setText(
+                            L10NManager.getInstance().format(Item.calculateEarnedValuePerHour(
                                     Item.getTotalExpectedEffort(
                                             ((long) remainingEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
                                             ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
                                             ((long) effortEstimate.getTime()) * MyDate.MINUTE_IN_MILLISECONDS),
-                                    Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())));
-                    earnedValuePerHour.animate(); //TODO: needed?
+                                    Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())),2));
+//                    earnedValuePerHour.animate(); //TODO: needed?
+                    earnedValuePerHour.repaint(); //TODO: needed?
                 }
             }
         };
@@ -1466,15 +1497,21 @@ public class ScreenItem extends MyForm {
             public void actionPerformed(ActionEvent e) {
                 //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
                 //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
-                remainingEffortSetManually = item.getRemainingEffortNoDefault() != remainingEffort.getTime(); //true;
-                if (MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem.getBoolean()
-                        && !effortEstimateSetManually
-                        && item.getEffortEstimate() == 0) {
+//                remainingEffortSetManually = item.getRemainingEffortNoDefault() != remainingEffort.getTime(); //true;
+                if (remainingEffortSetAutomatically) {
+                    return; //do nothing if remainingEffort is set automatically
+                } else {
+                    remainingEffortSetManually = true;
+                    if (MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
+                            && !effortEstimateSetManually) {//&& item.getEffortEstimate() == 0
 //                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
 //                    if ((remainingEffort.getTime() != 0 && item.getEffortEstimate() == 0 && (effortEstimate.getTime() == 0 || forceSameValues))
 //                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: 
-                    effortEstimate.setTime(remainingEffort.getTime() + actualEffort.getTime()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
-                    effortEstimate.repaint();
+                        effortEstimateSetAutomatically = true;
+                        effortEstimate.setTime(remainingEffort.getTime() + actualEffort.getTime()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
+                        effortEstimateSetAutomatically = false;
+                        effortEstimate.repaint();
+                    }
                 }
             }
 //            }
@@ -1484,7 +1521,7 @@ public class ScreenItem extends MyForm {
             public void actionPerformed(ActionEvent e) {
                 //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
                 //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
-                if (MyPrefs.getBoolean(MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem)) {
+                if (MyPrefs.getBoolean(MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem)) {
                     boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
                     if ((remainingEffort.getTime() != 0 && item.getEffortEstimate() == 0 && (effortEstimate.getTime() == 0 || forceSameValues))
                             || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: 
@@ -1499,22 +1536,29 @@ public class ScreenItem extends MyForm {
         MyActionListener effortEstimateChangeListener = new MyActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                effortEstimateSetManually = item.getEffortEstimate() != effortEstimate.getTime(); //UI: only set to true if actually changed (avoid that entering and leaving without changing blocks auto-updates
-                //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
-                //only automatically update effort estimate if never defined and not changed in the current editing 
-                if (MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem.getBoolean()
-                        && !remainingEffortSetManually
-                        && item.getRemainingEffortNoDefault() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+//                effortEstimateSetManually = item.getEffortEstimate() != effortEstimate.getTime(); //UI: only set to true if actually changed (avoid that entering and leaving without changing blocks auto-updates
+                if (effortEstimateSetAutomatically) {
+                    return;
+                } else {
+                    effortEstimateSetManually = true;
+                    //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
+                    //only automatically update effort estimate if never defined and not changed in the current editing 
+                    if (MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
+                            && !remainingEffortSetManually) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
 //                    if ((effortEstimate.getTime() != 0 && item.getRemainingEffortNoDefault() == 0 && (remainingEffort.getTime() == 0 || forceSameValues))
 //                            || remainingEffort.getTime()==effortEstimate.getTime()) { //UI: when to auto-update estimates
 //                    if ((item.getRemainingEffortNoDefault() == 0 && effortEstimate.getTime() != 0 && (remainingEffort.getTime() == 0 || forceSameValues))
 //                            || item.getRemainingEffortNoDefault() == 0
 //                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: when to auto-update estimates
-                    remainingEffort.setTime(effortEstimate.getTime() - actualEffort.getTime()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
-                    remainingEffortSetManually = false; //must reset since the actionlistener on remainingEffort does not distinguish between setting via manual user input and auto-setting based on changed effortEstimate
-                    remainingEffort.repaint();
-//                    }
+//</editor-fold>
+                        remainingEffortSetAutomatically = true;
+                        remainingEffort.setTime(effortEstimate.getTime() - actualEffort.getTime()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
+                        remainingEffortSetAutomatically = false;
+//                        remainingEffortSetManually = false; //must reset since the actionlistener on remainingEffort does not distinguish between setting via manual user input and auto-setting based on changed effortEstimate
+                        remainingEffort.repaint();
+                    }
                 }
             }
         };
@@ -1522,7 +1566,7 @@ public class ScreenItem extends MyForm {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
-                if (MyPrefs.getBoolean(MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem)) //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+                if (MyPrefs.getBoolean(MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem)) //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
                 {
                     boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
 //                    if ((effortEstimate.getTime() != 0 && item.getRemainingEffortNoDefault() == 0 && (remainingEffort.getTime() == 0 || forceSameValues))
@@ -1596,8 +1640,20 @@ public class ScreenItem extends MyForm {
 //        statusCont.add(layout(Item.WAIT_WHEN_SET_WAITING_DATE, dateSetWaitingDate, Item.WAIT_WHEN_SET_WAITING_DATE_HELP));
         statusCont.add(layoutN(Item.WAIT_WHEN_SET_WAITING_DATE, dateSetWaitingDate, Item.WAIT_WHEN_SET_WAITING_DATE_HELP));
         dateSetWaitingDate.addActionListener((e) -> {
-            if (status.getStatus() != ItemStatus.WAITING) {
-                status.setStatus(ItemStatus.WAITING);
+            if (dateSetWaitingDate.getDate().getTime() != 0) {
+                if (status.getStatus() != ItemStatus.WAITING) {
+                    status.setStatus(ItemStatus.WAITING);
+                    status.repaint();
+                }
+            } else {
+                if (actualEffort.getTime() != 0) {
+                    status.setStatus(ItemStatus.ONGOING); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+                    status.repaint();
+//                    status.setStatus(ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+                } else {
+                    status.setStatus(item.getStatus()); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+                    status.repaint();
+                }
             }
         });
 
@@ -1609,41 +1665,60 @@ public class ScreenItem extends MyForm {
                 //TODO!!! move this logic into Item as static method
                 if (status.getStatus() != item.getStatus()) {
                     if (status.getStatus() == ItemStatus.ONGOING) {
-                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+//                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+                        if (startedOnDate.getDate().getTime() == 0) {
                             startedOnDate.setDate(new Date());
+                            startedOnDate.repaint();
                         }
                     } else if (status.getStatus() == ItemStatus.DONE || status.getStatus() == ItemStatus.CANCELLED) {
-                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+//                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+                        if (startedOnDate.getDate().getTime() == 0) {
                             startedOnDate.setDate(new Date());
+                            startedOnDate.repaint();
                         }
-                        if (completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) {
+//                        if (completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) {
+                        if (completedDate.getDate().getTime() == 0) {
                             completedDate.setDate(new Date());
+                            completedDate.repaint();
                         }
                     } else if (status.getStatus() == ItemStatus.WAITING) {
-                        if (dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getDateWhenSetWaiting()) {
-                            dateSetWaitingDate.setDate(new Date());
-                        }
+//                        if (dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getDateWhenSetWaiting()) {
+                        dateSetWaitingDate.setDate(new Date());
+                        dateSetWaitingDate.repaint();
+//                        }
                         //UI: set startedOnDate when setting Waiting (even if no effort registered)?
-                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+//                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+                        if (startedOnDate.getDate().getTime() == 0) {
                             startedOnDate.setDate(new Date());
+                            startedOnDate.repaint();
                         }
                     } else if (status.getStatus() == ItemStatus.CREATED) {
                         //if set back to Created, force startedOnDate and completedDate and WaitingDate and ?? back
                         //TODO!!!!
                         //set back to 0 or if the date was only changed in the UI (item.getStartedOnDate()==0)
-                        if ((startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) || item.getStartedOnDate() == 0) {
+//                        if ((startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) || item.getStartedOnDate() == 0) {
+                        if (startedOnDate.getDate().getTime() != 0) {
                             startedOnDate.setDate(new Date(0));
+                            startedOnDate.repaint();
                         }
                         //TODO!!!!!! check the logic for setting dates back to 0!! 
                         //TODO In general, need to have methods in Item *without* any side-effects on other fields to ensure that the fields are set to the values seen in the UI
                         //TODO extract the logic for which changed fields impact others? Add new Item.setters embedding th needed logic for updating other fields and use those in the places where the automatic updates are needed
-                        if ((completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
+//                        if ((completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
+                        if (completedDate.getDate().getTime() != 0) {
                             completedDate.setDate(new Date(0));
+                            completedDate.repaint();
                         }
-                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
-                            completedDate.setDate(new Date(0));
-                        }
+//                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
+//                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
+//                            completedDate.setDate(new Date(0));
+//                        }
                     }
+                    if (status.getStatus() != ItemStatus.WAITING && dateSetWaitingDate.getDate().getTime() != 0) {
+                        dateSetWaitingDate.setDate(new Date(0));
+                        dateSetWaitingDate.repaint();
+                    }
+
                 }
             }
         };
@@ -1653,8 +1728,18 @@ public class ScreenItem extends MyForm {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 //if startedOnDate is set, then if status has not been set explicitly and it is Created (not Waiting), the set it 
-                if (startedOnDate.getDate().getTime() != 0 && item.getStartedOnDate() == 0 && status.getStatus() == item.getStatus() && status.getStatus() == ItemStatus.CREATED) {
+//                if (startedOnDate.getDate().getTime() != 0 && item.getStartedOnDate() == 0 && status.getStatus() == item.getStatus() && status.getStatus() == ItemStatus.CREATED) {
+                if (startedOnDate.getDate().getTime() != 0) { //doesn't matter 
                     status.setStatus(ItemStatus.ONGOING);
+                } else {
+                    if (actualEffort.getTime() != 0) {
+                        status.setStatus(ItemStatus.ONGOING); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+//                    } else if (completedDate.getDate().getTime()!=0){
+//                        status.setStatus(ItemStatus.DONE); //UI: if there is a completedDate set, then set status to Done
+                    } else {
+                        status.setStatus(item.getStatus()); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+                    }
+                    status.repaint();
                 }
             }
         };
@@ -1665,30 +1750,54 @@ public class ScreenItem extends MyForm {
             public void actionPerformed(ActionEvent evt) {
 //                boolean completedDateSet = false;
                 //if completeDate is set, then if status has not been set explicitly and it is Created/Ongoing/Waiting), the set it Completed
-                if (completedDate.getDate().getTime() != 0 && item.getCompletedDate() == 0 && status.getStatus() == item.getStatus()
-                        && (status.getStatus() == ItemStatus.CREATED || status.getStatus() == ItemStatus.ONGOING || status.getStatus() == ItemStatus.WAITING)) {
-//                    completedDateSet = true;
-//                    status.setStatus(ItemStatus.DONE);
-                    if (completedDate.getDate().getTime() == 0) { //UI: if deleting a completedDate
-                        if (actualEffort.getTime() == 0) {
-                            status.setStatus(ItemStatus.CREATED);
-                        } else {
-                            status.setStatus(ItemStatus.ONGOING);
-                        }
+//                if (completedDate.getDate().getTime() != 0 && item.getCompletedDate() == 0 && status.getStatus() == item.getStatus()
+//                        && (status.getStatus() == ItemStatus.CREATED || status.getStatus() == ItemStatus.ONGOING || status.getStatus() == ItemStatus.WAITING)) {
+                if (completedDate.getDate().getTime() != 0) {
+                    status.setStatus(ItemStatus.DONE);
+                } else {
+                    if (actualEffort.getTime() == 0) {
+                        status.setStatus(ItemStatus.CREATED);
                     } else {
-//                        status.setStatus(ItemStatus.CREATED);
-                        status.setStatus(ItemStatus.DONE);
-                    }
-                    //UI: if startedOnDate is not set, and not changed explicitly in UI, the set it to (-Now-) completedDate-actual
-//                    if (item.getStartedOnDate()==0 && startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                    if (item.getStartedOnDate() == 0 || startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-//                        startedOnDate.setDate(new Date());
-                        startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
+                        status.setStatus(ItemStatus.ONGOING);
                     }
                 }
-
+                status.repaint();
+                //UI: if startedOnDate is not changed explicitly in UI, the set it to (-Now-) completedDate-actual
+                if (startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
+                    startedOnDate.repaint();
+                }
             }
         };
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            public void actionPerformed(ActionEvent evt) {
+////                boolean completedDateSet = false;
+//                //if completeDate is set, then if status has not been set explicitly and it is Created/Ongoing/Waiting), the set it Completed
+//                if (completedDate.getDate().getTime() != 0 && item.getCompletedDate() == 0 && status.getStatus() == item.getStatus()
+//                        && (status.getStatus() == ItemStatus.CREATED || status.getStatus() == ItemStatus.ONGOING || status.getStatus() == ItemStatus.WAITING)) {
+////                    completedDateSet = true;
+////                    status.setStatus(ItemStatus.DONE);
+//                    if (completedDate.getDate().getTime() == 0) { //UI: if deleting a completedDate
+//                        if (actualEffort.getTime() == 0) {
+//                            status.setStatus(ItemStatus.CREATED);
+//                        } else {
+//                            status.setStatus(ItemStatus.ONGOING);
+//                        }
+//                    } else {
+////                        status.setStatus(ItemStatus.CREATED);
+//                        status.setStatus(ItemStatus.DONE);
+//                    }
+//                    //UI: if startedOnDate is not set, and not changed explicitly in UI, the set it to (-Now-) completedDate-actual
+////                    if (item.getStartedOnDate()==0 && startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+//                    if (item.getStartedOnDate() == 0 || startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+////                        startedOnDate.setDate(new Date());
+//                        startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
+//                    }
+//                }
+//
+//            }
+//        };
+//</editor-fold>
         completedDate.addActionListener(completedOnDateListener);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1858,38 +1967,40 @@ public class ScreenItem extends MyForm {
 //        Command addNewSubTask = makeCreateNewItemCommand("", item.getItemList());
 //        tabs.addTab("Subtasks", null, buildContentPaneForItemList(item.getItemList()));
 //</editor-fold>
-        if (false) {
-            tabs.addTab("Subtasks", null, new Button(Command.create("Edit subtasks", null, (e) -> {
-                ItemList itemList = item.getItemList();
-//                DAO.getInstance().fetchAllItemsIn((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
-                putEditedValues2(parseIdMap2);
-                new ScreenListOfItems(item.getText(), itemList, ScreenItem.this, (iList) -> {
-//                            itemList.setList(iList.getList());
-                    item.setItemList(itemList);
-                    DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                    refreshAfterEdit(); //necessary to update sum of subtask effort
-//                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList), null); //update the container with edited content
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                                categoryList.addItemAtIndex(category, 0);
-//                                DAO.getInstance().save(categoryList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//                            itemList.setList(itemList.getList());
-//                            DAO.getInstance().save(itemList);
-//                        },
-//                        (node) -> {
-//                            return buildItemListContainer((ItemList) node);
-//                        },
-//                        (itemList) -> {
-//                            ItemList newItemList = new ItemList();
-//                            new ScreenItemListProperties(newItemList, ScreenListOfItemLists.this, () -> {
-//                                DAO.getInstance().save(newItemList); //save before adding to itemList
-//                                itemList.addItem(newItemList);
-//                            }).show();
+//        if (false) {
+//            tabs.addTab("Subtasks", null, new Button(Command.create("Edit subtasks", null, (e) -> {
+//                ItemList itemList = item.getItemList();
+////                DAO.getInstance().fetchAllItemsIn((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
+//                putEditedValues2(parseIdMap2);
+//                new ScreenListOfItems(item.getText(), itemList, ScreenItem.this, (iList) -> {
+////                            itemList.setList(iList.getList());
+//                    item.setItemList(itemList);
+//                    DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                    refreshAfterEdit(); //necessary to update sum of subtask effort
+////                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList), null); //update the container with edited content
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                                categoryList.addItemAtIndex(category, 0);
+////                                DAO.getInstance().save(categoryList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+////                            itemList.setList(itemList.getList());
+////                            DAO.getInstance().save(itemList);
+////                        },
+////                        (node) -> {
+////                            return buildItemListContainer((ItemList) node);
+////                        },
+////                        (itemList) -> {
+////                            ItemList newItemList = new ItemList();
+////                            new ScreenItemListProperties(newItemList, ScreenListOfItemLists.this, () -> {
+////                                DAO.getInstance().save(newItemList); //save before adding to itemList
+////                                itemList.addItem(newItemList);
+////                            }).show();
+////</editor-fold>
+////                }, null, false, templateEditMode
+//                }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+//                ).show();
+//            })));
+//        }
 //</editor-fold>
-//                }, null, false, templateEditMode
-                }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
-                ).show();
-            })));
-        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        else {
 //            Container subTaskCont = createSubTaskTree(item);

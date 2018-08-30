@@ -48,11 +48,11 @@ class WorkSlotSlice {
         this.endTime = endTime; //use the smaller value (knowing that endTime must never be larger than getEndTime())
         this.missingDuration = missingDuration;
 //        ASSERT.that(startTime >= workSlot.getStartAdjusted(), "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted()));
-        if (Test.DEBUG) {
-            ASSERT.that(startTime >= workSlot.getStartAdjusted(now), "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted(now)));
+        if (Config.WORKTIME_TEST) {
+            assert startTime >= workSlot.getStartAdjusted(now): "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted(now));
         }
-        if (Test.DEBUG) {
-            ASSERT.that(endTime <= workSlot.getEndTime(), "endTime:" + new Date(endTime) + "must be less than workSlot.getEndTime():" + new Date(workSlot.getEndTime()));
+        if (Config.WORKTIME_TEST) {
+            assert endTime <= workSlot.getEndTime(): "endTime:" + new Date(endTime) + "must be less than workSlot.getEndTime():" + new Date(workSlot.getEndTime());
         }
 //        ASSERT.that(startTime != endTime, "zero duration workSlotSlice not allowed, startTime:" + new Date(startTime) + " endTime:" + new Date(endTime));
     }
@@ -73,9 +73,9 @@ class WorkSlotSlice {
 //            this.workSlot = workSlot;
 //            this(workSlot, Long.MIN_VALUE, Long.MAX_VALUE);
         this(workSlot, workSlot.getStartAdjusted(now), workSlot.getEndTime());
-        if (Test.DEBUG) {
-            this.now = now;
-        }
+//        if (Config.WORKTIME_TEST) {
+//            this.now = now;
+//        }
     }
 
     /**
@@ -120,21 +120,22 @@ class WorkSlotSlice {
 //</editor-fold>
     }
     
-    WorkSlotSlice getSliceXX(long startTime, long duration) {
-//            if (startTime == MyDate.MIN_DATE) {
-//                startTime = workSlot.getStartAdjusted();
-//            }
-        ASSERT.that(duration != 0, "duration must be !=0, is=" + duration);
-        ASSERT.that(startTime >= workSlot.getStartAdjusted(), "startTime:" + new Date(startTime) + " must be >= workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted()));
-        ASSERT.that(startTime <= workSlot.getEndTime(), "startTime:" + new Date(startTime) + " must be <= workSlot.getEndTime():" + new Date(workSlot.getEndTime()));
-//            ASSERT.that(endTime <= workSlot.getEndTime(), "endTime:" + new Date(endTime) + "must be less than workSlot.getEndTime():" + new Date(workSlot.getEndTime()));
-
-//            return new WorkSlotSlice(workSlot, startTime, Math.min(startTime + duration, endTime), Math.max(0, (startTime + duration) - endTime));
-        return new WorkSlotSlice(workSlot, startTime,
-                Math.min(startTime + duration, endTime), //endTime: only allocate to endTime is slice is too small to allocate full duration
-                Math.max(0, (startTime + duration) - Math.min(startTime + duration, endTime))); //missing = desiredEndTime - actualEndTime
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    WorkSlotSlice getSliceXX(long startTime, long duration) {
+////            if (startTime == MyDate.MIN_DATE) {
+////                startTime = workSlot.getStartAdjusted();
+////            }
+//        ASSERT.that(duration != 0, "duration must be !=0, is=" + duration);
+//        ASSERT.that(startTime >= workSlot.getStartAdjusted(), "startTime:" + new Date(startTime) + " must be >= workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted()));
+//        ASSERT.that(startTime <= workSlot.getEndTime(), "startTime:" + new Date(startTime) + " must be <= workSlot.getEndTime():" + new Date(workSlot.getEndTime()));
+////            ASSERT.that(endTime <= workSlot.getEndTime(), "endTime:" + new Date(endTime) + "must be less than workSlot.getEndTime():" + new Date(workSlot.getEndTime()));
+//
+////            return new WorkSlotSlice(workSlot, startTime, Math.min(startTime + duration, endTime), Math.max(0, (startTime + duration) - endTime));
+//        return new WorkSlotSlice(workSlot, startTime,
+//                Math.min(startTime + duration, endTime), //endTime: only allocate to endTime is slice is too small to allocate full duration
+//                Math.max(0, (startTime + duration) - Math.min(startTime + duration, endTime))); //missing = desiredEndTime - actualEndTime
+//    }
+//</editor-fold>
 //    WorkSlotSlice getSlice(long duration) {
 ////        return getSlice(workSlot.getStartAdjusted(), duration);
 //        return WorkSlotSlice.this.getSlice(startTime, duration);

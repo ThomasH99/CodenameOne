@@ -298,6 +298,7 @@ public class ScreenRepeatRuleNew extends MyForm {
             buttonRepeatRuleHistory.addActionListener((e) -> {
                 if (repeatRuleHideableDetailsContainer.getComponentCount() == 0) { //lazy evaluation
                     List<RepeatRuleObjectInterface> list = myRepeatRule.getListOfUndoneRepeatInstances();
+                    long now=System.currentTimeMillis(); //use a single value of now 
                     for (int i = 0, size = list.size(); i < size; i++) {
                         RepeatRuleObjectInterface item = list.get(i);
                         if (item instanceof Item) {
@@ -305,7 +306,7 @@ public class ScreenRepeatRuleNew extends MyForm {
                             repeatRuleHideableDetailsContainer.add(ScreenListOfItems.buildItemContainer(ScreenRepeatRuleNew.this, (Item) item, null, null));
                         } else if (item instanceof WorkSlot) {
 //                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, () -> refreshAfterEdit(), null));
-                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, ScreenRepeatRuleNew.this, null, false, false));
+                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, ScreenRepeatRuleNew.this, null, false, false, now));
                         }
                     }
                     if (myRepeatRule.getLatestDateCompletedOrCancelled().getTime() != 0) {

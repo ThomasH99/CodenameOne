@@ -141,7 +141,7 @@ public class StickyHeader extends Container implements ScrollListener {
                 int cw = g.getClipWidth();
                 int ch = g.getClipHeight();
 
-                if (true) {
+                if (false) {
                     int parAbsX = getParent().getAbsoluteX();
                     int parPadLeftX = getParent().getStyle().getPaddingLeft(isRTL());
                     int parMargLeftX = getParent().getStyle().getMarginLeft(isRTL()); //THJ)
@@ -173,21 +173,27 @@ public class StickyHeader extends Container implements ScrollListener {
 
 //                int tx = getParent().getX();// - getX();
 //                int ty = getParent().getY() - getY();
-                Container contPane = getComponentForm().getContentPane();
-                int tx = contPane.getAbsoluteX() + contPane.getStyle().getMarginLeft(isRTL()); //- getX(); //WORKS
+                Form form = getComponentForm();
+                if (form != null) {
+                    Container contPane = getComponentForm().getContentPane();
+//                int tx = contPane.getAbsoluteX() + contPane.getStyle().getMarginLeft(isRTL()); //- getX(); //WORKS
+                    int tx = contPane.getAbsoluteX() + contPane.getStyle().getMarginLeft(isRTL()) + getParent().getX(); //- getX(); //WORKS
 //                int ty = getComponentForm().getContentPane().getY() - getY();
-                int ty = contPane.getAbsoluteY() - getY(); //WORKS
+                    int ty = contPane.getAbsoluteY() - getY(); //WORKS
 
-                g.setClip(0, 0, rect.getWidth(), rect.getHeight());
+//                tx = getParent().getAbsoluteX() + getParent().getStyle().getPaddingLeft(isRTL()) + getParent().getScrollX() - getX(); //latest CN1 version, pbs: shifts sticky lable a few pixels left, and leaves a transparent space above the sticky label where the scrolled elements can be seen behind/through the label
+//                ty = getParent().getAbsoluteY() + getParent().getStyle().getPaddingTop() + getParent().getScrollY() - getY();
+                    g.setClip(0, 0, rect.getWidth(), rect.getHeight());
 
-                g.translate(tx, ty);
-                StickyHeader.this.paintComponentBackground(g);
-                StickyHeader.this.paint(g);
-                if (StickyHeader.this.getStyle().getBorder() != null) {
-                    StickyHeader.this.paintBorder(g);
+                    g.translate(tx, ty);
+                    StickyHeader.this.paintComponentBackground(g);
+                    StickyHeader.this.paint(g);
+                    if (StickyHeader.this.getStyle().getBorder() != null) {
+                        StickyHeader.this.paintBorder(g);
+                    }
+                    g.translate(-tx, -ty);
+                    g.setClip(cx, cy, cw, ch);
                 }
-                g.translate(-tx, -ty);
-                g.setClip(cx, cy, cw, ch);
             }
         };
         return sticky;

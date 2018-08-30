@@ -204,7 +204,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //
 //    void calculateWorkTimeForItems() {
 //        List<E> list = getList();
-//        WorkTimeDefinition workList = getWorkTimeAllocator();
+//        WorkTimeDefinition workList = getWorkTimeAllocatorN();
 //        if (list != null && list.size() > 0 && workList != null) {
 //            startTime = new long[list.size()];
 //            finishTime = new long[list.size()];
@@ -1268,6 +1268,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                      * (BaseItem)
                      */getItemAt(i))); //- no need to case to BaseItem, since we only copy references to the contained objects
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        destinyItemList.setText(getText()); //-done in super.copyMeInto(destinyItemList) above
 //        itemList.baseTypes=baseTypes;
 //        destinyItemList.addBaseType(getBaseType());
@@ -1283,6 +1284,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        destinyItemList.autoAddRemoveListAsListenerOnInsertedItems = autoAddRemoveListAsListenerOnInsertedItems;
 //        destinyItemList.sumFieldGetter = sumFieldGetter;
 //        destinyItemList.writeListItemsGuidOnly = writeListItemsGuidOnly;
+//</editor-fold>
     }
 
 //    final static int TOSTRING_COMMA_SEPARATED_LIST =1;
@@ -1448,7 +1450,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return null; //TODO return useful value?
 //    }
     /**
-     * set and save filter (and resets the filtered/sorted list)
+     * set, save and apply filter (and resets the filtered/sorted list)
      *
      * @param filterSortDef
      */
@@ -1577,6 +1579,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         itemListList.remove(this);
         DAO.getInstance().save(itemListList);
 
+        FilterSortDef filter = getFilterSortDef();
+            DAO.getInstance().delete((ParseObject) filter); //let each item delete itself properly
+
         //now delete the list itself (now all owned items are deleted)
 //        try {
 //            super.delete();
@@ -1672,7 +1677,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //</editor-fold>
     /**
      * Adding an item to list at given index. OK to add to a position *after*
-     * the last element (at position getSize())
+     * the last element (at position getSize()). items will only be added if not already in list!
      *
      * @param item - the item to add
      * @param index - the index position in the list
@@ -2053,7 +2058,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         for (Object elt : list) {
 //            if (item instanceof Item && !(((Item) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
             if (elt instanceof ItemAndListCommonInterface) { // && ((Item) item).shouldSubtaskStatusChange(newStatus)) { //use Item to optimize (since implementing isDone() on a list would be expensive
-                nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getNumberOfItemsThatWillChangeStatus(true, newStatus);
+//                nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getNumberOfItemsThatWillChangeStatus(true, newStatus);
+                nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getNumberOfItemsThatWillChangeStatus(recurse, newStatus);
             }
 //            if (recurse && list instanceof ItemAndListCommonInterface) {
 //                nbCountChangeStatus += ((ItemAndListCommonInterface) item).getNumberOfItemsThatWillChangeStatus(true, newStatus);
@@ -2935,7 +2941,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         int hash = 7;
 //        hash = 89 * hash + this.getObjectId().hashCode(); //doesn't work for unsaved objects
         hash = 89 * hash + this.getText().hashCode();
-//        hash = 89 * hash + Objects.hashCode(this.getObjectId());
+        hash = 89 * hash + this.getObjectId().hashCode();
 //        hash = 89 * hash + Objects.hashCode(this.getText());
 //        hash = 89 * hash + this.typeId;
 ////        hash = 89 * hash + (int) (this.guid ^ (this.guid >>> 32));
@@ -3042,7 +3048,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public long getWorkTimeSum() {
-//        List<WorkSlot> list = getWorkSlotList(false);
+//        List<WorkSlot> list = getWorkSlotListN(false);
 //        long sum = 0;
 //        long now = System.currentTimeMillis();
 //        for (WorkSlot workSlot : list) {
@@ -3163,19 +3169,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @return
      */
-//    public WorkTimeDefinition getWorkTimeAllocator() { //the WorkTimeDef should be created by the screen for the specific (possibly filtered/sorted) list
+//    public WorkTimeDefinition getWorkTimeAllocatorN() { //the WorkTimeDef should be created by the screen for the specific (possibly filtered/sorted) list
 ////        if (!hasWorkTimeDefinition()) {
 //////            workTimeDefinition = new WorkTimeDefinition(this);
 ////            workTimeDefinition = new WorkTimeDefinition();
 //////            changed(); // changed not necessary since workTimeDefinition will send back change events if it is actually changed after creation
 ////        }
 ////        return workTimeDefinition;
-////        return new WorkTimeDefinition(getWorkSlotList(), getList());
+////        return new WorkTimeDefinition(getWorkSlotListN(), getList());
 //        if (workTimeDefinitionBuffer == null) {
 //            if (getSourceItemList() != null && getSourceItemList() != this) {
-//                return getSourceItemList().getWorkTimeAllocator();
+//                return getSourceItemList().getWorkTimeAllocatorN();
 //            } else {
-//                workTimeDefinitionBuffer = new WorkTimeDefinition(getWorkSlotList(), getList());
+//                workTimeDefinitionBuffer = new WorkTimeDefinition(getWorkSlotListN(), getList());
 //            }
 //        }
 //        return workTimeDefinitionBuffer;
@@ -3186,14 +3192,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param refreshWorkSlotListFromDAO
      * @return null if no workslots defined
      */
-//    public List<WorkSlot> getWorkSlotList() {
-//        return getWorkSlotList(false);
+//    public List<WorkSlot> getWorkSlotListN() {
+//        return getWorkSlotListN(false);
 //    }
-//    public List<WorkSlot> getWorkSlotList(boolean refreshWorkSlotListFromDAO) {
+//    public List<WorkSlot> getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
     @Override
-    public WorkSlotList getWorkSlotList(boolean refreshWorkSlotListFromDAO) {
+    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
         if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
-            workSlotListBuffer = DAO.getInstance().getWorkSlots(this);
+            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
         }
         return workSlotListBuffer;
     }
@@ -3203,11 +3209,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @return
      */
-//    public List<WorkSlot> getWorkSlotList() {
+//    public List<WorkSlot> getWorkSlotListN() {
     @Override
-    public WorkSlotList getWorkSlotList() {
-//        return getWorkSlotList(true);
-        return getWorkSlotList(false);
+    public WorkSlotList getWorkSlotListN() {
+//        return getWorkSlotListN(true);
+        return getWorkSlotListN(false);
     }
 
 //    public void setWorkSlotList(List<WorkSlot> workSlotList) {
@@ -3220,27 +3226,28 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     /**
      * use this to check if a WorkTimeDefinition exists *before* calling
-     * getWorkTimeAllocator() since otherwise it will create a new
-     * WorkTimeDefinition
+ getWorkTimeAllocatorN() since otherwise it will create a new
+ WorkTimeDefinition
      *
      * @return true if a WorkTimeDefinition is defined in this list
      */
 //    boolean hasWorkTimeDefinition() {
 //        return workTimeDefinition != null;
 //    }
-//    public WorkTimeDefinition getWorkTimeAllocator() {
-//        return getWorkTimeAllocator(false);
+//    public WorkTimeDefinition getWorkTimeAllocatorN() {
+//        return getWorkTimeAllocatorN(false);
 //    }
     @Override
-    public WorkTimeAllocator getWorkTimeAllocator(boolean reset) {
-        if (workTimeAllocator == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotList(true), itemListFilteredSorted);
+    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
+        if (workTimeAllocator == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
 //            wtd = new WorkTimeDefinition(getList(), this);
-            long now = System.currentTimeMillis(); //this is the common value of 'now' used during all the allocations
-            WorkSlotList workSlots = getWorkSlotList();
+            WorkSlotList workSlots = getWorkSlotListN();
+//            long now = System.currentTimeMillis(); //this is the common value of 'now' used during all the allocations
+//            long now = workSlots.getNow(); //this is the common value of 'now' used during all the allocations
             if (workSlots != null && workSlots.hasComingWorkSlots()) {
 //                wtd = new WorkTimeDefinition(((<? extends ItemAndListCommonInterface>)getList(), workSlots);
-//                wtd = new WorkTimeAllocator((List<ItemAndListCommonInterface>) getList(), new WorkTime(workSlots), this);
-                workTimeAllocator = new WorkTimeAllocator(new WorkTime(workSlots, now), this);
+//                wtd = new WorkTimeAllocator((List<ItemAndListCommonInterface>) getList(), new WorkTimeSlices(workSlots), this);
+                workTimeAllocator = new WorkTimeAllocator(new WorkTimeSlices(workSlots), this);
             }
         }
         return workTimeAllocator;
@@ -3256,7 +3263,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public Date getFinishTime(ItemAndListCommonInterface item) {
-//        WorkTimeDefinition workTimeDef = getWorkTimeAllocator();
+//        WorkTimeDefinition workTimeDef = getWorkTimeAllocatorN();
 //        if (workTimeDef != null) {
 //            return new Date(workTimeDef.getFinishTime(item));
 //        } else {
@@ -3266,7 +3273,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public Date getFinishTimeOLD(Item item) {
-//        WorkTimeDefinition workTimeDef = getWorkTimeAllocator();
+//        WorkTimeDefinition workTimeDef = getWorkTimeAllocatorN();
 //        if (workTimeDef != null) {
 //            return new Date(workTimeDef.getFinishTime(item));
 //        } else {
@@ -3352,8 +3359,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
 //</editor-fold>
 //    @Override
-//    public WorkTime getAllocatedWorkTime() {
-////        return new WorkTime(getWorkSlotList()); //a list can only get workTime allocated via its workslots
+//    public WorkTimeSlices getAllocatedWorkTimeN() {
+////        return new WorkTimeSlices(getWorkSlotListN()); //a list can only get workTime allocated via its workslots
 //        throw new Error("Not supported yet."); 
 //    }
 } // Class ItemList

@@ -13,6 +13,7 @@ import com.codename1.ui.Button;
 import com.codename1.ui.Label;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
 import java.util.HashSet;
 import java.util.List;
 //import com.java4less.rchart.*;
@@ -121,21 +122,21 @@ public class ScreenListOfCategories extends MyForm {
 
     static Command makeNewCategoryCmd(CategoryList categoryOwnerList, MyForm previousForm, MyForm.Action refreshOnItemEdits) { //static since reused in other screens
         //NEW CATEGORY
-        return MyReplayCommand.create("CreateNewCategory", "",Icons.iconNewToolbarStyle(),(e)->{
-                Category category = new Category();
+        return MyReplayCommand.create("CreateNewCategory", "", Icons.iconNewToolbarStyle(), (e) -> {
+            Category category = new Category();
 //                new ScreenCategory(category, ScreenListOfCategories.this, () -> {
-                previousForm.setKeepPos(new KeepInSameScreenPosition());
-                new ScreenCategory(category, previousForm, () -> {
-                    if (category.hasSaveableData()) { //UI: do nothing for an empty category, allows user to add category and immediately return if regrests or just pushed wrong button
-                        category.setOwner(categoryOwnerList); //TODO should store ordered list of categories
-                        DAO.getInstance().save(category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        categoryOwnerList.addItemAtIndex(category, 0);
-                        DAO.getInstance().save(categoryOwnerList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
+            previousForm.setKeepPos(new KeepInSameScreenPosition());
+            new ScreenCategory(category, previousForm, () -> {
+                if (category.hasSaveableData()) { //UI: do nothing for an empty category, allows user to add category and immediately return if regrests or just pushed wrong button
+                    category.setOwner(categoryOwnerList); //TODO should store ordered list of categories
+                    DAO.getInstance().save(category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    categoryOwnerList.addItemAtIndex(category, 0);
+                    DAO.getInstance().save(categoryOwnerList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
 //                        previousForm.revalidate(); //refresh list to show new items(??)
-                        refreshOnItemEdits.launchAction();
-                    }
-                }).show();
-            }
+                    refreshOnItemEdits.launchAction();
+                }
+            }).show();
+        }
         );
     }
 
@@ -209,14 +210,12 @@ public class ScreenListOfCategories extends MyForm {
 //            public ItemAndListCommonInterface getDragAndDropList() {
 //                return categoryList;
 //            }
-
 //            @Override
 //            public List getDragAndDropSubList() {
 ////                return category.getList();
 ////                return null; //should never be used whend dropping onto a Category
 //                return category; //should never be used whend dropping onto a Category
 //            }
-
             @Override
             public ItemAndListCommonInterface getDragAndDropObject() {
                 return category;
@@ -226,7 +225,6 @@ public class ScreenListOfCategories extends MyForm {
 //            public void saveDragged() {
 //                DAO.getInstance().save(categoryList);
 //            }
-
             public Category getDragAndDropCategory() {
                 return null;
             }
@@ -248,9 +246,11 @@ public class ScreenListOfCategories extends MyForm {
 //            }
 //</editor-fold>
         };
-                swipCont.putClientProperty("element", category);
+        swipCont.putClientProperty("element", category);
 
-        if (Test.DEBUG) swipCont.setName(category.getText());
+        if (Config.TEST) {
+            swipCont.setName(category.getText());
+        }
 
         if (keepPos != null) {
             keepPos.testItemToKeepInSameScreenPosition(category, swipCont);
@@ -338,29 +338,42 @@ public class ScreenListOfCategories extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, editItemButton);
 //        cont.addComponent(BorderLayout.CENTER, new Label(category.getText()));
 //</editor-fold>
-        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText(), swipCont, () -> true); //D&D
+        Button expandCategorySubTasksButton = new Button();
+        WorkSlotList wSlots = category.getWorkSlotListN(false);
+//        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText(), swipCont, () -> true); //D&D
+        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText() + (Config.TEST&&wSlots != null && wSlots.size() > 0 ? "[W]" : ""), swipCont, () -> {
+            boolean enabled = ((MyForm) mainCont.getComponentForm()).isDragAndDropEnabled();
+            if (enabled && expandCategorySubTasksButton != null) {
+                Object e = swipCont.getClientProperty(KEY_EXPANDED);
+                if (e != null && e.equals("true")) { //                            subTasksButton.getCommand().actionPerformed(null);
+                    expandCategorySubTasksButton.pressed();//simulate pressing the button
+                    expandCategorySubTasksButton.released(); //trigger the actionLIstener to collapse
+                }
+            }
+            return enabled;
+        }); //D&D
         mainCont.addComponent(BorderLayout.CENTER, categoryLabel);
 
         Button editItemPropertiesButton = new Button();
-        editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCatProps"+category.getObjectIdP(), "",Icons.iconEditPropertiesToolbarStyle, (e) -> {
+        editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCatProps" + category.getObjectIdP(), "", Icons.iconEditPropertiesToolbarStyle, (e) -> {
 //                new ScreenCategory(category, ScreenListOfCategories.this, 
 //                ()-> {}
 //                ).show();
-                if (false) {
-                    DAO.getInstance().getAllItemsInCategory(category);
-                }
-                ASSERT.that( category.isDataAvailable() , "Category \"" + category + "\" data not available");
+            if (false) {
+                DAO.getInstance().getAllItemsInCategory(category);
+            }
+            ASSERT.that(category.isDataAvailable(), "Category \"" + category + "\" data not available");
 
 //                new ScreenListOfItems(category, ScreenListOfCategories.this,
-                ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, mainCont)); //mainCont right container to use here??
-                new ScreenListOfItems(category, (MyForm) swipCont.getComponentForm(), (itemList) -> {
-                    ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, swipCont));
-                    category.setList(itemList.getList());
-                    DAO.getInstance().save(category);
+            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, mainCont)); //mainCont right container to use here??
+            new ScreenListOfItems(category.getText(),()->category, (MyForm) swipCont.getComponentForm(), (itemList) -> {
+                ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, swipCont));
+                category.setList(itemList.getList());
+                DAO.getInstance().save(category);
 //                    refreshAfterEdit();
-                    refreshOnItemEdits.launchAction();
-                }).show();
-            }
+                refreshOnItemEdits.launchAction();
+            },0).show();
+        }
         ));
 
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -370,13 +383,14 @@ public class ScreenListOfCategories extends MyForm {
         if (category.getSize() != 0) {
 //            east.addComponent(new Label("[" + category.getSize() + "]"));
 //            Button subTasksButton = new Button("[" + category.getSize() + "]");
-            Button subTasksButton = new Button("[" + category.getNumberOfUndoneItems(false) + "]");
+//            Button subTasksButton = new Button("[" + category.getNumberOfUndoneItems(false) + "]");
+            expandCategorySubTasksButton.setText("[" + category.getNumberOfUndoneItems(false) + "]");
 //            subTasksButton.setIcon(Icons.get().iconShowMoreLabelStyle);
-            subTasksButton.setUIID("Label");
-            east.addComponent(subTasksButton);
+            expandCategorySubTasksButton.setUIID("Label");
+            east.addComponent(expandCategorySubTasksButton);
 //            cont.putClientProperty("subTasksButton", subTasksButton);
 //            cont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
-            swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
+            swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandCategorySubTasksButton);
         }
         east.addComponent(new Label(MyDate.formatTimeDuration(category.getRemainingEffort()))); //TODO reactivate this once caching of sum of effort in category is implemented
 

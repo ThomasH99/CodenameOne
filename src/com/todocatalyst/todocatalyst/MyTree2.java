@@ -139,6 +139,10 @@ public class MyTree2 extends ContainerScrollY {
      * insert below an Item
      */
     public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask) {
+        this(model, expandedObjects, insertNewTask, null);
+    }
+
+    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
         super();
         this.model = model;
         setUIID("MyTree2");
@@ -153,17 +157,18 @@ public class MyTree2 extends ContainerScrollY {
         this.expandedObjects = expandedObjects;
 //        this.itemListFilteredSorted = itemListFilteredSorted;
         this.insertNewElementFunc = insertNewTask;
+        this.stickyHeaderGen = stickyHeaderGen;
 
         FilterSortDef itemListFilteredSorted;
-        if (model instanceof ItemList && (itemListFilteredSorted = ((ItemList) model).getFilterSortDef()) != null && itemListFilteredSorted.isSortOn()) {
+        if (this.stickyHeaderGen == null && model instanceof ItemList && (itemListFilteredSorted = ((ItemList) model).getFilterSortDef()) != null && itemListFilteredSorted.isSortOn()) {
 //            FilterSortDef itemListFilteredSorted = ((ItemList) model).getFilterSortDef();
 //        if (this.itemListFilteredSorted != null && this.itemListFilteredSorted.isSortOn()) {
 //            if (itemListFilteredSorted != null && itemListFilteredSorted.isSortOn()) {
 //            stickyHeaderGen = makeStickyHeaderGen(this.itemListFilteredSorted.getSortFieldId());
-            stickyHeaderGen = makeStickyHeaderGen(itemListFilteredSorted.getSortFieldId());
+            this.stickyHeaderGen = makeStickyHeaderGen(itemListFilteredSorted.getSortFieldId());
 //            }
         } else {
-            stickyHeaderGen = (item) -> null;
+            this.stickyHeaderGen = (item) -> null;
         }
 
         BoxLayout layout;
@@ -380,19 +385,19 @@ public class MyTree2 extends ContainerScrollY {
     insert a 
     @param parent
     @return 
-    */
+     */
     static ContainerScrollY insertSubtaskContainer(Container parent) {
         ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
         dest.setUIID("ExpandedList");
         parent.addComponent(BorderLayout.CENTER, dest);
         return dest;
     }
-    
+
     /**
     insert a subtask into a parent container. Called when dragging a subtask back under its original owner. 
     @param parent
     @param subtaskComp 
-    */
+     */
     static void insertSubtask(Container parent, Component subtaskComp) {
         ContainerScrollY dest = insertSubtaskContainer(parent);
         dest.addComponent(subtaskComp);

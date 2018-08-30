@@ -9,6 +9,7 @@ import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
+import com.codename1.l10n.L10NManager;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
@@ -38,6 +39,7 @@ import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.parse4cn1.ParseObject;
+//import java.text.DecimalFormat;
 //import com.todocatalyst.todocatalyst.SwipeClearContainer.SwipeClear;
 import java.util.ArrayList;
 import java.util.Date;
@@ -204,6 +206,9 @@ public class MyForm extends Form {
 //    MyForm(String title) { //throws ParseException, IOException {
 //        super(title);
 //    }
+    MyForm(String title, MyForm previousForm) { //throws ParseException, IOException {
+        this(title, previousForm, ()->{});
+    }
     MyForm(String title, MyForm previousForm, UpdateField updateActionOnDone) { //throws ParseException, IOException {
         super(title);
 //        setLayout(layout);
@@ -344,6 +349,10 @@ public class MyForm extends Form {
 
     interface GetItemList {
 
+        /**
+        
+        @param itemList 
+        */
         void update(ItemList itemList);
     }
 
@@ -443,6 +452,10 @@ public class MyForm extends Form {
     interface Action {
 
         void launchAction();
+    }
+    
+    interface GetItemListFct {
+        ItemList getUpdatedItemList();
     }
 
     /**
@@ -756,12 +769,27 @@ public class MyForm extends Form {
 //            setGrowLimit(maxRows);
 //            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
 //            setMaxSize(maxTextSize);
-            if (getValue.get() != 0) {
-                this.setText(getValue.get() + "");
+            Double val = getValue.get();
+            if (val != 0) {
+//                this.setText(getValue.get() + "");
+//                DecimalFormat df2 = new DecimalFormat(".##");
+//                String s = df2.format(val);
+                String s =L10NManager.getInstance().format(val, 2);
+//                this.setText(val..get() + "");
+                this.setText(s);
             }
 //            this.set //TODO how to ensure cursor is positioned at end of entered text and not beginning?
             if (parseIdMap != null) {
                 parseIdMap.put(this, () -> setValue.accept(getText().equals("") ? 0 : Double.valueOf(getText())));
+            }
+        }
+        
+        void setVal(double val) {
+            if (val != 0) {
+//                DecimalFormat df2 = new DecimalFormat(".##");
+//                String s = df2.format(val);
+                String s = L10NManager.getInstance().format(val, 2);;
+                this.setText(s);
             }
         }
     }
@@ -1117,8 +1145,8 @@ public class MyForm extends Form {
 //            editFieldOnShowOrRefresh.startEditingAsync();
             inlineInsertContainer.getTextArea().startEditingAsync();
         }
-        if (Test.DEBUG) {
-            Log.p("calling " + getTitle() + ".refreshAfterEdit");
+        if (Config.TEST) {
+            Log.p("******* calling refreshAfterEdit for Screen: "+ getTitle() );
         }
     }
 
@@ -1135,6 +1163,7 @@ public class MyForm extends Form {
     public static String getListAsCommaSeparatedString(List<ItemAndListCommonInterface> setOrList) {
         return getListAsCommaSeparatedString(setOrList, false);
     }
+
     public static String getListAsCommaSeparatedString(List<ItemAndListCommonInterface> setOrList, boolean showObjIds) {
         String str = "";
         String separator = "";
@@ -1143,7 +1172,7 @@ public class MyForm extends Form {
             for (ItemAndListCommonInterface itemCategoryOrList : setOrList) {
 //                str = itemCategoryOrList.toString() + separator + str;
 //                str = itemCategoryOrList.getText() + separator + str;
-                str = str + separator + itemCategoryOrList.getText()+(showObjIds?"/"+itemCategoryOrList.getObjectIdP():"");
+                str = str + separator + itemCategoryOrList.getText() + (showObjIds ? "/" + itemCategoryOrList.getObjectIdP() : "");
                 separator = ", ";
             }
         }

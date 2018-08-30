@@ -124,16 +124,16 @@ public class ScreenListOfWorkSlots extends MyForm {
         getContentPane().removeAll();
 //        List<WorkSlot> wsList = null;
         WorkSlotList wsList = null;
-//        wsList = DAO.getInstance().getWorkSlots( owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//        wsList = DAO.getInstance().getWorkSlotsN( owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //        if (owner instanceof ItemList) {
-//            wsList = DAO.getInstance().getWorkSlots((ItemList) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//            wsList = DAO.getInstance().getWorkSlotsN((ItemList) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //        } else if (owner instanceof Item) {
-//            wsList = DAO.getInstance().getWorkSlots((Item) owner);
+//            wsList = DAO.getInstance().getWorkSlotsN((Item) owner);
 //        }
 //        if (owner instanceof ItemAndListCommonInterface) {
-//            wsList = DAO.getInstance().getWorkSlots((ItemList) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//            wsList = DAO.getInstance().getWorkSlotsN((ItemList) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
         if (owner != null) {
-            wsList = DAO.getInstance().getWorkSlots(owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+            wsList = DAO.getInstance().getWorkSlotsN(owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
         } else if (refreshWorkSlotList != null) {
             wsList = new WorkSlotList(refreshWorkSlotList.getUpdatedWorkSlotList(workSlotList));
         }
@@ -223,11 +223,15 @@ public class ScreenListOfWorkSlots extends MyForm {
 //    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm.Action refreshOnItemEdits, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot) {
 //        return buildWorkSlotContainer(workSlot, (MyForm)null, keepPos, expandItemsInWorkSlot);
 //    }
-    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot) {
-        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, true);
+//    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot) {
+//        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, true);
+//    }
+    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot, boolean showOwner) {
+        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, showOwner, System.currentTimeMillis());
     }
 
-    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot, boolean showOwner) {
+    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos,
+            boolean expandItemsInWorkSlot, boolean showOwner, long now) {
         Container cont = new Container();
         cont.setLayout(new BorderLayout());
 //        cont.addComponent(BorderLayout.CENTER, new Button(item.getText()));
@@ -296,13 +300,13 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        west.add(L10NManager.getInstance().formatDateTimeShort(workSlot.getStartTime()));
 //        west.add(MyDate.formatDateTimeNew(workSlot.getStartTimeD())+" - "+MyDate.formatDateTimeNew(new Date(workSlot.getEndTime())));
 //</editor-fold>
-        String startTimeStr = workSlot.getStartAdjusted() != workSlot.getStartTimeD().getTime() ? "Now" : MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted())); //UI: for ongoing workSlot, show 'now' instead of startTime
-        west.add(startTimeStr
-                + "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
-                + (workSlot.getRepeatRule() != null ? "*" : "")
-        //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
+        String startTimeStr = (workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime())
+                ? "Now"
+                : MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
+        startTimeStr += "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
+                + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
         //                + " " + MyDate.formatTimeDuration(workSlot.getDurationAdjusted())// + ")" //DON'T show duration since end-time is shown
-        );
+        west.add(startTimeStr);
 //            static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate, boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat) {
 
 //        east.addComponent(new Label("[" + workSlot.getDurationAdjustedInMinutes(now) + "]"));
@@ -382,15 +386,16 @@ public class ScreenListOfWorkSlots extends MyForm {
         parseIdMapReset();
         Container cont = new ContainerScrollY(BoxLayout.y());
         cont.setScrollableY(true);
-        long now = System.currentTimeMillis();
+//        long now = System.currentTimeMillis();
         if (workSlotList != null) {
+            long now = workSlotList.getNow();
             for (WorkSlot workSlot : workSlotList) {
 
 //                if (Test.DEBUG || workSlot.getEndTime() <= now) { //ignore workSlots in the past
-                if (Test.DEBUG || workSlot.getEndTime() >= now) { //ignore workSlots in the past
+                if (Config.WORKTIME_TEST || workSlot.getEndTime() >= now) { //ignore workSlots in the past
 //                    cont.add(buildWorkSlotContainer(workSlot, () -> refreshAfterEdit(), keepPos));
 //                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, keepPos, false));
-                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, null, false, showOwner));
+                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, null, false, showOwner, now));
                     if (keepPos != null) {
                         keepPos.testItemToKeepInSameScreenPosition(workSlot, cont);
                     }

@@ -19,11 +19,16 @@ import java.util.List;
  */
 public class WorkSlotList extends ArrayList<WorkSlot> {
 
+    private long now;//=-1; //ensure a single value of now is used for the work slots
+
     public WorkSlotList() {
         super();
+//        if (now==-1) 
+        now = System.currentTimeMillis();
     }
 
     public WorkSlotList(List<WorkSlot> list) {
+        this();
         //http://stackoverflow.com/questions/8441664/how-do-i-copy-the-contents-of-one-arraylist-into-another
         //http://stackoverflow.com/questions/17036405/how-to-copy-a-array-into-another-array-that-already-has-data-in-it
         if (false) {
@@ -37,10 +42,15 @@ public class WorkSlotList extends ArrayList<WorkSlot> {
 //        this.copyOf(list);
     }
 
-    static public long getWorkTimeSum(List<WorkSlot> list) {
-//        List<WorkSlot> list = getWorkSlotList(false);
+    public long getNow() {
+        return now;
+    }
+//    static public long getWorkTimeSum(List<WorkSlot> list) {
+
+    public long getWorkTimeSum(List<WorkSlot> list) {
+//        List<WorkSlot> list = getWorkSlotListN(false);
         long sum = 0;
-        long now = System.currentTimeMillis();
+//        long now = System.currentTimeMillis();
         for (WorkSlot workSlot : list) {
             sum += workSlot.getDurationAdjusted(now);
         }
@@ -245,10 +255,15 @@ public class WorkSlotList extends ArrayList<WorkSlot> {
      * workslots. E.g. if a subproject has defined workTime which then expired,
      */
     public boolean hasComingWorkSlots() {
+//        return hasComingWorkSlots(System.currentTimeMillis());
+        return hasComingWorkSlots(now);
+    }
+
+    public boolean hasComingWorkSlots(long now) {
         if (size() == 0) {
             return false; //return size()>0; //TODO!!!!!
         }
-        long now = System.currentTimeMillis();
+//        long now = System.currentTimeMillis();
         for (WorkSlot workSlot : this) {
             if (workSlot.getEndTime() > now) {
                 return true;

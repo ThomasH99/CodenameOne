@@ -25,6 +25,7 @@ package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Display;
 import com.codename1.io.Storage;
+import com.parse4cn1.ParseObject;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -128,7 +129,18 @@ public class MyCacheMap {
             memoryCache.remove(oldestKey);
         }
         long lastAccess = System.currentTimeMillis();
-        memoryCache.put(key, new Object[]{new Long(lastAccess), value});
+        Object previousValue = memoryCache.put(key, new Object[]{new Long(lastAccess), value});
+        if (false &&Config.TEST)
+        ASSERT.that( previousValue == null || (!(previousValue instanceof ParseObject && value instanceof ParseObject) ||
+                 ((ParseObject) value).keySet().size() > ((ParseObject) previousValue).keySet().size()),
+                "Error, replacing ParseObject with more data with ParseObject with less data, prev=" 
+                        + previousValue 
+                        +((((ParseObject) previousValue).keySet()!=null)?(" ("
+                                +((ParseObject) previousValue).keySet().size()+")"):"")
+                        +", new=" + value
+                        +((((ParseObject) value).keySet()!=null)?(" ("+((ParseObject) value).keySet().size()+")"):"")
+//                                +" ("+((ParseObject) value).keySet().size()+")"
+        );
         if (alwaysStore) {
             placeInStorageCache(key, lastAccess, value);
         }

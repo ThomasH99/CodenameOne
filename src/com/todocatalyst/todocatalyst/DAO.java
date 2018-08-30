@@ -102,6 +102,7 @@ public class DAO {
 //    private void cachePut(String objectId, ParseObject parseObject) {
     private void cachePut(ParseObject parseObject) {
 //        if (cache.get(objectId)==null)
+        //cache the singleton lists:
         if (parseObject instanceof CategoryList) {
 //            cache.put(CategoryList.CLASS_NAME, parseObject.getObjectIdP());
             cache.put(CategoryList.CLASS_NAME, parseObject);
@@ -112,10 +113,12 @@ public class DAO {
 //            cache.put(TemplateList.CLASS_NAME, parseObject.getObjectIdP());
             cache.put(TemplateList.CLASS_NAME, parseObject);
         }
+        
+        //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
         if (parseObject instanceof WorkSlot) {
             cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
         } else {
-            cache.put(parseObject.getObjectIdP(), parseObject);
+            cache.put(parseObject.getObjectIdP(), parseObject); //will override any previously put object with same ojectId
         }
         ASSERT.that(parseObject instanceof ParseObject, "trying to store non-ParseObject in cache: parseObject=" + parseObject);
     }
@@ -145,8 +148,10 @@ public class DAO {
 //                //handle named key like CategoryList.CLASS_NAME where the named key points to the Parse ObjectId so need a second get to fecth actual parseObject
 //                return (ParseObject) cache.get(temp);
 //            } else {
-            if (Test.DEBUG) {
-                ASSERT.that(temp instanceof ParseObject, "getting a non-ParseObject from cache: returned obj=" + temp + ", objectId=" + parseObjectId);
+            if (Config.TEST) {
+//                ASSERT.that(temp instanceof ParseObject, "getting a non-ParseObject from cache: returned obj=" + temp + ", objectId=" + parseObjectId);
+//            }
+                assert temp instanceof ParseObject: "getting a non-ParseObject from cache: returned obj=" + temp + ", objectId=" + parseObjectId;
             }
             return (ParseObject) temp;
 //            }
@@ -262,10 +267,10 @@ public class DAO {
 //            Object cachedObject;
             if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
 //                ASSERT.that((list.get(i) != null) , "entry nb=" + i + " in list  with size" + size+", name="+(list instanceof ItemList ? ((ItemList) list).getText() : "") + " == null");
-                if (Test.DEBUG) {
+                if (Config.TEST) {
                     ASSERT.that((list.get(i) != null), "entry nb=" + i + " in list  with size" + size + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == null");
                 }
-                if (Test.DEBUG) {
+                if (Config.TEST) {
                     ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list  with size" + size + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
                 }
 //                ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " == JSONObject.NULL");
@@ -585,7 +590,7 @@ public class DAO {
             List results = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results);
 
-            //WORKSLOTS
+            //WORKSLOTS - get workslots starting today
             if (true) { //fetch WorkSLots that have workTime between now and end of today
                 Date now = new Date();
 //        Date startOfToday = MyDate.getStartOfDay(now);
@@ -593,14 +598,21 @@ public class DAO {
                 Date startOfTomorrow = MyDate.getStartOfDay(new Date(now.getTime() + MyDate.DAY_IN_MILLISECONDS));
 
                 ParseQuery<WorkSlot> queryWorkSlots = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
-                queryWorkSlots.whereGreaterThan(WorkSlot.PARSE_END_TIME, now);
-                queryWorkSlots.whereLessThan(WorkSlot.PARSE_START_TIME, startOfTomorrow);
-                queryWorkSlots.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
+                queryWorkSlots.whereGreaterThan(WorkSlot.PARSE_END_TIME, now); //slots that end after now
+                queryWorkSlots.whereLessThan(WorkSlot.PARSE_START_TIME, startOfTomorrow); //and starts before tomorrow
+//                queryWorkSlots.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
+                query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+        
 //        setupItemQueryNoTemplatesLimit1000(queryDueToday);
 //        queryWorkSlots.whereDoesNotExist(WorkSlot.PARSE_CANCELLED); //don't fetchFromCacheOnly any templates
                 List<WorkSlot> resultsWorkSlots = queryWorkSlots.find();
                 fetchListElementsIfNeededReturnCachedIfAvail(resultsWorkSlots);
-                results.addAll(resultsWorkSlots);
+//                results.addAll(resultsWorkSlots);
+//add workslots as 'artificial' Items
+                for (WorkSlot workSlot : resultsWorkSlots) {
+                    results.add(workSlot.getItemsInWorkSlotAsArticialItem()); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
+                }
+
             }
             return results;
         } catch (ParseException ex) {
@@ -1970,12 +1982,18 @@ public class DAO {
     }
 
     private void saveImpl(ParseObject anyParseObject) {
+        saveImpl(anyParseObject, false);
+    }
+
+    private void saveImpl(ParseObject anyParseObject, boolean saveToCache) {
         try {
             anyParseObject.save();
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        cachePut(anyParseObject);
+        if (saveToCache) {
+            cachePut(anyParseObject);
+        }
     }
 
     /**
@@ -1986,116 +2004,125 @@ public class DAO {
      */
     public void save(ParseObject anyParseObject, boolean saveToCache) {
         if (anyParseObject != null && anyParseObject instanceof ParseObject) {
-            if (anyParseObject instanceof ItemList && ((ItemList) anyParseObject).isNoSave()) {
+            if (anyParseObject instanceof ItemList && ((ItemList) anyParseObject).isNoSave()) { //TODO!! shouldn't be necessary - yes, needed for lists like Today that are generated on the fly
                 return;
             }
-//                ((ParseObject) anyParseObject).save();
-            if (anyParseObject.getObjectIdP() == null) { //not saved before, so MUST save to Parse to get an objectID before proceding
-//                anyParseObject.save();
-                saveImpl(anyParseObject);
-                if (saveToCache) {
-//                    if (anyParseObject instanceof WorkSlot) {
-//                        cacheWorkSlots.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
-//                    } else {
-//                        cache.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
-//                    }
-                    cachePut(anyParseObject); //cache it in case it is the first time this object is saved
-                }
-            } else {
-                if (saveToCache) { //TODO Optimization: don't put if already cached (any substantial savings??)
-//                    if (anyParseObject instanceof WorkSlot) {
-//                        cacheWorkSlots.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
-//                    } else {
-//                        cache.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
-//                    }
-                    cachePut(anyParseObject); //cache it in case it is the first time this object is saved
-                }
-                saveInBackground(anyParseObject);
-            }
-        }
-    }
-
+            saveImpl(anyParseObject, saveToCache);
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    /**
-//     * return all categories for this item
-//     *
-//     * @param item
-//     * @return
-//     */
-//    public List<Category> getCategories(Item item) {
-//        List<Category> results = null;
-//        if (item.getObjectId() != null) { //Parse doesn't support queries on just created (not saved) objects
-//            ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
-//            query.whereEqualTo(Category.PARSE_ITEMLIST, item);
-////        if (item.)
-//            try {
-////             results = (Set<Category>) query.find();
-//                results = (List<Category>) query.find();
-//            } catch (ParseException ex) {
-//                Log.e(ex);
+////                ((ParseObject) anyParseObject).save();
+//            if (anyParseObject.getObjectIdP() == null) { //not saved before, so MUST save to Parse to get an objectID before proceding
+////                anyParseObject.save();
+//                saveImpl(anyParseObject,saveToCache);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (saveToCache) {
+//////                    if (anyParseObject instanceof WorkSlot) {
+//////                        cacheWorkSlots.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+//////                    } else {
+//////                        cache.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+//////                    }
+////                    cachePut(anyParseObject); //cache it in case it is the first time this object is saved
+////                }
+////</editor-fold>
+//            } else {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (saveToCache) { //TODO Optimization: don't put if already cached (any substantial savings??)
+//////                    if (anyParseObject instanceof WorkSlot) {
+//////                        cacheWorkSlots.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+//////                    } else {
+//////                        cache.put(anyParseObject.getObjectIdP(), anyParseObject); //cache it in case it is the first time this object is saved
+//////                    }
+////                    cachePut(anyParseObject); //cache it in case it is the first time this object is saved
+////                }
+////                saveInBackground(anyParseObject); //CANNOT save in background, can create race conditions eg if updating item in Overdue to new date and then immediately doing a query for new Overdue items
+////</editor-fold>
+//                saveImpl(anyParseObject,saveToCache); //CANNOT save in background, can create race conditions eg if updating item in Overdue to new date and then immediately doing a query for new Overdue items
 //            }
 //        }
-//        return results;
-//    }
 //</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public List<WorkSlot> getWorkSlots(ParseObject any) {
-//        return null;
-//    }
-//</editor-fold>
+        }
+    }
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    /**
+    //     * return all categories for this item
+    //     *
+    //     * @param item
+    //     * @return
+    //     */
+    //    public List<Category> getCategories(Item item) {
+    //        List<Category> results = null;
+    //        if (item.getObjectId() != null) { //Parse doesn't support queries on just created (not saved) objects
+    //            ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
+    //            query.whereEqualTo(Category.PARSE_ITEMLIST, item);
+    ////        if (item.)
+    //            try {
+    ////             results = (Set<Category>) query.find();
+    //                results = (List<Category>) query.find();
+    //            } catch (ParseException ex) {
+    //                Log.e(ex);
+    //            }
+    //        }
+    //        return results;
+    //    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    public List<WorkSlot> getWorkSlotsN(ParseObject any) {
+    //        return null;
+    //    }
+    //</editor-fold>
+
     /**
      * get the workslots for an item
      *
      * @param item
      * @return
      */
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public List<WorkSlot> getWorkSlotsXXX(Item item) {
-//        List<WorkSlot> results = null;
-//        if (item.getObjectId() != null) { //Parse doesn't support queries on just created (not saved) objects
-//            ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
-//            query.whereEqualTo(WorkSlot.PARSE_OWNER_ITEM, item);
-//            query.addAscendingOrder(WorkSlot.PARSE_START_TIME);
-////            query.include(WorkSlot.)
-//            try {
-//                results = (List<WorkSlot>) query.find();
-//                //no point in caching workslots, they're only used for a single List/Item and caching will only help the second time displaying them
-//            } catch (ParseException ex) {
-//                Log.e(ex);
-//            }
-//        }
-//        return results;
-//    }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public List<WorkSlot> getWorkSlots(Item item, int index, int amount) {
-//        List<WorkSlot> results = null;
-//        if (item.getObjectId() != null) { //Parse doesn't support queries on just created (not saved) objects
-//            ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
-//            query.whereEqualTo(WorkSlot.PARSE_OWNER_ITEM, item);
-//            query.setSkip(index).setLimit(amount);
-////            query.include(WorkSlot.)
-//            try {
-//                results = (List<WorkSlot>) query.find();
-//            } catch (ParseException ex) {
-//                Log.e(ex);
-//            }
-//        }
-//        return results;
-//    }
-//</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    public List<WorkSlot> getWorkSlotsXXX(Item item) {
+    //        List<WorkSlot> results = null;
+    //        if (item.getObjectId() != null) { //Parse doesn't support queries on just created (not saved) objects
+    //            ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+    //            query.whereEqualTo(WorkSlot.PARSE_OWNER_ITEM, item);
+    //            query.addAscendingOrder(WorkSlot.PARSE_START_TIME);
+    ////            query.include(WorkSlot.)
+    //            try {
+    //                results = (List<WorkSlot>) query.find();
+    //                //no point in caching workslots, they're only used for a single List/Item and caching will only help the second time displaying them
+    //            } catch (ParseException ex) {
+    //                Log.e(ex);
+    //            }
+    //        }
+    //        return results;
+    //    }
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    public List<WorkSlot> getWorkSlotsN(Item item, int index, int amount) {
+    //        List<WorkSlot> results = null;
+    //        if (item.getObjectId() != null) { //Parse doesn't support queries on just created (not saved) objects
+    //            ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+    //            query.whereEqualTo(WorkSlot.PARSE_OWNER_ITEM, item);
+    //            query.setSkip(index).setLimit(amount);
+    ////            query.include(WorkSlot.)
+    //            try {
+    //                results = (List<WorkSlot>) query.find();
+    //            } catch (ParseException ex) {
+    //                Log.e(ex);
+    //            }
+    //        }
+    //        return results;
+    //    }
+    //</editor-fold>
     /**
      *
      * @param itemWithWorkSlots
      * @return null if no workslots defined
      */
-//    public List<WorkSlot> getWorkSlots(ItemList itemList) {
-//    public List<WorkSlot> getWorkSlots(ItemAndListCommonInterface itemWithWorkSlots) {
-    public WorkSlotList getWorkSlots(ItemAndListCommonInterface itemWithWorkSlots) {
-        return getWorkSlots(itemWithWorkSlots, true);
+    //    public List<WorkSlot> getWorkSlotsN(ItemList itemList) {
+    //    public List<WorkSlot> getWorkSlotsN(ItemAndListCommonInterface itemWithWorkSlots) {
+    public WorkSlotList getWorkSlotsN(ItemAndListCommonInterface itemWithWorkSlots) {
+        return DAO.this.getWorkSlotsN(itemWithWorkSlots, true);
     }
 
-    public WorkSlotList getWorkSlots(ItemAndListCommonInterface itemWithWorkSlots, boolean onlyReturnFutureWorkSlots) {
+    public WorkSlotList getWorkSlotsN(ItemAndListCommonInterface itemWithWorkSlots, boolean onlyReturnFutureWorkSlots) {
         if (itemWithWorkSlots == null || (itemWithWorkSlots instanceof ParseObject && ((ParseObject) itemWithWorkSlots).getObjectIdP() == null)) {
             return null;
         }
@@ -2113,7 +2140,7 @@ public class DAO {
                 Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
 //                Vector keys = cache.getKeysInCache();
                 for (Object key : workSlotKeys) {
-                    workSlot = (WorkSlot) cacheWorkSlots.get(key);
+                    workSlot = (WorkSlot) cacheWorkSlots.get(key); 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                Object o = cache.get(key);
 //                if (o instanceof WorkSlot) {
@@ -2252,7 +2279,7 @@ public class DAO {
      * @param endDate
      * @return
      */
-//    public WorkSlotList getWorkSlots(Date startDate, Date endDate) {
+//    public WorkSlotList getWorkSlotsN(Date startDate, Date endDate) {
     public WorkSlotList getWorkSlots(Date startDate) {
         return getWorkSlots(startDate, new Date(MyDate.MAX_DATE));
     }
@@ -2353,7 +2380,7 @@ public class DAO {
 //     * @param itemList
 //     * @return
 //     */
-////    List<WorkSlot> getWorkSlots(ItemList itemList) {
+////    List<WorkSlot> getWorkSlotsN(ItemList itemList) {
 ////        ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
 ////        query.whereEqualTo(WorkSlot.PARSE_OWNER_LIST, itemList);
 ////        List<WorkSlot> results = null;
@@ -2864,7 +2891,14 @@ public class DAO {
         return filterSortDef;
     }
 
+    /**
+    delete the parseObject. Ignore if null
+    @param parseObject 
+     */
     public void delete(ParseObject parseObject) {
+        if (parseObject == null) {
+            return;
+        }
         String objId = parseObject.getObjectIdP();
         try {
             parseObject.delete();

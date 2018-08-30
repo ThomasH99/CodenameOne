@@ -88,7 +88,17 @@ public class ReplayLog {
 //        if (replayCommand != screenCommands.get(getPreviousCmdToReplayLog())) { //do not store command if it is the command being replayed
 //        if (nextIndex == -1 || nextIndex < logList.size()) { //do not store command if it is the command being replayed
         if (!replayingNow) { //do not store command if it is the command being replayed
-            ASSERT.that(!logList.contains(replayCommand.getCmdUniqueID()), "Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list: "+logList);
+            boolean doubleDecl = logList.contains(replayCommand.getCmdUniqueID());
+            ASSERT.that(!doubleDecl, "Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list: " + logList);
+            if (doubleDecl) {
+                //remove a previous command (and all commands after it) which is stuck by mistake (due to crash??)
+                String cmdStr;
+                do {
+                    ASSERT.that(logList.size() > 0, "logList should not be empty, if so, the test !cmdStr.equals(replayCommand.getCmdUniqueID()) has not worked correctly (except maybe if error happens for very first command)");
+                    cmdStr = logList.get(logList.size() - 1);
+                    logList.remove(logList.size() - 1);
+                } while (!cmdStr.equals(replayCommand.getCmdUniqueID()));
+            }
             logList.add(replayCommand.getCmdUniqueID());
             Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, logList);
             Log.p("+ ReplayCommand: " + replayCommand.getCmdUniqueID());
@@ -100,8 +110,10 @@ public class ReplayLog {
      */
     public void popCmd() {
         if (true) { //deactivate while testing
-            if (!Test.DEBUG || logList.size() > 0) { //while debugging //TODO!!!!! remove DEBUG once ReplayCommands have been added everywhere
-                Log.p("- ReplayCommand: " + logList.get(logList.size() - 1));
+            if (logList.size() > 0) { //while debugging //TODO!!!!! remove DEBUG once ReplayCommands have been added everywhere
+                if (Config.TEST) {
+                    Log.p("- ReplayCommand: " + logList.get(logList.size() - 1));
+                }
                 logList.remove(logList.size() - 1); //TODO!!! add check that logList.size>=1 (not during testing to provoke stacktrace
             }
         }
@@ -262,7 +274,9 @@ public class ReplayLog {
     public void addToSetOfScreenCommands(MyReplayCommand replayCommand) {
 
         if (storeAllCommandsForScreen) {
-            if (false)ASSERT.that(screenCommands.get(replayCommand.getCmdUniqueID()) == null, "MyReplayCommand created twice:" + replayCommand.getCmdUniqueID() + " cmd=" + replayCommand);
+            if (false) {
+                ASSERT.that(screenCommands.get(replayCommand.getCmdUniqueID()) == null, "MyReplayCommand created twice:" + replayCommand.getCmdUniqueID() + " cmd=" + replayCommand);
+            }
             screenCommands.put(replayCommand.getCmdUniqueID(), replayCommand);
         } else {
 //            if (replayCommand.getCmdUniqueID().equals(getCurrentReplayCmdID())) {

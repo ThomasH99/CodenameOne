@@ -50,9 +50,9 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      *
      * @return
      */
-    public WorkSlotList getWorkSlotList();
+    public WorkSlotList getWorkSlotListN();
 
-    public WorkSlotList getWorkSlotList(boolean refreshWorkSlotListFromDAO);
+    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO);
 
     public int getNumberOfUndoneItems(boolean includeSubTasks);
 
@@ -322,20 +322,20 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @param reset will reload the workSlots, e.g. if edited or time has passed
      * @return null if no worktime is defined
      */
-//    public WorkTimeDefinition getWorkTimeAllocator(boolean reset);
-    public WorkTimeAllocator getWorkTimeAllocator(boolean reset);
+//    public WorkTimeDefinition getWorkTimeAllocatorN(boolean reset);
+    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
-//default    public WorkTimeDefinition getWorkTimeAllocator(boolean reset) {
+//default    public WorkTimeDefinition getWorkTimeAllocatorN(boolean reset) {
 //        if (wtd != null && !reset) {
 //            return wtd;
 //        } else { //get right workSlots
-//            WorkSlotList workSlots = getWorkSlotList();
+//            WorkSlotList workSlots = getWorkSlotListN();
 //            if (workSlots != null && workSlots.hasComingWorkSlots()) {
-//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), new WorkTime(workSlots));
+//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), new WorkTimeSlices(workSlots));
 //                return wtd;
 //            } else {
-//                WorkTime workTime = getAvailableWorkTime();
+//                WorkTimeSlices workTime = getAvailableWorkTime();
 //                if (workTime != null) {
 //                    return new WorkTimeDefinition(workTime);
 //                }
@@ -354,9 +354,9 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      *
      * @return null if no worktime is defined
      */
-//    public WorkTimeDefinition getWorkTimeAllocator();
+//    public WorkTimeDefinition getWorkTimeAllocatorN();
     default public WorkTimeAllocator getWorkTimeDefinition() {
-        return getWorkTimeAllocator(false);
+        return getWorkTimeAllocatorN(false);
     }
 
     /**
@@ -372,10 +372,10 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return
      */
 //    default public Date getFinishTimeXXX(ItemAndListCommonInterface item) {
-//        WorkTimeDefinition workTimeDef = getWorkTimeAllocator();
+//        WorkTimeDefinition workTimeDef = getWorkTimeAllocatorN();
 //        if (workTimeDef != null) {
 ////            return new Date(workTimeDef.getFinishTime(item));
-//            return workTimeDef.getAllocatedWorkTime(item).getFinishTimeD();
+//            return workTimeDef.getAllocatedWorkTimeN(item).getFinishTimeD();
 //        } else {
 //            return new Date(0);
 //        }
@@ -388,7 +388,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      *
      * @param workTime
      */
-//    public void setWorkTime(WorkTime workTime);
+//    public void setWorkTime(WorkTimeSlices workTime);
     /**
      * return the list of work time providers in priority order. will for
      * example return in priority order: (first) Category with worktime, then
@@ -397,8 +397,8 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      *
      * @return null if no providers
      */
-    default public List<ItemAndListCommonInterface> getWorkTimeProvidersInPrioOrder() {
-        WorkSlotList workSlots = getWorkSlotList();
+    default public List<ItemAndListCommonInterface> getPotentialWorkTimeProvidersInPrioOrder() {
+        WorkSlotList workSlots = getWorkSlotListN();
         if (workSlots == null) {
             return null;
         } else {
@@ -410,26 +410,27 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 
     /**
      * returns true if has future workTime associated with it. either from own
-     * workSlots or allocated WorkTime.
+ workSlots or allocated WorkTimeSlices.
      *
      * @return
      */
-    default public boolean hasWorkTime() {
-        WorkSlotList workSlots = getWorkSlotList();
-//        return workSlots != null && workSlots.size() > 0; //||getAllocatedWorkTime()!=null;
+    default public boolean mayProvideWorkTime() {
+        WorkSlotList workSlots = getWorkSlotListN();
+//        return workSlots != null && workSlots.size() > 0; //||getAllocatedWorkTimeN()!=null;
 //        return (workSlots != null && workSlots.size() > 0) || getAvailableWorkTime() != null;
-//        return (workSlots != null && workSlots.size() > 0) || getAllocatedWorkTime() != null;
+//        return (workSlots != null && workSlots.size() > 0) || getAllocatedWorkTimeN() != null;
         if (workSlots != null && workSlots.size() > 0) {
             return true;
         }
 
         ItemAndListCommonInterface owner = getOwner();
-        if (false && owner != null && owner.hasWorkTime()) { //NB - do 
+//        if (false && owner != null && owner.mayProvideWorkTime()) { //NB - do not iterate up the hierarchy
+        if (owner != null && owner.mayProvideWorkTime()) { //NB - yes, do iterate up the hierarchy since any owner (e.g. project) at a higher level may recursively provide worktime
             return true;
         }
-//        for (Category cat:getCa|| getAllocatedWorkTime() != null;
+//        for (Category cat:getCa|| getAllocatedWorkTimeN() != null;
         return false;
-//        return getWorkTimeProvidersInPrioOrder() != null; //TODO optimization - is there a more efficient way?
+//        return getPotentialWorkTimeProvidersInPrioOrder() != null; //TODO optimization - is there a more efficient way?
     }
 
     /**
@@ -441,56 +442,62 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return workSlots and possibly workTime allocated by owner. null if no
      * WorkTime available
      */
-//    public WorkTime getAllocatedWorkTime(ItemAndListCommonInterface itemOrList);
-    default public WorkTime getAvailableWorkTimeXXX() {
-        WorkTime workTime = null; // = new WorkTime();
-
-        //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
-        List<ItemAndListCommonInterface> providers = getWorkTimeProvidersInPrioOrder();
-//        if (providers != null) {
-            for (ItemAndListCommonInterface prov : getWorkTimeProvidersInPrioOrder()) {
-//            ItemAndListCommonInterface prov;
-//            List<ItemAndListCommonInterface> providers = getWorkTimeProvidersInPrioOrder(true);
-//            for (int i = 0, size = providers.size(); i < size; i++) {
-//                while (workTimeProviders.hasNext()) {
-                //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
-//                    ItemAndListCommonInterface prov = workTimeProviders.next();
-//                prov = providers.get(i);
-//                if (prov == provider) {
-//                    break; // return remaining;
-//                } else if (prov == this) {
-                WorkTimeAllocator wtd = prov.getWorkTimeDefinition();
-                if (wtd != null) {
-                    WorkTime wt = wtd.allocateWorkTimeXXX(this);
-//                    if (workTime != null) {
-//                        workTime.addWorkTime(wt);
-//                    } else {
-//                        workTime = wt;
-//                    }
-                    workTime.addWorkTime(wt);
-                }
-            }
-//        }
-        return workTime;
-    }
+//    public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface itemOrList);
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    default public WorkTime getAvailableWorkTime() {
-//        WorkTime workTime = null; // = new WorkTime();
+//    default public WorkTimeSlices getAvailableWorkTimeXXX() {
+//        WorkTimeSlices workTime = null; // = new WorkTimeSlices();
 //
 //        //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
-//        WorkSlotList workSlots = getWorkSlotList();
+//        List<ItemAndListCommonInterface> providers = getPotentialWorkTimeProvidersInPrioOrder();
+////        if (providers != null) {
+//        for (ItemAndListCommonInterface prov : getPotentialWorkTimeProvidersInPrioOrder()) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            ItemAndListCommonInterface prov;
+////            List<ItemAndListCommonInterface> providers = getPotentialWorkTimeProvidersInPrioOrder(true);
+////            for (int i = 0, size = providers.size(); i < size; i++) {
+////                while (workTimeProviders.hasNext()) {
+////process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+////                    ItemAndListCommonInterface prov = workTimeProviders.next();
+////                prov = providers.get(i);
+////                if (prov == provider) {
+////                    break; // return remaining;
+////                } else if (prov == this) {
+////</editor-fold>
+//            WorkTimeAllocator wtd = prov.getWorkTimeDefinition();
+//            if (wtd != null) {
+//                WorkTimeSlices wt = wtd.allocateWorkTimeXXX(this);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    if (workTime != null) {
+////                        workTime.addWorkTime(wt);
+////                    } else {
+////                        workTime = wt;
+////                    }
+////</editor-fold>
+//                workTime.addWorkTime(wt);
+//            }
+//        }
+////        }
+//        return workTime;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    default public WorkTimeSlices getAvailableWorkTime() {
+//        WorkTimeSlices workTime = null; // = new WorkTimeSlices();
+//
+//        //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
+//        WorkSlotList workSlots = getWorkSlotListN();
 //        if (workSlots != null) {
 ////            workTime.addWorkTime(workSlots);
-//            workTime = new WorkTime(workSlots);
+//            workTime = new WorkTimeSlices(workSlots);
 //        }
 //
-////        WorkTime allocated = getAllocatedWorkTime();
+////        WorkTimeSlices allocated = getAllocatedWorkTimeN();
 //        ItemAndListCommonInterface owner = getOwner();
 //        if (owner != null) {
-//            WorkTimeDefinition wtd = owner.getWorkTimeAllocator();
+//            WorkTimeDefinition wtd = owner.getWorkTimeAllocatorN();
 //            if (wtd != null) {
-//                WorkTime allocated = wtd.getAllocatedWorkTime(this);
-////        WorkTime allocated = getAllocatedWorkTime();
+//                WorkTimeSlices allocated = wtd.getAllocatedWorkTimeN(this);
+////        WorkTimeSlices allocated = getAllocatedWorkTimeN();
 //                if (allocated != null) {
 //                    if (workTime != null) {
 //                        workTime.addWorkTime(allocated);
@@ -505,9 +512,9 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    default public WorkTime getAvailableWorkTimeOLD() {
-//        WorkTime workTime = null;
-//        WorkTime lastWorkTime;
+//    default public WorkTimeSlices getAvailableWorkTimeOLD() {
+//        WorkTimeSlices workTime = null;
+//        WorkTimeSlices lastWorkTime;
 //        long neededWorkTime = getRemainingEffort();
 //        Iterator<ItemAndListCommonInterface> workTimeProviders = getWorkTimeProviders().iterator();
 //
@@ -515,18 +522,18 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //
 //            ItemAndListCommonInterface workTimeProvider = workTimeProviders.next();
 //            neededWorkTime = this.getWorkTimeRequiredFromThisProvider(workTimeProvider);
-//            WorkTime newWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this, neededWorkTime);
+//            WorkTimeSlices newWorkTime = workTimeProvider.getWorkTimeAllocatorN().getAllocatedWorkTimeN(this, neededWorkTime);
 //            if (workTime == null) {
-////                lastWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this);
-//                workTime = newWorkTime; //workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this,neededWorkTime);
+////                lastWorkTime = workTimeProvider.getWorkTimeAllocatorN().getAllocatedWorkTimeN(this);
+//                workTime = newWorkTime; //workTimeProvider.getWorkTimeAllocatorN().getAllocatedWorkTimeN(this,neededWorkTime);
 ////                workTime = lastWorkTime;
 //            } else {
 //                workTime.addWorkTime(newWorkTime);
 //            }
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////            else if (workTime.getRemainingDuration() > 0) {
-//////                workTime=workTimeProviders.getAllocatedWorkTime(workTime,workTimeProvider.getAllocatedWorkTime(this, workTime.getUncoveredTime()));
-////                lastWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this, workTime.getRemainingDuration());
+//////                workTime=workTimeProviders.getAllocatedWorkTimeN(workTime,workTimeProvider.getAllocatedWorkTimeN(this, workTime.getUncoveredTime()));
+////                lastWorkTime = workTimeProvider.getWorkTimeAllocatorN().getAllocatedWorkTimeN(this, workTime.getRemainingDuration());
 ////                workTime.setNextWorkTime(lastWorkTime);
 ////            } else {
 ////                lastWorkTime = null;
@@ -542,19 +549,19 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //    }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    default public WorkTime getWorkTimeOLD() {
+//    default public WorkTimeSlices getWorkTimeOLD() {
 //        long neededWorkTime = getRemainingEffort();
-//        WorkTime workTime = null;
-//        WorkTime lastWorkTime;
+//        WorkTimeSlices workTime = null;
+//        WorkTimeSlices lastWorkTime;
 //        Iterator<ItemAndListCommonInterface> workTimeProviders = getWorkTimeProviders().iterator();
 //        while (workTimeProviders.hasNext() && neededWorkTime > 0 && (workTime == null || workTime.getRemainingDuration() > 0)) {
 //            ItemAndListCommonInterface workTimeProvider = workTimeProviders.next();
 //            if (workTime == null) {
-//                lastWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this);
+//                lastWorkTime = workTimeProvider.getWorkTimeAllocatorN().getAllocatedWorkTimeN(this);
 //                workTime = lastWorkTime;
 //            } else if (workTime.getRemainingDuration() > 0) {
-////                workTime=workTimeProviders.getAllocatedWorkTime(workTime,workTimeProvider.getAllocatedWorkTime(this, workTime.getUncoveredTime()));
-//                lastWorkTime = workTimeProvider.getWorkTimeAllocator().getAllocatedWorkTime(this, workTime.getRemainingDuration());
+////                workTime=workTimeProviders.getAllocatedWorkTimeN(workTime,workTimeProvider.getAllocatedWorkTimeN(this, workTime.getUncoveredTime()));
+//                lastWorkTime = workTimeProvider.getWorkTimeAllocatorN().getAllocatedWorkTimeN(this, workTime.getRemainingDuration());
 //                workTime.setNextWorkTime(lastWorkTime);
 //            } else {
 //                lastWorkTime = null;
@@ -571,14 +578,14 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * time allocated to this item (from all workTimeProviders: own workslots,
      * categories, owner)
      *
-     * @return null if no WorkTime allocated
+     * @return null if no WorkTimeSlices allocated
      */
-    default public WorkTime getAllocatedWorkTime() {
+    default public WorkTimeSlices getAllocatedWorkTimeN() {
         throw new Error("Not supported yet."); //should not be called for ItemLists and Categories (or WorkSlots)
     }
 
 //     {
-////        return getWorkTimeAllocator().getAllocatedWorkTime(this);
+////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
     /**
@@ -589,8 +596,8 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @param remainingDuration
      * @return
      */
-    default public WorkTime allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
-//        return getWorkTimeAllocator().getAllocatedWorkTime(itemOrList);
+    default public WorkTimeSlices allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
+//        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList);
         WorkTimeAllocator wt = getWorkTimeDefinition();
         return wt != null ? wt.allocateWorkTimeXXX(itemOrList) : null;
     }
@@ -603,19 +610,19 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @param remainingDuration
      * @return
      */
-    default public WorkTime allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
-//        return getWorkTimeAllocator().getAllocatedWorkTime(itemOrList, remainingDuration);
+    default public WorkTimeSlices allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
+//        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList, remainingDuration);
         WorkTimeAllocator wt = getWorkTimeDefinition();
         return wt != null ? wt.getAllocatedWorkTime(itemOrList, remainingDuration) : null;
     }
 
-//    default public long getAllocatedWorkTime() {
-//        return getAllocatedWorkTime().getFinishTime();
+//    default public long getAllocatedWorkTimeN() {
+//        return getAllocatedWorkTimeN().getFinishTime();
 //    }
     default public Date getFinishTimeD() {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        WorkTimeDefinition workTimeDef = getWorkTimeAllocator();
-//        WorkTime workTime = getAvailableWorkTime();
+//        WorkTimeDefinition workTimeDef = getWorkTimeAllocatorN();
+//        WorkTimeSlices workTime = getAvailableWorkTime();
 //        if (workTime != null) {
 ////            return new Date(workTimeDef.getFinishTime(item));
 //            return workTime.getFinishTimeD();
@@ -623,7 +630,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //            return new Date(0);
 //        }
 //</editor-fold>
-//        WorkTime wt = getAllocatedWorkTime();
+//        WorkTimeSlices wt = getAllocatedWorkTimeN();
 //        return wt != null ? wt.getFinishTimeD() : new Date(MyDate.MIN_DATE);
         return new Date(getFinishTime());
     }
@@ -631,13 +638,72 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     /**
      * returns the calculated finishTime for this item
      *
-     * @return finishTime or MyDate.MAX_DATE if no workTime was allocated
+     * @return finishTime or MyDate.MAX_DATE if no workTime was available/allocated, or if or insufficient workTime to finish the task was allocated
      */
     default public long getFinishTime() {
-//        return getAllocatedWorkTime().getFinishTime();
-        WorkTime wt = getAllocatedWorkTime();
+//        assert false:"getFinishTime on ItemListCommonInterface should never be called";
+//        return getFinishTime(System.currentTimeMillis());
+//    }
+//    
+//    default public long getFinishTime(long now) {
+//        return getAllocatedWorkTimeN().getFinishTime();
+        WorkTimeSlices workTime = getAllocatedWorkTimeN();
+        if (Config.WORKTIME_TEST) {
+            assert workTime == null || !(workTime.getAllocatedDuration() > getRemainingEffort()): "allocated too much time";
+        }
+//        long finishTime = MyDate.MAX_DATE;
+        if (workTime != null) {
+            if (Config.WORKTIME_DETAILED_LOG) {
+                Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (workTime != null ? workTime.toString() : "<null>") + ", returning=" + new Date(workTime.getFinishTime()));
+            }
+            if (workTime.getRemainingDuration() == 0) {
+                return workTime.getFinishTime();
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            else {
+//                return MyDate.MAX_DATE;
+//            }
+//        } else {
+//            return MyDate.MAX_DATE; //cannot allocate enough time
+//</editor-fold>
+        }
+        return MyDate.MAX_DATE; //cannot allocate enough time
+    }
+
+    default public long getFinishTimeOLD2() {
+//        return getAllocatedWorkTimeN().getFinishTime();
+        WorkTimeSlices wt = getAllocatedWorkTimeN();
+//        long finishTime = MyDate.MAX_DATE;
+        if (wt != null) {
+            long finishTime = wt.getFinishTime();
+            if (Config.WORKTIME_DETAILED_LOG) {
+                Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (wt != null ? wt.toString() : "<null>") + ", returning=" + new Date(finishTime));
+            }
+
+//        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
+//        ASSERT.that(wt.getAllocatedDuration() == getRemainingEffort() || wt.getAllocatedDuration() < getRemainingEffort(), "allocated too much time");
+//        if (wt != null) {
+            long remainingEffort = getRemainingEffort();
+            long allocatedDuration = wt.getAllocatedDuration();
+            if (Config.WORKTIME_TEST) {
+                ASSERT.that(wt == null || !(allocatedDuration > remainingEffort), "allocated too much time");
+            }
+//        return wt != null &&  allocatedDuration>= remainingEffort ? finishTime : MyDate.MAX_DATE;
+            if (allocatedDuration >= remainingEffort) {
+                return finishTime;
+            } else {
+                return MyDate.MAX_DATE;
+            }
+        } else {
+            return MyDate.MAX_DATE; //cannot allocate enough time
+        }
+    }
+
+    default public long getFinishTimeOLD() {
+//        return getAllocatedWorkTimeN().getFinishTime();
+        WorkTimeSlices wt = getAllocatedWorkTimeN();
         long finishTime = wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
-        if (Test.DEBUG) {
+        if (Config.WORKTIME_DETAILED_LOG) {
             Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (wt != null ? wt.toString() : "<null>") + ", returning=" + new Date(finishTime));
         }
 
@@ -646,8 +712,8 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
         if (wt != null) {
             long remainingEffort = getRemainingEffort();
             long allocatedDuration = wt.getAllocatedDuration();
-            if (Test.DEBUG) {
-                ASSERT.that(wt == null || !(allocatedDuration > remainingEffort), "allocated too much time");
+            if (Config.WORKTIME_TEST) {
+                assert wt == null || !(allocatedDuration > remainingEffort): "allocated too much time";
             }
 //        return wt != null &&  allocatedDuration>= remainingEffort ? finishTime : MyDate.MAX_DATE;
             return allocatedDuration >= remainingEffort ? finishTime : MyDate.MAX_DATE;

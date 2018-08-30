@@ -59,6 +59,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private InsertComp insertDropPlaceholderForSupertask = null; //function containing the drop action to execute on a normal drop
     private int lastY = -1; //x value for last component this was dragged over
     private boolean lastDragDirectionUp = false; //x value for last component this was dragged over
+    private Label newDropPlaceholder = null;
 
     boolean formNeedRefresh = false; //set true if a screen refresh is needed
 
@@ -1166,7 +1167,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
         //NB!!! dragOverListener is called on the **DRAGGED** object (not the dropTarget as I originally assumed)
-        addDragOverListener((e) -> {
+        addDragOverListener((ActionEvent e) -> {
 //            Component drag = e.getDraggedComponent();
             Component drag = (Component) e.getSource();
             Component dropTarget = e.getDropTarget(); //may be null (in Component.dragFinishedImpl(int x, int y))
@@ -2085,7 +2086,8 @@ T3
                     || (dropAsSubtaskActionCall != null && insertDropPlaceholderForSubtask != null)
                     || (dropAsSuperTaskActionCall != null && insertDropPlaceholderForSupertask != null)) {
                 //Create new dropPlaceholder
-                Label newDropPlaceholder = new Label() {
+//                Label newDropPlaceholder = new Label();
+                newDropPlaceholder = new Label() {
                     Component dropTarget1 = dropTarget;
 
                     @Override
@@ -2129,9 +2131,14 @@ T3
 //                                getComponentForm().animateHierarchy(300);
                         draggedMyDDCont.setDraggable(false); //set draggable false once the drop (activated by longPress) is completed
                         draggedMyDDCont.setFocusable(false); //set focusable false once the drop (activated by longPress) is completed
-                        
-                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition(getParentScrollYContainer(beforeMyDDCont))); //simply keep same position as whereto the list was scrolled during the drag, then inserted element should 'stay in place'
-                        
+
+//                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition(getParentScrollYContainer(beforeMyDDCont))); //simply keep same position of *previous* container (unless null!)
+//                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //simply keep same position as whereto the list was scrolled during the drag, then inserted element should 'stay in place'
+                        if (newDropPlaceholder != null) {
+                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition(draggedElement,newDropPlaceholder)); //whenever possible keep the dropped in same position**
+                        } else {
+                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
+                        }
                         super.drop(draggedMyDDCont, x, y); //Container.drop implements the first quick move of the container itself
                         ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
                     }
@@ -2228,7 +2235,7 @@ T3
                 newDropPlaceholder.setUIID("DropTargetPlaceholder");
                 newDropPlaceholder.setDropTarget(true);
                 newDropPlaceholder.setText("DropPlaceholder for (" + dropTarget.getName() + ")");
-                if (Test.DEBUG) {
+                if (Config.TEST) {
                     newDropPlaceholder.setName("DropPlaceholder for " + dropTarget.getName() + ", w=" + newDropPlaceholder.getWidth() + ", h=" + newDropPlaceholder.getHeight());
                 }
 

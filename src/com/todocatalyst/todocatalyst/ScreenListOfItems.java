@@ -92,6 +92,7 @@ public class ScreenListOfItems extends MyForm {
 //    private static String screenTitle = "Tasks";
 //    private ItemList<Item> itemListOrg;
     private ItemList itemListOrg;
+    private GetItemListFct getItemListFct;
 //    private ItemList itemListFilteredSorted;
 //    private java.util.List workSlotList;
 //    private WorkTimeDefinition wtd;
@@ -109,6 +110,7 @@ public class ScreenListOfItems extends MyForm {
 
 //    private static WorkTimeDefinition wtd;
     boolean projectEditMode = false; //indicates if projectEditMode is on (eg new tasks automatically added to end of list)
+    private MyTree2.StickyHeaderGenerator stickyHeaderGen;
 
     /**
      * set to true if a fixed filter is passed to the screen, if true user is
@@ -219,15 +221,14 @@ public class ScreenListOfItems extends MyForm {
 //                        });
 //    }
 //</editor-fold>
-    ScreenListOfItems(ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone) {
-        this(itemList.getText(), itemList, previousForm, updateItemListOnDone);
-    }
-
-    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
-//        this(title, itemList, previousForm, updateItemListOnDone, null, true);
-        this(title, itemList, previousForm, updateItemListOnDone, 0);
-    }
-
+//    ScreenListOfItems(ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone) {
+//        this(itemList.getText(), itemList, previousForm, updateItemListOnDone);
+//    }
+//
+//    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+////        this(title, itemList, previousForm, updateItemListOnDone, null, true);
+//        this(title, itemList, previousForm, updateItemListOnDone, 0);
+//    }
     /**
      *
      * @param title
@@ -238,6 +239,7 @@ public class ScreenListOfItems extends MyForm {
      * @param filterCanBeModified if true, user cannot modify the given filter
      * (used e.g. in Log)
      */
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone, FilterSortDef filterSortDef, boolean filterCanBeModified) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        this(title, itemList, previousForm, updateItemListOnDone, filterSortDef, filterCanBeModified, false);
 //    }
@@ -247,18 +249,33 @@ public class ScreenListOfItems extends MyForm {
 //    }
 //
 //    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone, FilterSortDef filterSortDef, int options) {
-//        
+//
 //    }
+//</editor-fold>
     ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone, int options) {
-        super(title, previousForm, () -> updateItemListOnDone.update(itemList));
+        this(title, () -> itemList, previousForm, updateItemListOnDone, options);
+    }
+
+    ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, GetItemList updateItemListOnDone, int options) {
+        this(title, itemListFct, previousForm, updateItemListOnDone, options, null);
+    }
+
+    ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, GetItemList updateItemListOnDone,
+            int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
+        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
         setScrollVisible(true); //UI: show scrollbar(?)
 //        super(title, previousForm, null);
         setOptions(options);
         getComponentForm().getLayeredPane().setLayout(new BorderLayout()); //needed for StickyHeaderMod
 //        MyDragAndDropSwipeableContainer.dragEnabled = false; //always disable before setting up a new screen
-        this.itemListOrg = itemList;
-        this.updateActionOnDone = () -> updateItemListOnDone.update(this.itemListOrg);
-//        workSlotList = itemListOrg.getWorkSlotList(); //expensive operation, only do once for the screen, or after editing WorkSlots
+//        this.itemListOrg = itemList;
+        this.getItemListFct = itemListFct;
+        this.itemListOrg = itemListFct.getUpdatedItemList();
+        this.updateActionOnDone = () -> {
+            this.itemListOrg = itemListFct.getUpdatedItemList();
+            updateItemListOnDone.update(this.itemListOrg);
+        };
+//        workSlotList = itemListOrg.getWorkSlotListN(); //expensive operation, only do once for the screen, or after editing WorkSlots
 
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
         setLayout(new BorderLayout());
@@ -282,6 +299,7 @@ public class ScreenListOfItems extends MyForm {
 //        optionUnmodifiableFilter = !filterCanBeModified;
 //</editor-fold>
         expandedObjects = new HashSet();
+        this.stickyHeaderGen = stickyHeaderGen;
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
         getToolbar().addSearchCommand((e) -> {
@@ -396,6 +414,7 @@ public class ScreenListOfItems extends MyForm {
 //            getContentPane().add(BorderLayout.SOUTH, makeQuickAddBox(projectEditMode));
 //            getContentPane().add(BorderLayout.SOUTH, new QuickAddItemContainer(projectEditMode));
 //        }
+        this.itemListOrg = getItemListFct.getUpdatedItemList();
         itemListOrg.resetWorkTimeDefinition(); //TODO!!!!! find a way to automatically reset wtd each time a list or its elements have been modified -> itemList.save(), or items call update/refresh on owner (and categories!)
 //        getContentPane().scrollComponentToVisible(this);
 //        refreshItemListFilterSort();
@@ -407,7 +426,7 @@ public class ScreenListOfItems extends MyForm {
 //            this.itemListFilteredSorted = itemListOrg;
 //        }
 //
-//        wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotList(true), itemListFilteredSorted);
+//        wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
 //        itemListOrg.refreshWorkTimeDefinition();
 
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.itemListFilteredSorted));
@@ -660,7 +679,7 @@ public class ScreenListOfItems extends MyForm {
         if (!optionTemplateEditMode && !optionNoWorkTime) {
             toolbar.addCommandToOverflowMenu(MyReplayCommand.create("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
                 setKeepPos(new KeepInSameScreenPosition());
-                new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotList(),
+                new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotListN(),
                         itemListOrg, ScreenListOfItems.this, (iList) -> {
 //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
                             //DONE!!! reload/recalc workslots
@@ -1067,10 +1086,10 @@ public class ScreenListOfItems extends MyForm {
     ////        }
     ////        ASSERT.that(idx>=0, "Item ["+item+"] not found in ItemList ["+itemList+"] as expected");
     ////        if ((finishTime = itemList.getFinishTime(idx)) != 0) {
-    ////        WorkTimeDefinition wtd = itemList.getWorkTimeAllocator();
-    ////        java.util.List workSlotList = itemListOrg.getWorkSlotList();
+    ////        WorkTimeDefinition wtd = itemList.getWorkTimeAllocatorN();
+    ////        java.util.List workSlotList = itemListOrg.getWorkSlotListN();
     ////        if (workSlotList != null && workSlotList.size() > 0) {
-    ////            WorkTimeDefinition wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotList(), itemList); //use possibly filtered/sorted list here. UI: finishTime is calcuated based on current view/filter/sort. E.g. if you always work by priority and not manual sorting
+    ////            WorkTimeDefinition wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(), itemList); //use possibly filtered/sorted list here. UI: finishTime is calcuated based on current view/filter/sort. E.g. if you always work by priority and not manual sorting
     ////        if (false) {
     ////            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
     ////                east.addComponent(new Label("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime))));
@@ -1088,7 +1107,7 @@ public class ScreenListOfItems extends MyForm {
     //        if (motherItemList != null) {
     //            long finishTime;
     //            int idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
-    //            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocator();
+    //            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocatorN();
     //            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
     //                south.addComponent(new Label("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime))));
     //            }
@@ -1418,6 +1437,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
         SwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(swipeActionContainer, buttonSwipeContainer, mainCont) {
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
 //                return draggedObject.getDragAndDropObject() instanceof Item;
@@ -1432,10 +1452,10 @@ public class ScreenListOfItems extends MyForm {
 ////                    return item.getOwner(); //returns the owner of
 ////                }
 ////</editor-fold>
-//                if (ownerItemOrItemList != null && ownerItemOrItemList instanceof Category) { //special case to allow drag&drop 
+//                if (ownerItemOrItemList != null && ownerItemOrItemList instanceof Category) { //special case to allow drag&drop
 //                    return ownerItemOrItemList;
 //                } else {
-//                    return item.getOwner(); //returns the owner of 
+//                    return item.getOwner(); //returns the owner of
 //                }
 //            }
 //            @Override
@@ -1443,6 +1463,7 @@ public class ScreenListOfItems extends MyForm {
 ////                return ((Item) getDragAndDropObject()).getList(); //returns the list of subtasks
 //                return item.getList(); //returns the list of subtasks
 //            }
+//</editor-fold>
             @Override
             public ItemAndListCommonInterface getDragAndDropObject() {
                 return item;
@@ -1460,7 +1481,7 @@ public class ScreenListOfItems extends MyForm {
 
         }; //D&D
         swipCont.setGrabsPointerEvents(true); //when swiping on task description, it also activated the button to show tasks details
-        if (Test.DEBUG) {
+        if (Config.TEST) {
             swipCont.setName(item.getText());
         }
 
@@ -1484,7 +1505,7 @@ public class ScreenListOfItems extends MyForm {
             mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
         }
 
-        Button subTasksButton;// = null;//= new Button(); //null;
+        Button expandSubTasksButton;// = null;//= new Button(); //null;
         //EXPAND subtasks in Item
 //        Button subTasksButton = new Button(); //null;
 //        if (true) {
@@ -1493,7 +1514,7 @@ public class ScreenListOfItems extends MyForm {
         int totalNumberSubtasks = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 //        int totalNumberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks; //true: get subtasks, always necessary for a project
 //            if (numberUndoneSubtasks > 0 || totalNumberSubtasks > 0) {
-        subTasksButton = numberUndoneSubtasks > 0 || totalNumberSubtasks > 0 ? new Button() {
+        expandSubTasksButton = numberUndoneSubtasks > 0 || totalNumberSubtasks > 0 ? new Button() {
             @Override
             public void longPointerPress(int x, int y) {
                 super.longPointerPress(x, y);
@@ -1516,16 +1537,16 @@ public class ScreenListOfItems extends MyForm {
 //        } : new Button();
         } : null;
 //            subTasksButton.setUIID("Label");
-        if (subTasksButton != null) {
-            subTasksButton.setUIID("ListOfItemsSubtasks");
+        if (expandSubTasksButton != null) {
+            expandSubTasksButton.setUIID("ListOfItemsSubtasks");
 //            subTasksButton.setGrabsPointerEvents(true); //TODO!!! does this work to avoid
 //            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberDoneSubtasks + "]");// {
 //            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberSubtasks + "]");// {
 //                Command expandSubTasks = new Command(numberUndoneSubtasks + "/" + totalNumberSubtasks);// {
 //                subTasksButton.setCommand(expandSubTasks);
-            subTasksButton.setText(numberUndoneSubtasks + "/" + totalNumberSubtasks);
+            expandSubTasksButton.setText(numberUndoneSubtasks + "/" + totalNumberSubtasks);
 //            topContainer.putClientProperty("subTasksButton", subTasksButton);
-            swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
+            swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandSubTasksButton);
 //            east.addComponent(subTasksButton);
             if (oldFormat) {
 //                    east.addComponent(subTasksButton);
@@ -1558,20 +1579,22 @@ public class ScreenListOfItems extends MyForm {
 //        }
 //</editor-fold>
         //ITEM TEXT
+        WorkSlotList wSlots = item.getWorkSlotListN(false);
         MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(
                 item.getText()
                 + ((Config.TEST && item.getRepeatRule() != null ? "*" : "")
                 + (Config.TEST && item.isInteruptOrInstantTask() ? "<" : "")
+                + (Config.TEST && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
                 + (Config.TEST && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
                 )), swipCont, () -> {
                     boolean enabled = myForm.isDragAndDropEnabled();
-                    if (enabled && subTasksButton != null) {
+                    if (enabled && expandSubTasksButton != null) {
                         Object e = swipCont.getClientProperty(KEY_EXPANDED);
                         if (e != null && e.equals("true")) { //                            subTasksButton.getCommand().actionPerformed(null);
-                            subTasksButton.pressed();//simulate pressing the button
-                            subTasksButton.released(); //trigger the actionLIstener to collapse
+                            expandSubTasksButton.pressed();//simulate pressing the button
+                            expandSubTasksButton.released(); //trigger the actionLIstener to collapse
                         }
                     }
                     return enabled;
@@ -1854,8 +1877,8 @@ public class ScreenListOfItems extends MyForm {
 //            long finishTime;
 ////            int idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
 //            int idx = motherListWithWorkTimeDef.indexOf(item); //TODO!!! optimization by passing index to here
-////            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocator();
-//            WorkTimeDefinition wtd = ((ItemList) motherListWithWorkTimeDef).getSourceItemList().getWorkTimeAllocator();
+////            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocatorN();
+//            WorkTimeDefinition wtd = ((ItemList) motherListWithWorkTimeDef).getSourceItemList().getWorkTimeAllocatorN();
 //            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
 //                south.add("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime)));
 ////                south.add("F:" + MyDate.formatDateCasual(new Date(finishTime)));
@@ -2011,7 +2034,7 @@ public class ScreenListOfItems extends MyForm {
                                 //                                finishTimeLabel != null ? finishTimeLabel : (isDone ? completedDateLabel : dueDateLabel)),
                                 BorderLayout.east(isDone ? completedDateLabel : (finishTimeLabel != null ? finishTimeLabel : dueDateLabel))),
                         //                        BoxLayout.encloseY(starButton, subTasksButton),
-                        subTasksButton != null ? subTasksButton : new Label(),
+                        expandSubTasksButton != null ? expandSubTasksButton : new Label(),
                         editItemButton))
                 );
 
@@ -2276,12 +2299,15 @@ refreshAfterEdit();
         //UPDATE DUE DATE
         if (!item.isTemplate() && !isDone) {
             setDueDateToToday.addActionListener((e) -> {
+//                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //NB keeping the position of item doesn't make sense since this command can make it disappear (e.g. in Overdue screen)
+//                myForm.setKeepPos(new KeepInSameScreenPosition(swipCont)); //ASSERT since swipCont not ScrollableY
+                myForm.setKeepPos(new KeepInSameScreenPosition()); //try to keep same scroll position as before 
                 Date tomorrow = new Date(new Date().getTime() + MyDate.DAY_IN_MILLISECONDS);
                 if (MyDate.isToday(item.getDueDateD())) {
 //                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
                     item.setDueDate((new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
                 } else if (MyDate.isToday(item.getWaitingTillDateD())) {
-                    item.setWaitingTillDate((new Date(item.getWaitingTillDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
+                    item.setWaitingTillDate((new Date(item.getWaitingTillDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if WaitingTillDate is today, then set to tomorrow
                 } else if (MyDate.isToday(item.getStartByDateD())) {
                     item.setStartByDate((new Date(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
                 } else {
@@ -2692,8 +2718,8 @@ refreshAfterEdit();
 ////            long finishTime;
 //////            int idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
 ////            int idx = motherListWithWorkTimeDef.indexOf(item); //TODO!!! optimization by passing index to here
-//////            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocator();
-////            WorkTimeDefinition wtd = ((ItemList) motherListWithWorkTimeDef).getSourceItemList().getWorkTimeAllocator();
+//////            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocatorN();
+////            WorkTimeDefinition wtd = ((ItemList) motherListWithWorkTimeDef).getSourceItemList().getWorkTimeAllocatorN();
 ////            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
 ////                south.add("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime)));
 //////                south.add("F:" + MyDate.formatDateCasual(new Date(finishTime)));
@@ -3180,8 +3206,7 @@ refreshAfterEdit();
 //    }
 //    protected static
 //</editor-fold>
-    Container buildContentPaneForItemList(ItemAndListCommonInterface listOfItems //            , HashSet expandedObjects, ItemAndListCommonInterface itemListOrg, MyForm myForm, KeepInSameScreenPosition keepPos
-
+    Container buildContentPaneForItemList(ItemAndListCommonInterface listOfItems //, HashSet expandedObjects, ItemAndListCommonInterface itemListOrg, MyForm myForm, KeepInSameScreenPosition keepPos
     ) {
 //        parseIdMapReset();
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3248,14 +3273,12 @@ refreshAfterEdit();
 //        myTree = new MyTree2(listOfItems, expandedObjects, filterSortDef) {
 //            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, itemListOrg.getFilterSortDef(), (item, itemOrItemList) -> InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) //<editor-fold defaultstate="collapsed" desc="comment">
 //            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, (item, itemOrItemList) -> InlineInsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) //<editor-fold defaultstate="collapsed" desc="comment">
-            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects,
-                    //                    lastInsertNewElementContainer != null ? 
-                    //            (getInlineInsertContainer() != null ? 
-                    ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)
-                    ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.make(item, itemOrItemList)
-                    //                            (item, itemOrItemList) -> getInlineInsertContainer().make(item, itemOrItemList)
-                    //                            : null)) //<editor-fold defaultstate="collapsed" desc="comment">
-                    getInlineInsertContainer()) //            {
+            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) //                    lastInsertNewElementContainer != null ? 
+            //            (getInlineInsertContainer() != null ? 
+            ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)
+            ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.make(item, itemOrItemList)
+            //                            (item, itemOrItemList) -> getInlineInsertContainer().make(item, itemOrItemList)
+            //                            : null)) //<editor-fold defaultstate="collapsed" desc="comment">
             //
             ////                if (lastInsertNewTaskContainer == null) {
             ////                InsertNewTaskContainer lastInsertNewTaskContainer = (InsertNewTaskContainer) getClientProperty(InsertNewTaskContainer.LAST_INSERTED_NEW_TASK_CONTAINER);

@@ -1476,7 +1476,7 @@ public class MyDate extends Date {
         }
         //within next 7 days: "Mon13h"
         if (diff <= MyDate.DAY_IN_MILLISECONDS * 7) {
-            return new SimpleDateFormat("EEEHH'h'").format(date);
+            return new SimpleDateFormat("EEEHH'h'mm").format(date);
         }
         //within next 365 days: "Jun11"
         if (diff <= MyDate.DAY_IN_MILLISECONDS * 365) {

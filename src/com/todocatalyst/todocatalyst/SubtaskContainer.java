@@ -246,7 +246,8 @@ public class SubtaskContainer extends Container {
 //                    Button editSubtasksFullScreenOLD = new Button();
 //                    editSubtasksFullScreenOLD.setCommand(Command.create(null, Icons.iconEditPropertiesLabelStyle, (e) -> {
                         ItemList subtaskList = item.getItemList();
-                        new ScreenListOfItems("Subtasks of " + item.getText(), subtaskList, myForm, (iList) -> {
+//                        new ScreenListOfItems("Subtasks of " + item.getText(), subtaskList, myForm, (iList) -> {
+                        new ScreenListOfItems("Subtasks of " + item.getText(), ()->item.getItemList(), myForm, (iList) -> {
                             item.setItemList(subtaskList);
                             DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
                             myForm.refreshAfterEdit(); //necessary to update sum of subtask effort

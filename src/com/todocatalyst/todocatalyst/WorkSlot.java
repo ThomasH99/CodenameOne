@@ -30,8 +30,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         implements RepeatRuleObjectInterface,
         //SumField, ItemAndListCommonInterface, 
         Externalizable //Comparable /* * , IComparable 
-        ,
-         ItemAndListCommonInterface {
+{
 
     public static String CLASS_NAME = "WorkSlot";
 
@@ -70,13 +69,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     final static String PARSE_OWNER_LIST = "ownerList";
     final static String PARSE_OWNER_CATEGORY = "ownerCategory";
     final static String PARSE_OWNER_ITEM = "ownerItem";
+
     final static String PARSE_REPEAT_RULE = "repeatRule"; //"repeatRule"
 
     final static String PARSE_TEXT = "text"; //"description";
-    final static String PARSE_COMMENT = "comment";
+//    final static String PARSE_COMMENT = "comment"; //not used
     final static String PARSE_START_TIME = "startTime";
-    final static String PARSE_END_TIME = "endTime";
     final static String PARSE_DURATION = "duration";
+    final static String PARSE_END_TIME = "endTime"; //always set automatically, based on changes to startTime or duration
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
     public WorkSlot() {
@@ -139,7 +139,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return null;
 //    }
 //</editor-fold>
-    @Override
+//    @Override
     public ItemList getOwnerList() {
 //        return owner; //TODO: Parsify
 //        ParseObject owner = getParseObject(PARSE_OWNER);
@@ -157,8 +157,13 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        this.owner = owner; //TODO: Parsify
 //        return oldOwner;
 //        }
-        if (has(PARSE_OWNER_LIST) || ownerList != null) {
+//        if (has(PARSE_OWNER_LIST) || ownerList != null) {
+//            put(PARSE_OWNER_LIST, ownerList);
+//        }
+        if (ownerList != null) {
             put(PARSE_OWNER_LIST, ownerList);
+        } else {
+            remove(PARSE_OWNER_LIST);
         }
 //        return ownerList;
     }
@@ -172,8 +177,13 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
 //    @Override
     private void setOwnerCategory(Category category) {
-        if (has(PARSE_OWNER_CATEGORY) || category != null) {
+//        if (has(PARSE_OWNER_CATEGORY) || category != null) {
+//            put(PARSE_OWNER_CATEGORY, category);
+//        }
+        if (category != null) {
             put(PARSE_OWNER_CATEGORY, category);
+        } else {
+            remove(PARSE_OWNER_CATEGORY);
         }
     }
 
@@ -204,8 +214,13 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        this.owner = owner; //TODO: Parsify
 //        return oldOwner;
 //        }
-        if (has(PARSE_OWNER_ITEM) || ownerItem != null) {
+//        if (has(PARSE_OWNER_ITEM) || ownerItem != null) {
+//            put(PARSE_OWNER_ITEM, ownerItem);
+//        }
+        if (ownerItem != null) {
             put(PARSE_OWNER_ITEM, ownerItem);
+        } else {
+            remove(PARSE_OWNER_ITEM);
         }
 //        return ownerList;
     }
@@ -214,10 +229,17 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         //set Owner of new workSlot
         if (owner instanceof Category) {
             setOwnerCategory((Category) owner);
+            //TODO if we allow a workSlot to be moved to another type of owner (eg from ItemList to Category) then we must also reset any old owner
+            setOwnerList(null);
+            setOwnerItem(null);
         } else if (owner instanceof ItemList) {
             setOwnerList((ItemList) owner);
+            setOwnerCategory(null);
+            setOwnerItem(null);
         } else if (owner instanceof Item) {
             setOwnerItem((Item) owner);
+            setOwnerCategory(null);
+            setOwnerList(null);
 //                    } else { //TODO: add flagging of new/unknown owner for workslots
 //                        throw RuntimeException("Unknown type of owner");
         } else if (owner == null) {
@@ -231,9 +253,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     public ItemAndListCommonInterface getOwner() {
         ItemAndListCommonInterface owner;
-        if ((owner = getOwnerList()) != null) {
+        if ((owner = getOwnerCategory()) != null) {
             return owner;
-        } else if ((owner = getOwnerCategory()) != null) {
+        } else if ((owner = getOwnerList()) != null) {
             return owner;
         } else if ((owner = getOwnerItem()) != null) {
             return owner;
@@ -566,9 +588,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     void copyMeInto(WorkSlot destination, CopyMode copyFieldDefinition) {
+        destination.setStartTime(getStartTimeD());
         destination.setDurationInMinutes(getDurationInMinutes());
         destination.setText(getText());
-        destination.setStartTime(getStartTimeD());
         destination.setOwner(getOwner()); //need to set owner here, since not done eg when creating repeat copies
         if (copyFieldDefinition == CopyMode.COPY_TO_REPEAT_INSTANCE) {
             destination.setRepeatRuleNoUpdate(getRepeatRule());
@@ -772,7 +794,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      * time of the slot). If startDate is in the past, return NOW
      * (MyDate.getNow())
      */
-    public long getStartAdjusted() {
+    public long getStartAdjustedXXX() {
 //        return getStartAdjusted(new Date().getTime());
         return getStartAdjusted(System.currentTimeMillis());
     }
@@ -839,7 +861,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     public long getEndTime() {
 //        return end!=0L?end:start+duration;
 //        return start + duration;
-        return getStartTimeD().getTime() + getDurationInMillis(); //unchanged, even as start is in the past, or consumedDuration>0
+//        return getStartTimeD().getTime() + getDurationInMillis(); //unchanged, even as start is in the past, or consumedDuration>0
+        return getEndTimeD().getTime();
+    }
+
+    public Date getEndTimeD() {
+//        return end!=0L?end:start+duration;
+//        return start + duration;
+        return new Date(getStartTimeD().getTime() + getDurationInMillis()); //unchanged, even as start is in the past, or consumedDuration>0
     }
 
     /**
@@ -1031,10 +1060,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         if (durationInMinutes != 0) {
             put(PARSE_DURATION, durationInMinutes); //store duration in minutes for readability
 //            updateEndTimeWithNewDuration(((long)durationInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
-            setEndTime(new Date(getStartTimeD().getTime() + getDurationInMillis()));
         } else {
             remove(PARSE_DURATION);
         }
+        setEndTime(new Date(getStartTimeD().getTime() + getDurationInMillis()));
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1370,6 +1399,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return getItemsInWorkSlot(false);
     }
 
+    /**
+    return the top-level tasks that this workslot has allocated time to (not lower-level subtasks that the top-level tasks has subsequently allocated their time to)
+    @param includeDoneTasks
+    @return 
+     */
     public List<Item> getItemsInWorkSlot(boolean includeDoneTasks) {
         ItemAndListCommonInterface owner = getOwner();
         List<Item> items = new ArrayList<>();
@@ -1377,13 +1411,15 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             for (Object i : owner.getList()) { //go through everyone of the WorkSLot's Owner's tasks
                 if (i instanceof Item) {
                     Item item = (Item) i;
-                    WorkTime wTime = item.getAllocatedWorkTime();
+                    WorkTimeSlices wTime = item.getAllocatedWorkTimeN();
                     if (wTime != null) {
                         List<WorkSlotSlice> slices = wTime.getWorkSlotSlices();
                         if (slices != null) {
                             for (WorkSlotSlice slice : slices) {
 //                                if (slice.workSlot == this && !items.contains(item)) {
-                                if (slice.workSlot == this && !items.contains(item) && slice.getDuration() > 0 && (!item.isDone() || includeDoneTasks)) {
+                                //if slice is from this workslot, and item not already added (necessary??!) and slice is non-zero duration (to exclude house-keeping allocations) and task is not done
+//                                if (slice.workSlot == this && !items.contains(item) && slice.getDuration() > 0 && (!item.isDone() || includeDoneTasks)) {
+                                if (slice.workSlot == this && (slice.getDuration() > 0 || includeDoneTasks || Config.TEST)) {
                                     items.add(item);
                                 }
                             }
@@ -1428,198 +1464,212 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return items;
     }
 
-    @Override
-    public boolean isDone() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Item getItemsInWorkSlotAsArticialItem() {
+        List<ItemAndListCommonInterface> subtasks = getTasksInWorkSlotForToday();
+        Item artificialItem = new Item();
+        artificialItem.setList(getTasksInWorkSlotForToday());
+        artificialItem.setText(
+                WorkSlot.WORKSLOT
+                + " " + MyDate.formatTimeNew(getStartTimeD()) + "-" + MyDate.formatTimeNew(getEndTimeD())
+                + (getOwner() != null ? " in " + getOwner().getText() : "")
+        );
+        return artificialItem;
     }
 
-    @Override
-    public void setDone(boolean done) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ItemStatus getStatus() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public long getRemainingEffort() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public long getEffortEstimate() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public long getActualEffort() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Date getRemainingEffortD() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public WorkSlotList getWorkSlotList() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public WorkSlotList getWorkSlotList(boolean refreshWorkSlotListFromDAO) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getNumberOfUndoneItems(boolean includeSubTasks) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getNumberOfItems(boolean onlyUndone, boolean countLeafTasks) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getNumberOfSubtasks(boolean onlyUndone, boolean countLeafTasks) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getComment() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setComment(String val) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isExpandable() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String toString(ToStringFormat format) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ItemAndListCommonInterface cloneMe() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ItemAndListCommonInterface cloneMe(CopyMode copyFieldDefintion, int copyExclusions) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void copyMeInto(ItemAndListCommonInterface destiny) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setStatus(ItemStatus itemStatus) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int size() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean addToList(ItemAndListCommonInterface subItemOrList) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean removeFromList(ItemAndListCommonInterface subItemOrList) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getItemIndex(ItemAndListCommonInterface subItemOrList) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<ItemAndListCommonInterface> getList() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setList(List listOfSubObjects) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isNoSave() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public WorkTimeAllocator getWorkTimeAllocator(boolean reset) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public WorkTimeAllocator getWorkTimeDefinition() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void resetWorkTimeDefinition() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+////<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
-//    public Date getFinishTime(ItemAndListCommonInterface item) {
+//    public boolean isDone() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-    @Override
-    public List getChildrenList(Object parent) {
-//        return getTasksInWorkSlotForToday();
-        return getItemsInWorkSlot();
-    }
-
-    @Override
-    public boolean isLeaf(Object node) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<ItemAndListCommonInterface> getWorkTimeProvidersInPrioOrder() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+//
 //    @Override
-//    public WorkTime getAllocatedWorkTime() {
-////        return getWorkTimeAllocator().getWorkTime(this);
-//        throw new Error("Not supported yet."); //not supported by WorkSlot
+//    public void setDone(boolean done) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-    @Override
-    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+//
+//    @Override
+//    public ItemStatus getStatus() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public long getRemainingEffort() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public long getEffortEstimate() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public long getActualEffort() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public Date getRemainingEffortD() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public WorkSlotList getWorkSlotListN() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public int getNumberOfUndoneItems(boolean includeSubTasks) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public int getNumberOfItems(boolean onlyUndone, boolean countLeafTasks) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public int getNumberOfSubtasks(boolean onlyUndone, boolean countLeafTasks) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public String getComment() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public void setComment(String val) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public boolean isExpandable() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public String toString(ToStringFormat format) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public ItemAndListCommonInterface cloneMe() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public ItemAndListCommonInterface cloneMe(CopyMode copyFieldDefintion, int copyExclusions) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public void copyMeInto(ItemAndListCommonInterface destiny) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public void setStatus(ItemStatus itemStatus) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public int size() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public boolean addToList(ItemAndListCommonInterface subItemOrList) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public boolean removeFromList(ItemAndListCommonInterface subItemOrList) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public int getItemIndex(ItemAndListCommonInterface subItemOrList) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public List<ItemAndListCommonInterface> getList() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public void setList(List listOfSubObjects) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public boolean isNoSave() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public WorkTimeAllocator getWorkTimeDefinition() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public void resetWorkTimeDefinition() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+////    @Override
+////    public Date getFinishTime(ItemAndListCommonInterface item) {
+////        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+////    }
+//    @Override
+//    public List getChildrenList(Object parent) {
+////        return getTasksInWorkSlotForToday();
+//        return getItemsInWorkSlot();
+//    }
+//
+//    @Override
+//    public boolean isLeaf(Object node) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public List<ItemAndListCommonInterface> getPotentialWorkTimeProvidersInPrioOrder() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+////    @Override
+////    public WorkTimeSlices getAllocatedWorkTimeN() {
+//////        return getWorkTimeAllocatorN().getWorkTime(this);
+////        throw new Error("Not supported yet."); //not supported by WorkSlot
+////    }
+//    @Override
+//    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//</editor-fold>
 }

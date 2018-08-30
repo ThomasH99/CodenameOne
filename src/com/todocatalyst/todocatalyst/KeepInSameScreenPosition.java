@@ -61,7 +61,7 @@ class KeepInSameScreenPosition {
     KeepInSameScreenPosition() {
 //        this(findScrollableContainer());
 //        form = (MyForm) Display.getInstance().getCurrent();
-        Component cont = findScrollableContainer_N();
+        Component cont = findScrollableContainerN();
         if (cont != null) {
             this.scrollY = cont.getScrollY();
         }
@@ -308,8 +308,8 @@ class KeepInSameScreenPosition {
      *
      * @return the found scrollableContainer or null if none found
      */
-    private Component findScrollableContainer_N() {
-        if (Test.DEBUG) {
+    private Component findScrollableContainerN() {
+        if (Config.TEST) {
 //            Form currentForm = Display.getInstance().getCurrent();
         }
 //        if (true) {
@@ -363,53 +363,57 @@ class KeepInSameScreenPosition {
 //        return null;
     }
 
-    private Container findScrollableContainerOLD() {
-        if (Test.DEBUG) {
-            Form currentForm = Display.getInstance().getCurrent();
-        }
-        if (newComponent != null) {
-            return getScrollableContainer(newComponent);
-        } else { //we didn't find newComponent so must find the scrollable container in some other way
-            Container scrollableCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y 
-            if (Test.DEBUG) {
-                Container parent = scrollableCont.getParent();
-            }
-            if (scrollableCont.isScrollableY()) {
-                return scrollableCont;
-            } else {
-                //is the ContentPane a BorderLayout with a scrollable CENTER?
-                Layout layout = scrollableCont.getLayout();
-                if (layout instanceof BorderLayout) {
-                    Component centerComp = ((BorderLayout) layout).getCenter();
-                    if (centerComp instanceof Container && centerComp.isScrollableY()) {
-//                        scrollableCont = ((Container) centerComp); //if usual construction with scrollable center container
-                        return ((Container) centerComp); //if usual construction with scrollable center container
-                    }
-                }
-            }
-            return null;
-        }
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Container findScrollableContainerOLD() {
+//        if (Config.TEST) {
+//            Form currentForm = Display.getInstance().getCurrent();
+//        }
+//        if (newComponent != null) {
+//            return getScrollableContainer(newComponent);
+//        } else { //we didn't find newComponent so must find the scrollable container in some other way
+//            Container scrollableCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y
+//            if (Config.TEST) {
+//                Container parent = scrollableCont.getParent();
+//            }
+//            if (scrollableCont.isScrollableY()) {
+//                return scrollableCont;
+//            } else {
+//                //is the ContentPane a BorderLayout with a scrollable CENTER?
+//                Layout layout = scrollableCont.getLayout();
+//                if (layout instanceof BorderLayout) {
+//                    Component centerComp = ((BorderLayout) layout).getCenter();
+//                    if (centerComp instanceof Container && centerComp.isScrollableY()) {
+////                        scrollableCont = ((Container) centerComp); //if usual construction with scrollable center container
+//return ((Container) centerComp); //if usual construction with scrollable center container
+//                    }
+//                }
+//            }
+//            return null;
+//        }
+//    }
+//</editor-fold>
 
-    private static Container findScrollableContainerStatic() {
-        if (Test.DEBUG) {
-            Form currentForm = Display.getInstance().getCurrent();
-        }
-        Container scrollCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y 
-        if (Test.DEBUG) {
-            Container parent = scrollCont.getParent();
-        }
-        if (!scrollCont.isScrollableY()) {
-            Layout layout = scrollCont.getLayout();
-            if (layout instanceof BorderLayout) {
-                Component centerComp = ((BorderLayout) layout).getCenter();
-                if (centerComp instanceof Container && centerComp.isScrollableY()) {
-                    scrollCont = ((Container) centerComp); //if usual construction with scrollable center container
-                }
-            }
-        }
-        return scrollCont;
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private static Container findScrollableContainerStatic() {
+//        if (Test.DEBUG) {
+//            Form currentForm = Display.getInstance().getCurrent();
+//        }
+//        Container scrollCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y
+//        if (Test.DEBUG) {
+//            Container parent = scrollCont.getParent();
+//        }
+//        if (!scrollCont.isScrollableY()) {
+//            Layout layout = scrollCont.getLayout();
+//            if (layout instanceof BorderLayout) {
+//                Component centerComp = ((BorderLayout) layout).getCenter();
+//                if (centerComp instanceof Container && centerComp.isScrollableY()) {
+//                    scrollCont = ((Container) centerComp); //if usual construction with scrollable center container
+//                }
+//            }
+//        }
+//        return scrollCont;
+//    }
+//</editor-fold>
 
     /**
      * call after the new Container has been laid out/revalidate()
@@ -434,7 +438,7 @@ class KeepInSameScreenPosition {
 //                }
 //            }
 //</editor-fold>
-                Component scrollCont = findScrollableContainer_N();
+                Component scrollCont = findScrollableContainerN();
                 if (scrollCont != null) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    scrollCont.setScrollY(scrollY - relScroll);

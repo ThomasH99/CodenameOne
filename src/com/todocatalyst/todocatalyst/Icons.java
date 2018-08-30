@@ -65,7 +65,7 @@ public class Icons {
 
     //TIMER
 //    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, toolBarStyle);
-    static Image iconTimerSymbolToolbarStyle(){return makeT(FontImage.MATERIAL_TIMER_OFF);}
+    static Image iconTimerSymbolToolbarStyle(){return makeT(FontImage.MATERIAL_TIMER);}
 //    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand"));
     final static Image iconTimerSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, labelStyle);
     static Image iconTimerOffToolbarStyle(){return makeT(FontImage.MATERIAL_TIMER_OFF);}

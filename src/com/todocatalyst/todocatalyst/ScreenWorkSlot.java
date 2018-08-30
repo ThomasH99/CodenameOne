@@ -254,27 +254,28 @@ public class ScreenWorkSlot extends MyForm {
         repeatRuleButton.setCommand(repeatRuleEditCmd);
         repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule() != null ? workSlot.getRepeatRule().toString() : null, "")); //"<click to make task/project repeat>"
 
-        if (false) {
-            MyTextArea owner = new MyTextArea(Item.BELONGS_TO, 20, TextArea.ANY, parseIdMap2, () -> {
-                Object ownerObj = workSlot.getOwner();
-                String ownerText = ""; // = item.getOwner() != null ? ((ItemAndListCommonInterface) item.getOwner()).getText() : ""; //TODO 
-                if (ownerObj != null) {
-                    if (workSlot.getOwner() instanceof Item) {
-                        ownerText = Item.PROJECT + ": " + ((Item) ownerObj).getText(); //TODO only call top-level projects for "Project"? 
-                    } else if (workSlot.getOwner() instanceof Category) {
-                        ownerText = Category.CATEGORY + ": " + ((Category) ownerObj).getText();
-                    } else if (workSlot.getOwner() instanceof ItemList) {
-                        ownerText = ItemList.ITEM_LIST + ": " + ((ItemList) ownerObj).getText();
-                    }
-                }
-                return ownerText;
-            },
-                    (d) -> {
-                        //TODO implement editing of owner directly (~Move to another project or list)
-                    });
-            owner.setEditable(false);
-        }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            MyTextArea owner = new MyTextArea(Item.BELONGS_TO, 20, TextArea.ANY, parseIdMap2, () -> {
+//                Object ownerObj = workSlot.getOwner();
+//                String ownerText = ""; // = item.getOwner() != null ? ((ItemAndListCommonInterface) item.getOwner()).getText() : ""; //TODO
+//                if (ownerObj != null) {
+//                    if (ownerObj instanceof Item) {
+//                        ownerText = Item.PROJECT + ": " + ((Item) ownerObj).getText(); //TODO only call top-level projects for "Project"?
+//                    } else if (ownerObj instanceof Category) {
+//                        ownerText = Category.CATEGORY + ": " + ((Category) ownerObj).getText();
+//                    } else if (ownerObj instanceof ItemList) {
+//                        ownerText = ItemList.ITEM_LIST + ": " + ((ItemList) ownerObj).getText();
+//                    }
+//                }
+//                return ownerText;
+//            },
+//                    (d) -> {
+//                        //TODO implement editing of owner directly (~Move to another project or list)
+//                    });
+//            owner.setEditable(false);
+//        }
+//</editor-fold>
         Object ownerObj = workSlot.getOwner();
         String ownerText = ""; // = item.getOwner() != null ? ((ItemAndListCommonInterface) item.getOwner()).getText() : ""; //TODO 
         if (ownerObj != null) {
@@ -310,7 +311,8 @@ public class ScreenWorkSlot extends MyForm {
             ItemList itemList = new ItemList(workSlot.getItemsInWorkSlot());
             Button editSubtasksFullScreen = new Button();
             editSubtasksFullScreen.setCommand(MyReplayCommand.create("ShowTasksInWorkSlot", items.size() + " tasks", null, (e) -> {
-                new ScreenListOfItems("Tasks in WorkSlot", itemList, ScreenWorkSlot.this, (iList) -> {
+//                new ScreenListOfItems("Tasks in WorkSlot", itemList, ScreenWorkSlot.this, (iList) -> {
+                new ScreenListOfItems("Tasks in WorkSlot", ()->new ItemList(workSlot.getItemsInWorkSlot()), ScreenWorkSlot.this, (iList) -> {
 //                        item.setItemList(subtaskList);
 //                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        myForm.refreshAfterEdit(); //necessary to update sum of subtask effort

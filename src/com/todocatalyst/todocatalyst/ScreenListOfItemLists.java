@@ -15,6 +15,7 @@ import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
+import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
 import java.util.HashSet;
 import java.util.List;
@@ -263,6 +264,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                }
 //            }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
 ////                return !(draggedObject.getDragAndDropObject() instanceof CategoryList) && draggedObject.getDragAndDropObject() instanceof ItemList
@@ -271,35 +273,38 @@ public class ScreenListOfItemLists extends MyForm {
 
 //            @Override
 //            public ItemAndListCommonInterface getDragAndDropList() {
-////                return ((ItemList) getDragAndDropObject()).getOwnerList().getList(); //returns the owner of 
-//                return itemList.getOwner(); //returns the owner of 
+////                return ((ItemList) getDragAndDropObject()).getOwnerList().getList(); //returns the owner of
+//                return itemList.getOwner(); //returns the owner of
 //            }
-
 //            @Override
 //            public List getDragAndDropSubList() {
 ////                return getDragAndDropList(); //returns the list of subtasks
 //                return itemList.getList();
 //            }
-
+//</editor-fold>
             @Override
             public ItemAndListCommonInterface getDragAndDropObject() {
                 return itemList;
             }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            public void saveDragged() {
 //                DAO.getInstance().save(itemList);
 //            }
+//</editor-fold>
 
         }; //use filtered/sorted ItemList for Timer
-                swipCont.putClientProperty("element", itemList);
+        swipCont.putClientProperty("element", itemList);
 
-        if (Test.DEBUG) swipCont.setName(itemList.getText());
+        if (Config.TEST) {
+            swipCont.setName(itemList.getText());
+        }
 
         if (keepPos != null) {
             keepPos.testItemToKeepInSameScreenPosition(itemList, swipCont);
         }
 
+        Button subTasksButton = new Button();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //EDIT LIST
 //        Button editItemButton = new Button();// {
@@ -339,11 +344,24 @@ public class ScreenListOfItemLists extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, new SpanLabel(itemList.getText()));
 //        cont.addComponent(BorderLayout.CENTER, new Label(itemList.getText()));
 //</editor-fold>
-//        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText()+(itemList.getWorkSlotList()!=null?"#":""), swipCont, () -> true); //D&D
-        WorkSlotList wSlots = itemList.getWorkSlotList(false);
-//        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotList(false).size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
-        MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (wSlots != null && wSlots.size() > 0 ? "[W]" : ""), 
-                swipCont, () -> true); //D&D
+//        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText()+(itemList.getWorkSlotListN()!=null?"#":""), swipCont, () -> true); //D&D
+        WorkSlotList wSlots = itemList.getWorkSlotListN(false);
+//        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotListN(false).size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
+        MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText() 
+                + (Config.TEST && wSlots != null && wSlots.size() > 0 ? "[W]" : ""),
+                //                swipCont, () -> true); //D&D
+                swipCont, () -> {
+//                    boolean enabled = ((MyForm)get.isDragAndDropEnabled();
+                    boolean enabled = ((MyForm) mainCont.getComponentForm()).isDragAndDropEnabled();
+                    if (enabled && subTasksButton != null) {
+                        Object e = swipCont.getClientProperty(KEY_EXPANDED);
+                        if (e != null && e.equals("true")) { //                            subTasksButton.getCommand().actionPerformed(null);
+                            subTasksButton.pressed();//simulate pressing the button
+                            subTasksButton.released(); //trigger the actionLIstener to collapse
+                        }
+                    }
+                    return enabled;
+                }); //D&D
 
         mainCont.addComponent(BorderLayout.CENTER, itemListLabel);
 
@@ -357,7 +375,7 @@ public class ScreenListOfItemLists extends MyForm {
                 f.setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllElementsInSublist((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
 //                new ScreenListOfItems(itemList.getText(), itemList, ScreenListOfItemLists.this, (iList) -> {
-                new ScreenListOfItems(itemList.getText(), itemList, (MyForm) mainCont.getComponentForm(), (iList) -> {
+                new ScreenListOfItems(itemList.getText(), () -> itemList, (MyForm) mainCont.getComponentForm(), (iList) -> {
                     if (true) {
 //                            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
                         f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
@@ -386,7 +404,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                                itemList.addItem(newItemList);
 //                            }).show();
 //</editor-fold>
-                }).show();
+                }, 0).show();
             }
             )
             );
@@ -405,19 +423,19 @@ public class ScreenListOfItemLists extends MyForm {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long remaining = itemList.getRemainingEffort();
 ////        long estimated = itemList.getEstimatedEffort();
-//        long workTime = itemList.getWorkSlotList().getWorkTimeSum();
+//        long workTime = itemList.getWorkSlotListN().getWorkTimeSum();
 ////        east.add(new Label("R"+MyDate.formatTimeDuration(remaining)+"E"+MyDate.formatTimeDuration(estimated)+"W"+MyDate.formatTimeDuration(workTime)));
 //        east.add(new Label("R"+MyDate.formatTimeDuration(remaining)+"W"+MyDate.formatTimeDuration(workTime)));
 //</editor-fold>
         //EXPAND list
         int numberItems;
-        WorkSlotList workSlots = itemList.getWorkSlotList();
-        long workTimeSumMillis = workSlots != null ? itemList.getWorkSlotList().getWorkTimeSum() : 0;
+        WorkSlotList workSlots = itemList.getWorkSlotListN();
+        long workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;
         if (true || !statisticsMode) {
             numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
             assert !statisticsMode || numberItems > 0; // the list should only exist in statistics mode if it is not empty
             if (numberItems > 0) {
-                Button subTasksButton = new Button();
+//                Button subTasksButton = new Button();
                 Command expandSubTasks = new Command("[" + numberItems + "]");// {
                 subTasksButton.setCommand(expandSubTasks);
 //            subTasksButton.setIcon(Icons.get().iconShowMoreLabelStyle);
@@ -442,12 +460,12 @@ public class ScreenListOfItemLists extends MyForm {
         if (!statisticsMode) {
             long remainingEffort = itemList.getRemainingEffort();
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        long workTime = itemList.getWorkSlotList().getWorkTimeSum();
+//        long workTime = itemList.getWorkSlotListN().getWorkTimeSum();
 //        if (remainingEffort != 0) {
 //            east.addComponent(new Label(MyDate.formatTimeDuration(remainingEffort)));
 //        }
 
-//        List<WorkSlot> workslots = itemList.getWorkSlotList();
+//        List<WorkSlot> workslots = itemList.getWorkSlotListN();
 //        long workTimeSumMillis = WorkSlot.sumWorkSlotList(workslots);
 //</editor-fold>
             east.addComponent(new Label((remainingEffort != 0 ? MyDate.formatTimeDuration(remainingEffort) : "")
@@ -551,13 +569,11 @@ public class ScreenListOfItemLists extends MyForm {
 ////                return ((ItemList) getDragAndDropObject()).getOwnerList().getList(); //returns the owner of 
 //                return itemList.getOwner(); //returns the owner of 
 //            }
-
 //            @Override
 //            public List getDragAndDropSubList() {
 ////                return getDragAndDropList(); //returns the list of subtasks
 //                return itemList.getList();
 //            }
-
             @Override
             public ItemAndListCommonInterface getDragAndDropObject() {
                 return itemList;
@@ -567,14 +583,13 @@ public class ScreenListOfItemLists extends MyForm {
 //            public void saveDragged() {
 //                DAO.getInstance().save(itemList);
 //            }
-
         }; //use filtered/sorted ItemList for Timer
 
         if (keepPos != null) {
             keepPos.testItemToKeepInSameScreenPosition(itemList, swipCont);
         }
 
-        MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotList(false).size() > 0 ? "%" : ""), 
+        MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotListN(false).size() > 0 ? "%" : ""),
                 swipCont, () -> true); //D&D
 
         mainCont.addComponent(BorderLayout.CENTER, itemListLabel);
@@ -583,8 +598,8 @@ public class ScreenListOfItemLists extends MyForm {
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
         //EXPAND list
         int numberItems;
-        WorkSlotList workSlots = itemList.getWorkSlotList();
-        long workTimeSumMillis = workSlots != null ? itemList.getWorkSlotList().getWorkTimeSum() : 0;
+        WorkSlotList workSlots = itemList.getWorkSlotListN();
+        long workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;
         numberItems = itemList.getNumberOfItems(false, true);
         if (numberItems > 0) {
             Button subTasksButton = new Button();

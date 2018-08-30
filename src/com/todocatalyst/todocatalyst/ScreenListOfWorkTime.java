@@ -34,7 +34,7 @@ public class ScreenListOfWorkTime extends MyForm {
     static String SCREEN_TITLE = "Work time details: ";
     private ItemAndListCommonInterface owner;
 
-    ScreenListOfWorkTime(String nameOfOwner, WorkTime workTime, MyForm previousForm) {
+    ScreenListOfWorkTime(String nameOfOwner, WorkTimeSlices workTime, MyForm previousForm) {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm, () -> updateItemListOnDone.update(workTime));
         super(SCREEN_TITLE + nameOfOwner, previousForm, () -> {
@@ -58,22 +58,26 @@ public class ScreenListOfWorkTime extends MyForm {
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
 
-    protected void buildContentPaneForWorkSlotList(WorkTime workTime) {
+    protected void buildContentPaneForWorkSlotList(WorkTimeSlices workTime) {
 //        Container cont =  new Container(BoxLayout.y());
         Container cont = getContentPane();
         cont.removeAll();
-        for (WorkSlotSlice workSlice : workTime.getWorkSlotSlices()) {
-            if (false && workSlice.getDuration() == 0) { //don't filter these since they are used for 
-                continue;
-            }
-            Container sliceCont = new Container(new FlowLayout());
-            sliceCont
-                    .add(new Label((workSlice.workSlot.getOwner().getText()) + " "
-                            + MyDate.formatDateTimeNew(new Date(workSlice.getStartTime())) + "-"
-                            + MyDate.formatTimeNew(new Date(workSlice.getEndTime()))));
+        if (workTime != null) {
+            for (WorkSlotSlice workSlice : workTime.getWorkSlotSlices()) {
+                if (false && workSlice.getDuration() == 0) { //don't filter these since they are used for 
+                    continue;
+                }
+                Container sliceCont = new Container(new FlowLayout());
+                sliceCont
+                        .add(new Label((workSlice.workSlot.getOwner().getText()) + " "
+                                + MyDate.formatDateTimeNew(new Date(workSlice.getStartTime())) + "-"
+                                + MyDate.formatTimeNew(new Date(workSlice.getEndTime()))));
 //                    .add(new Label(MyDate.formatDateNew(workSlice.getStartTime())))
 //                    .add(new Label(MyDate.formatTimeDuration(workSlice.getDurationInMillis())));
-            cont.add(sliceCont);
+                cont.add(sliceCont);
+            }
+        } else {
+            cont.add("No workslots**");
         }
 //        return cont;
     }

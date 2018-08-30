@@ -132,7 +132,7 @@ public class ScreenStatistics extends MyForm {
     private void reloadData() {
         Date startDate = new Date(System.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
         Date endDate = new Date();
-//        workSlots = DAO.getInstance().getWorkSlots(startDate, endDate);
+//        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
         workSlots = DAO.getInstance().getWorkSlots(startDate);
         itemsSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate);
 //        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
@@ -653,7 +653,7 @@ public class ScreenStatistics extends MyForm {
 //        accr.addContent("Item3", BoxLayout.encloseY(new Label("Label"), new TextField(),
 //                new Button("Button"), new CheckBox("CheckBox")));
 //
-////        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText()+(itemList.getWorkSlotList()!=null?"#":""), swipCont, () -> true); //D&D
+////        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText()+(itemList.getWorkSlotListN()!=null?"#":""), swipCont, () -> true); //D&D
 //        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText(), swipCont, () -> true); //D&D
 //
 //        cont.addComponent(BorderLayout.CENTER, itemLabel);
@@ -735,11 +735,11 @@ public class ScreenStatistics extends MyForm {
 ////            east.addComponent(new Label(MyDate.formatTimeDuration(remainingEffort)));
 ////        }
 //
-////        List<WorkSlot> workslots = itemList.getWorkSlotList();
-//        WorkSlotList workslots = itemList.getWorkSlotList();
+////        List<WorkSlot> workslots = itemList.getWorkSlotListN();
+//        WorkSlotList workslots = itemList.getWorkSlotListN();
 //        long sum = 0;
 //        long now = System.currentTimeMillis();
-////        List<WorkSlot> workslots2 = itemList.getWorkSlotList();
+////        List<WorkSlot> workslots2 = itemList.getWorkSlotListN();
 ////        for (WorkSlot ws:workslots2) {
 ////            sum+=ws.getDuration(ws.getDurationAdjusted(now));
 ////        }

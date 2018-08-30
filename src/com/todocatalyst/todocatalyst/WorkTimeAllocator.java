@@ -104,35 +104,35 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
      * and added to the WorkSlotList (and then available via
      */
 //    private WorkSlotList workSlots;// = new ItemList(); //lazy
-    private WorkTime workTime;// = new ItemList(); //lazy
+    private WorkTimeSlices workTime;// = new ItemList(); //lazy
     private List<ItemAndListCommonInterface> itemsSortedFiltered; //**
-    List<WorkTime> workTimeCache = new ArrayList();
+    List<WorkTimeSlices> workTimeCache = new ArrayList();
     private boolean cacheActiveXXX = true;
-    private ItemAndListCommonInterface owner;// = new ItemList(); //lazy
+    private ItemAndListCommonInterface ownerOrCategory;// = new ItemList(); //lazy
     private int largestOngoingIndex = Integer.MAX_VALUE; //use MAX to avoid that first call falsely looks like a illegal recursion
 //    private boolean log = false;
 //    private int lastIndex = -1; //use MAX to avoid that first call falsely looks like a illegal recursion
 
 //    private Hashtable<ItemAndListCommonInterface, WorkTimeInfo> workSlotInfoHashTable; // = new Hashtable();
 //    WorkTimeDefinition(List<ItemAndListCommonInterface> listOfItemsOrItemListsFilteredSorted, WorkSlotList workSlots) {
-//    WorkTimeAllocator(List<ItemAndListCommonInterface> listOfItemsOrItemListsFilteredSorted, WorkTime workTime, ItemAndListCommonInterface owner) {
-    WorkTimeAllocator(WorkTime workTime, ItemAndListCommonInterface owner) {
+//    WorkTimeAllocator(List<ItemAndListCommonInterface> listOfItemsOrItemListsFilteredSorted, WorkTimeSlices workTime, ItemAndListCommonInterface owner) {
+    WorkTimeAllocator(WorkTimeSlices workTime, ItemAndListCommonInterface ownerOrCategory) {
 //        this.items = listOfItemsOrItemListsFilteredSorted;
-        this.itemsSortedFiltered = (List<ItemAndListCommonInterface>) owner.getList();
+        this.itemsSortedFiltered = (List<ItemAndListCommonInterface>) ownerOrCategory.getList();
 //        this.orgItemOrList = orgItemOrList;
         this.workTime = workTime;
-        this.owner = owner;
+        this.ownerOrCategory = ownerOrCategory;
 //        init();
 //        workSlotInfoList = new ArrayList();
 //        workSlotInfoHashTable = new Hashtable();
     }
 
     public String toString() {
-        return "WorkTimeAllocator for owner:" + (owner != null ? (owner.getText() + ", workTime= " + workTime.toString()) : "noOwner");
+        return "WorkTimeAllocator for owner:" + (ownerOrCategory != null ? (ownerOrCategory.getText() + ", workTime= " + workTime.toString()) : "noOwner");
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    WorkTimeDefinition(WorkTime workTime) {
+//    WorkTimeDefinition(WorkTimeSlices workTime) {
 //        this.items = listOfItemsOrItemListsFilteredSorted;
 ////        this.orgItemOrList = orgItemOrList;
 //        this.workSlots = workSlots;
@@ -152,15 +152,18 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
      * WorkSlots start at the same time, we use the one with the longest
      * duration and ignore the other ones.
      *
+     * @param item
+     * @param remainingDuration
      * @param duration
+     * @return 
      */
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    private WorkTime calculateWorkTime(WorkTime prevWorkTime) {
+//    private WorkTimeSlices calculateWorkTime(WorkTimeSlices prevWorkTime) {
 //        return calculateWorkTime(prevWorkTime.getLastWorkSlotIndex(), prevWorkTime.getFinishTime(), prevWorkTime.getRemainingDuration());
 //    }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    private WorkTime calculateWorkTime(int workSlotIndex, long startTime, long remainingDuration) {
+//    private WorkTimeSlices calculateWorkTime(int workSlotIndex, long startTime, long remainingDuration) {
 ////        long startTime = Long.MIN_VALUE;
 //        long endTime = Long.MIN_VALUE;
 //        List<WorkSlot> usedWorkSlots = null;
@@ -177,7 +180,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //                startTime = workSlot.getStartAdjusted();
 //                startTimeCheckedAgainstFirstValidWorkSLot = true;
 //            }
-////            startTime = Math.max(startTime, workSlot.getStartAdjusted()); //not needed! If workSlot.startTime is smaller than startTime, it will simply be ignored in WorkTime
+////            startTime = Math.max(startTime, workSlot.getStartAdjusted()); //not needed! If workSlot.startTime is smaller than startTime, it will simply be ignored in WorkTimeSlices
 //            if (startTime + remainingDuration <= workSlot.getEndTime()) { //duration is fully covered within current workSlot
 //                endTime = startTime + remainingDuration;
 //                remainingDuration = 0;
@@ -191,11 +194,11 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //            }
 //            usedWorkSlots.add(workSlot);
 //        }
-//        return new WorkTime(usedWorkSlots, startTime, endTime, remainingDuration, null, workSlotIndex);
+//        return new WorkTimeSlices(usedWorkSlots, startTime, endTime, remainingDuration, null, workSlotIndex);
 //    }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    private WorkTime calculateWorkTimeOLD(int workSlotIndex, long startTime, long remainingDuration) {
+//    private WorkTimeSlices calculateWorkTimeOLD(int workSlotIndex, long startTime, long remainingDuration) {
 ////        long startTime = Long.MIN_VALUE;
 //        long endTime = Long.MIN_VALUE;
 //        List<WorkSlot> usedWorkSlots = null;
@@ -212,7 +215,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //                startTime = workSlot.getStartAdjusted();
 //                startTimeCheckedAgainstFirstValidWorkSLot = true;
 //            }
-////            startTime = Math.max(startTime, workSlot.getStartAdjusted()); //not needed! If workSlot.startTime is smaller than startTime, it will simply be ignored in WorkTime
+////            startTime = Math.max(startTime, workSlot.getStartAdjusted()); //not needed! If workSlot.startTime is smaller than startTime, it will simply be ignored in WorkTimeSlices
 //            if (startTime + remainingDuration <= workSlot.getEndTime()) { //duration is fully covered within current workSlot
 //                endTime = startTime + remainingDuration;
 //                remainingDuration = 0;
@@ -226,16 +229,16 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //            }
 //            usedWorkSlots.add(workSlot);
 //        }
-//        return new WorkTime(usedWorkSlots, startTime, endTime, remainingDuration, null, workSlotIndex);
+//        return new WorkTimeSlices(usedWorkSlots, startTime, endTime, remainingDuration, null, workSlotIndex);
 //    }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    private WorkTime getWorkTimeImpl(int itemIndex, long finishTime) {
+//    private WorkTimeSlices getWorkTimeImpl(int itemIndex, long finishTime) {
 ////        long finishTime; // = MyDate.MIN_DATE;
 //        Integer startWorkSlotIndex; // = 0; //Integer so that getWorkTimeFromSlots can return update workSlots index
 //
 //        if (itemIndex > 0) {
-//            WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1); //recurse
+//            WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1); //recurse
 //            finishTime = prevWorkTime.getFinishTime();
 //            startWorkSlotIndex = prevWorkTime.getLastWorkSlotIndex();
 //        } else {
@@ -244,7 +247,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //        }
 //
 ////        return calculateWorkTime(startWorkSlotIndex, finishTime, items.get(itemIndex).getRemainingEffort());
-//        return workTime.getAllocatedWorkTime(startWorkSlotIndex, finishTime, items.get(itemIndex).getRemainingEffort());
+//        return workTime.getAllocatedWorkTimeN(startWorkSlotIndex, finishTime, items.get(itemIndex).getRemainingEffort());
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////        long endTime = Long.MIN_VALUE;
 ////        List<WorkSlot> usedWorkSlots = new ArrayList();
@@ -265,24 +268,25 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 ////            }
 ////            usedWorkSlots.add(workSlot);
 ////        }
-////        return new WorkTime(workSlots, startTime, endTime, remainingDuration);
+////        return new WorkTimeSlices(workSlots, startTime, endTime, remainingDuration);
 ////</editor-fold>
 //    }
 //</editor-fold>
-    public WorkTime getAllocatedWorkTime(ItemAndListCommonInterface item, long remainingDuration) {
+    public WorkTimeSlices getAllocatedWorkTime(ItemAndListCommonInterface item, long remainingDuration) {
         int itemIndex = itemsSortedFiltered.indexOf(item);
-        if (itemIndex < 0 || Config.TEST) {
-            ASSERT.that(itemIndex >= 0, "WorkTimeAllocator.getAllocatedWorkTime: item=" + item
-                    + " not found, owner=" + owner
-                    + " itemsSortedFiltered=" + MyForm.getListAsCommaSeparatedString(itemsSortedFiltered, true)
-                    + " owner.getList=" + MyForm.getListAsCommaSeparatedString((List<ItemAndListCommonInterface>) owner.getList(), true)
-            );
+        if (false && (itemIndex < 0 || Config.TEST)) {
+            assert itemIndex >= 0 : "WorkTimeAllocator.getAllocatedWorkTime: item=" + item
+                    + " not found, owner=" + ownerOrCategory + (ownerOrCategory instanceof Category ? "[CAT]" : "")
+                    + ", itemsSortedFiltered=" + MyForm.getListAsCommaSeparatedString(itemsSortedFiltered, true)
+                    + " owner.getList=" + MyForm.getListAsCommaSeparatedString((List<ItemAndListCommonInterface>) ownerOrCategory.getList(), true);
         }
-//        if (itemIndex >= 0) {
-        return getAllocatedWorkTime(itemIndex, remainingDuration);
-//        } else {
-//            return new WorkTime();
-//        }
+        if (itemIndex >= 0) {
+            return getAllocatedWorkTime(itemIndex, remainingDuration);
+        } else if (item == ownerOrCategory) {
+            return new WorkTimeSlices(item.getWorkSlotListN());
+        } else {
+            return new WorkTimeSlices();
+        }
     }
 
     /**
@@ -291,18 +295,18 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
      * @param item
      * @return
      */
-    public WorkTime allocateWorkTimeXXX(ItemAndListCommonInterface item) {
+    public WorkTimeSlices allocateWorkTimeXXX(ItemAndListCommonInterface item) {
         int itemIndex = itemsSortedFiltered.indexOf(item);
-//        return getAllocatedWorkTime(itemIndex, item.getRemainingEffort());
-        return getAllocatedWorkTime(itemIndex, item.getWorkTimeRequiredFromProvider(owner));
+//        return getAllocatedWorkTimeN(itemIndex, item.getRemainingEffort());
+        return getAllocatedWorkTime(itemIndex, item.getWorkTimeRequiredFromProvider(ownerOrCategory));
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    public WorkTime getAllocatedWorkTime(int itemIndex) {
+//    public WorkTimeSlices getAllocatedWorkTimeN(int itemIndex) {
 ////        ItemAndListCommonInterface item = items.get(itemIndex);
-////        return getAllocatedWorkTime(itemIndex, items.get(itemIndex).getRemainingEffort());
-////        return WorkTimeAllocator.this.getAllocatedWorkTime(itemIndex, items.get(itemIndex).getWorkTimeRequiredFromProvider(owner));
-//        return getAllocatedWorkTime(itemIndex, items.get(itemIndex).getWorkTimeRequiredFromProvider(owner));
+////        return getAllocatedWorkTimeN(itemIndex, items.get(itemIndex).getRemainingEffort());
+////        return WorkTimeAllocator.this.getAllocatedWorkTimeN(itemIndex, items.get(itemIndex).getWorkTimeRequiredFromProvider(owner));
+//        return getAllocatedWorkTimeN(itemIndex, items.get(itemIndex).getWorkTimeRequiredFromProvider(owner));
 //    }
 //</editor-fold>
     /**
@@ -313,19 +317,21 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
      * @param desiredDuration
      * @return null if no workTime allocated
      */
-    public WorkTime getAllocatedWorkTime(int itemIndex, long desiredDuration) {
-        if (Config.TEST) {
-            ASSERT.that(itemIndex >= 0, "WorkTimeAllocator.getAllocatedWorkTime called with negative itemIndex");
-            Log.p(owner + "." + "getAllocatedWorkTime(itemIndex=" + itemIndex + ", duration=" + desiredDuration + "), item=" + itemsSortedFiltered.get(itemIndex));
+    public WorkTimeSlices getAllocatedWorkTime(int itemIndex, long desiredDuration) {
+        if (Config.WORKTIME_TEST) {
+            assert itemIndex >= 0 : "WorkTimeAllocator.getAllocatedWorkTime called with negative itemIndex";
         }
-//            if (!cacheActive) return new WorkTime();
+        if (Config.WORKTIME_DETAILED_LOG) {
+            Log.p(ownerOrCategory + "." + "getAllocatedWorkTime(itemIndex=" + itemIndex + ", duration=" + desiredDuration + "), item=" + itemsSortedFiltered.get(itemIndex));
+        }
+//            if (!cacheActive) return new WorkTimeSlices();
         //if allocated work time is already calculated/cached return the old value
 //        if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
 //        if (itemIndex < workTimeCache.size()) {
         if (itemIndex >= workTimeCache.size()) { //need to calculate first
 //            return workTimeCache.get(itemIndex);
 //        } else {
-            WorkTime workT = null;
+            WorkTimeSlices workT = null;
             Item item;
             long itemDuration;
             for (int i = workTimeCache.size(), size = itemIndex; i <= size; i++) { //start missing cache item at workTimeCache.size(), 
@@ -333,7 +339,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
                 if (i == itemIndex) {
                     itemDuration = desiredDuration; //TODO!!! weird that desiredDuration is taken from parameter insted of using item.getWorkTimeRequiredFromProvider(owner)!!!
                 } else {
-                    itemDuration = item.getWorkTimeRequiredFromProvider(owner);
+                    itemDuration = item.getWorkTimeRequiredFromProvider(ownerOrCategory);
                 }
                 if (i == 0) {
 //                    workT = workTime.getWorkTime(desiredDuration);
@@ -342,9 +348,9 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //                        workTimeCache = new ArrayList<>();
 //                    }
                 } else {
-//                    WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
+//                    WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
                     Item previousItem = (Item) itemsSortedFiltered.get(i - 1);
-                    WorkTime prevWorkTime = getAllocatedWorkTime(i - 1, previousItem.getWorkTimeRequiredFromProvider(owner)); //recurse
+                    WorkTimeSlices prevWorkTime = getAllocatedWorkTime(i - 1, previousItem.getWorkTimeRequiredFromProvider(ownerOrCategory)); //recurse
                     workT = workTime.getWorkTime(prevWorkTime.getFinishTime(), itemDuration); //get slice! starting from end of previous slice
                 }
 //                if (cacheActive && workT != null) { //must cache even null values since cache is an array
@@ -354,17 +360,17 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         }
         return workTimeCache.get(itemIndex);
 //            if (workT == null) {
-//                workT = new WorkTime();
+//                workT = new WorkTimeSlices();
 //            }
 //            return workT; //returns the last value calculated (which is for itemIndex)
 //        }
 //<editor-fold defaultstate="collapsed" desc="comment">
-////        WorkTime workT;
+////        WorkTimeSlices workT;
 //        if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
 //            return workTimeCache.get(itemIndex);
 //        } else {
 //            if (itemIndex > 0) {
-//                WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1, itemsSortedFiltered.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
+//                WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1, itemsSortedFiltered.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
 //                workT = workTime.getWorkTime(prevWorkTime.getFinishTime(), desiredDuration); //get slice! starting from end of previous slice
 //            } else { //itemIndex == 0, allocate time to very first element in list and end recursion
 //                workT = workTime.getWorkTime(desiredDuration);
@@ -380,11 +386,11 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //</editor-fold>
     }
 
-    public WorkTime getAllocatedWorkTimeOLD4(int itemIndex, long desiredDuration) {
-        if (Config.TEST) {
-            Log.p(owner + "." + "getAllocatedWorkTime(itemIndex=" + itemIndex + ", duration=" + desiredDuration + "), item=" + itemsSortedFiltered.get(itemIndex));
+    public WorkTimeSlices getAllocatedWorkTimeOLD4(int itemIndex, long desiredDuration) {
+        if (Config.WORKTIME_DETAILED_LOG) {
+            Log.p(ownerOrCategory + "." + "getAllocatedWorkTime(itemIndex=" + itemIndex + ", duration=" + desiredDuration + "), item=" + itemsSortedFiltered.get(itemIndex));
         }
-        WorkTime workT;
+        WorkTimeSlices workT;
         if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
             return workTimeCache.get(itemIndex);
         } else {
@@ -394,8 +400,8 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //        if (owner instanceof Category && ((Category) owner).isOwnerOfItemInCategoryBeforeItem(itemIndex)) {
 //            ASSERT.that(false, "allocateWorkTime called with itemIndex=" + itemIndex + " with startIndex=" + largestOngoingIndex + " for owner=" + owner);
 ////                return null;
-////                return new WorkTime(xxx
-////            WorkTime pWorkTime = itemIndex > 0 ? getAllocatedWorkTime(itemIndex - 1) : workTime.getWorkTime(desiredDuration); //recurse
+////                return new WorkTimeSlices(xxx
+////            WorkTimeSlices pWorkTime = itemIndex > 0 ? getAllocatedWorkTimeN(itemIndex - 1) : workTime.getWorkTime(desiredDuration); //recurse
 ////            desiredDuration = 0; //force duration to 0 to allocate an empty workslice at the right place
 ////            workT = workTime.getWorkTime(pWorkTime.getFinishTime(), 0); //get empty slice starting from end of previous slice
 ////                return workTime.getWorkTime(finishTime, 0);
@@ -418,19 +424,19 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
             //</editor-fold>
             if (itemIndex > 0) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//            WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1); //recurse
-//                WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()); //recurse
-//                WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromOwner(owner)); //recurse
-//                    WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
+//            WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1); //recurse
+//                WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()); //recurse
+//                WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromOwner(owner)); //recurse
+//                    WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (desiredDuration == 0) {
-//                    WorkTime prevWorkTime_N = getAllocatedWorkTime(itemIndex - 1, 0); //recurse
-//                    return new WorkTime() //                    WorkTime prevWorkTime_N = WorkTimeAllocator.this.getAllocatedWorkTime(itemIndex - 1); //recurse
-//                WorkTime prevWorkTime = WorkTimeAllocator.this.getAllocatedWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
+//                    WorkTimeSlices prevWorkTime_N = getAllocatedWorkTimeN(itemIndex - 1, 0); //recurse
+//                    return new WorkTimeSlices() //                    WorkTimeSlices prevWorkTime_N = WorkTimeAllocator.this.getAllocatedWorkTimeN(itemIndex - 1); //recurse
+//                WorkTimeSlices prevWorkTime = WorkTimeAllocator.this.getAllocatedWorkTimeN(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
 //</editor-fold>
-//                WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1); //recurse
-                WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1, itemsSortedFiltered.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
+//                WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1); //recurse
+                WorkTimeSlices prevWorkTime = getAllocatedWorkTime(itemIndex - 1, itemsSortedFiltered.get(itemIndex - 1).getWorkTimeRequiredFromProvider(ownerOrCategory)); //recurse
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    long finishTime = prevWorkTime_N != null ? prevWorkTime_N.getFinishTime() : 0;
 //                    long finishTime;
@@ -443,13 +449,13 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //                return workT;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (false) {
-//                        workT = workTime.getWorkTime(getAllocatedWorkTime(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()).getFinishTime(), desiredDuration); //one line version
+//                        workT = workTime.getWorkTime(getAllocatedWorkTimeN(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()).getFinishTime(), desiredDuration); //one line version
 //                    }
 //            startWorkSlotIndex = prevWorkTime.getLastWorkSlotIndex();
 //</editor-fold>
             } else { //itemIndex == 0, allocate time to very first element in list and end recursion
 //                finishTime = MyDate.MIN_DATE;
-//                workT = workTime.getAllocatedWorkTime(MyDate.MIN_DATE, desiredDuration);
+//                workT = workTime.getAllocatedWorkTimeN(MyDate.MIN_DATE, desiredDuration);
                 workT = workTime.getWorkTime(desiredDuration);
 //                return workT;
 //            startWorkSlotIndex = 0; //Integer so that getWorkTimeFromSlots can return update workSlots index
@@ -459,7 +465,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
                 }
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
-//            WorkTime workT = workTime.getAllocatedWorkTime(itemIndex, remainingDuration);
+//            WorkTimeSlices workT = workTime.getAllocatedWorkTimeN(itemIndex, remainingDuration);
 //                if (workT!=null&&workTimeCache == null && cacheActive) {
 //            if (workTimeCache != null) {
 //                if (workT!=null&&cacheActive) {
@@ -481,7 +487,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         }
     }
 
-    public WorkTime getWorkTimeOLD(int itemIndex, long desiredDuration) {
+    public WorkTimeSlices getWorkTimeOLD(int itemIndex, long desiredDuration) {
         if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
             return workTimeCache.get(itemIndex);
         } else {
@@ -492,14 +498,14 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
                 if (largestOngoingIndex == -1) {
                     largestOngoingIndex = itemIndex;
                 }
-//            WorkTime workTime = getWorkTimeImpl(itemIndex, remainingDuration);
+//            WorkTimeSlices workTime = getWorkTimeImpl(itemIndex, remainingDuration);
 //            long finishTime;
-                WorkTime workT;
+                WorkTimeSlices workT;
                 if (itemIndex > 0) {
-//            WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1); //recurse
-//                WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()); //recurse
-//                WorkTime prevWorkTime = getAllocatedWorkTime(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromOwner(owner)); //recurse
-                    WorkTime prevWorkTime = WorkTimeAllocator.this.getAllocatedWorkTime(itemIndex - 1, itemsSortedFiltered.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
+//            WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1); //recurse
+//                WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1, items.get(itemIndex - 1).getRemainingEffort()); //recurse
+//                WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromOwner(owner)); //recurse
+                    WorkTimeSlices prevWorkTime = WorkTimeAllocator.this.getAllocatedWorkTime(itemIndex - 1, itemsSortedFiltered.get(itemIndex - 1).getWorkTimeRequiredFromProvider(ownerOrCategory)); //recurse
                     long finishTime = prevWorkTime.getFinishTime();
                     workT = workTime.getWorkTime(finishTime, desiredDuration);
                     if (false) {
@@ -508,11 +514,11 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //            startWorkSlotIndex = prevWorkTime.getLastWorkSlotIndex();
                 } else {
 //                finishTime = MyDate.MIN_DATE;
-//                workT = workTime.getAllocatedWorkTime(MyDate.MIN_DATE, desiredDuration);
+//                workT = workTime.getAllocatedWorkTimeN(MyDate.MIN_DATE, desiredDuration);
                     workT = workTime.getWorkTime(desiredDuration);
 //            startWorkSlotIndex = 0; //Integer so that getWorkTimeFromSlots can return update workSlots index
                 }
-//            WorkTime workT = workTime.getAllocatedWorkTime(itemIndex, remainingDuration);
+//            WorkTimeSlices workT = workTime.getAllocatedWorkTimeN(itemIndex, remainingDuration);
                 if (workTimeCache == null && cacheActiveXXX) {
                     workTimeCache = new ArrayList<>();
                 }
@@ -557,7 +563,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         //find first workTime that contains changedWorkSlot and delete/reset that and all following
         if (workTimeCache != null) {
             for (int i = 0, size = workTimeCache.size(); i < size; i++) {
-                WorkTime workTime = workTimeCache.get(i);
+                WorkTimeSlices workTime = workTimeCache.get(i);
                 for (int i2 = 0, size2 = workTime.getWorkSlotSlices().size(); i2 < size2; i2++) {
                     if (workTime.getWorkSlotSlices().get(i2).workSlot == changedWorkSlot) {
 //                        while (workTime.workSlotSlices.size() > i2) {
@@ -592,7 +598,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //    public void resetCachedValuesOnWorkSlotChange(int indexOfChangedWorkSlot) {
 //        if (workTimeCache != null) {
 //            for (int i = 0, size = workTimeCache.size(); i < size; i++) {
-//                WorkTime workTime = workTimeCache.get(i);
+//                WorkTimeSlices workTime = workTimeCache.get(i);
 //                if (workTime.getLastWorkSlotIndex() >= indexOfChangedWorkSlot) {
 //                    resetCache(workTime.getLastWorkSlotIndex());
 //                    break;
