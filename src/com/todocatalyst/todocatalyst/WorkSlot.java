@@ -748,7 +748,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     public String toString() {
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
-        return MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatTimeDuration(getDurationInMinutes()) + " " + getText() + (getOwner() != null ? " Owner:" + getOwner().getText() : "");
+        return MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatTimeDuration(getDurationInMinutes()*MyDate.MINUTE_IN_MILLISECONDS) + " " + getText() + (getOwner() != null ? " Owner:" + getOwner().getText() : "");
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1431,6 +1431,18 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return items;
     }
 
+    public String getWorkSlotAllocationsAsStringForTEST() {
+        ItemAndListCommonInterface owner = getOwner();
+        List<Item> items = new ArrayList<>();
+        if (owner != null) {
+            WorkTimeAllocator wta = owner.getWorkTimeAllocatorN();
+            if (wta != null) {
+                return wta.toString();
+            }
+        }
+        return "WorkSlotAllocation EMPTY";
+    }
+
     public long getUnallocatedTime() {
         if (getDurationAdjusted() == 0) {
             return 0;
@@ -1633,7 +1645,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    }
 //
 //    @Override
-//    public WorkTimeAllocator getWorkTimeDefinition() {
+//    public WorkTimeAllocator getWorkTimeAllocatorN() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
 //

@@ -113,7 +113,7 @@ public class DAO {
 //            cache.put(TemplateList.CLASS_NAME, parseObject.getObjectIdP());
             cache.put(TemplateList.CLASS_NAME, parseObject);
         }
-        
+
         //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
         if (parseObject instanceof WorkSlot) {
             cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
@@ -151,7 +151,7 @@ public class DAO {
             if (Config.TEST) {
 //                ASSERT.that(temp instanceof ParseObject, "getting a non-ParseObject from cache: returned obj=" + temp + ", objectId=" + parseObjectId);
 //            }
-                assert temp instanceof ParseObject: "getting a non-ParseObject from cache: returned obj=" + temp + ", objectId=" + parseObjectId;
+                assert temp instanceof ParseObject : "getting a non-ParseObject from cache: returned obj=" + temp + ", objectId=" + parseObjectId;
             }
             return (ParseObject) temp;
 //            }
@@ -602,7 +602,7 @@ public class DAO {
                 queryWorkSlots.whereLessThan(WorkSlot.PARSE_START_TIME, startOfTomorrow); //and starts before tomorrow
 //                queryWorkSlots.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
                 query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
-        
+
 //        setupItemQueryNoTemplatesLimit1000(queryDueToday);
 //        queryWorkSlots.whereDoesNotExist(WorkSlot.PARSE_CANCELLED); //don't fetchFromCacheOnly any templates
                 List<WorkSlot> resultsWorkSlots = queryWorkSlots.find();
@@ -1941,21 +1941,30 @@ public class DAO {
 
     /**
      * saves the list of ParseObjects in the background but in sequential order
-     * so it is guaranteed that eg. new ParseObjects are saved before the lists
+     * so it is guaranteed that eg new ParseObjects are saved before the lists
      * in which they are added.
      *
      * @param parseObjects
      */
-    public void saveInBackgroundSequential(ParseObject... parseObjects) {
+    public void saveInBackgroundSequential(List<ParseObject> parseObjects) {
 //        saveImpl(anyParseObject);
+        if (parseObjects.size() == 0) {
+            return;
+        }
         if (backgroundThread == null) {
             backgroundThread = EasyThread.start("DAO.backgroundSave");
         }
+        cacheList(parseObjects); //first cache all objects
         backgroundThread.run(() -> {
             for (ParseObject parseObject : parseObjects) {
-                saveImpl(parseObject);
+//                saveImpl(parseObject);
+                saveToParse(parseObject);
             }
         });
+    }
+
+    public void saveInBackgroundSequential(ParseObject... parseObjects) {
+        saveInBackgroundSequential(Arrays.asList(parseObjects));
     }
 
     /**
@@ -1993,6 +2002,14 @@ public class DAO {
         }
         if (saveToCache) {
             cachePut(anyParseObject);
+        }
+    }
+
+    private void saveToParse(ParseObject anyParseObject) {
+        try {
+            anyParseObject.save();
+        } catch (ParseException ex) {
+            Log.e(ex);
         }
     }
 
@@ -2140,7 +2157,7 @@ public class DAO {
                 Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
 //                Vector keys = cache.getKeysInCache();
                 for (Object key : workSlotKeys) {
-                    workSlot = (WorkSlot) cacheWorkSlots.get(key); 
+                    workSlot = (WorkSlot) cacheWorkSlots.get(key);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                Object o = cache.get(key);
 //                if (o instanceof WorkSlot) {

@@ -16,6 +16,8 @@ import com.todocatalyst.todocatalyst.MyDate;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
 import com.todocatalyst.todocatalyst.MyPrefs;
 import static com.todocatalyst.todocatalyst.Util.removeTrailingPrecedingSpacesNewLinesEtc;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 //import com.todocatalyst.todocatalyst.MyTree.MyTreeModel;
 //import com.todocatalyst.todocat.AlarmServer.AlarmObject;
 import java.util.ArrayList;
@@ -1125,6 +1127,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
+    returns true if work on this task has actually started (no matter what ItemStatus is returned, e.g. actualEffort>0 or some subtasks are marked done
+    @return 
+     */
+    public boolean hasWorkStarted() {
+        return getActualEffort() > 0 || (isProject() && getCountOfSubtasksWithStatus(true, Arrays.asList(ItemStatus.DONE, ItemStatus.ONGOING)) > 0); //TODO!!! ensure that ONGOING is true whenever there is actualeffort or subtasks done
+    }
+
+    /**
      * returns true if status==WAITING and WaitingTillDate is not reached yet
      * (if date is defined). Serves to hide waiting items until the date is
      * reached.
@@ -2082,6 +2092,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this);
         }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        try {
 //            //finally delete the item itself
 ////            DAO.getInstance().delete(this); //WON'T WORK since DAO cannot call super.delete() on Item
@@ -2090,6 +2101,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////            Log.getLogger(Item.class.getName()).log(Level.SEVERE, null, ex); //TODO!!!!!!
 //            Log.p(Item.class.getName() + "SEVERE " + ex); //TODO!!!!!!
 //        }
+//</editor-fold>
         //finally delete the item itself
         //ALARMS remove any active alarms
         AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
@@ -2102,6 +2114,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         //TODO: any other references to an item??
 /////////////////////////////////////////////////////
+//<editor-fold defaultstate="collapsed" desc="comment">
 ////        super.deleteRuleAndAllRepeatInstancesExceptThis(); //delete the list in DAO, call changelisteners
 //
 //        TimerServer.getInstance().stopTimerIfRunningForThisItem(this); //TODO!!!!: make TimerScreen a listener on the timed item to be notified if its deleted
@@ -2110,7 +2123,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        MyRepeatRule myRepeatRule = getRepeatRule();
 //        if (myRepeatRule != null) {
 ////            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this, (ItemList) getOwner());
-//            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we 
+//            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we
 //        }
 //        if (subitems != null) {
 //            subitems.deleteAllItemsInList(pushToCalendardOnCompleted);
@@ -2118,6 +2131,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        // TODO: remove any active alarms!!
 //        AlarmServer.getInstance().remove(this); //TODO!!!! should happen automatically via delete change event?
+//</editor-fold>
     }
 
     /**
@@ -3777,30 +3791,59 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * -> Ongoing; Created/Ongoing -> Waiting; Created/Ongoing/Waiting ->
      * Cancelled [don't cancel Done tasks]; Ongoing/Waiting/Done -> Created
      *
+      when all tasks are Done/Cancelled, and newStatus is Created/Ongoing/Waiting, the transitions are different.
+    Only Cancelled tasks will remain cancelled. Other tasks will return to Created (if no Actual), Ongoing (if Actual), or Waiting (if Actual)??
+ 
      *
      * @param newStatus
      * @param oldStatus
      * @return
      */
 //    public static boolean changeSubtaskStatus(int newStatus, int oldStatus) {
-    public static boolean shouldSubtaskStatusChange(ItemStatus newStatus, ItemStatus oldStatus) {
-        return (newStatus == ItemStatus.DONE && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING || oldStatus == ItemStatus.WAITING)) //NOT: DONE, CANCELLED
-                || (newStatus == ItemStatus.ONGOING && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.WAITING)) //NOT: ONGOING, DONE, CANCELLED
-                || (newStatus == ItemStatus.WAITING && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING)) //NOT: WAITING, DONE, CANCELLED
-                || (newStatus == ItemStatus.CANCELLED && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING || oldStatus == ItemStatus.WAITING)) //NOT: DONE, CANCELLED
-                || (newStatus == ItemStatus.CREATED && (oldStatus == ItemStatus.ONGOING || oldStatus == ItemStatus.WAITING || oldStatus == ItemStatus.DONE));  //NOT: CANCELLED
+    public static boolean shouldSubtaskStatusChange(ItemStatus newStatus, ItemStatus oldStatus, boolean changingFromDone) {
+        if (changingFromDone) {
+            return ((newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.WAITING || newStatus == ItemStatus.CREATED)
+                    && (oldStatus != ItemStatus.CANCELLED));
+        } else {
+            return (newStatus == ItemStatus.DONE && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING || oldStatus == ItemStatus.WAITING)) //NOT: DONE, CANCELLED
+                    //                || (newStatus == ItemStatus.ONGOING && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.WAITING)) //NOT: ONGOING, DONE, CANCELLED
+                    || (newStatus == ItemStatus.ONGOING && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.WAITING)) //NOT: ONGOING, DONE, CANCELLED
+                    || (newStatus == ItemStatus.WAITING && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING)) //NOT: WAITING, DONE, CANCELLED
+                    || (newStatus == ItemStatus.CANCELLED && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING || oldStatus == ItemStatus.WAITING)) //NOT: DONE, CANCELLED
+                    || (newStatus == ItemStatus.CREATED && (oldStatus == ItemStatus.ONGOING || oldStatus == ItemStatus.WAITING || oldStatus == ItemStatus.DONE));  //NOT: CANCELLED
+        }
     }
 
-    public boolean shouldSubtaskStatusChange(ItemStatus newStatus) {
-        return shouldSubtaskStatusChange(newStatus, getStatus());
-    }
+    /**
+    when all tasks are Done/Cancelled, and newStatus is Created/Ongoing/Waiting, the transitions are different.
+    Only Cancelled tasks will remain cancelled. Other tasks will return to Created (if no Actual), Ongoing (if Actual), or Waiting (if Actual)??
+    @param newStatus
+    @param oldStatus
+    @return 
+     */
+//    public static boolean shouldSubtaskStatusChangeWhenMarkingUndone(ItemStatus newStatus, ItemStatus oldStatus) {
+//        return ((newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.WAITING || newStatus == ItemStatus.CREATED)
+//                && (oldStatus != ItemStatus.CANCELLED));
+//    }
+//    public boolean shouldSubtaskStatusChange(ItemStatus newStatus) {
+//        return shouldSubtaskStatusChange(newStatus, getStatus());
+//    }
 
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus) {
         List list = getList();
         if (list == null || list.size() == 0) {
-            return shouldSubtaskStatusChange(newStatus) ? 1 : 0;
+            return shouldSubtaskStatusChange(newStatus,getStatus()) ? 1 : 0;
         } else {
             return ItemList.getNumberOfItemsThatWillChangeStatus(list, recurse, newStatus);
+        }
+    }
+
+    public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses) {
+        List list = getList();
+        if (list == null || list.size() == 0) {
+            return statuses.indexOf(getStatus()) >= 0 ? 1 : 0;
+        } else {
+            return ItemList.getCountOfSubtasksWithStatus(list, recurse, statuses);
         }
     }
 
@@ -3811,16 +3854,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param askConfirmation
      * @param forceSubtasksToStatus
      */
-    public void setStatusImpl(boolean topLevelTask, ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
+//    public void setStatusImpl(boolean topLevelTask, ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
+    public void setStatusImpl(boolean topLevelTask, ItemStatus newStatus) {
         ItemStatus previousStatus = getStatus();
         if (previousStatus != newStatus) { //if status has receiveChangeEvent:
 //            ItemStatus oldStatus = this.status;
 //            ItemStatus oldStatus = getStatus();
-            if (topLevelTask || shouldSubtaskStatusChange(newStatus, previousStatus)) {
+            if (topLevelTask || shouldSubtaskStatusChange(newStatus, previousStatus, topLevelTask && previousStatus == ItemStatus.DONE)) {
 //                status = newStatus;
                 setStatusSaveValue(newStatus);
             }
             if (false) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (forceSubtasksToStatus && getItemListSize() > 0) {
 //                    if (askConfirmation) {
 //                        int nbSubTasksDiffFromStatus = countTasksWhereStatusWillBeChanged(newStatus, forceSubtasksToStatus);
@@ -3839,6 +3884,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    obj.setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
 ////            }
 //                }
+//</editor-fold>
             } else {
 //                    public void setStatusImpl(boolean topLevelTask, Item.ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
 //                        for (int i = 0, size = getSize(); i < size; i++) {
@@ -3908,104 +3954,105 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    public void setStatusImplOLD(boolean topLevelTask, ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
-        ItemStatus previousStatus = getStatus();
-        if (previousStatus != newStatus) { //if status has receiveChangeEvent:
-//            ItemStatus oldStatus = this.status;
-//            ItemStatus oldStatus = getStatus();
-            if (topLevelTask || shouldSubtaskStatusChange(newStatus, previousStatus)) {
-//                status = newStatus;
-                setStatusSaveValue(newStatus);
-            }
-            if (false) {
-//                if (forceSubtasksToStatus && getItemListSize() > 0) {
-//                    if (askConfirmation) {
-//                        int nbSubTasksDiffFromStatus = countTasksWhereStatusWillBeChanged(newStatus, forceSubtasksToStatus);
-//                        int nbSubtasksToChangeWithoutConfirmation = Settings.getInstance().nbSubtasksToChangeStatusWithoutConfirmation.getInt();
-//                        if (nbSubTasksDiffFromStatus > 0 && (nbSubTasksDiffFromStatus <= nbSubtasksToChangeWithoutConfirmation
-//                                || (Dialog.show("Set " + nbSubTasksDiffFromStatus + " subtasks to " + Item.getStatusName(status) + "?",
-//                                        "Are you sure you want to set " + nbSubTasksDiffFromStatus + " subtasks to " + Item.getStatusName(status)
-//                                        + "?\nThis cannot be undone.", "OK", "Cancel")))) {
-//                            getItemList().setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
-//                        }
-//                    } else { //no need to ask for confirmation
-//                        getItemList().setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
-//                    }
-////            if (obj instanceof BaseItemOrList) {
-////                ((BaseItemOrList) obj).setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
-//                    obj.setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
-////            }
-//                }
-            } else {
-//                    public void setStatusImpl(boolean topLevelTask, Item.ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
-//                        for (int i = 0, size = getSize(); i < size; i++) {
-//                ItemList subtasks = getItemList();
-                List subtasks = getList();
-                for (Object itemOrList : subtasks) {
-                    ((ItemAndListCommonInterface) itemOrList).setStatus(newStatus);
-                }
-            }
-
-            //StartedOnDate SET:
-            if (getStartedOnDate() == 0 && (newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.DONE)) {
-//                setStartedOnDate(MyDate.getNow());
-                setStartedOnDate(System.currentTimeMillis());
-            }
-            //StartedOnDate RESET: not relevant, always keep the first set StartedOnDate
-
-            //CompletedDate: SET set to Now if changing to Done/Cancelled from other state
-            if ((previousStatus != ItemStatus.DONE && previousStatus != ItemStatus.CANCELLED)
-                    && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
-                //TODO!!!! should actual effort be reduced to zero?? No, any effort spend should be kept even for Cancelled tasks
-//                setCompletedDate(MyDate.getNow()); //UI: also use Completed date to store date when task was cancelled (for historical data)
-                setCompletedDate(System.currentTimeMillis()); //UI: also use Completed date to store date when task was cancelled (for historical data)
-            }
-            //CompletedDate: RESET if changing from Done/Cancelled to other state
-            //CompletedDate: set if changing to Done/Cancelled from other state, set to Now if changing to Done/Cancelled
-            if (getCompletedDate() != 0 && (previousStatus == ItemStatus.DONE || previousStatus == ItemStatus.CANCELLED)
-                    && (newStatus != ItemStatus.DONE && newStatus != ItemStatus.CANCELLED)) {
-                //if item changes from Done/Cancelled to some other value, then reset CompletedDate
-                setCompletedDate(0L);
-            }
-
-            //WaitingActivatedDate:
-            if (previousStatus != ItemStatus.WAITING && newStatus == ItemStatus.WAITING /*
-                     * && getWaitingLastActivatedDate() == 0L
-                     */) { //UI: always only save the last time the task was set Waiting //-only save the first setWaitingDate (TODO!!!: or is it more intuitive that it's the last, eg it set waiting by mistake?)
-//                setDateWhenSetWaiting(MyDate.getNow()); //always save
-                setDateWhenSetWaiting(System.currentTimeMillis()); //always save
-            } else if (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING /*
-                     * && getWaitingLastActivatedDate() == 0L
-                     */) { //UI: always only save the last time the task was set Waiting //-only save the first setWaitingDate (TODO!!!: or is it more intuitive that it's the last, eg it set waiting by mistake?)
-//                setDateWhenSetWaiting(MyDate.getNow()); //always save
-                setDateWhenSetWaiting(0); //always save
-            }
-            if (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && getWaitingTillDateD().getTime() != 0L) { //reset WaitingTillDate
-                setWaitingTillDate(0); //reset waitingTill date
-                if (getWaitingAlarmDate() != 0) { //automatically turn off
-                    setWaitingAlarmDate(0);
-                }
-//                setWaitingLastActivatedDate(0); //-waitingActivateDate is not changed (until the task is possibly set waiting again)
-            }
-
-            //RemainingEffort: set to zero for Done/Cancelled tasks
-            if (newStatus == ItemStatus.DONE) {// || newStatus == ItemStatus.STATUS_CANCELLED) { //NO reason to delete remaining effort because a task is cancelled
-                setRemainingEffort(0L); //reset Remaining when marked done
-            }
-
-            //reset Alarms for Done/Cancelled tasks
-            //TODO shouldn't be necessary to reset alarmDate when using Parse to find relevant next alarmdate
-            if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
-                setAlarmDate(0); //Cancel any set alarms //TODO: to support reverting when a task is marked Done, the alarm time should be kept, but not activated (AlarmServer should ignore alarms for Done tasks)
-            }
-
-            //reset any running timers //NO, done in SCreentTimer now
-//            if (newStatus == ItemStatus.STATUS_DONE || newStatus == ItemStatus.STATUS_CANCELLED) {
-////                TimerServer.getInstance().stopTimerIfRunningForThisItem(this); //TODO!!!!: new way of cheking if timer is running for done item
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void setStatusImplOLD(boolean topLevelTask, ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
+//        ItemStatus previousStatus = getStatus();
+//        if (previousStatus != newStatus) { //if status has receiveChangeEvent:
+////            ItemStatus oldStatus = this.status;
+////            ItemStatus oldStatus = getStatus();
+//            if (topLevelTask || shouldSubtaskStatusChange(newStatus, previousStatus)) {
+////                status = newStatus;
+//                setStatusSaveValue(newStatus);
 //            }
-        }
-    }
-
+//            if (false) {
+////                if (forceSubtasksToStatus && getItemListSize() > 0) {
+////                    if (askConfirmation) {
+////                        int nbSubTasksDiffFromStatus = countTasksWhereStatusWillBeChanged(newStatus, forceSubtasksToStatus);
+////                        int nbSubtasksToChangeWithoutConfirmation = Settings.getInstance().nbSubtasksToChangeStatusWithoutConfirmation.getInt();
+////                        if (nbSubTasksDiffFromStatus > 0 && (nbSubTasksDiffFromStatus <= nbSubtasksToChangeWithoutConfirmation
+////                                || (Dialog.show("Set " + nbSubTasksDiffFromStatus + " subtasks to " + Item.getStatusName(status) + "?",
+////                                        "Are you sure you want to set " + nbSubTasksDiffFromStatus + " subtasks to " + Item.getStatusName(status)
+////                                        + "?\nThis cannot be undone.", "OK", "Cancel")))) {
+////                            getItemList().setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
+////                        }
+////                    } else { //no need to ask for confirmation
+////                        getItemList().setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
+////                    }
+//////            if (obj instanceof BaseItemOrList) {
+//////                ((BaseItemOrList) obj).setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
+////                    obj.setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
+//////            }
+////                }
+//            } else {
+////                    public void setStatusImpl(boolean topLevelTask, Item.ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
+////                        for (int i = 0, size = getSize(); i < size; i++) {
+////                ItemList subtasks = getItemList();
+//                List subtasks = getList();
+//                for (Object itemOrList : subtasks) {
+//                    ((ItemAndListCommonInterface) itemOrList).setStatus(newStatus);
+//                }
+//            }
+//
+//            //StartedOnDate SET:
+//            if (getStartedOnDate() == 0 && (newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.DONE)) {
+////                setStartedOnDate(MyDate.getNow());
+//                setStartedOnDate(System.currentTimeMillis());
+//            }
+//            //StartedOnDate RESET: not relevant, always keep the first set StartedOnDate
+//
+//            //CompletedDate: SET set to Now if changing to Done/Cancelled from other state
+//            if ((previousStatus != ItemStatus.DONE && previousStatus != ItemStatus.CANCELLED)
+//                    && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
+//                //TODO!!!! should actual effort be reduced to zero?? No, any effort spend should be kept even for Cancelled tasks
+////                setCompletedDate(MyDate.getNow()); //UI: also use Completed date to store date when task was cancelled (for historical data)
+//                setCompletedDate(System.currentTimeMillis()); //UI: also use Completed date to store date when task was cancelled (for historical data)
+//            }
+//            //CompletedDate: RESET if changing from Done/Cancelled to other state
+//            //CompletedDate: set if changing to Done/Cancelled from other state, set to Now if changing to Done/Cancelled
+//            if (getCompletedDate() != 0 && (previousStatus == ItemStatus.DONE || previousStatus == ItemStatus.CANCELLED)
+//                    && (newStatus != ItemStatus.DONE && newStatus != ItemStatus.CANCELLED)) {
+//                //if item changes from Done/Cancelled to some other value, then reset CompletedDate
+//                setCompletedDate(0L);
+//            }
+//
+//            //WaitingActivatedDate:
+//            if (previousStatus != ItemStatus.WAITING && newStatus == ItemStatus.WAITING /*
+//                     * && getWaitingLastActivatedDate() == 0L
+//                     */) { //UI: always only save the last time the task was set Waiting //-only save the first setWaitingDate (TODO!!!: or is it more intuitive that it's the last, eg it set waiting by mistake?)
+////                setDateWhenSetWaiting(MyDate.getNow()); //always save
+//                setDateWhenSetWaiting(System.currentTimeMillis()); //always save
+//            } else if (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING /*
+//                     * && getWaitingLastActivatedDate() == 0L
+//                     */) { //UI: always only save the last time the task was set Waiting //-only save the first setWaitingDate (TODO!!!: or is it more intuitive that it's the last, eg it set waiting by mistake?)
+////                setDateWhenSetWaiting(MyDate.getNow()); //always save
+//                setDateWhenSetWaiting(0); //always save
+//            }
+//            if (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && getWaitingTillDateD().getTime() != 0L) { //reset WaitingTillDate
+//                setWaitingTillDate(0); //reset waitingTill date
+//                if (getWaitingAlarmDate() != 0) { //automatically turn off
+//                    setWaitingAlarmDate(0);
+//                }
+////                setWaitingLastActivatedDate(0); //-waitingActivateDate is not changed (until the task is possibly set waiting again)
+//            }
+//
+//            //RemainingEffort: set to zero for Done/Cancelled tasks
+//            if (newStatus == ItemStatus.DONE) {// || newStatus == ItemStatus.STATUS_CANCELLED) { //NO reason to delete remaining effort because a task is cancelled
+//                setRemainingEffort(0L); //reset Remaining when marked done
+//            }
+//
+//            //reset Alarms for Done/Cancelled tasks
+//            //TODO shouldn't be necessary to reset alarmDate when using Parse to find relevant next alarmdate
+//            if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
+//                setAlarmDate(0); //Cancel any set alarms //TODO: to support reverting when a task is marked Done, the alarm time should be kept, but not activated (AlarmServer should ignore alarms for Done tasks)
+//            }
+//
+//            //reset any running timers //NO, done in SCreentTimer now
+////            if (newStatus == ItemStatus.STATUS_DONE || newStatus == ItemStatus.STATUS_CANCELLED) {
+//////                TimerServer.getInstance().stopTimerIfRunningForThisItem(this); //TODO!!!!: new way of cheking if timer is running for done item
+////            }
+//        }
+//    }
+//</editor-fold>
     /**
      * sets the status of the item and any subtasks. Makes other necessary
      * updates, such as stopping timers, cancelling alarms, setting completed
@@ -4025,19 +4072,24 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
                         || Dialog.show("INFO", "Changing status for " + nbChgStatus + " subtasks", "OK", "No")) {
                     List<Item> subtasks = getList();
+                    List subtasksToSave = new ArrayList();
                     for (int i = 0, size = subtasks.size(); i < size; i++) {
 //                    if (!subtasks.get(i).isDone()) {
                         if (shouldSubtaskStatusChange(newStatus, subtasks.get(i).getStatus())) { //only change status when transiation is allowed
-                            subtasks.get(i).setStatus(newStatus);
+                            Item item = subtasks.get(i);
+                            item.setStatus(newStatus);
+                            subtasksToSave.add(item);
+//                            DAO.getInstance().saveInBackgroundSequential(item);
                         }
                     }
+                    DAO.getInstance().saveInBackgroundSequential(subtasksToSave);
                 }
             }
-        } else //        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmation.getBoolean(), true); 
-        //        setStatusImpl(true, newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmation.getBoolean(), !Settings.getInstance().neverChangeProjectsSubtasksWhenChangingProjectStatus.getBoolean());
-        {
-            setStatusImpl(true, newStatus, MyPrefs.getBoolean(MyPrefs.changeSubtasksStatusWithoutConfirmation),
-                    MyPrefs.getBoolean(MyPrefs.neverChangeProjectsSubtasksWhenChangingProjectStatusXXX));
+        } else {
+            //        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), true); 
+            //        setStatusImpl(true, newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), !Settings.getInstance().neverChangeProjectsSubtasksWhenChangingProjectStatus.getBoolean());
+//            setStatusImpl(true, newStatus, !MyPrefs.changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), MyPrefs.neverChangeProjectsSubtasksWhenChangingProjectStatusXXX.getBoolean());
+            setStatusImpl(true, newStatus);
         }
     }
 
@@ -4049,7 +4101,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private void setStatusSaveValue(ItemStatus newStatus) {
 //        put(PARSE_STATUS, newStatus);
 //        put(PARSE_STATUS, newStatus.toString());
-//        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmation.getBoolean(), true); 
+//        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), true); 
 //        if (getRepeatRule() != null && newStatus == ItemStatus.DONE && newStatus == ItemStatus.CANCELLED) { //update repeats on DONE/CANCEL
 //            getRepeatRule().updateRepeatInstancesWhenItemIsDoneOrCancelled(this, getOwner(), MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : getOwner().size());
 //        }
@@ -4089,7 +4141,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return ItemStatus.DONE;
         } else if (statusCount.getCount(ItemStatus.DONE) + statusCount.getCount(ItemStatus.CANCELLED) + statusCount.getCount(ItemStatus.WAITING) == listSize) {//all subtasks are either done or cancelled
             return ItemStatus.WAITING;
-        } else if (statusCount.getCount(ItemStatus.ONGOING) >= 1) {//if at least one subtasks is ongoing
+        } else if (statusCount.getCount(ItemStatus.ONGOING) >= 1 || statusCount.getCount(ItemStatus.DONE) >= 1) {//if at least one subtasks is ongoing or one is Done
             return ItemStatus.ONGOING;
 //        } else if (statusCount.getCount(ItemStatus.ONGOING) > 0
 //                || (statusCount.getCount(ItemStatus.DONE) > 0
@@ -4582,7 +4634,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
 //            return remainingEffort;
             Long remainingEffort = getLong(PARSE_REMAINING_EFFORT);
-            if (useDefaultEstimateForZeroEstimates && MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() != 0 && (remainingEffort == null || remainingEffort == 0)) {
+            if (useDefaultEstimateForZeroEstimates //&& MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() != 0 //OK to use default value even if zero (gives 0 in any case)
+                    && (remainingEffort == null || remainingEffort == 0)) {
                 return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
             } else {
                 return (remainingEffort == null) ? 0L : remainingEffort;
@@ -6083,148 +6136,155 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return CLASS_NAME;
     }
 
-    public String[] toCSV() {
+    /**
+    takes 
+    @param fromCSV
+    @return 
+     */
+    public String[] convertToFromCSV(boolean toCSV) {
         ArrayList list = new ArrayList();
         int i = 1;
         Object val = null;
-        boolean write = true;
+//        boolean write = true;
         String s = "";
         switch (s) {
             case PARSE_TEXT:
-                if (write) {
+                if (toCSV) {
                     list.add(getText());
                 } else {
                     setText((String) val);
                 }
                 break;
             case PARSE_COMMENT:
-                if (write) {
+                if (toCSV) {
                     list.add(getComment());
                 } else {
                     setComment((String) val);
                 }
                 break;
             case PARSE_SUBTASKS:
-                if (write) {
+                //TODO: how to convert subtasks to sth meaningful? At least so they can be imported, e.g. "task text [guid]"
+                //TODO and write leaf subtasks to file first, so they have been read in when reading in their project, so they can be found via the guid
+                if (toCSV) {
                     list.add(getStatus().toString());
                 } else {
                     setStatus((ItemStatus) val);
                 }
                 break;
             case PARSE_DREAD_FUN_VALUE:
-                if (write) {
+                if (toCSV) {
                     list.add(getDreadFunValue().getDescription());
                 } else {
                     setDreadFunValue(DreadFunValue.getValue((String) val));
                 }
                 break;
             case PARSE_CHALLENGE:
-                if (write) {
+                if (toCSV) {
                     list.add(getChallenge().getDescription());
                 } else {
                     setChallenge(Challenge.getValue((String) val));
                 }
                 break;
             case PARSE_EXPIRES_ON_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getExpiresOnDateD()));
                 } else {
                     setExpiresOnDate((Date) val);
                 }
                 break;
             case PARSE_INTERRUPT_OR_INSTANT_TASK:
-                if (write) {
+                if (toCSV) {
                     list.add(((Boolean) isInteruptOrInstantTask()).toString());
                 } else {
                     setInteruptOrInstantTask(Boolean.parseBoolean((String) val));
                 }
                 break;
             case PARSE_ALARM_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getAlarmDateD()));
                 } else {
                     setAlarmDate((Date) val);
                 }
                 break;
             case PARSE_WAITING_ALARM_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getWaitingAlarmDateD()));
                 } else {
                     setWaitingAlarmDate((Date) val);
                 }
                 break;
             case PARSE_REPEAT_RULE:
-                if (write) {
+                if (toCSV) {
                     list.add(getRepeatRule().toString());
                 } else {
                     Log.p("Cannot import " + Item.REPEAT_RULE);
                 }
                 break;
             case PARSE_STARTED_ON_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getStartedOnDateD()));
                 } else {
                     setStartedOnDate((Date) val);
                 }
                 break;
             case PARSE_STATUS:
-                if (write) {
+                if (toCSV) {
                     list.add(getStatus().getDescription());
                 } else {
                     setStatus(ItemStatus.getValue((String) val));
                 }
                 break;
             case PARSE_DUE_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getDueDateD()));
                 } else {
                     setDueDate((Date) val);
                 }
                 break;
             case PARSE_HIDE_UNTIL_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getHideUntilDateD()));
                 } else {
                     setHideUntilDate((Date) val);
                 }
                 break;
             case PARSE_START_BY_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getStartByDateD()));
                 } else {
                     setStartByDate((Date) val);
                 }
                 break;
             case PARSE_WAITING_TILL_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getWaitingTillDateD()));
                 } else {
                     setWaitingTillDate((Date) val);
                 }
                 break;
             case PARSE_DATE_WHEN_SET_WAITING:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getDateWhenSetWaitingD()));
                 } else {
                     setDateWhenSetWaiting((Date) val);
                 }
                 break;
             case PARSE_EFFORT_ESTIMATE:
-                if (write) {
+                if (toCSV) {
                     list.add((MyDate.formatTimeDuration(getEffortEstimate(false))));
                 } else {
                     setEffortEstimate((Long) val, false, true);
                 }
                 break;
             case PARSE_REMAINING_EFFORT:
-                if (write) {
+                if (toCSV) {
                     list.add((MyDate.formatTimeDuration(getRemainingEffort(false))));
                 } else {
                     setRemainingEffort((Long) val, false, true); //UI: import of project estimates
                 }
                 break;
             case PARSE_ACTUAL_EFFORT:
-                if (write) {
+                if (toCSV) {
                     list.add((MyDate.formatTimeDuration(getActualEffort(false))));
                 } else {
                     setActualEffort((Long) val, false, true); //UI: import of project estimates
@@ -6234,49 +6294,49 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 //TODO!!!!search for category based on text string, if not existing, create it and add this task
                 break;
             case PARSE_PRIORITY:
-                if (write) {
+                if (toCSV) {
                     list.add(((Integer) getPriority()).toString());
                 } else {
                     setPriority(Integer.parseInt((String) val)); //TODO!!! more resistant parsing of val (illegal formats, null values)
                 }
                 break;
             case PARSE_STARRED:
-                if (write) {
+                if (toCSV) {
                     list.add(((Boolean) isStarred()).toString());
                 } else {
                     setStarred(Boolean.parseBoolean((String) val));
                 }
                 break;
             case PARSE_EARNED_VALUE:
-                if (write) {
+                if (toCSV) {
                     list.add(((Double) getEarnedValue()).toString());
                 } else {
                     setEarnedValue(Double.parseDouble((String) val));//TODO!!! more resistant parsing of val (illegal formats, null values)
                 }
                 break;
             case PARSE_COMPLETED_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getCompletedDateD()));
                 } else {
                     setCompletedDate((Date) val);
                 }
                 break;
             case PARSE_IMPORTANCE:
-                if (write) {
+                if (toCSV) {
                     list.add(getImportance().getDescription());
                 } else {
                     setImportance(HighMediumLow.getValue((String) val));
                 }
                 break;
             case PARSE_URGENCY:
-                if (write) {
+                if (toCSV) {
                     list.add(getUrgency().getDescription());
                 } else {
                     setUrgency(HighMediumLow.getValue((String) val));
                 }
                 break;
             case PARSE_OWNER_LIST:
-                //TODO!!! search for owner list based on text string, if not existing, create it
+                //TODO!!! search for owner list based on text string, if not existing, create it (!only when importing from another app!)
                 break;
             case PARSE_OWNER_ITEM:
                 //TODO!!! search for task/project based on text string, if not existing, create it (?=> means need to check if already existing when importing/creating tasks) and add this task as sub-task
@@ -6288,7 +6348,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 //TODO!!! search for task/project based on text string, if not existing, create it (?=> means need to check if already existing when importing/creating tasks) and add this task as sub-task
                 break;
             case PARSE_TEMPLATE:
-                if (write) {
+                if (toCSV) {
                     list.add(((Boolean) isTemplate()).toString());
                 } else {
                     setTemplate(Boolean.parseBoolean((String) val));
@@ -6296,14 +6356,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_UPDATED_AT:
                 list.add(MyDate.formatDateNew(getUpdatedAt()));
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getUpdatedAt()));
                 } else {
                     Log.p("Cannot import " + Item.UPDATED_DATE);
                 }
                 break;
             case PARSE_CREATED_AT:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getCreatedDateD()));
                 } else {
                     Log.p("Cannot import " + Item.CREATED_DATE);
@@ -6313,16 +6373,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 //TODO!!! search for task/project based on text string, if not existing, create it (?=> means need to check if already existing when importing/creating tasks) and add this task as sub-task
                 break;
             case PARSE_DELETED_DATE:
-                if (write) {
+                if (toCSV) {
                     list.add(MyDate.formatDateNew(getDeletedDate()));
                 } else {
                     setDeletedDate((Date) val);
                 }
                 break;
         }
-
-//        Writer w = new Writer();
-//        return CSVHelper.writeLine(w, list);
+//Writer fw = new OutputStreamWriter(fos, "UTF-8");
+////        Writer w = new Writer();
+//        return CSVHelper.writeLine(fw, list);
         return null;
     }
 
@@ -6540,6 +6600,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public void resetWorkTimeDefinition() {
         workTimeAllocator = null;
+        for (Object subtask : getList()) {
+            if (subtask instanceof Item) {// && ((Item)subtask).isProject()) {
+                ((Item) subtask).resetWorkTimeDefinition();
+            }
+        }
     }
 
     @Override
@@ -6556,11 +6621,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             Log.p("-> .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\"");
         }
 
-        long required = 0;
-
         //get the amount of worktime the subtasks require from this (their mother project)
+        long required = 0;
         List<ItemAndListCommonInterface> subtasks = getList();
-        if (subtasks != null && subtasks.size() > 0) {
+//        if (subtasks != null && subtasks.size() > 0) {
+        if (isProject()) {
             for (ItemAndListCommonInterface subtask : subtasks) { //starts from the *last* element in the list!!!
 //                required += subtask.getWorkTimeRequiredFromProvider(this);
                 required += subtask.getRemainingEffort();
@@ -6820,9 +6885,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
 //</editor-fold>
     @Override
-    public WorkTimeSlices getAllocatedWorkTimeN() {
-        return getAllocatedWorkTimeN(false);
-    }
+//    public WorkTimeSlices getAllocatedWorkTimeN() {
+//        return getAllocatedWorkTimeN(false);
+//    }
 
     /**
      * returns workTime for the item at index itemIndex and for an effort of
@@ -6830,7 +6895,50 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return null if no workTime
      */
-    public WorkTimeSlices getAllocatedWorkTimeN(boolean reset) {
+//    public WorkTimeSlices getAllocatedWorkTimeN(boolean reset) {
+    public WorkTimeSlices getAllocatedWorkTimeN() {
+        boolean reset = false;
+        WorkTimeSlices workTime = null;
+        if (Config.WORKTIME_DETAILED_LOG) {
+            Log.p("-> .getAllocatedWorkTime(" + reset + ") for Item \"" + this + "\"");
+        }
+        //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
+        long remaining = 0;
+        List<? extends ItemAndListCommonInterface> subtasks = getList();
+        if (subtasks != null && subtasks.size() > 0) { //I'm a project
+            for (ItemAndListCommonInterface elt : subtasks) {
+                remaining += elt.getWorkTimeRequiredFromProvider(this); //remaining of last subtask will hold any unallocated required worktime
+            }
+        } else { //I'm a leaf task
+            remaining = getRemainingEffort(); //how much total workTime is required?
+        }
+        //now iterate over workTimeProviders (returned by prio order) and get as much as possible from each
+        List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
+        for (ItemAndListCommonInterface prov : potentialProviders) {
+            //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+            WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(reset);
+            if (workTimeAllocator != null) {
+                WorkTimeSlices allocatedWorkTime = workTimeAllocator.getAllocatedWorkTime(this, remaining);
+                if (allocatedWorkTime != null) {
+                    if (workTime == null) {
+                        workTime = new WorkTimeSlices(); //only allocate WorkTimeSlices if there is actually some workTime to return
+                    }
+                    workTime.addWorkTime(allocatedWorkTime);
+                    remaining = allocatedWorkTime.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+                    if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+                        break;
+                    }
+                }
+            }
+        }
+        if (Config.WORKTIME_DETAILED_LOG) {
+            Log.p("<  .getAllocatedWorkTime(" + reset + ") for Item \"" + this.toString() + "\" returning " + (workTime != null ? workTime.toString() : "<null>"));
+        }
+        return workTime;
+    }
+
+    public WorkTimeSlices getAllocatedWorkTimeNOLD() {
+        boolean reset = false;
         WorkTimeSlices workTime = null;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && !(workTime == null || forceWorkTimeCalculation || reset)) { //true: don't cache values in Item, only cache WorkTimeAllocator
@@ -6903,22 +7011,39 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public void setAllocatedWorkTime(WorkTimeSlices workTime) {
 //        this.workTime = workTime;
 //    }
+    private long getLatestSubtaskFinishTime() {
+        long latestFinishTime = MyDate.MIN_DATE;
+        Item subtask;
+        for (Object subt : getList()) {
+            if (subt instanceof Item && !(subtask = (Item) subt).isDone()) { //AndListCommonInterface) {
+//                     subtask = (Item) subt;
+                long finishT = subtask.getFinishTime();
+//                    if (finishT > latestFinishTime && !subtask.isDone()) {
+                if (finishT > latestFinishTime) {
+                    latestFinishTime = finishT;
+                }
+            }
+        }
+        return latestFinishTime;
+    }
+
     @Override
     public long getFinishTime() {
 
-        long latestFinishTime = MyDate.MIN_DATE;
+//        long latestFinishTime = MyDate.MIN_DATE;
         if (isProject()) { //UI: for projects, finishTime is ALWAYS latest finishTime for subtasks (or undefined if all subtasks are Done)
-            Item subtask;
-            for (Object subt : getList()) {
-                if (subt instanceof Item && !(subtask = (Item) subt).isDone()) { //AndListCommonInterface) {
-//                     subtask = (Item) subt;
-                    long finishT = subtask.getFinishTime();
-//                    if (finishT > latestFinishTime && !subtask.isDone()) {
-                    if (finishT > latestFinishTime) {
-                        latestFinishTime = finishT;
-                    }
-                }
-            }
+//            Item subtask;
+//            for (Object subt : getList()) {
+//                if (subt instanceof Item && !(subtask = (Item) subt).isDone()) { //AndListCommonInterface) {
+////                     subtask = (Item) subt;
+//                    long finishT = subtask.getFinishTime();
+////                    if (finishT > latestFinishTime && !subtask.isDone()) {
+//                    if (finishT > latestFinishTime) {
+//                        latestFinishTime = finishT;
+//                    }
+//                }
+//            }
+            long latestFinishTime = getLatestSubtaskFinishTime();
 //            if (latestFinishTime != MyDate.MIN_DATE) { //only return if we actually have a date (all subtasks may be Done)
             return latestFinishTime == MyDate.MIN_DATE ? MyDate.MAX_DATE : latestFinishTime;
 //            }

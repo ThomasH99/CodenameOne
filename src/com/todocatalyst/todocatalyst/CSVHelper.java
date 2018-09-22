@@ -22,6 +22,7 @@ public static List<MyClass> readData() throws Exception {
     }
     lnr.close();
     return collection;
+
 // example of how to output a collection of objects to a CSV file
 public static void saveData(List<MyClass> myData) throws Exception {
     File csvFile = new File(<<path to write to>>);

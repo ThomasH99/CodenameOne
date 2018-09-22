@@ -274,6 +274,7 @@ public class ScreenListOfItems extends MyForm {
         this.updateActionOnDone = () -> {
             this.itemListOrg = itemListFct.getUpdatedItemList();
             updateItemListOnDone.update(this.itemListOrg);
+            refreshAfterEdit();
         };
 //        workSlotList = itemListOrg.getWorkSlotListN(); //expensive operation, only do once for the screen, or after editing WorkSlots
 
@@ -1701,7 +1702,7 @@ public class ScreenListOfItems extends MyForm {
 //                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refresh();}});
                 }
             }, () -> {
-                return item.getActualEffort() > 0;
+                return item.hasWorkStarted(); //item.getActualEffort() > 0;
             });
             if (oldFormat) {
                 west.add(status);

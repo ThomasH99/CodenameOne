@@ -30,7 +30,7 @@ class WorkSlotSlice {
                 +" dur="+MyDate.formatTimeDuration(getDuration())
                 +" miss="+MyDate.formatTimeDuration(missingDuration)
                 + " Owner:" + (workSlot != null && workSlot.getOwner() != null ? workSlot.getOwner().getText() : "<null>")
-                + (allocatedToXXX != null ? ( " AllocTo:" +allocatedToXXX.getText() ): "")
+//                + (allocatedToXXX != null ? ( " AllocTo:" +allocatedToXXX.getText() ): "")
                 + "]";
 //                + " of "
 //                + (workSlot != null ? new Date(workSlot.getDurationAdjusted()) : "null") + "-"

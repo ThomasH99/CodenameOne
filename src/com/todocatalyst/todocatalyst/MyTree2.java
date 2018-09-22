@@ -146,7 +146,7 @@ public class MyTree2 extends ContainerScrollY {
         super();
         this.model = model;
         setUIID("MyTree2");
-        if (Test.DEBUG) {
+        if (Config.TEST) {
             setName("MyTree2");
         }
 //        if (expandedObjects != null) {
@@ -676,7 +676,8 @@ public class MyTree2 extends ContainerScrollY {
                 MyForm myForm = (MyForm) getComponentForm();
                 InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
                 if (insertNewElement != null) {
-                    InsertNewElementFunc newInsertContainer = insertNewElement.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
+                    InsertNewElementFunc newInsertContainer = insertNewElement.make((Item) current, parent != null 
+                            ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
                     if (newInsertContainer != null) {
 //                    destination.add(insertNewElement);
                         destination.add((Component) newInsertContainer);

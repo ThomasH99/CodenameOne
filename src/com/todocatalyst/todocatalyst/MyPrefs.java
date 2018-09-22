@@ -166,7 +166,7 @@ public class MyPrefs {
     static PrefEntry checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress
             = new PrefEntry("Show "+Item.STATUS+" menu on click","checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress", false, "**");
 
-    static PrefEntry changeSubtasksStatusWithoutConfirmation
+    static PrefEntry changeSubtasksStatusWithoutConfirmationXXX
             = new PrefEntry("**","changeSubtasksStatusWithoutConfirmation", false, "**");
 
     static PrefEntry alwaysShowSubtasksExpandedInScreenItem

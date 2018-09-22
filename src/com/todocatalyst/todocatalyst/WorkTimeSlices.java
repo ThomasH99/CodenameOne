@@ -31,8 +31,10 @@ public class WorkTimeSlices {
 
     public String toString() {
         String res = "";
+        String sep="";
         for (WorkSlotSlice workSlot : workSlotSlicesSortedOnStartTime) {
-            res += workSlot.toString() + ", ";
+            res += sep+workSlot.toString() ;
+            sep=", ";
         }
         if (workSlotSlicesSortedOnStartTime.size() == 0) {
             res = "WorkTime empty";

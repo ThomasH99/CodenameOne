@@ -312,7 +312,7 @@ public class ScreenWorkSlot extends MyForm {
             Button editSubtasksFullScreen = new Button();
             editSubtasksFullScreen.setCommand(MyReplayCommand.create("ShowTasksInWorkSlot", items.size() + " tasks", null, (e) -> {
 //                new ScreenListOfItems("Tasks in WorkSlot", itemList, ScreenWorkSlot.this, (iList) -> {
-                new ScreenListOfItems("Tasks in WorkSlot", ()->new ItemList(workSlot.getItemsInWorkSlot()), ScreenWorkSlot.this, (iList) -> {
+                new ScreenListOfItems("Tasks in WorkSlot", () -> new ItemList(workSlot.getItemsInWorkSlot()), ScreenWorkSlot.this, (iList) -> {
 //                        item.setItemList(subtaskList);
 //                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
@@ -325,15 +325,20 @@ public class ScreenWorkSlot extends MyForm {
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
             content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
         }
-        content.add(layoutN("Unallocated time", new Label(MyDate.formatTimeDuration(workSlot.getUnallocatedTime())), "How much of this work slot is still free", 
+        content.add(layoutN("Unallocated time", new Label(MyDate.formatTimeDuration(workSlot.getUnallocatedTime())), "How much of this work slot is still free",
                 true, true, false));
+        
+        if (Config.WORKTIME_TEST) {
+            content.add(layoutN("WorkTimeAllocator (TEST)", new Label(workSlot.getWorkSlotAllocationsAsStringForTEST()), "**",
+                    true, true, false));
+        }
 
         Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
         content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
-        
+
         return content;
     }
-    
+
     @Override
     public void saveEditedValuesLocallyOnAppExit() {
 //        localSave = true;
@@ -345,7 +350,7 @@ public class ScreenWorkSlot extends MyForm {
     @Override
     public boolean restoreEditedValuesSavedLocallyOnAppExit() {
 //        Item itemLS = null;
-        boolean savedValues=false;
+        boolean savedValues = false;
         //if editing of item was ongoing when app was stopped, then recover saved item
 //        ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM) || ReplayLog.getInstance().isReplayInProgress()); //local item => replay must/should be Ongoing
 //        if (ReplayLog.getInstance().isReplayInProgress() && Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM)) {
@@ -366,5 +371,4 @@ public class ScreenWorkSlot extends MyForm {
 //        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEM); //delete in case one was 
     }
 
-    
 }

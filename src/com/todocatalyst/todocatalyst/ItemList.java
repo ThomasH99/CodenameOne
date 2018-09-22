@@ -2068,23 +2068,40 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return nbCountChangeStatus;
     }
 
-    public static int getNumberOfItemsThatWillChangeStatusOLD(List list, boolean recurse, ItemStatus newStatus) {
+    public static int getCountOfSubtasksWithStatus(List list, boolean recurse, List<ItemStatus> statuses) {
         if (list == null || list.size() == 0) {
             return 0;
         }
         int nbCountChangeStatus = 0;
-        for (Object item : list) {
-//            if (item instanceof Item && !(((Item) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
-            if (item instanceof Item && ((Item) item).shouldSubtaskStatusChange(newStatus)) { //use Item to optimize (since implementing isDone() on a list would be expensive
-                nbCountChangeStatus++;
-            }
-            if (recurse && list instanceof ItemAndListCommonInterface) {
-                nbCountChangeStatus += ((ItemAndListCommonInterface) item).getNumberOfItemsThatWillChangeStatus(true, newStatus);
+        for (Object elt : list) {
+            if (elt instanceof ItemAndListCommonInterface) { 
+                nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getCountOfSubtasksWithStatus(recurse, statuses);
             }
         }
         return nbCountChangeStatus;
     }
+    public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses) {
+        return getCountOfSubtasksWithStatus(getListFull(), recurse, statuses);
+    }
 
+//    public static int getNumberOfItemsThatWillChangeStatusOLD(List list, boolean recurse, ItemStatus newStatus) {
+//        if (list == null || list.size() == 0) {
+//            return 0;
+//        }
+//        int nbCountChangeStatus = 0;
+//        for (Object item : list) {
+////            if (item instanceof Item && !(((Item) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
+//            if (item instanceof Item && ((Item) item).shouldSubtaskStatusChange(newStatus)) { //use Item to optimize (since implementing isDone() on a list would be expensive
+//                nbCountChangeStatus++;
+//            }
+//            if (recurse && list instanceof ItemAndListCommonInterface) {
+//                nbCountChangeStatus += ((ItemAndListCommonInterface) item).getNumberOfItemsThatWillChangeStatus(true, newStatus);
+//            }
+//        }
+//        return nbCountChangeStatus;
+//    }
+
+    @Override
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus) {
         return getNumberOfItemsThatWillChangeStatus(getListFull(), recurse, newStatus);
     }
@@ -3258,6 +3275,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public void resetWorkTimeDefinition() {
         workTimeAllocator = null;
+        for (Object item:getList()){
+            if (item instanceof ItemAndListCommonInterface){
+                ((ItemAndListCommonInterface)item).resetWorkTimeDefinition();
+            }
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

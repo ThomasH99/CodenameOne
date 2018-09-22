@@ -57,6 +57,8 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     public int getNumberOfUndoneItems(boolean includeSubTasks);
 
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus);
+    
+    public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses);
 
 //    public int getNumberOfDoneItems(boolean includeSubTasks);
 //    public int getNumberOfItemsWithStatus(ItemStatus status, boolean includeSubTasks);
@@ -355,7 +357,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return null if no worktime is defined
      */
 //    public WorkTimeDefinition getWorkTimeAllocatorN();
-    default public WorkTimeAllocator getWorkTimeDefinition() {
+    default public WorkTimeAllocator getWorkTimeAllocatorN() {
         return getWorkTimeAllocatorN(false);
     }
 
@@ -463,7 +465,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 ////                    break; // return remaining;
 ////                } else if (prov == this) {
 ////</editor-fold>
-//            WorkTimeAllocator wtd = prov.getWorkTimeDefinition();
+//            WorkTimeAllocator wtd = prov.getWorkTimeAllocatorN();
 //            if (wtd != null) {
 //                WorkTimeSlices wt = wtd.allocateWorkTimeXXX(this);
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -598,7 +600,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      */
     default public WorkTimeSlices allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
 //        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList);
-        WorkTimeAllocator wt = getWorkTimeDefinition();
+        WorkTimeAllocator wt = getWorkTimeAllocatorN();
         return wt != null ? wt.allocateWorkTimeXXX(itemOrList) : null;
     }
 
@@ -612,7 +614,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      */
     default public WorkTimeSlices allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
 //        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList, remainingDuration);
-        WorkTimeAllocator wt = getWorkTimeDefinition();
+        WorkTimeAllocator wt = getWorkTimeAllocatorN();
         return wt != null ? wt.getAllocatedWorkTime(itemOrList, remainingDuration) : null;
     }
 
@@ -641,23 +643,24 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return finishTime or MyDate.MAX_DATE if no workTime was available/allocated, or if or insufficient workTime to finish the task was allocated
      */
     default public long getFinishTime() {
+        long finishTime=MyDate.MAX_DATE;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        assert false:"getFinishTime on ItemListCommonInterface should never be called";
 //        return getFinishTime(System.currentTimeMillis());
 //    }
-//    
+//
 //    default public long getFinishTime(long now) {
 //        return getAllocatedWorkTimeN().getFinishTime();
+//</editor-fold>
         WorkTimeSlices workTime = getAllocatedWorkTimeN();
-        if (Config.WORKTIME_TEST) {
-            assert workTime == null || !(workTime.getAllocatedDuration() > getRemainingEffort()): "allocated too much time";
-        }
 //        long finishTime = MyDate.MAX_DATE;
         if (workTime != null) {
             if (Config.WORKTIME_DETAILED_LOG) {
                 Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (workTime != null ? workTime.toString() : "<null>") + ", returning=" + new Date(workTime.getFinishTime()));
             }
             if (workTime.getRemainingDuration() == 0) {
-                return workTime.getFinishTime();
+//                return workTime.getFinishTime();
+                finishTime= workTime.getFinishTime();
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            else {
@@ -667,7 +670,13 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //            return MyDate.MAX_DATE; //cannot allocate enough time
 //</editor-fold>
         }
-        return MyDate.MAX_DATE; //cannot allocate enough time
+        if (false &&Config.WORKTIME_TEST) {
+            long remainingEffort = getRemainingEffort();
+            long allocated=workTime.getAllocatedDuration();
+            assert workTime == null || !(allocated > remainingEffort): "allocated too much time";
+        }
+//        return MyDate.MAX_DATE; // returning MAX, means cannot allocate enough time
+        return finishTime; //cannot allocate enough time
     }
 
     default public long getFinishTimeOLD2() {

@@ -1562,24 +1562,26 @@ public class ScreenItem extends MyForm {
                 }
             }
         };
-        MyActionListener effortEstimateChangeListenerOLD = new MyActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
-                if (MyPrefs.getBoolean(MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem)) //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
-                {
-                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
-//                    if ((effortEstimate.getTime() != 0 && item.getRemainingEffortNoDefault() == 0 && (remainingEffort.getTime() == 0 || forceSameValues))
-//                            || remainingEffort.getTime()==effortEstimate.getTime()) { //UI: when to auto-update estimates
-                    if ((item.getRemainingEffortNoDefault() == 0 && effortEstimate.getTime() != 0 && (remainingEffort.getTime() == 0 || forceSameValues))
-                            || item.getRemainingEffortNoDefault() == 0
-                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: when to auto-update estimates
-                        remainingEffort.setTime(effortEstimate.getTime() - actualEffort.getTime());
-                        remainingEffort.repaint();
-                    }
-                }
-            }
-        };
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        MyActionListener effortEstimateChangeListenerOLD = new MyActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
+//                if (MyPrefs.getBoolean(MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem)) //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+//                {
+//                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
+////                    if ((effortEstimate.getTime() != 0 && item.getRemainingEffortNoDefault() == 0 && (remainingEffort.getTime() == 0 || forceSameValues))
+////                            || remainingEffort.getTime()==effortEstimate.getTime()) { //UI: when to auto-update estimates
+//                    if ((item.getRemainingEffortNoDefault() == 0 && effortEstimate.getTime() != 0 && (remainingEffort.getTime() == 0 || forceSameValues))
+//                            || item.getRemainingEffortNoDefault() == 0
+//                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: when to auto-update estimates
+//                        remainingEffort.setTime(effortEstimate.getTime() - actualEffort.getTime());
+//                        remainingEffort.repaint();
+//                    }
+//                }
+//            }
+//        };
+//</editor-fold>
         effortEstimate.addActionListener(effortEstimateChangeListener);
 
         //TAB STATUS FIELDS
