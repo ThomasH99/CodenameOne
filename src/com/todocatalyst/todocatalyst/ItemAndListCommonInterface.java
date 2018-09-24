@@ -56,7 +56,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 
     public int getNumberOfUndoneItems(boolean includeSubTasks);
 
-    public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus);
+    public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus, boolean changingFromDone);
     
     public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses);
 

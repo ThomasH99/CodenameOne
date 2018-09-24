@@ -2050,7 +2050,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return countUndone;
     }
 
-    public static int getNumberOfItemsThatWillChangeStatus(List list, boolean recurse, ItemStatus newStatus) {
+    public static int getNumberOfItemsThatWillChangeStatus(List list, boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         if (list == null || list.size() == 0) {
             return 0;
         }
@@ -2059,7 +2059,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            if (item instanceof Item && !(((Item) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
             if (elt instanceof ItemAndListCommonInterface) { // && ((Item) item).shouldSubtaskStatusChange(newStatus)) { //use Item to optimize (since implementing isDone() on a list would be expensive
 //                nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getNumberOfItemsThatWillChangeStatus(true, newStatus);
-                nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getNumberOfItemsThatWillChangeStatus(recurse, newStatus);
+                nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getNumberOfItemsThatWillChangeStatus(recurse, newStatus, changingFromDone);
             }
 //            if (recurse && list instanceof ItemAndListCommonInterface) {
 //                nbCountChangeStatus += ((ItemAndListCommonInterface) item).getNumberOfItemsThatWillChangeStatus(true, newStatus);
@@ -2102,8 +2102,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
 
     @Override
-    public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus) {
-        return getNumberOfItemsThatWillChangeStatus(getListFull(), recurse, newStatus);
+    public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
+        return getNumberOfItemsThatWillChangeStatus(getListFull(), recurse, newStatus, changingFromDone);
     }
 
 //    @Override

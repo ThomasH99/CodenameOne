@@ -77,7 +77,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectImportance);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectUrgency);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDueDate);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStartDate);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStartByDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectWaitingTillDate);
 
 //        content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
