@@ -736,21 +736,21 @@ public class ScreenItem extends MyForm {
 
         //need to declare already here to use in actionListener below
         MyDurationPicker effortEstimate;
-        if (item.isProject()) {
-            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS,
-                    (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false, true));
-        } else {
-            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS,
-                    (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
-        }
+        effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS,
+                (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
+//        } else {
+//Label effortEstimateForSubtasks;
+//        if (item.isProject()) {
+//            effortEstimateForSubtasks = new Label(""+(int) itemLS.getEffortEstimateForSubtasks()/ MyDate.MINUTE_IN_MILLISECONDS);
+//        }
 
 //get the effort for the project task itself:
         MyDurationPicker remainingEffort;
         if (item.isProject()) {
 //            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS,
             remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort() / MyDate.MINUTE_IN_MILLISECONDS, //getRemainingEffort(true, true): need to show same sum here as in the list showing the project
-                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,
-                            false, true));
+                    //                    (i) -> item.setRemainingEffortXXX(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,
+                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
 //            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
 //            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {            }, true, true, false));
         } else {
@@ -920,7 +920,7 @@ public class ScreenItem extends MyForm {
 //            mainCont.add(layout(Item.EFFORT_REMAINING, remainingEffort.makeContainerWithClearButton(), "**"));
 //        } else {
 //            mainCont.add(layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTime(item.getRemainingEffort()), "Button"), "**"));
-//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffort(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffort((int) i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
+//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffort(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setRemainingEffortXXX((int) i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
 //        }
 //</editor-fold>
         //Categories
@@ -1216,78 +1216,43 @@ public class ScreenItem extends MyForm {
         timeCont.setScrollableY(true);
         tabs.addTab("Time", null, timeCont);
 
-//        MyDurationPicker effortEstimate;
-        MyDurationPicker actualEffort;
-//        SpanLabel actualExplanation = new SpanLabel("Setting '" + Item.EFFORT_ACTUAL + "' will automatically set " + Item.STATUS + " to " + ItemStatus.ONGOING);
-        if (itemLS.isProject()) {
+        boolean isProject = itemLS.isProject();
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//get the effort as the sum of subtasks (no update possible)
-//            mainCont.add(layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTime(item.getRemainingEffort()), "Button"), "**"));
-//            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getRemainingEffort()), "Button"), "**")); //hack to insert after alarmDate field
-//            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getRemainingEffortNoDefault()), "Button"), "**", false, true, true)); //hack to insert after alarmDate field
-//</editor-fold>
-//            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"), "**", false, true, true)); //hack to insert after alarmDate field
-//            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortNoDefault()), "LabelFixed"),
-            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
-                    "**", true, true, false)); //hack to insert after alarmDate field
-
-//            timeCont.add(layout(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getActualEffort()), "Button"), Item.EFFORT_ACTUAL_SUBTASKS_HELP, false, true, false));
-//            timeCont.add(layout(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualEffort()), "LabelFixed"), Item.EFFORT_ACTUAL_SUBTASKS_HELP, false, true, true));
-            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualEffort()), "LabelFixed"),
-                    Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false));
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getEffortEstimateInMinutes()), "Button"), "**"));
-//            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(item.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "Button"), Item.EFFORT_ESTIMATE_SUBTASKS, false, true, false));
-//</editor-fold>
-//            timeCont.add(layout(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"), Item.EFFORT_ESTIMATE_SUBTASKS, false, true, true));
-            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
-                    Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
-
-            if (false) { //false: makes no sense to show remaining for project itself, just confusing
-                timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP));
-            }
-
-            if (true) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
-                actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort(true) / MyDate.MINUTE_IN_MILLISECONDS,
-                        (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false, true));
-//            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort.makeContainerWithClearButton(), actualExplanation));
-//            timeCont.add(layout(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP, true, false, false));
-                timeCont.add(layoutN(Item.EFFORT_ACTUAL_PROJECT, actualEffort, Item.EFFORT_ACTUAL_PROJECT_HELP));
-            }
-            
-//            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) item.getEffortEstimate(false) / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate(i * MyDate.MINUTE_IN_MILLISECONDS, false, true));
-//            timeCont.add(layout(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate.makeContainerWithClearButton(), "**"));
-//            timeCont.add(layout(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate, Item.EFFORT_ESTIMATE_PROJECT_HELP, true, false, false));
-            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_PROJECT, effortEstimate, Item.EFFORT_ESTIMATE_PROJECT_HELP));
-        } else {
-//            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getActualEffortInMinutes(), (i) -> item.setActualEffortInMinutes((int) i));
-            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffort() / MyDate.MINUTE_IN_MILLISECONDS,
-                    (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            timeCont.add(new Label(Item.EFFORT_ACTUAL)).add(addTimePickerWithClearButton(actualEffort)).add(actualExplanation);
-//            timeCont.add(new Label(Item.EFFORT_ACTUAL)).add(actualEffort.makeContainerWithClearButton()).add(actualExplanation);
-//            timeCont.add(layout(Item.EFFORT_ACTUAL, actualEffort.makeContainerWithClearButton(), actualExplanation));
-//</editor-fold>
-//            timeCont.add(layout(Item.EFFORT_ACTUAL, actualEffort, Item.EFFORT_ACTUAL_HELP, true, false, false));
-            timeCont.add(layoutN(Item.EFFORT_ACTUAL, actualEffort, Item.EFFORT_ACTUAL_HELP));
-
-//            effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) item.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS, (i) -> item.setEffortEstimate((int) i * MyDate.MINUTE_IN_MILLISECONDS));
-//            timeCont.add(new Label(Item.EFFORT_ESTIMATE)).add(addTimePickerWithClearButton(effortEstimate));
-//            timeCont.add(new Label(Item.EFFORT_ESTIMATE)).add(effortEstimate.makeContainerWithClearButton());
-//            timeCont.add(layout(Item.EFFORT_ESTIMATE, effortEstimate.makeContainerWithClearButton(), "**"));
-//            timeCont.add(layout(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP, true, false, false));
-            timeCont.add(layoutN(Item.EFFORT_ESTIMATE, effortEstimate, Item.EFFORT_ESTIMATE_HELP));
-
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            timeCont.add(new Label(Item.EFFORT_REMAINING)).add(addTimePickerWithClearButton(remainingEffort));
-//            timeCont.add(new Label(Item.EFFORT_REMAINING)).add(remainingEffort.makeContainerWithClearButton());
-//            timeCont.add(layout(Item.EFFORT_REMAINING,remainingEffort.makeContainerWithClearButton(),"**"));
-//            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING, remainingEffort.makeContainerWithClearButton(), "**")); //hack to insert
-//</editor-fold>
-//            mainCont.addComponent(remainingIndex, layout(Item.EFFORT_REMAINING, remainingEffort, Item.EFFORT_REMAINING_HELP, true, false, false)); //hack to insert
-            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING, remainingEffort, Item.EFFORT_REMAINING_HELP)); //hack to insert
+        //REMAINING************
+        if (isProject) {
+//            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
+            timeCont.addComponent( layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
+                    Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false)); //hack to insert after alarmDate field
         }
+//TODO: makes no sense to show remaining for project itself, just confusing??
+        String remainingTxt = isProject ? Item.EFFORT_REMAINING_PROJECT : Item.EFFORT_REMAINING;
+        String remainingHelpTxt = isProject ? Item.EFFORT_REMAINING_PROJECT_HELP : Item.EFFORT_REMAINING_HELP;
+                timeCont.add(layoutN(remainingTxt, remainingEffort, remainingHelpTxt));
+
+
+        //ACTUAL************
+            //if project, show actual for subtasks
+        if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
+        timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualEffortFromSubtasks()), "LabelFixed"),
+                Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false));
+        }
+ 
+        //if single task, show picker with text for single task, if project show picker w text for ProjectTaskItself
+        MyDurationPicker actualEffort;
+        String actualTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF : Item.EFFORT_ACTUAL;
+        String actualHelpTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF_HELP : Item.EFFORT_ACTUAL_HELP;
+            actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffortProjectTaskItselfFromParse() / MyDate.MINUTE_IN_MILLISECONDS,
+                    (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
+            timeCont.add(layoutN(actualTxt, actualEffort, actualHelpTxt));
+
+        //ESTIMATE************
+        if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
+            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
+                    Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
+        }
+        String estimateTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT : Item.EFFORT_ESTIMATE;
+        String estimateHelpTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT_HELP : Item.EFFORT_ESTIMATE_HELP;
+            timeCont.add(layoutN(estimateTxt, effortEstimate, estimateHelpTxt));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        ActionEvent ae = new ActionEvent
@@ -1452,7 +1417,6 @@ public class ScreenItem extends MyForm {
 //        });
 ////        earnedValuePerHour.setConstraint(TextArea.UNEDITABLE);
 //        earnedValuePerHour.setEditable(false);
-        
         Label earnedValuePerHour = new Label(L10NManager.getInstance().format(itemLS.getEarnedValuePerHour(), 2));
         earnedValuePerHour.setUIID("LabelFixed");
 //        prioCont.add(new Label(Item.EARNED_POINTS_PER_HOUR)).add(earnedValuePerHour).add(new SpanLabel("Value per hour is calculated as Value divided by the Estimate, or the sum of Remaining and Actual effort - once work has started."));
@@ -1480,7 +1444,7 @@ public class ScreenItem extends MyForm {
                                             ((long) remainingEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
                                             ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
                                             ((long) effortEstimate.getTime()) * MyDate.MINUTE_IN_MILLISECONDS),
-                                    Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())),2));
+                                    Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())), 2));
 //                    earnedValuePerHour.animate(); //TODO: needed?
                     earnedValuePerHour.repaint(); //TODO: needed?
                 }

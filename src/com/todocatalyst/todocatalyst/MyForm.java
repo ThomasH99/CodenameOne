@@ -565,7 +565,7 @@ public class MyForm extends Form {
 //        }, (d) -> {
 ////            item.setWaitingTillDate(d.getTime());
 ////            item.setRemainingEffortInMinutes(d);
-//            item.setRemainingEffort(d * MyDate.MINUTE_IN_MILLISECONDS);
+//            item.setRemainingEffortXXX(d * MyDate.MINUTE_IN_MILLISECONDS);
 //        });
 //
 ////        cont.add(new Label("Wait until")).add(waitingDatePicker).add("When you set a date, waiting tasks can automatically be hidden until that date.");

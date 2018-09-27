@@ -21,7 +21,7 @@ public class MyPrefs {
     static PrefEntry automaticallyUpdateRemainingToEffortMinusActualWhenActualEffortIsUpdated
             = new PrefEntry("**","automaticallyUpdateRemainingToEffortMinusActualWhenActualEffortIsUpdated", false,"**");
 
-    static PrefEntry automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero
+    static PrefEntry  automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero
             = new PrefEntry("**","automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero", true,"**");
 
     static PrefEntry automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual

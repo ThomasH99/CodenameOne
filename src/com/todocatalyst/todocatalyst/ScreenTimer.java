@@ -1271,7 +1271,8 @@ public class ScreenTimer extends MyForm {
         setTaskStatusOngoingWhenMinimumThresholdPassed();
         long timerValueMillis = timerStack.currEntry.getTimerDurationInMillis();
         //UI: currently Picker time is limited to 23h59m so need to save time if that 
-        if (maxTimerTimePassed(timerStack.currEntry.timerShowsActualTotal, timerValueMillis, timerStack.currEntry.timedItem.getActualEffort(false))) {
+//        if (maxTimerTimePassed(timerStack.currEntry.timerShowsActualTotal, timerValueMillis, timerStack.currEntry.timedItem.getActualEffort(false))) {
+        if (maxTimerTimePassed(timerStack.currEntry.timerShowsActualTotal, timerValueMillis, timerStack.currEntry.timedItem.getActualEffortProjectTaskItself())) {
             //TODO!!!! how to handle when timer reaches max value?? Stop at 23h59, show popup when max value reached. Alternatively, save elapsed time and start over (omplex). Best option: create own timer Picker with no maximum value (99h59m, or 99999d23h59m)
             stopTimer(); //if max value reached for Total, stop timer. Necessary to stop when total
         }
@@ -1398,7 +1399,9 @@ public class ScreenTimer extends MyForm {
         elapsedTimePicker.setText(myFormatter.format(timerStack.currEntry.getTimerDurationInMillis())); //update picker immediately when starting Timer
         elapsedTimePicker.animate(); //this is enough to update the value on the screen
 
-        if (timer == null && !maxTimerTimePassed(timerStack.currEntry.timerShowsActualTotal, timerStack.currEntry.getTimerDurationInMillis(), timerStack.currEntry.timedItem.getActualEffort(false))) {
+        if (timer == null && !maxTimerTimePassed(timerStack.currEntry.timerShowsActualTotal, 
+//                timerStack.currEntry.getTimerDurationInMillis(), timerStack.currEntry.timedItem.getActualEffort(false))) {
+                timerStack.currEntry.getTimerDurationInMillis(), timerStack.currEntry.timedItem.getActualEffortProjectTaskItself())) {
             elapsedTimePicker.setEnabled(false); //disable while running
             //UI: It is OK to start timer on a completed task, it will simply add more time to actual
             setTaskStatusOngoingWhenMinimumThresholdPassed();
@@ -1411,7 +1414,9 @@ public class ScreenTimer extends MyForm {
                         setTaskStatusOngoingWhenMinimumThresholdPassed();
                         long timerValueMillis = timerStack.currEntry.getTimerDurationInMillis();
                         //UI: currently Picker time is limited to 23h59m so need to save time if that 
-                        if (maxTimerTimePassed(timerStack.currEntry.timerShowsActualTotal, timerValueMillis, timerStack.currEntry.timedItem.getActualEffort(false))) {
+                        if (maxTimerTimePassed(timerStack.currEntry.timerShowsActualTotal, timerValueMillis, 
+//                                timerStack.currEntry.timedItem.getActualEffort(false))) {
+                                timerStack.currEntry.timedItem.getActualEffortProjectTaskItself())) {
                             //TODO!!!! how to handle when timer reaches max value?? Stop at 23h59, show popup when max value reached. Alternatively, save elapsed time and start over (omplex). Best option: create own timer Picker with no maximum value (99h59m, or 99999d23h59m)
                             stopTimer(); //if max value reached for Total, stop timer. Necessary to stop when total
                         }
@@ -1920,7 +1925,7 @@ public class ScreenTimer extends MyForm {
 //        dia.addComponent(new Button(Command.create("OK", null, (e) -> {
 ////            stopTimer();
 //            if (remainingTimePicker.getTime() != (int) item.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS) {
-//                item.setRemainingEffort(remainingTimePicker.getTime() / MyDate.MINUTE_IN_MILLISECONDS);
+//                item.setRemainingEffortXXX(remainingTimePicker.getTime() / MyDate.MINUTE_IN_MILLISECONDS);
 //            }
 //            dia.dispose(); //close dialog
 //        })));
@@ -2027,7 +2032,7 @@ public class ScreenTimer extends MyForm {
     }
 
     private void updateTotalActualEffort() {
-        updateTotalActualEffortImpl(timerStack.currEntry.timedItem.getActualEffort(false), timerStack.currEntry.getTimerDurationInMillis());
+        updateTotalActualEffortImpl(timerStack.currEntry.timedItem.getActualEffortProjectTaskItself(), timerStack.currEntry.getTimerDurationInMillis());
     }
 
     private void updateTotalActualEffortImpl(long previousActualEffortMillis, long timerElapsedTimeMillis) {
@@ -2086,12 +2091,12 @@ public class ScreenTimer extends MyForm {
 //            if (!isTimerRunning()) {
 //                timerStack.currEntry.setTimerDurationInMillis(timerStack.currEntry.timedItem.getActualEffort(false)); //TODO!!! fix possible problems due to Picker not being able to handle long
 //            }
-                timerStack.currEntry.setTimerDurationInMillis(timerStack.currEntry.getTimerDurationInMillis() + timerStack.currEntry.timedItem.getActualEffort(false)); //TODO!!! fix possible problems due to Picker not being able to handle long
+                timerStack.currEntry.setTimerDurationInMillis(timerStack.currEntry.getTimerDurationInMillis() + timerStack.currEntry.timedItem.getActualEffortProjectTaskItself()); //TODO!!! fix possible problems due to Picker not being able to handle long
             }
             timerStack.currEntry.timerShowsActualTotal = true;
         } else { //off
             if (timerStack.currEntry.timerShowsActualTotal) { //was on before, now turned off, so remove item.actual
-                timerStack.currEntry.setTimerDurationInMillis(timerStack.currEntry.getTimerDurationInMillis() - timerStack.currEntry.timedItem.getActualEffort(false)); //TODO!!! fix possible problems due to Picker not being able to handle long
+                timerStack.currEntry.setTimerDurationInMillis(timerStack.currEntry.getTimerDurationInMillis() - timerStack.currEntry.timedItem.getActualEffortProjectTaskItself()); //TODO!!! fix possible problems due to Picker not being able to handle long
             }
             timerStack.currEntry.timerShowsActualTotal = false;
         }
@@ -2294,7 +2299,9 @@ public class ScreenTimer extends MyForm {
             } else //                entry.timedItem.addToActualEffort(elapsedTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS + entry.secondsInMillis - entry.secondsInMillis >= MyDate.MINUTE_IN_MILLISECONDS / 2 ? 1 : 0); //remove rounded up minutes when saving
             {
                 if (isMinimumThresholdPassed()) {
-                    timerStack.currEntry.timedItem.addToActualEffort(((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.savedSecondsFromTimerInMillis); //no round up minutes when saving, but add seconds even when not shown in picker
+//                    timerStack.currEntry.timedItem.addToActualEffort(((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.savedSecondsFromTimerInMillis); //no round up minutes when saving, but add seconds even when not shown in picker
+long addlEffort = ((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS + timerStack.currEntry.savedSecondsFromTimerInMillis;
+                    timerStack.currEntry.timedItem.setActualEffort(timerStack.currEntry.timedItem.getActualEffortProjectTaskItself()+addlEffort); //no round up minutes when saving, but add seconds even when not shown in picker
                 }
             }
         });

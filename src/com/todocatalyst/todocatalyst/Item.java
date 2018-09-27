@@ -818,28 +818,29 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String EFFORT_ESTIMATE_SHORT = "Estimate"; //"Estimate" // "Effort estimate";
 //    final static String EFFORT_ESTIMATE_HELP = "Estimates let you compare your expected amount of work with your actual amount of work. Is set automatically the first time you enter " + Item.EFFORT_REMAINING + "."; //"Estimate" // "Effort estimate";, "Estimated time"
     final static String EFFORT_ESTIMATE_HELP = "Estimates let you compare your expected amount of work with your actual amount of work. Is set automatically the first time you enter [EFFORT_REMAINING]."; //"Estimate" // "Effort estimate";, "Estimated time"
-    final static String EFFORT_ACTUAL = "Time worked"; //"Actual effort";"Time spent"
-//    final static String EFFORT_ACTUAL_HELP = "The amount of " + EFFORT_ACTUAL + " you have spend on this task. It is updated automatically when you use the Timer while working on tasks."; //"Actual effort";"Time spent"
-    final static String EFFORT_ACTUAL_HELP = "The amount of [EFFORT_ACTUAL] you have worked on this task. It is updated automatically when you use the Timer while working on tasks."; //"Actual effort";"Time spent"
-//        String actualExplanation = "Setting '" + Item.EFFORT_ACTUAL + "' will automatically set " + Item.STATUS + " to " + ItemStatus.ONGOING;
     final static String EFFORT_REMAINING = "Remaining effort"; //"Remaining effort"; "Remaining time"
     final static String EFFORT_REMAINING_SHORT = "Remaining"; //"Remaining effort";
     final static String EFFORT_REMAINING_HELP = "The amount of effort in hours:minutes that is remaining on this task. You can update it for partially finished tasks. The Timer can be set to prompt you to update it every time you move to another task without finishing the current one (Setting)."; //"Remaining effort"; "Remaining time"
     final static String EFFORT_ESTIMATE_SUBTASKS = "Estimate effort, subtasks"; //"Effort estimate";"Estimated time (subtasks)"
 //    final static String EFFORT_ESTIMATE_SUBTASKS_HELP = "The sum of the " + EFFORT_ESTIMATE + " of all subtasks"; //"Effort estimate";"Estimated time (subtasks)"
     final static String EFFORT_ESTIMATE_SUBTASKS_HELP = "The sum of the [EFFORT_ESTIMATE] of all subtasks"; //"Effort estimate";"Estimated time (subtasks)"
-    final static String EFFORT_ACTUAL_SUBTASKS = "Worked effort, subtasks"; //"Actual effort";, "Time spent (subtasks)"
+    final static String EFFORT_ACTUAL = "Time worked"; //"Actual effort";"Time spent"
+//    final static String EFFORT_ACTUAL_HELP = "The amount of " + EFFORT_ACTUAL + " you have spend on this task. It is updated automatically when you use the Timer while working on tasks."; //"Actual effort";"Time spent"
+    final static String EFFORT_ACTUAL_HELP = "The amount of [EFFORT_ACTUAL] you have worked on this task. Updated automatically when you use the Timer while working on tasks."; //"Actual effort";"Time spent"
+//        String actualExplanation = "Setting '" + Item.EFFORT_ACTUAL + "' will automatically set " + Item.STATUS + " to " + ItemStatus.ONGOING;
+    final static String EFFORT_ACTUAL_SUBTASKS = "Time worked, subtasks";//"Worked effort, subtasks"; //"Actual effort";, "Time spent (subtasks)"
 //    final static String EFFORT_ACTUAL_SUBTASKS_HELP = "The sum of the " + EFFORT_ACTUAL + " of all subtasks"; //"Actual effort";, "Time spent (subtasks)"
-    final static String EFFORT_ACTUAL_SUBTASKS_HELP = "The sum of the [EFFORT_ACTUAL] of all subtasks"; //"Actual effort";, "Time spent (subtasks)"
+//    final static String EFFORT_ACTUAL_SUBTASKS_HELP = "The total amount of work done on this [TASK] (sum of work done on this task and any subtasksthe [EFFORT_ACTUAL] of all subtasks"; //"Actual effort";, "Time spent (subtasks)"
+    final static String EFFORT_ACTUAL_SUBTASKS_HELP = "The total amount of work done on this [TASK] (sum of work done on this task and any subtasks"; //"Actual effort";, "Time spent (subtasks)"
+    final static String EFFORT_ACTUAL_PROJECT_TASK_ITSELF = "Time worked, this task";//"Worked effort, project"; //"Actual effort";"Time spent (project)"
+//    final static String EFFORT_ACTUAL_PROJECT_TASK_ITSELF_HELP = EFFORT_ACTUAL+" for the project. You can use this to capture "+EFFORT_ACTUAL+" that is not captured on the individual subtasks."; //"Effort estimate";"Estimated time (project)"
+    final static String EFFORT_ACTUAL_PROJECT_TASK_ITSELF_HELP = "[EFFORT_ACTUAL] for the project. You can use this to capture [EFFORT_ACTUAL] that is not captured on the individual subtasks."; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_REMAINING_SUBTASKS = "Remaining effort, subtasks"; //"Remaining effort";"Remaining time (subtasks)"
 //    final static String EFFORT_REMAINING_SUBTASKS_HELP = "The sum of the " + EFFORT_REMAINING+" of all subtasks"; //"Remaining effort";"Remaining time (subtasks)"
     final static String EFFORT_REMAINING_SUBTASKS_HELP = "The sum of the [EFFORT_REMAINING] of all subtasks"; //"Remaining effort";"Remaining time (subtasks)"
     final static String EFFORT_ESTIMATE_PROJECT = "Estimated effort, project"; //"Effort estimate";"Estimated time (project)"
 //    final static String EFFORT_ESTIMATE_PROJECT_HELP = EFFORT_ESTIMATE+" for the project. You can use this to indicate a total estimate for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_ESTIMATE_PROJECT_HELP = "[EFFORT_ESTIMATE] for the project. You can use this to indicate a total estimate for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
-    final static String EFFORT_ACTUAL_PROJECT = "Work effort, project"; //"Actual effort";"Time spent (project)"
-//    final static String EFFORT_ACTUAL_PROJECT_HELP = EFFORT_ACTUAL+" for the project. You can use this to capture "+EFFORT_ACTUAL+" that is not captured on the individual subtasks."; //"Effort estimate";"Estimated time (project)"
-    final static String EFFORT_ACTUAL_PROJECT_HELP = "[EFFORT_ACTUAL] for the project. You can use this to capture [EFFORT_ACTUAL] that is not captured on the individual subtasks."; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_REMAINING_PROJECT = "Remaining effort, project"; //"Remaining effort";"Remaining time (project)"
 //    final static String EFFORT_REMAINING_PROJECT_HELP = EFFORT_REMAINING+" for the project. You can use this to **?? indicate a total for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_REMAINING_PROJECT_HELP = "[EFFORT_REMAINING] for the project. You can use this to **?? indicate a total for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
@@ -939,7 +940,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    final static String PARSE_WAITING_LAST_ACTIVATED_DATE = "waitingLastActivatedDate";
     final static String PARSE_DATE_WHEN_SET_WAITING = "dateWhenSetWaiting";
     final static String PARSE_EFFORT_ESTIMATE = "effortEstimate";
+    final static String PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF = "effortEstimateProjectTask";
     final static String PARSE_REMAINING_EFFORT = "remainingEffort";
+    final static String PARSE_REMAINING_EFFORT_PROJECT_TASK_ITSELF = "remainingEffortProjectTask";
     final static String PARSE_ACTUAL_EFFORT = "actualEffort";
     final static String PARSE_ACTUAL_EFFORT_PROJECT_TASK_ITSELF = "actualEffortProjectTask";
 //    final static String PARSE_SHOW_FROM_DATE = "showFromDate";
@@ -1077,7 +1080,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 setActualEffort(((Long) fieldValue));
                 break;
             case FIELD_EFFORT_REMAINING:
-//                setRemainingEffort(((Duration)fieldValue).getDays());
+//                setRemainingEffortXXX(((Duration)fieldValue).getDays());
                 setRemainingEffort(((Long) fieldValue));
                 break;
             case FIELD_PRIORITY:
@@ -1651,7 +1654,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            destination.setEffortEstimate(getEffortEstimate());
             if ((copyExclusions & COPY_EXCLUDE_EFFORT_ESTIMATE) == 0) {
                 if (destination.getEffortEstimate() == 0) { //copy from template, iff nothing's already set for item
-                    destination.setEffortEstimate(getEffortEstimate(), fromTempl || toRepeatInst, true); //ensure remaining is set
+//                    destination.setEffortEstimate(getEffortEstimate(), fromTempl || toRepeatInst, true); //ensure remaining is set
+                    destination.setEffortEstimate(getEffortEstimate(), fromTempl || toRepeatInst); //TODO!!! WHY auto-update Remaining if (and only if) fromTempl || toRepeatInst????!!
                 }
             }
             //CHALLENGE
@@ -3576,12 +3580,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 setStatus(ItemStatus.DONE);
             }
         } else //if Done was set before and now is unset then reset completedDate //TODO: avoid extra call to receiveChangeEvent() in setCompletedDate()
-//        if (getActualEffort() != 0) {
-//            //if effort is recorded, then the right state to revert to is ONGOING; 
-//            //TODO!!!!: are there other indicators that previous state should be other than CREATED (or should we simply store the previous state and use that??!!)
-//            setStatus(ItemStatus.ONGOING);
-//        } else {
+        //        if (getActualEffort() != 0) {
+        //            //if effort is recorded, then the right state to revert to is ONGOING; 
+        //            //TODO!!!!: are there other indicators that previous state should be other than CREATED (or should we simply store the previous state and use that??!!)
+        //            setStatus(ItemStatus.ONGOING);
+        //        } else {
+        {
             setStatus(ItemStatus.CREATED);
+        }
 //        }
     }
 
@@ -4076,7 +4082,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //
 //            //RemainingEffort: set to zero for Done/Cancelled tasks
 //            if (newStatus == ItemStatus.DONE) {// || newStatus == ItemStatus.STATUS_CANCELLED) { //NO reason to delete remaining effort because a task is cancelled
-//                setRemainingEffort(0L); //reset Remaining when marked done
+//                setRemainingEffortXXX(0L); //reset Remaining when marked done
 //            }
 //
 //            //reset Alarms for Done/Cancelled tasks
@@ -4234,11 +4240,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
             long currentProjectActualEffortFromSubtasks = getActualEffortFromSubtasks();
             long currentProjectActualEffortProjectTaskItself = getActualEffortProjectTaskItselfFromParse();
-            long currentProjectActualEffort = getActualEffortFromParse();
+            long currentTotal = getActualEffortFromParse();
+            long newTotal = currentProjectActualEffortFromSubtasks + currentProjectActualEffortProjectTaskItself;
 //            if (currentProjectActualEffortFromSubtasks != currentProjectActualEffortProjectTaskItself) {
-            if (currentProjectActualEffortFromSubtasks + currentProjectActualEffortProjectTaskItself != currentProjectActualEffort) {
+            if (newTotal != currentTotal) {
 //                setActualEffortProjectTaskItselfInParse(currentProjectActualEffortProjectTaskItself); //store old Actual for project task itself
-                setActualEffortInParse(currentProjectActualEffortFromSubtasks + currentProjectActualEffortProjectTaskItself);
+                setActualEffortInParse(newTotal);
             }
 
             long currentProjectRemainingEffort = getRemainingEffort();
@@ -4729,6 +4736,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_DATE_WHEN_SET_WAITING);
         }
     }
+    
+        ////////////// ESTIMATE ///////////////
+    
 
     private void setEffortEstimateInParse(long effortEstimateMillis) {
         if (effortEstimateMillis != 0) {
@@ -4739,44 +4749,48 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         update();
     }
 
-    public void setEffortEstimate(long effortEstimateMillis, boolean autoUpdateRemainingEffort, boolean forProjectTaskItself) {
-//#mdebug
-//        ASSERT.that(effortEstimate >= 0, "EffortEstimate cannot be negative");
+    /**
+    effort estimate is handled differently from Actual and Remaining since the project estimate remains (is not updated to include the subtask estimates) to make it possible to compare an 
+    origianl estimate with the total Actual. 
+    @param effortEstimateMillis
+    @param autoUpdateRemainingEffort 
+    */
+//    public void setEffortEstimate(long effortEstimateMillis, boolean autoUpdateRemainingEffort, boolean forProjectTaskItself) {
+    public void setEffortEstimate(long effortEstimateMillis, boolean autoUpdateRemainingEffort) {
+
         assert effortEstimateMillis >= 0 : "EffortEstimate cannot be negative";
-//#enddebug
-        if (forProjectTaskItself || !isProject()) {
-//        this.effortEstimate = val;
-//        if (this.effortEstimate != val) {
-//            this.effortEstimate = val;
-//            if (has(PARSE_EFFORT_ESTIMATE) || effortEstimate != 0) {
-//                put(PARSE_EFFORT_ESTIMATE, effortEstimate);
-//            if (effortEstimateMillis != 0) {
-//                put(PARSE_EFFORT_ESTIMATE, effortEstimateMillis);
-//            } else {
-//                remove(PARSE_EFFORT_ESTIMATE);
-//            }
-            setEffortEstimateInParse(effortEstimateMillis);
-            //TODO!!! check if both "setRemainingEffort(effortEstimate - getActualEffort()" below are needed and consistent
-            if (autoUpdateRemainingEffort && effortEstimateMillis != 0
-                    && getRemainingEffort() == 0
-                    && MyPrefs.getBoolean(MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining)) {
-                setRemainingEffort(effortEstimateMillis - getActualEffort(), false, forProjectTaskItself); //TODO actualEffort should be set *before* effort estimate for this to work
-            }
-//            if (autoUpdateRemainingEffort && Settings.getInstance().alwaysUpdateRemainingToEffortMinusActualWhenEffortIsUpdated()) {
+
+//                long oldEffortTotalSubtasks = getEffortEstimateForSubtasks();
+                long oldEffortEstimate = getEffortEstimate();
+//        long effortSubtasks = getEffortEstimateForSubtasks();
+//        long newEffortTotal = effortSubtasks + effortEstimateMillis;
+
+//        long prevRemainingProjectTask = getRemainingEffortProjectTaskItself();
+
+        //auto-update Remaining
+        if (autoUpdateRemainingEffort && effortEstimateMillis > 0
+                && MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
+                && getRemainingEffortProjectTaskFromParse() == 0) {
+            setRemainingEffort(effortEstimateMillis - getActualEffortProjectTaskItself()); //TODO actualEffort should be set *before* effort estimate for this to work
+        } else { // *increase* remaining //UI: 
             if (autoUpdateRemainingEffort
                     && MyPrefs.getBoolean(MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual)
-                    && effortEstimateMillis > getRemainingEffort() + getActualEffort()) {
-//                if (this.remainingEffort + this.actualEffort < effortEstimate) { //UI: if currently set remaining effort + actual is less than estimate, then update Remaining so it corresponds to Estimate-Actual
-//                if (getRemainingEffort() + getActualEffort() < effortEstimate) { //UI: if currently set remaining effort + actual is less than estimate, then update Remaining so it corresponds to Estimate-Actual
-//                    setRemainingEffort(effortEstimate - this.actualEffort, false); //
-                setRemainingEffort(effortEstimateMillis - getActualEffort(), false, forProjectTaskItself); //
-//                }
+                    && effortEstimateMillis > getRemainingEffortFromParse() + getActualEffort()) {
+                setRemainingEffort(effortEstimateMillis - getActualEffort()); //
             }
         }
+        
+        setEffortEstimateInParse(effortEstimateMillis);// + actualEffortMillis);
+//        setERemainingEffortProjectTaskInParse(effortEstimateMillis);
+
+        if (effortEstimateMillis != oldEffortEstimate) {
+            update();
+        }
+
     }
 
     public void setEffortEstimate(long effortEstimateMillis) {
-        setEffortEstimate(effortEstimateMillis, false, false);
+        setEffortEstimate(effortEstimateMillis, true);
     }
 
 //    public void setEffortEstimateInMinutes(int val) {
@@ -4787,43 +4801,72 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return (effortEstimate == null) ? 0L : effortEstimate;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public long getEffortEstimateProjectTaskFromParse() {
+//        Long effortEstimate = getLong(PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF);
+//        return (effortEstimate == null) ? 0L : effortEstimate;
+//    }
+//
+//    public long getEffortEstimateProjectTask() {
+//        if (isProject()) {
+//            return getEffortEstimateProjectTaskFromParse();
+//        } else {
+//            return getEffortEstimateFromParse();
+//        }
+//    }
+//</editor-fold>
+
     /**
      * returns effort estimate. If no estimate was set (value 0) AND there are
      * subitems, then return the sum of the estimates of the subitems.
      *
      * @return
      */
-    public long getEffortEstimate(boolean forSubtasks) {
-//        if (effortEstimate == 0 && getItemListSize() != 0) {
-        if (forSubtasks && isProject()) {
-//            return sumUpEffortForSubItemsBuffered(FIELD_EFFORT_ESTIMATE); //optimization: store sum in intermediate variable to avoid recalculating each time
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public long getEffortEstimateXXX(boolean forSubtasks) {
+////        if (effortEstimate == 0 && getItemListSize() != 0) {
+//        if (forSubtasks && isProject()) {
+////            return sumUpEffortForSubItemsBuffered(FIELD_EFFORT_ESTIMATE); //optimization: store sum in intermediate variable to avoid recalculating each time
+//            long subItemSum = 0;
+//            for (int i = 0, size = getItemListSize(); i < size; i++) {
+////                Item item = (Item) getItemList().getItemAt(i);
+//                Item item = (Item) getList().get(i);
+//                if (!item.isDone()) { // /** || includeDone */) {
+//                    subItemSum += item.getEffortEstimate(forSubtasks);
+//                }
+//            }
+//            return subItemSum;
+////            return ((Long) derivedEstimateEffortSubItemsSumBuffered.getValue()).longValue();
+//        } else {
+////            return effortEstimate;
+////            Long effort = getLong(PARSE_EFFORT_ESTIMATE);
+//////            if (MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() != 0 && (effort == null || effort == 0)) {
+//////                return MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS;
+//////            } else {
+////            return (effort == null) ? 0L : effort;
+//            return getEffortEstimateFromParse();
+////            }
+//        }
+//    }
+//</editor-fold>
+
+    public long getEffortEstimateForSubtasks() {
             long subItemSum = 0;
-            for (int i = 0, size = getItemListSize(); i < size; i++) {
-//                Item item = (Item) getItemList().getItemAt(i);
-                Item item = (Item) getList().get(i);
-                if (!item.isDone()) { // /** || includeDone */) {
-                    subItemSum += item.getEffortEstimate(forSubtasks);
+            for (Item item: (List<Item>)getList()) {
+                if (!item.isDone()) { 
+                    subItemSum += item.getEffortEstimate();
                 }
             }
             return subItemSum;
-//            return ((Long) derivedEstimateEffortSubItemsSumBuffered.getValue()).longValue();
-        } else {
-//            return effortEstimate;
-//            Long effort = getLong(PARSE_EFFORT_ESTIMATE);
-////            if (MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() != 0 && (effort == null || effort == 0)) {
-////                return MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS;
-////            } else {
-//            return (effort == null) ? 0L : effort;
-            return getEffortEstimateFromParse();
-//            }
-        }
     }
 
     @Override
     public long getEffortEstimate() {
-        return getEffortEstimate(true);
+        return getEffortEstimateFromParse();
     }
 
+        ////////////// REMAINING ///////////////
+    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getEffortEstimate() {
 //        long sum = 0;
@@ -4847,6 +4890,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         update();
     }
 
+    private void setRemainingEffortProjectTaskItselfInParse(long remainingEffortMillis) {
+        if (remainingEffortMillis != 0) {
+            put(PARSE_REMAINING_EFFORT_PROJECT_TASK_ITSELF, remainingEffortMillis); //update first 
+        } else {
+            remove(PARSE_REMAINING_EFFORT_PROJECT_TASK_ITSELF);
+        }
+        update();
+    }
+
     /**
      *
      * @param remainingEffortMillis
@@ -4854,53 +4906,82 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param forProjectTaskItself set the effort for this task even though it
      * is a project with subtasks
      */
-    public void setRemainingEffort(long remainingEffortMillis, boolean autoUpdateEffortEstimate, boolean forProjectTaskItself) {
-//#mdebug
-//        ASSERT.that(remainingEffort >= 0, "RemainingEffort cannot be negative");
-        assert remainingEffortMillis >= 0 : "RemainingEffort cannot be negative";
-//#enddebug
-//        this.effortEstimate = val;
-        if (forProjectTaskItself || !isProject()) { //don't save for projects
-            long prevRemaining = getRemainingEffort();
-//            if (remainingEffortMillis != 0) {
-//                put(PARSE_REMAINING_EFFORT, remainingEffortMillis); //update first 
-//            } else {
-//                remove(PARSE_REMAINING_EFFORT);
-//            }
-            setRemainingEffortInParse(remainingEffortMillis);
-            if (prevRemaining != remainingEffortMillis) {
-//            if (autoUpdateEffortEstimate && prevRemaining == 0) {
-//            if (getEffortEstimate() == 0 && Settings.getInstance().isAlwaysSetFirstEstimateToInitialEstimate()) { //if no previous estimate, use Remaining
-                //UI: if no effort estimate has been set, then use Remaining+Actual as historical estimate (
-                //TODO: this requires Estimate and Actual to be set *before* setting Remaining
-//                if (getEffortEstimate() == 0 && Settings.getInstance().alwaysUseRemainingAsEstimateWhenActualIsZero()) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
-                if (autoUpdateEffortEstimate && prevRemaining == 0 && getEffortEstimate() == 0 && MyPrefs.getBoolean(MyPrefs.automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero)) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
-                    setEffortEstimate(remainingEffortMillis + getActualEffort(false), false, forProjectTaskItself); //since we test for 0, no problem if setting Estimate both here and direct
-                }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                if (getActualEffort() == 0 && Settings.getInstance().alwaysUseRemainingAsEstimateWhenActualIsZero()) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
-//                    setEffortEstimate(remainingEffort, false); //since we test for 0, no problem if setting Estimate both here and direct
+//    public void setRemainingEffortXXX(long remainingEffortMillis, boolean autoUpdateEffortEstimate, boolean forProjectTaskItself) {
+////#mdebug
+////        ASSERT.that(remainingEffort >= 0, "RemainingEffort cannot be negative");
+//        assert remainingEffortMillis >= 0 : "RemainingEffort cannot be negative";
+////#enddebug
+////        this.effortEstimate = val;
+//        if (forProjectTaskItself || !isProject()) { //don't save for projects
+//            long prevRemaining = getRemainingEffort();
+////            if (remainingEffortMillis != 0) {
+////                put(PARSE_REMAINING_EFFORT, remainingEffortMillis); //update first 
+////            } else {
+////                remove(PARSE_REMAINING_EFFORT);
+////            }
+//            setRemainingEffortInParse(remainingEffortMillis);
+//            if (prevRemaining != remainingEffortMillis) {
+////            if (autoUpdateEffortEstimate && prevRemaining == 0) {
+////            if (getEffortEstimate() == 0 && Settings.getInstance().isAlwaysSetFirstEstimateToInitialEstimate()) { //if no previous estimate, use Remaining
+//                //UI: if no effort estimate has been set, then use Remaining+Actual as historical estimate (
+//                //TODO: this requires Estimate and Actual to be set *before* setting Remaining
+////                if (getEffortEstimate() == 0 && Settings.getInstance().alwaysUseRemainingAsEstimateWhenActualIsZero()) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
+//                if (autoUpdateEffortEstimate && prevRemaining == 0 && getEffortEstimate() == 0
+//                        && MyPrefs.getBoolean(MyPrefs.automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero)) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
+//                    setEffortEstimateXXX(remainingEffortMillis + getActualEffort(false), false, forProjectTaskItself); //since we test for 0, no problem if setting Estimate both here and direct
 //                }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (getActualEffort() == 0 && Settings.getInstance().alwaysUseRemainingAsEstimateWhenActualIsZero()) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
+////                    setEffortEstimate(remainingEffort, false); //since we test for 0, no problem if setting Estimate both here and direct
+////                }
+////            }
+////            if (remainingEffort == 0 && !isDone() && Settings.getInstance().markDoneIfRemainingReducedToZero()) {
+////                setDone(true); //UI: reducing Remaining to 0 takes precedence over setting Done status to other (non-Done) values
+////            }
+////            this.remainingEffort = val;
+////            if (has(PARSE_REMAINING_EFFORT) || remainingEffort != 0) {
+//////                put(PARSE_REMAINING_EFFORT, new Date(remainingEffort));
+////                put(PARSE_REMAINING_EFFORT, remainingEffort);
+////            }
+////</editor-fold>
 //            }
-//            if (remainingEffort == 0 && !isDone() && Settings.getInstance().markDoneIfRemainingReducedToZero()) {
-//                setDone(true); //UI: reducing Remaining to 0 takes precedence over setting Done status to other (non-Done) values
-//            }
-//            this.remainingEffort = val;
-//            if (has(PARSE_REMAINING_EFFORT) || remainingEffort != 0) {
-////                put(PARSE_REMAINING_EFFORT, new Date(remainingEffort));
-//                put(PARSE_REMAINING_EFFORT, remainingEffort);
-//            }
-//</editor-fold>
-            }
+//        }
+//    }
+
+    public void setRemainingEffort(long remainingEffortMillis, boolean autoUpdateEffortEstimate) {
+
+        long oldEffortTotal = getRemainingEffort();
+//        long prevRemaining = getRemainingEffortFromParse();
+        long effortSubtasks = getRemainingEffortFromSubtasks();
+        long newEffortTotal = effortSubtasks + remainingEffortMillis;
+
+        long prevRemainingProjectTask = getRemainingEffortProjectTaskItself();
+
+        if (autoUpdateEffortEstimate && prevRemainingProjectTask == 0 //if first time we set Remaining
+                && MyPrefs.automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero.getBoolean()
+                && getEffortEstimate() == 0 //and no effort estimate already set
+                ) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
+            setEffortEstimate(remainingEffortMillis + getActualEffortProjectTaskItself()); //since we test for 0, no problem if setting Estimate both here and direct
+        }
+
+        setRemainingEffortInParse(newEffortTotal);// + actualEffortMillis);
+        setRemainingEffortProjectTaskItselfInParse(remainingEffortMillis);
+
+        if (newEffortTotal != oldEffortTotal) {
+            update();
         }
     }
-
-    public void setRemainingEffort(long remainingEffortMillis) {
-        setRemainingEffort(remainingEffortMillis, false, false);
+     public void setRemainingEffort(long remainingEffortMillis) {
+        setRemainingEffort(remainingEffortMillis, true);
     }
 
+   
+
+//    public void setRemainingEffortXXX(long remainingEffortMillis) {
+//        setRemainingEffortXXX(remainingEffortMillis, false, false);
+//    }
 //    public void setRemainingEffortInMinutes(int val) {
-//        setRemainingEffort(val * MyDate.MINUTE_IN_MILLISECONDS);
+//        setRemainingEffortXXX(val * MyDate.MINUTE_IN_MILLISECONDS);
 //    }
     /**
      * return effort estimate for this task. If subtasks exist, and the sum of
@@ -4920,72 +5001,104 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (isDone()) {
 //            return 0;
 //        }
-        return getRemainingEffort(true, true);
+        return getRemainingEffortFromParse();
     }
 
     public long getRemainingEffortNoDefault() {
 //        if (isDone()) {
 //            return 0;
 //        }
-        return getRemainingEffort(true, false);
+        return getRemainingEffort(false);
     }
 
 //    public int getRemainingEffortInMinutes() {
 //        return (int) getRemainingEffort() / MyDate.MINUTE_IN_MILLISECONDS;
 //    }
-    public long getRemainingEffort(boolean forSubtasks) {
-        return getRemainingEffort(forSubtasks, true);
-    }
-
+//    public long getRemainingEffort(boolean forSubtasks) {
+//        return getRemainingEffort(forSubtasks, true);
+//    }
     private long getRemainingEffortFromParse() {
         Long remainingEffort = getLong(PARSE_REMAINING_EFFORT);
         return (remainingEffort == null) ? 0L : remainingEffort;
     }
 
-    public long getRemainingEffort(boolean forSubtasks, boolean useDefaultEstimateForZeroEstimates) {
+    private long getRemainingEffortProjectTaskFromParse() {
+        Long remainingEffort = getLong(PARSE_REMAINING_EFFORT_PROJECT_TASK_ITSELF);
+        return (remainingEffort == null) ? 0L : remainingEffort;
+    }
+
+    
+        public long getRemainingEffortProjectTaskItself() {
+            if (isProject())
+        return getRemainingEffortProjectTaskFromParse(); else return getRemainingEffortFromParse();
+    }
+
+//    public long getRemainingEffort(boolean forSubtasks, boolean useDefaultEstimateForZeroEstimates) {
+    public long getRemainingEffort(boolean useDefaultEstimateForZeroEstimates) {
         if (isDone()) {
             return 0;
         }
-
-//        if (forSubtasks && getItemListSize() > 0) {
-        if (forSubtasks && isProject()) {
-//            return sumUpEffortForSubItemsBuffered(FIELD_EFFORT_REMAINING); //optimization: store sum in intermediate variable to avoid recalculating each time
-//            return ((Long) derivedRemainingEffortSubItemsSumBuffered.getValue()).longValue();
-//            return ((Long) derivedRemainingEffortSubItemsSumBuffered.getValue());
-            long subItemSum = 0;
-//            for (Object i : subitems) {
-//            for (Object i : getItemList()) {
-            for (Object i : getList()) {
-                Item item = (Item) i;
-                if (!item.isDone()) {
-//                    subItemSum += item.getRemainingEffort(forSubtasks);
-                    subItemSum += item.getRemainingEffort(forSubtasks, useDefaultEstimateForZeroEstimates);
-                }
-            }
-            return subItemSum;
+        long effort = getRemainingEffortFromParse();
+//<editor-fold defaultstate="collapsed" desc="comment">
+////        if (forSubtasks && getItemListSize() > 0) {
+//        if ( isProject()) {
+////            return sumUpEffortForSubItemsBuffered(FIELD_EFFORT_REMAINING); //optimization: store sum in intermediate variable to avoid recalculating each time
+////            return ((Long) derivedRemainingEffortSubItemsSumBuffered.getValue()).longValue();
+////            return ((Long) derivedRemainingEffortSubItemsSumBuffered.getValue());
+////            long subItemSum = 0;
+//////            for (Object i : subitems) {
+//////            for (Object i : getItemList()) {
+////            for (Object i : getList()) {
+////                Item item = (Item) i;
+////                if (!item.isDone()) {
+//////                    subItemSum += item.getRemainingEffort(forSubtasks);
+////                    subItemSum += item.getRemainingEffort(forSubtasks, useDefaultEstimateForZeroEstimates);
+////                }
+////            }
+////            return subItemSum;
+//            return getRemainingEffortFromParse()+getRemainingEffortFromSubtasks();
+//        } else {
+////            return remainingEffort;
+//            Long remainingEffort = getLong(PARSE_REMAINING_EFFORT);
+//            if (useDefaultEstimateForZeroEstimates //&& MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() != 0 //OK to use default value even if zero (gives 0 in any case)
+//                    && (remainingEffort == null || remainingEffort == 0)) {
+//                return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
+//            } else {
+//                return (remainingEffort == null) ? 0L : remainingEffort;
+//            }
+//        }
+//</editor-fold>
+        if (useDefaultEstimateForZeroEstimates && effort == 0) {
+            return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
         } else {
-//            return remainingEffort;
-            Long remainingEffort = getLong(PARSE_REMAINING_EFFORT);
-            if (useDefaultEstimateForZeroEstimates //&& MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() != 0 //OK to use default value even if zero (gives 0 in any case)
-                    && (remainingEffort == null || remainingEffort == 0)) {
-                return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
-            } else {
-                return (remainingEffort == null) ? 0L : remainingEffort;
-            }
+            return effort;
         }
     }
+
+            public long getRemainingEffortFromSubtasks() {
+        long effort = 0;
+        for (Item item : (List<Item>) getList()) {
+            effort += item.getRemainingEffort(); //remainingEffort  returns complete actual effort for subtasks (including their own effort and that of any of their subtasks
+        }
+        return effort;
+    }
+
+        
+        ////////////// ACTUAL ///////////////
 
     private void setActualEffortInParse(long actualEffortMillis) {
         if (actualEffortMillis != 0) {
             put(PARSE_ACTUAL_EFFORT, actualEffortMillis);
             //if setting Actual to a positive value (larger than zero) for the first time, and status==Created, set to Ongoing
-            if (getActualEffort() == 0 && getStatus() == ItemStatus.CREATED && Settings.getInstance().setStatusOngoingWhenActualEffortSetFirstTime()) {
+//            if (getActualEffort() == 0 && getStatus() == ItemStatus.CREATED && Settings.getInstance().setStatusOngoingWhenActualEffortSetFirstTime()) {
+            if (getStatus() == ItemStatus.CREATED && Settings.getInstance().setStatusOngoingWhenActualEffortSetFirstTime()) {
                 setStatus(ItemStatus.ONGOING); //automatically set to Ongoing as soon as time is spent on the task; setStatus set startedOn date
             }
         } else {
             remove(PARSE_ACTUAL_EFFORT);
             //if Actual is reduced to zero then set status back to Created and reset StartedOn date
-            if (actualEffortMillis == 0 && getActualEffort() > 0 && Settings.getInstance().setStatusToCreatedIfActualReducedToZero()) { //TODO replace use of Settings by MyPrefs
+//            if (actualEffortMillis == 0 && getActualEffort() > 0 && Settings.getInstance().setStatusToCreatedIfActualReducedToZero()) { //TODO replace use of Settings by MyPrefs
+            if (getStatus() == ItemStatus.ONGOING && Settings.getInstance().setStatusToCreatedIfActualReducedToZero()) { //TODO replace use of Settings by MyPrefs
                 setStatus(ItemStatus.CREATED);
             }
         }
@@ -5028,13 +5141,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public void setActualEffort(long actualEffortMillis) {
 //        setActualEffort(actualEffortMillis, false, false);
-        if (isProject()) {
-            setActualEffortProjectTaskItselfInParse(actualEffortMillis);
-            setActualEffortInParse(getActualEffortFromSubtasks() + actualEffortMillis);
-        } else {
-            setActualEffortInParse(actualEffortMillis);
+//        if (isProject()) {
+//            setActualEffortProjectTaskItselfInParse(actualEffortMillis);
+//            setActualEffortInParse(getActualEffortFromSubtasks());// + actualEffortMillis);
+//        } else {
+//            setActualEffortInParse(actualEffortMillis);
+//        }
+        long oldActualEffortTotal = getActualEffort();
+        long actualEffortSubtasks = getActualEffortFromSubtasks();
+        long newActualEffortTotal = actualEffortSubtasks + actualEffortMillis;
+
+        setActualEffortInParse(newActualEffortTotal);// + actualEffortMillis);
+        setActualEffortProjectTaskItselfInParse(actualEffortMillis);
+
+        if (newActualEffortTotal != oldActualEffortTotal) {
+            update();
         }
-        update();
     }
 
     /**
@@ -5043,9 +5165,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @param additionalActualEffortMillis
      */
-    public void addToActualEffort(long additionalActualEffortMillis) {
-        setActualEffort(getActualEffort(false) + additionalActualEffortMillis, false, true); //TODO check use of for subtasks or for project itself
-    }
+//    public void addToActualEffortxx(long additionalActualEffortMillis) {
+////        setActualEffort(getActualEffort(false) + additionalActualEffortMillis, false, true); //TODO check use of for subtasks or for project itself
+//        setActualEffort(getActualEffort() + additionalActualEffortMillis); //TODO check use of for subtasks or for project itself
+//    }
 
     public long getActualEffortFromParse() {
         Long actualEffort = getLong(PARSE_ACTUAL_EFFORT);
@@ -5062,8 +5185,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public long getActualEffortProjectTaskItselfFromParse() {
-        Long actualEffort = getLong(PARSE_ACTUAL_EFFORT);
+        Long actualEffort = getLong(PARSE_ACTUAL_EFFORT_PROJECT_TASK_ITSELF);
         return (actualEffort == null) ? 0L : actualEffort;
+    }
+
+    /**
+    return the effort for the project task itself, that is, if this is not a project, return actual effort PARSE_ACTUAL_EFFORT, if it *is*
+    a project, return the PARSE_ACTUAL_EFFORT_PROJECT_TASK_ITSELF
+    @return 
+     */
+    public long getActualEffortProjectTaskItself() {
+        if (isProject()){
+            return getActualEffortProjectTaskItselfFromParse();
+        } else {
+            return getActualEffortFromParse();
+        }
     }
 
 //    public void setActualEffortInMinutes(int val) {
@@ -5075,21 +5211,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public long getActualEffortFromSubtasks() {
-        long actual = 0;
-        List subtasks = getList();
-        for (int i = 0, size = subtasks.size(); i < size; i++) {
-            Item item = (Item) subtasks.get(i);
-            if (true || !item.isDone()) { // /** || includeDone */) { //ALWAYS include actual even for Done tasks so project Actual is exhaustive
-                actual += item.getActualEffortFromSubtasks();
-            }
+        long actual = 0;//getActualEffortProjectTaskItselfFromParse();
+//        List subtasks = getList();
+//        for (int i = 0, size = subtasks.size(); i < size; i++) {
+//            Item item = (Item) subtasks.get(i);
+        for (Item item : (List<Item>) getList()) {
+//            if (true || !item.isDone()) { // /** || includeDone */) { //ALWAYS include actual even for Done tasks so project Actual is exhaustive
+//                actual += item.getActualEffortFromSubtasks();
+            actual += item.getActualEffort(); //actuelEffort now returns complete actual effort for subtasks (including their own effort and that of any of their subtasks
+//            }
         }
         return actual;
     }
 
-    public long getActualEffort(boolean forSubtasks) {
-        return getActualEffortFromParse();
-    }
-
+//    public long getActualEffort(boolean forSubtasks) {
+//        return getActualEffortFromParse();
+//    }
     public long getActualEffortOLD(boolean forSubtasks) {
 //        Long actual = getLong(PARSE_ACTUAL_EFFORT);
 //        if (actual == null) {
@@ -5120,7 +5257,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public long getActualEffort() {
-        return getActualEffort(true);
+//        return getActualEffort(true);
+        return getActualEffortFromParse();
     }
 
 //    public int getActualEffortInMinutes() {
@@ -5152,7 +5290,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    + ". Reduce " + getFieldName(Item.FIELD_EFFORT_REMAINING) + " by " + Duration.formatDuration(actualIncrease, true) + " to " + Duration.formatDuration(updatedRemaining, true) + "?", //TODO!!!: add "Reduce Remaining with 0:10 to [1:35]?"
 //                    getFieldName(Item.FIELD_EFFORT_REMAINING), updatedRemaining);
 ////            if (res != -1) {
-////            setRemainingEffort(res);
+////            setRemainingEffortXXX(res);
 ////            }
 //        }
 //        return res;
@@ -5164,7 +5302,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public void askIfAutoDecreaseRemainingEffortWhenActualIncreased(long newActualEffort, long oldActualEffort, long newRemainingEffort, long oldRemainingEffort) {
 //        long remaining = getIfAutoDecreaseRemainingEffortWhenActualIncreased(newActualEffort, oldActualEffort, newRemainingEffort, oldRemainingEffort);
 //        if (remaining != -1) {
-//            setRemainingEffort(remaining);
+//            setRemainingEffortXXX(remaining);
 //        }
 //    }
     /**
@@ -5182,9 +5320,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                {
 //                    if (newActualEffort == getActualEffort()) { //only remaining effort may have changed
 ////                        askIfAutoUpdateActualEffortWhenRemainingReduced(newActualEffort, this.actualEffort, newRemainingEffort, this.remainingEffort); //-don't: it's counterintuitive - use increaseActual to record actuals, not decreaseRemaining
-//                        setRemainingEffort(newRemainingEffort);
+//                        setRemainingEffortXXX(newRemainingEffort);
 //                    } else { //both actual and remaining effort have changed
-//                        setRemainingEffort(newRemainingEffort); //no contradicting side effects between updating Remaining and Actual
+//                        setRemainingEffortXXX(newRemainingEffort); //no contradicting side effects between updating Remaining and Actual
 //                        setActualEffort(newActualEffort, false, false);
 //                    }
 //                }
@@ -5196,10 +5334,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                {
 //                    if (newActualEffort == getActualEffort()) { //only estimate and remaining effort may have changed
 //                        setEffortEstimate(newEffortEstimate, false, false);
-//                        setRemainingEffort(newRemainingEffort, false, false);
+//                        setRemainingEffortXXX(newRemainingEffort, false, false);
 //                    } else { //both actual and remaining effort have changed
 //                        setEffortEstimate(newEffortEstimate, false, false);
-//                        setRemainingEffort(newRemainingEffort, false, false);
+//                        setRemainingEffortXXX(newRemainingEffort, false, false);
 //                        setActualEffort(newActualEffort, true, false); //do autoupdate status
 //                    }
 //                }
@@ -5215,9 +5353,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                {
 //                    if (newActualEffort == getActualEffort()) { //only remaining effort may have changed
 ////                        askIfAutoUpdateActualEffortWhenRemainingReduced(newActualEffort, this.actualEffort, newRemainingEffort, this.remainingEffort); //-don't: it's counterintuitive - use increaseActual to record actuals, not decreaseRemaining
-//                        setRemainingEffort(newRemainingEffort);
+//                        setRemainingEffortXXX(newRemainingEffort);
 //                    } else { //both actual and remaining effort have changed
-//                        setRemainingEffort(newRemainingEffort); //no contradicting side effects between updating Remaining and Actual
+//                        setRemainingEffortXXX(newRemainingEffort); //no contradicting side effects between updating Remaining and Actual
 //                        setActualEffort(newActualEffort, false, false); //don't autoupdate status
 //                    }
 //                }
@@ -5229,10 +5367,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                {
 //                    if (newActualEffort == getActualEffort()) { //only estimate and remaining effort may have changed
 //                        setEffortEstimate(newEffortEstimate, false, false);
-//                        setRemainingEffort(newRemainingEffort, false, false);
+//                        setRemainingEffortXXX(newRemainingEffort, false, false);
 //                    } else { //both actual and remaining effort have changed
 //                        setEffortEstimate(newEffortEstimate, false, false);
-//                        setRemainingEffort(newRemainingEffort, false, false);
+//                        setRemainingEffortXXX(newRemainingEffort, false, false);
 //                        setActualEffort(newActualEffort, false, false);
 //                    }
 //                }
@@ -6488,7 +6626,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
             EstimateResult res = getEffortEstimateFromTaskText(txt);
             txt = res.cleaned;
-            item.setEffortEstimate(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, true, true); //update remaining, set for project-level
+            item.setEffortEstimate(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS); //update remaining, set for project-level
         }
         return txt;
     }
@@ -6664,23 +6802,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_EFFORT_ESTIMATE:
                 if (toCSV) {
-                    list.add((MyDate.formatTimeDuration(getEffortEstimate(false))));
+                    list.add((MyDate.formatTimeDuration(getEffortEstimate())));
                 } else {
-                    setEffortEstimate((Long) val, false, true);
+                    setEffortEstimate((Long) val);
                 }
                 break;
             case PARSE_REMAINING_EFFORT:
                 if (toCSV) {
-                    list.add((MyDate.formatTimeDuration(getRemainingEffort(false))));
+                    list.add((MyDate.formatTimeDuration(getRemainingEffortFromParse())));
                 } else {
-                    setRemainingEffort((Long) val, false, true); //UI: import of project estimates
+                    setRemainingEffort((Long) val); //UI: import of project estimates
                 }
                 break;
             case PARSE_ACTUAL_EFFORT:
                 if (toCSV) {
-                    list.add((MyDate.formatTimeDuration(getActualEffort(false))));
+                    list.add((MyDate.formatTimeDuration(getActualEffortProjectTaskItself())));
                 } else {
-                    setActualEffort((Long) val, false, true); //UI: import of project estimates
+                    setActualEffort((Long) val); //UI: import of project estimates
                 }
                 break;
             case PARSE_CATEGORIES:
