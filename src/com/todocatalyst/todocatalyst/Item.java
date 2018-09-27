@@ -838,10 +838,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String EFFORT_REMAINING_SUBTASKS = "Remaining effort, subtasks"; //"Remaining effort";"Remaining time (subtasks)"
 //    final static String EFFORT_REMAINING_SUBTASKS_HELP = "The sum of the " + EFFORT_REMAINING+" of all subtasks"; //"Remaining effort";"Remaining time (subtasks)"
     final static String EFFORT_REMAINING_SUBTASKS_HELP = "The sum of the [EFFORT_REMAINING] of all subtasks"; //"Remaining effort";"Remaining time (subtasks)"
-    final static String EFFORT_ESTIMATE_PROJECT = "Estimated effort, project"; //"Effort estimate";"Estimated time (project)"
+    final static String EFFORT_ESTIMATE_PROJECT = "Estimated effort, this task";//project"; //"Effort estimate";"Estimated time (project)"
 //    final static String EFFORT_ESTIMATE_PROJECT_HELP = EFFORT_ESTIMATE+" for the project. You can use this to indicate a total estimate for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_ESTIMATE_PROJECT_HELP = "[EFFORT_ESTIMATE] for the project. You can use this to indicate a total estimate for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
-    final static String EFFORT_REMAINING_PROJECT = "Remaining effort, project"; //"Remaining effort";"Remaining time (project)"
+    final static String EFFORT_REMAINING_PROJECT = "Remaining effort, this task"; //"Remaining effort";"Remaining time (project)"
 //    final static String EFFORT_REMAINING_PROJECT_HELP = EFFORT_REMAINING+" for the project. You can use this to **?? indicate a total for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_REMAINING_PROJECT_HELP = "[EFFORT_REMAINING] for the project. You can use this to **?? indicate a total for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_TOTAL_SHORT = "Total effort"; //total effort in Timer (previous actual + timer elapsed time)
@@ -1131,12 +1131,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return status == ItemStatus.DONE || status == ItemStatus.CANCELLED;  //CANCELLED since this makes a Cancelled task flip back to Created when clicked in a list
     }
 
+    public boolean areAnySubtasksOngoing() {
+        return getCountOfSubtasksWithStatus(true, Arrays.asList(ItemStatus.DONE, ItemStatus.ONGOING)) > 0;
+    }
+
     /**
     returns true if work on this task has actually started (no matter what ItemStatus is returned, e.g. actualEffort>0 or some subtasks are marked done
     @return 
      */
     public boolean hasWorkStarted() {
-        return getActualEffort() > 0 || (isProject() && getCountOfSubtasksWithStatus(true, Arrays.asList(ItemStatus.DONE, ItemStatus.ONGOING)) > 0); //TODO!!! ensure that ONGOING is true whenever there is actualeffort or subtasks done
+        return getActualEffort() > 0 || (isProject() && areAnySubtasksOngoing()); //TODO!!! ensure that ONGOING is true whenever there is actualeffort or subtasks done
     }
 
     /**
@@ -3565,33 +3569,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
     /**
-     * sets the Done status of the Item. if current status is not Done, then
-     * Created, Ongoing, Waiting, then set to completed. TODO!!!! check this
-     * works If current status is Cancelled, then set to Created, or Ongoing if
-     * Actual!=0. If current status is Done, then set to Created, or Ongoing if
-     * Actual!=0.
-     *
-     * @param done
-     */
-    public void setDone(boolean done) {
-        if (done) {
-            if (!isDone()) {
-                //only change status if not already Done (or Cancelled)
-                setStatus(ItemStatus.DONE);
-            }
-        } else //if Done was set before and now is unset then reset completedDate //TODO: avoid extra call to receiveChangeEvent() in setCompletedDate()
-        //        if (getActualEffort() != 0) {
-        //            //if effort is recorded, then the right state to revert to is ONGOING; 
-        //            //TODO!!!!: are there other indicators that previous state should be other than CREATED (or should we simply store the previous state and use that??!!)
-        //            setStatus(ItemStatus.ONGOING);
-        //        } else {
-        {
-            setStatus(ItemStatus.CREATED);
-        }
-//        }
-    }
-
-    /**
      * implements the user-visible logic of setting a task Waiting, and notably,
      * unsetting the Waiting state
      */
@@ -3810,11 +3787,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param newStatus new value (possibly manually edited by user)
      * @return
      */
-    static public ItemStatus updateStatusOnActualChange(long oldActual, long newActual, ItemStatus oldStatus, ItemStatus newStatus) {
+    static public ItemStatus updateStatusOnActualChange(long oldActual, long newActual, ItemStatus oldStatus, ItemStatus newStatus, boolean areAnySubtasksOngoing) {
         if (oldActual == newActual) {
-            return newStatus; //return if no change
+            return oldStatus; //return if no change
+        } else if (areAnySubtasksOngoing) { //if some subtasks are done
+            return ItemStatus.ONGOING;
         } else if (newActual > 0) { //if user has changed actual
-            if (oldStatus == ItemStatus.CREATED /*don't change WAITING/CANCELLED/ONGOING*/ && (newStatus == oldStatus/*status not manually changed*/ || oldStatus == ItemStatus.ONGOING /*setting back to existing value*/)) {
+            if (oldStatus == ItemStatus.CREATED /*don't change WAITING/CANCELLED/ONGOING*/
+                    && (newStatus == oldStatus/*status not manually changed*/
+                    || oldStatus == ItemStatus.ONGOING /*setting back to existing value*/)) {
                 return ItemStatus.ONGOING;
             } //else 
         } else if (oldStatus == ItemStatus.ONGOING && newStatus == oldStatus) {
@@ -3840,11 +3821,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
 //    public static boolean changeSubtaskStatus(int newStatus, int oldStatus) {
-    public static boolean shouldSubtaskStatusChange(ItemStatus newStatus, ItemStatus oldStatus) {
-        return shouldSubtaskStatusChange(newStatus, oldStatus, false);
+    public static boolean shouldTaskStatusChange(ItemStatus newStatus, ItemStatus oldStatus) {
+        return shouldTaskStatusChange(newStatus, oldStatus, false);
     }
 
-    public static boolean shouldSubtaskStatusChange(ItemStatus newStatus, ItemStatus oldStatus, boolean changingFromDone) {
+    public static boolean shouldTaskStatusChange(ItemStatus newStatus, ItemStatus oldStatus, boolean changingFromDone) {
         if (changingFromDone) {
             return ((newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.WAITING || newStatus == ItemStatus.CREATED)
                     && (oldStatus != ItemStatus.CANCELLED)); //if project is DONE, then all tasks are either CANCELLED or DONE, so
@@ -3869,14 +3850,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return ((newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.WAITING || newStatus == ItemStatus.CREATED)
 //                && (oldStatus != ItemStatus.CANCELLED));
 //    }
-//    public boolean shouldSubtaskStatusChange(ItemStatus newStatus) {
-//        return shouldSubtaskStatusChange(newStatus, getStatus());
+//    public boolean shouldTaskStatusChange(ItemStatus newStatus) {
+//        return shouldTaskStatusChange(newStatus, getStatus());
 //    }
     @Override
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         List list = getList();
         if (list == null || list.size() == 0) {
-            return shouldSubtaskStatusChange(newStatus, getStatus()) ? 1 : 0;
+            return shouldTaskStatusChange(newStatus, getStatus()) ? 1 : 0;
         } else {
             return ItemList.getNumberOfItemsThatWillChangeStatus(list, recurse, newStatus, changingFromDone);
         }
@@ -3900,45 +3881,51 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param forceSubtasksToStatus
      */
 //    public void setStatusImpl(boolean topLevelTask, ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
-    public void setStatusImpl(boolean topLevelTask, ItemStatus newStatus) {
+//    public void setStatusImpl(boolean topLevelTask, ItemStatus newStatus) {
+    public void setStatusImpl(ItemStatus newStatus) {
         ItemStatus previousStatus = getStatus();
         if (previousStatus != newStatus) { //if status has receiveChangeEvent:
 //            ItemStatus oldStatus = this.status;
 //            ItemStatus oldStatus = getStatus();
-            if (topLevelTask || shouldSubtaskStatusChange(newStatus, previousStatus, topLevelTask && previousStatus == ItemStatus.DONE)) {
+//            if (topLevelTask || shouldTaskStatusChange(newStatus, previousStatus, topLevelTask && previousStatus == ItemStatus.DONE)) {
+            if (shouldTaskStatusChange(newStatus, previousStatus, previousStatus == ItemStatus.DONE)) {
 //                status = newStatus;
-                setStatusInParse(newStatus);
-            }
-            if (false) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                if (forceSubtasksToStatus && getItemListSize() > 0) {
-//                    if (askConfirmation) {
-//                        int nbSubTasksDiffFromStatus = countTasksWhereStatusWillBeChanged(newStatus, forceSubtasksToStatus);
-//                        int nbSubtasksToChangeWithoutConfirmation = Settings.getInstance().nbSubtasksToChangeStatusWithoutConfirmation.getInt();
-//                        if (nbSubTasksDiffFromStatus > 0 && (nbSubTasksDiffFromStatus <= nbSubtasksToChangeWithoutConfirmation
-//                                || (Dialog.show("Set " + nbSubTasksDiffFromStatus + " subtasks to " + Item.getStatusName(status) + "?",
-//                                        "Are you sure you want to set " + nbSubTasksDiffFromStatus + " subtasks to " + Item.getStatusName(status)
-//                                        + "?\nThis cannot be undone.", "OK", "Cancel")))) {
-//                            getItemList().setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
-//                        }
-//                    } else { //no need to ask for confirmation
-//                        getItemList().setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
-//                    }
-////            if (obj instanceof BaseItemOrList) {
-////                ((BaseItemOrList) obj).setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
-//                    obj.setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
-////            }
-//                }
-//</editor-fold>
-            } else {
-//                    public void setStatusImpl(boolean topLevelTask, Item.ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
-//                        for (int i = 0, size = getSize(); i < size; i++) {
-//                ItemList subtasks = getItemList();
-                List subtasks = getList();
-                for (Object itemOrList : subtasks) {
-                    ((ItemAndListCommonInterface) itemOrList).setStatus(newStatus);
+                if (newStatus == ItemStatus.CREATED && getActualEffort() > 0) {
+                    setStatusInParse(ItemStatus.ONGOING);
+                } else { //if (newStatus == ItemStatus.ONGOING && getActualEffort() > 0) {
+                    setStatusInParse(newStatus);
                 }
             }
+//            if (false) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (forceSubtasksToStatus && getItemListSize() > 0) {
+////                    if (askConfirmation) {
+////                        int nbSubTasksDiffFromStatus = countTasksWhereStatusWillBeChanged(newStatus, forceSubtasksToStatus);
+////                        int nbSubtasksToChangeWithoutConfirmation = Settings.getInstance().nbSubtasksToChangeStatusWithoutConfirmation.getInt();
+////                        if (nbSubTasksDiffFromStatus > 0 && (nbSubTasksDiffFromStatus <= nbSubtasksToChangeWithoutConfirmation
+////                                || (Dialog.show("Set " + nbSubTasksDiffFromStatus + " subtasks to " + Item.getStatusName(status) + "?",
+////                                        "Are you sure you want to set " + nbSubTasksDiffFromStatus + " subtasks to " + Item.getStatusName(status)
+////                                        + "?\nThis cannot be undone.", "OK", "Cancel")))) {
+////                            getItemList().setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
+////                        }
+////                    } else { //no need to ask for confirmation
+////                        getItemList().setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
+////                    }
+//////            if (obj instanceof BaseItemOrList) {
+//////                ((BaseItemOrList) obj).setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
+////                    obj.setStatusImpl(false, newStatus, false, forceSubtasksToStatus);
+//////            }
+////                }
+////</editor-fold>
+//            } else {
+////                    public void setStatusImpl(boolean topLevelTask, Item.ItemStatus newStatus, boolean askConfirmation, boolean forceSubtasksToStatus) {
+////                        for (int i = 0, size = getSize(); i < size; i++) {
+////                ItemList subtasks = getItemList();
+//                List subtasks = getList();
+//                for (Object itemOrList : subtasks) {
+//                    ((ItemAndListCommonInterface) itemOrList).setStatus(newStatus);
+//                }
+//            }
 
             //StartedOnDate SET:
             if (getStartedOnDate() == 0 && (newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.DONE)) {
@@ -4005,7 +3992,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (previousStatus != newStatus) { //if status has receiveChangeEvent:
 ////            ItemStatus oldStatus = this.status;
 ////            ItemStatus oldStatus = getStatus();
-//            if (topLevelTask || shouldSubtaskStatusChange(newStatus, previousStatus)) {
+//            if (topLevelTask || shouldTaskStatusChange(newStatus, previousStatus)) {
 ////                status = newStatus;
 //                setStatusSaveValue(newStatus);
 //            }
@@ -4114,18 +4101,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             //when changing the status of a project, only the status of the subtasks are changed(??)
             ItemStatus oldStatus = getStatus();
             if (newStatus != oldStatus) { //only check how many subtasks may be impacted if overall status is being changed
-                boolean doneProject = oldStatus == ItemStatus.DONE;
+                boolean doneProject = (oldStatus == ItemStatus.DONE);
 //            int nbUndone = getNumberOfUndoneItems(true);
                 int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
                 if (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
                         || Dialog.show("INFO", "Changing status for " + nbChgStatus + " subtasks", "OK", "No")) {
-                    List<Item> subtasks = getList();
                     List subtasksToSave = new ArrayList();
-                    for (int i = 0, size = subtasks.size(); i < size; i++) {
+//                    List<Item> subtasks = getList();
+//                    for (int i = 0, size = subtasks.size(); i < size; i++) {
+                    for (Item item : (List<Item>) getList()) {
 //                    if (!subtasks.get(i).isDone()) {
-                        ItemStatus oldSubtaskStatus = subtasks.get(i).getStatus();
-                        if (shouldSubtaskStatusChange(newStatus, oldSubtaskStatus, doneProject)) { //only change status when transiation is allowed
-                            Item item = subtasks.get(i);
+//                        ItemStatus oldSubtaskStatus = subtasks.get(i).getStatus();
+                        ItemStatus oldSubtaskStatus = item.getStatus();
+                        if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, doneProject)) { //only change status when transition is allowed
+//                            Item item = subtasks.get(i);
                             item.setStatus(newStatus);
                             subtasksToSave.add(item);
 //                            DAO.getInstance().saveInBackgroundSequential(item);
@@ -4138,10 +4127,177 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             //        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), true); 
             //        setStatusImpl(true, newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), !Settings.getInstance().neverChangeProjectsSubtasksWhenChangingProjectStatus.getBoolean());
 //            setStatusImpl(true, newStatus, !MyPrefs.changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), MyPrefs.neverChangeProjectsSubtasksWhenChangingProjectStatusXXX.getBoolean());
-            setStatusImpl(true, newStatus);
+//            setStatusImpl(true, newStatus);
+            setStatusImpl(newStatus);
         }
     }
 
+    /**
+     * sets the Done status of the Item. if current status is not Done, then
+     * Created, Ongoing, Waiting, then set to completed. TODO!!!! check this
+     * works If current status is Cancelled, then set to Created, or Ongoing if
+     * Actual!=0. If current status is Done, then set to Created, or Ongoing if
+     * Actual!=0.
+     *
+     * @param done
+     */
+    public void setDone(boolean done) {
+        if (done) {
+            if (!isDone()) {
+                //only change status if not already Done (or Cancelled)
+                setStatus(ItemStatus.DONE);
+            }
+        } else //if Done was set before and now is unset then reset completedDate //TODO: avoid extra call to receiveChangeEvent() in setCompletedDate()
+        //        if (getActualEffort() != 0) {
+        //            //if effort is recorded, then the right state to revert to is ONGOING; 
+        //            //TODO!!!!: are there other indicators that previous state should be other than CREATED (or should we simply store the previous state and use that??!!)
+        //            setStatus(ItemStatus.ONGOING);
+        //        } else {
+        {
+            setStatus(ItemStatus.CREATED);
+        }
+//        }
+    }
+
+    /**
+     * actually updates the saved value of status
+     *
+     * @param newStatus
+     */
+    private void setStatusInParse(ItemStatus newStatus) {
+//        put(PARSE_STATUS, newStatus);
+//        put(PARSE_STATUS, newStatus.toString());
+//        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), true); 
+//        if (getRepeatRule() != null && newStatus == ItemStatus.DONE && newStatus == ItemStatus.CANCELLED) { //update repeats on DONE/CANCEL
+//            getRepeatRule().updateRepeatInstancesWhenItemIsDoneOrCancelled(this, getOwner(), MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : getOwner().size());
+//        }
+//        if (newStatus != null && newStatus != ItemStatus.CREATED) { //MUST store every status incl. CREATED to be able to query on it
+////            put(PARSE_CATEGORIES, new ArrayList(categories));
+//            put(PARSE_STATUS, newStatus.toString());
+//        } else { //categories == null || categories.isEmpty()
+//            remove(PARSE_STATUS);
+//        }
+        put(PARSE_STATUS, newStatus.toString());
+        update();
+    }
+
+    /**
+     * returns an composite state for a list of tasks (list of leaf(!) subtasks
+     * or ItemList) based on the state of all its subtasks/subprojects Rules: -
+     * all tasks Done or Cancelled => Done; - all tasks Cancelled => Cancelled;
+     * - if all that are not Done/Cancelled are Waiting => Waiting (//UI: a
+     * project is only waiting if ALL undone tasks are waiting - meaning no work
+     * to do currently); - if at least one task is Ongoing (and some
+     * Cancelled/Waiting/Done) => Ongoing; - else: Created
+     *
+     * @return
+     */
+    public ItemStatus getStatusFromSubtasks() {
+        return getStatus(getList());
+    }
+
+    public static ItemStatus getStatus(List<Item> list) {
+        //TODO optimization: only calculate/update a project's status when a subtask changes and then simply return the project's status here instead of calculating dynamically
+        Bag<ItemStatus> statusCount = new Bag<ItemStatus>();
+        int listSize = list.size();
+
+//        getStatusImplProjectLeaftasks(list, statusCount);
+        getStatusImplDirectSubTasksOnly(list, statusCount);
+
+        if (statusCount.getCount(ItemStatus.CANCELLED) == listSize) {//all subtasks are cancelled
+            return ItemStatus.CANCELLED;
+//        if (statusCount[BaseItemOrList.STATUS_CREATED] == listSize) {//all subtasks are created
+//                projectStatus = BaseItemOrList.STATUS_CREATED; 
+        } else if (statusCount.getCount(ItemStatus.DONE) + statusCount.getCount(ItemStatus.CANCELLED) == listSize) {//all subtasks are either done or cancelled
+            return ItemStatus.DONE;
+        } else if (statusCount.getCount(ItemStatus.DONE) + statusCount.getCount(ItemStatus.CANCELLED) + statusCount.getCount(ItemStatus.WAITING) == listSize) {//all subtasks are either done or cancelled
+            return ItemStatus.WAITING;
+        } else if (statusCount.getCount(ItemStatus.ONGOING) >= 1 || statusCount.getCount(ItemStatus.DONE) >= 1) {//if at least one subtasks is ongoing or one is Done
+            return ItemStatus.ONGOING;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        } else if (statusCount.getCount(ItemStatus.ONGOING) > 0
+//                || (statusCount.getCount(ItemStatus.DONE) > 0
+//                && statusCount.getCount(ItemStatus.CREATED) > 0
+//                && statusCount.getCount(ItemStatus.WAITING) == 0)) { //the whole project is ongoing if just one task is ongoing, or if there if some, but not all, tasks are completed
+//            projectStatus = ItemStatus.ONGOING;
+//        } else if (statusCount.getCount(ItemStatus.WAITING) > 0) { //if there are no ongoing tasks, then just one waiting tasks makes the whole project waiting (other tasks are either Cancelled or Created
+////        } else { //if there are no ongoing tasks, then just one waiting tasks makes the whole project waiting (other tasks are either Cancelled or Created
+//            projectStatus = ItemStatus.WAITING;
+//</editor-fold>
+        } else { //if (statusCount[BaseItemOrList.STATUS_CREATED]>0) // if there are no ongoing and no waiting, then the only possible state for remaining subtasks is Created
+            return ItemStatus.CREATED;
+        }
+    }
+
+    /**
+     * gets the status of a list of tasks from the status of its top-level tasks
+     * only (contrary to getStatusImplProjectLeaftasks). Not sure if this will
+     * give the same as based on leaf-tasks (which might be more precise??) but
+     * is more logical for end-user since easier to visually check project tasks
+     * against its first-level sub-tasks (at any level of the project hierarchy)
+     *
+     * @param list
+     * @param statusCount counts the number of times each status appears
+     */
+    private static void getStatusImplDirectSubTasksOnly(List<Item> list, Bag<ItemStatus> statusCount) {
+//    private static void getStatusImpl(List<ItemAndListCommonInterface> list, Bag<ItemStatus> statusCount) {
+//    protected ItemStatus getListStatus() {
+        for (int i = 0, size = list.size(); i < size; i++) {
+//            statusCount.add(list.get(i).getStatus());
+//            statusCount.add(list.get(i).getStatus());
+//            ItemAndListCommonInterface item = list.get(i);
+            Item item = list.get(i);
+//            if (item.isProject()) {
+//                getStatusImplDirectSubTasksOnly(item.getList(), statusCount);
+//            } else {
+            statusCount.add(item.getStatus());
+//            }
+        }
+    }
+
+    /**
+     * gets the status of a list of tasks based on the status of its leaf-tasks
+     * (contrary to getStatusImplProjectLeaftasks) counts all leaf tasks
+     *
+     * @param list
+     * @param statusCount
+     */
+    private static void getStatusImplProjectLeaftasks(List<Item> list, Bag<ItemStatus> statusCount) {
+//    protected ItemStatus getListStatus() {
+        for (int i = 0, size = list.size(); i < size; i++) {
+//            statusCount.add(list.get(i).getStatus());
+//            statusCount.add(list.get(i).getStatus());
+//            ItemAndListCommonInterface item = list.get(i);
+            Item item = list.get(i);
+            if (item.isProject()) {
+                getStatusImplProjectLeaftasks(item.getList(), statusCount);
+            } else {
+                statusCount.add(list.get(i).getStatus());
+//                statusCount.add(item.getStatus());
+            }
+        }
+    }
+
+    private ItemStatus getStatusFromParse() {
+        String status = getString(PARSE_STATUS);
+        return (status == null) ? ItemStatus.CREATED : ItemStatus.valueOf(status); //Created is initial value
+    }
+
+    public ItemStatus getStatus() {
+//        if (isProject()) {
+//            return getStatus(getList());
+//        } else {
+//            return getStatusFromParse();
+//        }
+        return getStatusFromParse();
+    }
+
+//    public ItemStatus getStatusOLD() {
+////        return status;
+////        Object status = (ItemStatus) get(PARSE_STATUS);
+//        String status = getString(PARSE_STATUS);
+//        return (status == null) ? ItemStatus.CREATED : ItemStatus.valueOf(status); //Created is initial value
+//    }
     /**
     refresh all values that are derived (or depend on other fields) and stored in Parse AND used for queries. 
     Eg all project values that depend on the subtasks are in this case.
@@ -4348,145 +4504,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     }
 
-    /**
-     * actually updates the saved value of status
-     *
-     * @param newStatus
-     */
-    private void setStatusInParse(ItemStatus newStatus) {
-//        put(PARSE_STATUS, newStatus);
-//        put(PARSE_STATUS, newStatus.toString());
-//        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), true); 
-//        if (getRepeatRule() != null && newStatus == ItemStatus.DONE && newStatus == ItemStatus.CANCELLED) { //update repeats on DONE/CANCEL
-//            getRepeatRule().updateRepeatInstancesWhenItemIsDoneOrCancelled(this, getOwner(), MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : getOwner().size());
-//        }
-//        if (newStatus != null && newStatus != ItemStatus.CREATED) { //MUST store every status incl. CREATED to be able to query on it
-////            put(PARSE_CATEGORIES, new ArrayList(categories));
-//            put(PARSE_STATUS, newStatus.toString());
-//        } else { //categories == null || categories.isEmpty()
-//            remove(PARSE_STATUS);
-//        }
-        put(PARSE_STATUS, newStatus.toString());
-        update();
-    }
-
-    /**
-     * returns an composite state for a list of tasks (list of leaf(!) subtasks
-     * or ItemList) based on the state of all its subtasks/subprojects Rules: -
-     * all tasks Done or Cancelled => Done; - all tasks Cancelled => Cancelled;
-     * - if all that are not Done/Cancelled are Waiting => Waiting (//UI: a
-     * project is only waiting if ALL undone tasks are waiting - meaning no work
-     * to do currently); - if at least one task is Ongoing (and some
-     * Cancelled/Waiting/Done) => Ongoing; - else: Created
-     *
-     * @return
-     */
-    public ItemStatus getStatusFromSubtasks() {
-        return getStatus(getList());
-    }
-
-    public static ItemStatus getStatus(List<Item> list) {
-        //TODO optimization: only calculate/update a project's status when a subtask changes and then simply return the project's status here instead of calculating dynamically
-        Bag<ItemStatus> statusCount = new Bag<ItemStatus>();
-        int listSize = list.size();
-
-//        getStatusImplProjectLeaftasks(list, statusCount);
-        getStatusImplDirectSubTasksOnly(list, statusCount);
-
-        if (statusCount.getCount(ItemStatus.CANCELLED) == listSize) {//all subtasks are cancelled
-            return ItemStatus.CANCELLED;
-//        if (statusCount[BaseItemOrList.STATUS_CREATED] == listSize) {//all subtasks are created
-//                projectStatus = BaseItemOrList.STATUS_CREATED; 
-        } else if (statusCount.getCount(ItemStatus.DONE) + statusCount.getCount(ItemStatus.CANCELLED) == listSize) {//all subtasks are either done or cancelled
-            return ItemStatus.DONE;
-        } else if (statusCount.getCount(ItemStatus.DONE) + statusCount.getCount(ItemStatus.CANCELLED) + statusCount.getCount(ItemStatus.WAITING) == listSize) {//all subtasks are either done or cancelled
-            return ItemStatus.WAITING;
-        } else if (statusCount.getCount(ItemStatus.ONGOING) >= 1 || statusCount.getCount(ItemStatus.DONE) >= 1) {//if at least one subtasks is ongoing or one is Done
-            return ItemStatus.ONGOING;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        } else if (statusCount.getCount(ItemStatus.ONGOING) > 0
-//                || (statusCount.getCount(ItemStatus.DONE) > 0
-//                && statusCount.getCount(ItemStatus.CREATED) > 0
-//                && statusCount.getCount(ItemStatus.WAITING) == 0)) { //the whole project is ongoing if just one task is ongoing, or if there if some, but not all, tasks are completed
-//            projectStatus = ItemStatus.ONGOING;
-//        } else if (statusCount.getCount(ItemStatus.WAITING) > 0) { //if there are no ongoing tasks, then just one waiting tasks makes the whole project waiting (other tasks are either Cancelled or Created
-////        } else { //if there are no ongoing tasks, then just one waiting tasks makes the whole project waiting (other tasks are either Cancelled or Created
-//            projectStatus = ItemStatus.WAITING;
-//</editor-fold>
-        } else { //if (statusCount[BaseItemOrList.STATUS_CREATED]>0) // if there are no ongoing and no waiting, then the only possible state for remaining subtasks is Created
-            return ItemStatus.CREATED;
-        }
-    }
-
-    /**
-     * gets the status of a list of tasks from the status of its top-level tasks
-     * only (contrary to getStatusImplProjectLeaftasks). Not sure if this will
-     * give the same as based on leaf-tasks (which might be more precise??) but
-     * is more logical for end-user since easier to visually check project tasks
-     * against its first-level sub-tasks (at any level of the project hierarchy)
-     *
-     * @param list
-     * @param statusCount counts the number of times each status appears
-     */
-    private static void getStatusImplDirectSubTasksOnly(List<Item> list, Bag<ItemStatus> statusCount) {
-//    private static void getStatusImpl(List<ItemAndListCommonInterface> list, Bag<ItemStatus> statusCount) {
-//    protected ItemStatus getListStatus() {
-        for (int i = 0, size = list.size(); i < size; i++) {
-//            statusCount.add(list.get(i).getStatus());
-//            statusCount.add(list.get(i).getStatus());
-//            ItemAndListCommonInterface item = list.get(i);
-            Item item = list.get(i);
-//            if (item.isProject()) {
-//                getStatusImplDirectSubTasksOnly(item.getList(), statusCount);
-//            } else {
-            statusCount.add(item.getStatus());
-//            }
-        }
-    }
-
-    /**
-     * gets the status of a list of tasks based on the status of its leaf-tasks
-     * (contrary to getStatusImplProjectLeaftasks) counts all leaf tasks
-     *
-     * @param list
-     * @param statusCount
-     */
-    private static void getStatusImplProjectLeaftasks(List<Item> list, Bag<ItemStatus> statusCount) {
-//    protected ItemStatus getListStatus() {
-        for (int i = 0, size = list.size(); i < size; i++) {
-//            statusCount.add(list.get(i).getStatus());
-//            statusCount.add(list.get(i).getStatus());
-//            ItemAndListCommonInterface item = list.get(i);
-            Item item = list.get(i);
-            if (item.isProject()) {
-                getStatusImplProjectLeaftasks(item.getList(), statusCount);
-            } else {
-                statusCount.add(list.get(i).getStatus());
-//                statusCount.add(item.getStatus());
-            }
-        }
-    }
-
-    private ItemStatus getStatusFromParse() {
-        String status = getString(PARSE_STATUS);
-        return (status == null) ? ItemStatus.CREATED : ItemStatus.valueOf(status); //Created is initial value
-    }
-
-    public ItemStatus getStatus() {
-//        if (isProject()) {
-//            return getStatus(getList());
-//        } else {
-//            return getStatusFromParse();
-//        }
-        return getStatusFromParse();
-    }
-
-//    public ItemStatus getStatusOLD() {
-////        return status;
-////        Object status = (ItemStatus) get(PARSE_STATUS);
-//        String status = getString(PARSE_STATUS);
-//        return (status == null) ? ItemStatus.CREATED : ItemStatus.valueOf(status); //Created is initial value
-//    }
     public long getDueDate() {
 //        return dueDate;
 //        Date date = getDate(PARSE_DUE_DATE);
@@ -4736,10 +4753,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_DATE_WHEN_SET_WAITING);
         }
     }
-    
-        ////////////// ESTIMATE ///////////////
-    
 
+    ////////////// ESTIMATE ///////////////
     private void setEffortEstimateInParse(long effortEstimateMillis) {
         if (effortEstimateMillis != 0) {
             put(PARSE_EFFORT_ESTIMATE, effortEstimateMillis); //update first 
@@ -4754,19 +4769,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     origianl estimate with the total Actual. 
     @param effortEstimateMillis
     @param autoUpdateRemainingEffort 
-    */
+     */
 //    public void setEffortEstimate(long effortEstimateMillis, boolean autoUpdateRemainingEffort, boolean forProjectTaskItself) {
     public void setEffortEstimate(long effortEstimateMillis, boolean autoUpdateRemainingEffort) {
 
         assert effortEstimateMillis >= 0 : "EffortEstimate cannot be negative";
 
 //                long oldEffortTotalSubtasks = getEffortEstimateForSubtasks();
-                long oldEffortEstimate = getEffortEstimate();
+        long oldEffortEstimate = getEffortEstimate();
 //        long effortSubtasks = getEffortEstimateForSubtasks();
 //        long newEffortTotal = effortSubtasks + effortEstimateMillis;
 
 //        long prevRemainingProjectTask = getRemainingEffortProjectTaskItself();
-
         //auto-update Remaining
         if (autoUpdateRemainingEffort && effortEstimateMillis > 0
                 && MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
@@ -4776,10 +4790,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (autoUpdateRemainingEffort
                     && MyPrefs.getBoolean(MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual)
                     && effortEstimateMillis > getRemainingEffortFromParse() + getActualEffort()) {
-                setRemainingEffort(effortEstimateMillis - getActualEffort()); //
+                setRemainingEffort(effortEstimateMillis - getActualEffort(), false); //false to avoid circular updates between setEffortEstimate() and setRemainingEffort()
             }
         }
-        
+
         setEffortEstimateInParse(effortEstimateMillis);// + actualEffortMillis);
 //        setERemainingEffortProjectTaskInParse(effortEstimateMillis);
 
@@ -4796,7 +4810,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public void setEffortEstimateInMinutes(int val) {
 //        setEffortEstimate(val * MyDate.MINUTE_IN_MILLISECONDS);
 //    }
-    public long getEffortEstimateFromParse() {
+    private long getEffortEstimateFromParse() {
         Long effortEstimate = getLong(PARSE_EFFORT_ESTIMATE);
         return (effortEstimate == null) ? 0L : effortEstimate;
     }
@@ -4815,7 +4829,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
 //</editor-fold>
-
     /**
      * returns effort estimate. If no estimate was set (value 0) AND there are
      * subitems, then return the sum of the estimates of the subitems.
@@ -4849,24 +4862,29 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
 //</editor-fold>
-
     public long getEffortEstimateForSubtasks() {
-            long subItemSum = 0;
-            for (Item item: (List<Item>)getList()) {
-                if (!item.isDone()) { 
-                    subItemSum += item.getEffortEstimate();
-                }
+        long subItemSum = 0;
+        for (Item item : (List<Item>) getList()) {
+            if (!item.isDone()) {
+                subItemSum += item.getEffortEstimate();
             }
-            return subItemSum;
+        }
+        return subItemSum;
     }
 
     @Override
     public long getEffortEstimate() {
-        return getEffortEstimateFromParse();
+//        return getEffortEstimateFromParse();
+        Long effortEstimate = getLong(PARSE_EFFORT_ESTIMATE);
+        if (effortEstimate == null || effortEstimate == 0L) {
+            return getEffortEstimateForSubtasks();
+        } else {
+            return effortEstimate;
+        }
+
     }
 
-        ////////////// REMAINING ///////////////
-    
+    ////////////// REMAINING ///////////////
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getEffortEstimate() {
 //        long sum = 0;
@@ -4947,7 +4965,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //        }
 //    }
-
     public void setRemainingEffort(long remainingEffortMillis, boolean autoUpdateEffortEstimate) {
 
         long oldEffortTotal = getRemainingEffort();
@@ -4961,7 +4978,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 && MyPrefs.automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero.getBoolean()
                 && getEffortEstimate() == 0 //and no effort estimate already set
                 ) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
-            setEffortEstimate(remainingEffortMillis + getActualEffortProjectTaskItself()); //since we test for 0, no problem if setting Estimate both here and direct
+            //since we test for 0, no problem if setting Estimate both here and direct
+            setEffortEstimate(remainingEffortMillis + getActualEffortProjectTaskItself(), false); //false to avoid circular updates between setEffortEstimate() and setRemainingEffort()
         }
 
         setRemainingEffortInParse(newEffortTotal);// + actualEffortMillis);
@@ -4971,11 +4989,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             update();
         }
     }
-     public void setRemainingEffort(long remainingEffortMillis) {
+
+    public void setRemainingEffort(long remainingEffortMillis) {
         setRemainingEffort(remainingEffortMillis, true);
     }
-
-   
 
 //    public void setRemainingEffortXXX(long remainingEffortMillis) {
 //        setRemainingEffortXXX(remainingEffortMillis, false, false);
@@ -5027,10 +5044,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return (remainingEffort == null) ? 0L : remainingEffort;
     }
 
-    
-        public long getRemainingEffortProjectTaskItself() {
-            if (isProject())
-        return getRemainingEffortProjectTaskFromParse(); else return getRemainingEffortFromParse();
+    public long getRemainingEffortProjectTaskItself() {
+        if (isProject()) {
+            return getRemainingEffortProjectTaskFromParse();
+        } else {
+            return getRemainingEffortFromParse();
+        }
     }
 
 //    public long getRemainingEffort(boolean forSubtasks, boolean useDefaultEstimateForZeroEstimates) {
@@ -5075,7 +5094,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-            public long getRemainingEffortFromSubtasks() {
+    public long getRemainingEffortFromSubtasks() {
         long effort = 0;
         for (Item item : (List<Item>) getList()) {
             effort += item.getRemainingEffort(); //remainingEffort  returns complete actual effort for subtasks (including their own effort and that of any of their subtasks
@@ -5083,9 +5102,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return effort;
     }
 
-        
-        ////////////// ACTUAL ///////////////
-
+    ////////////// ACTUAL ///////////////
     private void setActualEffortInParse(long actualEffortMillis) {
         if (actualEffortMillis != 0) {
             put(PARSE_ACTUAL_EFFORT, actualEffortMillis);
@@ -5169,7 +5186,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        setActualEffort(getActualEffort(false) + additionalActualEffortMillis, false, true); //TODO check use of for subtasks or for project itself
 //        setActualEffort(getActualEffort() + additionalActualEffortMillis); //TODO check use of for subtasks or for project itself
 //    }
-
     public long getActualEffortFromParse() {
         Long actualEffort = getLong(PARSE_ACTUAL_EFFORT);
         return (actualEffort == null) ? 0L : actualEffort;
@@ -5195,7 +5211,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public long getActualEffortProjectTaskItself() {
-        if (isProject()){
+        if (isProject()) {
             return getActualEffortProjectTaskItselfFromParse();
         } else {
             return getActualEffortFromParse();

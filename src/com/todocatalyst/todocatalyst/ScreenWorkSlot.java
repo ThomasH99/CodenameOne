@@ -333,9 +333,11 @@ public class ScreenWorkSlot extends MyForm {
                     true, true, false));
         }
 
+                if (MyPrefs.showObjectIdsInEditScreens.getBoolean()){
+
         Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
         content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
-
+                }
         return content;
     }
 

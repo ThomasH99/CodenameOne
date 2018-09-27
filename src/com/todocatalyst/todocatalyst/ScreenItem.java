@@ -737,27 +737,32 @@ public class ScreenItem extends MyForm {
         //need to declare already here to use in actionListener below
         MyDurationPicker effortEstimate;
         effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS,
-                (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
+                (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,false)); //false: avoid circular auto-updates when changing via the UI (which ensures the same updates visibly in the pickers)
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        } else {
 //Label effortEstimateForSubtasks;
 //        if (item.isProject()) {
 //            effortEstimateForSubtasks = new Label(""+(int) itemLS.getEffortEstimateForSubtasks()/ MyDate.MINUTE_IN_MILLISECONDS);
 //        }
+//</editor-fold>
 
 //get the effort for the project task itself:
-        MyDurationPicker remainingEffort;
-        if (item.isProject()) {
-//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS,
-            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort() / MyDate.MINUTE_IN_MILLISECONDS, //getRemainingEffort(true, true): need to show same sum here as in the list showing the project
-                    //                    (i) -> item.setRemainingEffortXXX(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,
-                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
-//            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
-//            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {            }, true, true, false));
-        } else {
-            //            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
-            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,
-                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
-        }
+        MyDurationPicker             remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortProjectTaskItself()/ MyDate.MINUTE_IN_MILLISECONDS, //getRemainingEffort(true, true): need to show same sum here as in the list showing the project
+                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,false)); //false since the UI will update the other picker (Estimate)
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (item.isProject()) {
+////            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS,
+//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortProjectTaskItself()/ MyDate.MINUTE_IN_MILLISECONDS, //getRemainingEffort(true, true): need to show same sum here as in the list showing the project
+//                    //                    (i) -> item.setRemainingEffortXXX(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,
+//                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,false)); //false since the UI will update the other picker (Estimate)
+////            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
+////            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {            }, true, true, false));
+//        } else {
+//            //            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
+//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,
+//                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
+//        }
+//</editor-fold>
 
 //        description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
         description.addActionListener((e) -> {
@@ -766,7 +771,7 @@ public class ScreenItem extends MyForm {
             //TODO!!! create a function that will determine when to any of the user setting baesd on the values in description string
             //eg call w string and 
 //            if (item.getEffortEstimate()==0 || effortEstimate.getTime() == 0||res.minutes*MyDate.MINUTE_IN_MILLISECONDS!=item.getEffortEstimate()) { //UI: use value in text if either no previous value set, or manual value entered in picker or new text value entered into text
-            if (res.minutes != 0) { //UI: alwyas use value in text to override previous value
+            if (res.minutes != 0 ) { //UI: alwyas use value in text to override previous value
                 //TODO!!!!! call the same actionListener as when EsitmatePicker is changed 
 //                effortEstimate.setTime(res.minutes); //will set effortEstimate, even if text is changed multiple times. However, manually changing remaining
                 //UI: entering an estimate in the text of an item is used to set remaining effort (and not effort estimate) since this is more useful, e.g. as an easy way to update remaining while editing the item
@@ -1221,7 +1226,7 @@ public class ScreenItem extends MyForm {
         //REMAINING************
         if (isProject) {
 //            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
-            timeCont.addComponent( layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
+            timeCont.addComponent( layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortFromSubtasks()), "LabelFixed"),
                     Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false)); //hack to insert after alarmDate field
         }
 //TODO: makes no sense to show remaining for project itself, just confusing??
@@ -1247,7 +1252,8 @@ public class ScreenItem extends MyForm {
 
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
-            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
+//            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
+            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() ), "LabelFixed"),
                     Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
         }
         String estimateTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT : Item.EFFORT_ESTIMATE;
@@ -1259,7 +1265,7 @@ public class ScreenItem extends MyForm {
         actualEffort.addActionListener(new MyActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getTime(), item.getStatus(), status.getStatus()));
+                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getTime(), item.getStatus(), status.getStatus(),item.areAnySubtasksOngoing()));
 //                status.animate();
                 status.repaint();
             }
@@ -1275,7 +1281,7 @@ public class ScreenItem extends MyForm {
 //                status.setStatus(ItemStatus.CREATED);
 //            }
 //            ItemStatus oldStatus = status.getStatus();
-                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getTime(), item.getStatus(), status.getStatus()));
+                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getTime(), item.getStatus(), status.getStatus(),item.areAnySubtasksOngoing()));
 //                status.animate();
                 status.repaint();
             });
@@ -1460,14 +1466,16 @@ public class ScreenItem extends MyForm {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
-                //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
 //                remainingEffortSetManually = item.getRemainingEffortNoDefault() != remainingEffort.getTime(); //true;
-                if (remainingEffortSetAutomatically) {
-                    return; //do nothing if remainingEffort is set automatically
-                } else {
+//                if (remainingEffortSetAutomatically) {
+//                    return; //do nothing if remainingEffort is set automatically
+//                } else {
+                //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
+                if (!remainingEffortSetAutomatically ) {
                     remainingEffortSetManually = true;
-                    if (MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
-                            && !effortEstimateSetManually) {//&& item.getEffortEstimate() == 0
+                    if (!effortEstimateSetManually&& MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
+//                            && !effortEstimateSetManually&& effortEstimate.getTime()==0&& effortEstimate.getTime()==itemLS.getEffortEstimate()) ) {//&& item.getEffortEstimate() == 0 xxonly set if picker zero and org value zero (not changed picker back to zero
+                            &&  itemLS.getEffortEstimate()==0 ) {//&& item.getEffortEstimate() == 0 xxonly set if picker zero and org value zero (not changed picker back to zero
 //                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
 //                    if ((remainingEffort.getTime() != 0 && item.getEffortEstimate() == 0 && (effortEstimate.getTime() == 0 || forceSameValues))
 //                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: 
@@ -1476,7 +1484,7 @@ public class ScreenItem extends MyForm {
                         effortEstimateSetAutomatically = false;
                         effortEstimate.repaint();
                     }
-                }
+                } //else do nothing if remainingEffort is set automatically
             }
 //            }
         };
@@ -1501,14 +1509,15 @@ public class ScreenItem extends MyForm {
             @Override
             public void actionPerformed(ActionEvent e) {
 //                effortEstimateSetManually = item.getEffortEstimate() != effortEstimate.getTime(); //UI: only set to true if actually changed (avoid that entering and leaving without changing blocks auto-updates
-                if (effortEstimateSetAutomatically) {
-                    return;
-                } else {
+//                if (effortEstimateSetAutomatically) {
+//                    return;
+//                } else {
+                if (!effortEstimateSetAutomatically) {
                     effortEstimateSetManually = true;
                     //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
                     //only automatically update effort estimate if never defined and not changed in the current editing 
                     if (MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
-                            && !remainingEffortSetManually) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+                            && !remainingEffortSetManually&&  itemLS.getRemainingEffortProjectTaskItself()==0 ) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
 //                    if ((effortEstimate.getTime() != 0 && item.getRemainingEffortNoDefault() == 0 && (remainingEffort.getTime() == 0 || forceSameValues))
@@ -1902,12 +1911,14 @@ public class ScreenItem extends MyForm {
         }
 //        }
 
+        if (MyPrefs.showObjectIdsInEditScreens.getBoolean()){
 //        Label itemObjectId = new Label(item.getObjectIdP() == null ? "<created when saved>" : item.getObjectIdP(), "LabelFixed");
         Label itemObjectId = new Label(item.getObjectIdP() == null ? "<set on save>" : item.getObjectIdP(), "LabelFixed");
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //        statusCont.add(layout(Item.OBJECT_ID, itemObjectId, "**", true, true, true));
         statusCont.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
-
+        }
+        
         //TAB SUBTASKS
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));

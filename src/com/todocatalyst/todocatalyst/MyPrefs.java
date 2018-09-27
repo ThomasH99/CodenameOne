@@ -243,7 +243,7 @@ public class MyPrefs {
     static PrefEntry itemInheritOwnerProjectTemplate
             = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.TEMPLATE), "itemInheritOwnerProjectTemplate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
-    // ************** NED inherit values from owning Project *************
+    // ************** END inherit values from owning Project *************
   
     
     static PrefEntry itemEffortEstimateExtractFromStringInTaskText
@@ -275,6 +275,9 @@ public class MyPrefs {
 
     static PrefEntry cacheLoadChangedElementsOnAppStart
             = new PrefEntry("cacheLoadChangedElementsOnAppStart (INTERNAL)","cacheLoadChangedElementsOnAppStart", true, "used to speed up app start during testing - NOT END USER");
+  
+    static PrefEntry showObjectIdsInEditScreens
+            = new PrefEntry("Show ObjectIds when editing","showObjectIdsInEditScreens", true, "show internal unique ID when editing - NOT END USER");
 
     //LOOK AND FEEL
     static PrefEntry themeNameWithoutBackslash

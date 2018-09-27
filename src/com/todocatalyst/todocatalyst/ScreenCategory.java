@@ -219,6 +219,12 @@ public class ScreenCategory extends MyForm {
             v.addSubmitButtons(getToolbar().findCommandComponent(backCommand)); // http://stackoverflow.com/questions/39690474/how-to-attach-a-command-to-longpress-on-a-command-in-the-toolbar
             v.setShowErrorMessageForFocusedComponent(true);
         }
+        
+                if (MyPrefs.showObjectIdsInEditScreens.getBoolean()){
+        Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "LabelFixed");
+        content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+        }
+
         return content;
     }
 }

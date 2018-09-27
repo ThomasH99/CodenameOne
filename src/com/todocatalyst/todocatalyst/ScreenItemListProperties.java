@@ -172,6 +172,10 @@ public class ScreenItemListProperties extends MyForm {
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
         content.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**"));
 
+        if (MyPrefs.showObjectIdsInEditScreens.getBoolean()){
+        Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "LabelFixed");
+        content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+        }
         return content;
     }
 }

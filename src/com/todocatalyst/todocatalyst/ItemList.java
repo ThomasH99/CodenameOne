@@ -2057,7 +2057,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         int nbCountChangeStatus = 0;
         for (Object elt : list) {
 //            if (item instanceof Item && !(((Item) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
-            if (elt instanceof ItemAndListCommonInterface) { // && ((Item) item).shouldSubtaskStatusChange(newStatus)) { //use Item to optimize (since implementing isDone() on a list would be expensive
+            if (elt instanceof ItemAndListCommonInterface) { // && ((Item) item).shouldTaskStatusChange(newStatus)) { //use Item to optimize (since implementing isDone() on a list would be expensive
 //                nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getNumberOfItemsThatWillChangeStatus(true, newStatus);
                 nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getNumberOfItemsThatWillChangeStatus(recurse, newStatus, changingFromDone);
             }
@@ -2091,7 +2091,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        int nbCountChangeStatus = 0;
 //        for (Object item : list) {
 ////            if (item instanceof Item && !(((Item) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
-//            if (item instanceof Item && ((Item) item).shouldSubtaskStatusChange(newStatus)) { //use Item to optimize (since implementing isDone() on a list would be expensive
+//            if (item instanceof Item && ((Item) item).shouldTaskStatusChange(newStatus)) { //use Item to optimize (since implementing isDone() on a list would be expensive
 //                nbCountChangeStatus++;
 //            }
 //            if (recurse && list instanceof ItemAndListCommonInterface) {

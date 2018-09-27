@@ -51,16 +51,16 @@ public class MyCheckBox extends Button {
     }
 
 //    public MyCheckBox(Item item, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler) {
-    public MyCheckBox(ItemStatus itemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, IsItemOngoing itemOngoing) {
+    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, IsItemOngoing itemOngoingXXX) {
         super();
         setUIID("MyCheckBox");
 //        String s = ItemStatus.values()[item.getStatus().ordinal()].fullDescription;
 //        this.saveOnChange = saveOnChange;
-        setStatus(itemStatus);
+        setStatus(initialItemStatus);
         this.activateFullMenuOnSingleClick = activateFullMenuOnSingleClick;
         this.statusChangeHandler = statusChangeHandler;
-        this.itemOngoing = itemOngoing;
-        addActionListener(new ActionListener() {
+        this.itemOngoing = itemOngoingXXX;
+        addActionListener(new ActionListener() { //Handle single-click
             @Override
             public void actionPerformed(ActionEvent evt) {
                 if (MyCheckBox.this.activateFullMenuOnSingleClick) {
@@ -68,7 +68,8 @@ public class MyCheckBox extends Button {
                 } else {
                     //TODO!! move below logic into static method in Item to avoid duplication
 //                ItemStatus itemStatus = itemStatus.getStatus();
-                    switch (MyCheckBox.this.itemStatus) {
+//                    switch (MyCheckBox.this.itemStatus) { //OLD STATUS
+                    switch (itemStatus) { //OLD STATUS
                         case CREATED:
                         case WAITING:
                         case ONGOING:
@@ -76,14 +77,15 @@ public class MyCheckBox extends Button {
                             break;
                         case DONE:
                         case CANCELLED:
-                            if (MyCheckBox.this.itemOngoing.isOngoing()) {
-                                setStatus(ItemStatus.ONGOING);
-                            } else {
+//                            if (MyCheckBox.this.itemOngoing.isOngoing()) { //NO LONGER necessary to check if item is ongoing, it will be handled in setStatus (setting to Ongoing)
+//                                setStatus(ItemStatus.ONGOING);
+//                            } else {
+//                                setStatus(ItemStatus.CREATED);
+//                            }
                                 setStatus(ItemStatus.CREATED);
-                            }
                             break;
                         default:
-                            assert false : "unknown ItemStatus=" + MyCheckBox.this.itemStatus;
+                            assert false : "unknown ItemStatus=" + itemStatus;
                     }
                 }
             }
