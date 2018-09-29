@@ -31,7 +31,8 @@ import java.util.HashSet;
 public class SubtaskContainer extends Container {
     //TODO add button to filter subtasks (eg hide/show Done tasks)
 
-    HashSet<ItemAndListCommonInterface> expandedObjects = new HashSet();
+//    HashSet<ItemAndListCommonInterface> expandedObjects = new HashSet();
+//    ExpandedObjects expandedObjects = new ExpandedObjects(screenId, parseObject);
 
     @Override
     public Dimension calcPreferredSize() {
@@ -52,13 +53,12 @@ public class SubtaskContainer extends Container {
      * @return
      */
 //    static public Container makeMyTree2ForSubTasks(ItemList listOfItems, HashSet<ItemAndListCommonInterface> expandedObjects) {
-    static public MyTree2 makeMyTree2ForSubTasks(MyForm myForm, ItemAndListCommonInterface listOfItems,
-            HashSet<ItemAndListCommonInterface> expandedObjects) {
+    static public MyTree2 makeMyTree2ForSubTasks(MyForm myForm, ItemAndListCommonInterface listOfItems, ExpandedObjects expandedObjects) {
+//            HashSet<ItemAndListCommonInterface> expandedObjects) {
 //        if (listOfItems != null && listOfItems.size() > 0) {
 //        MyTree2 myTree = new MyTree2(listOfItems, expandedObjects,
 //                myForm.lastInsertNewElementContainer != null ? (item, itemOrItemList) -> myForm.lastInsertNewElementContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList) : null) {
-        MyTree2 myTree = new MyTree2(listOfItems, expandedObjects,
-                myForm.getInlineInsertContainer()) {
+        MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, myForm.getInlineInsertContainer()) {
             @Override
             protected Component createNode(Object node, int depth, Category category) {
 //                    return createNode(node, depth, itemListOrg, category);
@@ -139,7 +139,8 @@ public class SubtaskContainer extends Container {
 //</editor-fold>
 //            Container subtasks = ScreenListOfItems.makeMyTree2ForSubTasks(myForm, itemListOrg, myForm.expandedObjects);
 //            MyTree2 subtasks = ScreenListOfItems.makeMyTree2ForSubTasks(myForm, item, expandedObjects);
-            MyTree2 subtasks = makeMyTree2ForSubTasks(myForm, item, expandedObjects);
+//            MyTree2 subtasks = makeMyTree2ForSubTasks(myForm, item, expandedObjects);
+            MyTree2 subtasks = makeMyTree2ForSubTasks(myForm, item, myForm.expandedObjects);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            subtasks.setHidden(!showSubtasksExpanded); //hasSubtasks);
 //            subtasks.setHidden(!(MyPrefs.alwaysShowSubtasksExpandedInScreenItem.getBoolean() && hasSubtasks)); //hasSubtasks);
@@ -242,18 +243,18 @@ public class SubtaskContainer extends Container {
                 //HEADER - EDIT LIST IN FULL SCREEN MODE
 //                    Button editSubtasksFullScreen = ScreenListOfItems.makeSubtaskButton(item, null);
                 Button editSubtasksFullScreen = new Button();
-                editSubtasksFullScreen.setCommand(MyReplayCommand.create("EditSubtasks", "", Icons.iconEditPropertiesToolbarStyle,(e)->{
+                editSubtasksFullScreen.setCommand(MyReplayCommand.create("EditSubtasks", "", Icons.iconEditPropertiesToolbarStyle, (e) -> {
 //                    Button editSubtasksFullScreenOLD = new Button();
 //                    editSubtasksFullScreenOLD.setCommand(Command.create(null, Icons.iconEditPropertiesLabelStyle, (e) -> {
-                        ItemList subtaskList = item.getItemList();
+                    ItemList subtaskList = item.getItemList();
 //                        new ScreenListOfItems("Subtasks of " + item.getText(), subtaskList, myForm, (iList) -> {
-                        new ScreenListOfItems("Subtasks of " + item.getText(), ()->item.getItemList(), myForm, (iList) -> {
-                            item.setItemList(subtaskList);
-                            DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                            myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
-                        }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
-                        ).show();
-                    }
+                    new ScreenListOfItems("Subtasks of " + item.getText(), () -> item.getItemList(), myForm, (iList) -> {
+                        item.setItemList(subtaskList);
+                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
+                    }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                    ).show();
+                }
                 ));
 
                 //HEADER - count + expand button

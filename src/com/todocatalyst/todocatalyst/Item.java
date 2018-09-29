@@ -4429,6 +4429,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (currentProjectStartedOnDate.getTime() != currentProjectStartedOnInParse.getTime()) {
                 setStartedOnDateInParse(currentProjectStartedOnDate);
             }
+            
+            DAO.getInstance() .saveInBackground(this);
         }
     }
 

@@ -89,7 +89,8 @@ public class ScreenListOfItemLists extends MyForm {
         this.itemListList = itemListList;
         setScrollable(false);
         setLayout(new BorderLayout());
-        expandedObjects = new HashSet();
+//        expandedObjects = new HashSet();
+        expandedObjects =new ExpandedObjects("ScreenListOfLists", itemListList);
         addCommandsToToolbar(getToolbar());
         getToolbar().addSearchCommand((e) -> {
             String text = (String) e.getSource();

@@ -1034,9 +1034,11 @@ public class ScreenRepair extends MyForm {
 //                        new com.codename1.ui.List((Object[])Storage.getInstance().listEntries()),
 //                        new com.codename1.ui.List(Arrays.asList(Storage.getInstance().listEntries())),
 //                if (Dialog.show("Local storage content", new com.codename1.ui.List(Storage.getInstance().listEntries()), new Command("OK"), new Command("Cancel"))) {
-                        if (Dialog.show("Delete this content", res, "OK", "Cancel")) {
+                        if (Dialog.show("Delete this content?", res, "OK", "Cancel")) {
                             Storage.getInstance().clearStorage();
                             Storage.getInstance().clearCache();
+                            //TODO!! does app need to restart after deleting all content? Do any of the features using local storage assume a file is there if it was there earlier?
+//                            TodoCatalystParse.exit();
                         }
                     }
                 }

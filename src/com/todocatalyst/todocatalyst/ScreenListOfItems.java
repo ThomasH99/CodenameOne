@@ -299,7 +299,8 @@ public class ScreenListOfItems extends MyForm {
 //        this.filterSortDef = filterSortDef;
 //        optionUnmodifiableFilter = !filterCanBeModified;
 //</editor-fold>
-        expandedObjects = new HashSet();
+//        expandedObjects = new HashSet();
+        expandedObjects = new ExpandedObjects("ScreenListOfItems",itemListOrg);
         this.stickyHeaderGen = stickyHeaderGen;
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
@@ -711,7 +712,7 @@ public class ScreenListOfItems extends MyForm {
         );
 
         //FILTER / SORT
-        if (!optionUnmodifiableFilter) {
+        if (!optionTemplateEditMode && !optionUnmodifiableFilter) {
             toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", Icons.iconSettingsLabelStyle, (e) -> {
 //                    if (filterSortDef == null) {
 ////                        filterSortDef = FilterSortDef.fetchFilterSortDef(SCREEN_ID, itemListOrg, new FilterSortDef(SCREEN_ID, itemListOrg));

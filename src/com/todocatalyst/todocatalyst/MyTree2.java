@@ -94,7 +94,8 @@ public class MyTree2 extends ContainerScrollY {
     private static Image nodeImage;
     private int depthIndent = DEPTH_INDENT;
 //    private boolean multilineMode;
-    private HashSet expandedObjects; // = new HashSet();
+//    private HashSet expandedObjects; // = new HashSet();
+    private ExpandedObjects expandedObjects; // = new HashSet();
 //    private FilterSortDef itemListFilteredSorted;
     private InsertNewElementFunc insertNewElementFunc = null;
 
@@ -122,7 +123,8 @@ public class MyTree2 extends ContainerScrollY {
 //    public MyTree2(MyTreeModel model) {
 //        this(model, null);
 //    }
-    public MyTree2(MyTreeModel model, HashSet expandedObjects) {
+//    public MyTree2(MyTreeModel model, HashSet expandedObjects) {
+    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects) {
         this(model, expandedObjects, null);
     }
 
@@ -138,11 +140,13 @@ public class MyTree2 extends ContainerScrollY {
      * @param insertNewTask function to determine a newTaskContainer should be
      * insert below an Item
      */
-    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask) {
+//    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask) {
+    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask) {
         this(model, expandedObjects, insertNewTask, null);
     }
 
-    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
+//    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
+    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
         super();
         this.model = model;
         setUIID("MyTree2");
@@ -194,25 +198,28 @@ public class MyTree2 extends ContainerScrollY {
 //        expandedObjects.clear();
 ////        this.subTreeExpanded = false;
 //    }
-    /**
-     * sets the list of automatically expanded objects (objects which will
-     * automatically be expanded when encountered when building the Tree.
-     * Objects which are not part of the item hierarchy (deleted, filtered) or
-     * which are below a not shown object (e.g. one not previously expanded) are
-     * not expanded.
-     *
-     * @param setOfAutomaticallyExpandedObjects
-     */
-    void setExpandedObjects(Collection setOfAutomaticallyExpandedObjects) {
-        if (expandedObjects == null) {
-            expandedObjects = new HashSet();
-        }
-        expandedObjects.addAll(setOfAutomaticallyExpandedObjects);
-    }
-
-    Collection getExpandedObjects() {
-        return expandedObjects;
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//     * sets the list of automatically expanded objects (objects which will
+//     * automatically be expanded when encountered when building the Tree.
+//     * Objects which are not part of the item hierarchy (deleted, filtered) or
+//     * which are below a not shown object (e.g. one not previously expanded) are
+//     * not expanded.
+//     *
+//     * @param setOfAutomaticallyExpandedObjects
+//     */
+//    void setExpandedObjects(Collection setOfAutomaticallyExpandedObjects) {
+//        if (expandedObjects == null) {
+////            expandedObjects = new HashSet();
+//            expandedObjects = new HashSet();
+//        }
+//        expandedObjects.addAll(setOfAutomaticallyExpandedObjects);
+//    }
+//
+//    Collection getExpandedObjects() {
+//        return expandedObjects;
+//    }
+//</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**

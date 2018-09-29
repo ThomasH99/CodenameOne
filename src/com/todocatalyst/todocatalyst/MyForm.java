@@ -9,6 +9,7 @@ import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
+import com.codename1.io.Storage;
 import com.codename1.l10n.L10NManager;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
@@ -39,9 +40,11 @@ import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.ReplayLog.REPLAY_LOG_FILE_NAME;
 //import java.text.DecimalFormat;
 //import com.todocatalyst.todocatalyst.SwipeClearContainer.SwipeClear;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,7 +82,8 @@ public class MyForm extends Form {
 //    GetItemList updateItemListOnDone;
     protected UpdateField updateActionOnDone;
     protected CheckDataIsComplete checkDataIsCompleteBeforeExit; //used to check if a Screen has defined all needed data and returns error message String if not
-    HashSet<ItemAndListCommonInterface> expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
+//    HashSet<ItemAndListCommonInterface> expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
+    ExpandedObjects expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
     protected KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
 //    List selectedObjects; //selected objects
     ListSelector<ItemAndListCommonInterface> selectedObjects; //selected objects
@@ -93,6 +97,7 @@ public class MyForm extends Form {
 //    private TextArea editFieldOnShowOrRefresh;
     private InsertNewElementFunc inlineInsertContainer;
     private BooleanFunction testIfEdit;
+    protected String formUniqueId=null; //unique id for each form, used to name local files for each form+ParseObject
 
 //    public TextArea getEditFieldOnShowOrRefresh() {
 //        return editFieldOnShowOrRefresh;
@@ -102,7 +107,7 @@ public class MyForm extends Form {
         boolean test();
     }
 
-    /**
+        /**
      * the textArea will be
      *
      * @param editFieldOnShowOrRefresh
@@ -207,13 +212,16 @@ public class MyForm extends Form {
 //        super(title);
 //    }
     MyForm(String title, MyForm previousForm) { //throws ParseException, IOException {
-        this(title, previousForm, ()->{});
+        this(title, previousForm, () -> {
+        });
     }
+
     MyForm(String title, MyForm previousForm, UpdateField updateActionOnDone) { //throws ParseException, IOException {
         super(title);
+        formUniqueId=title; 
 //        setLayout(layout);
 //        getLayeredPane().setLayout(BorderLayout.center());
-        ReplayLog.getInstance().resetForNewScreen();
+        ReplayLog.getInstance().deleteAllReplayCommandsFromPreviousScreen(title);
         if (false) {
             getFormLayeredPane(null, true).setLayout(new BorderLayout());
         }
@@ -352,7 +360,7 @@ public class MyForm extends Form {
         /**
         
         @param itemList 
-        */
+         */
         void update(ItemList itemList);
     }
 
@@ -453,8 +461,9 @@ public class MyForm extends Form {
 
         void launchAction();
     }
-    
+
     interface GetItemListFct {
+
         ItemList getUpdatedItemList();
     }
 
@@ -774,7 +783,7 @@ public class MyForm extends Form {
 //                this.setText(getValue.get() + "");
 //                DecimalFormat df2 = new DecimalFormat(".##");
 //                String s = df2.format(val);
-                String s =L10NManager.getInstance().format(val, 2);
+                String s = L10NManager.getInstance().format(val, 2);
 //                this.setText(val..get() + "");
                 this.setText(s);
             }
@@ -783,7 +792,7 @@ public class MyForm extends Form {
                 parseIdMap.put(this, () -> setValue.accept(getText().equals("") ? 0 : Double.valueOf(getText())));
             }
         }
-        
+
         void setVal(double val) {
             if (val != 0) {
 //                DecimalFormat df2 = new DecimalFormat(".##");
@@ -1146,7 +1155,7 @@ public class MyForm extends Form {
             inlineInsertContainer.getTextArea().startEditingAsync();
         }
         if (Config.TEST) {
-            Log.p("******* calling refreshAfterEdit for Screen: "+ getTitle() );
+            Log.p("******* calling refreshAfterEdit for Screen: " + getTitle());
         }
     }
 
@@ -1187,10 +1196,6 @@ public class MyForm extends Form {
         }
     }
 
-    void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
-        showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
-    }
-
     /**
      * will show the previous form (or the default Main form if previous form is
      * undefined)
@@ -1210,6 +1215,10 @@ public class MyForm extends Form {
         } else {
             new ScreenMain().show();
         }
+    }
+
+    void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
+        showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

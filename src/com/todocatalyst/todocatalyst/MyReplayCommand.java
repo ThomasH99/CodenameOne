@@ -20,31 +20,43 @@ public class MyReplayCommand extends Command {
 
     private String cmdUniqueID;
 
-    public MyReplayCommand(String command, Image icon) {
-        super(command, icon);
-        assert command != null && command.length() > 0 : "when using command name/String as unique ID it must not be null or empty";
-        setCmdUniqueID(command);
+//    public MyReplayCommand(String command, Image icon) {
+//        super(command, icon);
+//        assert command != null && command.length() > 0 : "when using command name/String as unique ID it must not be null or empty";
+//        setCmdUniqueID(command);
+//        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
+//    }
+    public MyReplayCommand(String cmdUniqueID, String commandName, Image icon) {
+        super(commandName, icon);
+        assert (cmdUniqueID != null && !cmdUniqueID.isEmpty()) || (commandName != null && commandName.length() > 0) : "when using command name/String as unique ID it must not be null or empty";
+        if (cmdUniqueID != null && !cmdUniqueID.isEmpty()) {
+            setCmdUniqueID(cmdUniqueID);
+        } else {
+            setCmdUniqueID(commandName);
+        }
         ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
     }
 
-    public MyReplayCommand(String command) {
-        super(command);
-        setCmdUniqueID(command); //use command string as unique ID (should be OK when
-        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
+    public MyReplayCommand(String cmdUniqueID, String commandName) {
+//        super(command);
+//        setCmdUniqueID(cmdUniqueID);
+//        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
+        this(cmdUniqueID, commandName, null);
     }
 
-    public MyReplayCommand(String cmdUniqueID, String command, Image icon) {
-        super(command, icon);
-        setCmdUniqueID(cmdUniqueID);
-        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
+    public MyReplayCommand(String commandName) {
+//        super(command);
+//        setCmdUniqueID(command); //use command string as unique ID (should be OK when
+//        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
+        this(commandName, commandName, null);
     }
 
-    public MyReplayCommand(String cmdUniqueID, String command) {
-        super(command);
-        setCmdUniqueID(cmdUniqueID);
-        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
-    }
-
+    
+    @Override
+   public String toString() {
+       return cmdUniqueID;
+   }
+               
     @Override
     public void actionPerformed(ActionEvent evt) {
         ReplayLog.getInstance().pushCmd(this);
@@ -81,10 +93,9 @@ public class MyReplayCommand extends Command {
     public static MyReplayCommand create(String name, Image icon, final ActionListener ev) {
         return create(name, name, icon, ev);
     }
-    
+
 //    @Override
 //    public String toString() {
 //        return getCommandName()+"/"+getCmdUniqueID();
 //    }
-
 }

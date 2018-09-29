@@ -72,7 +72,8 @@ public class ScreenStatistics extends MyForm {
 //        this.itemListList = itemListList;
         setScrollable(false);
         setLayout(new BorderLayout());
-        expandedObjects = new HashSet();
+//        expandedObjects = new HashSet();
+        expandedObjects = new ExpandedObjects("ScreenStatistics",null);
         addCommandsToToolbar(getToolbar());
         if (false) {
             getToolbar().addSearchCommand((e) -> {

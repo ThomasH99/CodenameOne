@@ -3171,7 +3171,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        }
 //    }
     public boolean hasSaveableData() {
-        return getText().length() > 0 || getComment().length() > 0;
+//        return getText().length() > 0 || getComment().length() > 0; //UI: 
+        return getText().length() > 0 ; //UI: lists must have names! TODO: if comment is defined, but not name, use part of comment as default name?
     }
 
     /**

@@ -175,6 +175,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             }
         });
 
+
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -459,13 +460,15 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         }
 
         //LOCALIZATION
-        String local = "";
+        String locale = "";
         if (MyPrefs.localeUserSelected.getString().length() == 0) {
-            local = L10NManager.getInstance().getLanguage();
+            locale = L10NManager.getInstance().getLanguage();
         } else {
-            local = MyPrefs.localeUserSelected.getString();
+            locale = MyPrefs.localeUserSelected.getString();
         }
-        UIManager.getInstance().setBundle(theme.getL10N("LocalizationBundle", local));
+        UIManager.getInstance().setBundle(theme.getL10N("LocalizationBundle", locale));
+        Display.getInstance().getLocalizationManager().getLocale();
+        Display.getInstance().getLocalizationManager().getLocale();
 
         Toolbar.setGlobalToolbar(true); //needed, otherwise toolbar null in other screens
 
@@ -514,6 +517,9 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         Log.getInstance().setFileWriteEnabled(true);
         Log.setLevel(Log.DEBUG);
         Log.setReportingLevel(Log.REPORTING_DEBUG);
+        
+        Log.p("LOCALE = " + locale);
+
         Log.p("init()");
 
         if (false) {
@@ -623,7 +629,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //            if (Dialog.show("Network Error", "There was a network error, would you like to retry?", "Retry", "Cancel")) {
 //            if (Dialog.show("Network Error", "There is no network connection, please retry when the network is available again. The just made changes will be lost unless you retry successfully before the exiting app.", "Retry", null)) {
             if (Dialog.show("Network Error", "No network connection. Please Retry when available again. "
-                    +"\n\nIf you exit the app before a successful Retry, any changes just made will be lost.", "Retry", null)) {
+                    + "\n\nIf you exit the app before a successful Retry, any changes just made will be lost.", "Retry", null)) {
                 e.consume();
                 ConnectionRequest conReq = e.getConnectionRequest();
                 conReq.retry();
@@ -641,7 +647,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         // will return true for desktops as well...
 //        if (Display.getInstance().isTablet()) { //TODO!!!! is not working
 //            Toolbar.setPermanentSideMenu(true); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
-            Toolbar.setPermanentSideMenu(Display.getInstance().isTablet()); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
+        Toolbar.setPermanentSideMenu(Display.getInstance().isTablet()); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
 //        }
 
 //        Display d = Display.getInstance();

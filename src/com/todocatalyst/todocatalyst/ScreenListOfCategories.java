@@ -83,7 +83,7 @@ public class ScreenListOfCategories extends MyForm {
 //</editor-fold>
         setScrollable(false);
         setLayout(new BorderLayout());
-        expandedObjects = new HashSet();
+        expandedObjects = new ExpandedObjects("ScreenCategories", categoryList);
         addCommandsToToolbar(getToolbar());
         getToolbar().addSearchCommand((e) -> {
             String text = (String) e.getSource();

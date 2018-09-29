@@ -16,22 +16,22 @@ public class MyPrefs {
 
     //ESTIMATES
     static PrefEntry automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining
-            = new PrefEntry("**","automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining", true, "**");
+            = new PrefEntry("**", "automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining", true, "**");
 
     static PrefEntry automaticallyUpdateRemainingToEffortMinusActualWhenActualEffortIsUpdated
-            = new PrefEntry("**","automaticallyUpdateRemainingToEffortMinusActualWhenActualEffortIsUpdated", false,"**");
+            = new PrefEntry("**", "automaticallyUpdateRemainingToEffortMinusActualWhenActualEffortIsUpdated", false, "**");
 
-    static PrefEntry  automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero
-            = new PrefEntry("**","automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero", true,"**");
+    static PrefEntry automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero
+            = new PrefEntry("**", "automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero", true, "**");
 
     static PrefEntry automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual
-            = new PrefEntry("**","automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual", true,"**");
+            = new PrefEntry("**", "automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual", true, "**");
 
     static PrefEntry itemRemoveTrailingPrecedingSpacesAndNewlines
-            = new PrefEntry("**","itemRemoveTrailingPrecedingSpacesAndNewlines", true,"**");
+            = new PrefEntry("**", "itemRemoveTrailingPrecedingSpacesAndNewlines", true, "**");
 
     static PrefEntry estimateDefaultValueForZeroEstimatesInMinutes
-            = new PrefEntry("Default time estimate","estimateDefaultValueForZeroEstimatesInMinutes", 4, 
+            = new PrefEntry("Default time estimate", "estimateDefaultValueForZeroEstimatesInMinutes", 4,
                     "Default time estimate to use for non-estimated tasks. Set to typical average value of actual effort for small tasks to avoid having to estimate these. Set to 0 to de-activate.");
 
     //INSERTION OF NEW ITEMS
@@ -46,20 +46,20 @@ public class MyPrefs {
             = new PrefEntry("Add new categories to beginning of list**(make this setting public??)", "insertNewCategoriesForItemsInStartOfIList", true, "Always insert added categories at the beginning (makes most recently added categories appear first)");
 
     static PrefEntry insertNewRepeatInstancesInStartOfLists
-            = new PrefEntry("**","insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
+            = new PrefEntry("**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
 
     static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
-            = new PrefEntry("**","insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task"); //"at the end"
+            = new PrefEntry("**", "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task"); //"at the end"
 
     static PrefEntry dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList
-            = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks","dropItemAtBeginningOfUnexpandedCategorySubtaskList", true, "**"); 
+            = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks", "dropItemAtBeginningOfUnexpandedCategorySubtaskList", true, "**");
 
     static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
             = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
-                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 10, "**"); 
-    
+                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 10, "**");
+
     static PrefEntry insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList
-                                                                = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", "insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList", false, "**");
+            = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", "insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList", false, "**");
 
     //TIMER
     static PrefEntry timerAutomaticallyStartTimer
@@ -69,8 +69,8 @@ public class MyPrefs {
             = new PrefEntry("Automatically continue on next task", "timerAutomaticallyGotoNextTask", true, "Automatically go to the next task in the list or project after the current task is done");
 
     static PrefEntry timerShowNextTaskWithRemainingTime
-            = new PrefEntry("Show "+Item.EFFORT_REMAINING+" for next-coming task", "timerShowNextTaskWithRemainingTime", true, 
-                    "Will show the "+Item.EFFORT_REMAINING+" in square brackets like [1:15] after next task at the bottom of the Timer screen."); //TODO make timerShowNextTask a numerical value to show 0/1/2/3 next tasks and start one by clicking on it
+            = new PrefEntry("Show " + Item.EFFORT_REMAINING + " for next-coming task", "timerShowNextTaskWithRemainingTime", true,
+                    "Will show the " + Item.EFFORT_REMAINING + " in square brackets like [1:15] after next task at the bottom of the Timer screen."); //TODO make timerShowNextTask a numerical value to show 0/1/2/3 next tasks and start one by clicking on it
     static PrefEntry timerShowNextTask
             = new PrefEntry("Show next-coming task in Timer", "timerShowNextTask", true, "Will show the next task in a list at the bottom of the Timer screen. This can help mentally prepare but can also disturb the focus on the current task"); //TODO make timerShowNextTask a numerical value to show 0/1/2/3 next tasks and start one by clicking on it
 
@@ -125,55 +125,55 @@ public class MyPrefs {
             = new PrefEntry("Add time stamp to Comments time stamps", "commentsAddTimedEntriesWithDateANDTime", false, "When adding time stamp to Comments, also add current time");
 
     static PrefEntry taskMaxSizeInChars
-            = new PrefEntry("**","taskMaxSizeInChars", 254,"**"); //TODO make max task size a PRO subscription dependendant setting
+            = new PrefEntry("**", "taskMaxSizeInChars", 254, "**"); //TODO make max task size a PRO subscription dependendant setting
 
     static PrefEntry commentMaxSizeInChars
-            = new PrefEntry("**","commentMaxSizeInChars", 512,"**"); //TODO make max comment size a PRO subscription dependendant setting
-    
+            = new PrefEntry("**", "commentMaxSizeInChars", 512, "**"); //TODO make max comment size a PRO subscription dependendant setting
+
     static PrefEntry showCategoryDescriptionInCategoryList
-            = new PrefEntry("**","showCategoryDescriptionInCategoryList", false,"Show Category description in category lists"); 
+            = new PrefEntry("**", "showCategoryDescriptionInCategoryList", false, "Show Category description in category lists");
 
     //ALARMS
 //    static PrefEntry alarmLastDateUptoWhichAlarmsHaveBeenSet = new PrefEntry("alarmLastDateUptoWhichAlarmsHaveBeenSet", new Date(0));
     static PrefEntry alarmsActivatedOnThisDevice
-            = new PrefEntry("Enable Reminders on this device","alarmsActivatedOnThisDevice", true,"**"); //alarms activated by default
+            = new PrefEntry("Enable Reminders on this device", "alarmsActivatedOnThisDevice", true, "**"); //alarms activated by default
 
     static PrefEntry alarmSoundFile
-            = new PrefEntry("**","alarmSoundFile", "notification_sound_Cuckoo_bird_sound.mp3","**");
+            = new PrefEntry("**", "alarmSoundFile", "notification_sound_Cuckoo_bird_sound.mp3", "**");
 
     static PrefEntry alarmIntervalBetweenAlarmsRepeatsMillisInMinutes
-            = new PrefEntry("**","alarmIntervalBetweenAlarmsRepeatsMillisInMinutes", 1, "Defines the minutes between the repeats of a reminder. Chose 0 to not repeat."); //alarms activated by default
+            = new PrefEntry("**", "alarmIntervalBetweenAlarmsRepeatsMillisInMinutes", 1, "Defines the minutes between the repeats of a reminder. Chose 0 to not repeat."); //alarms activated by default
 
     static PrefEntry alarmDefaultSnoozeTimeInMinutes
             = new PrefEntry("Snooze time in minutes", "alarmDefaultSnoozeTimeInMinutes", 1, "Set the time an alarm is snoozed"); //alarms activated by default
 
     static PrefEntry alarmFutureIntervalInWhichToSetAlarmsInHours
-            = new PrefEntry("**","alarmFutureIntervalInWhichToSetAlarmsInHours", 24, "How many days ahead are local notifications activated**"); //alarms activated by default
+            = new PrefEntry("**", "alarmFutureIntervalInWhichToSetAlarmsInHours", 24, "How many days ahead are local notifications activated**"); //alarms activated by default
 
     static PrefEntry alarmMaxNumberItemsForWhichToSetupAlarms
-            = new PrefEntry("**","alarmMaxNumberItemsForWhichToSetupAlarms", 32, "Maximum number of tasks for which to set up alarms for the period alarmFutureIntervalInWhichToSetAlarmsInDays. Used to limit how many Items are fetched in background from"); //alarms activated by default
+            = new PrefEntry("**", "alarmMaxNumberItemsForWhichToSetupAlarms", 32, "Maximum number of tasks for which to set up alarms for the period alarmFutureIntervalInWhichToSetAlarmsInDays. Used to limit how many Items are fetched in background from"); //alarms activated by default
 
     static PrefEntry alarmTimeOfDayWhenToUpdateAlarmsInMinutes
-            = new PrefEntry("**","alarmTimeOfDayWhenToUpdateAlarmsInMinutes", 10, "How many days ahead are alarmsminutes should an alarm snooze"); //10 = 10 minutes after midnight
+            = new PrefEntry("**", "alarmTimeOfDayWhenToUpdateAlarmsInMinutes", 10, "How many days ahead are alarmsminutes should an alarm snooze"); //10 = 10 minutes after midnight
 
     static PrefEntry alarmShowDueTimeAtEndOfNotificationText
-            = new PrefEntry("Include "+ Item.DUE_DATE + "in notifications","alarmShowDueTimeAtEndOfNotificationText", true, "Include " + Item.DUE_DATE + " in alarm notifications");
+            = new PrefEntry("Include " + Item.DUE_DATE + "in notifications", "alarmShowDueTimeAtEndOfNotificationText", true, "Include " + Item.DUE_DATE + " in alarm notifications");
 
     static PrefEntry alarmDaysAheadToFetchFutureAlarms
-            = new PrefEntry("**","alarmDaysAheadToFetchFutureAlarms", 30, "**"); //10 = 10 minutes after midnight
+            = new PrefEntry("**", "alarmDaysAheadToFetchFutureAlarms", 30, "**"); //10 = 10 minutes after midnight
 
     //ITEM
     static PrefEntry checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress
-            = new PrefEntry("Show "+Item.STATUS+" menu on click","checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress", false, "**");
+            = new PrefEntry("Show " + Item.STATUS + " menu on click", "checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress", false, "**");
 
     static PrefEntry changeSubtasksStatusWithoutConfirmationXXX
-            = new PrefEntry("**","changeSubtasksStatusWithoutConfirmation", false, "**");
+            = new PrefEntry("**", "changeSubtasksStatusWithoutConfirmation", false, "**");
 
     static PrefEntry alwaysShowSubtasksExpandedInScreenItem
-            = new PrefEntry("**","alwaysShowSubtasksExpandedInScreenItem", false, "**");
+            = new PrefEntry("**", "alwaysShowSubtasksExpandedInScreenItem", false, "**");
 
     static PrefEntry neverChangeProjectsSubtasksWhenChangingProjectStatusXXX
-            = new PrefEntry("**","neverChangeProjectsSubtasksWhenChangingProjectStatus", false, "**");
+            = new PrefEntry("**", "neverChangeProjectsSubtasksWhenChangingProjectStatus", false, "**");
 
     static PrefEntry waitingAskToSetWaitingDateWhenMarkingTaskWaiting
             = new PrefEntry("Popup to set " + Item.WAIT_UNTIL_DATE + " and " + Item.WAITING_ALARM_DATE + " when setting a task to " + ItemStatus.WAITING, "waitingAskToSetWaitingDateWhenMarkingTaskWaiting", true, "**does nothing if both of the waiting dates are already set");
@@ -194,61 +194,58 @@ public class MyPrefs {
             = new PrefEntry("Confirm changing status for this many subtasks", "itemMaxNbSubTasksToChangeStatusForWithoutConfirmation", 2, "For a project, ask for confirmation when changing the status of this many subtasks");
 
     // ************** inherit values from owning Project *************
-    
     static PrefEntry itemInheritOwnerProjectProperties
             = new PrefEntry("Subtasks inherit properties from their project", "itemInheritOwnerProjectProperties", true, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectChallenge
-//            = new PrefEntry("Subtasks inherit "+Item.CHALLENGE+" from their project", "itemInheritOwnerProjectChallenge", true, "**");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.CHALLENGE), "itemInheritOwnerProjectChallenge", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            //            = new PrefEntry("Subtasks inherit "+Item.CHALLENGE+" from their project", "itemInheritOwnerProjectChallenge", true, "**");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.CHALLENGE), "itemInheritOwnerProjectChallenge", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerStarredProperties
-//            = new PrefEntry(Format.f("Subtasks inherit %1 from their project","propert", "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.STARRED), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            //            = new PrefEntry(Format.f("Subtasks inherit %1 from their project","propert", "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.STARRED), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectPriority
-//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectPriority", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.PRIORITY), "itemInheritOwnerProjectPriority", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectPriority", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.PRIORITY), "itemInheritOwnerProjectPriority", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectDreadFun
-//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectDreadFun", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.FUN_DREAD), "itemInheritOwnerProjectDreadFun", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectDreadFun", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.FUN_DREAD), "itemInheritOwnerProjectDreadFun", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectImportance
-//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectImportance", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.IMPORTANCE), "itemInheritOwnerProjectImportance", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectImportance", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.IMPORTANCE), "itemInheritOwnerProjectImportance", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectUrgency
-//            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectUrgency", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.URGENCY), "itemInheritOwnerProjectUrgency", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectUrgency", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.URGENCY), "itemInheritOwnerProjectUrgency", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectDueDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.DUE_DATE), "itemInheritOwnerProjectDueDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.DUE_DATE), "itemInheritOwnerProjectDueDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectExpiresOnDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.EXPIRES_ON_DATE), "itemInheritOwnerProjectExpiresOnDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.EXPIRES_ON_DATE), "itemInheritOwnerProjectExpiresOnDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectStartByDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.START_BY_TIME), "itemInheritOwnerProjectStartByDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.START_BY_TIME), "itemInheritOwnerProjectStartByDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectWaitingTillDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.WAIT_UNTIL_DATE), "itemInheritOwnerProjectWaitingTillDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.WAIT_UNTIL_DATE), "itemInheritOwnerProjectWaitingTillDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectDateWhenSetWaiting
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.WAIT_WHEN_SET_WAITING_DATE), "itemInheritOwnerProjectDateWhenSetWaiting", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.WAIT_WHEN_SET_WAITING_DATE), "itemInheritOwnerProjectDateWhenSetWaiting", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     static PrefEntry itemInheritOwnerProjectHideUntilDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.HIDE_UNTIL), "itemInheritOwnerProjectHideUntilDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-    
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.HIDE_UNTIL), "itemInheritOwnerProjectHideUntilDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+
     static PrefEntry itemInheritOwnerProjectTemplate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project",Item.TEMPLATE), "itemInheritOwnerProjectTemplate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.TEMPLATE), "itemInheritOwnerProjectTemplate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
     // ************** END inherit values from owning Project *************
-  
-    
     static PrefEntry itemEffortEstimateExtractFromStringInTaskText
             = new PrefEntry("Extract task estimates from text", "itemEffortEstimateExtractFromStringInTaskText", true, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-    
+
     static PrefEntry itemEffortEstimateKeepStringInTaskText
             = new PrefEntry("Keep task estimates text after extraction", "itemEffortEstimateKeepStringInTaskText", false, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
 
@@ -256,48 +253,48 @@ public class MyPrefs {
             = new PrefEntry("Project properties like [STARTED_ON] shows values from subtasks", "itemProjectPropertiesDerivedFromSubtasks", true, "**");
 
     static PrefEntry workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime
-            = new PrefEntry(Format.f("Prioritize %1 from Categories","work time"), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime", true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
+            = new PrefEntry(Format.f("Prioritize %1 from Categories", "work time"), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime", true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
 
     //INTERNAL / TECHNICAL / CACHE
-    static PrefEntry backgroundFetchIntervalInSeconds = new PrefEntry("**","backgroundFetchIntervalInSeconds", 1 * MyDate.HOUR_IN_MILISECONDS / 1000, "interval for updating eg local notifications and badge count when app is in background**");
+    static PrefEntry backgroundFetchIntervalInSeconds = new PrefEntry("**", "backgroundFetchIntervalInSeconds", 1 * MyDate.HOUR_IN_MILISECONDS / 1000, "interval for updating eg local notifications and badge count when app is in background**");
 
-    static PrefEntry cacheDynamicSize = new PrefEntry("**","cacheDynamicSize", 10000, "number of tasks, lists, categories etc cached**");
-    static PrefEntry cacheDynamicSizeWorkSlots = new PrefEntry("**","cacheDynamicSizeWorkSlots", 10000, "number of WorkSlots cached**");
+    static PrefEntry cacheDynamicSize = new PrefEntry("**", "cacheDynamicSize", 10000, "number of tasks, lists, categories etc cached**");
+    static PrefEntry cacheDynamicSizeWorkSlots = new PrefEntry("**", "cacheDynamicSizeWorkSlots", 10000, "number of WorkSlots cached**");
 
     static PrefEntry cacheLocalStorageSize
-            = new PrefEntry("**","cacheLocalStorageSize", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
+            = new PrefEntry("**", "cacheLocalStorageSize", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
     static PrefEntry cacheLocalStorageSizeWorkSlots
-            = new PrefEntry("**","cacheLocalStorageSizeWorkSlots", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
+            = new PrefEntry("**", "cacheLocalStorageSizeWorkSlots", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
     static PrefEntry cacheMaxNumberParseObjectsToFetchInQueries
-            = new PrefEntry("**","cacheMaxNumberParseObjectsToFetchInQueries", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
+            = new PrefEntry("**", "cacheMaxNumberParseObjectsToFetchInQueries", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
     static PrefEntry cacheLoadChangedElementsOnAppStart
-            = new PrefEntry("cacheLoadChangedElementsOnAppStart (INTERNAL)","cacheLoadChangedElementsOnAppStart", true, "used to speed up app start during testing - NOT END USER");
-  
+            = new PrefEntry("cacheLoadChangedElementsOnAppStart (INTERNAL)", "cacheLoadChangedElementsOnAppStart", true, "used to speed up app start during testing - NOT END USER");
+
     static PrefEntry showObjectIdsInEditScreens
-            = new PrefEntry("Show ObjectIds when editing","showObjectIdsInEditScreens", true, "show internal unique ID when editing - NOT END USER");
+            = new PrefEntry("Show ObjectIds when editing", "showObjectIdsInEditScreens", true, "show internal unique ID when editing - NOT END USER");
 
     //LOOK AND FEEL
     static PrefEntry themeNameWithoutBackslash
-            = new PrefEntry("**","themeNameWithoutBackslash", "theme", "name of the graphical theme");
+            = new PrefEntry("**", "themeNameWithoutBackslash", "theme", "name of the graphical theme");
 
     //OTHER / SYSTEM-LEVEL
     static PrefEntry enableCancelInAllScreens
-            = new PrefEntry("**","enableCancelInAllScreens", false, "temporarily used to disable Cancel everywhere due to problems eg with too complex to Cancel when inserting Templates with subtasks");
+            = new PrefEntry("**", "enableCancelInAllScreens", false, "temporarily used to disable Cancel everywhere due to problems eg with too complex to Cancel when inserting Templates with subtasks");
     static PrefEntry dateShowDatesInUSFormat
-            = new PrefEntry("**","dateShowDatesInUSFormat", false, "**");
-    
+            = new PrefEntry("**", "dateShowDatesInUSFormat", false, "**");
+
     //REPEATRULE
-    static PrefEntry repeatMaxInterval = new PrefEntry("**","repeatMaxInterval", 365, "maximun value for repeat interval**");
+    static PrefEntry repeatMaxInterval = new PrefEntry("**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
     static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead = new PrefEntry("xxx", "repeatMaxNumberFutureInstancesToGenerateAhead", 10, "**");
     static PrefEntry repeatMaxNumberFutureDaysToGenerateAhead = new PrefEntry("zzz", "repeatMaxNumberFutureDaysToGenerateAhead", 31, "**");
     static PrefEntry maxNumberRepeatInstancesToDeleteWithoutConfirmation = new PrefEntry("ttt", "maxNumberRepeatInstancesToDeleteWithoutConfirmation", 1, "**");
     static PrefEntry repeatSetRelativeFieldsWhenCreatingRepeatInstances
             = new PrefEntry("kkk", "repeatSetRelativeFieldsWhenCreatingRepeatInstances", true,
                     "set the relative date fields like Alarm/HideUntil/StartBy/Autoexpire** etc to same time before/after due date**");
-    static PrefEntry repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule = new PrefEntry("Reuse existing instances when changing "+RepeatRuleParseObject.REPEAT_RULE, "repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule", true, "When changing a repeat rule, reuse any task instances that already exist, this will keep any edits to such instances");
+    static PrefEntry repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule = new PrefEntry("Reuse existing instances when changing " + RepeatRuleParseObject.REPEAT_RULE, "repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule", true, "When changing a repeat rule, reuse any task instances that already exist, this will keep any edits to such instances");
     static PrefEntry repeatHidePreviousTasksDetails = new PrefEntry("lll", "repeatHidePreviousTasksDetails", true, "When editing an existing repeat rule, expand the list of existing tasks");
 
     //ITEMS IN LIST
@@ -310,9 +307,9 @@ public class MyPrefs {
     //
     static PrefEntry creationLogInterval = new PrefEntry("yyy", "creationLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_CREATION_LOG_TITLE);
     static PrefEntry completionLogInterval = new PrefEntry("rrr", "completionLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_COMPLETION_LOG_TITLE);
-    static PrefEntry overdueLogInterval = new PrefEntry("Past days in "+ScreenMain.SCREEN_OVERDUE_TITLE, "overdueLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_OVERDUE_TITLE);
+    static PrefEntry overdueLogInterval = new PrefEntry("Past days in " + ScreenMain.SCREEN_OVERDUE_TITLE, "overdueLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_OVERDUE_TITLE);
     static PrefEntry touchedLogInterval = new PrefEntry("eee", "touchedLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED);
-    
+
     //STATISTICS SCREEN
     static PrefEntry statisticsScreenNumberPastDaysToShow = new PrefEntry("Past days to include", "statisticsScreenNumberPastDaysToShow", 30, "How many past days to include");
 //    static PrefEntry numberPastWeeksToShowInStatisticsScreen = new PrefEntry("eee", "numberPastDaysToShowInStatisticsScreen", 30, "How many past days to show Show completed tasks grouped by");
@@ -321,15 +318,17 @@ public class MyPrefs {
 //    static PrefEntry statisticsGroupByDateInterval = new PrefEntry("eee", "statisticsGroupByDateInterval", ScreenStatistics.ShowGroupedBy.day, "Show completed tasks grouped by");
     static PrefEntry statisticsSortBy = new PrefEntry("Sort by", "statisticsSortBy", ScreenStatistics.SortStatsOn.dateAndTime.name(), "Sort task by");
 //    static PrefEntry statisticsSortByXX = new PrefEntry("Sort by", "statisticsSortBy", ScreenStatistics.SortStatsOn.dateAndTime.name(), "Sort task by");
-    
+
 //    static PrefEntry statisticsGroupByCategoryInsteadOfList = new PrefEntry("eee", "statisticsGroupByCategoryInsteadOfList", false, "Show completed tasks grouped by Category instead of Lists (NB. If a task has multiple categories, only the first is used)");
     static PrefEntry statisticsGroupTasksUnderTheirProject = new PrefEntry("Show subtasks grouped under their project", "statisticsGroupTasksUnderTheirProject", true, "Show completed subtasks grouped under their top-level project");
     static PrefEntry statisticsShowDetailsForAllLists = new PrefEntry("Always show details for statistics", "statisticsShowDetailsForAllLists", false, "**");
-    
+
     //GLOBAL
     //localization
-    static PrefEntry localeUserSelected = new PrefEntry("Language for text", "localeUserSelected", "", "Determines the language used. Use this setting to override the default language used on your device");
-    
+    static PrefEntry localeUserSelected = new PrefEntry("Language for text", "localeUserSelected", "fr", "Determines the language used. Use this setting to override the default language used on your device");
+
+    static PrefEntry pickerMinuteStep = new PrefEntry("Picker minute steps", "pickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
+
 //LOGIN
     static PrefEntry loginStoreEmail = new PrefEntry("Show email on login", "loginStoreEmail", true, "**");
 //    static PrefEntry loginStayLoggedIn = new PrefEntry("Stay logged in", "loginStayLoggedIn", true, "**");//DOESN'T make sense to log user out automatically (would happen each time app is switched to background since destroy is unreliable)
@@ -365,11 +364,9 @@ public class MyPrefs {
 //        PrefEntry(String settingId, Object defaultValue, String helpText) {
 //            this(null, settingId, defaultValue, helpText);
 //        }
-
 //        PrefEntry(String settingId, Object defaultValue) {
 //            this(settingId, defaultValue, null);
 //        }
-
         String fieldDescription;
         String settingId;
         Object defaultValue;
@@ -443,7 +440,6 @@ public class MyPrefs {
 //    public static Object getEnum(PrefEntry setting, Object e) {
 //        Preferences.set(setting.settingId, e.toString());
 //    }
-
     public static void setInt(PrefEntry setting, int i) {
         Preferences.set(setting.settingId, i);
     }
