@@ -52,7 +52,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
      * *after* item2)
      */
     public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2) {
-        this(myForm2, item2, item2.getOwner());
+        this(myForm2, item2, item2.getOwner(),null);
     }
 
     /**
@@ -64,7 +64,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
      * @param itemOrItemListForNewTasks2 list into which add Items
      */
     public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
-
+this(myForm2, item2, itemOrItemListForNewTasks2, null);
     }
 
     public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, ItemAndListCommonInterface itemOrItemListForNewTasks2, Category category2) {
@@ -162,6 +162,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
                 parent.replace(InlineInsertNewItemContainer2.this, new Label(), null);
 //                if (myForm.getInlineInsertContainer() == this) {
                 myForm.setInlineInsertContainer(null);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                }
 //                closeInsertNewTaskContainer(myForm); //close without inserting new task
 //all below now done in MyForm.setInlineInsertContainer(null):
@@ -170,6 +171,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
 //                lastCreatedItem = null; //needed?
 ////                myForm.animateMyForm();
 //                parent.animateLayout(300);
+//</editor-fold>
             })));
         }
 
@@ -292,10 +294,11 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
      * @return
      */
     private void insertNewTaskAndSaveChanges(ItemAndListCommonInterface newItem) {
+            DAO.getInstance().save((ParseObject) newItem); //need to save first, other DAO.fetchListElementsIfNeededReturnCachedIfAvail called by getList will complain that no ObjectId
         if (insertAsSubtask) { //add as subtask to previous task, and keep the subtask level
             if (element != null) {
                 element.addToList(newItem); //add to end of subtask list (depending on setting for add to beginning/end of lists)
-                DAO.getInstance().saveInBackgroundSequential((ParseObject) newItem, (ParseObject) element);
+if (false)                DAO.getInstance().saveInBackgroundSequential((ParseObject) newItem, (ParseObject) element);
                 insertAsSubtask = false; //remove the subtask property so next task does not become a subtask to the subtask
                 myForm.expandedObjects.add(element); //UI: expand the item to show newly added subtask
             } else {
@@ -318,9 +321,11 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
                     itemOrItemListForNewElements.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
                 }
             }
-            DAO.getInstance().saveInBackgroundSequential((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements);
+            if (false)
+                DAO.getInstance().saveInBackgroundSequential((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements);
+            else DAO.getInstance().saveInBackgroundSequential((ParseObject) itemOrItemListForNewElements);
         } else {
-            DAO.getInstance().saveInBackground((ParseObject) newItem); //task only inserted into inbox
+            if (false)DAO.getInstance().saveInBackground((ParseObject) newItem); //task only inserted into inbox
         }
 //        return newItem;
     }

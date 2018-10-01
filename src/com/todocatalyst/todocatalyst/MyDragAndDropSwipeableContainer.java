@@ -244,7 +244,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * container list to which refComp belongs, -1: before refComp (not used?!)
      */
 //    private static boolean addDropPlaceholderToAppropriateParentCont(Component refComp, Component dropPh, int relativeIndex) {
-    private static boolean addDropPlaceholderToAppropriateParentCont(MyDragAndDropSwipeableContainer refComp, Component dropPh, int relativeIndex) {
+//     static boolean addDropPlaceholderToAppropriateParentCont(MyDragAndDropSwipeableContainer refComp, Component dropPh, int relativeIndex) {
+     static boolean addDropPlaceholderToAppropriateParentCont(Component refComp, Component dropPh, int relativeIndex) {
 
 //        ASSERT.that(!(refComp instanceof MyTree2) && !(refComp instanceof ContainerScrollY));
 //        Container dropCont =getParentScrollYContainer(refComp); //NOT possible to use getParentScrollYContainer because we need the refCompComp below to find the index

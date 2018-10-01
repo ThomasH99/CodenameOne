@@ -634,7 +634,7 @@ public class ScreenRepair extends MyForm {
                 }) {
 
                     @Override
-                    protected void display(int[] x, int[] y, boolean inPinch) {
+                    protected void displayTest(int[] x, int[] y, boolean inPinch) {
                         Component compAbove2 = getContentPane().getComponentAt(x[0], y[0]);
                         Component compAbove3 = getComponentForm().getComponentAt(x[0], y[0]);
                         Component compAbove1 = getComponentAt(x[0], y[0]);
@@ -643,8 +643,8 @@ public class ScreenRepair extends MyForm {
                         Component dropTarget = findDropTargetAt(x[0], y[0]);
                         Component closest = getClosestComponentTo(x[0], y[0]);
                         Container parentContAbove = compAbove != null ? compAbove.getParent() : null;
-//                        MyDragAndDropSwipeableContainer dropComponentAbove = MyForm.findDropContainerIn(compAbove);
-                        MyDragAndDropSwipeableContainer dropCompAbove = MyForm.findDropContainerIn(parentContAbove);
+//                        MyDragAndDropSwipeableContainer dropComponentAbove = MyForm.findDropContainerStartingFrom(compAbove);
+                        MyDragAndDropSwipeableContainer dropCompAbove = MyForm.findDropContainerStartingFrom(parentContAbove);
                         ItemAndListCommonInterface objAbove = dropCompAbove != null
                                 ? (ItemAndListCommonInterface) dropCompAbove.getDragAndDropObject()
                                 : null;

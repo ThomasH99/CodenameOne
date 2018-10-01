@@ -97,7 +97,7 @@ public class MyForm extends Form {
 //    private TextArea editFieldOnShowOrRefresh;
     private InsertNewElementFunc inlineInsertContainer;
     private BooleanFunction testIfEdit;
-    protected String formUniqueId=null; //unique id for each form, used to name local files for each form+ParseObject
+    protected String formUniqueId = null; //unique id for each form, used to name local files for each form+ParseObject
 
 //    public TextArea getEditFieldOnShowOrRefresh() {
 //        return editFieldOnShowOrRefresh;
@@ -107,7 +107,7 @@ public class MyForm extends Form {
         boolean test();
     }
 
-        /**
+    /**
      * the textArea will be
      *
      * @param editFieldOnShowOrRefresh
@@ -218,7 +218,7 @@ public class MyForm extends Form {
 
     MyForm(String title, MyForm previousForm, UpdateField updateActionOnDone) { //throws ParseException, IOException {
         super(title);
-        formUniqueId=title; 
+        formUniqueId = title;
 //        setLayout(layout);
 //        getLayeredPane().setLayout(BorderLayout.center());
         ReplayLog.getInstance().deleteAllReplayCommandsFromPreviousScreen(title);
@@ -2321,25 +2321,25 @@ public class MyForm extends Form {
     }
 
     //DEBUG:
-    private Form fPinchOut;// = new Form(new BorderLayout());
-    private Container disp1;// = new Container(BoxLayout.y());
-    private Label title;//= new Label();
-    private Label xLabel;// = new Label();
-    private Label yLabel;// = new Label();
-    private Label distLabel;// = new Label();
-    private Label comp1Label;// = new Label();
-    private Label comp2Label;//= new Label();
-    private Label cont1Label;//= new Label();
-    private Label cont2Label;//= new Label();
-    private Label dropTarget1Label;// = new Label();
-    private Label dropTarget2Label;//= new Label();
+    private Form fPinchOutTest;// = new Form(new BorderLayout());
+    private Container disp1Test;// = new Container(BoxLayout.y());
+    private Label titleTest;//= new Label();
+    private Label xLabelTest;// = new Label();
+    private Label yLabelTest;// = new Label();
+    private Label distLabelTest;// = new Label();
+    private Label comp1LabelTest;// = new Label();
+    private Label comp2LabelTest;//= new Label();
+    private Label cont1LabelTest;//= new Label();
+    private Label cont2LabelTest;//= new Label();
+    private Label dropTarget1LabelTest;// = new Label();
+    private Label dropTarget2LabelTest;//= new Label();
     private Component pinchContainer; //Container holding the pinchComponent (and implementing the resize)
 //    private Component pinchComponent;
 //    private Component prevComponentAbove;
 //    private Component prevComponentBelow;
 //    private Item pinchItem;
 
-    private boolean pinchInsertEnabled;
+    private boolean pinchInsertEnabled = true; //TODO!! only true for testing
 
     public boolean isPinchInsertEnabled() {
         return pinchInsertEnabled;
@@ -2350,22 +2350,22 @@ public class MyForm extends Form {
     }
     private int pinchInitialYDistance = Integer.MIN_VALUE;
 
-    private void initPinch() {
+    private void initPinchTest() {
 //fPinchOut.setScrollableY(true);
-        disp1 = new Container(BoxLayout.y());
-        title = new Label("XX");
-        xLabel = new Label("XX");
-        yLabel = new Label("XX");
-        distLabel = new Label("XX");
-        comp1Label = new Label("XX");
-        comp2Label = new Label("XX");
-        cont1Label = new Label("XX");
-        cont2Label = new Label("XX");
-        dropTarget1Label = new Label("XX");
-        dropTarget2Label = new Label("XX");
+        disp1Test = new Container(BoxLayout.y());
+        titleTest = new Label("XX");
+        xLabelTest = new Label("XX");
+        yLabelTest = new Label("XX");
+        distLabelTest = new Label("XX");
+        comp1LabelTest = new Label("XX");
+        comp2LabelTest = new Label("XX");
+        cont1LabelTest = new Label("XX");
+        cont2LabelTest = new Label("XX");
+        dropTarget1LabelTest = new Label("XX");
+        dropTarget2LabelTest = new Label("XX");
 //        disp1.removeAll();
-        disp1.addAll(title, xLabel, yLabel, distLabel, comp1Label, comp2Label, cont1Label, cont2Label, dropTarget1Label, dropTarget2Label);
-        fPinchOut.addComponent(BorderLayout.SOUTH, disp1);
+        disp1Test.addAll(titleTest, xLabelTest, yLabelTest, distLabelTest, comp1LabelTest, comp2LabelTest, cont1LabelTest, cont2LabelTest, dropTarget1LabelTest, dropTarget2LabelTest);
+        fPinchOutTest.addComponent(BorderLayout.SOUTH, disp1Test);
 
         Container labelCont = new Container(BoxLayout.y());
         labelCont.setScrollableY(true);
@@ -2374,44 +2374,44 @@ public class MyForm extends Form {
             l.setName("Label" + i);
             labelCont.add(l);
         }
-        fPinchOut.addComponent(BorderLayout.CENTER, labelCont);
+        fPinchOutTest.addComponent(BorderLayout.CENTER, labelCont);
     }
 
-    protected void display(int[] x, int[] y, boolean inPinch) {
+    protected void displayTest(int[] x, int[] y, boolean inPinch) {
         if (false) {
-            title.setText(inPinch ? "***PINCH***" : "MOVE");
-            xLabel.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
+            titleTest.setText(inPinch ? "***PINCH***" : "MOVE");
+            xLabelTest.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
             Component comp1 = getComponentAt(x[0], y[0]);
-            comp1Label.setText("Comp1=" + comp1.getName());
+            comp1LabelTest.setText("Comp1=" + comp1.getName());
             if (comp1 instanceof Container) {
                 Container cont1 = (Container) comp1;
-                cont1Label.setText("Cont1=" + cont1);
+                cont1LabelTest.setText("Cont1=" + cont1);
                 Component dropTarget1 = cont1.findDropTargetAt(x[0], y[0]);
-                dropTarget1Label.setText("dropTarget1=" + dropTarget1);
+                dropTarget1LabelTest.setText("dropTarget1=" + dropTarget1);
             }
             if (x.length > 1) {
-                yLabel.setText("(x[1],y[1])=(" + x[1] + "," + y[1] + ")");
-                distLabel.setText("dist=" + distance(x, y));
+                yLabelTest.setText("(x[1],y[1])=(" + x[1] + "," + y[1] + ")");
+                distLabelTest.setText("dist=" + distance(x, y));
                 Component comp2 = getComponentAt(x[1], y[1]);
-                comp1Label.setText("Comp2=" + comp2.getName());
+                comp1LabelTest.setText("Comp2=" + comp2.getName());
                 if (comp2 instanceof Container) {
                     Container cont2 = (Container) comp2;
-                    cont2Label.setText("Cont2=" + cont2);
+                    cont2LabelTest.setText("Cont2=" + cont2);
                     Component dropTarget2 = cont2.findDropTargetAt(x[1], y[1]);
-                    dropTarget2Label.setText("dropTarget2=" + dropTarget2);
+                    dropTarget2LabelTest.setText("dropTarget2=" + dropTarget2);
                 }
             } else {
-                comp1Label.setText("Comp2=");
-                cont2Label.setText("Cont2=");
-                dropTarget2Label.setText("dropTarget2=");
+                comp1LabelTest.setText("Comp2=");
+                cont2LabelTest.setText("Cont2=");
+                dropTarget2LabelTest.setText("dropTarget2=");
             }
 
-            fPinchOut.revalidate();
+            fPinchOutTest.revalidate();
         }
     }
 
     private static boolean minimumPinchSizeReached(int pinchYDistance, Component pinchContainer) {
-        return pinchYDistance > pinchContainer.getPreferredH() / 2; //true if over half the required size has been pinched out
+        return pinchYDistance > pinchContainer.getPreferredH() / 3 * 2; //true if over 2/3 of the required size has been pinched out
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2474,10 +2474,6 @@ public class MyForm extends Form {
         return pinchContainer;
     }
 
-    private Component createInsertContainer(ItemAndListCommonInterface elementType) {
-        return createInsertContainer(elementType, elementType.getOwner());
-    }
-
     /**
      * 
      * @param elementType
@@ -2485,22 +2481,37 @@ public class MyForm extends Form {
      * @return 
      */
     private Component createInsertContainer(ItemAndListCommonInterface elementType, ItemAndListCommonInterface list) {
-        if (elementType instanceof Item && list instanceof Category) {
+        return createInsertContainer(elementType, list, false);
+    }
+
+    private Component createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface list, boolean insertBeforeRefElement) {
+        ASSERT.that(!insertBeforeRefElement, "not implemented yet");
+        if (refElement instanceof Item) {
+            if (list instanceof Category) {
 //            Item newItem = new Item();
 //            newItem.addCategoryToItem((Category)list, false); //add category in InlineInsertNewItemContainer2
-            return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) elementType));
-        } else if (elementType instanceof Item && list instanceof ItemList) {
-            return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) elementType));
-        } else if (elementType instanceof Category) {
-            return wrapInPinchableContainer(new InlineInsertNewCategoryContainer(MyForm.this, (Category) elementType));
-//        } else if (elementType instanceof ItemList) {
-//            return wrap(new InlineInsertNewItemListContainer(MyForm.this, (Item) elementType));
-//        } else if (elementType instanceof WorkSlot) {
-//            return wrap(new InlineInsertNewWorkSlotContainer(MyForm.this, (Item) elementType));
+                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement));
+            } else if (list instanceof ItemList) {
+                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement));
+            }
+        } else if (refElement instanceof Category) {
+            return wrapInPinchableContainer(new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement));
+        } else if (refElement instanceof ItemList) {
+            return wrapInPinchableContainer(new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement));
+        } else if (refElement instanceof WorkSlot) {
+            return wrapInPinchableContainer(new InlineInsertNewWorkSlotContainer(MyForm.this, (Item) refElement));
         }
         return null;
     }
 
+    /**
+    create an insert container based on the elementType's owner. If 
+    @param elementType
+    @return 
+     */
+//    private Component createInsertContainer(ItemAndListCommonInterface elementType) {
+//        return createInsertContainer(elementType, elementType.getOwner());
+//    }
     /**
      * three cases: 1) simple: pinching out two siblings => insert between. 2) Pinching out between
      * a parent (Item project/ItemList/Category) and its expanded subtask => insert new subtask before the
@@ -2522,15 +2533,42 @@ public class MyForm extends Form {
      */
 //    private boolean insertPinchContainer(MyDragAndDropSwipeableContainer componentAbove, MyDragAndDropSwipeableContainer componentBelow, Object insertObj, boolean checkValidity) {
     private Component createAndInsertPinchContainer(int[] x, int[] y) {
-        Component containerAbove = y[0] < y[1] ? getComponentAt(y[0], x[0]) : getComponentAt(y[1], x[1]);
-        Component containerBelow = y[0] < y[1] ? getComponentAt(y[1], x[1]) : getComponentAt(y[0], x[0]);
-        Container parentContainerAbove = containerAbove.getParent();
-        Container parentContainerBelow = containerBelow.getParent();
-        MyDragAndDropSwipeableContainer dropComponentAbove = findDropContainerIn(containerAbove);
-        MyDragAndDropSwipeableContainer dropComponentBelow = findDropContainerIn(containerBelow);
-        ItemAndListCommonInterface objAbove = (ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
+        Component compAbove = y[0] < y[1] ? getComponentAt(x[0], y[0]) : getComponentAt(x[1], y[1]);
+        Component compBelow = y[0] < y[1] ? getComponentAt(x[1], y[1]) : getComponentAt(x[0], y[0]);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Container parentContainerAbove = null;
+//        if (compAbove != null) {
+//            parentContainerAbove = compAbove.getParent();
+//        }
+//        Container parentContainerBelow = null;
+//        if (compAbove != null) {
+//            parentContainerAbove = compBelow.getParent();
+//        }
+//        Container parentContainerBelow = compBelow.getParent();
+//</editor-fold>
+        //find the drop containers
+        MyDragAndDropSwipeableContainer dropComponentAbove = findDropContainerStartingFrom(compAbove);
+        MyDragAndDropSwipeableContainer dropComponentBelow = findDropContainerStartingFrom(compBelow);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        //find the drop containers parents - to insert pinch container?!
+//        Container parentContainerAbove = null;
+//        if (dropComponentAbove != null) {
+//            parentContainerAbove = dropComponentAbove.getParent();
+//        }
+//        Container parentContainerBelow = null;
+//        if (dropComponentBelow != null) {
+//            parentContainerAbove = dropComponentBelow.getParent();
+//        }
+//</editor-fold>
+        ItemAndListCommonInterface itemEltAbove = null; //(ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
+        if (compAbove != null) {
+            itemEltAbove = (ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
+        }
 //        List objAboveOwnerList = null;
-        ItemAndListCommonInterface objBelow = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
+        ItemAndListCommonInterface itemEltBelow = null;// = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
+        if (compAbove != null) {
+            itemEltBelow = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
+        }
 //        List objBelowOwnerList = null;
         Component insertContainer = null;
 
@@ -2545,132 +2583,162 @@ public class MyForm extends Form {
 //            objBelowOwnerList = objBelow.getOwner().getList();
 //        }
 //</editor-fold>
-        if (dropComponentAbove == null) { //pull down on top-most item, insert before the first item
-            insertContainer = createInsertContainer(objBelow); //create insertContainer
-            parentContainerBelow.addComponent(0, insertContainer); //insert insertContainer at beginning of list that the other pinch finger touches
-        } else if (dropComponentBelow == null) { //pull down on bottom-most item, insert at the end of the list
-            insertContainer = createInsertContainer(objAbove, null); //create insertContainer
-            parentContainerBelow.addComponent(parentContainerBelow.getComponentCount(), insertContainer); //insert insertContainer at end of list that the other pinch finger touches
-        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
-            ASSERT.that(objAbove.getClass() == objBelow.getClass()); //should always be of same class if in same list (TODO!!!! what about Today view?!
-            //Covers both Items, ItemList, Category, createInsertContainer will create the right container
-            insertContainer = createInsertContainer(objAbove, null); //create insertContainer
-            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
-            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert insertContainer at end of list that the other pinch finger touches
-        } else if (objBelow instanceof Item && (objAbove instanceof Category || objAbove instanceof ItemList)) { //insert above the Item (instanceof ItemList also matches Category)
-            if (((Category) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
-                insertContainer = createInsertContainer(objBelow, objBelow.getOwner()); //create insertContainer
-                parentContainerBelow.addComponent(0, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+        if (dropComponentAbove == null && dropComponentBelow != null) { //pull down on top-most item, insert before the first element (can be Item/Category/ItemList)
+            insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+            MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, insertContainer, 0); //insert insertContainer at position of dropComponentBelow
+        } else if (dropComponentBelow == null && dropComponentAbove != null) { //pull down on bottom-most item, insert at the end of the list (can be Item/Category/ItemList)
+            insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //create insertContainer
+            MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer *after* dropComponentAbove
+
+        } else if (itemEltAbove instanceof Item) { //inserting *after* an Item
+            if (itemEltBelow instanceof Category || itemEltBelow instanceof ItemList) {
+                //insert after itemEltAbove
+                insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer at start of subtask lise (before itemEltBelow)
+
+            } else if (itemEltBelow instanceof Item) {
+                if (itemEltAbove.getOwner() == itemEltBelow.getOwner()) { //belong to same owner, insert after 
+                    insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer at beginning of list that the other pinch finger touches
+                } else if (((Item) itemEltAbove).hasAsSubtask((Item) itemEltBelow)) {
+                    insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, insertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                }
             }
-        } else if (objAbove instanceof Item && (objBelow instanceof ItemList || objBelow instanceof ItemList)) { //insert *below* (+1) the objAbove Item 
-            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
-            parentContainerAbove.addComponent(parentContainerAbove.getComponentCount(), insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
-        } else if (objAbove instanceof Item && objBelow instanceof Item) { //both objects are Items but not in same list, insert below (+1) objAbove
-            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
-            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
-            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
-        } else if (objAbove != null) { //insert *after* objAbove
-            ASSERT.that(objAbove != null);
-            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
-            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
-            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+
+        } else if (itemEltAbove instanceof Category || itemEltAbove instanceof ItemList) { //inserting *after* a Category or ItemList
+            if (itemEltBelow instanceof Item) { //insert before itemEltBelow
+                insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, insertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
+            } else {
+                ASSERT.that(itemEltBelow instanceof Category || itemEltBelow instanceof ItemList, "if itemEltBelow is not an Item, it can only a Cateogyr or ItemList");
+                insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //create insertContainer
+                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer *after* dropComponentAbove
+            }
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
+//            ASSERT.that(itemEltAbove.getClass() == itemEltBelow.getClass()); //should always be of same class if in same list (TODO!!!! what about Today view?!
+//            //Covers both Items, ItemList, Category, createInsertContainer will create the right container
+//            insertContainer = createInsertContainer(itemEltAbove, null); //create insertContainer
+//            int insertIndex = parentContainerAbove.getComponentIndex(compAbove) + 1;
+//            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert insertContainer at end of list that the other pinch finger touches
+//        } else if (itemEltBelow instanceof Item && (itemEltAbove instanceof Category || itemEltAbove instanceof ItemList)) { //insert above the Item (instanceof ItemList also matches Category)
+//            if (((Category) itemEltAbove).getList().contains(itemEltBelow)) { //only insert if the item below is actually *in* the category
+//                insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner()); //create insertContainer
+//                parentContainerBelow.addComponent(0, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+//            }
+//        } else if (itemEltAbove instanceof Item && (itemEltBelow instanceof ItemList || itemEltBelow instanceof ItemList)) { //insert *below* (+1) the objAbove Item
+//            insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner()); //, objAbove.getOwner()); //create insertContainer
+//            parentContainerAbove.addComponent(parentContainerAbove.getComponentCount(), insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+//        } else if (itemEltAbove instanceof Item && itemEltBelow instanceof Item) { //both objects are Items but not in same list, insert below (+1) objAbove
+//            insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner()); //, objAbove.getOwner()); //create insertContainer
+//            int insertIndex = parentContainerAbove.getComponentIndex(compAbove) + 1;
+//            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+//        } else if (itemEltAbove != null) { //insert *after* objAbove
+//            ASSERT.that(itemEltAbove != null);
+//            insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner()); //, objAbove.getOwner()); //create insertContainer
+//            int insertIndex = parentContainerAbove.getComponentIndex(compAbove) + 1;
+//            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+//        }
+//</editor-fold>
         return insertContainer;
     }
 
-    private Component createAndInsertPinchContainerOLD(int[] x, int[] y) {
-        Component containerAbove = y[0] < y[1] ? getComponentAt(y[0], x[0]) : getComponentAt(y[1], x[1]);
-        Component containerBelow = y[0] < y[1] ? getComponentAt(y[1], x[1]) : getComponentAt(y[0], x[0]);
-        Container parentContainerAbove = containerAbove.getParent();
-        Container parentContainerBelow = containerBelow.getParent();
-        MyDragAndDropSwipeableContainer dropComponentAbove = findDropContainerIn(containerAbove);
-        MyDragAndDropSwipeableContainer dropComponentBelow = findDropContainerIn(containerBelow);
-        ItemAndListCommonInterface objAbove = (ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
-//        List objAboveOwnerList = null;
-        ItemAndListCommonInterface objBelow = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
-//        List objBelowOwnerList = null;
-        Component insertContainer = null;
-
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        if (dropComponentAbove != null) {
-//            objAbove = (ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
-//            objAboveOwnerList = objAbove.getOwner().getList();
-//            objAboveOwnerList.add()
-//        }
-//        if (dropComponentBelow != null) {
-//            objBelow = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
-//            objBelowOwnerList = objBelow.getOwner().getList();
-//        }
-//</editor-fold>
-        if (dropComponentAbove == null) { //pull down on top-most item, insert before the first item
-//            if (checkValidity) {                return true;            }
-//            if (false) {                objBelowOwnerList.add(0, insertObj);            }
-            insertContainer = createInsertContainer(objBelow); //create insertContainer
-            parentContainerBelow.addComponent(0, insertContainer); //insert insertContainer at beginning of list that the other pinch finger touches
-        } else if (dropComponentBelow == null) { //pull down on bottom-most item, insert at the end of the list
-//            if (checkValidity) {                return true;            }
-//            if (false) {                objAboveOwnerList.add(insertObj);            }
-            insertContainer = createInsertContainer(objAbove, null); //create insertContainer
-            parentContainerBelow.addComponent(parentContainerBelow.getComponentCount(), insertContainer); //insert insertContainer at end of list that the other pinch finger touches
-//        } else if (objAboveOwnerList == objBelowOwnerList) { //we're inserting in the same list
-        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
-//            assert objAbove.getClass()==objBelow.getClass():"";
-            ASSERT.that(objAbove.getClass() == objBelow.getClass()); //should always be of same class if in same list (TODO!!!! what about Today view?!
-            //Covers both Items, ItemList, Category, createInsertContainer will create the right container
-//            if (checkValidity) {                return true;            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            int insertIndex = objBelowOwnerList.indexOf(objBelow);
-//            int insertIndex = objAboveOwnerList.indexOf(objAbove); //insert below the top-most object
-//            objAboveOwnerList.add(insertIndex, insertObj);
-//</editor-fold>
-            insertContainer = createInsertContainer(objAbove, null); //create insertContainer
-            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
-            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert insertContainer at end of list that the other pinch finger touches
-        } else if (objBelow instanceof Item && (objAbove instanceof Category || objAbove instanceof ItemList)) { //insert above the Item (instanceof ItemList also matches Category)
-            if (((Category) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                if (checkValidity) {                     return true;                }
-//                int insertIndex = objBelowOwnerList.indexOf(objBelow);
-//                objBelowOwnerList.add(insertIndex, insertObj);
-//</editor-fold>
-                insertContainer = createInsertContainer(objBelow, objBelow.getOwner()); //create insertContainer
-                parentContainerBelow.addComponent(0, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
-            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        } else if (objAbove instanceof ItemList && objBelow instanceof Item) { //insert above the Item (instanceof ItemList also matches Category)
-//            if (((ItemList) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
-////                if (checkValidity) {                    return true;                }
+//    private Component createAndInsertPinchContainerOLD(int[] x, int[] y) {
+//        Component containerAbove = y[0] < y[1] ? getComponentAt(y[0], x[0]) : getComponentAt(y[1], x[1]);
+//        Component containerBelow = y[0] < y[1] ? getComponentAt(y[1], x[1]) : getComponentAt(y[0], x[0]);
+//        Container parentContainerAbove = containerAbove.getParent();
+//        Container parentContainerBelow = containerBelow.getParent();
+//        MyDragAndDropSwipeableContainer dropComponentAbove = findDropContainerStartingFrom(containerAbove);
+//        MyDragAndDropSwipeableContainer dropComponentBelow = findDropContainerStartingFrom(containerBelow);
+//        ItemAndListCommonInterface objAbove = (ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
+////        List objAboveOwnerList = null;
+//        ItemAndListCommonInterface objBelow = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
+////        List objBelowOwnerList = null;
+//        Component insertContainer = null;
+//
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (dropComponentAbove != null) {
+////            objAbove = (ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
+////            objAboveOwnerList = objAbove.getOwner().getList();
+////            objAboveOwnerList.add()
+////        }
+////        if (dropComponentBelow != null) {
+////            objBelow = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
+////            objBelowOwnerList = objBelow.getOwner().getList();
+////        }
+////</editor-fold>
+//        if (dropComponentAbove == null) { //pull down on top-most item, insert before the first item
+////            if (checkValidity) {                return true;            }
+////            if (false) {                objBelowOwnerList.add(0, insertObj);            }
+//            insertContainer = createInsertContainer(objBelow); //create insertContainer
+//            parentContainerBelow.addComponent(0, insertContainer); //insert insertContainer at beginning of list that the other pinch finger touches
+//        } else if (dropComponentBelow == null) { //pull down on bottom-most item, insert at the end of the list
+////            if (checkValidity) {                return true;            }
+////            if (false) {                objAboveOwnerList.add(insertObj);            }
+//            insertContainer = createInsertContainer(objAbove, null); //create insertContainer
+//            parentContainerBelow.addComponent(parentContainerBelow.getComponentCount(), insertContainer); //insert insertContainer at end of list that the other pinch finger touches
+////        } else if (objAboveOwnerList == objBelowOwnerList) { //we're inserting in the same list
+//        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
+////            assert objAbove.getClass()==objBelow.getClass():"";
+//            ASSERT.that(objAbove.getClass() == objBelow.getClass()); //should always be of same class if in same list (TODO!!!! what about Today view?!
+//            //Covers both Items, ItemList, Category, createInsertContainer will create the right container
+////            if (checkValidity) {                return true;            }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            int insertIndex = objBelowOwnerList.indexOf(objBelow);
+////            int insertIndex = objAboveOwnerList.indexOf(objAbove); //insert below the top-most object
+////            objAboveOwnerList.add(insertIndex, insertObj);
+////</editor-fold>
+//            insertContainer = createInsertContainer(objAbove, null); //create insertContainer
+//            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
+//            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert insertContainer at end of list that the other pinch finger touches
+//        } else if (objBelow instanceof Item && (objAbove instanceof Category || objAbove instanceof ItemList)) { //insert above the Item (instanceof ItemList also matches Category)
+//            if (((Category) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (checkValidity) {                     return true;                }
 ////                int insertIndex = objBelowOwnerList.indexOf(objBelow);
 ////                objBelowOwnerList.add(insertIndex, insertObj);
-//                return true;
+////</editor-fold>
+//                insertContainer = createInsertContainer(objBelow, objBelow.getOwner()); //create insertContainer
+//                parentContainerBelow.addComponent(0, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
 //            }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        } else if (objAbove instanceof ItemList && objBelow instanceof Item) { //insert above the Item (instanceof ItemList also matches Category)
+////            if (((ItemList) objAbove).getList().contains(objBelow)) { //only insert if the item below is actually *in* the category
+//////                if (checkValidity) {                    return true;                }
+//////                int insertIndex = objBelowOwnerList.indexOf(objBelow);
+//////                objBelowOwnerList.add(insertIndex, insertObj);
+////                return true;
+////            }
+////</editor-fold>
+//        } else if (objAbove instanceof Item && (objBelow instanceof ItemList || objBelow instanceof ItemList)) { //insert *below* (+1) the objAbove Item
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (checkValidity) {                return true;            }
+////            int insertIndex = objAboveOwnerList.indexOf(objAbove) + 1;
+////            objBelowOwnerList.add(insertIndex, insertObj);
+////</editor-fold>
+//            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
+//            parentContainerAbove.addComponent(parentContainerAbove.getComponentCount(), insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+//        } else if (objAbove instanceof Item && objBelow instanceof Item) { //both objects are Items but not in same list, insert below (+1) objAbove
+////            if (checkValidity) {                return true;            }
+////            ItemAndListCommonInterface owner = ((ItemAndListCommonInterface) objAbove).getOwner();
+////            int insertIndex = owner.getList().indexOf(objAbove) + 1;
+////            owner.getList().add(insertIndex, insert);
+//            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
+//            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
+//            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+//        } else if (objAbove != null) { //insert *after* objAbove
+//            ASSERT.that(objAbove != null);
+////            if (checkValidity) {                return true;            }
+//            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
+//            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
+//            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
+//        }
+//        return insertContainer;
+//    }
 //</editor-fold>
-        } else if (objAbove instanceof Item && (objBelow instanceof ItemList || objBelow instanceof ItemList)) { //insert *below* (+1) the objAbove Item 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (checkValidity) {                return true;            }
-//            int insertIndex = objAboveOwnerList.indexOf(objAbove) + 1;
-//            objBelowOwnerList.add(insertIndex, insertObj);
-//</editor-fold>
-            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
-            parentContainerAbove.addComponent(parentContainerAbove.getComponentCount(), insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
-        } else if (objAbove instanceof Item && objBelow instanceof Item) { //both objects are Items but not in same list, insert below (+1) objAbove
-//            if (checkValidity) {                return true;            }
-//            ItemAndListCommonInterface owner = ((ItemAndListCommonInterface) objAbove).getOwner();
-//            int insertIndex = owner.getList().indexOf(objAbove) + 1;
-//            owner.getList().add(insertIndex, insert);
-            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
-            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
-            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
-        } else if (objAbove != null) { //insert *after* objAbove
-            ASSERT.that(objAbove != null);
-//            if (checkValidity) {                return true;            }
-            insertContainer = createInsertContainer(objAbove); //, objAbove.getOwner()); //create insertContainer
-            int insertIndex = parentContainerAbove.getComponentIndex(containerAbove) + 1;
-            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
-        }
-        return insertContainer;
-    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private int getInsertContainerHeight(int preferredHeight) {
 //        if (pinchOut) {
@@ -2753,64 +2821,115 @@ public class MyForm extends Form {
 //    }
 //</editor-fold>
     protected static MyDragAndDropSwipeableContainer findDropContainerIn(Component comp) {
-        if (comp == null) {
-            return null;
-        }
-//        int count = cont.getComponentCount();
-//        for (int i = count - 1; i >= 0; i--) {
-        if (comp instanceof MyDragAndDropSwipeableContainer) {
+        if (comp instanceof MyDragAndDropSwipeableContainer) { //check if comp itself is a MyDragAndDropSwipeableContainer
             return (MyDragAndDropSwipeableContainer) comp;
-        } else if (comp instanceof Container) {
+        } else if (comp instanceof Container) { //search in hierarchy below comp
             Container cont = (Container) comp;
             for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
                 Component cmp = cont.getComponentAt(i);
-                if (cmp instanceof MyDragAndDropSwipeableContainer) {
-                    return (MyDragAndDropSwipeableContainer) cmp;
+                MyDragAndDropSwipeableContainer myDragAndDrop = findDropContainerIn(cmp);
+                if (myDragAndDrop != null) {
+                    return myDragAndDrop;
                 }
-            }
-            //for performance reasons, avoid diving into hierarchy of each sub Container, test top-level first
-            for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-                Component cmp = cont.getComponentAt(i);
-                if (cmp instanceof Container) {
-                    Component component = findDropContainerIn((Container) cmp);
-                    if (component != null) {
-                        return (MyDragAndDropSwipeableContainer) component;
-                    }
-                }
-            }
-        } else {
-            Container parent = comp.getParent();
-            while (parent != null) {
-                Container cont = parent; //(Container) comp;
-                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-                    Component cmp = cont.getComponentAt(i);
-                    if (cmp == comp) {
-                        continue;
-                    }
-                    if (cmp instanceof MyDragAndDropSwipeableContainer) {
-                        return (MyDragAndDropSwipeableContainer) cmp;
-                    }
-                }
-                //for performance reasons, avoid diving into hierarchy of each sub Container, test top-level first
-                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-                    Component cmp = cont.getComponentAt(i);
-                    if (cmp == comp) {
-                        continue;
-                    }
-                    if (cmp instanceof Container) {
-                        Component component = findDropContainerIn((Container) cmp);
-                        if (component != null) {
-                            return (MyDragAndDropSwipeableContainer) component;
-                        }
-                    }
-                }
-                parent = cont.getParent(); //
             }
         }
         return null;
     }
 
-    public Component getComponentOn(Container comp, int x, int y, boolean onlyDropTarget) {
+    /**
+    find a drop target in container hierarchy below or above comp. Used to start from whatever container is found under 
+    a pinch finger and find the corresponding container to get the corresponding Item elements. 
+    @param comp
+    @return drop target or null if none found
+     */
+    protected static MyDragAndDropSwipeableContainer findDropContainerStartingFrom(Component comp) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (comp == null) {
+//            return null;
+//        }
+//</editor-fold>
+        while (comp != null) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        int count = cont.getComponentCount();
+//        for (int i = count - 1; i >= 0; i--) {
+//            if (comp instanceof MyDragAndDropSwipeableContainer) { //check if comp itself is a MyDragAndDropSwipeableContainer
+//                return (MyDragAndDropSwipeableContainer) comp;
+//            } else if (comp instanceof Container) { //search in hierarchy below comp
+//                Container cont = (Container) comp;
+//                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+//                    Component cmp = cont.getComponentAt(i);
+//                    MyDragAndDropSwipeableContainer myDragAndDrop = findDropContainerStartingFrom(cmp);
+//                    if (myDragAndDrop != null) {
+//                        return myDragAndDrop;
+//                    }
+//</editor-fold>
+            MyDragAndDropSwipeableContainer myDragAndDrop = findDropContainerIn(comp);
+            if (myDragAndDrop != null) {
+                return myDragAndDrop;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    if (cmp instanceof MyDragAndDropSwipeableContainer) {
+//                        return (MyDragAndDropSwipeableContainer) cmp;
+//                    } else if (cmp instanceof Container){
+//
+//                }
+//                //for performance reasons, avoid diving into hierarchy of each sub Container, test top-level first
+//                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+//                    Component cmp = cont.getComponentAt(i);
+//                    if (cmp instanceof Container) {
+//                        MyDragAndDropSwipeableContainer myDragAndDrop = findDropContainerStartingFrom((Container) cmp);
+//                        if (myDragAndDrop != null) {
+//                            return myDragAndDrop;
+//                        }
+//                    }
+//                }
+//</editor-fold>
+            } else {
+                //search in hierarchy above comp
+                //TODO!!! optimization: this will search each container once for each level of the container hierarchy, e.g. 
+                comp = comp.getParent();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            Container parent = comp.getParent();
+//            while (parent != null) {
+//                Container cont = parent; //(Container) comp;
+//                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+//                    Component cmp = cont.getComponentAt(i);
+//                    if (cmp == comp) {
+//                        continue;
+//                    }
+//                    if (cmp instanceof MyDragAndDropSwipeableContainer) {
+//                        return (MyDragAndDropSwipeableContainer) cmp;
+//                    }
+//                }
+//                //for performance reasons, avoid diving into hierarchy of each sub Container, test top-level first
+//                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+//                    Component cmp = cont.getComponentAt(i);
+//                    if (cmp == comp) {
+//                        continue;
+//                    }
+//                    if (cmp instanceof Container) {
+//                        MyDragAndDropSwipeableContainer component = findDropContainerStartingFrom((Container) cmp);
+//                        if (component != null) {
+//                            return component;
+//                        }
+//                    }
+//                }
+//                parent = cont.getParent(); //
+//            }
+//</editor-fold>
+            }
+        }
+        return null;
+    }
+
+    /**
+    find the component at position x,y, if onlyDropTarget, 
+    @param comp
+    @param x
+    @param y
+    @param onlyDropTarget
+    @return 
+     */
+    public Component getComponentOnXXX(Container comp, int x, int y, boolean onlyDropTarget) {
         if (onlyDropTarget) {
             return comp.findDropTargetAt(x, y);
         } else {
@@ -2910,9 +3029,29 @@ public class MyForm extends Form {
 //</editor-fold>
     @Override
     public void pointerDragged(int[] x, int[] y) {
-        if (pinchInsertEnabled) {
-            if (x.length <= 1) { //PinchOut is either finished or not ongoing (newPinchContainer!=null means a pinch was ongoing before)
-                if (pinchContainer != null) { //a pinch container already exists, do nothing, insertContainer already in place
+        boolean testingPinchOnSimulator = true;
+        if (testingPinchOnSimulator) {
+            int displayHeight = Display.getInstance().getDisplayHeight();
+            if (Display.getInstance().isSimulator() && y.length == 1 && x.length == 1
+                    && x[0] >= Display.getInstance().getDisplayWidth() / 10 * 9
+                    && y[0] < displayHeight / 2) {
+                //simulate a pinch by mirroring the y values when dragging on the very right (10%) of the screen
+                int[] y2 = new int[2];
+                int[] x2 = new int[2];
+                y2[0] = y[0];
+                x2[0] = x[0];
+
+                x2[1] = x[0]; //set simulated x for other finger to same value as first finger
+                y2[1] = Math.min(displayHeight, (displayHeight / 2 - y[0]) + displayHeight / 2); //set simulated y to y mirrored around the middle of the screen
+//                Log.p("simulating pinch x[0]=" + x[0] + " y[0]=" + y[0] + " simulated x[1]=" + x[1] + " y[1]=" + y[1]);
+                Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
+                x = x2; //replace org values with simulatd pair
+                y = y2;
+            }
+        }
+        if (pinchInsertEnabled) { //if pinch not enabled, do nothing (other than call super.pointerDragged())
+            if (x.length <= 1) { //PinchOut is either finished or not ongoing 
+                if (pinchContainer != null) { //a pinch container already exists meaning a pinch was ongoing before
                     if (!minimumPinchSizeReached(pinchDistance, pinchContainer)) {
                         //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
                         Label emptyLabel = new Label();
@@ -2943,15 +3082,18 @@ public class MyForm extends Form {
                 } else { //pinchContainer != null || pinchDistance <= 0
                     //we already have a pinchContainer (either being inserted or inserted previously), so do nothing other than resize
                     Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
-                    MyForm.this.revalidate(); //refresh with new size of pinchContainer
+//                    MyForm.this.revalidate(); //refresh with new size of pinchContainer
+                    MyForm.this.repaint();//is repaint enough to refresh the view?? refresh with new size of pinchContainer
                 }
             }
         }
         super.pointerDragged(x, y);
-        display(x, y, true);
+        if (false) {
+            displayTest(x, y, true);
+        }
     }
 
-    public void pointerDraggedold(int[] x, int[] y) {
+    public void pointerDraggedOLD(int[] x, int[] y) {
         if (!pinchInsertEnabled) {
 //            super.pointerDragged(x, y);
         } else { //pinchInsertEnabled
@@ -3043,7 +3185,7 @@ public class MyForm extends Form {
             }
         }
         super.pointerDragged(x, y);
-        display(x, y, true);
+        displayTest(x, y, true);
         //            super.pointerDragged(x[0], y[0]);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">

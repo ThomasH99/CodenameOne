@@ -2176,6 +2176,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return new ArrayList();
         }
     }
+    
+    /**
+    returns true if subtask is a subtask of this Item
+    @param subtask
+    @return 
+    */
+    public boolean hasAsSubtask(Item subtask){
+        return getList().indexOf(subtask)>=0;
+    }
 
     @Override
     public int size() { //

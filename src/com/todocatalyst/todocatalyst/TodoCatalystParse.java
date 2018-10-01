@@ -29,6 +29,8 @@ import com.parse4cn1.Permissions;
 import com.parse4cn1.util.Logger;
 import com.parse4cn1.util.ParseRegistry;
 import java.util.Date;
+//import net.informaticalibera.cn1.nativelogreader.NativeLogs;
+//import net.informaticalibera.cn1.nativelogreader.*;
 //import javax.microedition.io.ConnectionNotFoundException;
 //import javax.microedition.io.PushRegistry;
 //import javax.microedition.lcdui.Display;
@@ -517,6 +519,9 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         Log.getInstance().setFileWriteEnabled(true);
         Log.setLevel(Log.DEBUG);
         Log.setReportingLevel(Log.REPORTING_DEBUG);
+        
+//        NativeLogs.initNativeLogs();
+                
         
         Log.p("LOCALE = " + locale);
 
