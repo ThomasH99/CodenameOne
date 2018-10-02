@@ -2465,12 +2465,14 @@ public class MyForm extends Form {
                     Dimension orgPrefSize = pinchComponent.getPreferredSize();
                     //if I'm old pinchContainer, and reduced to zero size
                     //TODO!! do like Clear app: if pinching further out than the size show some 'elastic' empty space around the container 
+//                    int h = Math.max(0, orgPrefSize.getHeight()+pinchDistance); //distance negative if pinching in, max(0 to avoid negative) //TODO!! what happens if pinching out beyond the preferred height (does it just grow or leave white space??)
                     int h = Math.max(0, Math.min(pinchDistance, orgPrefSize.getHeight())); //cannot become bigger than preferredHeight of the component
                     return new Dimension(orgPrefSize.getWidth(), h); //Math.max(0, since pinch distance may become negative when fingers cross vertically
                 }
             };
             pinchContainer.add(BorderLayout.CENTER, pinchComponent);
         }
+        pinchContainer.setName("wrapPinchContainer");
         return pinchContainer;
     }
 
@@ -2485,21 +2487,27 @@ public class MyForm extends Form {
     }
 
     private Component createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface list, boolean insertBeforeRefElement) {
-        ASSERT.that(!insertBeforeRefElement, "not implemented yet");
+//        ASSERT.that(!insertBeforeRefElement, "not implemented yet");
         if (refElement instanceof Item) {
             if (list instanceof Category) {
 //            Item newItem = new Item();
 //            newItem.addCategoryToItem((Category)list, false); //add category in InlineInsertNewItemContainer2
-                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement));
+                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, null, (Category) list, insertBeforeRefElement)); //don't insert into any list, just add to Category
             } else if (list instanceof ItemList) {
-                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement));
+                if (((ItemList) list).isNoSave()) {
+                    return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement));
+                } else {
+                    return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement)); //null=> don't insert into any list, only 'inbox'
+                }
+            } else if (list instanceof Item) { //NB! inserting refElement into a Project (as a subtask)!
+                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement));
             }
         } else if (refElement instanceof Category) {
-            return wrapInPinchableContainer(new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement));
+            return wrapInPinchableContainer(new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, insertBeforeRefElement));
         } else if (refElement instanceof ItemList) {
-            return wrapInPinchableContainer(new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement));
+            return wrapInPinchableContainer(new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement));
         } else if (refElement instanceof WorkSlot) {
-            return wrapInPinchableContainer(new InlineInsertNewWorkSlotContainer(MyForm.this, (Item) refElement));
+            return wrapInPinchableContainer(new InlineInsertNewWorkSlotContainer(MyForm.this, (Item) refElement, insertBeforeRefElement)); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
         }
         return null;
     }
@@ -2513,11 +2521,13 @@ public class MyForm extends Form {
 //        return createInsertContainer(elementType, elementType.getOwner());
 //    }
     /**
+    
+    insert container and animate??
      * three cases: 1) simple: pinching out two siblings => insert between. 2) Pinching out between
      * a parent (Item project/ItemList/Category) and its expanded subtask => insert new subtask before the
      * pinched one 3) Pinching out between a subtask and a following task at a higher level => insert new subtask after the subtask.  
      * 4) Pinching out between a task/subtask and a non-task (list/category/nothing/null) => insert new subtask after pinched one. 
-     * 5) Pinching out between a 
+     * 5) Pinching out between a TOTO: update doc wrt notebook page 151
      * 
      *
      * @param componentAbove the top-most (visually) pinched object (with the
@@ -2548,7 +2558,14 @@ public class MyForm extends Form {
 //</editor-fold>
         //find the drop containers
         MyDragAndDropSwipeableContainer dropComponentAbove = findDropContainerStartingFrom(compAbove);
-        MyDragAndDropSwipeableContainer dropComponentBelow = findDropContainerStartingFrom(compBelow);
+        MyDragAndDropSwipeableContainer dropComponentBelow = null;
+        if (dropComponentAbove != null) {
+            dropComponentBelow = MyDragAndDropSwipeableContainer.findNextDDCont(dropComponentAbove);
+        }
+//        MyDragAndDropSwipeableContainer dropComponentBelow = findDropContainerStartingFrom(compBelow);
+        if (false && dropComponentAbove == dropComponentBelow) { //if both fingers on same element, do nothing //NOW: always use Next container, even if both fingers on the same
+            return null;
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        //find the drop containers parents - to insert pinch container?!
 //        Container parentContainerAbove = null;
@@ -2566,7 +2583,7 @@ public class MyForm extends Form {
         }
 //        List objAboveOwnerList = null;
         ItemAndListCommonInterface itemEltBelow = null;// = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
-        if (compAbove != null) {
+        if (compBelow != null) {
             itemEltBelow = (ItemAndListCommonInterface) dropComponentBelow.getDragAndDropObject();
         }
 //        List objBelowOwnerList = null;
@@ -2597,12 +2614,16 @@ public class MyForm extends Form {
                 MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer at start of subtask lise (before itemEltBelow)
 
             } else if (itemEltBelow instanceof Item) {
-                if (itemEltAbove.getOwner() == itemEltBelow.getOwner()) { //belong to same owner, insert after 
+                //belong to same owner, insert after 
+                if (itemEltAbove.getOwner() == itemEltBelow.getOwner()) {
                     insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
                     MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer at beginning of list that the other pinch finger touches
-                } else if (((Item) itemEltAbove).hasAsSubtask((Item) itemEltBelow)) {
+                } else if (((Item) itemEltAbove).hasAsSubtask((Item) itemEltBelow)) { //
                     insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
                     MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, insertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                } else { //simply insert before elementAbove (e.g. eltAbove=subask of previous item A, eltBelow a sibling to A
+                    insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer at start of subtask lise (before itemEltBelow)
                 }
             }
 
@@ -2642,6 +2663,10 @@ public class MyForm extends Form {
 //            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
 //        }
 //</editor-fold>
+        if (false && insertContainer != null && insertContainer.getParent() != null) { //false: doesn't make sense to animate when insertContainer size is varied by pinch
+            insertContainer.getParent().animateLayout(300);
+        }
+//        insertContainer.setName("pinchWrapContainer");
         return insertContainer;
     }
 
@@ -3029,7 +3054,7 @@ public class MyForm extends Form {
 //</editor-fold>
     @Override
     public void pointerDragged(int[] x, int[] y) {
-        boolean testingPinchOnSimulator = true;
+        boolean testingPinchOnSimulator = Display.getInstance().isSimulator();
         if (testingPinchOnSimulator) {
             int displayHeight = Display.getInstance().getDisplayHeight();
             if (Display.getInstance().isSimulator() && y.length == 1 && x.length == 1
@@ -3052,17 +3077,24 @@ public class MyForm extends Form {
         if (pinchInsertEnabled) { //if pinch not enabled, do nothing (other than call super.pointerDragged())
             if (x.length <= 1) { //PinchOut is either finished or not ongoing 
                 if (pinchContainer != null) { //a pinch container already exists meaning a pinch was ongoing before
-                    if (!minimumPinchSizeReached(pinchDistance, pinchContainer)) {
+                    if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
+                        pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
+                    } else {
                         //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
-                        Label emptyLabel = new Label();
+//                        Label emptyLabel = new Label();
                         Container pinchContainerParent = pinchContainer.getParent();
-                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
-                        pinchContainerParent.removeComponent(emptyLabel);
+//                        if ()
+//                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
+                        pinchContainerParent.removeComponent(pinchContainer); //TODO!!! add meaningful animation
+                        pinchContainerParent.animateHierarchy(300);
+//                        pinchContainerParent.removeComponent(emptyLabel);
                         pinchContainer = null; //indicates done with this container
-                        MyForm.this.revalidate(); //necessary after using replace()??
+                        pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
+//                        MyForm.this.revalidate(); //necessary after using replace()??
                     }
-                    pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
+                    MyForm.this.revalidate(); //necessary after using replace()??
                 }
+                pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
             } else { // (x.length > 1) => PINCH ONGOING
                 //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
                 //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
@@ -3073,17 +3105,21 @@ public class MyForm extends Form {
                 if (pinchInitialYDistance == Integer.MIN_VALUE) {
                     pinchInitialYDistance = newYDist; //Math.abs(y[1]-y[0]);
                 }
-                pinchDistance = Math.max(0, newYDist - pinchInitialYDistance); //not allowed to become negative
+//                pinchDistance = Math.max(0, newYDist - pinchInitialYDistance); //not allowed to become negative
+                pinchDistance = newYDist - pinchInitialYDistance; //not allowed to become negative
+                Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
 
                 if (pinchContainer == null && pinchDistance > 0) {
                     //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
                     pinchContainer = createAndInsertPinchContainer(x, y);
+
                     MyForm.this.revalidate(); //refresh
                 } else { //pinchContainer != null || pinchDistance <= 0
                     //we already have a pinchContainer (either being inserted or inserted previously), so do nothing other than resize
-                    Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
 //                    MyForm.this.revalidate(); //refresh with new size of pinchContainer
-                    MyForm.this.repaint();//is repaint enough to refresh the view?? refresh with new size of pinchContainer
+                    if (pinchContainer != null) {
+                        MyForm.this.repaint();//is repaint enough to refresh the view?? refresh with new size of pinchContainer
+                    }
                 }
             }
         }
@@ -3116,10 +3152,12 @@ public class MyForm extends Form {
 //                    } else {
                     if (!minimumPinchSizeReached(pinchDistance, pinchContainer)) {
                         //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
-                        Label emptyLabel = new Label();
+//                        Label emptyLabel = new Label();
                         Container pinchContainerParent = pinchContainer.getParent();
-                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
-                        pinchContainerParent.removeComponent(emptyLabel);
+//                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
+//                        pinchContainerParent.removeComponent(emptyLabel);
+//                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
+                        pinchContainerParent.removeComponent(pinchContainer);
                         pinchContainer = null; //indicates done with this container
 //                        MyForm.this.refreshAfterEdit();
                         MyForm.this.revalidate(); //necessary after using replace()??

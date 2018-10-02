@@ -1433,6 +1433,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public String getText() {
         String s = getString(PARSE_TEXT);
+        if (Config.TEST && (s == null || s.isEmpty())){// && getObjectIdP() != null) {
+            return "<" + getObjectIdP() + ">";
+        }
         return (s == null) ? "" : s;
 //        return (description != null ? description : "");
     }
@@ -2176,14 +2179,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return new ArrayList();
         }
     }
-    
+
     /**
     returns true if subtask is a subtask of this Item
     @param subtask
     @return 
-    */
-    public boolean hasAsSubtask(Item subtask){
-        return getList().indexOf(subtask)>=0;
+     */
+    public boolean hasAsSubtask(Item subtask) {
+        return getList().indexOf(subtask) >= 0;
     }
 
     @Override
@@ -4438,8 +4441,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (currentProjectStartedOnDate.getTime() != currentProjectStartedOnInParse.getTime()) {
                 setStartedOnDateInParse(currentProjectStartedOnDate);
             }
-            
-            DAO.getInstance() .saveInBackground(this);
+
+            DAO.getInstance().saveInBackground(this);
         }
     }
 

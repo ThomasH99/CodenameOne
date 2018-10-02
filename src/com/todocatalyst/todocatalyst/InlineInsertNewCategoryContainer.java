@@ -28,6 +28,7 @@ public class InlineInsertNewCategoryContainer extends Container {
     private MyForm myForm;
     private ItemAndListCommonInterface itemOrItemListForNewTasks;
     private Category newCategory;
+    private boolean insertBeforeElement;
 //    private Container cont=new Container(new BorderLayout());
 
     private final static String ENTER_CATEGORY = "New category"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
@@ -58,15 +59,17 @@ public class InlineInsertNewCategoryContainer extends Container {
      * @param myForm
      * @param itemOrItemListForNewTasks2
      */
-    public InlineInsertNewCategoryContainer(MyForm myForm, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
-        this(myForm, new Category(), itemOrItemListForNewTasks2);
+//    public InlineInsertNewCategoryContainer(MyForm myForm, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeElement) {
+    public InlineInsertNewCategoryContainer(MyForm myForm, Category category, boolean insertBeforeElement) {
+        this(myForm, category, category.getOwner(), insertBeforeElement);
     }
 
-    public InlineInsertNewCategoryContainer(MyForm myForm, Category category2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
+    private InlineInsertNewCategoryContainer(MyForm myForm, Category category2, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeElement) {
         this.myForm = myForm;
         this.category = category2;
         ASSERT.that(itemOrItemListForNewTasks2 != null, "why itemOrItemListForNewTasks2==null here?");
         this.itemOrItemListForNewTasks = itemOrItemListForNewTasks2;
+        this.insertBeforeElement = insertBeforeElement;
 
 //        if (this.myForm.lastInsertNewTaskContainer != null) {
 //            newCategory = this.myForm.lastInsertNewTaskContainer.insertNewTask(); //if text field is non-empty, create a task before closing it
@@ -262,7 +265,7 @@ public class InlineInsertNewCategoryContainer extends Container {
         //TODO!!!! if list is sorted used sortOn value and value in previous (rather the next!) item to detect the values of newItem to keep it in (roughly) the same place
         int index = itemOrItemListForNewTasks.getItemIndex(category);
         if (index > -1) {
-            itemOrItemListForNewTasks.addToList(index + 1, newCategory); //add after item
+            itemOrItemListForNewTasks.addToList(index + (insertBeforeElement ? 0 : 1), newCategory); //add after item
         } else {
             itemOrItemListForNewTasks.addToList(newCategory); //if item is null or not in orgList, insert at beginning of (potentially empty) list
         }
@@ -373,7 +376,6 @@ public class InlineInsertNewCategoryContainer extends Container {
 //            }
 //        }
 //    }
-
     /**
      * if the textEntry field is in Form f, then it is set to editOnShow
      *
@@ -399,7 +401,6 @@ public class InlineInsertNewCategoryContainer extends Container {
 //            f.lastInsertNewElementContainer.setTextFieldEditableOnShow(f);
 //        }
 //    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public void paint(Graphics g) {

@@ -496,6 +496,20 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         return null;
     }
 
+    private static ContainerScrollY getScrollYContainerWithSubtasks(MyDragAndDropSwipeableContainer cont) {
+        Layout layout;
+        Component center;
+        Container contParent = cont.getParent();
+
+        if (contParent != null && (layout = contParent.getLayout()) instanceof BorderLayout
+                && (center = ((BorderLayout) layout).getCenter()) instanceof ContainerScrollY
+                && (((ContainerScrollY) center)).getComponentCount() > 0 ) {
+            //if dragged hidden container is the only one in center, then there must be at least 2 elements in container to return it, this is ensured by this expression: getPositionInContainerScrollY(((ContainerScrollY) center), this) >= 0 ? 1 : 0)
+            return (ContainerScrollY) center;
+        }
+        return null;
+    }
+
     /**
      * get the MyDragAndDropSwipeableContainer from a container coming from the
      * ContainerScrollY container
@@ -692,6 +706,121 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             int index = getPositionInContainerScrollY(parentScrollYCont, parentComp);
             int addOneIfNextIsHidden = (index + 1 == indexOfHiddenDraggedCont) ? 1 : 0; //if next index (index+1) points to the dragged one, then take the next again (+1)
             int adjIndex = index + 1 + addOneIfNextIsHidden; //if the next cont is the hidden dragged one, then take the next again (or none if hidden is at the end of the list)
+            if (adjIndex <= parentScrollYCont.getComponentCount() - 1) {
+//                    return getTaskContainer((Container) parentScrollYCont.getComponentAt(adjIndex + 1));
+//                return getTaskContainer((Container) parentScrollYCont.getComponentAt(adjIndex));
+                Container c = (Container) parentScrollYCont.getComponentAt(adjIndex); //get next element in the list
+                return getTaskContainer(c); //return the element
+            }
+            parentComp = getParentMyDDCont(parentComp);
+            parentScrollYCont = parentComp != null ? getParentScrollYContainer(parentComp) : null;
+        }
+        return null;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            //if parent has a non-empty center container (with expanded subtasks)
+//            if (dropCont.getLayout() instanceof BorderLayout //&& ((BorderLayout) dropCont.getLayout()).getCenter() != null
+//                    && (((BorderLayout) dropCont.getLayout()).getCenter() instanceof ContainerScrollY)
+//                    && ((Container) ((BorderLayout) dropCont.getLayout()).getCenter()).getComponentCount() > 0) {
+//                //expanded subtasks are always in the Center container of a BorderLayout
+//                return findFirstDDContainer((Container) ((Container) ((BorderLayout) dropCont.getLayout()).getCenter()).getComponentAt(0)); //find MyDD in the *first* element in the list
+//            } else {
+//                while (dropCont != null) {
+//                    //iterate up the container hierarchy to find a MyTree2 or ContainerScrollY container which has a task *after* this one
+//                    while (!(dropCont instanceof ContainerScrollY) && dropCont != null) {
+//                        parentComp = dropCont;
+//                        dropCont = parentComp.getParent();
+//                    }
+//
+//                    if (dropCont != null && dropCont.getComponentIndex(parentComp) + 1 < dropCont.getComponentCount()) { //if there's another element in the list after the current one
+////                    return findDropTargetIn((Container) dropCont.getComponentAt(0));
+////                    return findDropTargetIn((Container) dropCont.getComponentAt(dropCont.getComponentIndex(dropTargetTopLevelParent) + 1));
+////                    Container nextCont = ((Container) dropCont.getComponentAt(dropCont.getComponentIndex(dropTargetTopLevelParent) + 1));
+//                        //return first MyDD
+//                        return findFirstDDContainer((Container) dropCont.getComponentAt(dropCont.getComponentIndex(parentComp) + 1));
+//                    }
+//                    if (dropCont != null) {
+//                        parentComp = dropCont;
+//                        dropCont = parentComp.getParent(); //treeList = the list in which to insert the dropPlaceholder
+//                    }
+//                }
+//            }
+//            return null;
+//</editor-fold>
+    }
+
+     static MyDragAndDropSwipeableContainer findNextDDCont(MyDragAndDropSwipeableContainer comp) {
+        //first check if there are expanded subtasks then return the first one
+//        int index;
+//        int indexOfHiddenDraggedCont;
+
+        ContainerScrollY scrollYContainerWithSubtask = getScrollYContainerWithSubtasks(comp);
+        if (scrollYContainerWithSubtask != null) {
+            //if there is a subtask container
+//            int indexOfHiddenDraggedCont = getPositionInContainerScrollY(scrollYContainerWithSubtask, dragged); //this==dragged
+//            int countOfDragged = indexOfHiddenDraggedCont >= 0 ? 1 : 0;
+            //must container at least 2 elements if the hidden is one of them:
+//            if (scrollYContainerWithSubtask.getComponentCount() >= (1 + countOfDragged)) {
+            if (scrollYContainerWithSubtask.getComponentCount() >= 1) {
+                //if it has expanded subtasks, return the first (unless it is the hidden one)
+//                int adjIndex = indexOfHiddenDraggedCont == 0 ? 1 : 0; //if hidden is first element, take the one after
+//                Container c = (Container) scrollYContainerWithSubtask.getComponentAt(0 + adjIndex); //get first element in the list
+                Container c = (Container) scrollYContainerWithSubtask.getComponentAt(0); //get first element in the list
+                return getTaskContainer(c);
+            }
+        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        else {
+//            //if there are no appropriate expanded subtasks, then if there is a following sibling, return it
+//            ContainerScrollY parentScrollYContainer = getParentScrollYContainer(comp);
+//            if (parentScrollYContainer != null) {
+//                //Examples of lists with (H)idden element: T1 H T2: next(T1)=T2 (a); T1 T2 H: next(T2)=null (c)
+//                //Example where comp=dragged (initial situation)
+//                int indexOfHiddenDraggedCont = getPositionInContainerScrollY(parentScrollYContainer, dragged); //this==dragged
+//                int index = getPositionInContainerScrollY(parentScrollYContainer, comp);
+//                int addOneIfNextIsHidden = (index + 1 == indexOfHiddenDraggedCont) ? 1 : 0; //if next index (index+1) points to the dragged one, then take the next again (+1)
+//                int adjIndex = index + 1 + addOneIfNextIsHidden; //if the next cont is the hidden dragged one, then take the next again (or none if hidden is at the end of the list)
+//                if (adjIndex <= parentScrollYContainer.getComponentCount() - 1) { //check that adjIndex is valid (if hidden was last in list, it could point beyond the end of list)
+//                    Container c = (Container) parentScrollYContainer.getComponentAt(adjIndex); //get next element in the list
+//                    return getTaskContainer(c); //return the element
+//                }
+//            }
+//        }
+//</editor-fold>
+
+//<editor-fold defaultstate="collapsed" desc="documentation">
+//if no expanded subtask, and no following sibling, then iterate up the hierarchy to find a task that follows
+//this is a really tricky case!!!
+// example: T1 -> S1, S2 -> S21, S22, S3, T2
+// T1
+//   S1
+//   S2
+//     S21
+//     S22
+// T2
+// next(S22)==T2
+//
+// T1
+//   S1
+//   S2
+//     S21
+//     S22
+//   S3
+// T2
+// next(S22)==S3, next(S3)==T2
+//</editor-fold>
+        MyDragAndDropSwipeableContainer parentComp = comp;
+        ContainerScrollY parentScrollYCont = getParentScrollYContainer(parentComp);
+//            ContainerScrollY contY=getParentScrollYContainer(comp);
+        while (parentScrollYCont != null) {
+//            indexOfHiddenDraggedCont = getPositionInContainerScrollY(parentScrollYCont, dragged); //this==dragged
+//            index = getPositionInContainerScrollY(parentScrollYCont, comp);
+//            int adjIndex = index + 1 + (index + 1 == indexOfHiddenDraggedCont ? 1 : 0); //if the next cont is the hidden dragged one, then take the next again (or none if hidden is at the end of the list)
+//                if ((index = getPositionInContainerScrollY(parentScrollYCont, parentComp)) < parentScrollYCont.getComponentCount() - 1) {
+//            int indexOfHiddenDraggedCont = getPositionInContainerScrollY(parentScrollYCont, dragged); //this==dragged
+            int index = getPositionInContainerScrollY(parentScrollYCont, parentComp);
+//            int addOneIfNextIsHidden = (index + 1 == indexOfHiddenDraggedCont) ? 1 : 0; //if next index (index+1) points to the dragged one, then take the next again (+1)
+//            int adjIndex = index + 1 + addOneIfNextIsHidden; //if the next cont is the hidden dragged one, then take the next again (or none if hidden is at the end of the list)
+            int adjIndex = index + 1; //if the next cont is the hidden dragged one, then take the next again (or none if hidden is at the end of the list)
             if (adjIndex <= parentScrollYCont.getComponentCount() - 1) {
 //                    return getTaskContainer((Container) parentScrollYCont.getComponentAt(adjIndex + 1));
 //                return getTaskContainer((Container) parentScrollYCont.getComponentAt(adjIndex));

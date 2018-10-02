@@ -23,7 +23,7 @@ import com.parse4cn1.ParseObject;
  * @author Thomas
  */
 public class InlineInsertNewItemContainer2 extends Container implements InsertNewElementFunc {
-
+    
     private final static String ENTER_SUBTASK = "New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
     private final static String ENTER_TASK = "New task, ->for subtask)"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
     private final static String ENTER_TASK_NO_SWIPE_RIGHT = "New task"; //"Task (swipe right: subtask)"
@@ -31,10 +31,11 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
     private boolean insertAsSubtask; //true if the user has selected to insert new task as a subtask of the preceding task
     private MyTextField2 textEntryField2;
     private ItemAndListCommonInterface element;
-    private Category category;
-    private MyForm myForm;
+    private Category category2;
+    private MyForm myForm2;
     private ItemAndListCommonInterface itemOrItemListForNewElements;
     private ItemAndListCommonInterface lastCreatedItem;
+    private boolean insertBeforeElement=false;
     /**
      * if true, a new insertContainer will be added each time a new item is
      * added. This is done in MyTree which will compare each displayed item with
@@ -52,33 +53,45 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
      * *after* item2)
      */
     public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2) {
-        this(myForm2, item2, item2.getOwner(),null);
+        this(myForm2, item2, item2.getOwner(), null);
+    }
+    public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2,boolean insertBeforeElement) {
+        this(myForm2, item2, item2.getOwner(), null, insertBeforeElement);
     }
 
+    public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
+        this(myForm2, item2, itemOrItemListForNewTasks2, null);
+    }
+    
+    public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, ItemAndListCommonInterface itemOrItemListForNewTasks2, Category category2) {
+        this(myForm2, item2, itemOrItemListForNewTasks2, category2, false);
+    }
     /**
      * create a new Container and a new Item
      *
-     * @param myForm
-     * @param item2 item after which to add new task or under which to add new
+     * @param myForm 
+     * @param item item after which to add new task or under which to add new
      * subtask
-     * @param itemOrItemListForNewTasks2 list into which add Items
+     * @param itemOrItemListForNewTasks list into which add Items
+     * @param category optional category
+     * @param insertBeforeElement if true, insert *before* item, instead of, as default, after
      */
-    public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
-this(myForm2, item2, itemOrItemListForNewTasks2, null);
-    }
-
-    public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, ItemAndListCommonInterface itemOrItemListForNewTasks2, Category category2) {
-        this.myForm = myForm2;
+    public InlineInsertNewItemContainer2(MyForm myForm, ItemAndListCommonInterface item, ItemAndListCommonInterface itemOrItemListForNewTasks, Category category, boolean insertBeforeElement) {
+        this.myForm2 = myForm;
 //        ASSERT.that(item2 != null, "why item==null here?"); //Can be null when an empty insertNewTaskContainer is created in an empty list
-        this.element = item2; //new Item();
-        this.category = category2; //new Item();
-        ASSERT.that(itemOrItemListForNewTasks2 != null, "why itemOrItemListForNewTasks2==null here?");
-        this.itemOrItemListForNewElements = itemOrItemListForNewTasks2;
+        this.element = item; //new Item();
+        this.category2 = category; //new Item();
+        ASSERT.that(itemOrItemListForNewTasks != null, "why itemOrItemListForNewTasks2==null here?");
+        this.itemOrItemListForNewElements = itemOrItemListForNewTasks;
+        this.insertBeforeElement = insertBeforeElement;
+        if (Config.TEST) {
+            setName("InlineInsertNewItemContainer2"); //for debugging
+        }
         Container contForTextEntry = new Container(new BorderLayout());
-
+        
         SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
         add(swipC);
-
+        
         textEntryField2 = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField2.setHint(element == null ? ENTER_TASK_NO_SWIPE_RIGHT : ENTER_TASK); //if no item, then don't show hint about swipe right for subtask
         textEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
@@ -128,8 +141,10 @@ this(myForm2, item2, itemOrItemListForNewTasks2, null);
 //                            getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
                             Container parent = getParent();
 //                        parent.removeComponent(InlineInsertNewItemContainer2.this);
-                            parent.replace(InlineInsertNewItemContainer2.this,
-                                    ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
+//                            parent.replace(InlineInsertNewItemContainer2.this,
+//                                    ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
+                            parent.removeComponent(InlineInsertNewItemContainer2.this);
+                            parent.animateHierarchy(300);
 //                            if (continueAddingNewItems) {
 //                                lastCreatedItem = newItem; //ensures that MyTree2 will create a new insertContainer after newTask
 //                            }
@@ -146,7 +161,7 @@ this(myForm2, item2, itemOrItemListForNewTasks2, null);
                 }
         );
         contForTextEntry.add(BorderLayout.CENTER, textEntryField2);
-
+        
         Container westCont = new Container(BoxLayout.x());
         contForTextEntry.add(BorderLayout.WEST, westCont);
 
@@ -158,10 +173,14 @@ this(myForm2, item2, itemOrItemListForNewTasks2, null);
 //                if (myForm.getEditFieldOnShowOrRefresh() == textEntryField2) {
 //                    myForm.setEditOnShowOrRefresh(null);
 //                }
-                Container parent = getParent();
-                parent.replace(InlineInsertNewItemContainer2.this, new Label(), null);
+                Container parent = InlineInsertNewItemContainer2.this.getParent();
+//                parent.replace(InlineInsertNewItemContainer2.this, new Label(), new ); //TODO!!! set a transformation
+                parent.removeComponent(InlineInsertNewItemContainer2.this); //TODO!!! add smooth transformation like in ??
+                parent.revalidate();
+                parent.animateLayout(300);
 //                if (myForm.getInlineInsertContainer() == this) {
                 myForm.setInlineInsertContainer(null);
+//                myForm.revalidate(); //necessary?!
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                }
 //                closeInsertNewTaskContainer(myForm); //close without inserting new task
@@ -196,7 +215,8 @@ this(myForm2, item2, itemOrItemListForNewTasks2, null);
                         Container parent = getParent();
 //                        parent.removeComponent(InlineInsertNewItemContainer2.this);
                         parent.replace(InlineInsertNewItemContainer2.this,
-                                ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
+                                //                                ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
+                                ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks, null), null, null, 300);
                         myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this, -1)); //if editing the new task in separate screen, 
                         myForm.refreshAfterEdit();
                     }).show();
@@ -217,20 +237,20 @@ this(myForm2, item2, itemOrItemListForNewTasks2, null);
             lastCreatedItem = null; //store new task for use when recreating next insert container
         }
         if (lastCreatedItem != null) {
-            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+            myForm2.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
         } else {
-            myForm.setKeepPos(new KeepInSameScreenPosition(element, this, -1)); //otherwise keep same position of mother-item
+            myForm2.setKeepPos(new KeepInSameScreenPosition(element, this, -1)); //otherwise keep same position of mother-item
         }
         Container parent = getParent();
         parent.removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
         if (refreshScreen) {
-            myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
+            myForm2.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
         } else {
             parent.animateLayout(300);
 //            myForm.animateMyForm();
         }
     }
-
+    
     private void setRefreshXXX(ItemAndListCommonInterface newItem, boolean refreshScreen) {
         if (continueAddingNewItems) {
             lastCreatedItem = newItem; //store new task for use when recreating next insert container
@@ -238,20 +258,20 @@ this(myForm2, item2, itemOrItemListForNewTasks2, null);
             lastCreatedItem = null; //store new task for use when recreating next insert container
         }
         if (lastCreatedItem != null) {
-            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+            myForm2.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
         } else {
-            myForm.setKeepPos(new KeepInSameScreenPosition(element, this, -1)); //otherwise keep same position of mother-item
+            myForm2.setKeepPos(new KeepInSameScreenPosition(element, this, -1)); //otherwise keep same position of mother-item
         }
         Container parent = getParent();
         parent.removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
         if (refreshScreen) {
-            myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
+            myForm2.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
         } else {
             parent.animateLayout(300);
 //            myForm.animateMyForm();
         }
     }
-
+    
     private void insertNewElementXXX(ItemAndListCommonInterface element) {
         insertNewTaskAndSaveChanges(element);
 //        if (myForm.getEditFieldOnShowOrRefresh() == textEntryField2) {
@@ -261,12 +281,12 @@ this(myForm2, item2, itemOrItemListForNewTasks2, null);
         if (continueAddingNewItems) {
             lastCreatedItem = element; //ensures that MyTree2 will create a new insertContainer after newTask
         }
-        myForm.refreshAfterEdit();
+        myForm2.refreshAfterEdit();
     }
 
     /**
      *
-     * @return new task if created, otherwise null
+     * @return new task if created (meaning some text was entered), otherwise null
      */
     private Item createNewTask() {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -294,20 +314,22 @@ this(myForm2, item2, itemOrItemListForNewTasks2, null);
      * @return
      */
     private void insertNewTaskAndSaveChanges(ItemAndListCommonInterface newItem) {
-            DAO.getInstance().save((ParseObject) newItem); //need to save first, other DAO.fetchListElementsIfNeededReturnCachedIfAvail called by getList will complain that no ObjectId
+        DAO.getInstance().save((ParseObject) newItem); //need to save first, other DAO.fetchListElementsIfNeededReturnCachedIfAvail called by getList will complain that no ObjectId
         if (insertAsSubtask) { //add as subtask to previous task, and keep the subtask level
             if (element != null) {
                 element.addToList(newItem); //add to end of subtask list (depending on setting for add to beginning/end of lists)
-if (false)                DAO.getInstance().saveInBackgroundSequential((ParseObject) newItem, (ParseObject) element);
+                if (false) {
+                    DAO.getInstance().saveInBackgroundSequential((ParseObject) newItem, (ParseObject) element);
+                }
                 insertAsSubtask = false; //remove the subtask property so next task does not become a subtask to the subtask
-                myForm.expandedObjects.add(element); //UI: expand the item to show newly added subtask
+                myForm2.expandedObjects.add(element); //UI: expand the item to show newly added subtask
             } else {
 //                Dialog.show("Internal error", "Could not insert subtask", "OK", null);
                 DAO.getInstance().saveInBackground((ParseObject) newItem); //task only inserted into inbox
             }
         } else if (itemOrItemListForNewElements != null && !itemOrItemListForNewElements.isNoSave()) {
-            if (category != null) {
-                ((Item) newItem).addCategoryToItem(category, false); //add newItem to cateogory (but NOT category to newItem since that is done below in itemOrItemListForNewTasks.addToList(newItem))
+            if (category2 != null) {
+                ((Item) newItem).addCategoryToItem(category2, false); //add newItem to cateogory (but NOT category to newItem since that is done below in itemOrItemListForNewTasks.addToList(newItem))
             }
             //make a sistertask (insert in same list as item, after item)
             //TODO!!!! if list is sorted used sortOn value and value in previous (rather the next!) item to detect the values of newItem to keep it in (roughly) the same place
@@ -315,17 +337,21 @@ if (false)                DAO.getInstance().saveInBackgroundSequential((ParseObj
                 itemOrItemListForNewElements.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
             } else {
                 int index = itemOrItemListForNewElements.getItemIndex(element);
-                if (index != -1) {
-                    itemOrItemListForNewElements.addToList(index + 1, newItem); //add after item
+                if (index > -1) {
+                    itemOrItemListForNewElements.addToList(index + (insertBeforeElement?0:1), newItem); //add after item, unless insertBeforeElement is true, then insert *before* element
                 } else {
                     itemOrItemListForNewElements.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
                 }
             }
-            if (false)
+            if (false) {
                 DAO.getInstance().saveInBackgroundSequential((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements);
-            else DAO.getInstance().saveInBackgroundSequential((ParseObject) itemOrItemListForNewElements);
+            } else {
+                DAO.getInstance().saveInBackgroundSequential((ParseObject) itemOrItemListForNewElements);
+            }
         } else {
-            if (false)DAO.getInstance().saveInBackground((ParseObject) newItem); //task only inserted into inbox
+            if (false) {
+                DAO.getInstance().saveInBackground((ParseObject) newItem); //task only 'inserted' into inbox, no need to save here, already done above
+            }
         }
 //        return newItem;
     }
@@ -386,15 +412,17 @@ if (false)                DAO.getInstance().saveInBackgroundSequential((ParseObj
                 insertNewTaskAndSaveChanges(newItem);
             }
             Container parent = getParent();
-            parent.replace(InlineInsertNewItemContainer2.this,
-                    newItem != null ? ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewElements, null) : new Label(), MorphTransition.create(300));
+//            parent.replace(InlineInsertNewItemContainer2.this,
+//                    newItem != null ? ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewElements, null) : new Label(), MorphTransition.create(300));
+            parent.removeComponent(InlineInsertNewItemContainer2.this);
+            parent.animateHierarchy(300);
 //        return newItem;
         }
     }
-
+    
     @Override
     public TextArea getTextArea() {
         return textEntryField2;
     }
-
+    
 }
