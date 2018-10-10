@@ -10,7 +10,7 @@ import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
-import static com.todocatalyst.todocatalyst.Util.removeTrailingPrecedingSpacesNewLinesEtc;
+import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
 //import com.todocatalyst.todocatalyst.MyTree.MyTreeModel;
 import java.util.Vector;
 import java.util.ArrayList;

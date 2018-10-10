@@ -65,7 +65,8 @@ public class ScreenSettingsCommon extends MyForm {
         buildContentPane(getContentPane());
         revalidate();
         restoreKeepPos();
-    }
+         super.refreshAfterEdit();
+   }
 
     public void addCommandsToToolbar() {
         Toolbar toolbar = getToolbar();

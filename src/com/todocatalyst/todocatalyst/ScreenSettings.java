@@ -56,6 +56,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //            content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
 //            ;
 //        }
+        addSettingBoolean(content, parseIdMap2, MyPrefs.showDebugInfoInLabelsEtc);
         addSettingBoolean(content, parseIdMap2, MyPrefs.cacheLoadChangedElementsOnAppStart);
         addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewItemsInStartOfLists);
         addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 120, 1);

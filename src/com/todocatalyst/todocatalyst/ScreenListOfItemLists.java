@@ -122,6 +122,7 @@ public class ScreenListOfItemLists extends MyForm {
 //            this.keepPos.setNewScrollYPosition();
 //        }
         restoreKeepPos();
+        super.refreshAfterEdit();
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {

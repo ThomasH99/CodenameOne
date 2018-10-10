@@ -4593,37 +4593,37 @@ public class DAO {
 //    }
 //</editor-fold>
     public boolean cacheAllData(Date afterDate, Date beforeDate) {
-        boolean result;
+        boolean somethingWasLoaded;
         Log.p("Caching Items");
-        result = cacheAllItemsFromParse(afterDate, beforeDate);
+        somethingWasLoaded = cacheAllItemsFromParse(afterDate, beforeDate);
         Log.p("Caching Categories");
-        result = cacheAllCategoriesFromParse(afterDate, beforeDate) || result;
+        somethingWasLoaded = cacheAllCategoriesFromParse(afterDate, beforeDate) || somethingWasLoaded;
         Log.p("Caching ItemLists");
-        result = cacheAllItemListsFromParse(afterDate, beforeDate) || result;
+        somethingWasLoaded = cacheAllItemListsFromParse(afterDate, beforeDate) || somethingWasLoaded;
         Log.p("Caching WorkSlots");
-        result = cacheAllWorkSlotsFromParse(afterDate, beforeDate) || result;
+        somethingWasLoaded = cacheAllWorkSlotsFromParse(afterDate, beforeDate) || somethingWasLoaded;
         Log.p("Caching Filters");
-        result = cacheAllFilterSortDefsFromParse(afterDate, beforeDate) || result;
+        somethingWasLoaded = cacheAllFilterSortDefsFromParse(afterDate, beforeDate) || somethingWasLoaded;
 //        getAllCategoriesFromParse();
 //        getAllCategoriesFromParse(reloadUpdateAfterThis, now);
 //        getAllItemListsFromParse();
 //        getAllItemListsFromParse(reloadUpdateAfterThis, now);
         Log.p("Caching RepeatRules");
-        result = cacheAllRepeatRulesFromParse(afterDate, beforeDate) || result;
+        somethingWasLoaded = cacheAllRepeatRulesFromParse(afterDate, beforeDate) || somethingWasLoaded;
 //        getCategoryList(); //will cache the list of Categories
 //        getItemListList(); //will cache the list of ItemLists
 //        getTemplateList(); //will cache the list of Templates
         Log.p("Caching CategoryList");
-        result = cacheCategoryList(afterDate, beforeDate) || result; //will cache the list of Categories
+        somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
         Log.p("Caching ItemListList");
-        result = cacheItemListList(afterDate, beforeDate) || result; //will cache the list of ItemLists
+        somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
         Log.p("Caching TemplateList");
-        result = cacheTemplateList(afterDate, beforeDate) || result; //will cache the list of Templates
+        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
 //        cacheUpdateAllCategoryItemReferences(categoryList);
 //        cacheUpdateAllItemListItemReferences(itemListLists);
 //        cacheUpdateAllItemReferences();
-        Log.p("cacheAllData FINISHED updating cache" + (result ? " NEW DATA LOADED" : " no data loaded"));
-        return result;
+        Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
+        return somethingWasLoaded;
     }
 
 }

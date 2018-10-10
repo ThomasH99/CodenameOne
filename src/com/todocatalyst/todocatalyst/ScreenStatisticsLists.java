@@ -71,6 +71,8 @@ public class ScreenStatisticsLists extends MyForm {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
         restoreKeepPos();
+                super.refreshAfterEdit();
+
     }
 
     private String CURRENT_USER_STORAGE_ID = "parseCurrentUser";

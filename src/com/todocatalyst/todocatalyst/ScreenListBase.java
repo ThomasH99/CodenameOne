@@ -169,6 +169,7 @@ public class ScreenListBase extends MyForm {
 //        getContentPane().removeAll();
 //        getContentPane().add(buildContentPaneForItemList(itemList));
 //        revalidate();
+        super.refreshAfterEdit();
     }
 
     void addSearchToTitlexx() {

@@ -245,7 +245,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      */
 //    private static boolean addDropPlaceholderToAppropriateParentCont(Component refComp, Component dropPh, int relativeIndex) {
 //     static boolean addDropPlaceholderToAppropriateParentCont(MyDragAndDropSwipeableContainer refComp, Component dropPh, int relativeIndex) {
-     static boolean addDropPlaceholderToAppropriateParentCont(Component refComp, Component dropPh, int relativeIndex) {
+    static boolean addDropPlaceholderToAppropriateParentCont(Component refComp, Component dropPh, int relativeIndex) {
 
 //        ASSERT.that(!(refComp instanceof MyTree2) && !(refComp instanceof ContainerScrollY));
 //        Container dropCont =getParentScrollYContainer(refComp); //NOT possible to use getParentScrollYContainer because we need the refCompComp below to find the index
@@ -406,7 +406,11 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param myDDCont
      * @return null if none
      */
-    private static ContainerScrollY getParentScrollYContainer(MyDragAndDropSwipeableContainer myDDCont) {
+//     static ContainerScrollY getParentScrollYContainer(MyDragAndDropSwipeableContainer myDDCont) {
+    static ContainerScrollY getParentScrollYContainer(Container myDDCont) {
+        if (myDDCont == null) {
+            return null;
+        }
         Container myDDContParent = myDDCont.getParent();
 //        while (draggedParent != null) {
         //iterate up the container hierarchy to find a MyTree2 or ContainerScrollY container which has a task *after* this one
@@ -415,6 +419,44 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         }
 //        }
         return (ContainerScrollY) myDDContParent; //here either draggedParent is a ContainerScrollY or null
+    }
+
+    /**
+    starting from comp, iterates up to find the parent container that belongs to a ScrollY container and then removes that parent. Used
+    to ensure that an inserted component, e.g. xx is removed completely
+    @param comp 
+     */
+    static boolean removeFromParentScrollYContainer(Component comp) {
+        if (comp == null) {
+            return false;
+        }
+        Container myDDContParent = comp.getParent();
+        //iterate up the container hierarchy to find a MyTree2 or ContainerScrollY container which has a task *after* this one
+        while (myDDContParent != null && !(myDDContParent instanceof ContainerScrollY)) {
+            comp = myDDContParent;
+            myDDContParent = myDDContParent.getParent();
+        }
+        if (myDDContParent != null) {
+            myDDContParent.removeComponent(comp);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    static ContainerScrollY removeFromParentScrollYContAndReturnCont(Component comp) {
+        Container myDDContParent = comp.getParent();
+        //iterate up the container hierarchy to find a MyTree2 or ContainerScrollY container which has a task *after* this one
+        while (myDDContParent != null && !(myDDContParent instanceof ContainerScrollY)) {
+            comp = myDDContParent;
+            myDDContParent = myDDContParent.getParent();
+        }
+        if (myDDContParent instanceof ContainerScrollY) {
+            myDDContParent.removeComponent(comp);
+            return (ContainerScrollY) myDDContParent;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -484,7 +526,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
     private static ContainerScrollY getScrollYContainerWithSubtasks(MyDragAndDropSwipeableContainer cont, MyDragAndDropSwipeableContainer dragged) {
         Layout layout;
-        Component center;
+        Component center; if(cont==null) return null;
         Container contParent = cont.getParent();
 
         if (contParent != null && (layout = contParent.getLayout()) instanceof BorderLayout
@@ -503,7 +545,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
         if (contParent != null && (layout = contParent.getLayout()) instanceof BorderLayout
                 && (center = ((BorderLayout) layout).getCenter()) instanceof ContainerScrollY
-                && (((ContainerScrollY) center)).getComponentCount() > 0 ) {
+                && (((ContainerScrollY) center)).getComponentCount() > 0) {
             //if dragged hidden container is the only one in center, then there must be at least 2 elements in container to return it, this is ensured by this expression: getPositionInContainerScrollY(((ContainerScrollY) center), this) >= 0 ? 1 : 0)
             return (ContainerScrollY) center;
         }
@@ -748,7 +790,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
     }
 
-     static MyDragAndDropSwipeableContainer findNextDDCont(MyDragAndDropSwipeableContainer comp) {
+    static MyDragAndDropSwipeableContainer findNextDDCont(MyDragAndDropSwipeableContainer comp) {
         //first check if there are expanded subtasks then return the first one
 //        int index;
 //        int indexOfHiddenDraggedCont;
@@ -2265,7 +2307,7 @@ T3
 //                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition(getParentScrollYContainer(beforeMyDDCont))); //simply keep same position of *previous* container (unless null!)
 //                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //simply keep same position as whereto the list was scrolled during the drag, then inserted element should 'stay in place'
                         if (newDropPlaceholder != null) {
-                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition(draggedElement,newDropPlaceholder)); //whenever possible keep the dropped in same position**
+                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition(draggedElement, newDropPlaceholder)); //whenever possible keep the dropped in same position**
                         } else {
                             ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
                         }

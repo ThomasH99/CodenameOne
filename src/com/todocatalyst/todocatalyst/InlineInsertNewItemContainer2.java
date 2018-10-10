@@ -17,13 +17,14 @@ import com.codename1.ui.animations.MorphTransition;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
+import com.todocatalyst.todocatalyst.MyForm.Action;
 
 /**
  *
  * @author Thomas
  */
 public class InlineInsertNewItemContainer2 extends Container implements InsertNewElementFunc {
-    
+
     private final static String ENTER_SUBTASK = "New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
     private final static String ENTER_TASK = "New task, ->for subtask)"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
     private final static String ENTER_TASK_NO_SWIPE_RIGHT = "New task"; //"Task (swipe right: subtask)"
@@ -35,7 +36,8 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
     private MyForm myForm2;
     private ItemAndListCommonInterface itemOrItemListForNewElements;
     private ItemAndListCommonInterface lastCreatedItem;
-    private boolean insertBeforeElement=false;
+    private boolean insertBeforeElement = false;
+    private Action closeAction = null;
     /**
      * if true, a new insertContainer will be added each time a new item is
      * added. This is done in MyTree which will compare each displayed item with
@@ -55,17 +57,19 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
     public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2) {
         this(myForm2, item2, item2.getOwner(), null);
     }
-    public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2,boolean insertBeforeElement) {
+
+    public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, boolean insertBeforeElement) {
         this(myForm2, item2, item2.getOwner(), null, insertBeforeElement);
     }
 
     public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
         this(myForm2, item2, itemOrItemListForNewTasks2, null);
     }
-    
+
     public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, ItemAndListCommonInterface itemOrItemListForNewTasks2, Category category2) {
         this(myForm2, item2, itemOrItemListForNewTasks2, category2, false);
     }
+
     /**
      * create a new Container and a new Item
      *
@@ -77,6 +81,11 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
      * @param insertBeforeElement if true, insert *before* item, instead of, as default, after
      */
     public InlineInsertNewItemContainer2(MyForm myForm, ItemAndListCommonInterface item, ItemAndListCommonInterface itemOrItemListForNewTasks, Category category, boolean insertBeforeElement) {
+        this(myForm, item, itemOrItemListForNewTasks, category, insertBeforeElement, null);
+    }
+
+    public InlineInsertNewItemContainer2(MyForm myForm, ItemAndListCommonInterface item, ItemAndListCommonInterface itemOrItemListForNewTasks,
+            Category category, boolean insertBeforeElement, Action closeAction) {
         this.myForm2 = myForm;
 //        ASSERT.that(item2 != null, "why item==null here?"); //Can be null when an empty insertNewTaskContainer is created in an empty list
         this.element = item; //new Item();
@@ -84,14 +93,15 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
         ASSERT.that(itemOrItemListForNewTasks != null, "why itemOrItemListForNewTasks2==null here?");
         this.itemOrItemListForNewElements = itemOrItemListForNewTasks;
         this.insertBeforeElement = insertBeforeElement;
+        this.closeAction = closeAction;
         if (Config.TEST) {
             setName("InlineInsertNewItemContainer2"); //for debugging
         }
         Container contForTextEntry = new Container(new BorderLayout());
-        
+
         SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
         add(swipC);
-        
+
         textEntryField2 = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField2.setHint(element == null ? ENTER_TASK_NO_SWIPE_RIGHT : ENTER_TASK); //if no item, then don't show hint about swipe right for subtask
         textEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
@@ -139,21 +149,28 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
                             myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : element, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
 //                        closeInsertNewTaskContainer();
 //                            getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-                            Container parent = getParent();
-//                        parent.removeComponent(InlineInsertNewItemContainer2.this);
-//                            parent.replace(InlineInsertNewItemContainer2.this,
-//                                    ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
-                            parent.removeComponent(InlineInsertNewItemContainer2.this);
-                            parent.animateHierarchy(300);
+//                            Container parent = getParent();
+//                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
+////                        parent.removeComponent(InlineInsertNewItemContainer2.this);
+////                            parent.replace(InlineInsertNewItemContainer2.this,
+////                                    ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
+////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
+//                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
+//                            parent.animateHierarchy(300);
+                            closeInsertNewItemContainer();
 //                            if (continueAddingNewItems) {
 //                                lastCreatedItem = newItem; //ensures that MyTree2 will create a new insertContainer after newTask
 //                            }
 //                            myForm.animateMyForm();
                             myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
                         } else { //if no new item created, remove the container like with Close (x)
-                            Container parent = getParent();
-//                            parent.removeComponent(InlineInsertNewItemContainer2.this);
-                            parent.replace(InlineInsertNewItemContainer2.this, new Label(), null);
+//                            Container parent = getParent();
+//                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
+////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
+////                            parent.replace(InlineInsertNewItemContainer2.this, new Label(), null);
+//                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
+//                            parent.animateHierarchy(300);
+                            closeInsertNewItemContainer();
                             myForm.setInlineInsertContainer(null); //remove this as inlineContainer
 //                            parent.animateLayout(300); //not necesssary with replace?
                         }
@@ -161,7 +178,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
                 }
         );
         contForTextEntry.add(BorderLayout.CENTER, textEntryField2);
-        
+
         Container westCont = new Container(BoxLayout.x());
         contForTextEntry.add(BorderLayout.WEST, westCont);
 
@@ -173,11 +190,13 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
 //                if (myForm.getEditFieldOnShowOrRefresh() == textEntryField2) {
 //                    myForm.setEditOnShowOrRefresh(null);
 //                }
-                Container parent = InlineInsertNewItemContainer2.this.getParent();
-//                parent.replace(InlineInsertNewItemContainer2.this, new Label(), new ); //TODO!!! set a transformation
-                parent.removeComponent(InlineInsertNewItemContainer2.this); //TODO!!! add smooth transformation like in ??
-                parent.revalidate();
-                parent.animateLayout(300);
+//                Container parent = InlineInsertNewItemContainer2.this.getParent();
+//                Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
+//
+////                parent.replace(InlineInsertNewItemContainer2.this, new Label(), new ); //TODO!!! set a transformation
+//                MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this); //TODO!!! add smooth transformation like in ??
+//                parent.animateLayout(300);
+                closeInsertNewItemContainer();
 //                if (myForm.getInlineInsertContainer() == this) {
                 myForm.setInlineInsertContainer(null);
 //                myForm.revalidate(); //necessary?!
@@ -212,13 +231,18 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
 //                        }
 //                        myForm.setKeepPos(new KeepInSameScreenPosition(newItem));
                         lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
-                        Container parent = getParent();
+//                        Container parent = getParent();
 //                        parent.removeComponent(InlineInsertNewItemContainer2.this);
-                        parent.replace(InlineInsertNewItemContainer2.this,
-                                //                                ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
-                                ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks, null), null, null, 300);
+                        //replace the insert container with the created item, NOT GOOD approach since refrehsAfterEdit will rebuild, and not needed??!!
+                        if (false) {
+//                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
+                            Container parent = getParent();
+                            parent.replace(InlineInsertNewItemContainer2.this,
+                                    //                                ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
+                                    ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks, null), null, null, 300); //
+                        }
                         myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this, -1)); //if editing the new task in separate screen, 
-                        myForm.refreshAfterEdit();
+                        myForm.refreshAfterEdit();  //OK? NOT good, refreshAfterEdit will remove the new 
                     }).show();
                 }
                 )));
@@ -250,7 +274,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
 //            myForm.animateMyForm();
         }
     }
-    
+
     private void setRefreshXXX(ItemAndListCommonInterface newItem, boolean refreshScreen) {
         if (continueAddingNewItems) {
             lastCreatedItem = newItem; //store new task for use when recreating next insert container
@@ -271,7 +295,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
 //            myForm.animateMyForm();
         }
     }
-    
+
     private void insertNewElementXXX(ItemAndListCommonInterface element) {
         insertNewTaskAndSaveChanges(element);
 //        if (myForm.getEditFieldOnShowOrRefresh() == textEntryField2) {
@@ -338,7 +362,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
             } else {
                 int index = itemOrItemListForNewElements.getItemIndex(element);
                 if (index > -1) {
-                    itemOrItemListForNewElements.addToList(index + (insertBeforeElement?0:1), newItem); //add after item, unless insertBeforeElement is true, then insert *before* element
+                    itemOrItemListForNewElements.addToList(index + (insertBeforeElement ? 0 : 1), newItem); //add after item, unless insertBeforeElement is true, then insert *before* element
                 } else {
                     itemOrItemListForNewElements.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
                 }
@@ -354,6 +378,15 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
             }
         }
 //        return newItem;
+    }
+
+    private void closeInsertNewItemContainer() {
+        //UI: close the text field
+        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(this);
+        if (closeAction != null) {
+            closeAction.launchAction();
+        }
+        parent.animateLayout(300);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -402,8 +435,8 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
      * @param saveAnyEnteredElement
      * @return
      */
-    @Override
-    public void close(boolean saveAnyEnteredElement) {
+//    @Override
+    private void closeXXX(boolean saveAnyEnteredElement) {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         if (saveAnyEnteredElement) {
             Item newItem = createNewTask(); //store new task for use when recreating next insert container
@@ -419,10 +452,10 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
 //        return newItem;
         }
     }
-    
+
     @Override
     public TextArea getTextArea() {
         return textEntryField2;
     }
-    
+
 }

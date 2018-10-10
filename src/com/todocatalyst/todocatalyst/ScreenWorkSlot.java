@@ -69,6 +69,7 @@ public class ScreenWorkSlot extends MyForm {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
         restoreKeepPos();
+        super.refreshAfterEdit();
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {

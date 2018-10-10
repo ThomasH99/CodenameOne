@@ -55,12 +55,12 @@ public class ItemListList extends ItemList {
         return getList();
     }
 
-    public void setList(List categoryList) {
+    public void setList(List list) {
 //        if (has(PARSE_CATEGORY_LIST) || categoryList != null) {
 //            put(PARSE_CATEGORY_LIST, categoryList);
 //        }
-        if (categoryList != null && !categoryList.isEmpty()) {
-            put(PARSE_ITEMLIST_LIST, categoryList);
+        if (list != null && !list.isEmpty()) {
+            put(PARSE_ITEMLIST_LIST, list);
         } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
             remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
         }

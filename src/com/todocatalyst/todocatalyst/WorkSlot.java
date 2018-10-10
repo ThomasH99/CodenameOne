@@ -10,7 +10,7 @@ import com.codename1.io.Util;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import com.todocatalyst.todocatalyst.Item.CopyMode;
-import static com.todocatalyst.todocatalyst.Util.removeTrailingPrecedingSpacesNewLinesEtc;
+import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -608,7 +608,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        dos.writeUTF(description);
 ////        BaseItemDAO.getInstance().writeString(description, dos);
 ////        BaseItemDAO.getInstance().writeObject(description, dos);
-//        Util.writeObject(getText(), dos);
+//        MyUtil.writeObject(getText(), dos);
 //        dos.writeLong(getStartTimeD().getTime());
 //
 //        dos.writeLong(getDurationInMillis());
@@ -620,7 +620,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        dos.writeBoolean(isActive());
 ////        BaseItem.writeGuidInline(dos, repeatRule);
 ////        BaseItemDAO.getInstance().writeObject(repeatRule, dos); //, true);
-//        Util.writeObject(getRepeatRule(), dos); //, true);
+//        MyUtil.writeObject(getRepeatRule(), dos); //, true);
 ////            dos.writeInt(sourceSlotA != null ? sourceSlotA.getGuid() : 0);
 ////            dos.writeInt(sourceSlotB != null ? sourceSlotB.getGuid() : 0);
 ////            }
@@ -635,8 +635,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        description = dis.readUTF();
 ////        description = BaseItemDAO.getInstance().readString(dis);
 ////        description = (String) BaseItemDAO.getInstance().readObject(dis);
-////        description = (String) Util.readUTF(dis);
-//        setText((String) Util.readUTF(dis));
+////        description = (String) MyUtil.readUTF(dis);
+//        setText((String) MyUtil.readUTF(dis));
 ////        startTime = dis.readLong();
 //        setStartTime(new Date(dis.readLong()));
 //
@@ -650,8 +650,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        setActive(dis.readBoolean());
 ////        repeatRule = (MyRepeatRule) BaseItem.readGuidInline(dis, BaseItemTypes.MYREPEATRULE);
 ////        repeatRule = (MyRepeatRule) BaseItemDAO.getInstance().readObject(dis);
-////        repeatRule = (MyRepeatRule) Util.readObject(dis);
-//        setRepeatRule((RepeatRuleParseObject) Util.readObject(dis));
+////        repeatRule = (MyRepeatRule) MyUtil.readObject(dis);
+//        setRepeatRule((RepeatRuleParseObject) MyUtil.readObject(dis));
 //</editor-fold>
 //// <editor-fold defaultstate="collapsed" desc="comment">
 ////            int guid;

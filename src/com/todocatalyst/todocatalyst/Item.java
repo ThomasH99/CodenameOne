@@ -15,7 +15,7 @@ import com.parse4cn1.ParseObject;
 import com.todocatalyst.todocatalyst.MyDate;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
 import com.todocatalyst.todocatalyst.MyPrefs;
-import static com.todocatalyst.todocatalyst.Util.removeTrailingPrecedingSpacesNewLinesEtc;
+import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 //import com.todocatalyst.todocatalyst.MyTree.MyTreeModel;
@@ -5032,7 +5032,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (isDone()) {
 //            return 0;
 //        }
-        return getRemainingEffortFromParse();
+//        return getRemainingEffortFromParse();
+        return getRemainingEffort(true);
     }
 
     public long getRemainingEffortNoDefault() {

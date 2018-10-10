@@ -62,6 +62,7 @@ public class ScreenRepair extends MyForm {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
         restoreKeepPos();
+        super.refreshAfterEdit();
     }
 
     public void addCommandsToToolbar() {
@@ -633,7 +634,7 @@ public class ScreenRepair extends MyForm {
                 MyForm pinchForm = new MyForm("TestPinch", ScreenRepair.this, () -> {
                 }) {
 
-                    @Override
+//                    @Override
                     protected void displayTest(int[] x, int[] y, boolean inPinch) {
                         Component compAbove2 = getContentPane().getComponentAt(x[0], y[0]);
                         Component compAbove3 = getComponentForm().getComponentAt(x[0], y[0]);

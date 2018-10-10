@@ -72,6 +72,7 @@ public class ScreenCategory extends MyForm {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
         restoreKeepPos();
+        super.refreshAfterEdit();
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {

@@ -300,7 +300,7 @@ public class ScreenListOfItems extends MyForm {
 //        optionUnmodifiableFilter = !filterCanBeModified;
 //</editor-fold>
 //        expandedObjects = new HashSet();
-        expandedObjects = new ExpandedObjects("ScreenListOfItems",itemListOrg);
+        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
         this.stickyHeaderGen = stickyHeaderGen;
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
@@ -1482,6 +1482,9 @@ public class ScreenListOfItems extends MyForm {
             }
 
         }; //D&D
+        if (Config.TEST) {
+            swipCont.setName("Swipe|"+item.getText());
+        }
         swipCont.setGrabsPointerEvents(true); //when swiping on task description, it also activated the button to show tasks details
         if (Config.TEST) {
             swipCont.setName(item.getText());
@@ -1584,12 +1587,12 @@ public class ScreenListOfItems extends MyForm {
         WorkSlotList wSlots = item.getWorkSlotListN(false);
         MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(
                 item.getText()
-                + ((Config.TEST && item.getRepeatRule() != null ? "*" : "")
-                + (Config.TEST && item.isInteruptOrInstantTask() ? "<" : "")
-                + (Config.TEST && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
+                + (((Config.TEST &&MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
+                + ((Config.TEST &&MyPrefs.showDebugInfoInLabelsEtc.getBoolean())&& item.isInteruptOrInstantTask() ? "<" : "")
+                + ((Config.TEST &&MyPrefs.showDebugInfoInLabelsEtc.getBoolean())&& wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
-                + (Config.TEST && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
+                + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() &&item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
                 )), swipCont, () -> {
                     boolean enabled = myForm.isDragAndDropEnabled();
                     if (enabled && expandSubTasksButton != null) {

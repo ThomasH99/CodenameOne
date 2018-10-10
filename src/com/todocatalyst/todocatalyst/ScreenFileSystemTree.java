@@ -77,6 +77,7 @@ public class ScreenFileSystemTree extends MyForm {
 //    hi.show ();
     @Override
     public void refreshAfterEdit() {
+        super.refreshAfterEdit();
     }
     
         public void addCommandsToToolbar() {

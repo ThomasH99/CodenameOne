@@ -112,6 +112,7 @@ public class ScreenCategoryPicker extends MyForm {
         buildContentPane(getContentPane(), listOfAllCategories.getList()); //, this.selectedCategories);
         revalidate();
         restoreKeepPos();
+        super.refreshAfterEdit();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

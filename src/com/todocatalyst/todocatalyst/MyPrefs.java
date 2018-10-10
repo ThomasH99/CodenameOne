@@ -275,6 +275,9 @@ public class MyPrefs {
 
     static PrefEntry showObjectIdsInEditScreens
             = new PrefEntry("Show ObjectIds when editing", "showObjectIdsInEditScreens", true, "show internal unique ID when editing - NOT END USER");
+  
+    static PrefEntry showDebugInfoInLabelsEtc
+            = new PrefEntry("Show debug info, e.g. add ^ to subtask", "showDebugInfoInLabelsEtc", true, "** - NOT END USER");
 
     //LOOK AND FEEL
     static PrefEntry themeNameWithoutBackslash
@@ -302,7 +305,7 @@ public class MyPrefs {
     static PrefEntry itemListAlwaysShowStartByDate = new PrefEntry("ooo", "itemListAlwaysShowStartByDate", true, "**");
     static PrefEntry itemListExpiresByDate = new PrefEntry("iii", "itemListExpiresByDate", true, "**");
     static PrefEntry itemListWaitingTillDate = new PrefEntry("uuu", "itemListWaitingTillDate", true, "**");
-    static PrefEntry itemListShowRemainingEvenIfZero = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", "itemListShowRemainingEvenIfZero", true, "**");
+    static PrefEntry itemListShowRemainingEvenIfZero = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", "itemListShowRemainingEvenIfZero", false, "**");
 
     //
     static PrefEntry creationLogInterval = new PrefEntry("yyy", "creationLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_CREATION_LOG_TITLE);

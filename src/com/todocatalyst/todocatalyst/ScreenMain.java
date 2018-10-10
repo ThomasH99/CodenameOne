@@ -68,7 +68,7 @@ public class ScreenMain extends MyForm {
         if (false) {
             restoreKeepPos();
         }
-
+        super.refreshAfterEdit();
     }
 
 //    private void makeAndAddButtons(Command cmd, Toolbar toolbar, Container cont) {
@@ -209,7 +209,7 @@ public class ScreenMain extends MyForm {
 //            public void actionPerformed(ActionEvent evt) {
         MyReplayCommand workSlots = (MyReplayCommand) MyReplayCommand.create(ScreenListOfWorkSlots.SCREEN_TITLE, null, (e) -> {
 //                super.actionPerformed(e);
-            new ScreenListOfWorkSlots("",  DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), null, ScreenMain.this, (i) -> {
+            new ScreenListOfWorkSlots("", DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), null, ScreenMain.this, (i) -> {
 
 //            }, (obj) -> DAO.getInstance().getWorkSlotsN(new Date(System.currentTimeMillis()), new Date(MyDate.MAX_DATE)), true).show();
             }, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), true).show();

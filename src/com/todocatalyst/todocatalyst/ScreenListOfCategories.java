@@ -118,6 +118,7 @@ public class ScreenListOfCategories extends MyForm {
 //            this.keepPos.setNewScrollYPosition();
 //        }
         restoreKeepPos();
+        super.refreshAfterEdit();
     }
 
     static Command makeNewCategoryCmd(CategoryList categoryOwnerList, MyForm previousForm, MyForm.Action refreshOnItemEdits) { //static since reused in other screens
@@ -341,7 +342,7 @@ public class ScreenListOfCategories extends MyForm {
         Button expandCategorySubTasksButton = new Button();
         WorkSlotList wSlots = category.getWorkSlotListN(false);
 //        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText(), swipCont, () -> true); //D&D
-        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText() + (Config.TEST&&wSlots != null && wSlots.size() > 0 ? "[W]" : ""), swipCont, () -> {
+        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText() + (Config.TEST && wSlots != null && wSlots.size() > 0 ? "[W]" : ""), swipCont, () -> {
             boolean enabled = ((MyForm) mainCont.getComponentForm()).isDragAndDropEnabled();
             if (enabled && expandCategorySubTasksButton != null) {
                 Object e = swipCont.getClientProperty(KEY_EXPANDED);
@@ -366,13 +367,13 @@ public class ScreenListOfCategories extends MyForm {
 
 //                new ScreenListOfItems(category, ScreenListOfCategories.this,
             ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, mainCont)); //mainCont right container to use here??
-            new ScreenListOfItems(category.getText(),()->category, (MyForm) swipCont.getComponentForm(), (itemList) -> {
+            new ScreenListOfItems(category.getText(), () -> category, (MyForm) swipCont.getComponentForm(), (itemList) -> {
                 ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, swipCont));
                 category.setList(itemList.getList());
                 DAO.getInstance().save(category);
 //                    refreshAfterEdit();
                 refreshOnItemEdits.launchAction();
-            },0).show();
+            }, 0).show();
         }
         ));
 

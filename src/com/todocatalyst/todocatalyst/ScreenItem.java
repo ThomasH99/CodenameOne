@@ -142,7 +142,7 @@ public class ScreenItem extends MyForm {
         this.item = item;
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(formUniqueId,this.item);
-        expandedObjects = new ExpandedObjects("ScreenItem",this.item);
+        expandedObjects = new ExpandedObjects("ScreenItem", this.item);
         try {
             //        DAO.getInstance().deleteCategoryFromAllItems(cat);
             if (this.item != null) {
@@ -1153,8 +1153,7 @@ public class ScreenItem extends MyForm {
 
 //SUBTASKS
         //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, ScreenItem.this, item, templateEditMode));
-        mainTabCont
-                .add(BorderLayout.SOUTH, new SubtaskContainer(item, ScreenItem.this, templateEditMode));
+        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainerSimple(item, ScreenItem.this, templateEditMode));
         //TODO!!!!! editing of subtasks should be local (and saved locally on app exit)
 //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, item, templateEditMode));
 

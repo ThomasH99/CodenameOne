@@ -8,7 +8,7 @@ import static com.codename1.io.Log.p;
 import static com.codename1.io.Log.sendLog;
 import com.codename1.io.NetworkManager;
 import com.codename1.io.Storage;
-import com.codename1.io.Util;
+//import com.codename1.io.MyUtil.register;
 import com.codename1.l10n.L10NManager;
 import com.codename1.messaging.Message;
 import com.codename1.notifications.LocalNotificationCallback;
@@ -28,6 +28,7 @@ import com.parse4cn1.ParseUser;
 import com.parse4cn1.Permissions;
 import com.parse4cn1.util.Logger;
 import com.parse4cn1.util.ParseRegistry;
+import java.io.IOException;
 import java.util.Date;
 //import net.informaticalibera.cn1.nativelogreader.NativeLogs;
 //import net.informaticalibera.cn1.nativelogreader.*;
@@ -177,7 +178,6 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             }
         });
 
-
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -197,9 +197,9 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //    private boolean midletPaused = false;
 //</editor-fold>
     Resources resources;
+
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    static MIDlet self; // = null; // used to access the MIDlet from other classes
-
     //Dummy classes until these classes are properly implemented.
     //public class Categories {}
     //public class Status extends BaseItem {}
@@ -479,7 +479,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             Log.bindCrashProtection(false); //TODO: should probaly be true in production version (to consume errors so end-user doesn't see them)
         } else {
 //            m.setUrl("https://crashreport.codenameone.com/CrashReporterEmail/sendCrashReport");
-//            byte[] read = Util.readInputStream(Storage.getInstance().createInputStream("CN1Log__$"));
+//            byte[] read = MyUtil.readInputStream(Storage.getInstance().createInputStream("CN1Log__$"));
 //            m.addArgument("i", "" + Log.getUniqueDeviceId());
 //            m.addArgument("u", Display.getInstance().getProperty("built_by_user", ""));
 //            m.addArgument("p", Display.getInstance().getProperty("package_name", ""));
@@ -501,28 +501,38 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                         p("Before the first form!");
                     }
                     e((Throwable) evt.getSource());
-//                sendLog();
-                    Message m = new Message("Body of message"
-                            + "DeviceId: " + Log.getUniqueDeviceId()
-                            + "\nBuilt by user: " + Display.getInstance().getProperty("built_by_user", "")
-                            + "\nPackage name: " + Display.getInstance().getProperty("package_name", "")
-                            + "\nAppVersion: " + Display.getInstance().getProperty("AppVersion", "0.1")
-                            + "\nLOG:\n---------------------------------\n"
-                            + Storage.getInstance().readObject("CN1Log__$")
-                    );
+                    byte[] read = new byte[]{(byte) 0xe0};//['a'];
+                    try {
+                        //                sendLog();
+                        read = com.codename1.io.Util.readInputStream(Storage.getInstance().createInputStream("CN1Log__$"));
+//                        read.toString();
+
+                        Message m = new Message("Body of message"
+                                + "DeviceId: " + Log.getUniqueDeviceId()
+                                + "\nBuilt by user: " + Display.getInstance().getProperty("built_by_user", "")
+                                + "\nPackage name: " + Display.getInstance().getProperty("package_name", "")
+                                + "\nAppVersion: " + Display.getInstance().getProperty("AppVersion", "0.1")
+                                + "\nLOG:\n---------------------------------\n"
+                                //                            + Storage.getInstance().readObject("CN1Log__$")
+                                //                            + new String(read)
+                                //                            + MyUtil.hexStringToByteArray(read)
+                                + new String(read, "BaSE64") // for UTF-8 encoding, https://stackoverflow.com/questions/1536054/how-to-convert-byte-array-to-string-and-vice-versa
+                        );
 //            m.getAttachments().put(textAttachmentUri, "text/plain");
 //            m.getAttachments().put(imageAttachmentUri, "image/png");
-                    Display.getInstance().sendMessage(new String[]{"crashreport@todocatalyst.com"}, "TodoCatalyst crash report", m);
+                        Display.getInstance().sendMessage(new String[]{"crashreport@todocatalyst.com"}, "TodoCatalyst crash report", m);
+                    } catch (IOException ex) {
+//                        java.util.logging.Logger.getLogger(TodoCatalystParse.class.getName()).log(Level.SEVERE, null, ex);
+                        Log.p(TodoCatalystParse.class.getName(),Log.ERROR);
+                    }
                 }
             });
         }
         Log.getInstance().setFileWriteEnabled(true);
         Log.setLevel(Log.DEBUG);
         Log.setReportingLevel(Log.REPORTING_DEBUG);
-        
+
 //        NativeLogs.initNativeLogs();
-                
-        
         Log.p("LOCALE = " + locale);
 
         Log.p("init()");
@@ -580,25 +590,25 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         }
 //</editor-fold>
 
-//        Util.register(PreviouslyRunningTimerEntry.CLASS_NAME_PREVIOUSLY_RUNNING_TIMERS, PreviouslyRunningTimerEntry.class); //register Externalizable class
-        Util.register(TimerStackEntry.CLASS_NAME_TIMER_STACK_ENTRY, TimerStackEntry.class); //register Externalizable class
-//        Util.register(AlarmData.CLASS_NAME_ALARM_DATA, AlarmData.class); //register Externalizable class
-        Util.register(ParseConstants.CLASS_NAME_USER, ParseUser.class); //register Externalizable class
-        Util.register(NotificationShadow.CLASS_NAME_NOTIFICATION_SHADOW, NotificationShadow.class); //register Externalizable class
-        Util.register(LocalNotificationsShadowList.CLASS_NAME_NOTIFICATION_LIST, LocalNotificationsShadowList.class); //register Externalizable class
-        Util.register(ExpiredAlarm.CLASS_NAME_EXPIRED_ALARM, ExpiredAlarm.class); //register Externalizable class
-        Util.register(ParseACL.CLASS_NAME, ParseACL.class); //register Externalizable class
-//        Util.register(ParseACL.Permissions.CLASS_NAME_PARSE_PERMISSIONS, ParseACL.Permissions.class); //register Externalizable class
-        Util.register(Permissions.CLASS_NAME_PARSE_PERMISSIONS, Permissions.class); //register Externalizable class
-        Util.register(Item.CLASS_NAME, Item.class); //register Externalizable class
-        Util.register(ItemList.CLASS_NAME, ItemList.class); //register Externalizable class
-        Util.register(ItemListList.CLASS_NAME, ItemListList.class); //register Externalizable class
-        Util.register(TemplateList.CLASS_NAME, TemplateList.class); //register Externalizable class
-        Util.register(Category.CLASS_NAME, Category.class); //register Externalizable class
-        Util.register(CategoryList.CLASS_NAME, CategoryList.class); //register Externalizable class
-        Util.register(RepeatRuleParseObject.CLASS_NAME, RepeatRuleParseObject.class); //register Externalizable class
-        Util.register(FilterSortDef.CLASS_NAME, FilterSortDef.class); //register Externalizable class
-        Util.register(WorkSlot.CLASS_NAME, WorkSlot.class); //register Externalizable class
+//        MyUtil.register(PreviouslyRunningTimerEntry.CLASS_NAME_PREVIOUSLY_RUNNING_TIMERS, PreviouslyRunningTimerEntry.class); //register Externalizable class
+        com.codename1.io.Util.register(TimerStackEntry.CLASS_NAME_TIMER_STACK_ENTRY, TimerStackEntry.class); //register Externalizable class
+//        MyUtil.register(AlarmData.CLASS_NAME_ALARM_DATA, AlarmData.class); //register Externalizable class
+        com.codename1.io.Util.register(ParseConstants.CLASS_NAME_USER, ParseUser.class); //register Externalizable class
+        com.codename1.io.Util.register(NotificationShadow.CLASS_NAME_NOTIFICATION_SHADOW, NotificationShadow.class); //register Externalizable class
+        com.codename1.io.Util.register(LocalNotificationsShadowList.CLASS_NAME_NOTIFICATION_LIST, LocalNotificationsShadowList.class); //register Externalizable class
+        com.codename1.io.Util.register(ExpiredAlarm.CLASS_NAME_EXPIRED_ALARM, ExpiredAlarm.class); //register Externalizable class
+        com.codename1.io.Util.register(ParseACL.CLASS_NAME, ParseACL.class); //register Externalizable class
+//        MyUtil.register(ParseACL.Permissions.CLASS_NAME_PARSE_PERMISSIONS, ParseACL.Permissions.class); //register Externalizable class
+        com.codename1.io.Util.register(Permissions.CLASS_NAME_PARSE_PERMISSIONS, Permissions.class); //register Externalizable class
+        com.codename1.io.Util.register(Item.CLASS_NAME, Item.class); //register Externalizable class
+        com.codename1.io.Util.register(ItemList.CLASS_NAME, ItemList.class); //register Externalizable class
+        com.codename1.io.Util.register(ItemListList.CLASS_NAME, ItemListList.class); //register Externalizable class
+        com.codename1.io.Util.register(TemplateList.CLASS_NAME, TemplateList.class); //register Externalizable class
+        com.codename1.io.Util.register(Category.CLASS_NAME, Category.class); //register Externalizable class
+        com.codename1.io.Util.register(CategoryList.CLASS_NAME, CategoryList.class); //register Externalizable class
+        com.codename1.io.Util.register(RepeatRuleParseObject.CLASS_NAME, RepeatRuleParseObject.class); //register Externalizable class
+        com.codename1.io.Util.register(FilterSortDef.CLASS_NAME, FilterSortDef.class); //register Externalizable class
+        com.codename1.io.Util.register(WorkSlot.CLASS_NAME, WorkSlot.class); //register Externalizable class
 
         Display.getInstance().setLongPointerPressInterval(600); //UI: 700 is maybe a bit long, 650 a bit too long. set delay for activating LongPress (default 800 is too fast??)
 //<editor-fold defaultstate="collapsed" desc="comment">

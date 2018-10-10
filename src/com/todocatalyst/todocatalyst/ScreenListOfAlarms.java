@@ -42,16 +42,16 @@ import javafx.scene.effect.DisplacementMap;
  * @author Thomas
  */
 public class ScreenListOfAlarms extends MyForm {
-    
+
     public static String screenTitle = "Past reminders"; //"Past reminders", "Expired reminders"
     private static String screenHelp = "Shows past reminders. Starting Timer on a task or editing it will cancel the reminder";
 //    private LocalNotificationsShadowList notificationList;
     private long now; //represent 'now' wrt latest update of the screen <8eg to ensure that an alarm that expires just after the screen is updated may be cancelled w/o being shown/seen
 //    private KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
     private List<ExpiredAlarm> expiredAlarms;
-    
+
     private static ScreenListOfAlarms INSTANCE;
-    
+
     public static ScreenListOfAlarms getInstance() {
         if (INSTANCE == null) {
 //            INSTANCE = new ScreenListOfAlarms(AlarmHandler.getInstance().notificationList);
@@ -68,11 +68,11 @@ public class ScreenListOfAlarms extends MyForm {
 //        this.notificationList=notificationList;
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
         setLayout(new BorderLayout());
-        
+
         addCommandsToToolbar(getToolbar());
         refreshAfterEdit();
     }
-    
+
     @Override
     public void show() {
 //        Form form = getCurrentFormAfterClosingDialogOrMenu();
@@ -94,13 +94,13 @@ public class ScreenListOfAlarms extends MyForm {
         this.setTransitionOutAnimator(CommonTransitions.createUncover(CommonTransitions.SLIDE_VERTICAL, false, 300));
         super.show();
     }
-    
+
     @Override
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
-        
+
         now = System.currentTimeMillis();
-        
+
         getContentPane().removeAll();
         expiredAlarms = new ArrayList(AlarmHandler.getInstance().getExpiredAlarms()); //need a copy of the list to avoid java.util.ConcurrentModificationException in CancellAll/SnoozeAll loops below
         Container alarmCont = buildContentPaneForAlarmList(expiredAlarms, previousForm);
@@ -132,11 +132,11 @@ public class ScreenListOfAlarms extends MyForm {
 //                }
                 AlarmHandler.getInstance().cancelAllExpiredAlarms();
                 showPreviousScreenOrDefault(false);
-                
+
             })));
-            
+
             MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt());
-            
+
             cancelAllButtonsCont.add(BorderLayout.EAST, Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(Command.create("Snooze All", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //                Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -162,39 +162,39 @@ public class ScreenListOfAlarms extends MyForm {
 //                    AlarmHandler.getInstance().snoozeAlarm(expired, snoozeExpireTimeInMillis);
 //                }
                 AlarmHandler.getInstance().snoozeAllExpiredAlarms(
-                        MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + ((long)snoozeTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS)));
+                        MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + ((long) snoozeTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS)));
                 showPreviousScreenOrDefault(false);
             }))));
-            
+
             getContentPane().add(BorderLayout.SOUTH, cancelAllButtonsCont);
 //            alarmCont.animateHierarchy(300); //works??
             alarmCont.animateLayout(300); //works??
         }
-        
+
         revalidate();
         restoreKeepPos();
-        
+        super.refreshAfterEdit();
     }
-    
+
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
-        toolbar.addCommandToRightBar( MyReplayCommand.create("AlarmSettings", null, Icons.iconSettingsLabelStyle,(e)->{
-                boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
-                int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
-            
-                setKeepPos(new KeepInSameScreenPosition());
-                new ScreenSettingsAlarms(ScreenListOfAlarms.this, () -> {
-                    if (!MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
-                        AlarmHandler.getInstance().cancelAllExpiredAlarms();
-                    }
-                    if (MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean() != oldShowDueTime
-                            || MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt() != oldAlarmInterval) {
-                        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //refresh all local notifications
-                    }
-                    refreshAfterEdit(); //refresh since default snooze time may have changed
-                }).show();
-            }
-        ) );
+        toolbar.addCommandToRightBar(MyReplayCommand.create("AlarmSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
+            boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
+            int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
+
+            setKeepPos(new KeepInSameScreenPosition());
+            new ScreenSettingsAlarms(ScreenListOfAlarms.this, () -> {
+                if (!MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
+                    AlarmHandler.getInstance().cancelAllExpiredAlarms();
+                }
+                if (MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean() != oldShowDueTime
+                        || MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt() != oldAlarmInterval) {
+                    AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //refresh all local notifications
+                }
+                refreshAfterEdit(); //refresh since default snooze time may have changed
+            }).show();
+        }
+        ));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToRightBar(new MyReplayCommand("AlarmSettings", null, Icons.iconSettingsLabelStyle) {
@@ -217,7 +217,6 @@ public class ScreenListOfAlarms extends MyForm {
 //            }
 //        });
 //</editor-fold>
-
         //BACK
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true));
     }
@@ -241,19 +240,19 @@ public class ScreenListOfAlarms extends MyForm {
 
 //        Container alarmCont = BorderLayout.north(itemCont);
         Container alarmCont = BorderLayout.north(itemCont);
-        
+
         String header = ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)
                 ? "Waiting reminder at " : "Reminder at ") + MyDate.formatDateTimeNew(expiredAlarm.alarmTime);
         alarmCont.add(BorderLayout.CENTER, new SpanLabel(header));
-        
+
         MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt());
-        
+
         alarmCont.add(BorderLayout.SOUTH, TableLayout.encloseIn(2,
                 //        alarmCont.add(BorderLayout.west(new Button(Command.create("Cancel", Icons.iconAlarmOffLabelStyle, (evt) -> {
                 new Button(Command.create("Cancel", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //            expiredAlarms.removeAlarmAndRepeatAlarm(notif.notificationId); //update
                     AlarmHandler.getInstance().removeExpiredAlarm(expiredAlarm);
-                    
+
                     if (AlarmHandler.getInstance().getExpiredAlarms().isEmpty()) { //exit screen if all alarms are dealt with
                         showPreviousScreenOrDefault(previousForm, true);
                     } else {
@@ -274,17 +273,17 @@ public class ScreenListOfAlarms extends MyForm {
 //            }
 //</editor-fold>
                     AlarmHandler.getInstance().snoozeAlarm(expiredAlarm, snoozeExpireTimeInMillis);
-                    
+
                     if (AlarmHandler.getInstance().getExpiredAlarms().isEmpty()) { //exit screen if all alarms are dealt with
                         showPreviousScreenOrDefault(previousForm, true);
                     } else {
                         refreshOnItemEdits.launchAction();
                     };
                 })))));
-        
+
         return alarmCont;
     }
-    
+
     protected Container buildContentPaneForAlarmList(List<ExpiredAlarm> expiredAlarms, MyForm previousForm) {
         parseIdMapReset();
 //        Container cont = new Container();
@@ -292,7 +291,7 @@ public class ScreenListOfAlarms extends MyForm {
         cont.setScrollableY(true);
 //        for (int i = 0, size = expiredAlarms.size(); i < size; i++) {
 //            ExpiredAlarm notif = expiredAlarms.get(i);
-        for (ExpiredAlarm notif: expiredAlarms) {
+        for (ExpiredAlarm notif : expiredAlarms) {
 //            ExpiredAlarm notif = expiredAlarms.get(i);
             if (notif.alarmTime.getTime() <= now) {
                 Item item = DAO.getInstance().fetchItem(notif.objectId);
@@ -305,5 +304,5 @@ public class ScreenListOfAlarms extends MyForm {
         }
         return cont;
     }
-    
+
 }

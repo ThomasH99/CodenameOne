@@ -84,7 +84,10 @@ public class ScreenListOfWorkTime extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ASSERT.that("Not supported yet.");
+        super.refreshAfterEdit();
+
     }
 
 }

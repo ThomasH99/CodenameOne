@@ -35,7 +35,7 @@ public interface InsertNewElementFunc {
      * @return the created element (Item, ItemList, Category, ...)
      */
 //    public ItemAndListCommonInterface close(boolean saveAnyEnteredElement);
-    public void close(boolean saveAnyEnteredElement);
+//    public void close(boolean saveAnyEnteredElement);
     public TextArea getTextArea();
 
 }

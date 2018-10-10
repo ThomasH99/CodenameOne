@@ -102,7 +102,8 @@ public class ScreenStatistics extends MyForm {
         getContentPane().add(BorderLayout.CENTER, buildContentPane(itemListStats));
         revalidate();
         restoreKeepPos();
-    }
+         super.refreshAfterEdit();
+   }
 
     private void sortItems() {
         sortItems(itemsSortedOnDate, SortStatsOn.dateAndTime);

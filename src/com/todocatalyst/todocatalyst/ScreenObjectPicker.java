@@ -213,6 +213,7 @@ public class ScreenObjectPicker<E> extends MyForm {
         listCont.removeAll();
         buildContentPane(listCont); //, this.selectedCategories);
         revalidate();
+        super.refreshAfterEdit();
 //        animateMyForm();
     }
 
