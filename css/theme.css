@@ -1,0 +1,196 @@
+#Constants {
+    includeNativeBool: true; 
+
+    LabelValue {
+
+    }
+
+    ActualEffort {
+        cn1-derive: LabelValue;
+        text-align: center;
+        /*border: 1pt solid gray;
+        background-color: transparent;
+        */
+        font-family :  "native:MainRegular";
+        font-size: 80%;
+        color:green;
+        background-color: #3399ff;
+        /*foreground-color: #268b04;*/
+        margin:0;
+        padding:0 0.5mm; /*top+bottom right+left*/
+        padding-left:0.5mm;
+        padding-right:0.5mm;
+    }
+
+    ListOfItemsText {
+        cn1-derive: Label;
+        font-family :  "native:MainRegular";
+        font-size: 100%;
+        text-align: left;
+        color:black;
+        /*background-color: #3399ff;*/
+        margin:2mm;
+        padding:0 0.5mm; /*top+bottom right+left*/
+        /*padding-left:0.5mm;
+        padding-right:0.5mm;*/
+    }
+
+    Button {
+        text-align: center;
+        border: 1pt solid gray;
+        background-color: transparent;
+    }
+
+    Button.pressed {
+        background-color: gray;
+    }
+
+
+    MyButton {
+        cn1-derive: Button;
+        background-color: blue;
+    }
+
+    /*
+    https://www.codenameone.com/manual/css.html
+    
+padding (and variants): padding-left/right/top/bottom, top+bottom right+left, top left+right bottom, top right bottom left
+        If there is only one value, it applies to all sides. 
+    If there are two values, the top and bottom paddings are set to the first value and the right and left paddings are set to the second. 
+    If there are three values, the top is set to the first value, the left and right are set to the second, and the bottom is set to the third. 
+    If there are four values, they apply to the top, right, bottom, and left, respectively.
+margin (and variants)
+border (and variants): cn1-round-border /cn1-pill-border /border-radius (property)
+    RoundBorder {
+    border: 1px #3399ff  cn1-round-border;
+    text-align:center;
+    margin:2mm;
+    padding:3mm;
+}
+
+RoundBorderFilled {
+    background: cn1-round-border;
+    background-color: #ccc;
+    text-align:center;
+    margin:2mm;
+    padding:3mm;
+}
+PillBorder {
+    border: 1pt #3399ff cn1-pill-border;
+    text-align:center;
+}
+
+PillBorderFilled {
+    background: cn1-pill-border;
+    background-color: #3399ff;
+    color:white;
+    text-align:center;
+}
+RoundRectLabel {
+    background-color: red;
+    border-radius: 2mm;
+}
+
+border-radius
+background (Usage below)
+background-color
+background-repeat
+background-image
+
+    ex: MyContainer {
+   background: linear-gradient(0deg, #ccc, #666);
+}
+    
+font(Usage on Fonts wiki page):
+    PlainText0p5mm {
+    font-size: 0.5mm;
+}
+font-family (Usage on Fonts wiki page):  "native:MainThin" / native:MainLight / native:MainRegular / native:MainBold / native:MainBlack / native:ItalicThin / native:ItalicLight / native:ItalicRegular / native:ItalicBold / native:ItalicBlack 
+font-style (Usage on Fonts wiki page): italic
+font-size (Usage on Fonts wiki page): small/medium/large/5mm/200% (% relative to the medium font size of the platform)
+font-weight: bold
+
+    color: white/black/**
+@font-face (Usage on Fonts wiki page)
+    @font-face {
+    font-family: "FontAwesome";
+    src: url(github://FontAwesome/Font-Awesome/blob/master/fonts/fontawesome-webfont.ttf);
+}
+BoldText3d {
+    text-decoration: cn1-3d;
+    font-weight: bold;
+    color:white;
+    background-color: #3399ff;
+}    
+
+color
+text-align
+text-decoration(Usage below): underline/overline/line-through/none/cn1-3d/cn1-3d-lowered/cn1-3d-shadow-north
+opacity
+box-shadow
+width (only used for generating background-images and borders)
+height (only used for generating background-images and borders)
+    */
+
+    /*
+        Constants {
+        PopupDialogArrowBool: false;
+        calTitleDayStyleBool: true;
+        calTransitionVertBool: false;
+        calendarLeftImage: "calendar-arrow-left.png";
+        calendarRightImage: "calendar-arrow-right.png";
+        centeredPopupBool: false;
+        checkBoxCheckDisFocusImage: "Check-Box_Normal.png";
+        checkBoxCheckedFocusImage: "Check-Box_Press.png";
+        checkBoxCheckedImage: "Check-Box_Press.png";
+        checkBoxOppositeSideBool: true;
+        checkBoxUncheckedFocusImage: "Check-Box_Normal.png";
+        checkBoxUncheckedImage: "Check-Box_Normal.png";
+        comboImage: "combo.png";
+        commandBehavior: "Side";
+        dialogTransitionIn: "fade";
+        dialogTransitionOut: "fade";
+        dlgButtonCommandUIID: "DialogButton";
+        dlgCommandGridBool: true;
+        dlgInvisibleButtons: #1a1a1a;
+        formTransitionIn: "empty";
+        formTransitionOut: "slide";
+        includeNativeBool: true;
+        menuImage: "of_menu.png";
+        noTextModeBool: true;
+        onOffIOSModeBool: true;
+        otherPopupRendererBool: false;
+        pureTouchBool: true;
+        radioSelectedFocusImage: "Radio_btn_Press.png";
+        radioSelectedImage: "Radio_btn_Press.png";
+        radioUnselectedFocusImage: "Radio_btn_Normal.png";
+        radioUnselectedImage: "Radio_btn_Normal.png";
+        sideMenuImage: "menu.png";
+        switchMaskImage: "switch-mask-3.png";
+        switchOffImage: "switch-off-3.png";
+        switchOnImage: "switch-on-3.png";
+        tabPlacementInt: 0;
+        backIconImage: "Back-icon.png";
+        articleSourceIconImage: "Source-icon.png";
+        articleDateIconImage: "Date-icon.png";
+        articleArrowRightImage: "Arrow-right.png";
+        articleShareIconImage: "Share-icon.png";
+        articleBookmarkIconImage: "Bookmark-icon.png";
+        articleTextIconImage: "Text-icon.png";
+        articleCommentsIconImage: "Comments-icon.png";
+        newsIconImage: "News-icon.png";
+        channelsIconImage: "Channels-icon.png";
+        bookmarksIconImage: "Bookmarks-icon.png";
+        overviewIconImage: "Overview-icon.png";
+        calendarIconImage: "Calendar-icon.png";
+        timelineIconImage: "Timeline-icon.png";
+        profileIconImage: "Profile-icon.png";
+        widgetsIconImage: "Widgets-icon.png";
+        settingsIconImage: "Settings-icon.png";
+        SubmitIconImage: "Submit-icon.png";
+        SubmitIconDarkImage: "SubmitButtonLight-icon.png";
+    }
+    */
+
+}
+

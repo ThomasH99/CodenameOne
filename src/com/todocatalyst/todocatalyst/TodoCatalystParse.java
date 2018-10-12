@@ -459,6 +459,16 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         //THEME
         if (MyPrefs.themeNameWithoutBackslash.getString().length() > 0) {
             theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
+
+        }
+        theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
+        
+        Resources localizationTheme = null;
+        try {
+            localizationTheme = Resources.openLayered("/theme-localization");
+//            UIManager.getInstance().setThemeProps(localizationTheme.getTheme(localizationTheme.getThemeResourceNames()[0]));
+        } catch (IOException ex) {
+            Log.p(TodoCatalystParse.class.getName());
         }
 
         //LOCALIZATION
@@ -468,8 +478,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         } else {
             locale = MyPrefs.localeUserSelected.getString();
         }
-        UIManager.getInstance().setBundle(theme.getL10N("LocalizationBundle", locale));
-        Display.getInstance().getLocalizationManager().getLocale();
+        UIManager.getInstance().setBundle(localizationTheme.getL10N("LocalizationBundle", locale));
         Display.getInstance().getLocalizationManager().getLocale();
 
         Toolbar.setGlobalToolbar(true); //needed, otherwise toolbar null in other screens
@@ -523,7 +532,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                         Display.getInstance().sendMessage(new String[]{"crashreport@todocatalyst.com"}, "TodoCatalyst crash report", m);
                     } catch (IOException ex) {
 //                        java.util.logging.Logger.getLogger(TodoCatalystParse.class.getName()).log(Level.SEVERE, null, ex);
-                        Log.p(TodoCatalystParse.class.getName(),Log.ERROR);
+                        Log.p(TodoCatalystParse.class.getName(), Log.ERROR);
                     }
                 }
             });

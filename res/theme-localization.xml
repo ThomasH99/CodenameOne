@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<resource majorVersion="1" minorVersion="9" useXmlUI="false">
+    <l10n name="LocalizationBundle">
+        <lang name="fr">
+            <entry key="SUPPORT" value="Support" />
+            <entry key="menu" value="M&#xe9;nu" />
+            <entry key="DESCRIPTION_HINT" value=" Nouvelle [TASK]" />
+            <entry key="TASK" value="Tache" />
+            <entry key="cancel" value="Annuler" />
+            <entry key="ANONYMOUS_WARNING" value="" />
+            <entry key="PROJECT" value="Projet" />
+            <entry key="EARNED_POINTS_PER_HOUR" value="Valeur/heure" />
+            <entry key="PREFERENCES" value="Pr&#xe9;ferences" />
+            <entry key="ok" value="OK" />
+            <entry key="WELCOME" value="Bienvenu dans [TODOCATALYST]" />
+            <entry key="DESCRIPTION" value="D&#xe9;scription" />
+            <entry key="DUE_DATE" value="" />
+            <entry key="edit" value="R&#xe9;diger" />
+            <entry key="select" value="Choisir" />
+            <entry key="CANCELLED" value="Annul&#xe9;" />
+            <entry key="COMMENT" value="Notes" />
+            <entry key="WAITING" value="En attente" />
+            <entry key="EFFORT_ESTIMATE" value="Estimation" />
+            <entry key="TASK_HELP" value="D&#xe9;crire votre [TASK] ici" />
+            <entry key="EFFORT_REMAINING" value="Restant" />
+            <entry key="TODOCATALYST" value="TodoCatalyst" />
+            <entry key="DONE" value="Termin&#xe9;" />
+            <entry key="REPEAT_RULE" value="R&#xe9;p&#xe9;ter" />
+            <entry key="Email" value="Courriel" />
+            <entry key="SETTINGS" value="Pr&#xe9;f&#xe9;rences" />
+            <entry key="EFFORT_ACTUAL" value="Travail" />
+            <entry key="DUE_DATE_HELP" value="" />
+        </lang>
+        <lang name="en">
+            <entry key="SUPPORT" value="Support" />
+            <entry key="menu" value="Menu" />
+            <entry key="DESCRIPTION_HINT" value="New [TASK]" />
+            <entry key="TASK" value="Task" />
+            <entry key="cancel" value="Cancel" />
+            <entry key="ANONYMOUS_WARNING" value="&lt;html&gt;   &lt;head&gt;        &lt;/head&gt;   &lt;body&gt;     You will use [TODOCATALYST] with an incognito account.  If you later want to convert this to a permanent account please enter your      email in [PREFERENCES]. If you &lt;b&gt;lose&lt;/b&gt; this device your data cannot be recovered.  WIth an incognito account you cannot log in from another device. If you do not use your account it may be deleted after 6 months of inactivity.   &lt;/body&gt; &lt;/html&gt; " />
+            <entry key="PROJECT" value="Project" />
+            <entry key="EARNED_POINTS_PER_HOUR" value="Value/hour" />
+            <entry key="PREFERENCES" value="Preferences" />
+            <entry key="ok" value="OK" />
+            <entry key="WELCOME" value="Welcome to TodoCatalyst" />
+            <entry key="DESCRIPTION" value="Description" />
+            <entry key="DUE_DATE" value="Due" />
+            <entry key="edit" value="Edit" />
+            <entry key="select" value="Select" />
+            <entry key="CANCELLED" value="Cancelled" />
+            <entry key="COMMENT" value="Notes" />
+            <entry key="WAITING" value="Waiting" />
+            <entry key="EFFORT_ESTIMATE" value="Estimate" />
+            <entry key="TASK_HELP" value="Describe your [TASK] here" />
+            <entry key="EFFORT_REMAINING" value="Remaining" />
+            <entry key="TODOCATALYST" value="TodoCatalyst" />
+            <entry key="DONE" value="Completed" />
+            <entry key="REPEAT_RULE" value="Repeat" />
+            <entry key="Email" value="Email" />
+            <entry key="SETTINGS" value="Settings" />
+            <entry key="EFFORT_ACTUAL" value="Work" />
+            <entry key="DUE_DATE_HELP" value="Set the date this task is due to be completed. **features" />
+        </lang>
+        <lang name="dk">
+            <entry key="SUPPORT" value="Support" />
+            <entry key="menu" value="Menu" />
+            <entry key="DESCRIPTION_HINT" value="Ny [TASK]" />
+            <entry key="TASK" value="Opgave" />
+            <entry key="cancel" value="Annuler" />
+            <entry key="ANONYMOUS_WARNING" value="" />
+            <entry key="PROJECT" value="Projekt" />
+            <entry key="EARNED_POINTS_PER_HOUR" value="V&#xe6;rdi/time" />
+            <entry key="PREFERENCES" value="" />
+            <entry key="ok" value="OK" />
+            <entry key="WELCOME" value="Velkommen i TodoCatalyst" />
+            <entry key="DESCRIPTION" value="Beskrivelse" />
+            <entry key="DUE_DATE" value="Forfaldsdato" />
+            <entry key="edit" value="Ret" />
+            <entry key="select" value="V&#xe6;lg" />
+            <entry key="CANCELLED" value="Annuleret" />
+            <entry key="COMMENT" value="Noter" />
+            <entry key="WAITING" value="Venter" />
+            <entry key="EFFORT_ESTIMATE" value="Estimate" />
+            <entry key="TASK_HELP" value="Beskriv [TASK] her" />
+            <entry key="EFFORT_REMAINING" value="Resterende" />
+            <entry key="TODOCATALYST" value="TodoCatalyst" />
+            <entry key="DONE" value="Afslutttet" />
+            <entry key="REPEAT_RULE" value="Gentag" />
+            <entry key="Email" value="Email" />
+            <entry key="SETTINGS" value="Ops&#xe6;tning" />
+            <entry key="EFFORT_ACTUAL" value="Arbejdet" />
+            <entry key="DUE_DATE_HELP" value="" />
+        </lang>
+    </l10n>
+</resource>

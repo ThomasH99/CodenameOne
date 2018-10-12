@@ -103,6 +103,7 @@
         <val key="ActualEffort.align" value="4" />
         <val key="ActualEffort.derive" value="LabelValue" />
         <val key="ActualEffort.fgColor" value="268b04" />
+        <font key="ActualEffort.font" type="ttf" face="64" style="0" size="0" name="native:MainLight" family="native:MainLight" sizeSettings="3" actualSize="2.2" />
         <val key="ActualEffort.padUnit" value="0,2,0,2" />
         <val key="ActualEffort.padding" value="0.0,0.0,0.5,0.5" />
         <val key="Button.dis#derive" value="Button" />
@@ -250,6 +251,7 @@
         <val key="ListOfItemsText.align" value="1" />
         <val key="ListOfItemsText.derive" value="Label" />
         <val key="ListOfItemsText.dis#derive" value="ListOfItemsText" />
+        <font key="ListOfItemsText.font" type="ttf" face="0" style="0" size="0" name="native:MainRegular" family="native:MainRegular" sizeSettings="3" actualSize="2.4" />
         <val key="ListOfItemsText.margin" value="0.0,0.0,0.0,0.0" />
         <val key="ListOfItemsText.padUnit" value="0,2,0,2" />
         <val key="ListOfItemsText.padding" value="0.0,0.0,0.5,0.5" />

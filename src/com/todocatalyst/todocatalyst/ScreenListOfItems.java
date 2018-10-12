@@ -1483,7 +1483,7 @@ public class ScreenListOfItems extends MyForm {
 
         }; //D&D
         if (Config.TEST) {
-            swipCont.setName("Swipe|"+item.getText());
+            swipCont.setName("Swipe|" + item.getText());
         }
         swipCont.setGrabsPointerEvents(true); //when swiping on task description, it also activated the button to show tasks details
         if (Config.TEST) {
@@ -1503,7 +1503,8 @@ public class ScreenListOfItems extends MyForm {
         Container southDetailsContainer = new Container(new FlowLayout());
         southDetailsContainer.setUIID("ItemDetails");
 //        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.expandedObjects != null && myForm.expandedObjects.contains(item)); //hide details by default
-        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.showDetails != null && myForm.showDetails.contains(item)); //hide details by default
+        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.showDetails !=   null && myForm.showDetails.contains(item)
+        ); //hide details by default
 //        south.setHidden(!showDetailsForAllTasks || (tasksWithDetailsShown!=null && !tasksWithDetailsShown.contains(item))); //hide details by default
         southDetailsContainer.setHidden(!showDetails); //hide details by default
         if (oldFormat) {
@@ -1587,12 +1588,12 @@ public class ScreenListOfItems extends MyForm {
         WorkSlotList wSlots = item.getWorkSlotListN(false);
         MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(
                 item.getText()
-                + (((Config.TEST &&MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
-                + ((Config.TEST &&MyPrefs.showDebugInfoInLabelsEtc.getBoolean())&& item.isInteruptOrInstantTask() ? "<" : "")
-                + ((Config.TEST &&MyPrefs.showDebugInfoInLabelsEtc.getBoolean())&& wSlots != null && wSlots.size() > 0 ? "[W]" : "")
+                + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
-                + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() &&item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
+                + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
                 )), swipCont, () -> {
                     boolean enabled = myForm.isDragAndDropEnabled();
                     if (enabled && expandSubTasksButton != null) {
@@ -1604,6 +1605,15 @@ public class ScreenListOfItems extends MyForm {
                     }
                     return enabled;
                 }); //D&D
+
+        ActionListener showDetailsListener = (e) -> {
+            //if showDetails is already true, run the listener immediately
+            //if details container exists, remove it/make invisible
+            int detailLevel = 0;
+            if (detailLevel == 1) {
+
+            }
+        };
 
         itemLabel.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
 //        itemLabel.actualButton.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
@@ -1641,6 +1651,9 @@ public class ScreenListOfItems extends MyForm {
 //                    mainCont.animateHierarchy(300);
 //                };
 //</editor-fold>
+//                if (southDetailsContainer.getParent() != null) {
+//                    southDetailsContainer.getParent().animateLayout(300);
+//                }
                 myForm.animateMyForm();
             }
         });
@@ -1915,14 +1928,14 @@ public class ScreenListOfItems extends MyForm {
         Label priorityLabel = new Label();
         if (item.getPriority() != 0) {
             priorityLabel = new Label("P" + item.getPriority());
-            if (showInDetails) {
+            if (false && showInDetails) {
                 southDetailsContainer.add(priorityLabel);
             }
         }
         //IMPORTANCE/URGENCY
         Label impUrgLabel; // = new Label();
         impUrgLabel = new Label(item.getImpUrgPrioValueAsString());
-        if (showInDetails) {
+        if (false && showInDetails) {
             southDetailsContainer.add(impUrgLabel);
         }
 
@@ -2028,28 +2041,63 @@ public class ScreenListOfItems extends MyForm {
             southDetailsContainer.addComponent(new SpanLabel("Cat: " + getListAsCommaSeparatedString(cats)));
         }
 
+        Component effortCont = isDone ? actualEffortLabel : BoxLayout.encloseX(remainingEffortLabel, actualEffortLabel);
+        Component dateCont = isDone ? completedDateLabel : (finishTimeLabel != null ? finishTimeLabel : dueDateLabel);
+        Component prioCont = BoxLayout.encloseX(priorityLabel, impUrgLabel);
+        Component expandSubsLabel = expandSubTasksButton != null ? expandSubTasksButton : new Label();
         //BUILD CONTAINER
-        Container statusSelectionCont = new Container(new BorderLayout())
-                .add(BorderLayout.WEST, selected)
-                .add(BorderLayout.EAST, status);
-        Container eastCont = new Container(BoxLayout.x())
-                .add(BorderLayout.east(BoxLayout.encloseX(
-                        BoxLayout.encloseY(
-                                BorderLayout.east(isDone ? actualEffortLabel : BoxLayout.encloseX(remainingEffortLabel, actualEffortLabel)),
-                                //                                finishTimeLabel != null ? finishTimeLabel : (isDone ? completedDateLabel : dueDateLabel)),
-                                BorderLayout.east(isDone ? completedDateLabel : (finishTimeLabel != null ? finishTimeLabel : dueDateLabel))),
-                        //                        BoxLayout.encloseY(starButton, subTasksButton),
-                        expandSubTasksButton != null ? expandSubTasksButton : new Label(),
-                        editItemButton))
-                );
+        Container itemContent = new Container(new BorderLayout());
+        Container bottomContent = new Container(new BorderLayout());
+//        Container mainItemCont = new Container(new BorderLayout())
+        mainCont
+                .add(BorderLayout.WEST, BoxLayout.encloseX(selected, status))
+                .add(BorderLayout.EAST, editItemButton)
+                .add(BorderLayout.CENTER,
+                        itemContent.add(BorderLayout.CENTER, BorderLayout.centerEastWest(itemLabel, expandSubsLabel, null)) //item text + expand subtasks
+                                .add(BorderLayout.SOUTH, 
+                                        bottomContent.add(BorderLayout.CENTER, BorderLayout.centerEastWest(null, BoxLayout.encloseX(effortCont, dateCont), prioCont))
+                                                .add(BorderLayout.SOUTH, southDetailsContainer)));
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Container eastCont = new Container(BoxLayout.x())
+//                .add(BorderLayout.east(BoxLayout.encloseX(
+//                        BoxLayout.encloseY(
+//                                BorderLayout.east(isDone ? actualEffortLabel : BoxLayout.encloseX(remainingEffortLabel, actualEffortLabel)),
+//                                //                                finishTimeLabel != null ? finishTimeLabel : (isDone ? completedDateLabel : dueDateLabel)),
+//                                BorderLayout.east(isDone ? completedDateLabel : (finishTimeLabel != null ? finishTimeLabel : dueDateLabel))),
+//                        //                        BoxLayout.encloseY(starButton, subTasksButton),
+//                        expandSubTasksButton != null ? expandSubTasksButton : new Label(),
+//                        editItemButton))
+//                );
 
-        Container topBorderCont = new Container(new BorderLayout());
-        topBorderCont.add(BorderLayout.WEST, statusSelectionCont)
-                .add(BorderLayout.CENTER, itemLabel)
-                .add(BorderLayout.EAST, eastCont)
-                .add(BorderLayout.SOUTH, southDetailsContainer);
-
-        mainCont.add(BorderLayout.CENTER, topBorderCont);
+//        Container topBorderCont = new Container(new BorderLayout());
+//        topBorderCont.add(BorderLayout.WEST, statusSelectionCont)
+//                .add(BorderLayout.CENTER, itemLabel)
+//                .add(BorderLayout.EAST, eastCont)
+//                .add(BorderLayout.SOUTH, southDetailsContainer);
+//        mainCont.add(BorderLayout.CENTER, topBorderCont);
+//        //BUILD CONTAINER
+//        Container statusSelectionCont = new Container(new BorderLayout())
+//                .add(BorderLayout.WEST, selected)
+//                .add(BorderLayout.EAST, status);
+//        Container eastCont = new Container(BoxLayout.x())
+//                .add(BorderLayout.east(BoxLayout.encloseX(
+//                        BoxLayout.encloseY(
+//                                BorderLayout.east(isDone ? actualEffortLabel : BoxLayout.encloseX(remainingEffortLabel, actualEffortLabel)),
+//                                //                                finishTimeLabel != null ? finishTimeLabel : (isDone ? completedDateLabel : dueDateLabel)),
+//                                BorderLayout.east(isDone ? completedDateLabel : (finishTimeLabel != null ? finishTimeLabel : dueDateLabel))),
+//                        //                        BoxLayout.encloseY(starButton, subTasksButton),
+//                        expandSubTasksButton != null ? expandSubTasksButton : new Label(),
+//                        editItemButton))
+//                );
+//
+//        Container topBorderCont = new Container(new BorderLayout());
+//        topBorderCont.add(BorderLayout.WEST, statusSelectionCont)
+//                .add(BorderLayout.CENTER, itemLabel)
+//                .add(BorderLayout.EAST, eastCont)
+//                .add(BorderLayout.SOUTH, southDetailsContainer);
+//
+//        mainCont.add(BorderLayout.CENTER, topBorderCont);
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 /*
 private Component makeQuickAddBox(boolean projectEditMode) {
