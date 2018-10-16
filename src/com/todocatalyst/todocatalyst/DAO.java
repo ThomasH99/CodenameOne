@@ -120,7 +120,7 @@ public class DAO {
         } else {
             cache.put(parseObject.getObjectIdP(), parseObject); //will override any previously put object with same ojectId
         }
-        ASSERT.that(parseObject instanceof ParseObject, "trying to store non-ParseObject in cache: parseObject=" + parseObject);
+        ASSERT.that(parseObject instanceof ParseObject, ()->"trying to store non-ParseObject in cache: parseObject=" + parseObject);
     }
 
 //    private void cacheList(List<ParseObject> list) {
@@ -268,10 +268,10 @@ public class DAO {
             if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
 //                ASSERT.that((list.get(i) != null) , "entry nb=" + i + " in list  with size" + size+", name="+(list instanceof ItemList ? ((ItemList) list).getText() : "") + " == null");
                 if (Config.TEST) {
-                    ASSERT.that((list.get(i) != null), "entry nb=" + i + " in list  with size" + size + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == null");
-                }
-                if (Config.TEST) {
-                    ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list  with size" + size + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
+                    int i2=i;
+                    int size2=size;
+                    ASSERT.that((list.get(i) != null), ()->"entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == null");
+                    ASSERT.that((list.get(i) != JSONObject.NULL), ()->"entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
                 }
 //                ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " == JSONObject.NULL");
                 list.remove(i); //UI: clean up elements that don't exist anymore
@@ -845,7 +845,8 @@ public class DAO {
             results = query.find();
             //if no categoryList already saved, initialize it with existing categories
             if (results.size() > 0) {
-                ASSERT.that(results.size() <= 1, "error: more than one CategoryList element (" + results.size() + ")"); //TODO create error log for this 
+                int size=results.size();
+                ASSERT.that(results.size() <= 1, ()->"error: more than one CategoryList element (" + size + ")"); //TODO create error log for this 
                 categoryList = results.get(0); //return first element
 //                fetchAllElementsInSublist(categoryList); //NOT necessary since categoryList.getList() will fetch the items
             } else { //if (results.size() == 0) {
@@ -1001,7 +1002,8 @@ public class DAO {
             results = query.find();
             if (results.size() > 0) {
 //                            assert results.size() <= 1 : "error: more than one CategoryList element (" + results.size() + ")"; //TODO create error log for this 
-                ASSERT.that(results.size() <= 1, "error: more than one TemplateList element (" + results.size() + ")"); //TODO create error log for this 
+int s = results.size();
+                ASSERT.that(results.size() <= 1, ()->"error: more than one TemplateList element (" + s + ")"); //TODO create error log for this 
                 templateList = results.get(0); //return first element
 //                cache.put(templateList.getObjectId(), templateList); //TODO not really needed?
 //                cache.put(TemplateList.CLASS_NAME, templateList);
@@ -2166,7 +2168,7 @@ public class DAO {
 //                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
 //                if (workSlot != null) {
 //</editor-fold>
-                    ASSERT.that(workSlot != null, "WorkSlot in cache for key=\"" + key + "\" is null. Key type="
+                    ASSERT.that(workSlot != null, ()->"WorkSlot in cache for key=\"" + key + "\" is null. Key type="
                             + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
                     Object owner = workSlot.getOwner();
                     //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
@@ -3883,7 +3885,7 @@ public class DAO {
         cacheAllItemsFromParse(new Date(MyDate.MIN_DATE), new Date());
     }
 
-    private boolean cacheAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
+    private List<Item> getAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         boolean result = false;
         int loadCount = 0;
@@ -3894,22 +3896,22 @@ public class DAO {
         List<Item> results = null;
         try {
             results = query.find();
-            Log.p("-------------->>>> Items cached = " + results.size());
+            Log.p("-------------->>>> Items fetched from Parse = " + results.size());
             //TODO!!!! show spinner
-//            for (ParseObject o : results) {
-////                cache.put(o.getObjectIdP(), o);
-//                cachePut(o);
-//                result = true;
-//            }
-            cacheList(results);
-            result = !results.isEmpty();
         } catch (ParseException ex) {
             Log.e(ex);
         }
         //do this update AFTER having cached all items to be able to update all subtask and ownerItem references to the cached instances
-//        for (ParseObject o : results) {
-//            cacheItem((Item) o);
-//        }
+        return results;
+    }
+    
+    private boolean cacheAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        boolean result = false;
+        int loadCount = 0;
+        List<Item> results = getAllItemsFromParse(reloadUpdateAfterThis, now);
+            cacheList(results);
+            result = !results.isEmpty();
         return result;
     }
 

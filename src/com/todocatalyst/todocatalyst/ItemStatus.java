@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.ui.FontImage;
 import com.codename1.ui.Image;
 
 /**
@@ -26,11 +27,19 @@ public enum ItemStatus {
     WAITING("Waiting", "Task is on hold and waiting for something"),
     DONE("Done", "Task is completed, no more work"),
     CANCELLED("Cancelled", "Task has been cancelled (similar to deleted, but is kept to maintain history)");
+    
+    final static char iconCheckboxCreatedChar = FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED; 
+    final static char iconCheckboxCancelledChar = FontImage.MATERIAL_REMOVE_CIRCLE; //dark circle to illustrate 'done with'
+    final static char iconCheckboxOngoingChar = FontImage.MATERIAL_TIMELAPSE;
+    final static char iconCheckboxDoneChar = FontImage.MATERIAL_CHECK_CIRCLE;
+    final static char iconCheckboxWaitingChar = FontImage.MATERIAL_PAUSE_CIRCLE_OUTLINE;
+
 //String[] descriptionList = new String[]{CREATED.description, ONGOING.getDescription(), WAITING.getDescription(), DONE.getDescription(), CANCELLED.getDescription()};
     final static String[] descriptionList = new String[]{values()[0].fullDescription, values()[1].fullDescription, values()[2].fullDescription, values()[3].fullDescription, values()[4].fullDescription};
     final static String[] nameList = new String[]{values()[0].description, values()[1].description, values()[2].description, values()[3].description, values()[4].description};
     final static int[] descriptionValues = new int[]{values()[0].ordinal(), values()[1].ordinal(), values()[2].ordinal(), values()[3].ordinal(), values()[4].ordinal()};
-    final static Image[] icons = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
+//    static String iconStyle;
+//     static Image[] icons = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
 
     private final String description;
     final String fullDescription;
@@ -62,9 +71,9 @@ public enum ItemStatus {
         return descriptionValues;
     }
     
-    static Image getStatusIcon(ItemStatus itemStatus) {
-        return ItemStatus.icons[itemStatus.ordinal()];
-    }
+//    static Image getStatusIconXXX(ItemStatus itemStatus) { //now icons are created in ChechBox
+//        return ItemStatus.icons[itemStatus.ordinal()];
+//    }
 
    
             /**

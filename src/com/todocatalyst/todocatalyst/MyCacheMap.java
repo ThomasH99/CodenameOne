@@ -133,7 +133,7 @@ public class MyCacheMap {
         if (false &&Config.TEST)
         ASSERT.that( previousValue == null || (!(previousValue instanceof ParseObject && value instanceof ParseObject) ||
                  ((ParseObject) value).keySet().size() > ((ParseObject) previousValue).keySet().size()),
-                "Error, replacing ParseObject with more data with ParseObject with less data, prev=" 
+                ()->"Error, replacing ParseObject with more data with ParseObject with less data, prev=" 
                         + previousValue 
                         +((((ParseObject) previousValue).keySet()!=null)?(" ("
                                 +((ParseObject) previousValue).keySet().size()+")"):"")

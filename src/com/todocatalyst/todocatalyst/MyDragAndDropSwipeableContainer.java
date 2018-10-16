@@ -2428,7 +2428,7 @@ T3
                 Log.p("dropActionCall        " + (dropActionCall != null ? "NORMAL " : "") + (dropAsSubtaskActionCall != null ? "SUBTASK " : "") + (dropAsSuperTaskActionCall != null ? "SUPER" : ""));
                 Log.p("insertDropPlaceholder " + (insertDropPlaceholder != null ? "NORMAL " : "") + (insertDropPlaceholderForSubtask != null ? "SUBTASK " : "") + (insertDropPlaceholderForSupertask != null ? "SUPER" : ""));
 
-                ASSERT.that(newDropPlaceholder == null || (draggedMyDDCont.dropPlaceholder != null && draggedMyDDCont.dropPlaceholder.getParent() != null), "dragged.dropPlaceholder NOT correctly inserted");
+                ASSERT.that(newDropPlaceholder == null || (draggedMyDDCont.dropPlaceholder != null && draggedMyDDCont.dropPlaceholder.getParent() != null), ()->"dragged.dropPlaceholder NOT correctly inserted");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (index <= oldDropPlaceholderIndex) {
 //                        treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
@@ -3187,7 +3187,7 @@ T3
     @Override
     protected Image getDragImage() {
         if (!isHidden()) {
-            ASSERT.that(!isHidden(), "***Calling getDragImage() on " + getName() + " while it's hidden"
+            ASSERT.that(!isHidden(), ()->"***Calling getDragImage() on " + getName() + " while it's hidden"
                     + ", w=" + getWidth() + ", h=" + getHeight());
         } else {
             Log.p("Calling getDragImage() on " + getName() + " (not hidden)"

@@ -133,7 +133,7 @@ public class ScreenItem extends MyForm {
         super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
         if (false) {
-            ASSERT.that(item.isDataAvailable(), "Item \"" + item + "\" data not available");
+            ASSERT.that(item.isDataAvailable(), ()->"Item \"" + item + "\" data not available");
         }
 
         this.templateEditMode = item.isTemplate() || templateEditMode; //

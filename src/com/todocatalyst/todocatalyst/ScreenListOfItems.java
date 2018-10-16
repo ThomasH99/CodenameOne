@@ -8,6 +8,7 @@ import com.codename1.components.SpanLabel;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
 import com.codename1.l10n.L10NManager;
+import com.codename1.ui.CN;
 import com.codename1.ui.*;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
@@ -15,6 +16,7 @@ import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.Component;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.FlowLayout;
+import com.codename1.ui.plaf.Style;
 import com.codename1.ui.plaf.UIManager;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
@@ -287,7 +289,7 @@ public class ScreenListOfItems extends MyForm {
 //                setEditOnShow(InsertNewTaskContainer.lastInsertNewTaskContainer.getTextField());
 //            }
 //        });
-//        getContentPane().add(BorderLayout.SOUTH, makeQuickAddBox(projectEditMode));
+//        getContentPane().add(SOUTH, makeQuickAddBox(projectEditMode));
 //        if (filterSortDef != null) {
 //            this.filterSortDef = filterSortDef;
 //        } else {
@@ -383,7 +385,7 @@ public class ScreenListOfItems extends MyForm {
 //            DAO.getInstance().save(filterSortDef);
 //        }
 //        dragAndDropContainer = buildContentPaneForItemList(this.itemList);
-//        getContentPane().add(BorderLayout.CENTER, dragAndDropContainer);
+//        getContentPane().add(CENTER, dragAndDropContainer);
 //        setupList();
         refreshAfterEdit();
     }
@@ -413,8 +415,8 @@ public class ScreenListOfItems extends MyForm {
         getContentPane().removeAll();
 
 //        if (false) {
-//            getContentPane().add(BorderLayout.SOUTH, makeQuickAddBox(projectEditMode));
-//            getContentPane().add(BorderLayout.SOUTH, new QuickAddItemContainer(projectEditMode));
+//            getContentPane().add(SOUTH, makeQuickAddBox(projectEditMode));
+//            getContentPane().add(SOUTH, new QuickAddItemContainer(projectEditMode));
 //        }
         this.itemListOrg = getItemListFct.getUpdatedItemList();
         itemListOrg.resetWorkTimeDefinition(); //TODO!!!!! find a way to automatically reset wtd each time a list or its elements have been modified -> itemList.save(), or items call update/refresh on owner (and categories!)
@@ -431,9 +433,9 @@ public class ScreenListOfItems extends MyForm {
 //        wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
 //        itemListOrg.refreshWorkTimeDefinition();
 
-//        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.itemListFilteredSorted));
+//        getContentPane().add(CENTER, buildContentPaneForItemList(this.itemListFilteredSorted));
         parseIdMapReset();
-        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.itemListOrg));
+        getContentPane().add(CENTER, buildContentPaneForItemList(this.itemListOrg));
         if (false) {
 
         }
@@ -993,10 +995,10 @@ public class ScreenListOfItems extends MyForm {
     //
     //        MyDropContainer swipCont = new MyDropContainer(item, motherItemList, motherItem, bottomLeft, null, mainCont, ()-> draggableMode); //use filtered/sorted ItemList for Timer
     //        Label itemLabel = new Label(item.getText());
-    //        mainCont.addComponent(BorderLayout.CENTER, itemLabel);
+    //        mainCont.addComponent(CENTER, itemLabel);
     ////        MyDropHandler dropHandler = new MyDropHandler(item.getText(), item, motherItemList, motherItem, cont);
     ////        cont.setLeadComponent(dropHandler); // let the drophandler handle all events (to test if getLeadComponent() return null; works
-    ////        cont.addComponent(BorderLayout.CENTER, dropHandler);
+    ////        cont.addComponent(CENTER, dropHandler);
     //
     //        //EDIT Item in list
     //        Button editItemButton = new Button() {
@@ -1025,7 +1027,7 @@ public class ScreenListOfItems extends MyForm {
     //        editItemButton.setUIID("Label");
     ////        editItemButton.setGrabsPointerEvents(true);
     //
-    ////        cont.addComponent(BorderLayout.CENTER, editItemButton);
+    ////        cont.addComponent(CENTER, editItemButton);
     ////        Container west = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
     ////        if (item.getPriority() != 0) {
     ////            west.add(new Label(item.getPriority() + ""));
@@ -1051,7 +1053,7 @@ public class ScreenListOfItems extends MyForm {
     //                itemStatusCheckBox,
     //                item.getPriority() != 0 ? new Label(item.getPriority() + "") : new Label(" ")
     //        );
-    //        mainCont.addComponent(BorderLayout.WEST, west);
+    //        mainCont.addComponent(WEST, west);
     //
     //        //EAST
     //        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -1100,7 +1102,7 @@ public class ScreenListOfItems extends MyForm {
     ////</editor-fold>
     //        east.addComponent(editItemButton);
     //
-    //        mainCont.addComponent(BorderLayout.EAST, east);
+    //        mainCont.addComponent(EAST, east);
     //
     //        Container south = Container.encloseIn(BoxLayout.x(),
     //                new Label("(R:" + item.getRemainingEffortInMinutes() + "/A:" + item.getActualEffortInMinutes() + ")"),
@@ -1115,7 +1117,7 @@ public class ScreenListOfItems extends MyForm {
     //            }
     //        }
     //
-    //        mainCont.addComponent(BorderLayout.SOUTH, south);
+    //        mainCont.addComponent(SOUTH, south);
     //
     //        bottomLeft.add(new Button("X")); //Create new task below
     //        if (false) {
@@ -1497,7 +1499,7 @@ public class ScreenListOfItems extends MyForm {
 
         Container west = new Container(BoxLayout.x());
         if (oldFormat) {
-            mainCont.addComponent(BorderLayout.WEST, west);
+            mainCont.addComponent(CN.WEST, west);
         }
 
         Container southDetailsContainer = new Container(new FlowLayout());
@@ -1508,7 +1510,7 @@ public class ScreenListOfItems extends MyForm {
 //        south.setHidden(!showDetailsForAllTasks || (tasksWithDetailsShown!=null && !tasksWithDetailsShown.contains(item))); //hide details by default
         southDetailsContainer.setHidden(!showDetails); //hide details by default
         if (oldFormat) {
-            mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
+            mainCont.addComponent(CN.SOUTH, southDetailsContainer);
         }
 
         Button expandSubTasksButton;// = null;//= new Button(); //null;
@@ -1544,7 +1546,7 @@ public class ScreenListOfItems extends MyForm {
         } : null;
 //            subTasksButton.setUIID("Label");
         if (expandSubTasksButton != null) {
-            expandSubTasksButton.setUIID("ListOfItemsSubtasks");
+            expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
 //            subTasksButton.setGrabsPointerEvents(true); //TODO!!! does this work to avoid
 //            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberDoneSubtasks + "]");// {
 //            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberSubtasks + "]");// {
@@ -1659,12 +1661,13 @@ public class ScreenListOfItems extends MyForm {
         });
 //        itemLabel.setUIID("ListOfItemsText");
         if (oldFormat) {
-            mainCont.addComponent(BorderLayout.CENTER, itemLabel);
+            mainCont.addComponent(CENTER, itemLabel);
         }
 
         //STATUS or SELECTED
 //        if (isSelectionMode()) {
         Button selected = new Button(); //null;
+        selected.setUIID("ListOfItemsSelected");
         if (myForm.selectedObjects != null) {
 //            RadioButton selected = new RadioButton();
 //            selected = new Button();
@@ -1721,6 +1724,7 @@ public class ScreenListOfItems extends MyForm {
             }, () -> {
                 return item.hasWorkStarted(); //item.getActualEffort() > 0;
             });
+            status.setUIID("ListOfItemsMyCheckBox");
             if (oldFormat) {
                 west.add(status);
             }
@@ -1774,12 +1778,12 @@ public class ScreenListOfItems extends MyForm {
 //                actualEffortLabel = new Label();
 //                actualEffortLabel.setText("A:" + MyDate.formatTimeDuration(actualEffort));
                 actualEffortLabel.setText(MyDate.formatTimeDuration(actualEffort));
-                actualEffortLabel.setUIID("ActualEffort");
+                actualEffortLabel.setUIID("ListOfItemsActualEffort");
                 if (oldFormat) {
                     east.addComponent(actualEffortLabel);
                 }
             }
-            completedDateLabel = new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "CompletedDate");
+            completedDateLabel = new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
             if (oldFormat) {
                 east.addComponent(completedDateLabel);
             }
@@ -1787,7 +1791,7 @@ public class ScreenListOfItems extends MyForm {
             long due = item.getDueDate();
             if (finishTime != MyDate.MAX_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
                 finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
-                        due != 0 && finishTime > due ? "FinishTimeOverdue" : "FinishTime");
+                        due != 0 && finishTime > due ? "ListOfItemsFinishTimeOverdue" : "ListOfItemsFinishTime");
                 if (oldFormat) {
                     east.add(finishTimeLabel);
                 }
@@ -1795,7 +1799,7 @@ public class ScreenListOfItems extends MyForm {
             {
                 if (due != 0) {
                     dueDateLabel = new Label("D:" + MyDate.formatDateSmart(new Date(due)),
-                            due < System.currentTimeMillis() ? "DueDateOverdue" : "DueDate");
+                            due < System.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                     if (oldFormat) {
                         east.add(dueDateLabel);
                     }
@@ -1836,7 +1840,10 @@ public class ScreenListOfItems extends MyForm {
                 Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
             }
         };
-        Command editItemCmd = MyReplayCommand.create("EditItem-" + item.getObjectIdP(), "", Icons.get().iconEditSymbolLabelStyle, (e) -> {
+
+        final  Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
+
+        Command editItemCmd = MyReplayCommand.create("EditItem-" + item.getObjectIdP(), "", editItemIcon, (e) -> {
             //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
 //                Item item = (Item) mainCont.getClientProperty("item"); //TODO!!!! is this needed, why notjust access 'item'??
 //                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
@@ -1886,7 +1893,7 @@ public class ScreenListOfItems extends MyForm {
         }
 
         if (oldFormat) {
-            mainCont.addComponent(BorderLayout.EAST, east);
+            mainCont.addComponent(CN.EAST, east);
         }
 
         //SOUTH
@@ -1925,16 +1932,18 @@ public class ScreenListOfItems extends MyForm {
             southDetailsContainer.add("F:" + MyDate.formatDateTimeNew(new Date(finishTime)));
         }
         //PRIORITY
-        Label priorityLabel = new Label();
+        Label priorityLabel= new Label();
         if (item.getPriority() != 0) {
-            priorityLabel = new Label("P" + item.getPriority());
+            priorityLabel.setText("P" + item.getPriority());
             if (false && showInDetails) {
                 southDetailsContainer.add(priorityLabel);
             }
+            priorityLabel.setUIID("ListOfItemsPrio");
         }
         //IMPORTANCE/URGENCY
         Label impUrgLabel; // = new Label();
         impUrgLabel = new Label(item.getImpUrgPrioValueAsString());
+        impUrgLabel.setUIID("ListOfItemsImpUrg");
         if (false && showInDetails) {
             southDetailsContainer.add(impUrgLabel);
         }
@@ -1964,7 +1973,7 @@ public class ScreenListOfItems extends MyForm {
 //            south.addComponent(new Label("D:" + MyDate.formatDateNatural(new MyDate(new Date(item.getDueDate())),MyDate.FORMAT_CASUAL, false)));
 //                south.addComponent(new Label("D:" + MyDate.formatDateNatural(new MyDate(item.getDueDate()), new MyDate(), MyDate.FORMAT_CASUAL, false)));
                 southDetailsContainer.addComponent(new Label("D:" + MyDate.formatDateNew(item.getDueDate()),
-                        item.getDueDate() < System.currentTimeMillis() ? "DueDateOverdue" : "DueDate"));
+                        item.getDueDate() < System.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate"));
             }
         }
 //        else {
@@ -1973,6 +1982,9 @@ public class ScreenListOfItems extends MyForm {
 //        }
 
         //ALARM SET icon
+                       Style s = UIManager.getInstance().getComponentStyle("ListOfItems");
+                  final  Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, s);
+   
         Label alarmLabel = null;
         if (item.getAlarmDate() != 0) {
 //            south.addComponent(new Label((Image) (item.getAlarmDate() != 0 ? Icons.get().iconAlarmSetLabelStyle : null)));
@@ -2044,19 +2056,22 @@ public class ScreenListOfItems extends MyForm {
         Component effortCont = isDone ? actualEffortLabel : BoxLayout.encloseX(remainingEffortLabel, actualEffortLabel);
         Component dateCont = isDone ? completedDateLabel : (finishTimeLabel != null ? finishTimeLabel : dueDateLabel);
         Component prioCont = BoxLayout.encloseX(priorityLabel, impUrgLabel);
-        Component expandSubsLabel = expandSubTasksButton != null ? expandSubTasksButton : new Label();
+        Component expandSubsCont = expandSubTasksButton != null ? expandSubTasksButton : new Label();
         //BUILD CONTAINER
         Container itemContent = new Container(new BorderLayout());
         Container bottomContent = new Container(new BorderLayout());
 //        Container mainItemCont = new Container(new BorderLayout())
         mainCont
-                .add(BorderLayout.WEST, BoxLayout.encloseX(selected, status))
-                .add(BorderLayout.EAST, editItemButton)
-                .add(BorderLayout.CENTER,
-                        itemContent.add(BorderLayout.CENTER, BorderLayout.centerEastWest(itemLabel, expandSubsLabel, null)) //item text + expand subtasks
-                                .add(BorderLayout.SOUTH, 
-                                        bottomContent.add(BorderLayout.CENTER, BorderLayout.centerEastWest(null, BoxLayout.encloseX(effortCont, dateCont), prioCont))
-                                                .add(BorderLayout.SOUTH, southDetailsContainer)));
+                .add(CN.WEST, BoxLayout.encloseX(selected, status))
+                .add(CN.EAST, editItemButton)
+                .add(CENTER,
+                        itemContent.add(CENTER, BorderLayout.west(itemLabel)) //item text + expand subtasks
+                                .add(CN.SOUTH, 
+                                        bottomContent
+//                                                .add(WEST, BorderLayout.centerEastWest(null, null, BoxLayout.encloseX(prioCont, dateCont,effortCont) ))
+                                                .add(CN.WEST,  BoxLayout.encloseX(prioCont, dateCont,effortCont) )
+                                                .add(CN.EAST, expandSubsCont)
+                                                .add(CN.SOUTH, southDetailsContainer)));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container eastCont = new Container(BoxLayout.x())
 //                .add(BorderLayout.east(BoxLayout.encloseX(
@@ -2071,14 +2086,14 @@ public class ScreenListOfItems extends MyForm {
 
 //        Container topBorderCont = new Container(new BorderLayout());
 //        topBorderCont.add(BorderLayout.WEST, statusSelectionCont)
-//                .add(BorderLayout.CENTER, itemLabel)
-//                .add(BorderLayout.EAST, eastCont)
-//                .add(BorderLayout.SOUTH, southDetailsContainer);
-//        mainCont.add(BorderLayout.CENTER, topBorderCont);
+//                .add(CENTER, itemLabel)
+//                .add(EAST, eastCont)
+//                .add(SOUTH, southDetailsContainer);
+//        mainCont.add(CENTER, topBorderCont);
 //        //BUILD CONTAINER
 //        Container statusSelectionCont = new Container(new BorderLayout())
-//                .add(BorderLayout.WEST, selected)
-//                .add(BorderLayout.EAST, status);
+//                .add(WEST, selected)
+//                .add(EAST, status);
 //        Container eastCont = new Container(BoxLayout.x())
 //                .add(BorderLayout.east(BoxLayout.encloseX(
 //                        BoxLayout.encloseY(
@@ -2091,18 +2106,18 @@ public class ScreenListOfItems extends MyForm {
 //                );
 //
 //        Container topBorderCont = new Container(new BorderLayout());
-//        topBorderCont.add(BorderLayout.WEST, statusSelectionCont)
-//                .add(BorderLayout.CENTER, itemLabel)
-//                .add(BorderLayout.EAST, eastCont)
-//                .add(BorderLayout.SOUTH, southDetailsContainer);
+//        topBorderCont.add(WEST, statusSelectionCont)
+//                .add(CENTER, itemLabel)
+//                .add(EAST, eastCont)
+//                .add(SOUTH, southDetailsContainer);
 //
-//        mainCont.add(BorderLayout.CENTER, topBorderCont);
+//        mainCont.add(CENTER, topBorderCont);
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 /*
 private Component makeQuickAddBox(boolean projectEditMode) {
 
-cont.add(BorderLayout.EAST, new Button(Command.create(null, Icons.get().iconEditSymbolLabelStyle, (e) -> {
+cont.add(EAST, new Button(Command.create(null, Icons.get().iconEditSymbolLabelStyle, (e) -> {
 //            ((MyForm) getParent().getComponentForm()).setKeepPos(new KeepInSameScreenPosition());
 ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition());
 String taskText = taskTextEntryField.getText();
@@ -2198,9 +2213,9 @@ refreshAfterEdit();
 //                            }
 //                        });
 //
-//                        cont.add(BorderLayout.WEST, new Label(Icons.iconCheckboxCreated));
-//                        cont.add(BorderLayout.CENTER, taskTextEntryField2);
-//                        cont.add(BorderLayout.EAST, new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
+//                        cont.add(WEST, new Label(Icons.iconCheckboxCreated));
+//                        cont.add(CENTER, taskTextEntryField2);
+//                        cont.add(EAST, new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
 //                            //close the container
 //                            swipC.getParent().removeComponent(swipC);
 //                            newTaskContainer = null;
@@ -2217,7 +2232,7 @@ refreshAfterEdit();
 //                    ASSERT.that(contForInsertTask instanceof MyTree2, "ERROR - not right place to insert insertTaskContainer, cont=" + contForInsertTask);
 //                    ((ScreenListOfItems) myForm).indexOfSwipContParentParent = contForInsertTask.getComponentIndex(swipContParent);
 //                    Container contWithAddNewTaskCont = new Container(new BorderLayout()); //container to hold the AddNewTask container after the item
-//                    contWithAddNewTaskCont.add(BorderLayout.CENTER, mainCont);
+//                    contWithAddNewTaskCont.add(CENTER, mainCont);
 
 //                    SwipeableContainer swipC = buildAddNewTaskContainer(item, orgList, swipCont, refreshOnItemEdits);
 //                     myForm.lastInsertSwiptCreatedItem = new Item();
@@ -2255,7 +2270,7 @@ refreshAfterEdit();
 //                    Container parent = swipCont.getParent();
 //                    int indexOfSwipContParentParent = parent.getComponentIndex(swipCont);
 //                    parent.addComponent(index+1, swipC);
-//                    contWithAddNewTaskCont.add(BorderLayout.SOUTH, swipC);
+//                    contWithAddNewTaskCont.add(SOUTH, swipC);
 //                    int adjustPos = ((ScreenListOfItems) myForm).lastInsertNewTaskContainer != null
 //                            ((ScreenListOfItems) myForm).lastInsertNewTaskContainer.contForInsertTask.addComponent(((ScreenListOfItems) myForm).indexOfSwipContParentParent + 1, newTaskContainer);
 //                    contForInsertTask.addComponent(indexOfSwipContParentParent + 1, newTaskContainer);
@@ -2521,13 +2536,13 @@ refreshAfterEdit();
 ////        if (keepPos!=null) keepPos.
 //
 //        Container west = new Container(BoxLayout.x());
-//        mainCont.addComponent(BorderLayout.WEST, west);
+//        mainCont.addComponent(WEST, west);
 //
 //        Container south = new Container(new FlowLayout());
 //        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (expandedObjects != null && expandedObjects.contains(item)); //hide details by default
 ////        south.setHidden(!showDetailsForAllTasks || (tasksWithDetailsShown!=null && !tasksWithDetailsShown.contains(item))); //hide details by default
 //        south.setHidden(!showDetails); //hide details by default
-//        mainCont.addComponent(BorderLayout.SOUTH, south);
+//        mainCont.addComponent(SOUTH, south);
 //
 //        //ITEM TEXT
 //        Button itemLabel = new MyButtonInitiateDragAndDrop(
@@ -2574,7 +2589,7 @@ refreshAfterEdit();
 //            }
 //        });
 ////        itemLabel.setUIID("Label");
-//        mainCont.addComponent(BorderLayout.CENTER, itemLabel);
+//        mainCont.addComponent(CENTER, itemLabel);
 //
 //        //STATUS or SELECTED
 ////        if (isSelectionMode()) {
@@ -2763,7 +2778,7 @@ refreshAfterEdit();
 ////        editItemButton.setGrabsPointerEvents(true);
 //        east.addComponent(editItemButton);
 //
-//        mainCont.addComponent(BorderLayout.EAST, east);
+//        mainCont.addComponent(EAST, east);
 //
 //        //SOUTH
 //        //WORK TIME
@@ -2863,7 +2878,7 @@ refreshAfterEdit();
 ///*
 //private Component makeQuickAddBox(boolean projectEditMode) {
 //
-//cont.add(BorderLayout.EAST, new Button(Command.create(null, Icons.get().iconEditSymbolLabelStyle, (e) -> {
+//cont.add(EAST, new Button(Command.create(null, Icons.get().iconEditSymbolLabelStyle, (e) -> {
 ////            ((MyForm) getParent().getComponentForm()).setKeepPos(new KeepInSameScreenPosition());
 //((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition());
 //String taskText = taskTextEntryField.getText();
@@ -2954,9 +2969,9 @@ refreshAfterEdit();
 ////                            }
 ////                        });
 ////
-////                        cont.add(BorderLayout.WEST, new Label(Icons.iconCheckboxCreated));
-////                        cont.add(BorderLayout.CENTER, taskTextEntryField2);
-////                        cont.add(BorderLayout.EAST, new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
+////                        cont.add(WEST, new Label(Icons.iconCheckboxCreated));
+////                        cont.add(CENTER, taskTextEntryField2);
+////                        cont.add(EAST, new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
 ////                            //close the container
 ////                            swipC.getParent().removeComponent(swipC);
 ////                            newTaskContainer = null;
@@ -2972,7 +2987,7 @@ refreshAfterEdit();
 //                    ASSERT.that(contForInsertTask instanceof MyTree2, "ERROR - not right place to insert insertTaskContainer, cont=" + contForInsertTask);
 //                    int indexOfSwipContParentParent = contForInsertTask.getComponentIndex(swipContParent);
 ////                    Container contWithAddNewTaskCont = new Container(new BorderLayout()); //container to hold the AddNewTask container after the item
-////                    contWithAddNewTaskCont.add(BorderLayout.CENTER, mainCont);
+////                    contWithAddNewTaskCont.add(CENTER, mainCont);
 //
 //                    SwipeableContainer swipC = buildAddNewTaskContainer(item, orgList, swipCont, refreshOnItemEdits);
 //                    if (myForm.getClientProperty(EXISTING_NEW_TASK_CONTAINER) != null) {
@@ -2982,7 +2997,7 @@ refreshAfterEdit();
 ////                    Container parent = swipCont.getParent();
 ////                    int index = parent.getComponentIndex(swipCont);
 ////                    parent.addComponent(index+1, swipC);
-////                    contWithAddNewTaskCont.add(BorderLayout.SOUTH, swipC);
+////                    contWithAddNewTaskCont.add(SOUTH, swipC);
 //                    contForInsertTask.addComponent(indexOfSwipContParentParent + 1, swipC);
 //
 ////                    contWithAddNewTaskCont.getComponentForm().animateHierarchy(300);
@@ -3232,9 +3247,9 @@ refreshAfterEdit();
 //            }
 //        });
 //
-////        cont.add(BorderLayout.WEST, new Label(Icons.iconCheckboxCreated));
-//        cont.add(BorderLayout.CENTER, taskTextEntryField2);
-//        cont.add(BorderLayout.WEST, new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
+////        cont.add(WEST, new Label(Icons.iconCheckboxCreated));
+//        cont.add(CENTER, taskTextEntryField2);
+//        cont.add(WEST, new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
 //            //close the container
 //            Form parentForm = swipC.getComponentForm();
 //            swipC.getParent().removeComponent(swipC);
@@ -3373,7 +3388,7 @@ refreshAfterEdit();
                     if (node instanceof Item) {
 //                    assert ((Item) node).isDataAvailable() : "Item \"" + node + "\" data not available";
                         if (false) {
-                            ASSERT.that(((Item) node).getObjectIdP() == null || ((Item) node).isDataAvailable(), "Item \"" + node + "\" objId=(" + ((Item) node).getObjectIdP() + ") data not available");
+                            ASSERT.that(((Item) node).getObjectIdP() == null || ((Item) node).isDataAvailable(), ()->"Item \"" + node + "\" objId=(" + ((Item) node).getObjectIdP() + ") data not available");
                         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.refresh(),

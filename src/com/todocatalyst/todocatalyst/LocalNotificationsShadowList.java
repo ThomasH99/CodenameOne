@@ -485,7 +485,7 @@ public class LocalNotificationsShadowList implements Externalizable {
     void addAlarmAndRepeat(String objectId, Date newAlarm, AlarmType type, String titleText, String bodyText) {
         int repeatInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
 
-        ASSERT.that(type == AlarmType.notification || type == AlarmType.waiting|| type == AlarmType.snooze, "wrong alarmType="+type);
+        ASSERT.that(type == AlarmType.notification || type == AlarmType.waiting|| type == AlarmType.snooze, ()->"wrong alarmType="+type);
 //        ASSERT.that((getNumberAvailableLocalNotificationSlots() >= (repeatInterval > 0 ? 2 : 1)));
 
         insertAndSetSingleBaseAlarmSorted(objectId, type, newAlarm, titleText, bodyText);

@@ -99,7 +99,7 @@ public class ReplayLog {
 //        if (nextIndex == -1 || nextIndex < logList.size()) { //do not store command if it is the command being replayed
         if (!replayingInProgress) { //do not store command if it is the command being replayed
             boolean doubleDecl = replayStack.contains(replayCommand.getCmdUniqueID());
-            ASSERT.that(!doubleDecl, "Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list: " + replayStack);
+            ASSERT.that(!doubleDecl, ()->"Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list: " + replayStack);
             if (doubleDecl) {
                 //remove a previous command (and all commands after it) which is stuck by mistake (due to crash??)
                 String cmdStr;

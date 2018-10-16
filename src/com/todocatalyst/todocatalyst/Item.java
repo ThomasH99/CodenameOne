@@ -1353,7 +1353,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
     @Override
     public void setOwner(ItemAndListCommonInterface owner) {
-        ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null), "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
+        ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null), ()->"Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
 //        if (owner instanceof Category) {
 //            setOwnerCategory((Category) owner);
 //        } else 
@@ -1368,7 +1368,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             setOwnerItem(null);
             setOwnerTemplateList(null);
         } else {
-            ASSERT.that(false, "unknown owner type for " + owner);
+            ASSERT.that(false, ()->"unknown owner type for " + owner);
         }
     }
 
@@ -1404,7 +1404,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             } else if (ownerObj instanceof ItemList) {
                 ownerText = ItemList.ITEM_LIST + ": " + ((ItemList) ownerObj).getText();
             } else {
-                ASSERT.that(false, "unknown type of owner for Item:" + this + ", owner:" + ownerObj);
+                ASSERT.that(false, ()->"unknown type of owner for Item:" + this + ", owner:" + ownerObj);
             }
         }
         return ownerText;
@@ -2081,7 +2081,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             DAO.getInstance().save(cat);
         }
         List<Category> catList = DAO.getInstance().getAllCategoriesContainingItem(this);
-        ASSERT.that(catList == null || catList.size() == 0, "some categories still contain item after deleting it from its categories, item=" + this + " categories=" + catList);
+        ASSERT.that(catList == null || catList.size() == 0, ()->"some categories still contain item after deleting it from its categories, item=" + this + " categories=" + catList);
 
         //DELETE IN OWNERS/PROJECTS
         if (getOwnerItem() != null) {
@@ -6289,7 +6289,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (getObjectIdP() != null && item.getObjectIdP() != null) {
             //compare isDirty in case we have two instances of the same 
 //            return getObjectId().equals(((Item) obj).getObjectId()) && isDirty()==((Item) obj).isDirty();
-            ASSERT.that(!getObjectIdP().equals(item.getObjectIdP()) || isDirty() == item.isDirty(), "comparing dirty and not dirty instance of same object=" + this);
+            ASSERT.that(!getObjectIdP().equals(item.getObjectIdP()) || isDirty() == item.isDirty(), ()->"comparing dirty and not dirty instance of same object=" + this);
             if (getObjectIdP().equals(item.getObjectIdP())) {
                 return true;
             }
@@ -6495,7 +6495,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 return TodaySortOrder.WAITING_TODAY;
             } else {
                 time = getStartByDateD().getTime();
-                ASSERT.that(time >= startOfToday && time < startOfTomorrow,
+                ASSERT.that(time >= startOfToday && time < startOfTomorrow,()->
                         "getStartByDateD should always be Today, item=" + this
                         + " startBy=" + MyDate.formatDateNew(getStartByDateD())
                         + " due=" + MyDate.formatDateNew(getDueDateD())
@@ -7209,7 +7209,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
                 break; // stop iteration when we get to provider itself and return what is remaining for provider to deliver
             } else {
-                ASSERT.that(!prov.equals(provider), "duplicate object instances for prov=" + prov + ", this=" + this);
+                ASSERT.that(!prov.equals(provider), ()->"duplicate object instances for prov=" + prov + ", this=" + this);
                 if (prov instanceof Category && ((Category) prov).isOwnerOfItemInCategoryBeforeItem(this)) {
                     if (Config.WORKTIME_DETAILED_LOG) {
                         Log.p("-> .getWorkTimeRequiredFromProvider - trying to get worktime from Category (" + prov + ") AND isOwnerOfItemInCategoryBeforeItem(" + this + "\") is true");

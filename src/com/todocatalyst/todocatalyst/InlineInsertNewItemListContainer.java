@@ -63,7 +63,7 @@ public class InlineInsertNewItemListContainer extends Container {
 
     public InlineInsertNewItemListContainer(MyForm myForm, ItemList itemList2, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeRefElement) {
         this.itemList = itemList2;
-        ASSERT.that(itemOrItemListForNewTasks2 != null, "why itemOrItemListForNewTasks2==null here?");
+        ASSERT.that(itemOrItemListForNewTasks2 != null, ()->"why itemOrItemListForNewTasks2==null here?");
         this.itemOrItemListForNewTasks = itemOrItemListForNewTasks2;
         this.insertBeforeRefElement = insertBeforeRefElement;
 

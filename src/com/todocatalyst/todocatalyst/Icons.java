@@ -130,16 +130,24 @@ public class Icons {
     final static Image iconCloseCircleLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_HIGHLIGHT_OFF, labelStyle);
 
     //TASK STATUS
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    final static Image iconCheckboxCreated = FontImage.createMaterial(FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK, labelStyle);
-    final static Image iconCheckboxCreated = FontImage.createMaterial(FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED, labelStyle); //TODO NOT GOOD - same symbol as multiple selection
+//    final static char iconCheckboxCreatedChar = FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED;
+//    final static char iconCheckboxCancelledChar = FontImage.MATERIAL_REMOVE_CIRCLE; //dark circle to illustrate 'done with'
+//    final static char iconCheckboxOngoingChar = FontImage.MATERIAL_TIMELAPSE;
+//    final static char iconCheckboxDoneChar = FontImage.MATERIAL_CHECK_CIRCLE;
+//    final static char iconCheckboxWaitingChar = FontImage.MATERIAL_PAUSE_CIRCLE_OUTLINE;
+//</editor-fold>
+
+    final static Image iconCheckboxCreated = FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, labelStyle); //TODO NOT GOOD - same symbol as multiple selection
 //    final static Image iconCheckboxCancelled = FontImage.createMaterial(FontImage.MATERIAL_INDETERMINATE_CHECK_BOX, labelStyle);
-    final static Image iconCheckboxCancelled = FontImage.createMaterial(FontImage.MATERIAL_REMOVE_CIRCLE, labelStyle); //dark circle to illustrate 'done with'
+    final static Image iconCheckboxCancelled = FontImage.createMaterial(ItemStatus.iconCheckboxCancelledChar, labelStyle); //dark circle to illustrate 'done with'
 //    final static Image iconCheckboxDone = FontImage.createMaterial(FontImage.MATERIAL_CHECK_BOX, labelStyle);
-    final static Image iconCheckboxOngoing = FontImage.createMaterial(FontImage.MATERIAL_TIMELAPSE, labelStyle);
-    final static Image iconCheckboxDone = FontImage.createMaterial(FontImage.MATERIAL_CHECK_CIRCLE, labelStyle);
+    final static Image iconCheckboxOngoing = FontImage.createMaterial(ItemStatus.iconCheckboxOngoingChar, labelStyle);
+    final static Image iconCheckboxDone = FontImage.createMaterial(ItemStatus.iconCheckboxDoneChar, labelStyle);
 //    final static Image iconCheckboxWaiting = FontImage.createMaterial(FontImage.MATERIAL_ACCOUNT_BOX, iconStyle);
 //    final static Image iconCheckboxWaiting = FontImage.createMaterial(FontImage.MATERIAL_HOURGLASS_FULL, labelStyle);
-    final static Image iconCheckboxWaiting = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_OUTLINE, labelStyle);
+    final static Image iconCheckboxWaiting = FontImage.createMaterial(ItemStatus.iconCheckboxWaitingChar, labelStyle);
 
     static Image iconBackToPrevFormToolbarStyle(){return makeT(FontImage.MATERIAL_ARROW_BACK);}
     static Image iconBackToPrevFormLabelStyle(){return makeL(FontImage.MATERIAL_ARROW_BACK);}

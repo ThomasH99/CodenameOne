@@ -34,6 +34,7 @@ class MyComponentGroup extends ComponentGroup {
         super();
         this.setHorizontal(true);
         ButtonGroup buttonGroup = new ButtonGroup();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        ButtonGroup buttonGroup = new ButtonGroup() {
 //            @Override
 //            public void setSelected(RadioButton rb) {
@@ -45,6 +46,7 @@ class MyComponentGroup extends ComponentGroup {
 //                }
 //            }
 //        };
+//</editor-fold>
         RadioButton radioButton;
 //            RadioButton[] radioButtonArray = new RadioButton[values.length];
         for (int i = 0; i < values.length; i++) {
@@ -55,9 +57,11 @@ class MyComponentGroup extends ComponentGroup {
             radioButton.setUnselectAllowed(unselectAllowed); //allow to de-select a selected button
             buttonGroup.add(radioButton);
             this.add(radioButton);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                radioButtonArray[i] = radioButton;
 //            if (selectedString != null && values[i].equals(selectedString)) {
 //            if (selectedString != null && (values[i] instanceof String?(String)values[i]:values[i].toString()).equals(selectedString)) {
+//</editor-fold>
             if (selectedString != null && values[i].toString().equals(selectedString)) {
                 radioButton.setSelected(true);
             }

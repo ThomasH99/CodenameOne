@@ -229,7 +229,7 @@ public class MyForm extends Form {
         }
         this.previousForm = previousForm;
         this.updateActionOnDone = updateActionOnDone;
-        ASSERT.that(updateActionOnDone != null, "doneAction should always be defined, Form=" + this);
+        ASSERT.that(updateActionOnDone != null, ()->"doneAction should always be defined, Form=" + this);
         parseIdMapReset();
 //        form = new Form();
 //        form = this;
@@ -1561,6 +1561,11 @@ public class MyForm extends Form {
 
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton) {
+        return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton);
+    }
+
+    protected static Component layoutNXXX(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton) {
         if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
 //            field.getAllStyles().setPaddingRight(6);
         } else {
@@ -2718,7 +2723,7 @@ public class MyForm extends Form {
             pinchInsertFinished();
 //            }
         } //else { //don't call super.pointerR if finishing pinch since it may launch other events
-            super.pointerReleased(x, y);
+        super.pointerReleased(x, y);
 //        }
     }
 

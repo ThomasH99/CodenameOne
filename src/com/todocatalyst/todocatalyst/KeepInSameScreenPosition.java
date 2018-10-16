@@ -49,7 +49,7 @@ class KeepInSameScreenPosition {
      */
 //    KeepInSameScreenPosition(int scrollY) {
     KeepInSameScreenPosition(Container scrollableContainer) {
-        ASSERT.that(scrollableContainer.isScrollableY(), "KeepInSameScreenPosition called with non-scrollableY container=" + scrollableContainer);
+        ASSERT.that(scrollableContainer.isScrollableY(), ()->"KeepInSameScreenPosition called with non-scrollableY container=" + scrollableContainer);
 //        form = (MyForm) scrollableContainer.getComponentForm();
         this.scrollY = scrollableContainer.getScrollY();
     }
@@ -449,7 +449,7 @@ class KeepInSameScreenPosition {
 //                    }
 //</editor-fold>
                     ASSERT.that(scrollCont instanceof ContainerScrollY,
-                            "Scrollable container not found, must improve findScrollableContainer(), scrollCont not ContainerScrollY: " + scrollCont);
+                            ()->"Scrollable container not found, must improve findScrollableContainer(), scrollCont not ContainerScrollY: " + scrollCont);
                     ((ContainerScrollY) scrollCont).setScrollYPublic(scrollY);
                 }
             } //else //UI: do nothing, no scroll

@@ -992,7 +992,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
         addItemAtIndex((E) subItemOrList, index);
-        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, ()->"subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
@@ -1003,7 +1003,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public boolean addToList(ItemAndListCommonInterface positionItem, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
         int index = indexOf(positionItem);
         addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
-        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, ()->"subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
@@ -1028,7 +1028,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return status;
         removeItem(subItemOrList); //TODO: update removeItem to return boolean
 //        assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subItemOrList=" + subItemOrList + ", owner=" + getOwner() + ", list=" + this;
-        ASSERT.that(!(this instanceof ItemList) || subItemOrList.getOwner() == this, "list not owner of removed subItemOrList (" + subItemOrList + "), owner=" + getOwner() + ", list=" + this); //
+        ASSERT.that(!(this instanceof ItemList) || subItemOrList.getOwner() == this, ()->"list not owner of removed subItemOrList (" + subItemOrList + "), owner=" + getOwner() + ", list=" + this); //
         subItemOrList.setOwner(null);
         return true;
     }
@@ -1726,8 +1726,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public void addItemAtSpecialPosition(E item, E referencePositionItem, int position) {
 //        int index;
 //#mdebug
-        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || referencePositionItem != null, "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem==null, list=" + this);
-        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || getItemIndex(referencePositionItem) != -1, "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem=" + referencePositionItem + " not in list=" + this);
+        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || referencePositionItem != null, 
+                ()->"addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem==null, list=" + this);
+        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || getItemIndex(referencePositionItem) != -1, 
+                ()->"addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem=" + referencePositionItem + " not in list=" + this);
 //        ASSERT.that((position != INSERT_BEFORE_REFERENCE_ITEM && position != INSERT_AFTER_REFERENCE_ITEM) || (referenceIndex>=0 && referenceIndex<getSize()), "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referenceIndex="+referenceIndex+" outside bounds of list="+this);
 //#enddebug
         if (position == Settings.INSERT_AT_HEAD_OF_LIST) {
@@ -2936,7 +2938,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
         if (getObjectIdP() != null && itemList.getObjectIdP() != null) {
             //compare isDirty in case we have two instances of the same 
-            ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(), "comparing dirty and not dirty instance of same object=" + this);
+            ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(), ()->"comparing dirty and not dirty instance of same object=" + this);
             if (getObjectIdP().equals(itemList.getObjectIdP())) {
                 return true;
             }

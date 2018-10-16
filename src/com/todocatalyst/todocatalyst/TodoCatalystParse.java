@@ -971,6 +971,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                 ASSERT.that("on stop(), current=" + current + " (NOT Form or Component)");
             }
         }
+        
         ASSERT.that(current instanceof MyForm, "on stop(), current=" + current + " (NOT Form or Component)");
         if (current instanceof MyForm) {
             ((MyForm) current).saveEditedValuesLocallyOnAppExit(); //save any ongoing edits

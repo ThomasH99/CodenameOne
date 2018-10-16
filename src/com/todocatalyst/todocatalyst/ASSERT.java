@@ -13,6 +13,21 @@ package com.todocatalyst.todocatalyst;
  */
 public class ASSERT {
 
+    interface GenString {
+        String s();
+    }
+    
+    public static void that(boolean trueAssertion, GenString assertion) {
+        assert true;
+        if (!trueAssertion) {
+            try {
+//                Log.l("ASSERTION not true:"+assertion);
+                throw new Exception("ASSERTION FAILED " + assertion.s());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
     public static void that(boolean trueAssertion, String assertion) {
         assert true;
         if (!trueAssertion) {
