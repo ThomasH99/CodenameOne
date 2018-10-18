@@ -11,6 +11,8 @@ import com.codename1.io.CacheMap;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.Display;
+import com.codename1.ui.Form;
 import com.codename1.ui.util.UITimer;
 import com.codename1.util.EasyThread;
 import com.parse4cn1.ParseBatch;
@@ -120,7 +122,7 @@ public class DAO {
         } else {
             cache.put(parseObject.getObjectIdP(), parseObject); //will override any previously put object with same ojectId
         }
-        ASSERT.that(parseObject instanceof ParseObject, ()->"trying to store non-ParseObject in cache: parseObject=" + parseObject);
+        ASSERT.that(parseObject instanceof ParseObject, () -> "trying to store non-ParseObject in cache: parseObject=" + parseObject);
     }
 
 //    private void cacheList(List<ParseObject> list) {
@@ -268,10 +270,10 @@ public class DAO {
             if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
 //                ASSERT.that((list.get(i) != null) , "entry nb=" + i + " in list  with size" + size+", name="+(list instanceof ItemList ? ((ItemList) list).getText() : "") + " == null");
                 if (Config.TEST) {
-                    int i2=i;
-                    int size2=size;
-                    ASSERT.that((list.get(i) != null), ()->"entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == null");
-                    ASSERT.that((list.get(i) != JSONObject.NULL), ()->"entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
+                    int i2 = i;
+                    int size2 = size;
+                    ASSERT.that((list.get(i) != null), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == null");
+                    ASSERT.that((list.get(i) != JSONObject.NULL), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
                 }
 //                ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " == JSONObject.NULL");
                 list.remove(i); //UI: clean up elements that don't exist anymore
@@ -373,7 +375,7 @@ public class DAO {
      * @return null if object does not (or no longer) exist on server
      */
     public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObject) {
-        if (parseObject == null || parseObject.getObjectIdP() == null) {
+        if (parseObject == null || parseObject.getObjectIdP() == null || parseObject.getObjectIdP().equals("")) {
             return null;
         }
         ParseObject temp;
@@ -845,8 +847,8 @@ public class DAO {
             results = query.find();
             //if no categoryList already saved, initialize it with existing categories
             if (results.size() > 0) {
-                int size=results.size();
-                ASSERT.that(results.size() <= 1, ()->"error: more than one CategoryList element (" + size + ")"); //TODO create error log for this 
+                int size = results.size();
+                ASSERT.that(results.size() <= 1, () -> "error: more than one CategoryList element (" + size + ")"); //TODO create error log for this 
                 categoryList = results.get(0); //return first element
 //                fetchAllElementsInSublist(categoryList); //NOT necessary since categoryList.getList() will fetch the items
             } else { //if (results.size() == 0) {
@@ -958,26 +960,6 @@ public class DAO {
         return getTemplateList(true) != null;
     }
 
-    public List<Category> getAllCategoriesFromParse() {
-        return getAllCategoriesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
-    }
-
-    public List<Category> getAllCategoriesFromParse(Date reloadUpdateAfterThisDate, Date reloadUpdateBeforeOrOnThisDate) {
-        List<Category> results = null;
-        ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
-        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThisDate);
-        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, reloadUpdateBeforeOrOnThisDate);
-        try {
-            results = query.find();
-            cacheList(results);
-//            fetchAllElementsInSublist(results); //replace with cached classes
-            return results;
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        return null;
-    }
-
 //    private final static String ALL_TEMPLATES_KEY = "ALL_TEMPLATES_KEY";
     public TemplateList getTemplateList() {
         return getTemplateList(false);
@@ -1002,8 +984,8 @@ public class DAO {
             results = query.find();
             if (results.size() > 0) {
 //                            assert results.size() <= 1 : "error: more than one CategoryList element (" + results.size() + ")"; //TODO create error log for this 
-int s = results.size();
-                ASSERT.that(results.size() <= 1, ()->"error: more than one TemplateList element (" + s + ")"); //TODO create error log for this 
+                int s = results.size();
+                ASSERT.that(results.size() <= 1, () -> "error: more than one TemplateList element (" + s + ")"); //TODO create error log for this 
                 templateList = results.get(0); //return first element
 //                cache.put(templateList.getObjectId(), templateList); //TODO not really needed?
 //                cache.put(TemplateList.CLASS_NAME, templateList);
@@ -1623,25 +1605,6 @@ int s = results.size();
 //        return (List<Category>) getAll(Category.CLASS_NAME);
     }
 
-    public List<ItemList> getAllItemListsFromParse() {
-        return getAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
-    }
-
-    public List<ItemList> getAllItemListsFromParse(Date reloadAfterThisDate, Date reloadUpToAndIncludingThisDate) {
-//        List<ItemList> results = null;
-        ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
-        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadAfterThisDate);
-        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, reloadUpToAndIncludingThisDate);
-        try {
-            List<ItemList> results = query.find();
-            cacheList(results);
-            return results;
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        return null;
-    }
-
     public List<RepeatRuleParseObject> getAllRepeatRulesFromParse() {
 //        List<ItemList> results = null;
         ParseQuery<RepeatRuleParseObject> query = ParseQuery.getQuery(RepeatRuleParseObject.CLASS_NAME);
@@ -2168,7 +2131,7 @@ int s = results.size();
 //                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
 //                if (workSlot != null) {
 //</editor-fold>
-                    ASSERT.that(workSlot != null, ()->"WorkSlot in cache for key=\"" + key + "\" is null. Key type="
+                    ASSERT.that(workSlot != null, () -> "WorkSlot in cache for key=\"" + key + "\" is null. Key type="
                             + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
                     Object owner = workSlot.getOwner();
                     //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
@@ -3887,8 +3850,6 @@ int s = results.size();
 
     private List<Item> getAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
-        boolean result = false;
-        int loadCount = 0;
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
@@ -3904,22 +3865,41 @@ int s = results.size();
         //do this update AFTER having cached all items to be able to update all subtask and ownerItem references to the cached instances
         return results;
     }
-    
+
     private boolean cacheAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
-        boolean result = false;
-        int loadCount = 0;
         List<Item> results = getAllItemsFromParse(reloadUpdateAfterThis, now);
-            cacheList(results);
-            result = !results.isEmpty();
-        return result;
+        cacheList(results);
+        return !results.isEmpty();
     }
 
     private boolean cacheAllWorkSLotsFromParse() {
         return cacheAllWorkSlotsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
+    private List<WorkSlot> getAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+        query.whereGreaterThan(Item.PARSE_UPDATED_AT, afterDate);
+        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, beforeDate);
+        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
+        List<WorkSlot> results = null;
+        try {
+            results = query.find();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return results;
+    }
+
     private boolean cacheAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        List<WorkSlot> results = getAllWorkSlotsFromParse(afterDate, beforeDate);
+        cacheList(results);
+        return !results.isEmpty();
+    }
+
+    private boolean cacheAllWorkSlotsFromParseXXX(Date afterDate, Date beforeDate) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         boolean result = false;
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
@@ -3957,7 +3937,29 @@ int s = results.size();
         cacheAllRepeatRulesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
+    private List<RepeatRuleParseObject> getAllRepeatRulesFromParse(Date reloadUpdateAfterThis, Date now) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        ParseQuery<RepeatRuleParseObject> query = ParseQuery.getQuery(RepeatRuleParseObject.CLASS_NAME);
+        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
+        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
+        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
+        List<RepeatRuleParseObject> results = null;
+        try {
+            results = query.find();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return results;
+    }
+
     private boolean cacheAllRepeatRulesFromParse(Date reloadUpdateAfterThis, Date now) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        List<RepeatRuleParseObject> results = getAllRepeatRulesFromParse(reloadUpdateAfterThis, now);
+        cacheList(results);
+        return !results.isEmpty();
+    }
+
+    private boolean cacheAllRepeatRulesFromParseXXX(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         boolean result = false;
         ParseQuery<RepeatRuleParseObject> query = ParseQuery.getQuery(RepeatRuleParseObject.CLASS_NAME);
@@ -3991,7 +3993,29 @@ int s = results.size();
         return cacheAllFilterSortDefsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
+    private List<FilterSortDef> getAllFilterSortDefsFromParse(Date reloadUpdateAfterThis, Date now) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        ParseQuery<FilterSortDef> query = ParseQuery.getQuery(FilterSortDef.CLASS_NAME);
+        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
+        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
+        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
+        List<FilterSortDef> results = null;
+        try {
+            results = query.find();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return results;
+    }
+
     private boolean cacheAllFilterSortDefsFromParse(Date reloadUpdateAfterThis, Date now) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        List<FilterSortDef> results = getAllFilterSortDefsFromParse(reloadUpdateAfterThis, now);
+        cacheList(results);
+        return !results.isEmpty();
+    }
+
+    private boolean cacheAllFilterSortDefsFromParseXXX(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         boolean result = false;
         ParseQuery<FilterSortDef> query = ParseQuery.getQuery(FilterSortDef.CLASS_NAME);
@@ -4019,29 +4043,73 @@ int s = results.size();
         return result;
     }
 
-    /**
-     * replace all items in cateogry by their cached instances
-     *
-     * @param cat
-     */
-//    private void cacheItemListOrCategoryXXX(ItemList cat) {
-//        List<Item> catItems = cat.getList();
-//        Item temp;
-////            for (Item subtask:subtasks) {
-//        for (int i = 0, size = catItems.size(); i < size; i++) {
-//            Item subtask = catItems.get(i);
-//            if (!subtask.isDataAvailable() && (temp = (Item) cache.get(subtask.getObjectIdP())) != null) {
-//                catItems.set(i, temp); //replace unloaded item with buffered instance
-//            }
-//        }
-////        if (item.getOwner() instanceof Item && (temp=(Item)cache.get(item.getOwner()))!=null)
-////            item.setOwner((Item)temp);
-//    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//     * replace all items in cateogry by their cached instances
+//     *
+//     * @param cat
+//     */
+////    private void cacheItemListOrCategoryXXX(ItemList cat) {
+////        List<Item> catItems = cat.getList();
+////        Item temp;
+//////            for (Item subtask:subtasks) {
+////        for (int i = 0, size = catItems.size(); i < size; i++) {
+////            Item subtask = catItems.get(i);
+////            if (!subtask.isDataAvailable() && (temp = (Item) cache.get(subtask.getObjectIdP())) != null) {
+////                catItems.set(i, temp); //replace unloaded item with buffered instance
+////            }
+////        }
+//////        if (item.getOwner() instanceof Item && (temp=(Item)cache.get(item.getOwner()))!=null)
+//////            item.setOwner((Item)temp);
+////    }
+//</editor-fold>
     private boolean cacheAllCategoriesFromParse() {
         return cacheAllCategoriesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
+    public List<Category> getAllCategoriesFromParse() {
+        return getAllCategoriesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
+    }
+
+    public List<Category> getAllCategoriesFromParseXXX(Date reloadUpdateAfterThisDate, Date reloadUpdateBeforeOrOnThisDate) {
+        List<Category> results = null;
+        ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
+        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThisDate);
+        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, reloadUpdateBeforeOrOnThisDate);
+        try {
+            results = query.find();
+            cacheList(results);
+//            fetchAllElementsInSublist(results); //replace with cached classes
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;
+    }
+
+    public List<Category> getAllCategoriesFromParse(Date reloadUpdateAfterThis, Date reloadUpdateBeforeOrOnThisDate) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
+        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
+        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, reloadUpdateBeforeOrOnThisDate);
+        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
+        List<Category> results = null;
+        try {
+            results = query.find();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return results;
+    }
+
     private boolean cacheAllCategoriesFromParse(Date reloadUpdateAfterThis, Date now) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        List<Category> results = getAllCategoriesFromParse(reloadUpdateAfterThis, now);
+        cacheList(results);
+        return !results.isEmpty();
+    }
+
+    private boolean cacheAllCategoriesFromParseXXX(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         boolean result = false;
         ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
@@ -4070,7 +4138,47 @@ int s = results.size();
         return cacheAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
+    public List<ItemList> getAllItemListsFromParse() {
+        return getAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
+    }
+
+    public List<ItemList> getAllItemListsFromParseXXX(Date reloadAfterThisDate, Date reloadUpToAndIncludingThisDate) {
+//        List<ItemList> results = null;
+        ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
+        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadAfterThisDate);
+        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, reloadUpToAndIncludingThisDate);
+        try {
+            List<ItemList> results = query.find();
+            cacheList(results);
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;
+    }
+
+    public List<ItemList> getAllItemListsFromParse(Date reloadUpdateAfterThis, Date reloadUpToAndIncludingThisDate) {
+        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+        ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
+        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
+        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, reloadUpToAndIncludingThisDate);
+        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
+        List<ItemList> results = null;
+        try {
+            results = query.find();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return results;
+    }
+
     private boolean cacheAllItemListsFromParse(Date reloadUpdateAfterThis, Date now) {
+        List<ItemList> results = getAllItemListsFromParse(reloadUpdateAfterThis, now);
+        cacheList(results);
+        return !results.isEmpty();
+    }
+
+    private boolean cacheAllItemListsFromParseXXX(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         boolean result = false;
         ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
@@ -4555,6 +4663,63 @@ int s = results.size();
                 }
                 Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
             }
+            return cacheAllData(lastCacheRefreshDate, now);
+        }
+        return false;
+    }
+
+    public boolean cacheLoadDataChangedOnServerInBackground(boolean loadChangedDataFromParseServer) {
+        //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
+//        initAndConfigureCache(); //now done in DAO constructor
+////\        loadCacheToMemory(); //first load 
+        cache.loadCacheToMemory(); //first load 
+        if (loadChangedDataFromParseServer) {
+            Date now = new Date(); //UI: only cache data that was already changed when update was launched
+            Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
+            if (MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active
+                //get date when local cache was last updated
+                if (Storage.getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH)) {
+                    lastCacheRefreshDate = (Date) Storage.getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH); //read in when initializing the Timer - from here on it is only about saving updates
+                }
+                Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
+            }
+
+            Log.p("Caching Items");
+            List<Item> items = getAllItemsFromParse(lastCacheRefreshDate, now);
+            Log.p("Caching Categories");
+            List<Category> categories = getAllCategoriesFromParse(lastCacheRefreshDate, now);
+            Log.p("Caching ItemLists");
+            List<ItemList> itemLists = getAllItemListsFromParse(lastCacheRefreshDate, now);
+            Log.p("Caching WorkSlots");
+            List<WorkSlot> workSlots = getAllWorkSlotsFromParse(lastCacheRefreshDate, now);
+            Log.p("Caching Filters");
+            List<FilterSortDef> filters = getAllFilterSortDefsFromParse(lastCacheRefreshDate, now);
+            Log.p("Caching RepeatRules");
+            List<RepeatRuleParseObject> repeatRules = getAllRepeatRulesFromParse(lastCacheRefreshDate, now);
+            Log.p("Caching CategoryList");
+            CategoryList categoryList = getCategoryList(true); //will cache the list of Categories
+            Log.p("Caching ItemListList");
+            ItemListList itemListList = getItemListList(true); //will cache the list of ItemLists
+            Log.p("Caching TemplateList");
+            TemplateList templateList = getTemplateList(true); //will cache the list of Templates
+            Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
+
+            Display.getInstance().callSerially(() -> {
+                cacheList(items);
+                cacheList(categories);
+                cacheList(itemLists);
+                cacheList(workSlots);
+                cacheList(filters);
+                cacheList(repeatRules);
+                cacheList(categoryList);
+                cacheList(itemListList);
+                cacheList(templateList);
+                Form f = Display.getInstance().getCurrent();
+                if (f instanceof MyForm) {
+                    ((MyForm) f).refreshAfterEdit(); //update with new values //TODO!!! show a spinner or sth: "Updating with new data"
+                }
+            });
+
             return cacheAllData(lastCacheRefreshDate, now);
         }
         return false;

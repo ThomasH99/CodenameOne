@@ -35,6 +35,7 @@ import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
+import com.codename1.ui.util.UITimer;
 import com.parse4cn1.ParseObject;
 import java.util.Date;
 import java.util.HashMap;
@@ -207,6 +208,8 @@ public class MyForm extends Form {
         });
     }
 
+    private UITimer doubleTapTitleTimer;
+
     MyForm(String title, MyForm previousForm, UpdateField updateActionOnDone) { //throws ParseException, IOException {
         super(title);
         setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
@@ -221,15 +224,57 @@ public class MyForm extends Form {
 //        setToolbar(new Toolbar());
         getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
         setTitle(title); //do again since super(title)
+        setScrollVisible(true); //show scroll bar(?)
 //        if (getToolbar().getTitleComponent() instanceof Label) {
 //            ((Label) getToolbar().getTitleComponent()).setAutoSizeMode(true); //ensure title is centered even when icons are added
 //        }//        getTitleComponent().setAutoSizeMode(true); //DOESN'T work with toolbar
+        getToolbar().setTitleComponent(new Label(getTitle()) {
+            public void pointerReleased(int x, int y) {
+                super.pointerReleased(x, y);
+                if (doubleTapTitleTimer == null) {
+                    doubleTapTitleTimer = UITimer.timer(50, false, getComponentForm(), () -> {
+                        // singleTapEvent();
+                        //scroll list to top
+                        ContainerScrollY cont = findScrollableContYChild(getComponentForm());
+                        if (cont != null) {
+                            Component lastComp = cont.getComponentAt(0); //scroll list to bottom
+                            if (lastComp != null) {
+                                cont.scrollComponentToVisible(lastComp);
+                            }
+                        }
+                        doubleTapTitleTimer = null;
+                    });
+                } else {
+                    doubleTapTitleTimer.cancel();
+                    doubleTapTitleTimer = null;
+                    //doubleTapEvent(); 
+                    //scroll list to bottom
+                    Form f = getComponentForm();
+                    if (f != null) {
+                        ContainerScrollY cont = findScrollableContYChild(getComponentForm());
+                        if (cont != null) {
+                            int idx = cont.getComponentCount() - 1;
+                            if (idx >= 0) {
+                                Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
+                                if (lastComp != null) {
+                                    cont.scrollComponentToVisible(lastComp);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
+
+        getToolbar().setScrollOffUponContentPane(true);
+
         if (false) {
             setAutoSizeMode(true); //ensure title is centered even when icons are added
         }
         this.previousForm = previousForm;
         this.updateActionOnDone = updateActionOnDone;
-        ASSERT.that(updateActionOnDone != null, ()->"doneAction should always be defined, Form=" + this);
+        ASSERT.that(updateActionOnDone != null, () -> "doneAction should always be defined, Form=" + this);
         parseIdMapReset();
 //        form = new Form();
 //        form = this;
@@ -238,6 +283,7 @@ public class MyForm extends Form {
 //        setTactileTouch(true); //enables opening contextmenu on touching a list element??
         setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
         setLayout(new BorderLayout()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
+//        setLayout(BoxLayout.y()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
         if (false) {
             setLayout(BoxLayout.y());
             setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
@@ -3017,6 +3063,52 @@ public class MyForm extends Form {
     public void animateHierarchy(final int duration) {
         Log.p("*******animateHierarchy(" + duration + ") - expensive call");
         super.animateHierarchy(duration);
+    }
+
+    /**
+     * copied from Form (where it is **private)
+     *
+     * @param c
+     * @return
+     */
+    static Component findScrollableChild(Container c) {
+        if (c.isScrollableY()) {
+            return c;
+        }
+        int count = c.getComponentCount();
+        for (int iter = 0; iter < count; iter++) {
+            Component comp = c.getComponentAt(iter);
+            if (comp.isScrollableY()) {
+                return comp;
+            }
+            if (comp instanceof Container) {
+                Component chld = findScrollableChild((Container) comp);
+                if (chld != null) {
+                    return chld;
+                }
+            }
+        }
+        return null;
+    }
+
+    static ContainerScrollY findScrollableContYChild(Container c) {
+        if (c instanceof ContainerScrollY) {
+            return (ContainerScrollY) c;
+        }
+        int count = c.getComponentCount();
+        for (int iter = 0; iter < count; iter++) {
+            Component comp = c.getComponentAt(iter);
+            if (comp instanceof ContainerScrollY) {
+                return (ContainerScrollY) comp;
+            }
+            if (comp instanceof Container) {
+                Component chld = findScrollableChild((Container) comp);
+                if (chld instanceof ContainerScrollY) {
+                    return (ContainerScrollY) chld;
+                }
+            }
+        }
+        return null;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -34,7 +34,7 @@ public class MyButtonInitiateDragAndDrop extends WrapButton {
 //        getTextComponent().setVerticalAlignment(TextArea.CENTER); //https://stackoverflow.com/questions/36674632/multiple-line-textarea-alignment-in-table-layout-codenameone: can't position text area center
 //        getTextComponent().setActAsLabel(true);
 //        setUIID("LabelField");
-        setUIID("ListOfItemsText");
+        setUIID("ListOfItemsTextCont");
         setTextUIID("ListOfItemsText");
         setAutoRelease(true); //"A bit of "black magic" to avoid that swipe triggers the button http://stackoverflow.com/questions/39558166/how-to-avoid-that-swiping-a-swipeablecontainer-also-creates-an-event-in-the-top
 //        actualButton.setAutoRelease(true); //"A bit of "black magic" to avoid that swipe triggers the button http://stackoverflow.com/questions/39558166/how-to-avoid-that-swiping-a-swipeablecontainer-also-creates-an-event-in-the-top

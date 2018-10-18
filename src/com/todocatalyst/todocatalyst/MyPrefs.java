@@ -268,7 +268,7 @@ public class MyPrefs {
             = new PrefEntry("**", "cacheLocalStorageSizeWorkSlots", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
     static PrefEntry cacheMaxNumberParseObjectsToFetchInQueries
-            = new PrefEntry("**", "cacheMaxNumberParseObjectsToFetchInQueries", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
+            = new PrefEntry("**", "cacheMaxNumberParseObjectsToFetchInQueries", 100000, "deactivated if 0** need to implement Externalizable before this will work!!");
 
     static PrefEntry cacheLoadChangedElementsOnAppStart
             = new PrefEntry("cacheLoadChangedElementsOnAppStart (INTERNAL)", "cacheLoadChangedElementsOnAppStart", true, "used to speed up app start during testing - NOT END USER");
@@ -328,7 +328,7 @@ public class MyPrefs {
 
     //GLOBAL
     //localization
-    static PrefEntry localeUserSelected = new PrefEntry("Language for text", "localeUserSelected", "fr", "Determines the language used. Use this setting to override the default language used on your device");
+    static PrefEntry localeUserSelected = new PrefEntry("Language for text", "localeUserSelected", "en", "Determines the language used. Use this setting to override the default language used on your device");
 
     static PrefEntry pickerMinuteStep = new PrefEntry("Picker minute steps", "pickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
 

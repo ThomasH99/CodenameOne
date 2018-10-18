@@ -179,32 +179,6 @@ class KeepInSameScreenPosition {
         }
     }
 
-    /**
-     * copied from Form (where it is **private)
-     *
-     * @param c
-     * @return
-     */
-    Component findScrollableChild(Container c) {
-        if (c.isScrollableY()) {
-            return c;
-        }
-        int count = c.getComponentCount();
-        for (int iter = 0; iter < count; iter++) {
-            Component comp = c.getComponentAt(iter);
-            if (comp.isScrollableY()) {
-                return comp;
-            }
-            if (comp instanceof Container) {
-                Component chld = findScrollableChild((Container) comp);
-                if (chld != null) {
-                    return chld;
-                }
-            }
-        }
-        return null;
-    }
-
     public String toString() {
         return (itemOrg != null && itemOrg instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) itemOrg).getText() : "itemOrg=null")
                 + " rel:" + relScroll + " scrollY:" + scrollY;
@@ -304,10 +278,23 @@ class KeepInSameScreenPosition {
 //        void setNewScrollYPosition(Container newScrollYContainer, Component newComponent) {
 //</editor-fold>
     /**
-     * try to find the scrollable container (from the top of the hierarchy)
+     * try to find the scrollable container (first trying below newComponent, if none found, trying from the current Form )
      *
      * @return the found scrollableContainer or null if none found
      */
+    private static Component findScrollableContainerBelowNXXX(Component newComponent) {
+        if (newComponent != null) { //if we found the new component
+            return MyForm.findScrollableChild(newComponent.getComponentForm().getContentPane());
+        } else { //otherwise we'll simply get the form
+            Form f = Display.getInstance().getCurrent();
+            if (f != null) {
+                return MyForm.findScrollableChild(f);
+            } else {
+                return null;
+            }
+        }
+    }
+
     private Component findScrollableContainerN() {
         if (Config.TEST) {
 //            Form currentForm = Display.getInstance().getCurrent();
@@ -320,14 +307,14 @@ class KeepInSameScreenPosition {
 //                }
 //            }
         if (newComponent != null) { //if we found the new component
-            return findScrollableChild(newComponent.getComponentForm().getContentPane());
+            return MyForm.findScrollableChild(newComponent.getComponentForm().getContentPane());
         } else if (someComponent != null) { //else lets use some other component from the form
-            return findScrollableChild(someComponent.getComponentForm().getContentPane());
+            return MyForm.findScrollableChild(someComponent.getComponentForm().getContentPane());
         } else { //otherwise we'll simply get the form
 //                return findScrollableChild(Display.getInstance().getCurrent().getContentPane());
             Form f = Display.getInstance().getCurrent();
             if (f != null) {
-                return findScrollableChild(f);
+                return MyForm.findScrollableChild(f);
             } else {
                 return null;
             }

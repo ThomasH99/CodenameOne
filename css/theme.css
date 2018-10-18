@@ -1,6 +1,35 @@
 #Constants {
     includeNativeBool: true; 
 }
+
+Label {
+    /*border: 1pt solid gray;*/
+    padding: 1mm;
+    margin: 1mm;
+    text-align: left;
+    color: black;
+    background-color: transparent;
+}
+
+Button {
+    /*border: 1pt solid gray;*/
+    text-align: center;
+    color: dodgerblue;
+    background-color: transparent;
+}
+
+Button.pressed {
+    background-color: gray;
+}
+
+
+MyButton {
+    cn1-derive: Button;
+    background-color: blue;
+}
+
+/*************** EDIT ITEM ***********/
+
 LabelField {
     cn1-derive: Label;
     font-family :  "native:MainLight";
@@ -31,19 +60,22 @@ LabelValue {
     cn1-derive: Label;
     color: blue;
 }
-
-ExpandedList {
+Text {
     cn1-derive: Label;
-    padding:0;
-    margin-left: 2mm;
-    color: lightgray;
-    border: 1px solid gray; /*cn1-pill-border */
-    /*border-radius: 0mm;*/
+        padding: 1mm;
+    margin: 1mm;
+    text-decoration: underline;
+border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    color: black;
+   font-size: 100%;
+    text-align: left;
 }
 
 /*************** list of items **************/
 
-ListOfItemsText {
+ListOfItemsTextCont { /*style for task container (WrapButton) in lists*/
+}
+ListOfItemsText { /*style for task text in lists*/
     cn1-derive: Label;
     font-family :  "native:MainLight";
     font-size: 100%;
@@ -54,6 +86,11 @@ ListOfItemsText {
     padding:0 0.5mm; /*top+bottom right+left*/
     /*padding-left:0.5mm;
     padding-right:0.5mm;*/
+}
+ListOfItemsTextDone { /*style for DONE task text in lists*/
+    cn1-derive: ListOfItemsText;
+    color:grey;
+        text-decoration: line-through;
 }
 
 ItemListSmall {
@@ -88,6 +125,15 @@ ListOfItemsDueDate {
     cn1-derive: ItemListSmall;
     text-align: center;
     color:grey;
+    /*background-color: #3399ff;
+    /*foreground-color: #268b04;*/
+}
+
+ListOfItemsDueDateInherited {
+    cn1-derive: ListOfItemsDueDate;
+   /* text-align: center;*/
+    color: red;
+     text-decoration: underline;
     /*background-color: #3399ff;
     /*foreground-color: #268b04;*/
 }
@@ -131,7 +177,6 @@ ListOfItemsShowSubtasks { /*expand subtasks*/
     color:white;
     /*border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     border-radius: 8px;
-
 }
 
 MyCheckBox {
@@ -140,14 +185,52 @@ MyCheckBox {
     margin: 0;
     padding: 0;
     text-align: left;
-   color: brown;
+    color: brown;
 }
 
-ItemContainer { /*wraps item in ScreenListOfItems*/
-    /*cn1-derive: MyCheckBox;*/
-    padding: 0mm;
-    margin: 0;
+ExpandedList {
+    cn1-derive: Label;
+    padding:0;
+    margin: 0 0 0 4mm;
+    color: lightgray;
+    border: 1px solid gray; /*cn1-pill-border */
+    box-shadow: 12px 12px 12px 12px activeborder inset;
+    /*border-radius: 0mm;*/
 }
+
+MyDragAndDropSwipeableContainer {
+    /*cn1-derive: Label;*/
+    padding:0;
+    margin: 0;
+    color: white;
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
+
+
+ContainerListElement {
+    /*wraps item in ScreenListOfItems*/
+    /*cn1-derive: Label;*/
+    padding:0;
+    margin: 0;
+    /*background-color: whitesmoke;
+    box-shadow: 12px 12px 12px 12px activeborder inset;
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
+ItemContainer {
+    /*wraps item in ScreenListOfItems*/
+    /*cn1-derive: Label;*/
+    padding:0;
+    margin: 0;
+    background-color: whitesmoke;
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
+
 
 ListOfItemsMyCheckBox {
     cn1-derive: MyCheckBox;
@@ -306,20 +389,23 @@ ButtonGroupOnly {
     color: violet;
 }
 
-Button {
+/******* TIMER ****************/
+
+TimerTimer {
+    /*font-family :  "native:MainBold";*/
+        font-family :  "System-Monospace";
+ 
+    font-size: 200%;
+    border: 1mm solid gray;
+    background: blue;
     text-align: center;
-    border: 1pt solid gray;
-    background-color: transparent;
+    color:white;
 }
 
-Button.pressed {
-    background-color: gray;
-}
+/******* TIMER ****************/
 
-
-MyButton {
-    cn1-derive: Button;
-    background-color: blue;
+ManualSorting {
+    color: violet;
 }
 
 /*

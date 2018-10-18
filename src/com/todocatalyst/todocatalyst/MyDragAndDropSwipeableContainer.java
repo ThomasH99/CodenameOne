@@ -10,6 +10,7 @@ import com.codename1.ui.AnimationManager;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
+import com.codename1.ui.Font;
 import com.codename1.ui.Form;
 import com.codename1.ui.Graphics;
 import com.codename1.ui.Image;
@@ -1339,7 +1340,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
         //NB!!! dragOverListener is called on the **DRAGGED** object (not the dropTarget as I originally assumed)
-        addDragOverListener((ActionEvent e) -> {
+        addDragOverListener((e) -> {
 //            Component drag = e.getDraggedComponent();
             Component drag = (Component) e.getSource();
             Component dropTarget = e.getDropTarget(); //may be null (in Component.dragFinishedImpl(int x, int y))
@@ -2406,8 +2407,8 @@ T3
 //</editor-fold>
                 newDropPlaceholder.setUIID("DropTargetPlaceholder");
                 newDropPlaceholder.setDropTarget(true);
-                newDropPlaceholder.setText("DropPlaceholder for (" + dropTarget.getName() + ")");
-                if (Config.TEST) {
+                if (false)newDropPlaceholder.setText("DropPlaceholder for (" + dropTarget.getName() + ")");
+                if (false && Config.TEST) {
                     newDropPlaceholder.setName("DropPlaceholder for " + dropTarget.getName() + ", w=" + newDropPlaceholder.getWidth() + ", h=" + newDropPlaceholder.getHeight());
                 }
 

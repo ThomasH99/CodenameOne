@@ -1505,8 +1505,7 @@ public class ScreenListOfItems extends MyForm {
         Container southDetailsContainer = new Container(new FlowLayout());
         southDetailsContainer.setUIID("ItemDetails");
 //        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.expandedObjects != null && myForm.expandedObjects.contains(item)); //hide details by default
-        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.showDetails !=   null && myForm.showDetails.contains(item)
-        ); //hide details by default
+        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.showDetails != null && myForm.showDetails.contains(item)); //hide details by default
 //        south.setHidden(!showDetailsForAllTasks || (tasksWithDetailsShown!=null && !tasksWithDetailsShown.contains(item))); //hide details by default
         southDetailsContainer.setHidden(!showDetails); //hide details by default
         if (oldFormat) {
@@ -1607,6 +1606,7 @@ public class ScreenListOfItems extends MyForm {
                     }
                     return enabled;
                 }); //D&D
+        itemLabel.setTextUIID(item.isDone() ? "ListOfItemsTextDone" : "ListOfItemsText");
 
         ActionListener showDetailsListener = (e) -> {
             //if showDetails is already true, run the listener immediately
@@ -1743,6 +1743,7 @@ public class ScreenListOfItems extends MyForm {
         //STARRED
         final Button starButton = new Button(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
         final Button starredSwipeableButton = new Button(null, item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
+
         final Button setDueDateToToday = new Button(null, Icons.iconSetDueDateToToday());
 
         starButton.setHidden(!item.isStarred() || isDone); //UI: hide star if task is done
@@ -1800,6 +1801,10 @@ public class ScreenListOfItems extends MyForm {
                 if (due != 0) {
                     dueDateLabel = new Label("D:" + MyDate.formatDateSmart(new Date(due)),
                             due < System.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
+                    if (item.isDueDateInherited()) {
+                        dueDateLabel.setUIID("ListOfItemsDueDateInherited");
+                    }
+
                     if (oldFormat) {
                         east.add(dueDateLabel);
                     }
@@ -1841,7 +1846,7 @@ public class ScreenListOfItems extends MyForm {
             }
         };
 
-        final  Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
+        final Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
 
         Command editItemCmd = MyReplayCommand.create("EditItem-" + item.getObjectIdP(), "", editItemIcon, (e) -> {
             //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
@@ -1932,7 +1937,7 @@ public class ScreenListOfItems extends MyForm {
             southDetailsContainer.add("F:" + MyDate.formatDateTimeNew(new Date(finishTime)));
         }
         //PRIORITY
-        Label priorityLabel= new Label();
+        Label priorityLabel = new Label();
         if (item.getPriority() != 0) {
             priorityLabel.setText("P" + item.getPriority());
             if (false && showInDetails) {
@@ -1982,9 +1987,9 @@ public class ScreenListOfItems extends MyForm {
 //        }
 
         //ALARM SET icon
-                       Style s = UIManager.getInstance().getComponentStyle("ListOfItems");
-                  final  Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, s);
-   
+        Style s = UIManager.getInstance().getComponentStyle("ListOfItems");
+        final Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, s);
+
         Label alarmLabel = null;
         if (item.getAlarmDate() != 0) {
 //            south.addComponent(new Label((Image) (item.getAlarmDate() != 0 ? Icons.get().iconAlarmSetLabelStyle : null)));
@@ -2066,10 +2071,10 @@ public class ScreenListOfItems extends MyForm {
                 .add(CN.EAST, editItemButton)
                 .add(CENTER,
                         itemContent.add(CENTER, BorderLayout.west(itemLabel)) //item text + expand subtasks
-                                .add(CN.SOUTH, 
+                                .add(CN.SOUTH,
                                         bottomContent
-//                                                .add(WEST, BorderLayout.centerEastWest(null, null, BoxLayout.encloseX(prioCont, dateCont,effortCont) ))
-                                                .add(CN.WEST,  BoxLayout.encloseX(prioCont, dateCont,effortCont) )
+                                                //                                                .add(WEST, BorderLayout.centerEastWest(null, null, BoxLayout.encloseX(prioCont, dateCont,effortCont) ))
+                                                .add(CN.WEST, BoxLayout.encloseX(prioCont, dateCont, effortCont))
                                                 .add(CN.EAST, expandSubsCont)
                                                 .add(CN.SOUTH, southDetailsContainer)));
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3388,7 +3393,7 @@ refreshAfterEdit();
                     if (node instanceof Item) {
 //                    assert ((Item) node).isDataAvailable() : "Item \"" + node + "\" data not available";
                         if (false) {
-                            ASSERT.that(((Item) node).getObjectIdP() == null || ((Item) node).isDataAvailable(), ()->"Item \"" + node + "\" objId=(" + ((Item) node).getObjectIdP() + ") data not available");
+                            ASSERT.that(((Item) node).getObjectIdP() == null || ((Item) node).isDataAvailable(), () -> "Item \"" + node + "\" objId=(" + ((Item) node).getObjectIdP() + ") data not available");
                         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.refresh(),
