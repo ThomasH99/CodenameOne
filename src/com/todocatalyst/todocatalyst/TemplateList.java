@@ -27,16 +27,13 @@ public class TemplateList extends ItemList {
     final static String PARSE_ITEMLIST_LIST = "templateList";
     private static TemplateList INSTANCE = null;
 
-    public TemplateList() {
+    public  TemplateList() {
         super(CLASS_NAME);
     }
 
     static public TemplateList getInstance() {
         if (INSTANCE == null) {
             INSTANCE = DAO.getInstance().getTemplateList();
-//            if (INSTANCE == null) {
-//                INSTANCE = new CategoryList();
-//            }
         }
         return INSTANCE;
     }
@@ -65,6 +62,13 @@ public class TemplateList extends ItemList {
             remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
         }
     }
+    
+    public TemplateList resetInstance() {
+        TemplateList t= INSTANCE;
+        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
+        return t;
+    }
+    
     @Override
     public int getVersion() {
         return 0;

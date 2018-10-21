@@ -34,7 +34,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
 
 //    MyForm mainScreen;
     ScreenSettings(MyForm mainScreen) { // throws ParseException, IOException {
-        super(SCREEN_TITLE, null, () -> {
+        super(SCREEN_TITLE, mainScreen, () -> {
         });
     }
 
@@ -81,6 +81,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStartByDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectWaitingTillDate);
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
 //
 //        Button logoutButton = new Button(new Command("Log out") {
@@ -118,7 +119,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //            Button deleteAllData = new Button(new Command("DELETE data") {
 //                @Override
 //                public void actionPerformed(ActionEvent evt) {
-//                    //TODO add WARNING: this will delete xx tasks, yy lists, zz categories as well as work time, finished tasks etc. Do NOT use this unless you have a backup of your data or really want to erase all your data in Sharper 
+//                    //TODO add WARNING: this will delete xx tasks, yy lists, zz categories as well as work time, finished tasks etc. Do NOT use this unless you have a backup of your data or really want to erase all your data in Sharper
 //                    DAO.getInstance().deleteAllUserDataCannotBeUndone();
 //                }
 //            });
@@ -131,7 +132,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //                public void actionPerformed(ActionEvent evt) {
 //                    //clear cache
 //                    //delete user with user.delete() BUT data:
-////http://stackoverflow.com/questions/31351168/parse-com-delete-a-user-account-including-related-objects, 
+////http://stackoverflow.com/questions/31351168/parse-com-delete-a-user-account-including-related-objects,
 ////background task: http://stackoverflow.com/questions/28366161/parse-remove-user-and-its-related-records
 //                }
 //            });
@@ -152,6 +153,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //                }
 //            }
 //        });
+//</editor-fold>
         if (false) { //NO support for changing themes for now
             if (false) {
                 content.add(new SpanLabel(MyPrefs.themeNameWithoutBackslash.helpText));

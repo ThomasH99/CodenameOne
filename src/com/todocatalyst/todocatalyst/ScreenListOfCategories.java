@@ -63,7 +63,7 @@ public class ScreenListOfCategories extends MyForm {
 //                            DAO.getInstance().save(cat);
 //                        });
 //    }
-    ScreenListOfCategories(CategoryList categoryList, MyForm previousForm, GetItemList updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfCategories(CategoryList categoryList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super(title == null ? SCREEN_TITLE : title, previousForm, () -> updateItemListOnDone.update(categoryList));
         super(SCREEN_TITLE, previousForm, () -> updateItemListOnDone.update(categoryList));
 //        setUpdateItemListOnDone(updateItemListOnDone);

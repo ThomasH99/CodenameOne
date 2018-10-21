@@ -114,6 +114,9 @@ public class DAO {
         } else if (parseObject instanceof TemplateList) {
 //            cache.put(TemplateList.CLASS_NAME, parseObject.getObjectIdP());
             cache.put(TemplateList.CLASS_NAME, parseObject);
+        } else if (parseObject instanceof Inbox) {
+//            cache.put(TemplateList.CLASS_NAME, parseObject.getObjectIdP());
+            cache.put(Inbox.CLASS_NAME, parseObject);
         }
 
         //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
@@ -181,6 +184,8 @@ public class DAO {
                 cache.delete(ItemListList.CLASS_NAME);
             } else if (parseObject instanceof TemplateList) {
                 cache.delete(TemplateList.CLASS_NAME);
+            } else if (parseObject instanceof Inbox) {
+                cache.delete(Inbox.CLASS_NAME);
             }
         }
     }
@@ -456,6 +461,8 @@ public class DAO {
 //                        fetchAllElementsInSublist((ParseObject) list.get(i), recursively);
 //                    }
                 }
+            } else {
+                ASSERT.that(false, "tried to fetch sublist of elements from wrong type");
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (itemOrItemListOrCategoryOrList instanceof Item) {
@@ -826,6 +833,8 @@ public class DAO {
 //        ParseUser parseUser = ParseUser.getCurrent();
 //        if (parseUser != null) {
         ParseQuery<CategoryList> query = ParseQuery.getQuery(CategoryList.CLASS_NAME);
+//                query.selectKeys(new ArrayList()); //just get search result, no data (these are cached) //NOOO: gets an empty list
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            query.setLimit(1); //if ever there is more than one list, get only first one
 //            if (false) {
@@ -850,38 +859,26 @@ public class DAO {
                 int size = results.size();
                 ASSERT.that(results.size() <= 1, () -> "error: more than one CategoryList element (" + size + ")"); //TODO create error log for this 
                 categoryList = results.get(0); //return first element
-//                fetchAllElementsInSublist(categoryList); //NOT necessary since categoryList.getList() will fetch the items
+                if (false) {
+                    fetchListElementsIfNeededReturnCachedIfAvail(categoryList);
+                }
+//                fetchListElementsIfNeededReturnCachedIfAvail(categoryList); //NOT necessary since categoryList.getList() will fetch the items
             } else { //if (results.size() == 0) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    List<Category> categories = null;
-//                    ParseQuery<Category> query2 = ParseQuery.getQuery(Category.CLASS_NAME);
-//                    try {
-//                        categories = query2.find();
-//                    } catch (ParseException ex) {
-//                        Log.e(ex);
-//                    }
-//</editor-fold>
                 categoryList = new CategoryList();
-//                if (categories.size() > 0) {
-//                    categoryList.setList(categories);
-//                }
+                categoryList.addAll(getAllCategoriesFromParse()); //add any existing categories - only relevant if categoryList was added to app after creating - normally never needed
+                if (false) {
+                    fetchListElementsIfNeededReturnCachedIfAvail(categoryList);
+                }
+//                getInstance().save(categoryList); //always save so new lists can be assigned to it
                 getInstance().save(categoryList); //always save so new lists can be assigned to it
             }
-//            DAO.this.fetchAllElementsInSublist(categoryList);
-//            fetchListElementsIfNeededReturnCachedIfAvail(categoryList);
-//            cacheList(results);
-//            cache.put(categoryList.getObjectIdP(), categoryList); //may fetchFromCacheOnly by objectId via getOwner
-            cachePut(categoryList); //may fetchFromCacheOnly by objectId via getOwner
-//            cache.put(CategoryList.CLASS_NAME, categoryList);
         } catch (ParseException ex) {
             Log.e(ex);
         }
 //        }
-//        else {
-//            categoryList = null;
-//        }
+//ASSERT: categoryList should never become null
+        cachePut(categoryList); //may fetchFromCacheOnly by objectId via getOwner
         return categoryList;
-//        return (List<Category>) getAll(Category.CLASS_NAME);
     }
 
     public boolean cacheCategoryList(Date reloadUpdateAfterThis, Date now) {
@@ -973,36 +970,83 @@ public class DAO {
         }
         List<TemplateList> results = null;
         ParseQuery<TemplateList> query = ParseQuery.getQuery(TemplateList.CLASS_NAME);
-        if (false) {
-            query.include(TemplateList.PARSE_ITEMLIST_LIST); //NO - fetches an additional copy of the templates
-        }//        query.selectKeys(null); //just get search result, no data (these are cached)
-        if (false) {
-            query.selectKeys(new ArrayList()); //just get search result, no data (these are cached) //NOOO: gets an empty list
-        }
-        query.selectKeys(new ArrayList(Arrays.asList(TemplateList.PARSE_ITEMLIST_LIST))); //just get search result, no data (these are cached) //NOOO: gets an empty list
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            query.include(TemplateList.PARSE_ITEMLIST_LIST); //NO - fetches an additional copy of the templates
+//        }//        query.selectKeys(null); //just get search result, no data (these are cached)
+//        if (false) {
+//            query.selectKeys(new ArrayList()); //just get search result, no data (these are cached) //NOOO: gets an empty list
+//        }
+//        query.selectKeys(new ArrayList(Arrays.asList(TemplateList.PARSE_ITEMLIST_LIST))); //just get search result, no data (these are cached) //No need, no superflous data in this list
+//</editor-fold>
         try {
             results = query.find();
-            if (results.size() > 0) {
-//                            assert results.size() <= 1 : "error: more than one CategoryList element (" + results.size() + ")"; //TODO create error log for this 
-                int s = results.size();
-                ASSERT.that(results.size() <= 1, () -> "error: more than one TemplateList element (" + s + ")"); //TODO create error log for this 
+            int s = results.size();
+            if (s > 0) {
+                ASSERT.that(s <= 1, () -> "error: more than one TemplateList element (" + s + ")"); //TODO create error log for this 
                 templateList = results.get(0); //return first element
+//                if (false) fetchListElementsIfNeededReturnCachedIfAvail(templateList); //replace references to templates with instances from cache //NOT needed since first getList() will do this //optimization?!
 //                cache.put(templateList.getObjectId(), templateList); //TODO not really needed?
 //                cache.put(TemplateList.CLASS_NAME, templateList);
 //                return templateList; //return first element
-            } else { //if (results.size() == 0) {
+            } else { //if (results.size() == 0) 
                 templateList = new TemplateList();
                 templateList.addAll(getAllTemplatesByQuery());
-                getInstance().save(templateList); //always save so new lists can be assigned to it
+//                if (false) fetchListElementsIfNeededReturnCachedIfAvail(templateList);
+                getInstance().save(templateList); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
+//                cachePut(templateList); //cache list 
+//                return templateList;
             }
 //            cache.put(templateList.getObjectIdP(), templateList);
 //            cache.put(TemplateList.CLASS_NAME, templateList);
-            cachePut(templateList);
-            return templateList;
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return new TemplateList();
+//        return TemplateList.getInstance();
+        cachePut(templateList); //cache list 
+        return templateList;
+    }
+
+    /**
+    get a named list, used for special lists like "Inbox" which are NOT stored in ItemListList
+    @param name
+    @return 
+     */
+    public ItemList getSpecialNamedItemListFromParse(String name) {
+        ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
+        query.whereEqualTo(ItemList.PARSE_TEXT, name);
+        query.whereDoesNotExist(ItemList.PARSE_OWNER); //only get lists that do not belong to the ItemListList
+        List<ItemList> results = null;
+        try {
+            results = query.find();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        int s = results.size();
+        ASSERT.that(results.size() <= 1, () -> "too many lists (" + s + ") with reserved name: " + name);
+        if (s > 0) {
+            return results.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public ItemList getInbox(String name) {
+//        if (!forceFromParse && (inbox = (Inbox) cacheGet(Inbox.CLASS_NAME)) != null) {
+//            return inbox;
+//        } //NO need for caching since this is done in the instance/singleton
+        ItemList inbox = getSpecialNamedItemListFromParse(name);
+        if (inbox == null) {
+            //if no Inbox already saved, initialize it with existing categories
+            inbox = new ItemList();
+            for (Item item : getAllItemsWithoutOwners()) {
+                inbox.addToList(item);
+            }
+//                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
+            getInstance().save(inbox); //always save so new lists can be assigned to it
+        }
+        cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
+        return inbox;
     }
 
 //    private final static String ALL_TEMPLATES_KEY = "ALL_TEMPLATES_KEY";
@@ -1341,7 +1385,7 @@ public class DAO {
         }
 //        query2.include(Item.PARSE_OWNER_LIST); //ensure we fetchFromCacheOnly the ownerList (eg for drag & drop)
         query.whereExists(Item.PARSE_TEMPLATE); //fetch only templates
-        query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude all subtasks
+        query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude all template subtasks
         query.orderByDescending(Item.PARSE_TEXT); //order alphabetically
         query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
         List<Item> results = null;
@@ -4641,19 +4685,21 @@ public class DAO {
 //    }
     /**
      *
-     * @param loadChangedDataFromParseServer skip checking server for
+     * @param skipLoadingChangedDataFromParseServerForTesting skip checking server for
      * updates to optimize app startup time during testing.
      * will initialize (or reset if resetAndDeleteAllCachedData) the cache and
      * update cache with objects that have been changed on Parse server since
      * last update. First time called will cache everything. Assumes that local
      * cache is large enough to hold everything, if not, ???
      */
-    public boolean cacheLoadDataChangedOnServer(boolean loadChangedDataFromParseServer) {
+    public boolean cacheLoadDataChangedOnServer(boolean skipLoadingChangedDataFromParseServerForTesting) {
         //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
 //        initAndConfigureCache(); //now done in DAO constructor
 ////\        loadCacheToMemory(); //first load 
+        Dialog ip = new InfiniteProgress().showInfiniteBlocking();
+
         cache.loadCacheToMemory(); //first load 
-        if (loadChangedDataFromParseServer) {
+        if (skipLoadingChangedDataFromParseServerForTesting) {
             Date now = new Date(); //UI: only cache data that was already changed when update was launched
             Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
             if (MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active
@@ -4663,7 +4709,9 @@ public class DAO {
                 }
                 Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
             }
-            return cacheAllData(lastCacheRefreshDate, now);
+            boolean result= cacheAllData(lastCacheRefreshDate, now);
+            ip.dispose();
+            return result;
         }
         return false;
     }
@@ -4684,6 +4732,7 @@ public class DAO {
                 Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
             }
 
+            //TODO!!!! run all these queries in parallel and continue when they've all returned
             Log.p("Caching Items");
             List<Item> items = getAllItemsFromParse(lastCacheRefreshDate, now);
             Log.p("Caching Categories");
@@ -4697,12 +4746,15 @@ public class DAO {
             Log.p("Caching RepeatRules");
             List<RepeatRuleParseObject> repeatRules = getAllRepeatRulesFromParse(lastCacheRefreshDate, now);
             Log.p("Caching CategoryList");
-            CategoryList categoryList = getCategoryList(true); //will cache the list of Categories
+//            CategoryList categoryList = getCategoryList(true); //will cache the list of Categories
+            cacheDelete(CategoryList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will refresh an update cache
             Log.p("Caching ItemListList");
-            ItemListList itemListList = getItemListList(true); //will cache the list of ItemLists
+//            ItemListList itemListList = getItemListList(true); //will cache the list of ItemLists
+            cacheDelete(ItemListList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will refresh an update cache
             Log.p("Caching TemplateList");
-            TemplateList templateList = getTemplateList(true); //will cache the list of Templates
-            Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
+//            TemplateList templateList = getTemplateList(true); //will cache the list of Templates
+            cacheDelete(TemplateList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will refresh an update cache
+//            Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
 
             Display.getInstance().callSerially(() -> {
                 cacheList(items);
@@ -4711,9 +4763,9 @@ public class DAO {
                 cacheList(workSlots);
                 cacheList(filters);
                 cacheList(repeatRules);
-                cacheList(categoryList);
-                cacheList(itemListList);
-                cacheList(templateList);
+//                cacheList(categoryList);
+//                cacheList(itemListList);
+//                cacheList(inbox);
                 Form f = Display.getInstance().getCurrent();
                 if (f instanceof MyForm) {
                     ((MyForm) f).refreshAfterEdit(); //update with new values //TODO!!! show a spinner or sth: "Updating with new data"

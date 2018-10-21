@@ -59,7 +59,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
     }
 
     public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, boolean insertBeforeElement) {
-        this(myForm2, item2, item2.getOwner(), null, insertBeforeElement);
+        this(myForm2, item2, item2.getOwner(), null, insertBeforeElement, null);
     }
 
     public InlineInsertNewItemContainer2(MyForm myForm2, ItemAndListCommonInterface item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {

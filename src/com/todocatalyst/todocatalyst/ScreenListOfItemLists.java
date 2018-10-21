@@ -80,11 +80,11 @@ public class ScreenListOfItemLists extends MyForm {
 //                            DAO.getInstance().save(cat);
 //                        });
 //    }
-    ScreenListOfItemLists(ItemList itemListList, MyForm previousForm, GetItemList updateItemListOnDone) {
+    ScreenListOfItemLists(ItemList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) {
         this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
     }
 
-    ScreenListOfItemLists(String title, ItemList itemListList, MyForm previousForm, GetItemList updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfItemLists(String title, ItemList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(title, previousForm, () -> updateItemListOnDone.update(itemListList));
         this.itemListList = itemListList;
         setScrollable(false);

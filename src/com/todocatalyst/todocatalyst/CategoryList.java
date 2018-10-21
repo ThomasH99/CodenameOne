@@ -51,12 +51,13 @@ public class CategoryList extends ItemList {
 //        return (Category) getParseObject(PARSE_CATEGORY_LIST);
         List<Category> list = getList(PARSE_CATEGORY_LIST);
         if (list != null) {
-           DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
-           return list;
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list); //optimization: cache the list (BUT: how to keep sync'ed with parse server?!)
+            return list;
         } else {
             return new ArrayList();
         }
     }
+
     @Override
     public List<Category> getListFull() {
         return getList();
@@ -90,6 +91,13 @@ public class CategoryList extends ItemList {
         }
         return null;
     }
+
+    public CategoryList resetInstance() {
+        CategoryList t = INSTANCE;
+        INSTANCE = null; //next call to getInstance() will re-initiate/refresh the instance
+        return t;
+    }
+
     @Override
     public int getVersion() {
         return 0;
@@ -99,6 +107,5 @@ public class CategoryList extends ItemList {
     public String getObjectId() {
         return CLASS_NAME;
     }
-
 
 }

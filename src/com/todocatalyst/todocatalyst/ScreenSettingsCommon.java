@@ -15,6 +15,7 @@ import com.codename1.ui.table.TableLayout;
 import java.util.Map;
 
 /**
+used as basis for all (future) settings screens (one per screen)
  * @author Thomas
  */
 public class ScreenSettingsCommon extends MyForm {
@@ -34,7 +35,7 @@ public class ScreenSettingsCommon extends MyForm {
 
     ScreenSettingsCommon(String title, MyForm previousScreen, UpdateField doneAction) { // throws ParseException, IOException {
         super(title, previousScreen, doneAction); // ScreenTimer.SCREEN_TITLE + " settings"
-        this.previousForm = previousScreen;
+//        this.previousForm = previousScreen;
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
 
         if (tableLayout) {
@@ -65,8 +66,8 @@ public class ScreenSettingsCommon extends MyForm {
         buildContentPane(getContentPane());
         revalidate();
         restoreKeepPos();
-         super.refreshAfterEdit();
-   }
+        super.refreshAfterEdit();
+    }
 
     public void addCommandsToToolbar() {
         Toolbar toolbar = getToolbar();
@@ -232,21 +233,21 @@ public class ScreenSettingsCommon extends MyForm {
 //
 //        }
 //    }
-
     protected void addSettingEnum(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed) {
 
         if (tableLayout) {
         } else {
             cont.add(layout(prefEntry.getFieldScription(), new MyComponentGroup(enumValues, parseIdMap2, () -> {
                 for (Object e : enumValues) {
-                    if (((Enum)e).name().equals(prefEntry.getString()))
-                    return e.toString();
+                    if (((Enum) e).name().equals(prefEntry.getString())) {
+                        return e.toString();
+                    }
                 }
                 return null;
             }, (s) -> {
                 for (Object e : enumValues) {
                     if (e.toString().equals(s)) {
-                        MyPrefs.setString(prefEntry, ((Enum)e).name());
+                        MyPrefs.setString(prefEntry, ((Enum) e).name());
                         return;
                     }
                 }
@@ -265,7 +266,6 @@ public class ScreenSettingsCommon extends MyForm {
 ////                    prefEntry.getHelpText()));
 //        }
 //    }
-
     protected void buildContentPane(Container cont) {
         parseIdMapReset();
     }

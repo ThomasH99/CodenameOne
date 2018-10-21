@@ -1,6 +1,7 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.background.BackgroundFetch;
+import com.codename1.components.InfiniteProgress;
 import com.codename1.io.ConnectionRequest;
 import com.codename1.io.Log;
 import static com.codename1.io.Log.e;
@@ -705,8 +706,13 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        showMainForm(false, null, null);
 //        showMainForm(false, null, null);
 //</editor-fold>
+
+            InfiniteProgress.setDefaultMaterialDesignMode(true);
+
         ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
 
+        
+        
 //        new ScreenMainP(resources).show();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) { //test subtasks
@@ -735,18 +741,18 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        }
 //</editor-fold>
         //LOGIN
-        if (false) { //moved to ScreenLogin2
+        if (false) { //moved to ScreenLogin
 //            if (MyPrefs.loginFirstTimeLogin.getBoolean()) { //very first login
 //                MyPrefs.setBoolean(MyPrefs.loginFirstTimeLogin, false);
-//                new ScreenLogin2(theme).show();
+//                new ScreenLogin(theme).show();
 //            } else {
-            ParseUser parseUser = ScreenLogin2.getLastUserSessionFromStorage();
+            ParseUser parseUser = ScreenLogin.getLastUserSessionFromStorage();
             Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
             if (parseUser == null) {
-//                new ScreenLogin2(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
-                new ScreenLogin2().show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+                new ScreenLogin().show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
             } else {
-                ScreenLogin2.setDefaultACL(parseUser); //TODO needed??
+                ScreenLogin.setDefaultACL(parseUser); //TODO needed??
                 try {
                     count = query.count();
                 } catch (ParseException ex) {
@@ -771,8 +777,8 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //                }
             }
         } else {
-//            new ScreenLogin2(theme).go();
-            new ScreenLogin2().go();
+//            new ScreenLogin(theme).go();
+            new ScreenLogin().go();
         }
     }
     //<editor-fold defaultstate="collapsed" desc="comment">

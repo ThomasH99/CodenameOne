@@ -2062,7 +2062,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      */
     @Override
-    public void delete() throws ParseException {
+    public void delete() { //throws ParseException {
 
         //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
 //        List<Item> itemsSubtasksOfThisItem = DAO.getInstance().getAllItemsOwnedBy(this); //best to get owned subtasks directly from DAO since less likely that some may be missed

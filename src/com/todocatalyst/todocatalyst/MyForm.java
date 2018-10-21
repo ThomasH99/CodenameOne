@@ -71,7 +71,7 @@ public class MyForm extends Form {
     protected MyForm previousForm;
 //    protected static Form form;
 //    Resources theme;
-//    GetItemList updateItemListOnDone;
+//    UpdateItemListAfterEditing updateItemListOnDone;
     protected UpdateField updateActionOnDone;
     protected CheckDataIsComplete checkDataIsCompleteBeforeExit; //used to check if a Screen has defined all needed data and returns error message String if not
 //    HashSet<ItemAndListCommonInterface> expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
@@ -203,11 +203,10 @@ public class MyForm extends Form {
 //    MyForm(String title) { //throws ParseException, IOException {
 //        super(title);
 //    }
-    MyForm(String title, MyForm previousForm) { //throws ParseException, IOException {
-        this(title, previousForm, () -> {
-        });
-    }
-
+//    MyForm(String title, MyForm previousForm) { //throws ParseException, IOException {
+//        this(title, previousForm, () -> {
+//        });
+//    }
     private UITimer doubleTapTitleTimer;
 
     MyForm(String title, MyForm previousForm, UpdateField updateActionOnDone) { //throws ParseException, IOException {
@@ -267,7 +266,9 @@ public class MyForm extends Form {
         });
         getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
 
-        getToolbar().setScrollOffUponContentPane(true);
+        if (false) {
+            getToolbar().setScrollOffUponContentPane(true);
+        }
 
         if (false) {
             setAutoSizeMode(true); //ensure title is centered even when icons are added
@@ -286,6 +287,7 @@ public class MyForm extends Form {
 //        setLayout(BoxLayout.y()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
         if (false) {
             setLayout(BoxLayout.y());
+            setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
             setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
         }
         //<editor-fold defaultstate="collapsed" desc="comment">
@@ -393,7 +395,7 @@ public class MyForm extends Form {
         void editNewItemListItem(ItemList itemList);
     }
 
-    interface GetItemList {
+    interface UpdateItemListAfterEditing {
 
         /**
         
@@ -1398,11 +1400,61 @@ public class MyForm extends Form {
         );
     }
 
+    /**
+     * adds new item to itemListOrg at the given position and saves both list
+     * and item. Nothing is done if itemListOrg is null or not already saved
+     * (temporary list) or not a Category.
+     *
+     * @param item
+     * @param pos
+     * @param itemListOrg
+     */
+//    private static void addNewTaskSetTemplateAddToListAndSave(Item item, int pos, ItemList itemListOrg) {
+    static void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
+//        item.setTemplate(itemListOrg.isTemplate()); //template or not
+        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null
+                && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+            itemListOrg.addToList(pos, item); //UI: add to top of list
+        }
+        DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
+        if (addToList) {
+            DAO.getInstance().save((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+        }
+    }
+//    static void addNewTaskSetTemplateAddToListAndSave(Item item, ItemList itemListOrg) {
+
+    /**
+     * adds new item to itemListOrg at the default position (as given by the
+     * settings) and saves both list and item
+     *
+     * @param item
+     * @param pos
+     */
+    static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
+        addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.size(), itemListOrg);
+    }
+
+    static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg) {
+        addNewTaskToListAndSave(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+    }
+
+//    private void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
+////        item.setTemplate(optionTemplateEditMode); //template or not
+//        boolean addToList = (itemListOrg != null && itemListOrg.getObjectIdP() != null
+//                && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+//        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+//            itemListOrg.addToList(pos, item); //UI: add to top of list
+//        }
+//        DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
+//        if (addToList) {
+//            DAO.getInstance().save((ParseObject)itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//        }
+//    }
     public Command newItemSaveToInboxCmd() {
 
         Command cmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewTaskToolbarStyle(), (e) -> {
             Item item = new Item();
-//                addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItem(item, (MyForm) getComponentForm(), () -> {
                 if (item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
@@ -1412,6 +1464,8 @@ public class MyForm extends Form {
                         //TODO!!! save directly to Inbox
 //                            addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                     }
+                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : Inbox.getInstance().getSize(), Inbox.getInstance());
+
                     DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
                     refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                    }
@@ -2381,7 +2435,7 @@ public class MyForm extends Form {
 //    private Component prevComponentBelow;
 //    private Item pinchItem;
     private boolean pinchInsertEnabled = true; //TODO!! only true for testing
-    private boolean pinchInsertInitiated = true; //TODO!! only true for testing
+    private boolean pinchInsertInitiated = true; //tracks whenever a pinch was initiated (to ensure we only finish when it makes sense)
     private int pinchInitialYDistance = Integer.MIN_VALUE;
     private int pinchDistance = Integer.MAX_VALUE;
 //    private boolean pinchOut;
@@ -2418,6 +2472,8 @@ public class MyForm extends Form {
                 }
             } else if (list instanceof Item) { //NB! inserting refElement into a Project (as a subtask)!
                 return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement));
+            } else {
+                ASSERT.that(false, () -> "error1 in createInsertContainer: refElt=" + refElement + "; list=" + list + "; insertBefore=" + insertBeforeRefElement);
             }
         } else if (refElement instanceof Category) {
             return wrapInPinchableContainer(new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, insertBeforeRefElement));
@@ -2426,6 +2482,7 @@ public class MyForm extends Form {
         } else if (refElement instanceof WorkSlot) {
             return wrapInPinchableContainer(new InlineInsertNewWorkSlotContainer(MyForm.this, (Item) refElement, insertBeforeRefElement)); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
         }
+        ASSERT.that(false, () -> "error2 in createInsertContainer: refElt=" + refElement + "; list=" + list + "; insertBefore=" + insertBeforeRefElement);
         return null;
     }
 
@@ -2758,21 +2815,33 @@ public class MyForm extends Form {
                 parentToAnimate.animateHierarchy(300);
             }
             pinchInsertInitiated = false;
+            removePointerReleasedListener(pointerReleasedListener);
+            pointerReleasedListener=null;
         }
     }
 
-    @Override
-    public void pointerReleased(int x, int y) {
-        Log.p("pointerReleased called!!!!");
-        if (pinchInsertEnabled && pinchInsertInitiated) {
-//            if (pinchContainer != null) {
-            pinchInsertFinished();
-//            }
-        } //else { //don't call super.pointerR if finishing pinch since it may launch other events
-        super.pointerReleased(x, y);
-//        }
-    }
+    ActionListener pointerReleasedListener;
+//    = (e) -> {
+//        Log.p("pointerReleased called!!!!");
+//        if (pinchInsertEnabled && pinchInsertInitiated) {
+////            if (pinchContainer != null) {
+//            pinchInsertFinished();
+////            }
+//        } //else { //don't call super.pointerR if finishing pinch since it may launch other events
+//    };
 
+//    @Override
+//    public void pointerReleased(int x, int y) {
+//        Log.p("pointerReleased called!!!!");
+//        if (pinchInsertEnabled && pinchInsertInitiated) {
+////            if (pinchContainer != null) {
+//            pinchInsertFinished();
+////            }
+//        } //else { //don't call super.pointerR if finishing pinch since it may launch other events
+//        super.pointerReleased(x, y);
+////        }
+//        //       addPointerReleasedListener((e) -> Log.p("PointerReleasedListener: pointer release (listener), evt= " + e));
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private Component create(int[] x, int[] y, boolean checkValidity) {
 //        int yMin = y[1] <= y[0] ? y[1] : y[0];
@@ -2913,6 +2982,15 @@ public class MyForm extends Form {
                 super.pointerDragged(x, y);
             } else { // (x.length > 1) => PINCH ONGOING
                 pinchInsertInitiated = true;
+                ASSERT.that(pointerReleasedListener==null, "pointerReleasedListener NOT null as it should be");
+                pointerReleasedListener = (e) -> {
+                    Log.p("pointerReleased called!!!!");
+                    if (pinchInsertEnabled && pinchInsertInitiated) {
+//            if (pinchContainer != null) {
+                        pinchInsertFinished();
+//            }
+                    } //else { //don't call super.pointerR if finishing pinch since it may launch other events
+                };
                 //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
                 //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
                 int yMin = Math.min(y[1], y[0]); //y[1] <= y[0] ? y[1] : y[0];
@@ -2953,7 +3031,7 @@ public class MyForm extends Form {
                 }
             }
 //            super.pointerDragged(x, y); //leaving this call will make the screen scroll at the same time if the two fingers move
-        } else {
+        } else { //while pinching, pinch will consume the pointer dragged (to avoid that the list moves at the same time as if it was dragged)
             super.pointerDragged(x, y);
         }
         if (false) {

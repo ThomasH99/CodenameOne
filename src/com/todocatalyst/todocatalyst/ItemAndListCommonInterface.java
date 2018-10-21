@@ -274,7 +274,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     /**
      * remove this from its owner and set this.owner=null;
      */
-    default public void removeMeFromOwner() {
+    default public void removeFromOwner() {
         List ownerList = getOwner().getList();
 //        getOwnerList().removeItem(this);
         ownerList.remove(this);

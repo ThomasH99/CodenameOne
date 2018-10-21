@@ -37,38 +37,45 @@ public class MultipleSelection {
 
     static ItemOperation moveTo(Item newProject) {
         return (item) -> {
-            item.removeMeFromOwner();
+            item.removeFromOwner();
+            List list = newProject.getList();
             if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
-                newProject.getList().add(0, item);
+                list.add(0, item);
             } else {
-                newProject.getList().add(item);
+                list.add(item);
             }
+            newProject.setList(list);
         };
     }
 
     static ItemOperation moveTo(ItemList newItemList) {
         return (item) -> {
-            item.removeMeFromOwner();
+            item.removeFromOwner();
+            List list = newItemList.getList();
             if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
-                newItemList.getList().add(0, item);
+                list.add(0, item);
             } else {
-                newItemList.getList().add(item);
+                list.add(item);
             }
+            newItemList.setList(list);
         };
     }
 
     static ItemOperation moveToTopOfList(ItemList newItemList) {
         return (item) -> {
 //            item.removeFromOwner();
-            newItemList.getList().remove(item);
-            newItemList.getList().add(0, item);
+            List list = newItemList.getList();
+            list.remove(item);
+            list.add(0, item);
+            newItemList.setList(list);
         };
     }
 
     static ItemOperation delete() {
         return (item) -> {
 //            item.delete();
-            DAO.getInstance().delete(item);
+//            DAO.getInstance().delete(item);
+            item.delete();
         };
     }
 
@@ -155,11 +162,11 @@ public class MultipleSelection {
      * @param operations
      */
     static void performOnAll(List<Item> items, ItemOperation operation) {
-//        for (Item item : items) {
-        for (int i=0, size=items.size(); i<size;i++) {
-            Item item=items.get(i);
+        for (Item item : items) {
+//        for (int i=0, size=items.size(); i<size;i++) {
+//            Item item=items.get(i);
             operation.execute(item);
-            DAO.getInstance().save(item);
+//            DAO.getInstance().save(item);
         }
     }
 

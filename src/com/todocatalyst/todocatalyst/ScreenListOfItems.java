@@ -106,7 +106,7 @@ public class ScreenListOfItems extends MyForm {
 //    HashSet expandedObjects = new HashSet(); //TODO!! save expandedObjects for this screen and the given list
 //    boolean selectionMode = false; //is selectionMode on
 //    private HashSet selectedObjects; //selected objects
-    ArrayList selectedObjects; //selected objects
+    ArrayList selectedObjects = new ArrayList(); //selected objects
 //    private ArrayList oldSelectedObjects; //store selection after deactivating
 //    private static SwipeableContainer newTaskContainer = null; //stores the current newSubtask container to allow to automatically close one if a new one is created
 
@@ -223,11 +223,11 @@ public class ScreenListOfItems extends MyForm {
 //                        });
 //    }
 //</editor-fold>
-//    ScreenListOfItems(ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone) {
+//    ScreenListOfItems(ItemList itemList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) {
 //        this(itemList.getText(), itemList, previousForm, updateItemListOnDone);
 //    }
 //
-//    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+//    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 ////        this(title, itemList, previousForm, updateItemListOnDone, null, true);
 //        this(title, itemList, previousForm, updateItemListOnDone, 0);
 //    }
@@ -242,27 +242,27 @@ public class ScreenListOfItems extends MyForm {
      * (used e.g. in Log)
      */
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone, FilterSortDef filterSortDef, boolean filterCanBeModified) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+//    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, FilterSortDef filterSortDef, boolean filterCanBeModified) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        this(title, itemList, previousForm, updateItemListOnDone, filterSortDef, filterCanBeModified, false);
 //    }
 //
-//    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone, FilterSortDef filterSortDef, boolean filterCanBeModified, boolean templateEditMode) {
+//    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, FilterSortDef filterSortDef, boolean filterCanBeModified, boolean templateEditMode) {
 //        this(title, itemList, previousForm, updateItemListOnDone, filterSortDef, (filterCanBeModified ? 0 : OPTION_NO_MODIFIABLE_FILTER) | (templateEditMode ? OPTION_TEMPLATE_EDIT : 0));
 //    }
 //
-//    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone, FilterSortDef filterSortDef, int options) {
+//    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, FilterSortDef filterSortDef, int options) {
 //
 //    }
 //</editor-fold>
-    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, GetItemList updateItemListOnDone, int options) {
+    ScreenListOfItems(String title, ItemList itemList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, int options) {
         this(title, () -> itemList, previousForm, updateItemListOnDone, options);
     }
 
-    ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, GetItemList updateItemListOnDone, int options) {
+    ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, int options) {
         this(title, itemListFct, previousForm, updateItemListOnDone, options, null);
     }
 
-    ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, GetItemList updateItemListOnDone,
+    ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
             int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
         super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
         setScrollVisible(true); //UI: show scrollbar(?)
@@ -451,57 +451,6 @@ public class ScreenListOfItems extends MyForm {
         super.refreshAfterEdit();
     }
 
-    /**
-     * adds new item to itemListOrg at the given position and saves both list
-     * and item. Nothing is done if itemListOrg is null or not already saved
-     * (temporary list) or not a Category.
-     *
-     * @param item
-     * @param pos
-     * @param itemListOrg
-     */
-//    private static void addNewTaskSetTemplateAddToListAndSave(Item item, int pos, ItemList itemListOrg) {
-    private static void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
-//        item.setTemplate(itemListOrg.isTemplate()); //template or not
-        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null
-                && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-            itemListOrg.addToList(pos, item); //UI: add to top of list
-        }
-        DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
-        if (addToList) {
-            DAO.getInstance().save((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-        }
-    }
-//    static void addNewTaskSetTemplateAddToListAndSave(Item item, ItemList itemListOrg) {
-
-    /**
-     * adds new item to itemListOrg at the default position (as given by the
-     * settings) and saves both list and item
-     *
-     * @param item
-     * @param pos
-     */
-    static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
-        addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.size(), itemListOrg);
-    }
-
-    static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg) {
-        addNewTaskToListAndSave(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-    }
-
-//    private void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
-////        item.setTemplate(optionTemplateEditMode); //template or not
-//        boolean addToList = (itemListOrg != null && itemListOrg.getObjectIdP() != null
-//                && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-//        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-//            itemListOrg.addToList(pos, item); //UI: add to top of list
-//        }
-//        DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
-//        if (addToList) {
-//            DAO.getInstance().save((ParseObject)itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//        }
-//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private static void addNewTaskXXX(Item item, int pos, ItemList itemListOrg, boolean optionTemplateEditMode) {
 //        item.setTemplate(optionTemplateEditMode); //template or not
@@ -524,16 +473,20 @@ public class ScreenListOfItems extends MyForm {
         //NEW ITEM
 //        Command newCmd = new Command("OldCmd", Icons.iconNewToolbarStyle) {
         if (!optionNoNewButton) {
+            if (itemListOrg.isNoSave()) {
+                toolbar.addCommandToRightBar(newItemSaveToInboxCmd());
+            } else {
 //            Command newCmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle(), (e) -> {
-            Command newCmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewTaskToolbarStyle(), (e) -> {
-                Item item = new Item();
+                Command newCmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewTaskToolbarStyle(), (e) -> {
+                    Item item = new Item();
 //                    item.setOwner(itemListOrg); //necessary to have an owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
-                item.setTemplate(optionTemplateEditMode);
-                addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
+                    item.setTemplate(optionTemplateEditMode);
+                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
 //                    ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                setKeepPos(new KeepInSameScreenPosition());
+                    setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllElementsInSublist(item, true);
-                new ScreenItem(item, ScreenListOfItems.this, () -> {
+                    new ScreenItem(item, ScreenListOfItems.this, () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 ////                    DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        boolean addToList = (itemListOrg != null && itemListOrg.getObjectId() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
 ////                    if (itemListOrg != null && itemListOrg.getObjectId() != null && !(itemListOrg instanceof Category)) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
@@ -549,25 +502,27 @@ public class ScreenListOfItems extends MyForm {
 //                            DAO.getInstance().save(itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        }//                    } else {
 //                        if (!(!item.needToSaveNewTask() && !Dialog.show("INFO", "No key data in this task, save anyway?", "Save","Don't save"))) {
-                    if (item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
-                        //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
-                        //only save if data (don't save if no relevant data)
-                        if (false) {
-                            item.setTemplate(optionTemplateEditMode);
-                            addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
-                        }
-                        DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
-                        refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+//</editor-fold>
+                        if (item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
+                            //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
+                            //only save if data (don't save if no relevant data)
+                            if (false) {
+                                item.setTemplate(optionTemplateEditMode);
+                                addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+                            }
+                            DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
+                            refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                        assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
 //                    }
-                    } else {
-                        itemListOrg.removeFromList(item); //if no saveable data, undo the 
-                        //TODO!!!! how to remove from eg Categories if finally the task is not saved??
-                    }
-                }, optionTemplateEditMode).show();
+                        } else {
+                            itemListOrg.removeFromList(item); //if no saveable data, undo the 
+                            //TODO!!!! how to remove from eg Categories if finally the task is not saved??
+                        }
+                    }, optionTemplateEditMode).show();
+                }
+                );
+                toolbar.addCommandToRightBar(newCmd);
             }
-            );
-            toolbar.addCommandToRightBar(newCmd);
         }
 
         if (false) {
@@ -867,6 +822,7 @@ public class ScreenListOfItems extends MyForm {
                         MultipleSelection.performOnAll(selectedObjects, MultipleSelection.moveToTopOfList(itemListOrg));
 //                    selectedObjects.clear(); //DO NOT unselect objects to allow for additional operations on selection
 //                    setupList(); //TODO optimize the application of a filter?
+                        DAO.getInstance().save(itemListOrg); //save after having moved items around
                         refreshAfterEdit(); //TODO optimize the application of a filter?
                     } else {
 //                        ToastBar.showErrorMessage("Move to top not possible when list is shown sorted");

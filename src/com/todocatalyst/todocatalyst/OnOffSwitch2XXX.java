@@ -56,7 +56,7 @@ import java.util.Vector;
  *
  * @author Shai Almog
  */
-public class OnOffSwitch2 extends Container {
+public class OnOffSwitch2XXX extends Container {
 
     private String on = "ON";
     private String off = "OFF";
@@ -76,7 +76,7 @@ public class OnOffSwitch2 extends Container {
     /**
      * Default constructor
      */
-    public OnOffSwitch2() {
+    public OnOffSwitch2XXX() {
         setUIID("OnOffSwitch");
         initialize();
     }
@@ -380,7 +380,7 @@ public class OnOffSwitch2 extends Container {
                     if (f != null) {
                         f.deregisterAnimated(this);
                     }
-                    OnOffSwitch2.this.setValue(value);
+                    OnOffSwitch2XXX.this.setValue(value);
                 }
                 repaint();
                 return false;

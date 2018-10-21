@@ -171,9 +171,15 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(next, toolbar, cont, "Have a look at what's up the next month");
 
+//        Command inbox = MyReplayCommand.create(SCREEN_INBOX_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
+//                    new ScreenListOfItems(SCREEN_INBOX_TITLE, () -> new ItemList(SCREEN_INBOX_TITLE, DAO.getInstance().getAllItemsWithoutOwners(), true), ScreenMain.this, (i) -> {
+//                    }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+//                }
+//        );
         Command inbox = MyReplayCommand.create(SCREEN_INBOX_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
-                    new ScreenListOfItems(SCREEN_INBOX_TITLE, () -> new ItemList(SCREEN_INBOX_TITLE, DAO.getInstance().getAllItemsWithoutOwners(), true), ScreenMain.this, (i) -> {
-                    }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                    new ScreenListOfItems(SCREEN_INBOX_TITLE, () -> new ItemList(SCREEN_INBOX_TITLE, Inbox.getInstance(), true), ScreenMain.this, (i) -> {
+//                    }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                    }, 0).show();
                 }
         );
         makeAndAddButtons(inbox, toolbar, cont, "**");

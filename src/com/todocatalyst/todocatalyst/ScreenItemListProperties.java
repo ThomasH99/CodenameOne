@@ -60,7 +60,7 @@ public class ScreenItemListProperties extends MyForm {
 //        ScreenItemP.item = item;
         this.itemList = itemList;
 //        ScreenItemP.previousForm = previousForm;
-        this.previousForm = previousForm;
+//        this.previousForm = previousForm;
 //        this.updateActionOnDone = doneAction;
         // we initialize the main form and add the favorites command so we can navigate there
 //        form = new Form("TodoCatalyst");

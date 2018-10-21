@@ -476,7 +476,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     @Override
     public boolean add(Object e) {
-        addItem((E) e);
+        addToList((E) e);
         return true;
 
     }
@@ -497,13 +497,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     @Override
     public Object set(int index, Object element) {
-        throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-
+//        return setItemAtIndex((E)element, index);
+        return setToList(index,(E)element);
     }
 
     @Override
     public void add(int index, Object element) {
-        addItemAtIndex((E) element, index);
+//        addItemAtIndex((E) element, index);
+        addToList(index,(E) element);
     }
 
     @Override
@@ -1683,11 +1684,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param index - the index position in the list
      */
     public void addItemAtIndex(E item, int index) {
-        Bag updatedBag = getItemBag();
+        Bag updatedBag = getItemBag(); //TODO: 
         if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
 //            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
             updatedBag.add(item);
             setItemBag(updatedBag); //then don't add to list, but just add to bag to keep track of how many times added
+            //TODO!!! should the next statement be an 'else'?? 
         } else if (!getListFull().contains(item)) {
             //else add normally
             //only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
@@ -1711,6 +1713,50 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
     }
 
+    public E setItemAtIndex(E item, int index) {
+        List<E> editedList = getListFull();
+        E oldElement = editedList.get(index);
+        Bag updatedBag = getItemBag();
+        if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
+            updatedBag.remove(oldElement);
+//            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
+            updatedBag.add(item);
+            setItemBag(updatedBag); //then don't add to list, but just add to bag to keep track of how many times added
+        } else {//if (!getListFull().contains(item)) {
+            //else add normally
+            //only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
+//            if (!storeOnlySingleInstanceOfItems || getItemIndex(item) == -1) {
+//            assert getItemIndex(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
+//            if (index <= getSize()) { // shouldn't make this check since it might make us miss some errors
+//                itemList.insertElementAt(item, index);
+//                itemList.add(index, item);
+            editedList.set(index, item);
+            setList(editedList);
+//                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
+//                    selectedIndex++;
+//                }
+//            int selIdx = getSelectedIndex();
+//            if (selIdx >= index && selIdx < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
+//                setSelectedIndex(selIdx + 1);
+//            }
+            int selIdx = index;
+            fireDataChangedEvent(DataChangedListener.CHANGED, index);
+//            }
+        }
+        return oldElement;
+    }
+
+    public boolean setToList(int index, ItemAndListCommonInterface subItemOrList) {
+        setItemAtIndex((E) subItemOrList, index);
+        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, ()->"subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+//        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
+        subItemOrList.setOwner(this);
+//        DAO.getInstance().save((ParseObject)subtask);
+        return true;
+    }
+
+
+    
     /**
      * inserts item at special position. Used to insert at head/tail of list, or
      * before/after a referenceItem when adding new items to list. If called

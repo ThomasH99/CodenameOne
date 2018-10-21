@@ -6,19 +6,21 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.components.OnOffSwitch;
+import com.codename1.components.Switch;
 import java.util.Map;
 
 /**
  *
  * @author Thomas
  */
-class MyOnOffSwitch extends OnOffSwitch {
+//class MyOnOffSwitch extends OnOffSwitch {
+class MyOnOffSwitch extends Switch {
 
 //            String title;
 //            String parseId;
     MyOnOffSwitch(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetBoolean get, MyForm.PutBoolean set) {
         super();
-        getAllStyles().setPaddingRight(6);
+//        getAllStyles().setPaddingRight(6);
 //            setUIID("Button");
 //            setUIID("MyOnOffSwitch");
 //                this.title = title;
@@ -36,10 +38,10 @@ class MyOnOffSwitch extends OnOffSwitch {
     }
 
 //            MyOnOffSwitch(String title, String onString, String offString, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
-    MyOnOffSwitch(String offString, String onString, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetBoolean get, MyForm.PutBoolean set) {
-        this(parseIdMap, get, set);
-        this.setOn(onString);
-        this.setOff(offString);
-    }
+//    MyOnOffSwitch(String offString, String onString, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetBoolean get, MyForm.PutBoolean set) {
+//        this(parseIdMap, get, set);
+//        this.setOn(onString);
+//        this.setOff(offString);
+//    }
 
 };

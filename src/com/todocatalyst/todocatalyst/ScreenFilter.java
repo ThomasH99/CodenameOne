@@ -166,8 +166,8 @@ public class ScreenFilter extends MyForm {
                 (b) -> {
                     filterSortDef.setSortOn(!b);
                 });
-        sortOnSwitch.setOn("Sort");
-        sortOnSwitch.setOff("Manual");
+//        sortOnSwitch.setOn("Sort");
+//        sortOnSwitch.setOff("Manual");
         sortOnSwitch.addActionListener((e) -> {
             if (sortOnSwitch.isValue()) {
                 //TODO!!! do the animation at the level above (like in Timer)

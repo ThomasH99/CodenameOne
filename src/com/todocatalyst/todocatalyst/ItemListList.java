@@ -23,7 +23,7 @@ public class ItemListList extends ItemList {
 
 //    final static String PARSE_ITEMLIST_LIST = "itemListList";
     final static String PARSE_ITEMLIST_LIST = ItemList.PARSE_ITEMLIST; //reuse column name from ItemList to ensure any non-overwritten calls (notably getListFull()) works, was: "categoryList";
-;
+    ;
 //    final static String PARSE_ITEMLIST_LIST = "itemList";
 
     private static ItemListList INSTANCE = null;
@@ -39,17 +39,18 @@ public class ItemListList extends ItemList {
         return INSTANCE;
     }
 
-        @Override
+    @Override
     public List<Category> getList() {
 //        return (Category) getParseObject(PARSE_CATEGORY_LIST);
         List<Category> list = getList(PARSE_ITEMLIST_LIST);
         if (list != null) {
-           DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
-           return list;
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+            return list;
         } else {
             return new ArrayList();
         }
     }
+
     @Override
     public List<Category> getListFull() {
         return getList();
@@ -66,8 +67,12 @@ public class ItemListList extends ItemList {
         }
     }
 
-
-    
+    public ItemListList resetInstance() {
+        ItemListList t= INSTANCE;
+        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
+        return t;
+    }
+ 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public List<ItemList> getList() {
 //    @Override
@@ -83,7 +88,6 @@ public class ItemListList extends ItemList {
 //            return new ArrayList();
 //        }
 //    }
-    
 //    @Override
 //    public void setListXXX(List itemListList) {
 ////        if (has(PARSE_ITEMLIST_LIST) || itemListList != null) {
@@ -107,6 +111,5 @@ public class ItemListList extends ItemList {
     public String getObjectId() {
         return CLASS_NAME;
     }
-
 
 }

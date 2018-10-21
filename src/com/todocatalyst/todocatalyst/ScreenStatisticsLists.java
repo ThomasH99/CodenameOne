@@ -57,9 +57,9 @@ public class ScreenStatisticsLists extends MyForm {
     
 //    MyForm mainScreen;
     ScreenStatisticsLists(MyForm mainScreen) { // throws ParseException, IOException {
-        super(SCREEN_TITLE, null, () -> {
+        super(SCREEN_TITLE, mainScreen, () -> {
         });
-        this.previousForm = mainScreen;
+//        this.previousForm = mainScreen;
         setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         addCommandsToToolbar();
 //        buildContentPane(getContentPane());

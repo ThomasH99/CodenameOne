@@ -407,6 +407,12 @@ TimerTimer {
 ManualSorting {
     color: violet;
 }
+/******* OTHER ****************/
+Switch {
+    /*color: white;
+    background: activeborder;*/
+    padding: 0 2mm 0 0;
+}
 
 /*
 https://www.codenameone.com/manual/css.html

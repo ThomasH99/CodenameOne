@@ -2,6 +2,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.components.InfiniteProgress;
 import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
@@ -30,8 +31,8 @@ import com.parse4cn1.ParseUser;
  *
  * @author Shai Almog
  */
-//public class ScreenLogin2 extends BaseForm {
-public class ScreenLogin2 extends MyForm {
+//public class ScreenLogin extends BaseForm {
+public class ScreenLogin extends MyForm {
     //https://uxplanet.org/designing-ux-login-form-and-process-8b17167ed5b9
     //Sign Up Free
     //Log In
@@ -55,7 +56,7 @@ public class ScreenLogin2 extends MyForm {
 //    private final static String welcome2 = "For demanding users who need the features no other todo apps offer. See how new tasks impacts your deadlines or commitments. Be efficient.";
 //    private final static String welcome3 = "Master priorities. Master time. \nTime-saving features like templates, copy-paste, multiple selections, ...";
 //    private final static String welcome4 = "Time-saving features like templates, copy-paste, multiple selections, ...";
-    public ScreenLogin2() {
+    public ScreenLogin() {
         //TODO change login screen to show 2 text/ad screens, swipe them left to get to login fields (like ?? app)
         super("Login", null, () -> {
         });
@@ -63,6 +64,59 @@ public class ScreenLogin2 extends MyForm {
 
     public void go() {
         go(false);
+    }
+
+    private void startUp(boolean refreshDataInBackground) {
+        EasyThread thread = EasyThread.start("cacheUpdate");
+//            if (true) {
+//                thread.run(() -> {
+//                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//                });
+//            } else {
+//                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//            }
+//            boolean refreshDataInBackground = true;
+        if (refreshDataInBackground) {
+            thread.run((success) -> {
+                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+                    success.onSucess(null);
+                }
+                thread.kill();
+//                success.onSucess(success); //CN1 Support: is there an error in CN1 for the run(r,t) call?!!!
+            }, (notUsed) -> {
+                Display.getInstance().callSerially(() -> {
+//                if (newDataLoaded) {
+                    Form f = Display.getInstance().getCurrent();
+                    //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
+                    if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain) && !(f instanceof ScreenItem)) {
+                        //TODO!!! show "Running" symbyl after like 2 seconds
+//                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
+                        ((MyForm) f).refreshAfterEdit();
+                        Log.p("Screen " + getComponentForm().getTitle() + " refreshed after loading new data from network");
+                    }
+//                    thread.kill();
+//                }
+                });
+            });
+        } else {
+            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
+            //TODO!!!! show waiting symbol "loading your tasks..."
+            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+            ip.dispose();
+        }
+        //ALARMS - initialize
+        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
+
+        //TIMER - was running when app was moved to background? - now done with ReplayCommand
+//            if (!ScreenTimer.getInstance().isTimerActive()) {
+//                new ScreenMain().show(); //go directly to main screen if user already has a session
+//            } else {
+//                if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
+//                    new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+//                }
+//            }
+        new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+
     }
 
     public void go(boolean forceLaunchForTest) {
@@ -83,56 +137,62 @@ public class ScreenLogin2 extends MyForm {
                 }
                 Log.p("Count of Item in Parse = " + count, Log.DEBUG);
             }
-            //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
-            EasyThread thread = EasyThread.start("cacheUpdate");
-//            if (true) {
-//                thread.run(() -> {
-//                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+
+            startUp(true);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
+//            EasyThread thread = EasyThread.start("cacheUpdate");
+////            if (true) {
+////                thread.run(() -> {
+////                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+////                });
+////            } else {
+////                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+////            }
+//            boolean refreshDataInBackground = true;
+//            if (refreshDataInBackground) {
+//                thread.run((success) -> {
+//                    if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//                        success.onSucess(null);
+//                    }
+//                    thread.kill();
+////                success.onSucess(success); //CN1 Support: is there an error in CN1 for the run(r,t) call?!!!
+//                }, (notUsed) -> {
+//                    Display.getInstance().callSerially(() -> {
+////                if (newDataLoaded) {
+//                        Form f = Display.getInstance().getCurrent();
+//                        //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
+//                        if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain) && !(f instanceof ScreenItem)) {
+//                            //TODO!!! show "Running" symbyl after like 2 seconds
+////                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
+//                            ((MyForm) f).refreshAfterEdit();
+//                            Log.p("Screen " + getComponentForm().getTitle() + " refreshed after loading new data from network");
+//                        }
+////                    thread.kill();
+////                }
+//                    });
 //                });
 //            } else {
 //                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
 //            }
-            if (false) {
-                thread.run((success) -> {
-                    if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
-                        success.onSucess(null);
-                    }
-                    thread.kill();
-//                success.onSucess(success); //CN1 Support: is there an error in CN1 for the run(r,t) call?!!!
-                }, (notUsed) -> {
-//                if (newDataLoaded) {
-                    Form f = Display.getInstance().getCurrent();
-                    //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
-                    if (f instanceof MyForm && !(f instanceof ScreenLogin2) && !(f instanceof ScreenMain) && !(f instanceof ScreenItem)) {
-                        //TODO!!! show "Running" symbyl after like 2 seconds
-//                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
-                        ((MyForm) f).refreshAfterEdit();
-                        Log.p("Screen " + getComponentForm().getTitle() + " refreshed after loading new data from network");
-                    }
-//                    thread.kill();
-//                }
-                });
-            }
-            
-            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
-            
-            //ALARMS - initialize
-            AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
-
-            //TIMER - was running when app was moved to background? - now done with ReplayCommand
-//            if (!ScreenTimer.getInstance().isTimerActive()) {
-//                new ScreenMain().show(); //go directly to main screen if user already has a session
-//            } else {
-//                if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
-//                    new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
-//                }
-//            }
-            new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+//            //ALARMS - initialize
+//            AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
+//
+//            //TIMER - was running when app was moved to background? - now done with ReplayCommand
+////            if (!ScreenTimer.getInstance().isTimerActive()) {
+////                new ScreenMain().show(); //go directly to main screen if user already has a session
+////            } else {
+////                if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
+////                    new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+////                }
+////            }
+//            new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+//</editor-fold>
 
         } else {
             setupLoginScreen();
-//                new ScreenLogin2(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
-//            new ScreenLogin2(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//            new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
             show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
         }
 
@@ -227,7 +287,7 @@ public class ScreenLogin2 extends MyForm {
             forgottenPassword.setHidden(false);
             backToSignupSignIn.setHidden(false);
             animateHierarchy(300);
-//            ScreenLogin2.this.getContentPane().animateLayout(300);
+//            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
 
         createAccount.setCommand(Command.create("Create my account", Icons.iconPersonNew, (e2) -> {
@@ -239,7 +299,7 @@ public class ScreenLogin2 extends MyForm {
             } else {
                 Dialog.show("", errorMsg, "OK", null);
             }
-//            ScreenLogin2.this.getContentPane().animateLayout(300);
+//            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
 
         connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
@@ -253,7 +313,7 @@ public class ScreenLogin2 extends MyForm {
             } else {
                 Dialog.show("", errorMsg, "OK", null);
             }
-            ScreenLogin2.this.getContentPane().animateLayout(300);
+            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
 
         forgottenPassword.setCommand(Command.create("Forgot password", null, (ev) -> {
@@ -275,7 +335,8 @@ public class ScreenLogin2 extends MyForm {
 
     }
 
-//    public ScreenLogin2(int xxx, Resources res) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public ScreenLogin(int xxx, Resources res) {
 ////        if (MyPrefs.loginFirstTimeLogin.getBoolean()) { //very first login
 ////            MyPrefs.setBoolean(MyPrefs.loginFirstTimeLogin, false);
 ////
@@ -290,8 +351,8 @@ public class ScreenLogin2 extends MyForm {
 //////                }
 //////            Log.p("Count of Item in Parse = " + count, Log.DEBUG);
 ////            } else {
-//////                new ScreenLogin2(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
-////                new ScreenLogin2(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//////                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+////                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
 ////
 ////                //TODO intro quiz: you tired of running into limitations in (miss features) in other ToDO apps, your tasks tend to pile up endlessly?, it is important for to be fully control/appear professional?
 //////        super("Welcome to TodoCatalyst", BoxLayout.y());
@@ -449,9 +510,9 @@ public class ScreenLogin2 extends MyForm {
 ////                            Dialog.show("", errorMsg, "OK", null);
 ////                        }
 ////                    }));
-//////            ScreenLogin2.this.animateHierarchy(300);
-//////            ScreenLogin2.this.getContentPane().animateHierarchy(300);
-////                    ScreenLogin2.this.getContentPane().animateLayout(300);
+//////            ScreenLogin.this.animateHierarchy(300);
+//////            ScreenLogin.this.getContentPane().animateHierarchy(300);
+////                    ScreenLogin.this.getContentPane().animateLayout(300);
 ////                });
 ////
 ////                RadioButton login = RadioButton.createToggle("Login", barGroup);
@@ -476,7 +537,7 @@ public class ScreenLogin2 extends MyForm {
 ////                        } else {
 ////                            Dialog.show("", errorMsg, "OK", null);
 ////                        }
-////                        ScreenLogin2.this.getContentPane().animateLayout(300);
+////                        ScreenLogin.this.getContentPane().animateLayout(300);
 ////                    }));
 ////                });
 ////
@@ -500,7 +561,7 @@ public class ScreenLogin2 extends MyForm {
 ////                            Dialog.show("", errorMsg, "OK", null);
 ////                        }
 ////                    }));
-////                    ScreenLogin2.this.getContentPane().animateLayout(300);
+////                    ScreenLogin.this.getContentPane().animateLayout(300);
 ////                });
 ////
 //////        forgottenPassword.setCommand(Command.create("Forgot you password?", selectedWalkthru, (ev) -> {
@@ -558,6 +619,7 @@ public class ScreenLogin2 extends MyForm {
 ////                    updateArrowPosition(barGroup.getRadioButton(barGroup.getSelectedIndex()), arrow);
 ////                });
 ////
+//</editor-fold>
 //////<editor-fold defaultstate="collapsed" desc="comment">
 //////        addButton(res.getImage("news-item-1.jpg"), "Morbi per tincidunt tellus sit of amet eros laoreet.", false, 26, 32);
 //////        addButton(res.getImage("news-item-2.jpg"), "Fusce ornare cursus masspretium tortor integer placera.", true, 15, 21);
@@ -565,6 +627,7 @@ public class ScreenLogin2 extends MyForm {
 //////        addButton(res.getImage("news-item-4.jpg"), "Pellentesque non lorem diam. Proin at ex sollicia.", false, 11, 9);
 //////        add(emailCont);
 //////</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 ////            }
 ////        }
 //    }
@@ -593,15 +656,15 @@ public class ScreenLogin2 extends MyForm {
 //    private void initializeXXX() {
 //        if (MyPrefs.loginFirstTimeLogin.getBoolean()) { //very first login
 //            MyPrefs.setBoolean(MyPrefs.loginFirstTimeLogin, false);
-//            new ScreenLogin2(theme).show();
+//            new ScreenLogin(theme).show();
 //        } else {
 //            int count = 0;
-//            ParseUser parseUser = ScreenLogin2.getLastUserSessionFromStorage();
+//            ParseUser parseUser = ScreenLogin.getLastUserSessionFromStorage();
 //            Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
 //            if (parseUser == null) {
-//                new ScreenLogin2(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
 //            } else {
-//                ScreenLogin2.setDefaultACL(parseUser); //TODO needed??
+//                ScreenLogin.setDefaultACL(parseUser); //TODO needed??
 ////                try {
 ////                    count = query.count();
 ////                } catch (ParseException ex) {
@@ -638,6 +701,7 @@ public class ScreenLogin2 extends MyForm {
 //        if (img.getHeight() < size) {
 //            img = img.scaledHeight(size);
 //        }
+//</editor-fold>
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////        Label likes = new Label(likesStr);
 ////        Style heartStyle = new Style(likes.getUnselectedStyle());
@@ -649,6 +713,7 @@ public class ScreenLogin2 extends MyForm {
 ////        Label comments = new Label(commentsStr);
 ////        FontImage.setMaterialIcon(comments, FontImage.MATERIAL_CHAT);
 ////</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (img.getHeight() > Display.getInstance().getDisplayHeight() / 2) {
 //            img = img.scaledHeight(Display.getInstance().getDisplayHeight() / 2);
 //        }
@@ -702,6 +767,7 @@ public class ScreenLogin2 extends MyForm {
 //    private String CURRENT_USER_STORAGE_ID = "parseCurrentUser";
 //    private String CURRENT_USER_USER_NAME = "parseUserName";
 //    private String CURRENT_USER_USER_EMAIL = "parseUserEmail";
+//</editor-fold>
     private static String CURRENT_USER_SESSION_TOKEN = "parseUserSessionToken";
 //    private String CURRENT_USER_PASSWORD = "parseUserPsWd";
 
@@ -824,14 +890,7 @@ public class ScreenLogin2 extends MyForm {
         return errorMsg;
     }
 
-    /**
-     * create account and sign in
-     *
-     * @param validEmail
-     * @param validUserId if empty, email is used
-     * @param password if empty a temporary one is automatically generated
-     * @return
-     */
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private String createAccountXXX(String validEmail, String validUserId, String password) {
 //
 //        String errorMsg;
@@ -873,6 +932,15 @@ public class ScreenLogin2 extends MyForm {
 //        }
 //        return null;
 //    }
+//</editor-fold>
+    /**
+     * create account and sign in
+     *
+     * @param validEmail
+     * @param validUserId if empty, email is used
+     * @param password if empty a temporary one is automatically generated
+     * @return
+     */
     private String createAccount(String validEmail) {
 
         String errorMsg = validEmail(validEmail);
@@ -932,8 +1000,10 @@ public class ScreenLogin2 extends MyForm {
             parseUser.login();//perform sign up / account creation
 //            setDefaultACL(parseUser); //TODO shoudn't be necessary, only at creation?!
             saveCurrentUserSessionToStorage();
+            startUp(false); //load existing data in foreground
             return null;
         } catch (ParseException ex) {
+//<editor-fold defaultstate="collapsed" desc="Process error message">
             Log.p("***login failed***");
             Log.p(ex.getMessage());
             Log.e(ex);
@@ -955,8 +1025,8 @@ public class ScreenLogin2 extends MyForm {
                     errorMsg = "Something seems to be wrong with your email, please correct and try again";
                     break;
 //                case ParseException.USERNAME_MISSING: //UsernameMissing	200	Error code indicating that the username is missing or empty.
-//                case ParseException.PASSWORD_MISSING: //PasswordMissing	201	Error code indicating that the password is missing or empty.                    
-                //pb with login email or 
+//                case ParseException.PASSWORD_MISSING: //PasswordMissing	201	Error code indicating that the password is missing or empty.
+                //pb with login email or
                 case ParseException.CLOUD_ERROR:
                 case ParseException.CONNECTION_FAILED: // 100	Error code indicating the connection to the Parse servers failed.
                     errorMsg = "Cannot connect to the TodoCatalyst server. Please check your network connection.";
@@ -978,6 +1048,7 @@ public class ScreenLogin2 extends MyForm {
             }
 //            Dialog.show("ERROR", err, "OK", null);
             return errorMsg;
+//</editor-fold>
         }
     }
 

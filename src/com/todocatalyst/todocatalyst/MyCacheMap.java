@@ -25,6 +25,7 @@ package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Display;
 import com.codename1.io.Storage;
+import com.codename1.util.EasyThread;
 import com.parse4cn1.ParseObject;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -101,6 +102,8 @@ public class MyCacheMap {
         this.cacheSize = cacheSize;
     }
 
+    private static final Object LOCK = new Object();
+
     /**
      * Puts the given key/value pair in the cache
      *
@@ -108,41 +111,44 @@ public class MyCacheMap {
      * @param value the value
      */
     public void put(Object key, Object value) {
-        if (cacheSize <= memoryCache.size()) {
-            // we need to find the oldest entry
-            Enumeration e = memoryCache.keys();
-            long oldest = System.currentTimeMillis();
-            Object oldestKey = null;
-            Object[] oldestValue = null;
-            while (e.hasMoreElements()) { //optimization: if stored in age order, iterate from end of list?
-                Object currentKey = e.nextElement();
-                Object[] currentValue = (Object[]) memoryCache.get(currentKey);
-                long currentAge = ((Long) currentValue[0]).longValue();
-                if (currentAge <= oldest || oldestValue == null) {
-                    oldest = currentAge;
-                    oldestKey = currentKey;
-                    oldestValue = currentValue;
+        synchronized (LOCK) {
+            if (cacheSize <= memoryCache.size()) {
+                // we need to find the oldest entry
+                Enumeration e = memoryCache.keys();
+                long oldest = System.currentTimeMillis();
+                Object oldestKey = null;
+                Object[] oldestValue = null;
+                while (e.hasMoreElements()) { //optimization: if stored in age order, iterate from end of list?
+                    Object currentKey = e.nextElement();
+                    Object[] currentValue = (Object[]) memoryCache.get(currentKey);
+                    long currentAge = ((Long) currentValue[0]).longValue();
+                    if (currentAge <= oldest || oldestValue == null) {
+                        oldest = currentAge;
+                        oldestKey = currentKey;
+                        oldestValue = currentValue;
+                    }
                 }
+                placeInStorageCache(oldestKey, oldest, oldestValue[1]);
+                weakCache.put(oldestKey, Display.getInstance().createSoftWeakRef(oldestValue[1]));
+                memoryCache.remove(oldestKey);
             }
-            placeInStorageCache(oldestKey, oldest, oldestValue[1]);
-            weakCache.put(oldestKey, Display.getInstance().createSoftWeakRef(oldestValue[1]));
-            memoryCache.remove(oldestKey);
-        }
-        long lastAccess = System.currentTimeMillis();
-        Object previousValue = memoryCache.put(key, new Object[]{new Long(lastAccess), value});
-        if (false &&Config.TEST)
-        ASSERT.that( previousValue == null || (!(previousValue instanceof ParseObject && value instanceof ParseObject) ||
-                 ((ParseObject) value).keySet().size() > ((ParseObject) previousValue).keySet().size()),
-                ()->"Error, replacing ParseObject with more data with ParseObject with less data, prev=" 
-                        + previousValue 
-                        +((((ParseObject) previousValue).keySet()!=null)?(" ("
-                                +((ParseObject) previousValue).keySet().size()+")"):"")
-                        +", new=" + value
-                        +((((ParseObject) value).keySet()!=null)?(" ("+((ParseObject) value).keySet().size()+")"):"")
-//                                +" ("+((ParseObject) value).keySet().size()+")"
-        );
-        if (alwaysStore) {
-            placeInStorageCache(key, lastAccess, value);
+            long lastAccess = System.currentTimeMillis();
+            Object previousValue = memoryCache.put(key, new Object[]{new Long(lastAccess), value});
+            if (false && Config.TEST) {
+                ASSERT.that(previousValue == null || (!(previousValue instanceof ParseObject && value instanceof ParseObject)
+                        || ((ParseObject) value).keySet().size() > ((ParseObject) previousValue).keySet().size()),
+                        () -> "Error, replacing ParseObject with more data with ParseObject with less data, prev="
+                        + previousValue
+                        + ((((ParseObject) previousValue).keySet() != null) ? (" ("
+                        + ((ParseObject) previousValue).keySet().size() + ")") : "")
+                        + ", new=" + value
+                        + ((((ParseObject) value).keySet() != null) ? (" (" + ((ParseObject) value).keySet().size() + ")") : "")
+                //                                +" ("+((ParseObject) value).keySet().size()+")"
+                );
+            }
+            if (alwaysStore) {
+                placeInStorageCache(key, lastAccess, value);
+            }
         }
     }
 
@@ -152,23 +158,25 @@ public class MyCacheMap {
      * @param key entry to remove from the cache
      */
     public void delete(Object key) {
-        memoryCache.remove(key);
-        weakCache.remove(key);
-        Vector storageCacheContent = getStorageCacheContent();
-        int s = storageCacheContent.size();
+        synchronized (LOCK) {
+            memoryCache.remove(key);
+            weakCache.remove(key);
+            Vector storageCacheContent = getStorageCacheContent();
+            int s = storageCacheContent.size();
 //        for (int iter = 0; iter < s; iter++) {
-        int iter = 0;
-        while (iter < s) {
-            Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
-            if (obj[1].equals(key)) {
-                Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + key.toString());
+            int iter = 0;
+            while (iter < s) {
+                Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
+                if (obj[1].equals(key)) {
+                    Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + key.toString());
 //                obj[0] = new Long(Long.MIN_VALUE);
 //                obj[1] = obj[0]; //THJ: obj[1] = obj[0] seems like a dirty way of deleting the index entry, is Vector.remove(index) so expensive?? ACTUALLY, ERROR: this corrupts the idx since the obj[1] value gets included in getKeysInCache!!!
-                storageCacheContent.remove(iter); //THJ, not allowed with for loop
-                Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
-                return;
+                    storageCacheContent.remove(iter); //THJ, not allowed with for loop
+                    Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+                    return;
+                }
+                iter++;
             }
-            iter++;
         }
     }
 
@@ -179,32 +187,34 @@ public class MyCacheMap {
      * @return value from a previous put or null
      */
     public Object get(Object key) {
-        Object[] o = (Object[]) memoryCache.get(key);
-        if (o != null) {
-            return o[1];
-        }
-        Object ref = weakCache.get(key);
-        if (ref != null) {
-            ref = Display.getInstance().extractHardRef(ref);
-            if (ref != null) {
-                // cache hit! Promote it to the hard cache again
-                put(key, ref);
-                return ref;
+        synchronized (LOCK) {
+            Object[] o = (Object[]) memoryCache.get(key);
+            if (o != null) {
+                return o[1];
             }
-        }
-        if (storageCacheSize > 0) {
-            Vector storageCacheContent = getStorageCacheContent();
-            for (int iter = 0, size = storageCacheContent.size(); iter < size; iter++) { //THJ: optimization
-                Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
-                if (obj[1].equals(key)) { //THJ: stored format: { value, lastAccessed, key } so must be '2'. NOPE: index is {lastAccessed, key}
-                    // place the object back into the memory cache and return the value
-                    Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
-                    if (v != null) {
-                        Object val = v.elementAt(0);
-                        put(key, val);
-                        return val;
+            Object ref = weakCache.get(key);
+            if (ref != null) {
+                ref = Display.getInstance().extractHardRef(ref);
+                if (ref != null) {
+                    // cache hit! Promote it to the hard cache again
+                    put(key, ref);
+                    return ref;
+                }
+            }
+            if (storageCacheSize > 0) {
+                Vector storageCacheContent = getStorageCacheContent();
+                for (int iter = 0, size = storageCacheContent.size(); iter < size; iter++) { //THJ: optimization
+                    Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
+                    if (obj[1].equals(key)) { //THJ: stored format: { value, lastAccessed, key } so must be '2'. NOPE: index is {lastAccessed, key}
+                        // place the object back into the memory cache and return the value
+                        Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
+                        if (v != null) {
+                            Object val = v.elementAt(0);
+                            put(key, val);
+                            return val;
+                        }
+                        return null;
                     }
-                    return null;
                 }
             }
         }
@@ -216,6 +226,7 @@ public class MyCacheMap {
      * load as many as possible to memory to speed up access.
      */
     synchronized public void loadCacheToMemory() {
+        synchronized(LOCK){
         Vector storageCacheContent = getStorageCacheContent();
         boolean oldAlwaysStore = alwaysStore;
         alwaysStore = false; //avoid to persist to StorageCache (very slow)
@@ -228,6 +239,7 @@ public class MyCacheMap {
             }
         }
         alwaysStore = oldAlwaysStore;
+        }
     }
 
     /**
