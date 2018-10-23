@@ -60,15 +60,18 @@ LabelValue {
     cn1-derive: Label;
     color: blue;
 }
-Text {
+ScreenItemTaskText {
     cn1-derive: Label;
-        padding: 1mm;
+    padding: 1mm;
     margin: 1mm;
     text-decoration: underline;
-border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     color: black;
-   font-size: 100%;
+    font-size: 100%;
     text-align: left;
+}
+Text { /*old UIID for task text*/
+    cn1-derive: ScreenItemTaskText;
 }
 
 /*************** list of items **************/
@@ -90,7 +93,7 @@ ListOfItemsText { /*style for task text in lists*/
 ListOfItemsTextDone { /*style for DONE task text in lists*/
     cn1-derive: ListOfItemsText;
     color:grey;
-        text-decoration: line-through;
+    text-decoration: line-through;
 }
 
 ItemListSmall {
@@ -131,9 +134,9 @@ ListOfItemsDueDate {
 
 ListOfItemsDueDateInherited {
     cn1-derive: ListOfItemsDueDate;
-   /* text-align: center;*/
+    /* text-align: center;*/
     color: red;
-     text-decoration: underline;
+    text-decoration: underline;
     /*background-color: #3399ff;
     /*foreground-color: #268b04;*/
 }
@@ -393,8 +396,8 @@ ButtonGroupOnly {
 
 TimerTimer {
     /*font-family :  "native:MainBold";*/
-        font-family :  "System-Monospace";
- 
+    font-family :  "System-Monospace";
+
     font-size: 200%;
     border: 1mm solid gray;
     background: blue;

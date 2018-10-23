@@ -797,6 +797,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String TASK = "TASK"; //Task";
     final static String TASK_HELP = "TASK_HELP";// "Describe your task here";
     final static String DESCRIPTION = "DESCRIPTION"; //"Description"; // "Task text"
+    final static String DESCRIPTION_HELP = "DESCRIPTION_HELP"; //"Description"; // "Task text"
     final static String DESCRIPTION_HINT = "DESCRIPTION_HINT"; //"New task"; // "Task text"
     //        final static String FIELD_DONE = "Done", Expr.VALUE_FIELD_TYPE_STRING),
     final static String DONE = "DONE"; //"Done";

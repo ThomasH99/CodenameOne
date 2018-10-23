@@ -722,9 +722,8 @@ public class ScreenItem extends MyForm {
                 Log.p("longPointerPress on text area");
             }
         };
-        description.longPointerPress(TOP, TOP);
         //https://stackoverflow.com/questions/34531047/how-to-add-donelistener-to-textarea-in-codename-one: "putClientProperty("searchField", true);, putClientProperty("sendButton", true);and putClientProperty("goButton", true); would place a button on the keyboard"
-        description.putClientProperty("goButton", true);
+        description.putClientProperty("goButton", Boolean.TRUE); //doc https://www.codenameone.com/manual/components.html, section "Action Button Client Property"
         description.setUIID("Text");
         description.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
 //        MyCheckBox status = new MyCheckBox(null, parseIdMap2, () -> item.isDone(), (b) -> item.setDone(b));

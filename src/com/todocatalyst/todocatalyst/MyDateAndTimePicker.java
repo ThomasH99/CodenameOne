@@ -36,7 +36,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear{
         }
         setType(Display.PICKER_TYPE_DATE_AND_TIME);
         setShowMeridiem(false);
-        setMinuteStep(MyPrefs.pickerMinuteStep.getInt());
+        setMinuteStep(MyPrefs.dateTimePickerMinuteStep.getInt());
 //            this.addActionListener(
 //                    (e) -> {
 //                        if (getDate().getTime() == 0) {

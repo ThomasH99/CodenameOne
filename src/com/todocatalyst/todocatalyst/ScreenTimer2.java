@@ -37,7 +37,7 @@ import static com.todocatalyst.todocatalyst.MyForm.dialogSetWaitingDateAndAlarm;
  *
  * @author Thomas
  */
-public class ScreenTimer extends MyForm {
+public class ScreenTimer2 extends MyForm {
 
     //TODO!!! get owner project / list from owner field of timed task (to ensure that even if started from e.g. Overdue, it will show!
     //TODO Imp: rearrange Timer to show most useful/needed first: show task and timer first, then Notes, then estimates.
@@ -165,7 +165,7 @@ public class ScreenTimer extends MyForm {
 
 //    private CheckBox startTimerAutomaticallyForNextTask; //should be unique for the Timer
 //    private Command continueCommand; //make global to be able to test return value; 
-    private ScreenTimer() {
+    private ScreenTimer2() {
         super(SCREEN_TITLE, null, () -> {
         });
         setLayout(new BorderLayout());
@@ -193,11 +193,11 @@ public class ScreenTimer extends MyForm {
         super.refreshAfterEdit();
     }
 
-    private static ScreenTimer INSTANCE;
+    private static ScreenTimer2 INSTANCE;
 
-    public static ScreenTimer getInstance() {
+    public static ScreenTimer2 getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new ScreenTimer();
+            INSTANCE = new ScreenTimer2();
         }
         return INSTANCE;
     }
@@ -558,7 +558,7 @@ public class ScreenTimer extends MyForm {
      */
 //    private void startTimerImpl(Item item, ItemList itemList, MyForm previousForm, boolean startTimerImmediately, boolean keepPreviousItemWithoutPrompt, boolean interrupt) {
 //    private void launchTimerImpl(Item item, ItemList orgItemList, FilterSortDef filter, MyForm previousForm, boolean interruptOrInstantTask) {
-    private void launchTimerImpl(Item item, ItemList orgItemList, MyForm previousForm, boolean interruptOrInstantTask) {
+    private void launchTimerImplXXX(Item item, ItemList orgItemList, MyForm previousForm, boolean interruptOrInstantTask) {
 //        launchTimerImpl(item, orgItemList, filter, previousForm, interruptOrInstantTask, false);
         launchTimerImpl(item, orgItemList, previousForm, interruptOrInstantTask, false);
     }
@@ -572,7 +572,7 @@ public class ScreenTimer extends MyForm {
 
             assert item != null || orgItemList != null : "either item or itemList must be defined";
             this.forceTimerStartOnLeafTasksWithAnyStatus = forceTimerStartOnLeafTasksWithAnyStatus;
-            if (previousForm != ScreenTimer.this) {
+            if (previousForm != ScreenTimer2.this) {
                 //UI: always store last form to return to when using BACK button (except when Timer launched from Timer, e.g. for interrupts)
                 this.previousForm = previousForm; //if Interrupt comes from Timer, do not save the ScreenTimer as previous form, but keep whatever previous form the user come from when first starting the timer
             }
@@ -816,16 +816,16 @@ public class ScreenTimer extends MyForm {
         //stop and push previously timed item+context
 //        startInterrupt(item, previousForm, true, true);
 //        launchTimerImpl(item, null, null, previousForm, true);
-        launchTimerImpl(item, null, previousForm, true);
+        launchTimerImpl(item, null, previousForm, true, false);
     }
 
 //    public void startInterrupt(Item item, MyForm previousForm, boolean startTimerImmediately, boolean keepPreviousItemWithoutPrompt) {
 //        startTimerImpl(item, getEntry().itemList, previousForm, startTimerImmediately, keepPreviousItemWithoutPrompt, true);
 //    }
 //
-    public void startTimerOnItemXXX(Item item, MyForm previousForm) {
-        startTimerOnItem(item, previousForm, false);
-    }
+//    public void startTimerOnItemXXX(Item item, MyForm previousForm) {
+//        startTimerOnItemXXX(item, previousForm, false);
+//    }
 
     public void startTimerOnItem(Item item, MyForm previousForm, boolean forceTimerStartOnLeafTasksWithAnyStatus) {
         //if timer already running, update time for (already stored) Item
@@ -838,7 +838,7 @@ public class ScreenTimer extends MyForm {
         //TODO!!! remove filter from arguments and get it directly from orgItemList
         //if timer already running, update time for (already stored) Item
 //        launchTimerImpl(null, orgItemList, filter, previousForm, false);
-        launchTimerImpl(null, orgItemList, previousForm, false);
+        launchTimerImpl(null, orgItemList, previousForm, false, false);
     }
 //    final Image iconTimerStartTimer = FontImage.createMaterial(FontImage.MATERIAL_PLAY_ARROW, new Label().getStyle());
 //    final Image iconTimerPauseTimer = FontImage.createMaterial(FontImage.MATERIAL_PAUSE, new Label().getStyle());
@@ -880,7 +880,8 @@ public class ScreenTimer extends MyForm {
      * than Timer UI, e.g. stopped because the timed tasks is marked
      * Done/Cancelled or Deleted (//TODO!!!! will this work?)
      */
-    private void processCurrentItemAndLaunchNextOrExit(ItemStatus newItemStatus, boolean forceExitAfterUpdatingItem, boolean cancelCurrentTask, boolean manuallySelectedGotoNextTask, boolean timerBeingStoppedRemotely) {
+    private void processCurrentItemAndLaunchNextOrExit(ItemStatus newItemStatus, boolean forceExitAfterUpdatingItem, boolean cancelCurrentTask, 
+            boolean manuallySelectedGotoNextTask, boolean timerBeingStoppedRemotely) {
 //        TimerStackEntry entry = getEntry();
         assert !timerIsUpdatingItemStatus || timerBeingStoppedRemotely : "timerIsUpdatingItemStatus not reset back to false correctly";
 
@@ -1438,7 +1439,7 @@ public class ScreenTimer extends MyForm {
                 }
             }
             //            )).schedule(INTERVAL_UPDATE_TIMER_MILLIS, TIMER_REPEAT_UPDATE, ScreenTimer.this); //update every second. TODO change to every minute when timer>60s
-            )).schedule(MyPrefs.timerUpdateInterval.getInt() * MyDate.SECOND_IN_MILLISECONDS, TIMER_REPEAT_UPDATE, ScreenTimer.this); //update every second. TODO change to every minute when timer>60s
+            )).schedule(MyPrefs.timerUpdateInterval.getInt() * MyDate.SECOND_IN_MILLISECONDS, TIMER_REPEAT_UPDATE, ScreenTimer2.this); //update every second. TODO change to every minute when timer>60s
             timerStartStopButton.setIcon(Icons.iconTimerPauseLabelStyle);
             timerStartStopButton.animate(); //this is enough to update the value on the screen
 
@@ -1457,7 +1458,7 @@ public class ScreenTimer extends MyForm {
                     }
                 }
                 //            )).schedule(BUZZER_INTERVAL, true, ScreenTimer.this); //update every second. TODO change to every minute when timer>60s
-                )).schedule(MyPrefs.timerBuzzerInterval.getInt(), true, ScreenTimer.this); //update every second. TODO change to every minute when timer>60s
+                )).schedule(MyPrefs.timerBuzzerInterval.getInt(), true, ScreenTimer2.this); //update every second. TODO change to every minute when timer>60s
             }
 
             timerStack.save(); //save status (e.g. of running)
@@ -1826,7 +1827,7 @@ public class ScreenTimer extends MyForm {
 //</editor-fold>
 //        toolbar.addCommandToOverflowMenu(new Command("Timer settings", Icons.iconSettingsLabelStyle) {
         toolbar.addCommandToRightBar(MyReplayCommand.create("TimerSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
-            new ScreenSettingsTimer(ScreenTimer.this, () -> {
+            new ScreenSettingsTimer(ScreenTimer2.this, () -> {
                 refreshAfterEdit();
             }).show();
         }
@@ -2234,10 +2235,10 @@ public class ScreenTimer extends MyForm {
 
         editItemButton = new Button(MyReplayCommand.create("EditItem", "", Icons.iconEditSymbolLabelStyle, (e) -> {
             putEditedValues2(parseIdMap2, timerStack.currEntry.timedItem); //first update Item with any values changed in Timer
-            ScreenItem screenItem = new ScreenItem(timerStack.currEntry.timedItem, ScreenTimer.this, () -> {
+            ScreenItem2 screenItem = new ScreenItem(timerStack.currEntry.timedItem, ScreenTimer2.this, () -> {
                 DAO.getInstance().save(timerStack.currEntry.timedItem);
                 refreshItemEditFields(timerStack.currEntry.timedItem);
-                ScreenTimer.this.revalidate();
+                ScreenTimer2.this.revalidate();
             });
             screenItem.show();
         }

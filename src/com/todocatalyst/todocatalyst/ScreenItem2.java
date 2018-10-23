@@ -116,6 +116,7 @@ public class ScreenItem2 extends MyForm {
     private boolean remainingEffortSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private boolean effortEstimateSetManually = false; //true when effortEstimate has been edited to a different value than the original one from item
     private boolean effortEstimateSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
+    private String LAST_TAB_SELECTED = "$$LastTabSelected";
 
 //    ScreenItem(Item item, MyForm previousForm) { //throws ParseException, IOException {
 //        this(item, previousForm, ()->{});
@@ -660,6 +661,76 @@ public class ScreenItem2 extends MyForm {
 //    }
 //</editor-fold>
 
+    Map<Object, Object> previousValues = new HashMap<Object, Object>() {
+        public Object put(Object key, Object value) {
+            Object previousValue = super.put(key, value);
+            saveFile();
+            return previousValue;
+        }
+
+        public Object remove(Object key) {
+            Object previousValue = super.remove(key);
+            saveFile();
+            return previousValue;
+        }
+
+        void saveFile() {
+            Storage.getInstance().writeObject("ScreenItem-" + item.getObjectIdP(), this); //save 
+        }
+
+        void deleteFile() {
+            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
+        }
+    };
+
+    interface GetVal {
+
+        Object getVal();
+    }
+
+    interface PutVal {
+
+        void setVal(Object val);
+    }
+
+    interface GetBool {
+
+        boolean getVal();
+    }
+
+    private Component make(String identifier, GetVal getVal, PutVal putVal, PutVal putField, GetVal getField) {
+        return make("", "", identifier, getVal, putVal, getField, putField, null);
+    }
+
+    private Component make(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
+//                if (previousValues.get(Item.PARSE_EFFORT_ESTIMATE) != null) {
+        if (previousValues.get(Item.PARSE_EFFORT_ESTIMATE) != null) ;
+        if (previousValues.get(fieldIdentifier) != null) {
+//            effortEstimate.setDuration((long) previousValues.get(Item.PARSE_EFFORT_ESTIMATE)); //use a previously edited value
+            putField.setVal(previousValues.get(fieldIdentifier)); //use a previously edited value
+        } else {
+//            if (item.isChallengeInherited()) {
+            if (isInherited != null && isInherited.getVal()) {
+                //handle inheritance when appropriate
+            } else {
+//                effortEstimate.setDuration(item.getEffortEstimate());
+                putField.setVal(getVal.getVal());
+            }
+        }
+
+        //get edited value on exit
+//        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
+        parseIdMap2.put(fieldIdentifier, () -> {
+//        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
+            if (!getField.getVal().equals(getVal.getVal())) {
+//            item.setEffortEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
+                putVal.setVal(getField.getVal()); //if value has been changed, update item
+            }
+        });
+
+        return layoutN(fieldLabel, (Component) field, fieldHelp);
+    }
+
     /**
      * This method shows the main user interface of the app
      *
@@ -696,8 +767,19 @@ public class ScreenItem2 extends MyForm {
 //       tabs.setTabPlacement(Component.BOTTOM);
 //       tabs.setTabPlacement(Component.BOTTOM);
         tabs.setSwipeActivated(false);
+        tabs.addSelectionListener((oldSel, i) -> {
+//            int i = tabs.getSelectedIndex();
+            if (i == 0 || i == -1) {
+                previousValues.remove(LAST_TAB_SELECTED);
+            } else {
+                previousValues.put(LAST_TAB_SELECTED, i);
+            }
+        });
         cont.add(BorderLayout.CENTER, tabs);
 
+        MyTextArea description;
+        MyDurationPicker effortEstimate;
+        MyDurationPicker remainingEffort;
         //TAB MAIN
         Container mainTabCont = new Container(new BorderLayout());
         Container mainCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
@@ -716,128 +798,61 @@ public class ScreenItem2 extends MyForm {
 //        MyTextField description = new MyTextField("Task", 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2, () -> item.getText(), (s) -> item.setText(s));
 //        MyTextField description = new MyTextField(Item.DESCRIPTION_HINT, 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
 //                () -> itemLS.getText(), (s) -> item.setText(s));
-        MyTextArea description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
+        description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
                 () -> itemLS.getText(), (s) -> item.setText(s)) {
             @Override
             public void longPointerPress(int x, int y) {
                 Log.p("longPointerPress on text area");
+                //TODO!!! call templatePicker
             }
         };
-        description.longPointerPress(TOP, TOP);
+        make(Item.DESCRIPTION, Item.DESCRIPTION_HELP, description, Item.PARSE_TEXT, () -> item.getText(), (t) -> item.setText((String) t),
+                (t) -> description.setText((String) t), () -> description.getText(), null);
+
         //https://stackoverflow.com/questions/34531047/how-to-add-donelistener-to-textarea-in-codename-one: "putClientProperty("searchField", true);, putClientProperty("sendButton", true);and putClientProperty("goButton", true); would place a button on the keyboard"
         description.putClientProperty("goButton", true);
-        description.setUIID("Text");
+        description.setUIID("ScreenItemTaskText");
         description.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
 //        MyCheckBox status = new MyCheckBox(null, parseIdMap2, () -> item.isDone(), (b) -> item.setDone(b));
-        tabs.addSelectionListener(new SelectionListener() {
-            @Override
-            public void selectionChanged(int oldSelected, int newSelected) {
-                if (oldSelected == 0) { //main tab(??) //TODO!! why this code??
-//                    setTitle(description.getText()); //update Form title in case task text has changed (why would it??)
-                    setTitle(getScreenTitle(item.isTemplate(), description.getText())); //update Form title in case task text has changed (TODO why would it??)
-                }
-                lastTabSelected = newSelected; //keep track of lastTab
-            }
-        });
+//        tabs.addSelectionListener(new SelectionListener() {
+//            @Override
+//            public void selectionChanged(int oldSelected, int newSelected) {
+//                if (oldSelected == 0) { //main tab(??) //TODO!! why this code??
+////                    setTitle(description.getText()); //update Form title in case task text has changed (why would it??)
+//                    setTitle(getScreenTitle(item.isTemplate(), description.getText())); //update Form title in case task text has changed (TODO why would it??)
+//                }
+//                lastTabSelected = newSelected; //keep track of lastTab
+//            }
+//        });
         if (description.getText().length() == 0) {
             setEditOnShow(description); //UI: start editing this field, only if empty (to avoid keyboard popping up)
         }
 
         //need to declare already here to use in actionListener below
-//        MyDurationPicker effortEstimate;
-//        effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS,
-//                (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false)); //false: avoid circular auto-updates when changing via the UI (which ensures the same updates visibly in the pickers)
-        MyDurationPicker effortEstimate;
-        effortEstimate = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS,
-                (i) -> item.setEffortEstimate(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false)); //false: avoid circular auto-updates when changing via the UI (which ensures the same updates visibly in the pickers)
+        effortEstimate = new MyDurationPicker();
+        make(Item.EFFORT_ESTIMATE, Item.EFFORT_ESTIMATE_HELP, effortEstimate, Item.PARSE_EFFORT_ESTIMATE, () -> item.getEffortEstimate(), (l) -> item.setEffortEstimate((long) l), (l) -> effortEstimate.setDuration((long) l), () -> effortEstimate.getDuration(), null);
 
-        Map<Object, Object> previousValues = new HashMap<Object, Object>() {
-            public Object put(Object key, Object value) {
-                Object previousValue = super.put(key, value);
-//                save();
-                return previousValue;
-            }
-
-            public Object remove(Object key) {
-                Object previousValue = super.remove(key);
-//                save();
-                return previousValue;
-            }
-        };
-        //set initial value
-        if (previousValues.get(Item.PARSE_EFFORT_ESTIMATE) != null) {
-            effortEstimate.setDuration((long) previousValues.get(Item.PARSE_EFFORT_ESTIMATE)); //use a previously edited value
-        } else {
-            if (item.isChallengeInherited()) {
-                //handle inheritance when appropriate
-            } else {
-                effortEstimate.setDuration(item.getEffortEstimate());
-            }
-        }
-        //get edited value on exit
-        if (effortEstimate.getDuration()!=item.getEffortEstimate()) {
-            item.setEffortEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
-        } 
-        
-        //listen to changes an update+save if edited to different value than item.orgValue
-        effortEstimate.addActionListener((e) -> {
-            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
-            } else {
-                previousValues.remove(Item.PARSE_EFFORT_ESTIMATE); //remove any old value if edited back to same value as Item has already
-            }
-        });
-
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        } else {
-//Label effortEstimateForSubtasks;
-//        if (item.isProject()) {
-//            effortEstimateForSubtasks = new Label(""+(int) itemLS.getEffortEstimateForSubtasks()/ MyDate.MINUTE_IN_MILLISECONDS);
-//        }
-//</editor-fold>
 //get the effort for the project task itself:
-        MyDurationPicker remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS, //getRemainingEffort(true, true): need to show same sum here as in the list showing the project
-                (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS, false)); //false since the UI will update the other picker (Estimate)
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (item.isProject()) {
-////            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS,
-//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortProjectTaskItself()/ MyDate.MINUTE_IN_MILLISECONDS, //getRemainingEffort(true, true): need to show same sum here as in the list showing the project
-//                    //                    (i) -> item.setRemainingEffortXXX(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,
-//                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS,false)); //false since the UI will update the other picker (Estimate)
-////            timeCont.add(layout(Item.EFFORT_REMAINING_PROJECT, remainingEffort.makeContainerWithClearButton(), "**"));
-////            timeCont.add(layoutN(Item.EFFORT_REMAINING_PROJECT, remainingEffort, Item.EFFORT_REMAINING_PROJECT_HELP, () -> {            }, true, true, false));
-//        } else {
-//            //            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) item.getRemainingEffortInMinutes(), (i) -> item.setRemainingEffortInMinutes((int) i));
-//            remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,
-//                    (i) -> item.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
-//        }
-//</editor-fold>
+        remainingEffort = new MyDurationPicker();
+        make(Item.EFFORT_REMAINING, Item.EFFORT_REMAINING_HELP, effortEstimate, Item.PARSE_REMAINING_EFFORT, () -> item.getRemainingEffort(), (l) -> item.setRemainingEffort((long) l),
+                (l) -> remainingEffort.setDuration((long) l), () -> remainingEffort.getDuration(), null);
 
-//        description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
         description.addActionListener((e) -> {
 //            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
             Item.EstimateResult res = Item.getEffortEstimateFromTaskText(description.getText(), false);
             //TODO!!! create a function that will determine when to any of the user setting baesd on the values in description string
-            //eg call w string and 
-//            if (item.getEffortEstimate()==0 || effortEstimate.getTime() == 0||res.minutes*MyDate.MINUTE_IN_MILLISECONDS!=item.getEffortEstimate()) { //UI: use value in text if either no previous value set, or manual value entered in picker or new text value entered into text
             if (res.minutes != 0) { //UI: alwyas use value in text to override previous value
                 //TODO!!!!! call the same actionListener as when EsitmatePicker is changed 
-//                effortEstimate.setTime(res.minutes); //will set effortEstimate, even if text is changed multiple times. However, manually changing remaining
                 //UI: entering an estimate in the text of an item is used to set remaining effort (and not effort estimate) since this is more useful, e.g. as an easy way to update remaining while editing the item
                 remainingEffort.setTime(res.minutes); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
                 remainingEffort.repaint();
-//                effortEstimateSetManually = true; //NOT necessary
-                description.setText(res.cleaned); //DON'T update text while 
+                description.setText(res.cleaned); //update text after estimate is removed 
                 description.repaint();
             }
             setTitle(getScreenTitle(item.isTemplate(), description.getText()));
         }); //update the form title when text is changed
 
-//        MyDurationPicker actualEffort = null;
-//        Button status = ItemContainer.createCheckbox(item, false);
-//        MyCheckBox status = new MyCheckBox(item, false);
         MyCheckBox status = new MyCheckBox(itemLS.getStatus(), (oldStatus, newStatus) -> {
-//            if (newStatus==ItemStatus.WAITING)
         }, null);
 
         parseIdMap2.put(status, () -> item.setStatus(status.getStatus()));
@@ -2148,8 +2163,14 @@ public class ScreenItem2 extends MyForm {
 //        TableLayout.Constraint cn = tl.createConstraint();
 //        cn.setHorizontalSpan(spanButton);
 //        cn.setHorizontalAlign(Component.RIGHT);
-        if (lastTabSelected >= 0 && tabs.getTabCount() > 0) {
-            tabs.setSelectedIndex(lastTabSelected); //keep same tab selected even if regenerating the screen
+//        if (lastTabSelected >= 0 && tabs.getTabCount() > 0) {
+//            tabs.setSelectedIndex(lastTabSelected); //keep same tab selected even if regenerating the screen
+//        }
+//        if (previousValues.containsKey(LAST_TAB_SELECTED) >= 0 && tabs.getTabCount() > 0) {
+//            tabs.setSelectedIndex(lastTabSelected); //keep same tab selected even if regenerating the screen
+//        }
+        if (previousValues.containsKey(LAST_TAB_SELECTED)) {
+            tabs.setSelectedIndex((int)previousValues.get(LAST_TAB_SELECTED)); //keep same tab selected even if regenerating the screen
         }
         return cont;
     }

@@ -98,6 +98,28 @@ class MyDurationPicker extends Picker implements SwipeClear {
         setMinuteStep(1);
     }
 
+    MyDurationPicker() {
+        super();
+        setUIID("LabelValue");
+        this.setType(Display.PICKER_TYPE_DURATION);
+        this.zeroValuePattern = ""; // "<set>";
+        this.defaultValueInMinutes = 0;
+//        setFormatter(new SimpleDateFormat() {
+//            public String format(Object value) {
+//                return MyDate.formatTimeDuration((Long) value);
+//            }
+//        });
+        setMinuteStep(MyPrefs.durationPickerMinuteStep.getInt()); //TODO!! setting to select interval of 1/5 minutes
+    }
+
+    public void setDurationMinutes(int minutes) {
+        this.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
+    }
+
+    public int getDurationMinutes() {
+        return (int) getDuration() / MyDate.MINUTE_IN_MILLISECONDS;
+    }
+
     private Button clearButton = null;
 
 //    public void setClearButton(Button clearButton) {

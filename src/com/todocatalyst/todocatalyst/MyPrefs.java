@@ -330,7 +330,8 @@ public class MyPrefs {
     //localization
     static PrefEntry localeUserSelected = new PrefEntry("Language for text", "localeUserSelected", "en", "Determines the language used. Use this setting to override the default language used on your device");
 
-    static PrefEntry pickerMinuteStep = new PrefEntry("Picker minute steps", "pickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
+    static PrefEntry dateTimePickerMinuteStep = new PrefEntry("Picker minute steps", "pickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
+    static PrefEntry durationPickerMinuteStep = new PrefEntry("Duration picker minute steps", "pickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
 
 //LOGIN
     static PrefEntry loginStoreEmail = new PrefEntry("Show email on login", "loginStoreEmail", true, "**");
