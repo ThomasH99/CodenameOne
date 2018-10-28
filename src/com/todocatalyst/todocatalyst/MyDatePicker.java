@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * @author Thomas
  */
-class MyDatePicker extends Picker implements SwipeClear{
+class MyDatePicker extends Picker implements SwipeClear {
 
     @Override
     protected void updateValue() {
@@ -53,6 +53,14 @@ class MyDatePicker extends Picker implements SwipeClear{
         this(zeroValuePattern, parseIdMap, get, set, false);
     }
 
+    MyDatePicker() {
+        super();
+        setUIID("LabelValue");
+        this.zeroValuePattern = ""; //"<set>";
+        this.setType(Display.PICKER_TYPE_DATE);
+
+    }
+
     MyDatePicker(Date date, String zeroValuePattern, boolean setEndOfSelectedDay) {
         super();
 //        setUIID("Button");
@@ -66,7 +74,7 @@ class MyDatePicker extends Picker implements SwipeClear{
         this.setType(Display.PICKER_TYPE_DATE);
 //            this.setDate(parseObject.getDate(parseId));
 //        Date d = get.get();
-        if (date != null && date.getTime()!=0) {
+        if (date != null && date.getTime() != 0) {
             this.setDate(date);
         } else {
             this.setDate(new Date(0)); //UI: default date is undefined
@@ -99,7 +107,6 @@ class MyDatePicker extends Picker implements SwipeClear{
     }
 
 //    private Button clearButtonXXX = null;
-
 //    @Override
 //    public void setDate(Date date) {
 //        if (clearButtonXXX != null) {
@@ -114,7 +121,6 @@ class MyDatePicker extends Picker implements SwipeClear{
 //            }
 //        }
 //    }
-
     void swipeClear() {
         setDate(new Date(0));
     }
@@ -137,7 +143,6 @@ class MyDatePicker extends Picker implements SwipeClear{
 ////        return LayeredLayout.encloseIn(this, FlowLayout.encloseRightMiddle(clearButton));
 //        return FlowLayout.encloseRightMiddle(this, clearButtonXXX);
 //    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDatePicker(String title, String zeroValuePattern, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
 //            super();
@@ -159,7 +164,6 @@ class MyDatePicker extends Picker implements SwipeClear{
 //            return title;
 //        }
 //</editor-fold>
-
     @Override
     public void clearFieldValue() {
         swipeClear();

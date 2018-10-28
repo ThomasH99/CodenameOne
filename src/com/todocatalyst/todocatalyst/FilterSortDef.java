@@ -122,7 +122,7 @@ public class FilterSortDef extends ParseObject {
     private static String[] sortOptions = new String[]{
         Item.PRIORITY, Item.DUE_DATE, Item.EFFORT_REMAINING,
         Item.EFFORT_ESTIMATE, Item.EFFORT_ACTUAL,
-        Item.CHALLENGE, Item.FUN_DREAD, Item.EARNED_POINTS,
+        Item.CHALLENGE, Item.FUN_DREAD, Item.EARNED_VALUE,
         Item.START_BY_TIME, Item.STARTED_ON_DATE, Item.UPDATED_DATE,
         Item.CREATED_DATE, Item.COMPLETED_DATE, Item.WAIT_UNTIL_DATE,
         Item.DESCRIPTION,

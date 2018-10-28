@@ -35,6 +35,7 @@ public class EditFieldContainer extends Container {
     EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Image fieldIcon) {
         super(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+        setUIID("EditFieldContainer");
         Container fieldContainer = this;
 
         if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {

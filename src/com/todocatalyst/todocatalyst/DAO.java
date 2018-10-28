@@ -215,6 +215,26 @@ public class DAO {
         }
         return item;
     }
+    
+    public Category fetchCategory(String objectId) {
+        Category category;
+        if (objectId == null || objectId.length() == 0) {
+            return null;
+        }
+//        if ((item = (Item) cache.get(objectId)) != null) {
+        if ((category = (Category) cacheGet(objectId)) != null) {
+            return category;
+        }
+//        Item item = null;
+        try {
+            category = ParseObject.fetch(Category.CLASS_NAME, objectId);
+//            cache.put(objectId, item);
+            cachePut(category);
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return category;
+    }
 
     /**
      *
@@ -1039,6 +1059,8 @@ public class DAO {
         if (inbox == null) {
             //if no Inbox already saved, initialize it with existing categories
             inbox = new ItemList();
+            inbox.setText(name);
+            save(inbox); //save first to set ObjectId (for when adding tasks in for loop
             for (Item item : getAllItemsWithoutOwners()) {
                 inbox.addToList(item);
             }
@@ -1282,6 +1304,7 @@ public class DAO {
         setupItemQueryNotTemplateNotDeletedLimit10000(query);
         query.whereDoesNotExist(Item.PARSE_OWNER_ITEM);
         query.whereDoesNotExist(Item.PARSE_OWNER_LIST);
+        query.whereDoesNotExist(Item.PARSE_OWNER_TEMPLATE_LIST);
         query.orderByDescending(Item.PARSE_UPDATED_AT);
         query.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
         query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
@@ -4659,7 +4682,7 @@ public class DAO {
         }
 //        initAndConfigureCache(true);
         initAndConfigureCache();
-        cacheLoadDataChangedOnServer(true);
+        cacheLoadDataChangedOnServer(true, false);
         ip.dispose();
     }
 
@@ -4685,21 +4708,27 @@ public class DAO {
 //    }
     /**
      *
-     * @param skipLoadingChangedDataFromParseServerForTesting skip checking server for
+     * @param loadingChangedDataFromParseServerForTesting skip checking server for
      * updates to optimize app startup time during testing.
      * will initialize (or reset if resetAndDeleteAllCachedData) the cache and
      * update cache with objects that have been changed on Parse server since
      * last update. First time called will cache everything. Assumes that local
      * cache is large enough to hold everything, if not, ???
      */
-    public boolean cacheLoadDataChangedOnServer(boolean skipLoadingChangedDataFromParseServerForTesting) {
+//    public boolean cacheLoadDataChangedOnServer(boolean loadingChangedDataFromParseServerForTesting) {
+//        
+//    }
+    public boolean cacheLoadDataChangedOnServer(boolean loadingChangedDataFromParseServerForTesting, boolean inBackground) {
         //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
 //        initAndConfigureCache(); //now done in DAO constructor
 ////\        loadCacheToMemory(); //first load 
-        Dialog ip = new InfiniteProgress().showInfiniteBlocking();
 
         cache.loadCacheToMemory(); //first load 
-        if (skipLoadingChangedDataFromParseServerForTesting) {
+        if (loadingChangedDataFromParseServerForTesting) {
+            Dialog ip = null;
+            if (!inBackground) {
+                ip = new InfiniteProgress().showInfiniteBlocking();
+            }
             Date now = new Date(); //UI: only cache data that was already changed when update was launched
             Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
             if (MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active
@@ -4709,8 +4738,10 @@ public class DAO {
                 }
                 Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
             }
-            boolean result= cacheAllData(lastCacheRefreshDate, now);
-            ip.dispose();
+            boolean result = cacheAllData(lastCacheRefreshDate, now);
+            if (ip != null) {
+                ip.dispose();
+            }
             return result;
         }
         return false;

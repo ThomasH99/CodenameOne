@@ -30,6 +30,30 @@ MyButton {
 
 /*************** EDIT ITEM ***********/
 
+Spacer {
+    cn1-derive: Label;
+    
+    color: darkslategray;
+    background-color: blue;
+    margin:3mm;
+    padding:0 ; /*top+bottom right+left*/
+    border-bottom: 1px darkgray;
+    border-top: 1px darkgray;
+    /*padding-left:0.5mm;
+    padding-right:0.5mm;*/
+}
+EditFieldContainer {
+   /* cn1-derive: Label;
+    
+    color: darkslategray;
+    background-color: blue;
+    margin:3mm;
+    border-top: 1px darkgray;
+    padding:0 ; /*top+bottom right+left*/
+    border-bottom: 4px black;
+    /*padding-left:0.5mm;
+    padding-right:0.5mm;*/
+}
 LabelField {
     cn1-derive: Label;
     font-family :  "native:MainLight";
@@ -77,9 +101,12 @@ Text { /*old UIID for task text*/
 /*************** list of items **************/
 
 ListOfItemsTextCont { /*style for task container (WrapButton) in lists*/
+    margin:0mm;
+    padding:0; /*top+bottom right+left*/
 }
+
 ListOfItemsText { /*style for task text in lists*/
-    cn1-derive: Label;
+    /*cn1-derive: Label;*/
     font-family :  "native:MainLight";
     font-size: 100%;
     text-align: left;
@@ -98,27 +125,52 @@ ListOfItemsTextDone { /*style for DONE task text in lists*/
 
 ItemListSmall {
     cn1-derive: LabelValue;
+    text-align: left;
     font-family :  "native:MainRegular";
     font-size: 80%;
     margin:0;
     padding:0 0.5mm; /*top+bottom right+left*/
 }
 
+ItemDetails { /*style for task details - SOUTH */
+    cn1-derive: Container;
+    
+    margin:0mm;
+    padding:0; /*top+bottom right+left*/
+}
+
+ItemDetailsLabel { /*style for task details labels */
+    cn1-derive: ItemListSmall;
+    color:darkgray;
+    margin:0mm;
+    padding:0 0.5mm; /*top+bottom right+left*/
+}
+
+ListOfItemsPrio {
+    cn1-derive: ItemListSmall;
+    color:violet;
+}
+
+ListOfItemsImpUrg {
+    cn1-derive: ItemListSmall;
+    color:red;
+}
+
 ListOfItemsActualEffort {
     cn1-derive: ItemListSmall;
-    text-align: center;
+    /*text-align: center;*/
     color:green;
 }
 
 ListOfItemsRemaining {
     cn1-derive: ItemListSmall;
-    text-align: center;
+    /*text-align: center;*/
     color:blue;
 }
 
 ListOfItemsCompletedDate {
     cn1-derive: ItemListSmall;
-    text-align: center;
+    /*text-align: center;*/
     color:green;
     /*background-color: #3399ff;
     /*foreground-color: #268b04;*/
@@ -126,7 +178,7 @@ ListOfItemsCompletedDate {
 
 ListOfItemsDueDate {
     cn1-derive: ItemListSmall;
-    text-align: center;
+    /*text-align: center;*/
     color:grey;
     /*background-color: #3399ff;
     /*foreground-color: #268b04;*/
@@ -161,16 +213,6 @@ ListOfItemsFinishTime {
 ListOfItemsFinishTimeOverdue {
     cn1-derive: ItemListSmall;
     color:red;
-}
-
-ListOfItemsPrio {
-    cn1-derive: ItemListSmall;
-    color:violet;
-}
-
-ListOfItemsImpUrg {
-    cn1-derive: ItemListSmall;
-    color:violet;
 }
 
 ListOfItemsShowSubtasks { /*expand subtasks*/
@@ -215,8 +257,9 @@ MyDragAndDropSwipeableContainer {
 ContainerListElement {
     /*wraps item in ScreenListOfItems*/
     /*cn1-derive: Label;*/
-    padding:0;
-    margin: 0;
+    padding:0mm 0;
+    margin: 0mm 0;
+    border-bottom: 1px solid darkgrey;
     /*background-color: whitesmoke;
     box-shadow: 12px 12px 12px 12px activeborder inset;
     /*background-color: transparent;

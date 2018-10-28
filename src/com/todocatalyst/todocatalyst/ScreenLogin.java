@@ -78,7 +78,7 @@ public class ScreenLogin extends MyForm {
 //            boolean refreshDataInBackground = true;
         if (refreshDataInBackground) {
             thread.run((success) -> {
-                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true)) { //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
                     success.onSucess(null);
                 }
                 thread.kill();
@@ -87,8 +87,8 @@ public class ScreenLogin extends MyForm {
                 Display.getInstance().callSerially(() -> {
 //                if (newDataLoaded) {
                     Form f = Display.getInstance().getCurrent();
-                    //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
-                    if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain) && !(f instanceof ScreenItem)) {
+                    //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values - not with new version!)
+                    if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain)) { // && !(f instanceof ScreenItem)) {
                         //TODO!!! show "Running" symbyl after like 2 seconds
 //                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
                         ((MyForm) f).refreshAfterEdit();
@@ -99,10 +99,10 @@ public class ScreenLogin extends MyForm {
                 });
             });
         } else {
-            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
+//            Dialog ip = new InfiniteProgress().showInfiniteBlocking(); //DONE in DAO.cacheLoadDataChangedOnServer
             //TODO!!!! show waiting symbol "loading your tasks..."
-            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
-            ip.dispose();
+            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//            ip.dispose();
         }
         //ALARMS - initialize
         AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background

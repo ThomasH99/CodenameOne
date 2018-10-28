@@ -1098,7 +1098,7 @@ public class ScreenTimer2 extends MyForm {
 
             buildContentPane();
 
-            boolean valuesRestored = restoreEditedValuesSavedLocallyOnAppExit(); //restore any previously saved values
+            boolean valuesRestored = restoreEditedValuesSavedLocallyOnAppExitXXX(); //restore any previously saved values
             deleteEditedValuesSavedLocallyOnAppExit();
 
             if (timerRunningForPushedEntry) { //Timer was running when app was Paused/Exited
@@ -2228,14 +2228,16 @@ public class ScreenTimer2 extends MyForm {
                 //do nothing - user forces status back to empty checkbox
             }
 //            }
-        }, () -> {
-            return timerStack.currEntry.timedItem.getActualEffort() > 0;
-        });
+        }
+//                , () -> {
+//            return timerStack.currEntry.timedItem.getActualEffort() > 0;
+//        }
+        );
         parseIdMap2.put(status, () -> timerStack.currEntry.timedItem.setStatus(status.getStatus()));
 
         editItemButton = new Button(MyReplayCommand.create("EditItem", "", Icons.iconEditSymbolLabelStyle, (e) -> {
             putEditedValues2(parseIdMap2, timerStack.currEntry.timedItem); //first update Item with any values changed in Timer
-            ScreenItem2 screenItem = new ScreenItem(timerStack.currEntry.timedItem, ScreenTimer2.this, () -> {
+            ScreenItem2 screenItem = new ScreenItem2(timerStack.currEntry.timedItem, ScreenTimer2.this, () -> {
                 DAO.getInstance().save(timerStack.currEntry.timedItem);
                 refreshItemEditFields(timerStack.currEntry.timedItem);
                 ScreenTimer2.this.revalidate();
@@ -2672,7 +2674,7 @@ long addlEffort = ((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLIS
     }
 
     @Override
-    public void saveEditedValuesLocallyOnAppExit() {
+    public void saveEditedValuesLocallyOnAppExitXXX() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (item.getObjectIdP() == null) { //new item, save everything locally and restore next time
 ////            Storage.getInstance().writeObject(SCREEN_TITLE + "- EDITED ITEM", item); //save date
@@ -2708,7 +2710,7 @@ long addlEffort = ((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLIS
     }
 
     @Override
-    public boolean restoreEditedValuesSavedLocallyOnAppExit() {
+    public boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Item itemLS = null;
 //        //if editing of item was ongoing when app was stopped, then recover saved item

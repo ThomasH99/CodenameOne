@@ -762,7 +762,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                 Log.p("Count of Item in Parse = " + count, Log.DEBUG);
 
 //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
-                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
 
                 //ALARMS - initialize
                 AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
@@ -979,8 +979,8 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         }
         
         ASSERT.that(current instanceof MyForm, "on stop(), current=" + current + " (NOT Form or Component)");
-        if (current instanceof MyForm) {
-            ((MyForm) current).saveEditedValuesLocallyOnAppExit(); //save any ongoing edits
+        if (false && current instanceof MyForm) { //not needed anymore, now saved on each edit
+            ((MyForm) current).saveEditedValuesLocallyOnAppExitXXX(); //save any ongoing edits
         }
 //        ScreenTimer.getInstance().saveTimerStatusOnAppStop();
 //        ScreenTimer.getInstance().onDestroy(); //called here because destroy doesn't seem to be called

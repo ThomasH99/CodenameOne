@@ -173,6 +173,13 @@ public class RepeatRuleParseObject
         }
     }
 
+    public RepeatRuleParseObject(RepeatRuleParseObject repeatRule) {
+        this();
+        if (repeatRule != null) {
+            repeatRule.copyMeInto(this);
+        }
+    }
+
     /**
      * sets all the fields of MyRepeatRule to the values stored in RepeatRule
      * (should never be used as we will always edit a RepeatRule indirectly via
@@ -1385,7 +1392,7 @@ public class RepeatRuleParseObject
         if (getNumberFutureRepeatsToGenerateAhead() != 0) {
             return new Date(MyDate.MAX_DATE);
         } else {
-            ASSERT.that(getNumberOfDaysRepeatsAreGeneratedAhead() != 0, "Both getNumberFutureRepeatsToGenerateAhead() and getNumberOfDaysRepeatsAreGeneratedAhead() are 0 for RepeatRule="+this);
+            ASSERT.that(getNumberOfDaysRepeatsAreGeneratedAhead() != 0, "Both getNumberFutureRepeatsToGenerateAhead() and getNumberOfDaysRepeatsAreGeneratedAhead() are 0 for RepeatRule=" + this);
             Date subEndDate = MyDate.getEndOfDay(new Date(System.currentTimeMillis() + getNumberOfDaysRepeatsAreGeneratedAhead() * MyDate.DAY_IN_MILLISECONDS));
             if (subEndDate.getTime() >= earliestDate.getTime()) {
                 return subEndDate;
@@ -2979,7 +2986,7 @@ public class RepeatRuleParseObject
     }
 
     /**
-     * tests if the repeat parameters are the same, e.g.
+     * tests if the repeat parameters are the same, e.g. but does NOT check if parseObjectId is different
      *
      * @param repeatRule
      * @return
@@ -3049,6 +3056,90 @@ public class RepeatRuleParseObject
 //            return false;
 //        }
         return true;
+    }
+
+    /**
+    update the repeat rule with any differences (edits) in the RR given in argument
+    @param o
+    @return true if any changes were made (meaning the updated rule needs to be saved)
+     */
+    public boolean update(RepeatRuleParseObject o) {
+        // ASSERT.that("equals() called on MyRepeatRule"); //DONE!!!: not updated (is it needed?) //called when setting a new/update
+        if (o == this) {
+            return false;
+        }
+//        if (o == null) {
+//            return false;
+//        }
+
+        boolean updated = false;
+
+        RepeatRuleParseObject repeatRule = (RepeatRuleParseObject) o;
+
+        if (getSpecifiedStartDate() != repeatRule.getSpecifiedStartDate()) {
+            setSpecifiedStartDate(repeatRule.getSpecifiedStartDate());
+            updated = true;
+        }
+        if (getRepeatType() != repeatRule.getRepeatType()) {
+            setRepeatType(repeatRule.getRepeatType());
+            updated = true;
+        }
+        if (getFrequency() != repeatRule.getFrequency()) {
+            setFrequency(repeatRule.getFrequency());
+            updated = true;
+        }
+        if (getInterval() != repeatRule.getInterval()) {
+            setInterval(repeatRule.getInterval());
+            updated = true;
+        }
+
+        if (getEndDate() != repeatRule.getEndDate()) {
+            setEndDate(repeatRule.getEndDate());
+            updated = true;
+        }
+        if (getNumberOfRepeats() != repeatRule.getNumberOfRepeats()) {
+            setNumberOfRepeats(repeatRule.getNumberOfRepeats());
+            updated = true;
+        }
+
+        if (getDaysInWeek() != repeatRule.getDaysInWeek()) {
+            setDaysInWeek(repeatRule.getDaysInWeek());
+            updated = true;
+        }
+        if (getWeeksInMonth() != repeatRule.getWeeksInMonth()) {
+            setWeeksInMonth(repeatRule.getWeeksInMonth());
+            updated = true;
+        }
+        if (getWeekdaysInMonth() != repeatRule.getWeekdaysInMonth()) {
+            setWeekdaysInMonth(repeatRule.getWeekdaysInMonth());
+            updated = true;
+        }
+
+        if (getMonthsInYear() != repeatRule.getMonthsInYear()) {
+            setMonthsInYear(repeatRule.getMonthsInYear());
+            updated = true;
+        }
+        if (getDayInMonth() != repeatRule.getDayInMonth()) {
+            setDayInMonth(repeatRule.getDayInMonth());
+            updated = true;
+        }
+        if (getDayInYear() != repeatRule.getDayInYear()) {
+            setDayInYear(repeatRule.getDayInYear());
+            updated = true;
+        }
+
+        if (getNumberFutureRepeatsToGenerateAhead() != repeatRule.getNumberFutureRepeatsToGenerateAhead()) {
+            setNumberFutureRepeatsToGenerateAhead(repeatRule.getNumberFutureRepeatsToGenerateAhead());
+            updated = true;
+        }
+        if (getNumberOfDaysRepeatsAreGeneratedAhead() != repeatRule.getNumberOfDaysRepeatsAreGeneratedAhead()) {
+            setNumberOfDaysRepeatsAreGeneratedAhead(repeatRule.getNumberOfDaysRepeatsAreGeneratedAhead());
+            updated = true;
+        }
+//        if (repeatRuleOriginator != repeatRule.repeatRuleOriginator) {
+//            return false;
+//        }
+        return updated;
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////    

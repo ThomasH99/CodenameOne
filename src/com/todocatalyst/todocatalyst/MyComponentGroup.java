@@ -8,6 +8,8 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.ui.ButtonGroup;
 import com.codename1.ui.ComponentGroup;
 import com.codename1.ui.RadioButton;
+import com.codename1.ui.events.ActionListener;
+import com.codename1.ui.util.EventDispatcher;
 import java.util.Map;
 
 /**
@@ -15,6 +17,7 @@ import java.util.Map;
  * @author Thomas
  */
 /**
+cannot select multiple values!
  * stores the index of the string array in Parse. E.g. ["str1", "str2", "str3"]
  * and str2 selected will store 1, str1 will store 0.
  */
@@ -24,6 +27,10 @@ import java.util.Map;
  */
 class MyComponentGroup extends ComponentGroup {
 
+    Object[] values;
+    ButtonGroup buttonGroup;
+    private EventDispatcher dispatcher = new EventDispatcher();
+
     /**
      * 
      * @param values either an array of String or an array of Objects for which toString() will be used
@@ -32,8 +39,13 @@ class MyComponentGroup extends ComponentGroup {
      */
     MyComponentGroup(Object[] values, String selectedString, boolean unselectAllowed) {
         super();
+        this.values = values;
         this.setHorizontal(true);
-        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup = new ButtonGroup();
+        ActionListener buttonListener = (e) -> {
+            dispatcher.fireActionEvent(e);
+        };
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        ButtonGroup buttonGroup = new ButtonGroup() {
 //            @Override
@@ -51,10 +63,11 @@ class MyComponentGroup extends ComponentGroup {
 //            RadioButton[] radioButtonArray = new RadioButton[values.length];
         for (int i = 0; i < values.length; i++) {
 //            radioButton = new RadioButton(values[i]);
-            radioButton = new RadioButton(values[i] instanceof String?(String)values[i]:values[i].toString());
-            radioButton = new RadioButton(values[i] instanceof String?(String)values[i]:values[i].toString());
+//            radioButton = new RadioButton(values[i] instanceof String?(String)values[i]:values[i].toString());
+            radioButton = new RadioButton(values[i] instanceof String ? (String) values[i] : values[i].toString());
             radioButton.setToggle(true); //allow to de-select a selected button
             radioButton.setUnselectAllowed(unselectAllowed); //allow to de-select a selected button
+            radioButton.addActionListener(buttonListener); //allow to de-select a selected button
             buttonGroup.add(radioButton);
             this.add(radioButton);
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -68,8 +81,93 @@ class MyComponentGroup extends ComponentGroup {
         }
     }
 
+    MyComponentGroup(Object[] values, boolean unselectAllowed) {
+        this(values, "", unselectAllowed);
+    }
+
+    /**
+     * Adds a listener to the button which will cause an event to dispatch on click
+     * 
+     * @param l implementation of the action listener interface
+     */
+    public void addActionListener(ActionListener l) {
+        dispatcher.addListener(l);
+    }
+
+    /**
+     * Removes the given action listener from the button
+     * 
+     * @param l implementation of the action listener interface
+     */
+    public void removeActionListener(ActionListener l) {
+        dispatcher.removeListener(l);
+    }
+
+    /**
+    any previous selected value will become unselected, an illegal string, not in the list, will lead to all being deselected
+    @param selectedString 
+    */
+    public void select(String selectedString) {
+        if (selectedString == null || selectedString.isEmpty()) {
+            return;
+        }
+        int size = this.getComponentCount();
+        for (int i = 0; i < values.length; i++) {
+//            radioButton = new RadioButton(values[i]);
+//            if (selectedString != null && values[i].toString().equals(selectedString)) {
+//                buttonGroup.getRadioButton(i).setSelected(true);
+//            }
+            buttonGroup.getRadioButton(i).setSelected(selectedString != null && values[i].toString().equals(selectedString));
+        }
+    }
+
+    /**
+    
+    @param selectedIndex an illegal value, e.g. -1, will lead to all being unselected
+     */
+    public void select(int selectedIndex) {
+        int size = this.getComponentCount();
+        if (selectedIndex < 0 || selectedIndex >= size) {
+            return;
+        }
+        for (int i = 0; i < size; i++) {
+            ((RadioButton) this.getComponentAt(i)).setSelected(i == selectedIndex);
+        }
+    }
+
+    /**
+    returns selected index, or -1 if none
+    @return 
+     */
+    public int getSelectedIndex() {
+        int size = this.getComponentCount();
+        for (int i = 0; i < size; i++) {
+            if (((RadioButton) this.getComponentAt(i)).isSelected()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+    returns selected String, or null if none
+    @return 
+     */
+    public String getSelectedString() {
+        int selected = getSelectedIndex();
+        int size = this.getComponentCount();
+        if (selected >= 0 && selected < size - 1) {
+            return ((RadioButton) this.getComponentAt(selected)).getText();
+        }
+        return null;
+    }
+
     MyComponentGroup(String[] values, int selectedStringIndex, boolean unselectAllowed) {
         this(values, values[selectedStringIndex], unselectAllowed);
+    }
+
+    MyComponentGroup(Object[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString get, MyForm.PutString set) {
+        this(values, parseIdMap, get, set, true);
     }
 
     MyComponentGroup(Object[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {
@@ -84,10 +182,6 @@ class MyComponentGroup extends ComponentGroup {
             }
             set.accept("");
         });
-    }
-
-    MyComponentGroup(Object[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString get, MyForm.PutString set) {
-        this(values, parseIdMap, get, set, true);
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -245,5 +339,4 @@ class MyComponentGroup extends ComponentGroup {
 //        });
 //    }
 //</editor-fold>
-
 }

@@ -41,6 +41,18 @@ import java.util.Map;
             setText(getValue.get());
             parseIdMap.put(this, () -> setValue.accept(getText()));
         }
+        MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint                ) {
+            super("", rows, columns, constraint);
+//            if (rows != 1) {
+//                setRows(rows);
+//            }
+            setGrowByContent(true);
+            setAutoDegradeMaxSize(true);
+            setGrowLimit(maxRows);
+            setHint(hint);
+//            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
+            setMaxSize(maxTextSize);
+        }
 
 //        MyTextArea(String hint, int columns, int constraint, Map<Object, UpdateField> parseIdMap, GetDouble getValue, PutDouble setValue) {
 //            super("", 1, columns, constraint);

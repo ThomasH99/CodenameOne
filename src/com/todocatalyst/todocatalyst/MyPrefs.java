@@ -196,7 +196,8 @@ public class MyPrefs {
     // ************** inherit values from owning Project *************
     static PrefEntry itemInheritOwnerProjectProperties
             = new PrefEntry("Subtasks inherit properties from their project", "itemInheritOwnerProjectProperties", true, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-
+    //TODO!! set false for easy startup
+    
     static PrefEntry itemInheritOwnerProjectChallenge
             //            = new PrefEntry("Subtasks inherit "+Item.CHALLENGE+" from their project", "itemInheritOwnerProjectChallenge", true, "**");
             = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.CHALLENGE), "itemInheritOwnerProjectChallenge", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");

@@ -22,7 +22,7 @@ import java.util.Set;
  *
  * @author Thomas
  */
-public class Category extends ItemList { //Flatten { //implements ExpandableInterface { //Sublist {
+public class Category extends ItemList implements ItemAndListCommonInterface { //Flatten { //implements ExpandableInterface { //Sublist {
 
     final static String CLASS_NAME = "Category";
 

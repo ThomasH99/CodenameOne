@@ -57,15 +57,18 @@ public class MyCheckBox extends Button {
      */
     private boolean activateFullMenuOnSingleClick;
 
-    public MyCheckBox(ItemStatus itemStatus, ProcessItemStatusChange statusChangeHandler, IsItemOngoing itemOngoing) {
-        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), statusChangeHandler, itemOngoing, null, null, null);
+    public MyCheckBox() {
+        this(ItemStatus.CREATED, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null);
+    }
+    public MyCheckBox(ItemStatus itemStatus, ProcessItemStatusChange statusChangeHandler) {//, IsItemOngoing itemOngoing) {
+        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), statusChangeHandler, null, null, null);
     }
 
 //    public MyCheckBox(Item item, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler) {
 //    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, IsItemOngoing itemOngoingXXX) {
 //        this(initialItemStatus, activateFullMenuOnSingleClick, statusChangeHandler, itemOngoingXXX, null, null, null);
 //    }
-    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, IsItemOngoing itemOngoingXXX,
+    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, //IsItemOngoing itemOngoing,
             String singleIconStyleUIID, String popupIconStyleUIID, String groupStyleUIID) {
         super();
         setUIID("MyCheckBox");
@@ -80,6 +83,8 @@ public class MyCheckBox extends Button {
 //        } else {
 //            this.popupIconStyleName = "ItemStatusPopupIcon";
 //        }
+this.itemOngoing=itemOngoing;
+
         this.popupIconStyleUIID = singleIconStyleUIID;
         if (this.popupIconStyleUIID == null) {
             this.popupIconStyleUIID = "ItemStatusPopupIcon";

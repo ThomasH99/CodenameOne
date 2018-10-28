@@ -74,6 +74,7 @@ public class ScreenCategoryPicker extends MyForm {
 //    }
 //    ScreenCategoryPicker(String title, List<Category> categories, Set<Category> selectedCategories, Form previousForm) { //throws ParseException, IOException {
         super(title, previousForm, updateOnDone);
+//        super(title, updateOnDone);
         this.listOfAllCategories = listOfAllCategories;
 //        this.orgSelectedCategories = selectedCategories;
 //        this.selectedCategories = new HashSet(selectedCategories);

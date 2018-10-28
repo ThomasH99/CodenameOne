@@ -725,6 +725,13 @@ public class ScreenRepair extends MyForm {
             }
         }));
         
+        content.add(new Button(new Command("Test ScreenEdit2") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                new ScreenItem2(new Item(), ScreenRepair.this, ()->{}).show();
+            }
+        }));
+        
         content.add(new Button(new Command("Show files in FileSystemStorage") {
             @Override
             public void actionPerformed(ActionEvent evt) {

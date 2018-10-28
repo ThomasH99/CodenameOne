@@ -37,6 +37,10 @@ class MyOnOffSwitch extends Switch {
         }
     }
 
+    MyOnOffSwitch() {
+        super();
+    }
+
 //            MyOnOffSwitch(String title, String onString, String offString, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
 //    MyOnOffSwitch(String offString, String onString, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetBoolean get, MyForm.PutBoolean set) {
 //        this(parseIdMap, get, set);

@@ -53,6 +53,15 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear{
         }
     }
 
+    MyDateAndTimePicker() {
+        super();
+        setUIID("LabelValue");
+        zeroValuePattern = "";
+        setType(Display.PICKER_TYPE_DATE_AND_TIME);
+        setShowMeridiem(false); //TODO!!!! depend on locale!!
+        setMinuteStep(MyPrefs.dateTimePickerMinuteStep.getInt());
+    }
+
     MyDateAndTimePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
         this(null, parseIdMap, get, set);
     }

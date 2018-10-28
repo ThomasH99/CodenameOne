@@ -106,7 +106,7 @@ public class ScreenItem extends MyForm {
 //    private MyTree2 subTaskTree;
     private int lastTabSelected = -1;
     private boolean templateEditMode;
-    private String FILE_LOCAL_EDITED_ITEM = "ScreenItem-EditedItem";
+    private String FILE_LOCAL_EDITED_ITEMXXX = "ScreenItem-EditedItem";
     private String FILE_LOCAL_EDITED_OWNER = "ScreenItem-EditedOwner";
     private String FILE_LOCAL_EDITED_CATEGORIES = "ScreenItem-EditedCategories";
     private String FILE_LOCAL_EDITED_REPEAT_RULE = "ScreenItem-EditedRepeatRule";
@@ -154,7 +154,7 @@ public class ScreenItem extends MyForm {
 
         //RESTORE locally edited value (if stored on app pause/exit)
 //        itemLS = (Item) restoreLocallyEditedValuesOnAppExit();
-        boolean valuesRestored = restoreEditedValuesSavedLocallyOnAppExit();
+        boolean valuesRestored = restoreEditedValuesSavedLocallyOnAppExitXXX();
 //        if (itemLS != null && this.item.getObjectIdP() == null) {
         if (valuesRestored && this.item.getObjectIdP() == null) {
             this.item = itemLS; //if item is a new item, then we completely ignore that Item and continue with the previously locally saved values
@@ -796,7 +796,7 @@ public class ScreenItem extends MyForm {
 //        MyCheckBox status = new MyCheckBox(item, false);
         MyCheckBox status = new MyCheckBox(itemLS.getStatus(), (oldStatus, newStatus) -> {
 //            if (newStatus==ItemStatus.WAITING)
-        }, null);
+        }); //, null);
 
         parseIdMap2.put(status, () -> item.setStatus(status.getStatus()));
 //        Container taskCont = new Container(new BoxLayout(BoxLayout.X_AXIS));
@@ -1352,7 +1352,7 @@ public class ScreenItem extends MyForm {
         timeCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP));
 
         if (true) {
-            MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDateD(d)); // "<auto-cancel on date>", 
+            MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDate(d)); // "<auto-cancel on date>", 
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(addDatePickerWithClearButton(expireByDate));
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(expireByDate.makeContainerWithClearButton());
 //            timeCont.add(layout(Item.AUTOCANCEL_BY, expireByDate.makeContainerWithClearButton(), "**"));
@@ -1419,9 +1419,9 @@ public class ScreenItem extends MyForm {
         MyNumericTextField earnedValue = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValue(), (d) -> item.setEarnedValue(d));
 //        earnedValue.setColumns(2); //result: only shows/truncates to 2 columns when field is not edited
 
-//        prioCont.add(new Label(Item.EARNED_POINTS)).add(earnedValue);
-//        prioCont.add(layout(Item.EARNED_POINTS, earnedValue, Item.EARNED_POINTS_HELP, true, false, false));
-        prioCont.add(layoutN(Item.EARNED_POINTS, earnedValue, Item.EARNED_POINTS_HELP, true, false, true));
+//        prioCont.add(new Label(Item.EARNED_VALUE)).add(earnedValue);
+//        prioCont.add(layout(Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, true, false, false));
+        prioCont.add(layoutN(Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, true, false, true));
 
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("<set>", parseIdMap2, () -> item.getEarnedValuePerHour(), (d) -> {
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValuePerHour(), (d) -> {
@@ -1431,7 +1431,7 @@ public class ScreenItem extends MyForm {
         Label earnedValuePerHour = new Label(L10NManager.getInstance().format(itemLS.getEarnedValuePerHour(), 2));
         earnedValuePerHour.setUIID("LabelFixed");
 //        prioCont.add(new Label(Item.EARNED_POINTS_PER_HOUR)).add(earnedValuePerHour).add(new SpanLabel("Value per hour is calculated as Value divided by the Estimate, or the sum of Remaining and Actual effort - once work has started."));
-//                add(new SpanLabel(Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_POINTS + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."));
+//                add(new SpanLabel(Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_VALUE + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."));
 //        prioCont.add(layout(Item.EARNED_POINTS_PER_HOUR, earnedValuePerHour, Item.EARNED_POINTS_PER_HOUR_HELP, true, true, true));
         prioCont.add(layoutN(Item.EARNED_POINTS_PER_HOUR, earnedValuePerHour, Item.EARNED_POINTS_PER_HOUR_HELP, true, true, false));
 
@@ -1578,7 +1578,7 @@ public class ScreenItem extends MyForm {
         statusCont.add(layoutN(Item.CREATED_DATE, createdDate, "**", true));
 
         if (item.isProject()) {
-            long lastModifiedSubtasks = item.getLastModifiedDateSubtasks().getTime();
+            long lastModifiedSubtasks = item.getLastModifiedDateProjectOrSubtasks().getTime();
             Label lastModifiedDateSubtasks = new Label(lastModifiedSubtasks == 0 ? "" : MyDate.formatDateTimeNew(lastModifiedSubtasks));
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //            statusCont.add(layout(Item.UPDATED_DATE_SUBTASKS, lastModifiedDateSubtasks, "**", true, true, true));
@@ -2113,8 +2113,7 @@ public class ScreenItem extends MyForm {
     }
 
     @Override
-
-    public void saveEditedValuesLocallyOnAppExit() {
+    public void saveEditedValuesLocallyOnAppExitXXX() {
 //        if (item.getObjectIdP() == null) { //new item, save everything locally and restore next time
 ////            Storage.getInstance().writeObject(SCREEN_TITLE + "- EDITED ITEM", item); //save date
 //            Storage.getInstance().writeObject(FILE_LOCAL_EDITED_ITEM, item); //save 
@@ -2124,22 +2123,22 @@ public class ScreenItem extends MyForm {
 //        }
         localSave = true;
         putEditedValues2(parseIdMap2);
-        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_ITEM, item); //save 
+        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_ITEMXXX, item); //save 
         localSave = false;
     }
 
     @Override
-    public boolean restoreEditedValuesSavedLocallyOnAppExit() {
+    public boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
 //        Item itemLS = null;
         boolean savedValues;
         //if editing of item was ongoing when app was stopped, then recover saved item
-        ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM) || ReplayLog.getInstance().isReplayInProgress()); //local item => replay must/should be Ongoing
-        if (ReplayLog.getInstance().isReplayInProgress() && Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM)) {
-            itemLS = (Item) Storage.getInstance().readObject(FILE_LOCAL_EDITED_ITEM); //read in when initializing the Timer - from here on it is only about saving updates
+        ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEMXXX) || ReplayLog.getInstance().isReplayInProgress()); //local item => replay must/should be Ongoing
+        if (ReplayLog.getInstance().isReplayInProgress() && Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEMXXX)) {
+            itemLS = (Item) Storage.getInstance().readObject(FILE_LOCAL_EDITED_ITEMXXX); //read in when initializing the Timer - from here on it is only about saving updates
             savedValues = true;
         } else {
 //            itemLS = this.item; //it no locally saved edits, then use item to 'feed' the edits fields
-            ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEM));
+            ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEMXXX));
             deleteEditedValuesSavedLocallyOnAppExit();
             savedValues = false;
         }
@@ -2149,7 +2148,7 @@ public class ScreenItem extends MyForm {
 
     @Override
     public void deleteEditedValuesSavedLocallyOnAppExit() {
-        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEM); //delete in case one was 
+        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEMXXX); //delete in case one was 
     }
 
     private void saveNewOwner(ItemAndListCommonInterface newOwner) {

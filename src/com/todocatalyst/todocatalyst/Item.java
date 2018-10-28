@@ -847,15 +847,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String EFFORT_REMAINING_PROJECT_HELP = "[EFFORT_REMAINING] for the project. You can use this to **?? indicate a total for a project before defining its subtasks (or even before realizing that it should be a project)"; //"Effort estimate";"Estimated time (project)"
     final static String EFFORT_TOTAL_SHORT = "Total effort"; //total effort in Timer (previous actual + timer elapsed time)
     final static String STATUS = "Status"; //"Status""Task status"
+    final static String STATUS_HELP = "Status"; //"Status""Task status"
     final static String PRIORITY = "Priority";
     final static String PRIORITY_HELP = "Priority";
     final static String PROJECT = "Project";
     final static String EARNED_POINTS_PER_HOUR = "Value/hour"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
-    //Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_POINTS + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."
+    //Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_VALUE + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."
     final static String EARNED_POINTS_PER_HOUR_HELP = "Value/hour**"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
-    final static String EARNED_POINTS = "Value";
-//    final static String EARNED_POINTS_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate "+EARNED_POINTS_PER_HOUR+" which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
-    final static String EARNED_POINTS_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate [EARNED_POINTS_PER_HOUR] which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
+    final static String EARNED_VALUE = "Value";
+//    final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate "+EARNED_POINTS_PER_HOUR+" which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
+    final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate [EARNED_POINTS_PER_HOUR] which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
     //"Earned value (in currency or points)"
     final static String ALARM_DATE = "Reminder"; // "Alarm date", "Alarm"
     final static String ALARM_DATE_HELP = "Set a Reminder for this task. Shown as a local notification on your phone or device when the app is not running, or as a reminder ** when you are using the app."; // "Alarm date", "Alarm"
@@ -971,6 +972,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
     final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the 
     final static String PARSE_FILTER_SORT_DEF = "filterSort";
+//    final static String PARSE_FINISH_TIME = "finishTimexx"; //NOT a parse field, just used to store the field with
 //    final static String PARSE_ = "";
 
     /**
@@ -2397,7 +2399,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    private final static int[] challengeValues = new int[]{0, 1, 2, 3, 4};
     public enum Challenge {
         //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
-        VERY_EASY("Very easy", "V.easy"), EASY("Easy"), AVERAGE("Average", "Avrg"), HARD("Tough"), VERY_HARD("Hard");
+//        VERY_EASY("Very easy", "V.easy"), EASY("Easy"), AVERAGE("Average", "Avrg"), HARD("Tough"), VERY_HARD("Hard");
+        VERY_EASY( "Simple"), EASY("Easy"), AVERAGE("Normal"), HARD("Hard"), VERY_HARD("Tough");
 
         private final String description;
         private final String shortDescription;
@@ -2978,9 +2981,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
     }
 
-    public void setExpiresOnDateD(Date expiresOnDate) {
-        setExpiresOnDate(expiresOnDate.getTime());
-    }
+//    public void setExpiresOnDateD(Date expiresOnDate) {
+//        setExpiresOnDate(expiresOnDate.getTime());
+//    }
 
     public boolean isInteruptOrInstantTask() {
         Boolean interruptTask = getBoolean(PARSE_INTERRUPT_OR_INSTANT_TASK);
@@ -3467,9 +3470,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (has(PARSE_REPEAT_RULE) || repeatRule != null) { //no need to save a value since a null pointer is interprested as zero
 //            put(PARSE_REPEAT_RULE, repeatRule);
 //        }
-        DAO.getInstance().save(repeatRule); //save the (possibly new or changed) repeatRule
+        RepeatRuleParseObject oldRepeatRule = (RepeatRuleParseObject) getParseObject(PARSE_REPEAT_RULE);
         if (repeatRule != null) {
-            put(PARSE_REPEAT_RULE, repeatRule);
+            if (oldRepeatRule == null) {
+                DAO.getInstance().save(repeatRule); //save the (possibly new or changed) repeatRule
+                put(PARSE_REPEAT_RULE, repeatRule);
+            } else { //update the existing rule with the changes (avoid to create a new repeatRule at each edit)
+                oldRepeatRule.update(repeatRule);
+                put(PARSE_REPEAT_RULE, oldRepeatRule);
+            }
         } else {
             remove(PARSE_REPEAT_RULE);
         }
@@ -5558,6 +5567,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////            categories = new ItemList(BaseItemTypes.CATEGORY, this, false, isEnsureItemCategoryAutoConsistency(), true, true); //ItemListSaveInline(this);
 ////        }
 ////        return categories;
+    }
+
+    static public List<String> convCategoryListToObjectIdList(List<Category> categoryList) {
+        List<String> catIds = new ArrayList();
+        for (Category c:categoryList) {
+            catIds.add(c.getObjectIdP());
+        }
+        return catIds;
+    }
+
+    static public List<Category> convCatObjectIdsListToCategoryList(List<String> categoryIdList) {
+        List<Category> categories = new ArrayList();
+        for (String c:categoryIdList) {
+            categories.add(DAO.getInstance().fetchCategory(c));
+        }
+        return categories;
     }
 
     /**
@@ -7709,13 +7734,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    public Date getLastModifiedDateSubtasks() {
+    public Date getLastModifiedDateProjectOrSubtasks() {
         long lastSubtaskUpdate = getLastModifiedDate(); //if ever project task itself is updated the last, return that date. 
         long temp;
         if (isProject()) {
             for (Object o : getList()) {
                 if (o instanceof Item) {
-                    temp = ((Item) o).getLastModifiedDateSubtasks().getTime(); //cache since potentially heavy operation
+                    temp = ((Item) o).getLastModifiedDateProjectOrSubtasks().getTime(); //cache since potentially heavy operation
                     if (temp > lastSubtaskUpdate) {
                         lastSubtaskUpdate = temp;
                     }

@@ -7,13 +7,16 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.components.OnOffSwitch;
 import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
+import com.codename1.components.Switch;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
+import com.codename1.io.Storage;
 import com.codename1.l10n.L10NManager;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
+import com.codename1.ui.ComponentGroup;
 //import com.codename1.ui.*;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
@@ -160,6 +163,11 @@ public class MyForm extends Form {
         }
     }
 
+    @Override
+    public String toString() {
+        return "MyForm " + getTitle() + super.toString();
+    }
+
 //    static final String SOURCE_OBJECT = "SOURCE_OBJECT"; //label to store source object in containers/components in lists
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    CreateAndEditListItem createAndEdit;
@@ -210,7 +218,17 @@ public class MyForm extends Form {
     private UITimer doubleTapTitleTimer;
 
     MyForm(String title, MyForm previousForm, UpdateField updateActionOnDone) { //throws ParseException, IOException {
+//    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
         super(title);
+        this.previousForm = previousForm;
+//        this.previousForm = getCurrentFormAfterClosingDialogOrMenu();
+//        if (Config.TEST) {
+//            MyForm mf = getCurrentFormAfterClosingDialogOrMenu();
+//        }
+//        Form f = getComponentForm();
+//        if (f instanceof MyForm) {
+//            this.previousForm = (MyForm) f;
+//        }
         setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
 
 //        setLayout(layout);
@@ -273,7 +291,8 @@ public class MyForm extends Form {
         if (false) {
             setAutoSizeMode(true); //ensure title is centered even when icons are added
         }
-        this.previousForm = previousForm;
+//        this.previousForm = previousForm;
+//        this.previousForm = getComponentForm();
         this.updateActionOnDone = updateActionOnDone;
         ASSERT.that(updateActionOnDone != null, () -> "doneAction should always be defined, Form=" + this);
         parseIdMapReset();
@@ -833,6 +852,17 @@ public class MyForm extends Form {
             }
         }
 
+        MyNumericTextField(String hint) {
+            super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
+            setGrowByContent(false);
+            setAlignment(Component.RIGHT);
+//            setSameWidth(new Label("9999"));
+            setAutoDegradeMaxSize(true);
+//            setGrowLimit(maxRows);
+//            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
+//            setMaxSize(maxTextSize);
+        }
+
         void setVal(double val) {
             if (val != 0) {
 //                DecimalFormat df2 = new DecimalFormat(".##");
@@ -1228,7 +1258,34 @@ public class MyForm extends Form {
         return str;
     }
 
-    public String getDefaultIfStrEmpty(String str, String defaultStr) {
+    public static String getCategoriesAsCommaSeparatedString(List<Category> setOrList, boolean showObjIds) {
+        String str = "";
+        String separator = "";
+        if (setOrList != null) {
+//            for (Category cat : setOrList) {
+            for (Category itemCategoryOrList : setOrList) {
+//                str = itemCategoryOrList.toString() + separator + str;
+//                str = itemCategoryOrList.getText() + separator + str;
+                str = str + separator + itemCategoryOrList.getText() + (showObjIds ? "/" + itemCategoryOrList.getObjectIdP() : "");
+                separator = ", ";
+            }
+        }
+        return str;
+    }
+
+    public static String getStringListAsCommaSeparatedString(List<String> setOrList) {
+        String str = "";
+        String separator = "";
+        if (setOrList != null) {
+            for (String s : setOrList) {
+                str = str + separator + s;
+                separator = ", ";
+            }
+        }
+        return str;
+    }
+
+    public static String getDefaultIfStrEmpty(String str, String defaultStr) {
         if (str == null || str.equals("")) {
             return defaultStr;
         } else {
@@ -1254,6 +1311,8 @@ public class MyForm extends Form {
             }
             previousForm.showBack();
         } else {
+            Form f = Display.getInstance().getCurrent();
+            ASSERT.that(false, "should not happen anymore, screen \"" + f != null ? f.getTitle() : "<null form>");
             new ScreenMain().show();
         }
     }
@@ -1288,7 +1347,7 @@ public class MyForm extends Form {
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand() {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), false); //default false since otherwise edited values will be lost
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), true); //false); //default false since otherwise edited values will be lost
     }
 
 //    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon) {
@@ -2264,6 +2323,170 @@ public class MyForm extends Form {
         return l;
     }
 
+    private String previousValuesFilename;
+
+    protected void setPreviousValuesFilename(String filename) {
+        previousValuesFilename = filename;
+    }
+
+    Map<Object, Object> previousValues;
+
+    public void saveLocallyEditedValues(String filename) {
+        previousValuesFilename = filename;
+        previousValues = new HashMap<Object, Object>() {
+            void saveFile() {
+//            Storage.getInstance().writeObject("ScreenItem-" + item.getObjectIdP(), this); //save 
+                Storage.getInstance().writeObject(previousValuesFilename, this); //save 
+            }
+
+            public Object put(Object key, Object value) {
+                Object previousValue = super.put(key, value);
+                saveFile();
+                return previousValue;
+            }
+
+            public Object remove(Object key) {
+                Object previousValue = super.remove(key);
+                saveFile();
+                return previousValue;
+            }
+
+        };
+        if (Storage.getInstance().exists(previousValuesFilename)) {
+            previousValues.putAll((Map) Storage.getInstance().readObject(previousValuesFilename));
+        }
+    }
+
+    public void deleteLocallyEditedValues() {
+//            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
+        if (previousValuesFilename != null && !previousValuesFilename.isEmpty()) {
+            Storage.getInstance().deleteStorageFile(previousValuesFilename);
+        }
+    }
+
+    interface GetVal {
+
+        Object getVal();
+    }
+
+    interface PutVal {
+
+        void setVal(Object val);
+    }
+
+    interface GetBool {
+
+        boolean getVal();
+    }
+
+    void makeField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
+        makeField(identifier, field, getVal, putVal, getField, putField, null, null);
+    }
+//    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
+//         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null);
+//    }
+
+//    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
+//            GetBool isInherited, ActionListener actionListener) {
+    void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+            GetBool isInherited, ActionListener actionListener) {
+//         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
+//    }
+//
+//    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
+//            GetBool isInherited, ActionListener actionListener, Container componentCont) {
+//                if (previousValues.get(Item.PARSE_EFFORT_ESTIMATE) != null) {
+        if (putField != null && getOrg != null) { //if putField==null => not an editable field
+            if (previousValues.get(fieldIdentifier) != null) {
+//            effortEstimate.setDuration((long) previousValues.get(Item.PARSE_EFFORT_ESTIMATE)); //use a previously edited value
+                putField.setVal(previousValues.get(fieldIdentifier)); //use a previously edited value
+            } else {
+//            if (item.isChallengeInherited()) {
+                if (isInherited != null && isInherited.getVal()) {
+                    //handle inheritance when appropriate
+                } else {
+//                effortEstimate.setDuration(item.getEffortEstimate());
+                    putField.setVal(getOrg.getVal());
+                }
+            }
+        }
+
+        if (putOrg != null && getField != null) {//get edited value on exit
+            //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
+            parseIdMap2.put(fieldIdentifier, () -> {
+//        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
+                ASSERT.that(getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
+                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
+                if (!getField.getVal().equals(getOrg.getVal())) {
+//            item.setEffortEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
+                    putOrg.setVal(getField.getVal()); //if value has been changed, update item
+                }
+            });
+        }
+
+        if (getField != null && getOrg != null) {
+            ActionListener al = (e) -> {
+                if (actionListener != null) {
+                    actionListener.actionPerformed(e);
+                }
+//            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
+                ASSERT.that(getField.getVal() != null, "getField.getVal()==null, for field=" + fieldIdentifier);
+                ASSERT.that(getOrg.getVal() != null, "getOrg.getVal()==null, for field=" + fieldIdentifier);
+                if (!getField.getVal().equals(getOrg.getVal())) {
+//                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
+                    previousValues.put(fieldIdentifier, getField.getVal());
+                } else {
+                    previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+                }
+            };
+            //listen to changes an update+save if edited to different value than item.orgValue
+            if (field instanceof Picker) {
+                ((Picker) field).addActionListener(al);
+//            if (field instanceof MyDurationPicker) {
+//                ((MyDurationPicker) field).addActionListener(al);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            ((MyDurationPicker) field).addActionListener((e) -> {
+////            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
+//                if (!getField.getVal().equals(getVal.getVal())) {
+////                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
+//                    previousValues.put(fieldIdentifier, getField.getVal());
+//                } else {
+//                    previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+//                }
+//            });
+//</editor-fold>
+//            } else if (field instanceof MyTextArea) {
+            } else if (field instanceof TextArea) {
+                ((TextArea) field).addActionListener(al);
+            } else if (field instanceof Button) {
+                ((Button) field).addActionListener(al);
+            } else if (field instanceof WrapButton) {
+                ((WrapButton) field).addActionListener(al);
+            } else if (field instanceof Switch) {
+                ((Switch) field).addActionListener(al);
+            } else if (field instanceof MyComponentGroup) {
+                ((MyComponentGroup) field).addActionListener(al);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            ((MyTextArea) field).addActionListener((e) -> {
+////            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
+//                if (!getField.getVal().equals(getVal.getVal())) {
+////                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
+//                    previousValues.put(fieldIdentifier, getField.getVal());
+//                } else {
+//                    previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+//                }
+//            });
+//</editor-fold>
+            } else {
+                assert false;
+            }
+        }
+//        if (componentCont == null) { //if a container is already defined use that, e.g. for comment field
+//            return componentCont;
+//        }
+//        return layoutN(fieldLabel, (Component) field, fieldHelp);
+    }
+
     protected void animateMyForm() {
 //        ASSERT.that(false, "not implemented!!!");
         getContentPane().animateLayoutAndWait(300); //need AndWait to ensure that form is animited into place before setting InlineAddTask text field in focus??! 
@@ -2332,6 +2555,9 @@ public class MyForm extends Form {
 //        if (replayCommand != null) { //if there is a command to replay do that instead of showing this screen
 //            replayCommand.actionPerformed(new ActionEvent(this));
 //        } else { //only show if no replay command
+        if (Config.DEBUG_LOGGING) {
+            Log.p("Show MyForm: " + getTitle());
+        }
         if (!ReplayLog.getInstance().replayCmd(new ActionEvent(this))) { //only show screen is there was no command to replay
             super.show();
         }
@@ -2339,6 +2565,7 @@ public class MyForm extends Form {
 
     @Override
     public void showBack() {
+        deleteLocallyEditedValues();
         ReplayLog.getInstance().popCmd(); //pop any previous command
         super.showBack();
     }
@@ -2348,86 +2575,18 @@ public class MyForm extends Form {
      * destroyed later on). Does nothing in screens with no new edits. Saved
      * items must be read back in constructor of the screen.
      */
-    public void saveEditedValuesLocallyOnAppExit() {
+    public void saveEditedValuesLocallyOnAppExitXXX() {
 
     }
 
-    public boolean restoreEditedValuesSavedLocallyOnAppExit() {
+    public boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
         return false;
     }
 
     public void deleteEditedValuesSavedLocallyOnAppExit() {
-
+        deleteLocallyEditedValues();
     }
 
-    private double distance(int[] x, int[] y) {
-        int disx = x[0] - x[1];
-        int disy = y[0] - y[1];
-        return Math.sqrt(disx * disx + disy * disy);
-    }
-
-    /**
-     * If this Component is focused, the pointer dragged event will call this
-     * method
-     *
-     * @param x the pointer x coordinate
-     * @param y the pointer y coordinate
-     */
-    public void pointerDraggedXX(int[] x, int[] y) {
-//        if (x.length > 1) {
-//            double currentDis = distance(x, y);
-//
-//            // prevent division by 0
-//            if (pinchDistance <= 0) {
-//                pinchDistance = currentDis;
-//            }
-//            double scale = currentDis / pinchDistance;
-//            if (pinch((float) scale)) {
-//                return;
-//            }
-//            Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
-//        }
-//        pointerDragged(x[0], y[0]);
-    }
-
-    private void insertNewContainer() {
-        //find position where to insert in list
-        //insert a (scaled) temporary container (create from empty Item)
-        //cancel insert if less than 100%
-        //insert: create new Item in appropriate underlying ItemList, 
-    }
-
-//    @Override
-    public void pointerDraggedXXX(int[] x, int[] y) {
-////        super.pointerDragged(x, y);
-//        if (x.length > 1) {
-//            double currentDis = distance(x, y);
-//
-//            // prevent division by 0
-//            if (pinchDistance <= 0) {
-//                pinchDistance = currentDis;
-//            }
-//            double scale = currentDis / pinchDistance;
-//            if (pinch((float) scale)) {
-//                return;
-//            }
-//        }
-//        pointerDragged(x[0], y[0]);
-    }
-
-    //DEBUG:
-    private Form fPinchOutTest;// = new Form(new BorderLayout());
-    private Container disp1Test;// = new Container(BoxLayout.y());
-    private Label titleTest;//= new Label();
-    private Label xLabelTest;// = new Label();
-    private Label yLabelTest;// = new Label();
-    private Label distLabelTest;// = new Label();
-    private Label comp1LabelTest;// = new Label();
-    private Label comp2LabelTest;//= new Label();
-    private Label cont1LabelTest;//= new Label();
-    private Label cont2LabelTest;//= new Label();
-    private Label dropTarget1LabelTest;// = new Label();
-    private Label dropTarget2LabelTest;//= new Label();
     private Container pinchContainer; //Container holding the pinchComponent (and implementing the resize)
     private Component pinchContainerPrevious; //Container holding the pinchComponent (and implementing the resize)
 //    private Component pinchComponent;
@@ -2481,8 +2640,9 @@ public class MyForm extends Form {
             return wrapInPinchableContainer(new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement));
         } else if (refElement instanceof WorkSlot) {
             return wrapInPinchableContainer(new InlineInsertNewWorkSlotContainer(MyForm.this, (Item) refElement, insertBeforeRefElement)); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
+        } else {
+            ASSERT.that(false, () -> "error2 in createInsertContainer: refElt=" + refElement + "; list=" + list + "; insertBefore=" + insertBeforeRefElement);
         }
-        ASSERT.that(false, () -> "error2 in createInsertContainer: refElt=" + refElement + "; list=" + list + "; insertBefore=" + insertBeforeRefElement);
         return null;
     }
 
@@ -2816,7 +2976,7 @@ public class MyForm extends Form {
             }
             pinchInsertInitiated = false;
             removePointerReleasedListener(pointerReleasedListener);
-            pointerReleasedListener=null;
+            pointerReleasedListener = null;
         }
     }
 
@@ -2982,7 +3142,7 @@ public class MyForm extends Form {
                 super.pointerDragged(x, y);
             } else { // (x.length > 1) => PINCH ONGOING
                 pinchInsertInitiated = true;
-                ASSERT.that(pointerReleasedListener==null, "pointerReleasedListener NOT null as it should be");
+                ASSERT.that(pointerReleasedListener == null, "pointerReleasedListener NOT null as it should be");
                 pointerReleasedListener = (e) -> {
                     Log.p("pointerReleased called!!!!");
                     if (pinchInsertEnabled && pinchInsertInitiated) {
