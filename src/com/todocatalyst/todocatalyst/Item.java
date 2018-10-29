@@ -1392,6 +1392,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+    public static String getOwner() {
+
+    }
+
     /**
      * returns owner with a prefix accordinfg to its type, e.g. "Project: xxx"
      * if owner is an Item
@@ -2400,7 +2404,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public enum Challenge {
         //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
 //        VERY_EASY("Very easy", "V.easy"), EASY("Easy"), AVERAGE("Average", "Avrg"), HARD("Tough"), VERY_HARD("Hard");
-        VERY_EASY( "Simple"), EASY("Easy"), AVERAGE("Normal"), HARD("Hard"), VERY_HARD("Tough");
+        VERY_EASY("Simple"), EASY("Easy"), AVERAGE("Normal"), HARD("Hard"), VERY_HARD("Tough");
 
         private final String description;
         private final String shortDescription;
@@ -2984,7 +2988,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public void setExpiresOnDateD(Date expiresOnDate) {
 //        setExpiresOnDate(expiresOnDate.getTime());
 //    }
-
     public boolean isInteruptOrInstantTask() {
         Boolean interruptTask = getBoolean(PARSE_INTERRUPT_OR_INSTANT_TASK);
         return (interruptTask == null) ? false : interruptTask;
@@ -5571,15 +5574,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     static public List<String> convCategoryListToObjectIdList(List<Category> categoryList) {
         List<String> catIds = new ArrayList();
-        for (Category c:categoryList) {
-            catIds.add(c.getObjectIdP());
+        if (categoryList != null) {
+            for (Category c : categoryList) {
+                catIds.add(c.getObjectIdP());
+            }
         }
         return catIds;
     }
 
     static public List<Category> convCatObjectIdsListToCategoryList(List<String> categoryIdList) {
         List<Category> categories = new ArrayList();
-        for (String c:categoryIdList) {
+        for (String c : categoryIdList) {
             categories.add(DAO.getInstance().fetchCategory(c));
         }
         return categories;

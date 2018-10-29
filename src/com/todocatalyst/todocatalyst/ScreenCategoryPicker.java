@@ -63,7 +63,7 @@ public class ScreenCategoryPicker extends MyForm {
 //    ScreenCategoryPicker(List<Category> listOfAllCategories, Set<Category> selectedCategories, MyForm previousForm) {
 //    ScreenCategoryPicker(CategoryList listOfAllCategories, Set<Category> selectedCategories, MyForm previousForm) {
 //</editor-fold>
-    ScreenCategoryPicker(CategoryList listOfAllCategories, List<Category> selectedCategories, MyForm previousForm) {
+    ScreenCategoryPicker(CategoryList listOfAllCategories, List<Category> selectedCategories, MyForm previousForm,UpdateField updateOnDone) {
         this("Select Categories", listOfAllCategories, selectedCategories, previousForm, () -> {
         });
     }

@@ -102,9 +102,9 @@ public class ScreenItem2 extends MyForm {
     private Item item;
     private Item itemLS; //FromLocalStorage, read from local storage if app was stopped with unsaved edits to Item, otherwise set to edited item
 //    Set locallyEditedCategories;
-    private List locallyEditedCategories = null;
+//    private List locallyEditedCategories = null;
 //    private ItemAndListCommonInterface locallyEditedOwner = null;
-    private List<ItemAndListCommonInterface> locallyEditedOwner = null;
+//    private List<ItemAndListCommonInterface> locallyEditedOwner = null;
     private RepeatRuleParseObject orgRepeatRule; //same instance as the item's repeatRule, must use item.setRepeatRule to ensure it is stored?
     private RepeatRuleParseObject locallyEditedRepeatRule;
 //    UpdateField updateActionOnDone;
@@ -980,20 +980,47 @@ public class ScreenItem2 extends MyForm {
 //            previousValues.put(Item.PARSE_CATEGORIES, locallyEditedCategories);
 //        }
 //        SpanButton categoriesButton = new SpanButton(); //DOESN'T WORK WITH SPANBUTTON
-        WrapButton categoriesButton = new WrapButton();
+//        if (previousValues.get(Item.PARSE_CATEGORIES) == null) {
+//            previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(item.getCategories()));
+//        }
+//        List<Category> editedCats = Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES));
+        WrapButton categoriesButton = new WrapButton(previousValues.get(Item.PARSE_CATEGORIES) != null
+                ? getCategoriesAsCommaSeparatedString(Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)))
+                : getCategoriesAsCommaSeparatedString(item.getCategories()));
+//        WrapButton editOwnerButton = new WrapButton(getListAsCommaSeparatedString(editedCats));
+
         Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem2.this);
-                List<Category> catList = Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES));
+//                if (previousValues.get(Item.PARSE_CATEGORIES) != null) {
+                List<Category> catList = (previousValues.get(Item.PARSE_CATEGORIES) != null
+                        ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)) //if previous edited value exists, use that
+                        : item.getCategories());
                 ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(),
                         catList,
-                        ScreenItem2.this);
-                screenCatPicker.setDoneUpdater(() -> {
+                        ScreenItem2.this, () -> {
 //                    categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
-                    categoriesButton.setText(getDefaultIfStrEmpty(getCategoriesAsCommaSeparatedString(catList,false),"")); //"<click to set categories>"
-                    categoriesButton.revalidate(); //layout new list of categories, working??
-                    previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(catList));
+                            if (catList.equals(item.getCategories())) {
+                                previousValues.remove(Item.PARSE_CATEGORIES); //remove previos/edited value (nothing to store)
+                                categoriesButton.setText(getCategoriesAsCommaSeparatedString(item.getCategories())); //"<click to set categories>"
+                            } else {
+                                previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(catList));
+                                categoriesButton.setText(getCategoriesAsCommaSeparatedString(catList)); //"<click to set categories>"
+                            }
+                            categoriesButton.revalidate(); //layout new list of categories, working??
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                                ItemAndListCommonInterface newOwner = locallyEditedOwner.size() >= 1 ? locallyEditedOwner.get(0) : null;
+////                                editOwnerButton.setText(newOwner != null ? newOwner.getText() : ""); //"<no owner>"
+//////                                        editOwnerButton.revalidate(); //refresh screen?
+////                                parseIdMap2.put("ItemScreen.ScreenObjectPicker", () -> {
+////                                    if (localSave) {
+////                                        saveNewOwner(newOwner);
+////                                    } else {
+////                                        item.setOwnerAndMoveFromOldOwner(newOwner);
+////                                    }
+////                                }); //TODO!!! no need to save item setOwnerAndMoveFromOldOwner since also saved on exit from this screen
+////</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    parseIdMap2.put("ItemScreen.EditedCategories", () -> {
 //                        if (localSave) {
@@ -1003,14 +1030,20 @@ public class ScreenItem2 extends MyForm {
 //                        }
 //                    });
 //</editor-fold>
-                });
+                        });
                 screenCatPicker.show();
+//                }
             }
         };
         categoriesButton.setCommand(categoryEditCmd);
-        makeField(Item.PARSE_CATEGORIES, categoriesButton, () -> item.getCategories(), (catlist) -> item.setCategories((List) catlist),
-                () -> Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)),
-                (catlist) -> previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList((List) catlist)));
+        parseIdMap2.put(Item.PARSE_CATEGORIES, () -> {
+            if (previousValues.get(Item.PARSE_CATEGORIES) != null) {
+                item.setCategories(Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)));
+            }
+        });
+//        makeField(Item.PARSE_CATEGORIES, categoriesButton, () -> item.getCategories(), (catlist) -> item.setCategories((List) catlist),
+//                () -> Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)),
+//                (catlist) -> previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList((List) catlist)));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(item.getCategories()), "<click to set categories>"));
@@ -1026,7 +1059,11 @@ public class ScreenItem2 extends MyForm {
 
         //REPEAT RULE
 //        SpanButton repeatRuleButton = new SpanButton();
-        WrapButton repeatRuleButton = new WrapButton();
+//        WrapButton repeatRuleButton = new WrapButton();
+        WrapButton repeatRuleButton = new WrapButton(previousValues.get(Item.REPEAT_RULE) != null
+                ? ((RepeatRuleParseObject) previousValues.get(Item.PARSE_OWNER_ITEM)).getText()
+                : item.getRepeatRule() != null ? item.getRepeatRule().getText() : "");
+
 //        RepeatRule 
 //        locallyEditedRepeatRule = item.getRepeatRule();
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRules", "", null, (e) -> {
@@ -1059,6 +1096,11 @@ public class ScreenItem2 extends MyForm {
                 Dialog.show("INFO", Format.f("Once a repeating task has been set [DONE] or [CANCELLED] the [REPEAT_RULE] definition cannot be edited from this task anymore"), "OK", null);
                 return;
             }
+
+            RepeatRuleParseObject locallyEditedRepeatRule
+                    = previousValues.get(Item.PARSE_REPEAT_RULE) != null
+                    ? ((RepeatRuleParseObject) previousValues.get(Item.PARSE_OWNER_ITEM)) //fetch previously edited instance/copy of the repeat Rule
+                    : new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if returns null, creates a fresh RR
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (orgRepeatRule == null && editedRepeatRuleCopy == null) {
 //                    editedRepeatRuleCopy = new RepeatRuleParseObject(); //if no rule exists already, create a fresh one
@@ -1089,7 +1131,8 @@ public class ScreenItem2 extends MyForm {
 //                putEditedValues2(parseIdMap2);
 //            new ScreenRepeatRuleNew(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
 //</editor-fold>
-            new ScreenRepeatRuleNew(Item.REPEAT_RULE, (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE), item, ScreenItem2.this, () -> {
+//            new ScreenRepeatRuleNew(Item.REPEAT_RULE, (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE), item, ScreenItem2.this, () -> {
+            new ScreenRepeatRuleNew(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (false && !locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)) { //if rule was edited
 //                        DAO.getInstance().save(locallyEditedRepeatRule); //save first to enable saving repeatInstances
@@ -1101,8 +1144,14 @@ public class ScreenItem2 extends MyForm {
 //                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null && !locallyEditedRepeatRule.equals(new RepeatRuleParseObject())
 //                        //                            ? editedRepeatRuleCopy.\toString() : null, "<set>")); //"<click to make task/project repeat>"
 //                        ? locallyEditedRepeatRule.toString() : null, "")); //"<click to make task/project repeat>"
-                repeatRuleButton.setText(((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)).toString()); //"<click to make task/project repeat>"
-                repeatRuleButton.revalidate();
+                if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
+                    previousValues.remove(Item.PARSE_REPEAT_RULE);
+                    repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
+                } else {
+                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
+                    repeatRuleButton.setText(locallyEditedRepeatRule.getText()); //"<click to make task/project repeat>"
+                }
+//                    repeatRuleButton.revalidate();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (dueDate.getDate().getTime() == 0
 //                            && locallyEditedRepeatRule.getSpecifiedStartDateD().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
@@ -1140,6 +1189,15 @@ public class ScreenItem2 extends MyForm {
 //        });
 //</editor-fold>
         repeatRuleButton.setCommand(repeatRuleEditCmd);
+        parseIdMap2.put(Item.PARSE_REPEAT_RULE,()->{
+            if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
+                    previousValues.remove(Item.PARSE_REPEAT_RULE);
+                    repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
+                } else {
+                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
+                    repeatRuleButton.setText(locallyEditedRepeatRule.getText()); //"<click to make task/project repeat>"
+                }
+        });
         makeField(Item.PARSE_REPEAT_RULE, repeatRuleButton, () -> {
             if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && item.getRepeatRule() == null) {
                 return new RepeatRuleParseObject(); //if no previous RR, create a fresh one to edit
@@ -1148,7 +1206,7 @@ public class ScreenItem2 extends MyForm {
             }
         }, (repRule) -> item.setRepeatRule((RepeatRuleParseObject) repRule),
                 () -> previousValues.get(Item.PARSE_REPEAT_RULE), (repRule) -> previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject((RepeatRuleParseObject) repRule)));
-
+NB what if RR is deleted completely?! put(with null value?!)
 //        repeatRuleButton.setText(getDefaultIfStrEmpty(itemLS.getRepeatRule() != null ? itemLS.getRepeatRule().toString() : null, "")); //"<set>", "<click to make task/project repeat>"
 //        repeatRuleButton.setUIID("TextField");
 //        mainCont.add(layout(Item.REPEAT_RULE, makeContainerWithClearButton(repeatRuleButton, () -> {
@@ -1971,12 +2029,19 @@ public class ScreenItem2 extends MyForm {
 //            }
 //        ItemAndListCommonInterface locallyEditedOwner = item.getOwner(); //null;
 //</editor-fold>
-        if (locallyEditedOwner == null) {
-            locallyEditedOwner = new ArrayList(); //Arrays.asList(item.getOwner())
-            locallyEditedOwner.add(itemLS.getOwner());
-        }
+//        if (locallyEditedOwner == null) {
+//            locallyEditedOwner = new ArrayList(); //Arrays.asList(item.getOwner())
+//            locallyEditedOwner.add(itemLS.getOwner());
+//        }
 //        SpanButton editOwnerButton = new SpanButton();
-        WrapButton editOwnerButton = new WrapButton();
+//        if (previousValues.get(Item.PARSE_OWNER_ITEM) == null) {
+//            previousValues.put(Item.PARSE_OWNER_ITEM, item.getOwner().getObjectIdP());
+//        }
+//        ItemAndListCommonInterface prevOwner = DAO.getInstance().fetchItemOwner((String) previousValues.get(Item.PARSE_OWNER_ITEM));
+        WrapButton editOwnerButton = new WrapButton(previousValues.get(Item.PARSE_OWNER_ITEM) != null
+                ? DAO.getInstance().fetchItemOwner((String) previousValues.get(Item.PARSE_OWNER_ITEM)).getText()
+                : item.getOwner().getText());
+
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
         Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
@@ -1985,23 +2050,22 @@ public class ScreenItem2 extends MyForm {
 
             //cconvert list of ObjectId to list of actual owners (well, 0 or 1 owner)
             List<ItemAndListCommonInterface> locallyEditedOwner
-                    = ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0
+                    = previousValues.get(Item.PARSE_OWNER_ITEM) != null && ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0
                     ? new ArrayList(Arrays.asList(DAO.getInstance().fetchItem(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)))) //fetch the actual owner 
                     : new ArrayList();
-            ScreenObjectPicker ownerPicker
-                    //<editor-fold defaultstate="collapsed" desc="comment">
-                    //                        = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(), DAO.getInstance().getItemListList(), locallyEditedOwner, ScreenItem.this);
-                    //                ownerPicker.setDoneUpdater(() -> {
-                    //                    editOwnerButton.setText(locallyEditedOwner != null ? locallyEditedOwner.getText() : "<no owner>");
-                    //                    parseIdMap2.put("ItemScreen.ScreenObjectPicker", () -> item.setOwner(locallyEditedOwner));
-                    //                });
-                    //</editor-fold>
-                    = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(),
-                            //                            DAO.getInstance().getItemListList(),
-                            ItemListList.getInstance(),
-                            projects,
-                            locallyEditedOwner, ScreenItem2.this,
-                            () -> {
+            //<editor-fold defaultstate="collapsed" desc="comment">
+            //                        = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(), DAO.getInstance().getItemListList(), locallyEditedOwner, ScreenItem.this);
+            //                ownerPicker.setDoneUpdater(() -> {
+            //                    editOwnerButton.setText(locallyEditedOwner != null ? locallyEditedOwner.getText() : "<no owner>");
+            //                    parseIdMap2.put("ItemScreen.ScreenObjectPicker", () -> item.setOwner(locallyEditedOwner));
+            //                });
+            //</editor-fold>
+            ScreenObjectPicker ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(),
+                    //                            DAO.getInstance().getItemListList(),
+                    ItemListList.getInstance(),
+                    projects,
+                    locallyEditedOwner, ScreenItem2.this,
+                    () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                ItemAndListCommonInterface newOwner = locallyEditedOwner.size() >= 1 ? locallyEditedOwner.get(0) : null;
 //                                editOwnerButton.setText(newOwner != null ? newOwner.getText() : ""); //"<no owner>"
@@ -2014,38 +2078,60 @@ public class ScreenItem2 extends MyForm {
 //                                    }
 //                                }); //TODO!!! no need to save item setOwnerAndMoveFromOldOwner since also saved on exit from this screen
 //</editor-fold>
-                                if (locallyEditedOwner.size() > 0) {
-                                    ItemAndListCommonInterface newOwner = locallyEditedOwner.get(0);
-                                    editOwnerButton.setText(newOwner.getText()); //"<no owner>"
-                                    previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(((ItemAndListCommonInterface) newOwner).getObjectIdP()))); //store objectId of new owner
-//                                        editOwnerButton.revalidate(); //refresh screen?
-                                } else {
-                                    previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList()); //store empty list (e.g. if previous owner was deselected)
-                                    editOwnerButton.setText(""); //"<no owner>"
-                                }
-                            }, null, 0, 1, true, false, false);
+                        if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
+                            ItemAndListCommonInterface newOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
+//                            if ((newOwner==null&&item.getOwner()==null)||newOwner.equals(item.getOwner())) {
+                            if (newOwner.equals(item.getOwner())) {
+//                                        previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList()); //store empty list (e.g. if previous owner was selected agagin)
+                                previousValues.remove(Item.PARSE_OWNER_ITEM); //store empty list (e.g. if previous owner was selected agagin)
+//                                editOwnerButton.setText(item.getOwner()==null?"":item.getOwner().getText());  //set back to old Owner
+                                editOwnerButton.setText(item.getOwner().getText());  //set back to old Owner
+                            } else { //new owner
+                                previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(((ItemAndListCommonInterface) newOwner).getObjectIdP()))); //store objectId of new owner
+                                editOwnerButton.setText(newOwner.getText());
+                            }
+                        } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
+                            if (item.getOwner() == null) {
+                                previousValues.remove(Item.PARSE_OWNER_ITEM); //remove previousValue, e.g. no owner before, none selected now
+                            } else {
+                                previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList()); //store empty list (e.g. if previous owner was deselected)
+                            }
+                            editOwnerButton.setText(""); //"<no owner>"
+                        }
+                    }, null, 0, 1, true, false, false);
             ownerPicker.show();
         }
         );
         editOwnerButton.setCommand(editOwnerCmd);
+        parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
+            if (previousValues.get(Item.PARSE_OWNER_ITEM) != null) {
+                if (((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0) {
+                    item.setOwner(DAO.getInstance().fetchItem(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)));
+                } else {
+                    item.setOwner(null);
+                }
+            }
+        });
         //previousValues stores the ObjectId of the owner, not the owner itself!
         //NB! Item.PARSE_OWNER_ITEM is used to index previousValues, but owner can also be Item.PARSE_OWNER_LIST, but not Item.PARSE_OWNER_TEMPLATE_LIST
-        makeField(Item.PARSE_OWNER_ITEM, editOwnerButton, () -> item.getOwner(), (o) -> item.setOwner((ItemAndListCommonInterface) o),
-                () -> {
-                    if (((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0) {
-                        return (DAO.getInstance().fetchItem((String) ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)));
-                    } else {
-                        return null;
-                    }
-                },
-                (s) -> {
-                    if (s != null) {
-//                        previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(((ItemAndListCommonInterface) s).getObjectIdP()))); //store as list of ObjectIds 
-                        previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(((ItemAndListCommonInterface) s).getObjectIdP()))); //store as list of ObjectIds 
-                    } else {
-                        previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList()); //store as list of ObjectIds
-                    }
-                });
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        makeField(Item.PARSE_OWNER_ITEM, editOwnerButton, () -> item.getOwner(), (o) -> item.setOwner((ItemAndListCommonInterface) o),
+//                () -> {
+//                    if (((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0) {
+//                        return (DAO.getInstance().fetchItem((String) ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)));
+//                    } else {
+//                        return null;
+//                    }
+//                },
+//                (owner2) -> {
+//                    if (owner2 != null) {
+////                        previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(((ItemAndListCommonInterface) s).getObjectIdP()))); //store as list of ObjectIds
+//                        previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(((ItemAndListCommonInterface) owner2).getObjectIdP()))); //store as list of ObjectIds
+//                    } else {
+//                        previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList()); //store as list of ObjectIds
+//                    }
+//                });
+//</editor-fold>
 //        statusCont.add(layout(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, true, false, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
         statusCont.add(layoutN(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 

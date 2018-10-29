@@ -215,7 +215,43 @@ public class DAO {
         }
         return item;
     }
-    
+
+    /**
+    special case to fetch the Owner of an item, which may be either an Item or an ItemList (for now). 
+    Used in ScreenItem. 
+    @param objectId
+    @return 
+    */
+    public ItemAndListCommonInterface fetchItemOwner(String objectId) {
+        ItemAndListCommonInterface elt = null;
+        if (objectId == null || objectId.length() == 0) {
+            return null;
+        }
+//        if ((item = (Item) cache.get(objectId)) != null) {
+        if ((elt = (ItemAndListCommonInterface) cacheGet(objectId)) != null) {
+            return elt;
+        }
+        try {
+            elt = ParseObject.fetch(Item.CLASS_NAME, objectId);
+            if (elt instanceof ItemAndListCommonInterface) {
+                cachePut((ParseObject)elt);
+                return elt;
+            }
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        try {
+            elt = ParseObject.fetch(ItemList.CLASS_NAME, objectId);
+            if (elt instanceof ItemAndListCommonInterface) {
+                cachePut((ParseObject)elt);
+                return elt;
+            }
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return elt;
+    }
+
     public Category fetchCategory(String objectId) {
         Category category;
         if (objectId == null || objectId.length() == 0) {
@@ -234,6 +270,26 @@ public class DAO {
             Log.e(ex);
         }
         return category;
+    }
+
+    public RepeatRuleParseObject fetchRepeatRule(String objectId) {
+        RepeatRuleParseObject repeatRule;
+        if (objectId == null || objectId.length() == 0) {
+            return null;
+        }
+//        if ((item = (Item) cache.get(objectId)) != null) {
+        if ((repeatRule = (RepeatRuleParseObject) cacheGet(objectId)) != null) {
+            return repeatRule;
+        }
+//        Item item = null;
+        try {
+            repeatRule = ParseObject.fetch(RepeatRuleParseObject.CLASS_NAME, objectId);
+//            cache.put(objectId, item);
+            cachePut(repeatRule);
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return repeatRule;
     }
 
     /**

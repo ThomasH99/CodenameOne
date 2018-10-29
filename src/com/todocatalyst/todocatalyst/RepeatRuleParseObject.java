@@ -2598,11 +2598,10 @@ public class RepeatRuleParseObject
     }
 
     /**
-     *
+     * return the text describing the repeatRule
      * @return
      */
-    @Override
-    public String toString() {
+    public String getText() {
         String s = "";
         if (getRepeatType() == REPEAT_TYPE_NO_REPEAT) {
             s = REPEAT_RULE_NO_REPEAT;
@@ -2700,6 +2699,11 @@ public class RepeatRuleParseObject
             }
         }
         return s;
+    }
+
+    @Override
+    public String toString() {
+        return getText();
     }
 
     public void copyMeInto(RepeatRuleParseObject destiny) {
@@ -2826,46 +2830,53 @@ public class RepeatRuleParseObject
 //        return date;
 //    }
 //</editor-fold>
+    /**
+    externalize (and internalize) are used to store an edited RepeatRule locally (for Replay).
+    Only end-user edited fields need to be saved, since either the user edited an existing rule 
+    in which case the old rule will not be updated until saving, or he edited a new rule, 
+    in which case there are no calculated fields (repeat instances)
+    @param dos
+    @throws IOException 
+     */
+    public void externalize(DataOutputStream dos) throws IOException {
+//        super.writeObject(dos);
+        dos.writeInt(getFrequency());
+        dos.writeInt(getInterval());
+        dos.writeInt(getNumberOfRepeats());
+
+        dos.writeLong(getEndDate());
+        dos.writeInt(getDaysInWeek());
+        dos.writeInt(getWeeksInMonth());
+
+        dos.writeInt(getWeekdaysInMonth());
+        dos.writeInt(getMonthsInYear());
+        dos.writeInt(getDayInMonth());
+
+        dos.writeInt(getDayInYear());
+        dos.writeInt(getRepeatType());
+
+        dos.writeInt(getNumberFutureRepeatsToGenerateAhead());
+        dos.writeInt(getNumberOfDaysRepeatsAreGeneratedAhead());
+        dos.writeLong(getSpecifiedStartDate());
 //<editor-fold defaultstate="collapsed" desc="comment">
-//    public void externalizeXXX(DataOutputStream dos) throws IOException {
-////        super.writeObject(dos);
-//        dos.writeInt(getFrequency());
-//        dos.writeInt(getInterval());
-//        dos.writeInt(getNumberOfRepeats());
-//
-//        dos.writeLong(getEndDate());
-//        dos.writeInt(getDaysInWeek());
-//        dos.writeInt(getWeeksInMonth());
-//
-//        dos.writeInt(getWeekdaysInMonth());
-//        dos.writeInt(getMonthsInYear());
-//        dos.writeInt(getDayInMonth());
-//
-//        dos.writeInt(getDayInYear());
-//        dos.writeInt(getRepeatType());
-//
-//        dos.writeInt(getNumberFutureRepeatsToGenerateAhead());
-//        dos.writeInt(getNumberOfDaysRepeatsAreGeneratedAhead());
-//        dos.writeLong(getSpecifiedStartDate());
-//
-////        dos.writeLong(getLastDateGeneratedFor()); //=0; //
+//        dos.writeLong(getLastDateGeneratedFor()); //=0; //
 //        dos.writeLong(getLastGeneratedDate()); //=0; //
 //        dos.writeInt(getTotalNumberOfInstancesGeneratedSoFar());
-//
-////<editor-fold defaultstate="collapsed" desc="comment">
-////        int vectorSize = repeatInstanceVector.size();
-////        dos.writeInt(vectorSize);
-////        for (int i = 0; i < vectorSize; i++) {
-////            dos.writeInt(((BaseItem) repeatInstanceVector.elementAt(i)).getGuid());
-////        }
-////        repeatInstanceVector.writeObject(dos, true);
-////        BaseItemDAO.getInstance().writeObject(repeatInstanceVector, dos, true);
-////        BaseItemDAO.getInstance().writeObject(repeatInstanceItemList, dos);
-////</editor-fold>
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        int vectorSize = repeatInstanceVector.size();
+//        dos.writeInt(vectorSize);
+//        for (int i = 0; i < vectorSize; i++) {
+//            dos.writeInt(((BaseItem) repeatInstanceVector.elementAt(i)).getGuid());
+//        }
+//        repeatInstanceVector.writeObject(dos, true);
+//        BaseItemDAO.getInstance().writeObject(repeatInstanceVector, dos, true);
+//        BaseItemDAO.getInstance().writeObject(repeatInstanceItemList, dos);
+//</editor-fold>
 //        Util.writeObject(getListOfUndoneRepeatInstances(), dos);
-//
-////        datesList.writeObject(dos);
-////        Util.writeObject(getDatesList(), dos); //TODO!! cannot externalize since Date is not handled by CN1, must rewrite to loop writing long as below
+
+//        datesList.writeObject(dos);
+//        Util.writeObject(getDatesList(), dos); //TODO!! cannot externalize since Date is not handled by CN1, must rewrite to loop writing long as below
 //        if (false) {
 //            List<Date> list = getDatesListXXX();
 ////        int vectorSize = datesList.vector.size();
@@ -2875,81 +2886,81 @@ public class RepeatRuleParseObject
 //                dos.writeLong(list.get(i).getTime());
 //            }
 //        }
+//</editor-fold>
+    }
+
+    public void internalize(int version, DataInputStream dis) throws IOException {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        super.readObject(version, dis);
+//        frequency = dis.readInt();
+//        interval = dis.readInt();
+//        count = dis.readInt();
 //
-//    }
+//        endDate = dis.readLong();
+//        daysInWeek = dis.readInt();
+//        weeksInMonth = dis.readInt();
 //
-//    public void internalizeXXX(int version, DataInputStream dis) throws IOException {
-////<editor-fold defaultstate="collapsed" desc="comment">
-////        super.readObject(version, dis);
-////        frequency = dis.readInt();
-////        interval = dis.readInt();
-////        count = dis.readInt();
-////
-////        endDate = dis.readLong();
-////        daysInWeek = dis.readInt();
-////        weeksInMonth = dis.readInt();
-////
-////        weekdaysInMonth = dis.readInt();
-////        monthsInYear = dis.readInt();
-////        dayInMonth = dis.readInt();
-////
-////        dayInYear = dis.readInt();
-////        repeatType = dis.readInt();
-////
-////        numberOfRepeatsGeneratedAhead = dis.readInt();
-////        numberOfDaysRepeatsAreGeneratedAhead = dis.readInt();
-////        specifiedStartDate = dis.readLong();
-////
-////        lastDateGeneratedFor = dis.readLong(); //=0; //
-////        lastGeneratedDate = dis.readLong(); //=0; //
-////        countOfInstancesGeneratedSoFar = dis.readInt();
-////</editor-fold>
-//        setFrequency(dis.readInt());
-//        setInterval(dis.readInt());
-//        setNumberOfRepeats(dis.readInt());
+//        weekdaysInMonth = dis.readInt();
+//        monthsInYear = dis.readInt();
+//        dayInMonth = dis.readInt();
 //
-//        setEndDate(dis.readLong());
-//        setDaysInWeek(dis.readInt());
-//        setWeeksInMonth(dis.readInt());
+//        dayInYear = dis.readInt();
+//        repeatType = dis.readInt();
 //
-//        setWeekdaysInMonth(dis.readInt());
-//        setMonthsInYear(dis.readInt());
-//        setDayInMonth(dis.readInt());
+//        numberOfRepeatsGeneratedAhead = dis.readInt();
+//        numberOfDaysRepeatsAreGeneratedAhead = dis.readInt();
+//        specifiedStartDate = dis.readLong();
 //
-//        setDayInYear(dis.readInt());
-//        setRepeatType(dis.readInt());
-//
-//        setNumberFutureRepeatsToGenerateAhead(dis.readInt());
-//        setNumberOfDaysRepeatsAreGeneratedAhead(dis.readInt());
-//        setSpecifiedStartDate(dis.readLong());
-//
-////        setLastDateGeneratedFor(dis.readLong()); //=0; //
+//        lastDateGeneratedFor = dis.readLong(); //=0; //
+//        lastGeneratedDate = dis.readLong(); //=0; //
+//        countOfInstancesGeneratedSoFar = dis.readInt();
+//</editor-fold>
+        setFrequency(dis.readInt());
+        setInterval(dis.readInt());
+        setNumberOfRepeats(dis.readInt());
+
+        setEndDate(dis.readLong());
+        setDaysInWeek(dis.readInt());
+        setWeeksInMonth(dis.readInt());
+
+        setWeekdaysInMonth(dis.readInt());
+        setMonthsInYear(dis.readInt());
+        setDayInMonth(dis.readInt());
+
+        setDayInYear(dis.readInt());
+        setRepeatType(dis.readInt());
+
+        setNumberFutureRepeatsToGenerateAhead(dis.readInt());
+        setNumberOfDaysRepeatsAreGeneratedAhead(dis.readInt());
+        setSpecifiedStartDate(dis.readLong());
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        setLastDateGeneratedFor(dis.readLong()); //=0; //
 //        setLastGeneratedDate(new Date(dis.readLong())); //=0; //
 //        setTotalNumberOfInstancesGeneratedSoFar(dis.readInt());
-//
-////<editor-fold defaultstate="collapsed" desc="comment">
-////        int vectorSize = dis.readInt();
-////        repeatInstanceVector = new RepeatInstanceVector();
-////        for (int i = 0; i < vectorSize; i++) {
-////            repeatInstanceVector.addElement(BaseItemDAO.getInstance().getBaseItem(dis.readInt()));
-////        }
-////        repeatInstanceVector = new RepeatInstanceVector();
-////        repeatInstanceVector.readBaseItem(version, dis);
-////        repeatInstanceVector = (RepeatInstanceVector) BaseItemDAO.getInstance().readBaseItem(dis, this);
-////        repeatInstanceVector = (RepeatInstanceVector) BaseItemDAO.getInstance().readBaseItem(this, dis);
-////        repeatInstanceItemList = (RepeatInstanceItemList) BaseItemDAO.getInstance().readObject(this, dis);
-////        repeatInstanceItemList = (RepeatInstanceItemList) Util.readObject(dis);
-////        repeatInstanceItemList = (List) Util.readObject(dis);
-////</editor-fold>
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        int vectorSize = dis.readInt();
+//        repeatInstanceVector = new RepeatInstanceVector();
+//        for (int i = 0; i < vectorSize; i++) {
+//            repeatInstanceVector.addElement(BaseItemDAO.getInstance().getBaseItem(dis.readInt()));
+//        }
+//        repeatInstanceVector = new RepeatInstanceVector();
+//        repeatInstanceVector.readBaseItem(version, dis);
+//        repeatInstanceVector = (RepeatInstanceVector) BaseItemDAO.getInstance().readBaseItem(dis, this);
+//        repeatInstanceVector = (RepeatInstanceVector) BaseItemDAO.getInstance().readBaseItem(this, dis);
+//        repeatInstanceItemList = (RepeatInstanceItemList) BaseItemDAO.getInstance().readObject(this, dis);
+//        repeatInstanceItemList = (RepeatInstanceItemList) Util.readObject(dis);
+//        repeatInstanceItemList = (List) Util.readObject(dis);
+//</editor-fold>
 //        setListOfUndoneRepeatInstances((List) Util.readObject(dis));
-//
-////<editor-fold defaultstate="collapsed" desc="comment">
-////        datesList = new DateBuffer();
-////        datesList.readObject(999, dis);
-////        datesList = (DateBuffer) Util.readObject(dis);
-////        datesList = (DateBuffer) Util.readObject(dis);
-////</editor-fold>
-////        setDatesList((List) Util.readObject(dis));
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        datesList = new DateBuffer();
+//        datesList.readObject(999, dis);
+//        datesList = (DateBuffer) Util.readObject(dis);
+//        datesList = (DateBuffer) Util.readObject(dis);
+//</editor-fold>
+//        setDatesList((List) Util.readObject(dis));
 //        int vectorSize = dis.readInt();
 ////            datesList.vector = new Vector(vectorSize);
 //        List<Date> datesList = new ArrayList(vectorSize);
@@ -2958,9 +2969,9 @@ public class RepeatRuleParseObject
 //            datesList.add(new Date(dis.readLong()));
 //        }
 //        setDatesListXXX(datesList);
-//
-//    }
 //</editor-fold>
+    }
+
     @Override
     public int hashCode() {
         int hash = 7;

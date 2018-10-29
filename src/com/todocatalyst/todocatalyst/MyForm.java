@@ -1258,6 +1258,10 @@ public class MyForm extends Form {
         return str;
     }
 
+    public static String getCategoriesAsCommaSeparatedString(List<Category> setOrList) {
+        return getCategoriesAsCommaSeparatedString(setOrList, false);
+    }
+
     public static String getCategoriesAsCommaSeparatedString(List<Category> setOrList, boolean showObjIds) {
         String str = "";
         String separator = "";
@@ -1288,6 +1292,14 @@ public class MyForm extends Form {
     public static String getDefaultIfStrEmpty(String str, String defaultStr) {
         if (str == null || str.equals("")) {
             return defaultStr;
+        } else {
+            return str;
+        }
+    }
+
+    public static String getEmptyStrIfStrEmpty(String str) {
+        if (str == null || str.equals("")) {
+            return "";
         } else {
             return str;
         }
@@ -2390,12 +2402,16 @@ public class MyForm extends Form {
 //            GetBool isInherited, ActionListener actionListener) {
     void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
             GetBool isInherited, ActionListener actionListener) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
 //    }
 //
 //    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
 //            GetBool isInherited, ActionListener actionListener, Container componentCont) {
 //                if (previousValues.get(Item.PARSE_EFFORT_ESTIMATE) != null) {
+//</editor-fold>
+
+        //check if a previous value exists, and if yes, use that to initialize the editable field with, 
         if (putField != null && getOrg != null) { //if putField==null => not an editable field
             if (previousValues.get(fieldIdentifier) != null) {
 //            effortEstimate.setDuration((long) previousValues.get(Item.PARSE_EFFORT_ESTIMATE)); //use a previously edited value
@@ -2406,18 +2422,19 @@ public class MyForm extends Form {
                     //handle inheritance when appropriate
                 } else {
 //                effortEstimate.setDuration(item.getEffortEstimate());
-                    putField.setVal(getOrg.getVal());
+                    putField.setVal(getOrg.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
                 }
             }
         }
 
+        //set actionListener on edited field, to store edited values (only if different from the original one)
         if (putOrg != null && getField != null) {//get edited value on exit
             //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
             parseIdMap2.put(fieldIdentifier, () -> {
 //        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
                 ASSERT.that(getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
                 ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
-                if (!getField.getVal().equals(getOrg.getVal())) {
+                if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
 //            item.setEffortEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
                     putOrg.setVal(getField.getVal()); //if value has been changed, update item
                 }
