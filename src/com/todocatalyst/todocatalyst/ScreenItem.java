@@ -944,8 +944,7 @@ public class ScreenItem extends MyForm {
         Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
             @Override
             public void actionPerformed(ActionEvent evt) {
-                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem.this);
-                screenCatPicker.setDoneUpdater(() -> {
+                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem.this,() -> {
                     categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
                     categoriesButton.revalidate(); //layout new list of categories, working??
                     parseIdMap2.put("ItemScreen.EditedCategories", () -> {
@@ -1034,7 +1033,7 @@ public class ScreenItem extends MyForm {
                     || (locallyEditedRepeatRule.equals(orgRepeatRule)
                     && orgRepeatRule.equals(locallyEditedRepeatRule)), "problem in cloning repeatRule");
             //                putEditedValues2(parseIdMap2);
-            new ScreenRepeatRuleNew(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem.this, () -> {
+            new ScreenRepeatRule(Item.REPEAT_RULE, item.getRepeatRule(), locallyEditedRepeatRule, item, ScreenItem.this, () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (false && !locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)) { //if rule was edited
 //                        DAO.getInstance().save(locallyEditedRepeatRule); //save first to enable saving repeatInstances

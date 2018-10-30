@@ -226,7 +226,7 @@ public class ScreenWorkSlot extends MyForm {
             ASSERT.that(workSlot.getRepeatRule() == null || (repeatRuleCopyBeforeEdit.equals(locallyEditedRepeatRule) && locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)), 
                     "problem in cloning repeatRule");
 
-            new ScreenRepeatRuleNew(Item.REPEAT_RULE, locallyEditedRepeatRule, workSlot, ScreenWorkSlot.this, () -> {
+            new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRule, workSlot, ScreenWorkSlot.this, () -> {
                 repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
                 if (false) { //now done when exiting via parseIdMap2 below
                     workSlot.setRepeatRule(locallyEditedRepeatRule);

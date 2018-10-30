@@ -3071,12 +3071,12 @@ public class RepeatRuleParseObject
 
     /**
     update the repeat rule with any differences (edits) in the RR given in argument
-    @param o
+    @param editedRepeatRule
     @return true if any changes were made (meaning the updated rule needs to be saved)
      */
-    public boolean update(RepeatRuleParseObject o) {
+    public boolean update(RepeatRuleParseObject editedRepeatRule) {
         // ASSERT.that("equals() called on MyRepeatRule"); //DONE!!!: not updated (is it needed?) //called when setting a new/update
-        if (o == this) {
+        if (editedRepeatRule == this) {
             return false;
         }
 //        if (o == null) {
@@ -3085,7 +3085,7 @@ public class RepeatRuleParseObject
 
         boolean updated = false;
 
-        RepeatRuleParseObject repeatRule = (RepeatRuleParseObject) o;
+        RepeatRuleParseObject repeatRule = (RepeatRuleParseObject) editedRepeatRule;
 
         if (getSpecifiedStartDate() != repeatRule.getSpecifiedStartDate()) {
             setSpecifiedStartDate(repeatRule.getSpecifiedStartDate());
@@ -4222,13 +4222,13 @@ public class RepeatRuleParseObject
         } else {
             setNumberFutureRepeatsToGenerateAhead(daysOrInstances);
         }
-        if (foreverUntilNumber == ScreenRepeatRuleNew.REPEAT_HOW_LONG_OPTION_UNTIL) {
+        if (foreverUntilNumber == ScreenRepeatRule.REPEAT_HOW_LONG_OPTION_UNTIL) {
             setEndDate((Date) untilOrNumber);
             setNumberOfRepeats(Integer.MAX_VALUE);
-        } else if (foreverUntilNumber == ScreenRepeatRuleNew.REPEAT_HOW_LONG_OPTION_NUMBER) {
+        } else if (foreverUntilNumber == ScreenRepeatRule.REPEAT_HOW_LONG_OPTION_NUMBER) {
             setNumberOfRepeats((Integer) untilOrNumber);
             setEndDate(new Date(MyDate.MAX_DATE));
-        } else if (foreverUntilNumber == ScreenRepeatRuleNew.REPEAT_HOW_LONG_OPTION_FOREVER) {
+        } else if (foreverUntilNumber == ScreenRepeatRule.REPEAT_HOW_LONG_OPTION_FOREVER) {
             setNumberOfRepeats(Integer.MAX_VALUE);
             setEndDate(new Date(MyDate.MAX_DATE));
         }
@@ -4259,9 +4259,9 @@ public class RepeatRuleParseObject
         Date start = makeDate(1, 8, 2017, 23, 10);
         Date end = makeDate(1, 10, 2017, 23, 10);
 //(Date start, int fromDue, int frequency, int interval, int intOptions, boolean genDaysAhead, int daysOrInstances, int foreverUntilNumber, Object untilOrNumber)
-        runTest(start, REPEAT_TYPE_FROM_COMPLETED_DATE, RepeatRule.WEEKLY, 1, RepeatRule.WEDNESDAY, true, 5, ScreenRepeatRuleNew.REPEAT_HOW_LONG_OPTION_FOREVER, null);
-        runTest(start, REPEAT_TYPE_FROM_COMPLETED_DATE, RepeatRule.WEEKLY, 1, RepeatRule.WEDNESDAY, true, 5, ScreenRepeatRuleNew.REPEAT_HOW_LONG_OPTION_NUMBER, 4);
-        runTest(start, REPEAT_TYPE_FROM_COMPLETED_DATE, RepeatRule.WEEKLY, 1, RepeatRule.WEDNESDAY, true, 5, ScreenRepeatRuleNew.REPEAT_HOW_LONG_OPTION_UNTIL, end);
+        runTest(start, REPEAT_TYPE_FROM_COMPLETED_DATE, RepeatRule.WEEKLY, 1, RepeatRule.WEDNESDAY, true, 5, ScreenRepeatRule.REPEAT_HOW_LONG_OPTION_FOREVER, null);
+        runTest(start, REPEAT_TYPE_FROM_COMPLETED_DATE, RepeatRule.WEEKLY, 1, RepeatRule.WEDNESDAY, true, 5, ScreenRepeatRule.REPEAT_HOW_LONG_OPTION_NUMBER, 4);
+        runTest(start, REPEAT_TYPE_FROM_COMPLETED_DATE, RepeatRule.WEEKLY, 1, RepeatRule.WEDNESDAY, true, 5, ScreenRepeatRule.REPEAT_HOW_LONG_OPTION_UNTIL, end);
 
         return false;
     }

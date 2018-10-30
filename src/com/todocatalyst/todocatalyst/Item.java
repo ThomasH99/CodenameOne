@@ -1392,10 +1392,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    public static String getOwner() {
-
-    }
-
     /**
      * returns owner with a prefix accordinfg to its type, e.g. "Project: xxx"
      * if owner is an Item

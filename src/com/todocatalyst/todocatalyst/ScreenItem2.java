@@ -105,22 +105,24 @@ public class ScreenItem2 extends MyForm {
 //    private List locallyEditedCategories = null;
 //    private ItemAndListCommonInterface locallyEditedOwner = null;
 //    private List<ItemAndListCommonInterface> locallyEditedOwner = null;
-    private RepeatRuleParseObject orgRepeatRule; //same instance as the item's repeatRule, must use item.setRepeatRule to ensure it is stored?
-    private RepeatRuleParseObject locallyEditedRepeatRule;
+//    private RepeatRuleParseObject orgRepeatRule; //same instance as the item's repeatRule, must use item.setRepeatRule to ensure it is stored?
+//    private RepeatRuleParseObject locallyEditedRepeatRule;
 //    UpdateField updateActionOnDone;
 //    private MyTree2 subTaskTree;
-    private int lastTabSelected = -1;
+//    private int lastTabSelected = -1;
     private boolean templateEditMode;
     private String FILE_LOCAL_EDITED_ITEMXXX = "ScreenItem-EditedItem";
     private String FILE_LOCAL_EDITED_OWNER = "ScreenItem-EditedOwner";
     private String FILE_LOCAL_EDITED_CATEGORIES = "ScreenItem-EditedCategories";
     private String FILE_LOCAL_EDITED_REPEAT_RULE = "ScreenItem-EditedRepeatRule";
-    private boolean localSave; //true when save of item is only local (on app pause/exit). Hack to reuse putEditedValues2!
+//    private boolean localSave; //true when save of item is only local (on app pause/exit). Hack to reuse putEditedValues2!
     private boolean remainingEffortSetManually = false; //true when reaminingEffort has been edited to a different value than the original one from item
     private boolean remainingEffortSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private boolean effortEstimateSetManually = false; //true when effortEstimate has been edited to a different value than the original one from item
     private boolean effortEstimateSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private String LAST_TAB_SELECTED = "$$LastTabSelected";
+
+    private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
 
 //    ScreenItem(Item item, MyForm previousForm) { //throws ParseException, IOException {
 //        this(item, previousForm, ()->{});
@@ -146,7 +148,7 @@ public class ScreenItem2 extends MyForm {
         getTitleComponent().setEndsWith3Points(true);
 //        ScreenItemP.item = item;
         this.item = item;
-        saveLocallyEditedValues("ScreenItem-" + item.getObjectIdP());
+        initLocalSaveOfEditedValues("ScreenItem-" + item.getObjectIdP());
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(formUniqueId,this.item);
         expandedObjects = new ExpandedObjects("ScreenItem", this.item);
@@ -161,17 +163,18 @@ public class ScreenItem2 extends MyForm {
 
         //RESTORE locally edited value (if stored on app pause/exit)
 //        itemLS = (Item) restoreLocallyEditedValuesOnAppExit();
-        boolean valuesRestored = restoreEditedValuesSavedLocallyOnAppExitXXX();
+//        boolean valuesRestored = restoreEditedValuesSavedLocallyOnAppExitXXX();
 //        if (itemLS != null && this.item.getObjectIdP() == null) {
-        if (valuesRestored && this.item.getObjectIdP() == null) {
-            this.item = itemLS; //if item is a new item, then we completely ignore that Item and continue with the previously locally saved values
-        } else {
-            itemLS = this.item; //if no locally saved edits, then use item to 'feed' the edits fields
-        }
+//        if (valuesRestored && this.item.getObjectIdP() == null) {
+//            this.item = itemLS; //if item is a new item, then we completely ignore that Item and continue with the previously locally saved values
+//        } else {
+//            itemLS = this.item; //if no locally saved edits, then use item to 'feed' the edits fields
+//        }
+            itemLS = this.item; //quick hack. TODO!! replace all references to itemLS with item
         //restore locally edited Owner
-        locallyEditedOwner = restoreNewOwner_N();
-        locallyEditedCategories = restoreNewCategories_N();
-        locallyEditedRepeatRule = restoreNewRepeatRule_N();
+//        locallyEditedOwner = restoreNewOwner_N();
+//        locallyEditedCategories = restoreNewCategories_N();
+//        locallyEditedRepeatRule = restoreNewRepeatRule_N();
 
 //        ScreenItemP.previousForm = previousForm;
 //        this.previousForm = previousForm;
@@ -303,7 +306,7 @@ public class ScreenItem2 extends MyForm {
                             Item template = (Item) selectedTemplates.get(0);
                             Dialog ip = new InfiniteProgress().showInfiniteBlocking();
                             template.copyMeInto(item, Item.CopyMode.COPY_FROM_TEMPLATE);
-                            locallyEditedCategories = null; //HACK needed to force update of locallyEditedCategories (which shouldn't be refreshed when eg editing subtasks to avoid losing the edited categories) 
+//                            locallyEditedCategories = null; //HACK needed to force update of locallyEditedCategories (which shouldn't be refreshed when eg editing subtasks to avoid losing the edited categories) 
                             ip.dispose();
                             refreshAfterEdit();
                         }
@@ -989,7 +992,8 @@ public class ScreenItem2 extends MyForm {
                 : getCategoriesAsCommaSeparatedString(item.getCategories()));
 //        WrapButton editOwnerButton = new WrapButton(getListAsCommaSeparatedString(editedCats));
 
-        Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
+//        Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
+        Command categoryEditCmd = new Command( "") { //"<click to set categories>"
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem2.this);
@@ -1060,13 +1064,30 @@ public class ScreenItem2 extends MyForm {
         //REPEAT RULE
 //        SpanButton repeatRuleButton = new SpanButton();
 //        WrapButton repeatRuleButton = new WrapButton();
-        WrapButton repeatRuleButton = new WrapButton(previousValues.get(Item.REPEAT_RULE) != null
-                ? ((RepeatRuleParseObject) previousValues.get(Item.PARSE_OWNER_ITEM)).getText()
-                : item.getRepeatRule() != null ? item.getRepeatRule().getText() : "");
+        Object editedRepeatRule = previousValues.get(Item.PARSE_REPEAT_RULE);
+        String repeatRuleButtonStr;
+        if (editedRepeatRule == null) { //no edits
+            if (item.getRepeatRule() != null) {
+                repeatRuleButtonStr = item.getRepeatRule().getText();
+            } else {
+                repeatRuleButtonStr = "";
+            }
+        } else if (editedRepeatRule.equals(REPEAT_RULE_DELETED_MARKER)) {
+            repeatRuleButtonStr = "";
+        } else { //if (editedRepeatRule instanceof RepeatRuleParseObject) { //NB instanceof RepeatRuleParseObject is only option possible
+            assert editedRepeatRule instanceof RepeatRuleParseObject;
+            repeatRuleButtonStr = ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)).getText();
+        }
+//        WrapButton repeatRuleButton = new WrapButton(repeatVal!= null && !repeatVal.equals(REPEAT_RULE_DELETED_MARKER)
+//                ? ((RepeatRuleParseObject) previousValues.get(Item.REPEAT_RULE)).getText()
+//                : item.getRepeatRule() != null ? item.getRepeatRule().getText() : "");
+        WrapButton repeatRuleButton = new WrapButton(repeatRuleButtonStr);
 
 //        RepeatRule 
 //        locallyEditedRepeatRule = item.getRepeatRule();
-        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRules", "", null, (e) -> {
+//        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRules", "", null, (e) -> {
+        Command repeatRuleEditCmd = Command.create( "", null, (e) -> {
+            //TODO!!!! by making this a ReplayCommand, it is also necessary to store the edited values within the screen, otherwise the user is returned, but the values are lost => annoying!
 //DON'T set a string since SpanButton shows both Command string and SpanLabel string
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (Display)
@@ -1099,7 +1120,7 @@ public class ScreenItem2 extends MyForm {
 
             RepeatRuleParseObject locallyEditedRepeatRule
                     = previousValues.get(Item.PARSE_REPEAT_RULE) != null
-                    ? ((RepeatRuleParseObject) previousValues.get(Item.PARSE_OWNER_ITEM)) //fetch previously edited instance/copy of the repeat Rule
+                    ? ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)) //fetch previously edited instance/copy of the repeat Rule
                     : new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if returns null, creates a fresh RR
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (orgRepeatRule == null && editedRepeatRuleCopy == null) {
@@ -1129,21 +1150,10 @@ public class ScreenItem2 extends MyForm {
 //                    || (locallyEditedRepeatRule.equals(orgRepeatRule)
 //                    && orgRepeatRule.equals(locallyEditedRepeatRule)), "problem in cloning repeatRule");
 //                putEditedValues2(parseIdMap2);
-//            new ScreenRepeatRuleNew(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
+//            new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
 //</editor-fold>
-//            new ScreenRepeatRuleNew(Item.REPEAT_RULE, (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE), item, ScreenItem2.this, () -> {
-            new ScreenRepeatRuleNew(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (false && !locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)) { //if rule was edited
-//                        DAO.getInstance().save(locallyEditedRepeatRule); //save first to enable saving repeatInstances
-//                        item.setRepeatRule(locallyEditedRepeatRule);  //TODO!! optimize and see if there's a way to check if rule was just opened in editor but not changed
-////                    repeatRuleButton.setText(getDefaultIfStrEmpty(item.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
-////                        repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-//                    }
-//</editor-fold>
-//                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null && !locallyEditedRepeatRule.equals(new RepeatRuleParseObject())
-//                        //                            ? editedRepeatRuleCopy.\toString() : null, "<set>")); //"<click to make task/project repeat>"
-//                        ? locallyEditedRepeatRule.toString() : null, "")); //"<click to make task/project repeat>"
+//            new ScreenRepeatRule(Item.REPEAT_RULE, (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE), item, ScreenItem2.this, () -> {
+            new ScreenRepeatRule(Item.REPEAT_RULE, item.getRepeatRule(), locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
                 if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
                     previousValues.remove(Item.PARSE_REPEAT_RULE);
                     repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
@@ -1189,24 +1199,36 @@ public class ScreenItem2 extends MyForm {
 //        });
 //</editor-fold>
         repeatRuleButton.setCommand(repeatRuleEditCmd);
-        parseIdMap2.put(Item.PARSE_REPEAT_RULE,()->{
-            if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
-                    previousValues.remove(Item.PARSE_REPEAT_RULE);
-                    repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
-                } else {
-                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
-                    repeatRuleButton.setText(locallyEditedRepeatRule.getText()); //"<click to make task/project repeat>"
-                }
+
+
+        /*
+Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
+-> undefined/null: no change of org. RR (or no RR originally)
+-> RR: modified RR (*only* defined if the RR has been edited!)
+-> "DELETED": the RR has been deleted
+         */
+        parseIdMap2.put(Item.PARSE_REPEAT_RULE, () -> {
+//            if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
+//                    previousValues.remove(Item.PARSE_REPEAT_RULE);
+//                    repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
+//                } else {
+            Object repeatRuleVal = previousValues.get(Item.PARSE_REPEAT_RULE);
+            if (repeatRuleVal instanceof RepeatRuleParseObject) { //A certain indication that the RR has been edited
+                item.setRepeatRule((RepeatRuleParseObject) repeatRuleVal);
+            } else if (repeatRuleVal != null && repeatRuleVal.equals(REPEAT_RULE_DELETED_MARKER)) {
+                item.setRepeatRule(null); //delete repeatRule (if any, if null before, no change)
+            } //else: ==null => do nothing (either no RR was defined before/after editing, or the rule was not changed
         });
-        makeField(Item.PARSE_REPEAT_RULE, repeatRuleButton, () -> {
-            if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && item.getRepeatRule() == null) {
-                return new RepeatRuleParseObject(); //if no previous RR, create a fresh one to edit
-            } else {
-                return new RepeatRuleParseObject(item.getRepeatRule()); //edit a *copy* of the item's RR
-            }
-        }, (repRule) -> item.setRepeatRule((RepeatRuleParseObject) repRule),
-                () -> previousValues.get(Item.PARSE_REPEAT_RULE), (repRule) -> previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject((RepeatRuleParseObject) repRule)));
-NB what if RR is deleted completely?! put(with null value?!)
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        makeField(Item.PARSE_REPEAT_RULE, repeatRuleButton, () -> {
+//            if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && item.getRepeatRule() == null) {
+//                return new RepeatRuleParseObject(); //if no previous RR, create a fresh one to edit
+//            } else {
+//                return new RepeatRuleParseObject(item.getRepeatRule()); //edit a *copy* of the item's RR
+//            }
+//        }, (repRule) -> item.setRepeatRule((RepeatRuleParseObject) repRule),
+//                () -> previousValues.get(Item.PARSE_REPEAT_RULE), (repRule) -> previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject((RepeatRuleParseObject) repRule)));
+
 //        repeatRuleButton.setText(getDefaultIfStrEmpty(itemLS.getRepeatRule() != null ? itemLS.getRepeatRule().toString() : null, "")); //"<set>", "<click to make task/project repeat>"
 //        repeatRuleButton.setUIID("TextField");
 //        mainCont.add(layout(Item.REPEAT_RULE, makeContainerWithClearButton(repeatRuleButton, () -> {
@@ -1215,7 +1237,11 @@ NB what if RR is deleted completely?! put(with null value?!)
 //        }), "**"));
 //        mainCont.add(layout(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> item.setRepeatRule(null), false, false, false));
 //        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> item.setRepeatRule(null)));
-        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> previousValues.put(Item.PARSE_REPEAT_RULE, null)));
+//</editor-fold>
+        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> {
+            previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
+            repeatRuleButton.setText("");
+        }));
         //TODO deleting should not delete in item but delete editcopy and when saving via parseIdMap
         //<editor-fold defaultstate="collapsed" desc="comment">
         //        if (false) {
@@ -1301,9 +1327,11 @@ NB what if RR is deleted completely?! put(with null value?!)
 //                })),
 //                new Label(MyDate.formatTimeDuration(subtasksItemList.getRemainingEffort()))));
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        parseIdMap2.put("subtasksItemList", () -> item.setList(subtasksItemList.getList())); //NOT needed, since all edits to subtasks are save directly
 //        mainTabCont.add(BorderLayout.SOUTH, ScreenListOfItems.makeMyTree2ForSubTasks(ScreenItem.this, item, expandedObjects));
 //        parseIdMap2.put("subtasksItemList", () -> item.setList(subtasksItemList.getList()));
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container subtasksCont = new Container(BoxLayout.y());
 //        List subtasks = item.getList();
@@ -2040,11 +2068,12 @@ NB what if RR is deleted completely?! put(with null value?!)
 //        ItemAndListCommonInterface prevOwner = DAO.getInstance().fetchItemOwner((String) previousValues.get(Item.PARSE_OWNER_ITEM));
         WrapButton editOwnerButton = new WrapButton(previousValues.get(Item.PARSE_OWNER_ITEM) != null
                 ? DAO.getInstance().fetchItemOwner((String) previousValues.get(Item.PARSE_OWNER_ITEM)).getText()
-                : item.getOwner().getText());
+                : (item.getOwner()!=null?item.getOwner().getText():""));
 
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
-        Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
+//        Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
+        Command editOwnerCmd = Command.create( item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
             List projects = DAO.getInstance().getAllProjects(false);
             projects.remove(item); //Must not be possible to select the item itself as its own owner
 
@@ -2378,6 +2407,7 @@ NB what if RR is deleted completely?! put(with null value?!)
 //        subtasks.setUIID("TextField");
 //        cont.add(new Label("Subtasks")).add(subtasks);
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        TableLayout.Constraint cn = tl.createConstraint();
 //        cn.setHorizontalSpan(spanButton);
 //        cn.setHorizontalAlign(Component.RIGHT);
@@ -2387,102 +2417,105 @@ NB what if RR is deleted completely?! put(with null value?!)
 //        if (previousValues.containsKey(LAST_TAB_SELECTED) >= 0 && tabs.getTabCount() > 0) {
 //            tabs.setSelectedIndex(lastTabSelected); //keep same tab selected even if regenerating the screen
 //        }
+//</editor-fold>
         if (previousValues.containsKey(LAST_TAB_SELECTED)) {
             tabs.setSelectedIndex((int) previousValues.get(LAST_TAB_SELECTED)); //keep same tab selected even if regenerating the screen
         }
         return cont;
     }
 
-    @Override
-
-    public void saveEditedValuesLocallyOnAppExitXXX() {
-//        if (item.getObjectIdP() == null) { //new item, save everything locally and restore next time
-////            Storage.getInstance().writeObject(SCREEN_TITLE + "- EDITED ITEM", item); //save date
-//            Storage.getInstance().writeObject(FILE_LOCAL_EDITED_ITEM, item); //save 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    @Override
+//    
+//    public void saveEditedValuesLocallyOnAppExitXXX() {
+////        if (item.getObjectIdP() == null) { //new item, save everything locally and restore next time
+//////            Storage.getInstance().writeObject(SCREEN_TITLE + "- EDITED ITEM", item); //save date
+////            Storage.getInstance().writeObject(FILE_LOCAL_EDITED_ITEM, item); //save
+////
+////        } else { //edited item, update item but only save locally, then restore edit fields based on locally saved values
+////            putEditedValues2(parseIdMap2);
+////        }
+//        localSave = true;
+//        putEditedValues2(parseIdMap2);
+//        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_ITEMXXX, item); //save
+//        localSave = false;
+//    }
 //
-//        } else { //edited item, update item but only save locally, then restore edit fields based on locally saved values
-//            putEditedValues2(parseIdMap2);
+//    @Override
+//    public boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
+////        Item itemLS = null;
+//        boolean savedValues;
+//        //if editing of item was ongoing when app was stopped, then recover saved item
+//        ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEMXXX) || ReplayLog.getInstance().isReplayInProgress()); //local item => replay must/should be Ongoing
+//        if (ReplayLog.getInstance().isReplayInProgress() && Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEMXXX)) {
+//            itemLS = (Item) Storage.getInstance().readObject(FILE_LOCAL_EDITED_ITEMXXX); //read in when initializing the Timer - from here on it is only about saving updates
+//            savedValues = true;
+//        } else {
+////            itemLS = this.item; //it no locally saved edits, then use item to 'feed' the edits fields
+//            ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEMXXX));
+//            deleteEditedValuesSavedLocallyOnAppExit();
+//            savedValues = false;
 //        }
-        localSave = true;
-        putEditedValues2(parseIdMap2);
-        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_ITEMXXX, item); //save 
-        localSave = false;
-    }
-
-    @Override
-    public boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
-//        Item itemLS = null;
-        boolean savedValues;
-        //if editing of item was ongoing when app was stopped, then recover saved item
-        ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEMXXX) || ReplayLog.getInstance().isReplayInProgress()); //local item => replay must/should be Ongoing
-        if (ReplayLog.getInstance().isReplayInProgress() && Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEMXXX)) {
-            itemLS = (Item) Storage.getInstance().readObject(FILE_LOCAL_EDITED_ITEMXXX); //read in when initializing the Timer - from here on it is only about saving updates
-            savedValues = true;
-        } else {
-//            itemLS = this.item; //it no locally saved edits, then use item to 'feed' the edits fields
-            ASSERT.that(!Storage.getInstance().exists(FILE_LOCAL_EDITED_ITEMXXX));
-            deleteEditedValuesSavedLocallyOnAppExit();
-            savedValues = false;
-        }
-//        return itemLS;
-        return savedValues;
-    }
-
-    @Override
-    public void deleteEditedValuesSavedLocallyOnAppExit() {
-        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEMXXX); //delete in case one was 
-    }
-
-    private void saveNewOwner(ItemAndListCommonInterface newOwner) {
-        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_OWNER, newOwner.getObjectIdP()); //save 
-    }
-
-    private List<ItemAndListCommonInterface> restoreNewOwner_N() {
-        List<ItemAndListCommonInterface> locallyEditedOwner = null;
-//        ItemAndListCommonInterface locallyStoreOwner;
-        //DONE!!!!! DAO.fetchFromCacheOnly only works for Item so selecting a new ItemList as owner will crash!!
-        ItemAndListCommonInterface locallyStoreOwner = (ItemAndListCommonInterface) DAO.getInstance().fetchFromCacheOnly((String) Storage.getInstance().readObject(FILE_LOCAL_EDITED_OWNER)); //save 
-//        locallyStoreOwner = (ItemAndListCommonInterface) DAO.getInstance().fetchIfNeededReturnCachedIfAvail((ParseObject) locallyStoreOwner);
-//        if (restoreNewOwner() != null) {
-        if (locallyStoreOwner != null) {
-            locallyEditedOwner = new ArrayList();
-            locallyEditedOwner.add(locallyStoreOwner);
-        }
-        return locallyEditedOwner;
-    }
-
-    public void deleteNewOwner() {
-        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_OWNER); //delete in case one was 
-    }
-
-    private void saveNewCategories(List<Category> categories) {
-        List<String> catObjIds = new ArrayList();
-        for (Category cat : categories) {
-            catObjIds.add(cat.getObjectIdP());
-        }
-        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_CATEGORIES, catObjIds); //save 
-    }
-
-    private List<Category> restoreNewCategories_N() {
-        List<String> catObjIds = (List) Storage.getInstance().readObject(FILE_LOCAL_EDITED_CATEGORIES);
-        List<Category> categories = null;
-        if (catObjIds != null) {
-            for (String cat : catObjIds) {
-                if (categories == null) {
-                    categories = new ArrayList<>();
-                }
-                categories.add((Category) DAO.getInstance().fetchFromCacheOnly(cat));
-            }
-        }
-        return categories;
-    }
-
-    private void saveNewRepeatRule(RepeatRuleParseObject repeatRule) {
-        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_REPEAT_RULE, repeatRule); //save 
-    }
-
-    private RepeatRuleParseObject restoreNewRepeatRule_N() {
-        return (RepeatRuleParseObject) Storage.getInstance().readObject(FILE_LOCAL_EDITED_REPEAT_RULE);
-    }
+////        return itemLS;
+//        return savedValues;
+//    }
+//
+//    @Override
+//    public void deleteEditedValuesSavedLocallyOnAppExit() {
+//        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEMXXX); //delete in case one was
+//    }
+//
+//    private void saveNewOwner(ItemAndListCommonInterface newOwner) {
+//        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_OWNER, newOwner.getObjectIdP()); //save
+//    }
+//
+//    private List<ItemAndListCommonInterface> restoreNewOwner_N() {
+//        List<ItemAndListCommonInterface> locallyEditedOwner = null;
+////        ItemAndListCommonInterface locallyStoreOwner;
+//        //DONE!!!!! DAO.fetchFromCacheOnly only works for Item so selecting a new ItemList as owner will crash!!
+//        ItemAndListCommonInterface locallyStoreOwner = (ItemAndListCommonInterface) DAO.getInstance().fetchFromCacheOnly((String) Storage.getInstance().readObject(FILE_LOCAL_EDITED_OWNER)); //save
+////        locallyStoreOwner = (ItemAndListCommonInterface) DAO.getInstance().fetchIfNeededReturnCachedIfAvail((ParseObject) locallyStoreOwner);
+////        if (restoreNewOwner() != null) {
+//        if (locallyStoreOwner != null) {
+//            locallyEditedOwner = new ArrayList();
+//            locallyEditedOwner.add(locallyStoreOwner);
+//        }
+//        return locallyEditedOwner;
+//    }
+//
+//    public void deleteNewOwner() {
+//        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_OWNER); //delete in case one was
+//    }
+//
+//    private void saveNewCategories(List<Category> categories) {
+//        List<String> catObjIds = new ArrayList();
+//        for (Category cat : categories) {
+//            catObjIds.add(cat.getObjectIdP());
+//        }
+//        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_CATEGORIES, catObjIds); //save
+//    }
+//
+//    private List<Category> restoreNewCategories_N() {
+//        List<String> catObjIds = (List) Storage.getInstance().readObject(FILE_LOCAL_EDITED_CATEGORIES);
+//        List<Category> categories = null;
+//        if (catObjIds != null) {
+//            for (String cat : catObjIds) {
+//                if (categories == null) {
+//                    categories = new ArrayList<>();
+//                }
+//                categories.add((Category) DAO.getInstance().fetchFromCacheOnly(cat));
+//            }
+//        }
+//        return categories;
+//    }
+//
+//    private void saveNewRepeatRule(RepeatRuleParseObject repeatRule) {
+//        Storage.getInstance().writeObject(FILE_LOCAL_EDITED_REPEAT_RULE, repeatRule); //save
+//    }
+//
+//    private RepeatRuleParseObject restoreNewRepeatRule_N() {
+//        return (RepeatRuleParseObject) Storage.getInstance().readObject(FILE_LOCAL_EDITED_REPEAT_RULE);
+//    }
+//</editor-fold>
 
 }

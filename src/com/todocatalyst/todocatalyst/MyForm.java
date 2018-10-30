@@ -2343,7 +2343,7 @@ public class MyForm extends Form {
 
     Map<Object, Object> previousValues;
 
-    public void saveLocallyEditedValues(String filename) {
+    public void initLocalSaveOfEditedValues(String filename) {
         previousValuesFilename = filename;
         previousValues = new HashMap<Object, Object>() {
             void saveFile() {

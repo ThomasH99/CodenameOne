@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author Thomas
  */
-public class ScreenRepeatRuleNew extends MyForm {
+public class ScreenRepeatRule extends MyForm {
     //TODO 
     //TODO add help text to repeatFromCompleted to explain that cancel/delete also counts as 'Completed'
     //TODO selectors like monthlyRepeatTypeSelectionBox should NOT allow to deselect all choices (should work as radiobuttons: exactly one is selected at all times(
@@ -45,6 +45,7 @@ public class ScreenRepeatRuleNew extends MyForm {
     private boolean allowEditingStartDate;
     private SelectionListener refreshSelectionListener;
     private RepeatRuleParseObject myRepeatRule;
+    private RepeatRuleParseObject myRepeatRuleEdited;
     private MyDatePicker repeatEndDateEditButton;
 //    MyDate endDate;
     private Date endDate;
@@ -109,12 +110,12 @@ public class ScreenRepeatRuleNew extends MyForm {
 //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(repeatRuleOwner); //delete rule and all other instances than this one (currently edited)
 //            myRepeatRule = null;
 ////            screenArg.done(ScreenRepeatRule.this, null, true); //UI: as soon as RepeatRule is deleted, exit the ScreenRepeatRule
-//            done(ScreenRepeatRuleNew.this, null, true); //UI: as soon as RepeatRule is deleted, exit the ScreenRepeatRule
+//            done(ScreenRepeatRule.this, null, true); //UI: as soon as RepeatRule is deleted, exit the ScreenRepeatRule
 //            popMeAndDisplayPreviousForm();
 //        }
 //    };
 
-//    public ScreenRepeatRuleNew(String title, MyRepeatRule repeatRule) {
+//    public ScreenRepeatRule(String title, MyRepeatRule repeatRule) {
 //        this(title, repeatRule, null);
 //    }
 //    public ScreenRepeatRule(RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOwner) {
@@ -124,18 +125,24 @@ public class ScreenRepeatRuleNew extends MyForm {
 //    public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOwner) {
 //        this(title, repeatRule, repeatRuleOwner, true);
 //    }
-//    public ScreenRepeatRuleNew(String title, MyRepeatRule repeatRule, MyDate defaultRepeatFromDate, boolean allowEditingStartDate) {
+//    public ScreenRepeatRule(String title, MyRepeatRule repeatRule, MyDate defaultRepeatFromDate, boolean allowEditingStartDate) {
 //    public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOwner, boolean allowEditingStartDate) {
 //</editor-fold>
-    public ScreenRepeatRuleNew(String title, RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm, UpdateField doneAction, boolean allowEditingStartDate) {
-        this(title, repeatRule, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, null);
+    public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm, UpdateField doneAction, boolean allowEditingStartDate) {
+        this(title, repeatRule, null, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, null);
     }
 
-    public ScreenRepeatRuleNew(String title, RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm, UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate) {
-        this(title, repeatRule, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, defaultStartDate, false);
+    public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleParseObject repeatRuleEdited, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm, UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate) {
+        this(title, repeatRule, null, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, defaultStartDate, false);
     }
 
-    public ScreenRepeatRuleNew(String title, RepeatRuleParseObject repeatRule,
+    public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule,
+            RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm,
+            UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate, boolean isForWorkSlot) {
+        this(title, repeatRule, null, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, defaultStartDate, isForWorkSlot);
+    }
+
+    public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleParseObject repeatRuleEdited,
             RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm,
             UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate, boolean isForWorkSlot) {
 //        super(title, repeatRule);
@@ -146,7 +153,8 @@ public class ScreenRepeatRuleNew extends MyForm {
         this.allowEditingStartDate = allowEditingStartDate;
 //        this.myRepeatRule = (RepeatRuleParseObject) value;
         this.myRepeatRule = repeatRule;
-        if ((this.startDate = myRepeatRule.getSpecifiedStartDateD()).getTime() == 0) {
+        this.myRepeatRuleEdited = repeatRuleEdited; //the editable/edited copy of the repeatRule, used to edit only the end-user edtaible fields
+        if ((this.startDate = myRepeatRuleEdited.getSpecifiedStartDateD()).getTime() == 0) {
             this.startDate = defaultStartDate; //only use defaultStartDate if rule doesn't have one already
 //            this.startDate = myRepeatRule.getSpecifiedStartDateD(); //use rule's existing startDate if it has one
 //        } else {
@@ -298,15 +306,15 @@ public class ScreenRepeatRuleNew extends MyForm {
             buttonRepeatRuleHistory.addActionListener((e) -> {
                 if (repeatRuleHideableDetailsContainer.getComponentCount() == 0) { //lazy evaluation
                     List<RepeatRuleObjectInterface> list = myRepeatRule.getListOfUndoneRepeatInstances();
-                    long now=System.currentTimeMillis(); //use a single value of now 
+                    long now = System.currentTimeMillis(); //use a single value of now 
                     for (int i = 0, size = list.size(); i < size; i++) {
                         RepeatRuleObjectInterface item = list.get(i);
                         if (item instanceof Item) {
 //                            repeatRuleHideableDetailsContainer.add(ScreenListOfItems.buildItemContainer((Item) item, null, () -> false, null, false, null));
-                            repeatRuleHideableDetailsContainer.add(ScreenListOfItems.buildItemContainer(ScreenRepeatRuleNew.this, (Item) item, null, null));
+                            repeatRuleHideableDetailsContainer.add(ScreenListOfItems.buildItemContainer(ScreenRepeatRule.this, (Item) item, null, null));
                         } else if (item instanceof WorkSlot) {
 //                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, () -> refreshAfterEdit(), null));
-                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, ScreenRepeatRuleNew.this, null, false, false, now));
+                            repeatRuleHideableDetailsContainer.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) item, ScreenRepeatRule.this, null, false, false, now));
                         }
                     }
                     if (myRepeatRule.getLatestDateCompletedOrCancelled().getTime() != 0) {
@@ -340,7 +348,7 @@ public class ScreenRepeatRuleNew extends MyForm {
         }
 
 //        daysInWeekField = new ComboBoxLogicalMultiSelection(new int[]{RepeatRule.MONDAY, RepeatRule.TUESDAY, RepeatRule.WEDNESDAY, RepeatRule.THURSDAY, RepeatRule.FRIDAY, RepeatRule.SATURDAY, RepeatRule.SUNDAY}, new String[]{MyDate.MONDAY, MyDate.TUESDAY, MyDate.WEDNESDAY, MyDate.THURSDAY, MyDate.FRIDAY, MyDate.SATURDAY, MyDate.SUNDAY});
-        int frequency = myRepeatRule.getFrequency();
+        int frequency = myRepeatRuleEdited.getFrequency();
         //Repeat from "completion date", "due date", "today"
         if (isForWorkSlot) {
 //            repeatFromDueOrCompletedField = new ComboBoxLogicalNames(MyRepeatRule.getRepeatRuleTypeNumbers(), new String[]{"inactive** date", "start date"}, myRepeatRule.getRepeatFromDueOrCompleted());
@@ -350,7 +358,7 @@ public class ScreenRepeatRuleNew extends MyForm {
             repeatFrom_NoneCompletedDue_Field.setHidden(true);
         } else {
 //            repeatFromDueOrCompletedField = new ComboBoxLogicalNames(MyRepeatRule.getRepeatRuleTypeNumbers(), MyRepeatRule.getRepeatRuleTypeNames(), myRepeatRule.getRepeatFromDueOrCompleted()); //"completion date", "due date", "today"
-            repeatFrom_NoneCompletedDue_Field = new MyToggleButton(RepeatRuleParseObject.getRepeatRuleTypeNames(), RepeatRuleParseObject.getRepeatRuleTypeNumbers(), myRepeatRule.getRepeatType()); //"completion date", "due date", "today"
+            repeatFrom_NoneCompletedDue_Field = new MyToggleButton(RepeatRuleParseObject.getRepeatRuleTypeNames(), RepeatRuleParseObject.getRepeatRuleTypeNumbers(), myRepeatRuleEdited.getRepeatType()); //"completion date", "due date", "today"
         }
 //        repeatFrom_CompletedDue_Field.setContainer(new Container(new GridLayout(2)));
 
@@ -401,14 +409,14 @@ public class ScreenRepeatRuleNew extends MyForm {
 //        intervalField = new ComboBoxOffset(intervalFieldInfiniteList);
 //        intervalField.setSelectedValue(myRepeatRule.getInterval());
 //        intervalField_1_NN_TextField = new TextField("" + myRepeatRule.getInterval(), "<interval>", 10, TextField.NUMERIC);
-        intervalField_1_NN_TextField = new MyIntTextField(myRepeatRule.getInterval(), "**", 1, MyPrefs.repeatMaxInterval.getInt(), 1);
+        intervalField_1_NN_TextField = new MyIntTextField(myRepeatRuleEdited.getInterval(), "**", 1, MyPrefs.repeatMaxInterval.getInt(), 1);
 
         //Set up all fields with default selected valued
         //DAYS IN WEEK: MONDAY[ ] TUESDAY[ ]...
 //        daysInWeekField = new ComboBoxLogicalMultiSelection(MyRepeatRule.getDayInWeekNumbers(), MyDate.getWeekDayNamesMondayFirst());
 //        daysInWeekField.setSelectedOredTogether(myRepeatRule.getDaysInWeek());
         daysInWeek_MonSun_Field = new MyToggleButton(MyDate.getShortWeekDayNamesMondayFirst(), RepeatRuleParseObject.getDayInWeekNumbers(),
-                myRepeatRule.getDaysInWeekAsVector(), -1, true, new ComponentGroup[2], new int[]{5, 2});
+                myRepeatRuleEdited.getDaysInWeekAsVector(), -1, true, new ComponentGroup[2], new int[]{5, 2});
 //        daysInWeekField = new MyComponentGroup(MyDate.getShortWeekDayNamesMondayFirst(), RepeatRuleParseObject.getDayInWeekNumbers(), myRepeatRule.getDaysInWeekAsVector(), true);
 //        daysInWeek_MonSun_Field.setContainer(new Container(new GridLayout(7)));
 
@@ -418,18 +426,18 @@ public class ScreenRepeatRuleNew extends MyForm {
 //        dayInYear_1_365_Field = new TextField("" + myRepeatRule.getInterval(), "<interval>", 10, TextField.NUMERIC);
 //        dayInYear_1_365_Field.setText("" + (myRepeatRule.getDayInYear() > 0 ? myRepeatRule.getDayInYear() : 1)); //TODO default should be 182 to start in the mid of the year...
 //        dayInYear_1_365_Field = new MyIntTextField(myRepeatRule.getInterval(), "<day in year>", 1, 365, 1);
-        dayInYear_1_365_Field = new MyIntTextField(myRepeatRule.getDayInYear() > 0 ? myRepeatRule.getDayInYear() : 1,
+        dayInYear_1_365_Field = new MyIntTextField(myRepeatRuleEdited.getDayInYear() > 0 ? myRepeatRuleEdited.getDayInYear() : 1,
                 "<day in year>", 1, 365, 1);
 
         //Jan-Dec
 //        monthsInYearField = new ComboBoxLogicalMultiSelection(MyRepeatRule.getMonthInYearNumbers(), MyDate.getMonthNames());
-        monthsInYear_JanDec_Field = new MyToggleButton(MyDate.getShortMonthNames(), RepeatRuleParseObject.getMonthInYearNumbers(), myRepeatRule.getMonthInYearAsVector(), -1, true, new ComponentGroup[2], new int[]{6, 6});
+        monthsInYear_JanDec_Field = new MyToggleButton(MyDate.getShortMonthNames(), RepeatRuleParseObject.getMonthInYearNumbers(), myRepeatRuleEdited.getMonthInYearAsVector(), -1, true, new ComponentGroup[2], new int[]{6, 6});
 //        monthsInYearField.setSelectedOredTogether(myRepeatRule.getMonthInYear());
 
         //Mon-Sun+Weekdays+Weekends
 //        daysInMonthField = new ComboBoxLogicalMultiSelection(MyRepeatRule.getDayInWeekNumbersInclWeekdays(), MyDate.getWeekDayNamesMondayFirstInclWeekdays());
         daysInMonth_MonSunWeekdays_Field = new MyToggleButton(MyDate.getShortWeekDayNamesMondayFirstInclWeekdays(), RepeatRuleParseObject.getDayInWeekNumbersInclWeekdays(),
-                myRepeatRule.getDaysInWeekAsVectorInclWeekdays(), -1, true, new ComponentGroup[2], new int[]{5, 4});
+                myRepeatRuleEdited.getDaysInWeekAsVectorInclWeekdays(), -1, true, new ComponentGroup[2], new int[]{5, 4});
 //        daysInMonth_MonSunWeekend_Field.setContainer(new Container(new GridLayout(2, 7)));
 //        daysInMonthField.setSelectedOredTogether(myRepeatRule.getDaysInWeek());
 
@@ -437,11 +445,11 @@ public class ScreenRepeatRuleNew extends MyForm {
 //        dayInMonth_1_31_Last_FieldFM = new ComboBoxOffset(new ListModelInfinite(1, 32, true, "Last"));
         dayInMonth_1_31_Last_FieldFM = new ComboBoxOffsetNew();
 //        dayInMonth_1_31_Last_FieldFM.setSelectedValue(myRepeatRule.getDayInMonth() > 0 ? myRepeatRule.getDayInMonth() : 1);
-        dayInMonth_1_31_Last_FieldFM.setSelectedValue(myRepeatRule.getDayInMonth() > 0 ? myRepeatRule.getDayInMonth() : 1);
+        dayInMonth_1_31_Last_FieldFM.setSelectedValue(myRepeatRuleEdited.getDayInMonth() > 0 ? myRepeatRuleEdited.getDayInMonth() : 1);
 
         //1st..5th, last..5th last (of week)
 //        weeksInMonthField = new ComboBoxLogicalMultiSelection(MyRepeatRule.getWeekInMonthNumbers(), MyRepeatRule.getWeekInMonthNames());
-        weeksInMonth_1st2ndLast_Field = new MyToggleButton(RepeatRuleParseObject.getWeekInMonthNamesShort(), RepeatRuleParseObject.getWeekInMonthNumbersShort(), myRepeatRule.getWeekInMonthAsVector(), true);
+        weeksInMonth_1st2ndLast_Field = new MyToggleButton(RepeatRuleParseObject.getWeekInMonthNamesShort(), RepeatRuleParseObject.getWeekInMonthNumbersShort(), myRepeatRuleEdited.getWeekInMonthAsVector(), true);
         //1st..5th+last
 //        weeksInMonth_1st2ndLast_Field.setContainer(new Container(new TableLayout(2, 5)));
 //        weeksInMonthField.setSelectedOredTogether(myRepeatRule.getWeekInMonth());
@@ -449,7 +457,7 @@ public class ScreenRepeatRuleNew extends MyForm {
         //1st..5th, last..5th last (of Mon-Sun)
 //        weekdaysInMonthField = new ComboBoxLogicalMultiSelection(MyRepeatRule.getWeekInMonthNumbers(), MyRepeatRule.getWeekInMonthNames());
 //        weekdaysInMonthField = new MyToggleButton(RepeatRuleParseObject.getWeekInMonthNames(), RepeatRuleParseObject.getWeekInMonthNumbers(), myRepeatRule.getWeekdaysInMonth(), true);
-        weekdaysInMonth_1st2nLast_Field = new MyToggleButton(RepeatRuleParseObject.getWeekInMonthNamesShort(), RepeatRuleParseObject.getWeekInMonthNumbersShort(), myRepeatRule.getWeekdaysInMonthAsVector(), true); //**
+        weekdaysInMonth_1st2nLast_Field = new MyToggleButton(RepeatRuleParseObject.getWeekInMonthNamesShort(), RepeatRuleParseObject.getWeekInMonthNumbersShort(), myRepeatRuleEdited.getWeekdaysInMonthAsVector(), true); //**
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        weekdaysInMonthField.setSelectedOredTogether(myRepeatRule.getWeekdaysInMonth());
 //        weekdaysInMonthField.setSelectedOredTogether(myRepeatRule.getWeekdaysInMonth());
@@ -470,8 +478,8 @@ public class ScreenRepeatRuleNew extends MyForm {
         //show dayInMonth if either field is defined, or if weekInMonth is not defined (covers both initial state and once defined)
 //        monthlyRepeatTypeSelectionBox.setSelectedIndex(((myRepeatRule.getDayInMonth() > 0 || (myRepeatRule.getWeekInMonth() == 0 && myRepeatRule.getWeekdaysInMonth() == 0)) ? 0 : ((myRepeatRule.getWeekInMonth() != 0) ? 1 : 2)));
 //        monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.setSelectedIndex(((myRepeatRule.getDayInMonth() > 0 || (myRepeatRule.getWeeksInMonth() == 0 && myRepeatRule.getWeekdaysInMonth() == 0))
-        monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.setSelectedValue(((myRepeatRule.getDayInMonth() > 0 || (myRepeatRule.getWeeksInMonth() == 0 && myRepeatRule.getWeekdaysInMonth() == 0))
-                ? MONTHLY_OPTION_DAY : ((myRepeatRule.getWeeksInMonth() != 0) ? MONTHLY_OPTION_WEEK_NB : MONTHLY_OPTION_WEEKDAYS)));
+        monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.setSelectedValue(((myRepeatRuleEdited.getDayInMonth() > 0 || (myRepeatRuleEdited.getWeeksInMonth() == 0 && myRepeatRuleEdited.getWeekdaysInMonth() == 0))
+                ? MONTHLY_OPTION_DAY : ((myRepeatRuleEdited.getWeeksInMonth() != 0) ? MONTHLY_OPTION_WEEK_NB : MONTHLY_OPTION_WEEKDAYS)));
         monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.addSelectionListener(refreshSelectionListener);
 //<editor-fold defaultstate="collapsed" desc="xyz">
 //        if ((myRepeatRule.getDayInMonth() > 0 || (myRepeatRule.getWeekInMonth() == 0 && myRepeatRule.getWeekdaysInMonth() == 0))) {
@@ -491,7 +499,7 @@ public class ScreenRepeatRuleNew extends MyForm {
 //</editor-fold>
         yearlyChoice_DayMonths_Combo = new MyToggleButton(new String[]{"day", "month(s)"}, new int[]{YEAR_OPTION_DAY_OF_YEAR, YEAR_OPTION_MONTHS});
 //        yearlyChoice_DayMonths_Combo.setSelectedValue(((myRepeatRule.getDayInYear() > 0 || myRepeatRule.getMonthsInYear() == 0) ? YEAR_OPTION_DAY_OF_YEAR : YEAR_OPTION_MONTHS)); //show dayInYear if either field is defined, or if monthInYear is not defined (covers both initial state and once defined)
-        yearlyChoice_DayMonths_Combo.setSelectedValue(((myRepeatRule.getDayInYear() > 0) ? YEAR_OPTION_DAY_OF_YEAR : YEAR_OPTION_MONTHS)); //show dayInYear if either field is defined, or if monthInYear is not defined (covers both initial state and once defined)
+        yearlyChoice_DayMonths_Combo.setSelectedValue(((myRepeatRuleEdited.getDayInYear() > 0) ? YEAR_OPTION_DAY_OF_YEAR : YEAR_OPTION_MONTHS)); //show dayInYear if either field is defined, or if monthInYear is not defined (covers both initial state and once defined)
         yearlyChoice_DayMonths_Combo.addSelectionListener(refreshSelectionListener);
 
 //        repeatFromField = new DateField5(repeatRuleOwner.getRepeatStartTime(false));
@@ -507,8 +515,8 @@ public class ScreenRepeatRuleNew extends MyForm {
 //</editor-fold>
         repeatHowLong_ForeverUntilNumber_ChoiceCombo = new MyToggleButton(new String[]{"forever", "until", "number"}, new int[]{REPEAT_HOW_LONG_OPTION_FOREVER, REPEAT_HOW_LONG_OPTION_UNTIL, REPEAT_HOW_LONG_OPTION_NUMBER});
 //        repeatHowLongChoiceCombo.setSelectedValue(myRepeatRule.useCount() ? 2 : (myRepeatRule.getEndDate() != Long.MAX_VALUE ? 1 : 0));
-        repeatHowLong_ForeverUntilNumber_ChoiceCombo.setSelectedValue(myRepeatRule.useCount() ? REPEAT_HOW_LONG_OPTION_NUMBER
-                : (myRepeatRule.getEndDate() != MyDate.MAX_DATE ? REPEAT_HOW_LONG_OPTION_UNTIL : REPEAT_HOW_LONG_OPTION_FOREVER));
+        repeatHowLong_ForeverUntilNumber_ChoiceCombo.setSelectedValue(myRepeatRuleEdited.useCount() ? REPEAT_HOW_LONG_OPTION_NUMBER
+                : (myRepeatRuleEdited.getEndDate() != MyDate.MAX_DATE ? REPEAT_HOW_LONG_OPTION_UNTIL : REPEAT_HOW_LONG_OPTION_FOREVER));
         repeatHowLong_ForeverUntilNumber_ChoiceCombo.addSelectionListener(refreshSelectionListener);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -521,8 +529,8 @@ public class ScreenRepeatRuleNew extends MyForm {
 //                : new MyDate(MyDate.getNowDateOnly() + MyDate.DAY_IN_MILLISECONDS * Settings.getInstance().getDefaultRepeatFromSpecifiedDateDaysAhead()));
 //        endDate = new Date(myRepeatRule.getEndDate() != Long.MAX_VALUE ?
 //</editor-fold>
-        endDate = new Date(myRepeatRule.getEndDate() != MyDate.MAX_DATE
-                ? myRepeatRule.getEndDate()
+        endDate = new Date(myRepeatRuleEdited.getEndDate() != MyDate.MAX_DATE
+                ? myRepeatRuleEdited.getEndDate()
                 //                : System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * Settings.getInstance().getDefaultRepeatFromSpecifiedDateDaysAhead());
                 : startDate.getTime());
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -549,13 +557,13 @@ public class ScreenRepeatRuleNew extends MyForm {
 //        repeatHowManyTimesField = new ComboBoxOffset(new ListModelInfinite(1, Settings.getInstance().getMaxRepeatCount(), "", ""/*times"*/, 1, false, false));
 //        repeatHowManyTimesField.setSelectedValue(myRepeatRule.useCount() ? myRepeatRule.getNumberOfRepeats()myRepeatRule : 1);
 //        repeatHowManyTimesField = new MyIntPicker(myRepeatRule.useCount() ? myRepeatRule.getNumberOfRepeats() : 1, 1, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead.getInt());
-        repeatHowManyTimesField = new MyIntTextField(myRepeatRule.useCount() ? myRepeatRule.getNumberOfRepeats() : 1, "", 1, 999999, 1);
+        repeatHowManyTimesField = new MyIntTextField(myRepeatRuleEdited.useCount() ? myRepeatRuleEdited.getNumberOfRepeats() : 1, "", 1, 999999, 1);
 
         //SHOW HOW MANY FUTURE REPEATS
 //        showHowManyCombo = new ComboBoxLogicalNames(new int[]{0, 1}, new String[]{"repeat instances", "days ahead"});
         showHowMany_InstancesDaysAhead_Combo = new MyToggleButton(new String[]{"instances", "days ahead"}, new int[]{SHOW_HOW_MANY_AHEAD_INSTANCES, SHOW_HOW_MANY_AHEAD_DAYS_AHEAD});
 //        showHowMany_InstancesDaysAhead_Combo.setSelectedValue(myRepeatRule.getNumberFutureRepeatsToGenerateAhead() != 0 ? SHOW_HOW_MANY_AHEAD_INSTANCES : SHOW_HOW_MANY_AHEAD_DAYS_AHEAD);
-        showHowMany_InstancesDaysAhead_Combo.setSelectedValue(myRepeatRule.useNumberFutureRepeatsToGenerateAhead() ? SHOW_HOW_MANY_AHEAD_INSTANCES : SHOW_HOW_MANY_AHEAD_DAYS_AHEAD);
+        showHowMany_InstancesDaysAhead_Combo.setSelectedValue(myRepeatRuleEdited.useNumberFutureRepeatsToGenerateAhead() ? SHOW_HOW_MANY_AHEAD_INSTANCES : SHOW_HOW_MANY_AHEAD_DAYS_AHEAD);
         showHowMany_InstancesDaysAhead_Combo.addSelectionListener(refreshSelectionListener);
 //            showHowManyContainer = createLabelAndFieldContainer("Show how many", showHowManyCombo);
 //        showHowManyContainer = createLabelAndFieldContainer("Create how many future repeats", showHowManyCombo);
@@ -563,15 +571,15 @@ public class ScreenRepeatRuleNew extends MyForm {
 
 //        showNumberFutureRepeats = new ComboBoxOffset(new ListModelInfinite(1, Settings.getInstance().getMaxFutureRepeatInstances(), "", "", 1, false, false));
 //        showNumberFutureRepeats.setSelectedValue(myRepeatRule.useNumberFutureRepeatsToGenerateAhead() ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() : 1); //use 1 as defaiæt vaæie (if NumberFutureRepeatsGeneratedAhead is not defined)
-        showNumberFutureRepeats = new MyIntPicker(myRepeatRule.useNumberFutureRepeatsToGenerateAhead()
+        showNumberFutureRepeats = new MyIntPicker(myRepeatRuleEdited.useNumberFutureRepeatsToGenerateAhead()
                 ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() + 1 : 1, 1, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead.getInt()); //+1: adjust rel. to UI which now says "simultaneous instances"
 
 //        showNumberDaysAhead = new ComboBoxOffset(new ListModelInfinite(1, Settings.getInstance().getMaxFutureRepeatInstances(), "", "", 1, false, false));
 //        showNumberDaysAhead.setSelectedValue(myRepeatRule.useNumberFutureRepeatsToGenerateAhead() ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() : 1); //use 1 as defaiæt vaæie (if NumberFutureRepeatsGeneratedAhead is not defined)
 //        showNumberDaysAhead = new MyIntPicker(myRepeatRule.useNumberFutureRepeatsToGenerateAhead()
 //                ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() : 1, 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead.getInt());
-        showNumberDaysAhead = new MyIntPicker(!myRepeatRule.useNumberFutureRepeatsToGenerateAhead()
-                ? myRepeatRule.getNumberOfDaysRepeatsAreGeneratedAhead() : 1, 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead.getInt());
+        showNumberDaysAhead = new MyIntPicker(!myRepeatRuleEdited.useNumberFutureRepeatsToGenerateAhead()
+                ? myRepeatRuleEdited.getNumberOfDaysRepeatsAreGeneratedAhead() : 1, 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead.getInt());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            initialized = true;
 //        } else { //if not initialized
@@ -594,7 +602,7 @@ public class ScreenRepeatRuleNew extends MyForm {
         fieldsShow();
     }
 
-    private void addMonthlyFieldsToContainer(Container addToContainer, RepeatRuleParseObject myRepeatRule, boolean forYear) {
+    private void addMonthlyFieldsToContainer(Container addToContainer) {//, RepeatRuleParseObject myRepeatRule, boolean forYear) {
 
         addToContainer.addComponent(monthlyRepeatType_DayWeekdaysWeeks_SelectionBox);
 
@@ -648,7 +656,7 @@ public class ScreenRepeatRuleNew extends MyForm {
 
         //Select yearly repeat on a monthly basis
 //        addMonthlyFieldsToContainer(motherContainer, myRepeatRule, true);
-        addMonthlyFieldsToContainer(motherContainer, myRepeatRule, false);
+        addMonthlyFieldsToContainer(motherContainer);//, myRepeatRule, false);
 
         motherContainer.addComponent(repeatHowLong_ForeverUntilNumber_ChoiceCombo);
         //{"Repeat forever", "Repeat until", "Number of repeats"}
@@ -1138,7 +1146,7 @@ public class ScreenRepeatRuleNew extends MyForm {
 
     void restoreEditedFieldsOnDone() {
 //        repeatRuleOwner.setRepeatStartTime(repeatStartDatePicker.getDate()); //update due date in case it was changed while editing the repeat rule
-        if (!restoreEditedFieldsToRepeatRule(myRepeatRule)) {
+        if (!restoreEditedFieldsToRepeatRule(myRepeatRuleEdited)) {
             Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
         }
     }
