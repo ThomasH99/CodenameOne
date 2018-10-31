@@ -725,7 +725,7 @@ public class ScreenRepair extends MyForm {
             }
         }));
         
-        content.add(new Button(new Command("Test ScreenEdit2") {
+        content.add(new Button(new MyReplayCommand("replayTest","Test ScreenEdit2") {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 new ScreenItem2(new Item(), ScreenRepair.this, ()->{}).show();

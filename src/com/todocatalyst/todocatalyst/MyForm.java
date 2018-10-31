@@ -29,6 +29,7 @@ import com.codename1.ui.SideMenuBar;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
+import com.codename1.ui.animations.ComponentAnimation;
 //import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
@@ -286,6 +287,9 @@ public class MyForm extends Form {
 
         if (false) {
             getToolbar().setScrollOffUponContentPane(true);
+            //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One:
+            ComponentAnimation title2 = getToolbar().getTitleComponent().createStyleAnimation("Title", 200);
+            getAnimationManager().onTitleScrollAnimation(title2);
         }
 
         if (false) {
@@ -354,6 +358,12 @@ public class MyForm extends Form {
 //</editor-fold>
     }
 
+    protected void setTitleAnimation(Container scrollableComponent) {
+        //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One:
+            ComponentAnimation title2 = getToolbar().getTitleComponent().createStyleAnimation("TitleSmall", 200);
+            getAnimationManager().onTitleScrollAnimation(scrollableComponent,title2);
+    }
+    
     protected void setKeepPos(KeepInSameScreenPosition keepPos) {
         this.keepPos = keepPos;
     }
@@ -1317,10 +1327,16 @@ public class MyForm extends Form {
 //        showPreviousScreenOrDefault(previousForm, false);
 //    }
     static void showPreviousScreenOrDefault(MyForm previousForm, boolean callRefreshAfterEdit) {
+
         if (previousForm != null) {
+            Form f = Display.getInstance().getCurrent();
+            if (f instanceof MyForm) {
+                ((MyForm) f).deleteLocallyEditedValues();
+            }
             if (callRefreshAfterEdit) {
                 previousForm.refreshAfterEdit();
             }
+
             previousForm.showBack();
         } else {
             Form f = Display.getInstance().getCurrent();
@@ -2582,7 +2598,6 @@ public class MyForm extends Form {
 
     @Override
     public void showBack() {
-        deleteLocallyEditedValues();
         ReplayLog.getInstance().popCmd(); //pop any previous command
         super.showBack();
     }

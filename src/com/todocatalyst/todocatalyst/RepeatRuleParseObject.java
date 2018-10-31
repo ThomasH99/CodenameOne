@@ -58,10 +58,6 @@ public class RepeatRuleParseObject
     final static int REPEAT_TYPE_FROM_DUE_DATE = 2;// 33;
 //    final static int REPEAT_TYPE_FROM_SPECIFIED_DATE = 3; //7; //TODO: implement as additional option?
 
-    private final static String PARSE_REPEAT_INSTANCE_ITEMLIST = "repeatInstanceItemList";
-    private final static String PARSE_DATES_LIST = "datesList";
-//    final static String LAST_DATE_GENERATED_FOR = "lastDateGeneratedFor";
-
     private final static String PARSE_SPECIFIED_START_DATE = "specifiedStartDate";
     private final static String PARSE_REPEAT_TYPE = "repeatType";
     private final static String PARSE_FREQUENCY = "frequency";
@@ -81,6 +77,9 @@ public class RepeatRuleParseObject
     private final static String PARSE_NUMBER_FUTURE_REPEATS_TO_GENERATE_AHEAD = "numberFutureRepeatsToGenerateAhead";
     private final static String PARSE_NUMBER_OF_DAYS_TO_GENERATE_AHEAD = "numberOfDaysRepeatsAreGeneratedAhead";
 
+    private final static String PARSE_REPEAT_INSTANCE_ITEMLIST = "repeatInstanceItemList";
+//    private final static String PARSE_DATES_LIST = "datesList";
+//    final static String LAST_DATE_GENERATED_FOR = "lastDateGeneratedFor";
     private final static String PARSE_LAST_DATE_GENERATED = "lastGeneratedDate";
     final static String PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR = "countOfInstancesGeneratedSoFar";
     final static String PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED = "dateLastCompleted";
@@ -264,13 +263,16 @@ public class RepeatRuleParseObject
     }
 
     /**
-     * keep track of undone (not Done/Cancelled/Deleted) repeat instances. Used
+     * keep track of undone (not Done/Cancelled/Deleted) repeat instances (not used for WorkSlots?!). Used
      * to delete repeat instances if repeatRule is deleted, or to reuse existing
      * instances if the rule is changed.
      *
      * @return
      */
+//    public List<ParseObject> getListOfUndoneRepeatInstances() {
+//    public List<ItemAndListCommonInterface> getListOfUndoneRepeatInstances() {
     public List getListOfUndoneRepeatInstances() {
+        //TODO!!!! used for WorkSlots? (is externalized as if WorkSlots could be in list)
         List list = getList(PARSE_REPEAT_INSTANCE_ITEMLIST);
         if (list != null) {
 //            DAO.getInstance().fetchAllElementsInSublist(list, false);
@@ -2838,8 +2840,13 @@ public class RepeatRuleParseObject
     @param dos
     @throws IOException 
      */
+    @Override
     public void externalize(DataOutputStream dos) throws IOException {
 //        super.writeObject(dos);
+//        if (DAO.getInstance().cache.LOCK) {
+//            super.externalize(dos);
+//            return;
+//        }
         dos.writeInt(getFrequency());
         dos.writeInt(getInterval());
         dos.writeInt(getNumberOfRepeats());
@@ -2858,10 +2865,31 @@ public class RepeatRuleParseObject
         dos.writeInt(getNumberFutureRepeatsToGenerateAhead());
         dos.writeInt(getNumberOfDaysRepeatsAreGeneratedAhead());
         dos.writeLong(getSpecifiedStartDate());
+
+        dos.writeLong(getLatestDateCompletedOrCancelled().getTime()); //=0; //
+        dos.writeLong(getLastGeneratedDate()); //=0; //
+        dos.writeInt(getTotalNumberOfInstancesGeneratedSoFar());
+
+//        Util.writeObject(getListOfUndoneRepeatInstances(), dos);
+        //store list of undone instances as: size; type of elements [Item/WorkSlot]; list of objectIds:
+        List instances = getListOfUndoneRepeatInstances();
+        dos.writeInt(instances.size());
+        if (instances.size() > 0) { //store the type of objects
+            if (instances.get(0) instanceof WorkSlot) {
+                dos.writeUTF(WorkSlot.CLASS_NAME);
+            } else {
+                dos.writeUTF(Item.CLASS_NAME);
+            }
+        }
+//        for (ItemAndListCommonInterface p : getListOfUndoneRepeatInstances()) {
+        for (Object p : getListOfUndoneRepeatInstances()) {
+            if (p instanceof Item) {
+                dos.writeUTF(((Item) p).getObjectIdP());
+            } else {
+                dos.writeUTF(((WorkSlot) p).getObjectIdP());
+            }
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        dos.writeLong(getLastDateGeneratedFor()); //=0; //
-//        dos.writeLong(getLastGeneratedDate()); //=0; //
-//        dos.writeInt(getTotalNumberOfInstancesGeneratedSoFar());
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        int vectorSize = repeatInstanceVector.size();
@@ -2874,7 +2902,7 @@ public class RepeatRuleParseObject
 //        BaseItemDAO.getInstance().writeObject(repeatInstanceItemList, dos);
 //</editor-fold>
 //        Util.writeObject(getListOfUndoneRepeatInstances(), dos);
-
+//
 //        datesList.writeObject(dos);
 //        Util.writeObject(getDatesList(), dos); //TODO!! cannot externalize since Date is not handled by CN1, must rewrite to loop writing long as below
 //        if (false) {
@@ -2889,6 +2917,7 @@ public class RepeatRuleParseObject
 //</editor-fold>
     }
 
+    @Override
     public void internalize(int version, DataInputStream dis) throws IOException {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        super.readObject(version, dis);
@@ -2933,11 +2962,33 @@ public class RepeatRuleParseObject
         setNumberFutureRepeatsToGenerateAhead(dis.readInt());
         setNumberOfDaysRepeatsAreGeneratedAhead(dis.readInt());
         setSpecifiedStartDate(dis.readLong());
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        setLastDateGeneratedFor(dis.readLong()); //=0; //
-//        setLastGeneratedDate(new Date(dis.readLong())); //=0; //
-//        setTotalNumberOfInstancesGeneratedSoFar(dis.readInt());
 
+        setLatestDateCompletedOrCancelled(new Date(dis.readLong())); //=0; //
+        setLastGeneratedDate(new Date(dis.readLong())); //=0; //
+        setTotalNumberOfInstancesGeneratedSoFar(dis.readInt());
+
+//        setListOfUndoneRepeatInstances((List) Util.readObject(dis));
+        int instancesSize = dis.readInt();
+        if (instancesSize > 0) {
+            String instanceType = dis.readUTF();
+            String objectId;
+            Item item;
+            WorkSlot workSlot;
+            List instanceList = new ArrayList();
+            for (int i = 0; i < instancesSize; i++) {
+                objectId = dis.readUTF();
+                if (!instanceType.equals(WorkSlot.CLASS_NAME)) { //use !equals since faster than equals
+                    item = DAO.getInstance().fetchItem(objectId);
+                    instanceList.add(item);
+                } else {
+                    workSlot = DAO.getInstance().fetchWorkSlot(objectId);
+                    instanceList.add(workSlot);
+                }
+            }
+            setListOfUndoneRepeatInstances(instanceList);
+        }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        int vectorSize = dis.readInt();
 //        repeatInstanceVector = new RepeatInstanceVector();
@@ -2953,7 +3004,6 @@ public class RepeatRuleParseObject
 //        repeatInstanceItemList = (List) Util.readObject(dis);
 //</editor-fold>
 //        setListOfUndoneRepeatInstances((List) Util.readObject(dis));
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        datesList = new DateBuffer();
 //        datesList.readObject(999, dis);

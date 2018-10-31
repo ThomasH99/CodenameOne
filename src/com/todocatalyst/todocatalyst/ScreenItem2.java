@@ -832,7 +832,7 @@ public class ScreenItem2 extends MyForm {
                 () -> {
                     return starred.getIcon().equals(Icons.iconStarSelectedLabelStyle);
                 }, (b) -> {
-                    starred.setIcon((boolean) b ? Icons.iconStarUnselectedLabelStyle : Icons.iconStarSelectedLabelStyle);
+                    starred.setIcon((boolean) b ?  Icons.iconStarSelectedLabelStyle:Icons.iconStarUnselectedLabelStyle);
 //                    starred.repaint();
                 }); //add taskCont just to avoid creating an unnecessary field container
 
@@ -1056,7 +1056,7 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
 //        categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "<set>")); //"<click to set categories>"
 //        categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
-        categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString((List) previousValues.get(Item.PARSE_CATEGORIES)), "")); //"<click to set categories>"
+        categoriesButton.setText(getDefaultIfStrEmpty(getCategoriesAsCommaSeparatedString(Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))), "")); //"<click to set categories>"
         categoriesButton.revalidate();
 //        mainCont.add(layout(Item.CATEGORIES, categoriesButton, "**", false, false, false));
         mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, "**", null, true, false, true));

@@ -435,10 +435,10 @@ public class ScreenListOfItems extends MyForm {
 
 //        getContentPane().add(CENTER, buildContentPaneForItemList(this.itemListFilteredSorted));
         parseIdMapReset();
-        getContentPane().add(CENTER, buildContentPaneForItemList(this.itemListOrg));
-        if (false) {
+        Container scrollableContainer = buildContentPaneForItemList(this.itemListOrg);
+        getContentPane().add(CENTER, scrollableContainer);
+        setTitleAnimation(scrollableContainer);
 
-        }
         revalidate(); //TODO: needed? YES
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
@@ -1460,7 +1460,9 @@ public class ScreenListOfItems extends MyForm {
 
         Container southDetailsContainer = new Container(new FlowLayout());
         southDetailsContainer.setUIID("ItemDetails");
-        if (Config.TEST) southDetailsContainer.setName("ItemDetails");
+        if (Config.TEST) {
+            southDetailsContainer.setName("ItemDetails");
+        }
 //        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.expandedObjects != null && myForm.expandedObjects.contains(item)); //hide details by default
         boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.showDetails != null && myForm.showDetails.contains(item)); //hide details by default
 //        south.setHidden(!showDetailsForAllTasks || (tasksWithDetailsShown!=null && !tasksWithDetailsShown.contains(item))); //hide details by default
@@ -1630,7 +1632,9 @@ public class ScreenListOfItems extends MyForm {
 //            selected = new Button();
 //            selected.setIcon(myForm.selectedObjects.contains(item) ? Icons.iconSelectedLabelStyle : Icons.iconUnselectedLabelStyle);
             selected.setIcon(myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedLabelStyle : Icons.iconUnselectedLabelStyle);
-            if (Config.TEST)selected.setName("SelectBox");
+            if (Config.TEST) {
+                selected.setName("SelectBox");
+            }
             selected.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
@@ -1680,12 +1684,14 @@ public class ScreenListOfItems extends MyForm {
 //                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refresh();}});
                 }
             }
-//                    , () -> {
-//                return item.hasWorkStarted(); //item.getActualEffort() > 0;
-//            }
+            //                    , () -> {
+            //                return item.hasWorkStarted(); //item.getActualEffort() > 0;
+            //            }
             );
             status.setUIID("ListOfItemsMyCheckBox");
-            if (Config.TEST)status.setName("CheckBox");
+            if (Config.TEST) {
+                status.setName("CheckBox");
+            }
             if (oldFormat) {
                 west.add(status);
             }
@@ -1765,7 +1771,7 @@ public class ScreenListOfItems extends MyForm {
                     if (item.isDueDateInherited()) {
                         dueDateLabel.setUIID("ListOfItemsDueDateInherited");
                     }
-dueDateLabel.setName("Due");
+                    dueDateLabel.setName("Due");
                     if (oldFormat) {
                         east.add(dueDateLabel);
                     }
@@ -1904,7 +1910,9 @@ dueDateLabel.setName("Due");
         //PRIORITY
         Label priorityLabel = new Label();
 //        priorityLabel.setUIID("ItemDetailsLabel");
-        if (Config.TEST) priorityLabel.setName("Priority");
+        if (Config.TEST) {
+            priorityLabel.setName("Priority");
+        }
         if (item.getPriority() != 0) {
             priorityLabel.setText("P" + item.getPriority());
             if (false && showInDetails) {
@@ -1914,8 +1922,10 @@ dueDateLabel.setName("Due");
         }
         //IMPORTANCE/URGENCY
         Label impUrgLabel; // = new Label();
-        impUrgLabel = new Label(item.getImpUrgPrioValueAsString(),"ListOfItemsImpUrg");
-        if (Config.TEST) impUrgLabel.setName("ImpUrg");
+        impUrgLabel = new Label(item.getImpUrgPrioValueAsString(), "ListOfItemsImpUrg");
+        if (Config.TEST) {
+            impUrgLabel.setName("ImpUrg");
+        }
 //        impUrgLabel.setUIID("ListOfItemsImpUrg");
         if (false && showInDetails) {
             southDetailsContainer.add(impUrgLabel);
@@ -1924,8 +1934,10 @@ dueDateLabel.setName("Due");
         //DREAD/FUN
         if (item.getDreadFunValue() != null) {
             Label funDreadLabel; // = new Label();
-            funDreadLabel = new Label(item.getDreadFunValue().toString(),"ItemDetailsLabel");
-            if (Config.TEST) funDreadLabel.setName("FunDread");
+            funDreadLabel = new Label(item.getDreadFunValue().toString(), "ItemDetailsLabel");
+            if (Config.TEST) {
+                funDreadLabel.setName("FunDread");
+            }
             if (showInDetails) {
                 southDetailsContainer.add(funDreadLabel);
             }
@@ -1934,8 +1946,10 @@ dueDateLabel.setName("Due");
         //CHALLENGE
         if (item.getChallenge() != null) {
             Label challengeLabel; // = new Label();
-            challengeLabel = new Label(item.getChallenge().toString(),"ItemDetailsLabel");
-            if (Config.TEST) challengeLabel.setName("Challenge");
+            challengeLabel = new Label(item.getChallenge().toString(), "ItemDetailsLabel");
+            if (Config.TEST) {
+                challengeLabel.setName("Challenge");
+            }
             if (showInDetails) {
                 southDetailsContainer.add(challengeLabel);
             }
@@ -1947,7 +1961,7 @@ dueDateLabel.setName("Due");
 //            south.addComponent(new Label("D:" + L10NManager.getInstance().formatDateShortStyle(new Date(item.getDueDate()))));
 //            south.addComponent(new Label("D:" + MyDate.formatDateNatural(new MyDate(new Date(item.getDueDate())),MyDate.FORMAT_CASUAL, false)));
 //                south.addComponent(new Label("D:" + MyDate.formatDateNatural(new MyDate(item.getDueDate()), new MyDate(), MyDate.FORMAT_CASUAL, false)));
-                Label dueLabel =new Label("D:" + MyDate.formatDateNew(item.getDueDate()),
+                Label dueLabel = new Label("D:" + MyDate.formatDateNew(item.getDueDate()),
                         item.getDueDate() < System.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                 dueLabel.setName("DueDate");
                 southDetailsContainer.addComponent(dueLabel);
@@ -1964,8 +1978,10 @@ dueDateLabel.setName("Due");
         Label alarmLabel = null;
         if (item.getAlarmDate() != 0) {
 //            south.addComponent(new Label((Image) (item.getAlarmDate() != 0 ? Icons.get().iconAlarmSetLabelStyle : null)));
-            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), (Image) Icons.get().iconAlarmSetLabelStyle,"ItemDetailsLabel");
-            if (Config.TEST) alarmLabel.setName("Alarm");
+            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), (Image) Icons.get().iconAlarmSetLabelStyle, "ItemDetailsLabel");
+            if (Config.TEST) {
+                alarmLabel.setName("Alarm");
+            }
 //            alarmLabel.getStyle().setAlignment(Component.RIGHT);
             if (showInDetails) {
                 southDetailsContainer.addComponent(alarmLabel);
@@ -1977,8 +1993,10 @@ dueDateLabel.setName("Due");
         Label hideUntilLabel = new Label();
         if (item.getHideUntilDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowHideUntilDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD()),"ItemDetailsLabel");
-            if (Config.TEST) hideUntilLabel.setName("HideUntil");
+            hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD()), "ItemDetailsLabel");
+            if (Config.TEST) {
+                hideUntilLabel.setName("HideUntil");
+            }
             if (showInDetails) {
                 southDetailsContainer.addComponent(hideUntilLabel);
             }
@@ -1987,8 +2005,10 @@ dueDateLabel.setName("Due");
         Label startByLabel = new Label();
         if (item.getStartByDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowStartByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            startByLabel = new Label("S:" + MyDate.formatDateNew(item.getStartByDateD()),"ItemDetailsLabel");
-            if (Config.TEST) startByLabel.setName("StartBy");
+            startByLabel = new Label("S:" + MyDate.formatDateNew(item.getStartByDateD()), "ItemDetailsLabel");
+            if (Config.TEST) {
+                startByLabel.setName("StartBy");
+            }
             if (showInDetails) {
                 southDetailsContainer.addComponent(startByLabel);
             }
@@ -1997,8 +2017,10 @@ dueDateLabel.setName("Due");
         Label expireByLabel = new Label();
         if (item.getExpiresOnDateD().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()),"ItemDetailsLabel");
-            if (Config.TEST) expireByLabel.setName("ExpireBy");
+            expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()), "ItemDetailsLabel");
+            if (Config.TEST) {
+                expireByLabel.setName("ExpireBy");
+            }
             if (showInDetails) {
                 southDetailsContainer.addComponent(expireByLabel);
             }
@@ -2007,8 +2029,10 @@ dueDateLabel.setName("Due");
         Label waitingTillLabel = new Label();
         if (item.getWaitingTillDateD().getTime() != 0 && MyPrefs.itemListWaitingTillDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            waitingTillLabel = new Label("W:" + MyDate.formatDateNew(item.getWaitingTillDateD()),"ItemDetailsLabel");
-            if (Config.TEST) waitingTillLabel.setName("WaitingTill");
+            waitingTillLabel = new Label("W:" + MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
+            if (Config.TEST) {
+                waitingTillLabel.setName("WaitingTill");
+            }
             if (showInDetails) {
                 southDetailsContainer.addComponent(waitingTillLabel);
             }
@@ -2031,8 +2055,10 @@ dueDateLabel.setName("Due");
 //</editor-fold>
         List cats = item.getCategories();
         if (cats != null && cats.size() > 0) {
-            SpanLabel catsLabel = new SpanLabel("Cat: " + getListAsCommaSeparatedString(cats),"ItemDetailsLabel");
-            if (Config.TEST) catsLabel.setName("Categories");
+            SpanLabel catsLabel = new SpanLabel("Cat: " + getListAsCommaSeparatedString(cats), "ItemDetailsLabel");
+            if (Config.TEST) {
+                catsLabel.setName("Categories");
+            }
             southDetailsContainer.addComponent(catsLabel);
         }
 

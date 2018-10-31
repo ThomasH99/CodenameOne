@@ -215,6 +215,26 @@ public class DAO {
         }
         return item;
     }
+    
+    public WorkSlot fetchWorkSlot(String objectId) {
+        WorkSlot workSlot;
+        if (objectId == null || objectId.length() == 0) {
+            return null;
+        }
+//        if ((item = (Item) cache.get(objectId)) != null) {
+        if ((workSlot = (WorkSlot) cacheGet(objectId)) != null) {
+            return workSlot;
+        }
+//        Item item = null;
+        try {
+            workSlot = ParseObject.fetch(WorkSlot.CLASS_NAME, objectId);
+//            cache.put(objectId, item);
+            cachePut(workSlot);
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return workSlot;
+    }
 
     /**
     special case to fetch the Owner of an item, which may be either an Item or an ItemList (for now). 
@@ -4779,7 +4799,7 @@ public class DAO {
 //        initAndConfigureCache(); //now done in DAO constructor
 ////\        loadCacheToMemory(); //first load 
 
-        cache.loadCacheToMemory(); //first load 
+        cache.loadCacheToMemory(); //first load to memory
         if (loadingChangedDataFromParseServerForTesting) {
             Dialog ip = null;
             if (!inBackground) {

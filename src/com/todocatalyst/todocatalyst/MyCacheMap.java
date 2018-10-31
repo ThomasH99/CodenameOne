@@ -102,7 +102,7 @@ public class MyCacheMap {
         this.cacheSize = cacheSize;
     }
 
-    private static final Object LOCK = new Object();
+    /*private*/ static final Object LOCK = new Object(); 
 
     /**
      * Puts the given key/value pair in the cache
@@ -226,19 +226,19 @@ public class MyCacheMap {
      * load as many as possible to memory to speed up access.
      */
     synchronized public void loadCacheToMemory() {
-        synchronized(LOCK){
-        Vector storageCacheContent = getStorageCacheContent();
-        boolean oldAlwaysStore = alwaysStore;
-        alwaysStore = false; //avoid to persist to StorageCache (very slow)
-        int size = Math.min(cacheSize, Math.min(storageCacheContent.size(), storageCacheSize)); //iterate over as many items as possible, starting with most recently accessed
-        for (int i = 0; i < size; i++) { //THJ: optimization
-            Object key = ((Object[]) storageCacheContent.elementAt(i))[1];
-            Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
-            if (v != null) {
-                put(key, v.elementAt(0));
+        synchronized (LOCK) {
+            Vector storageCacheContent = getStorageCacheContent();
+            boolean oldAlwaysStore = alwaysStore;
+            alwaysStore = false; //avoid to persist to StorageCache (very slow)
+            int size = Math.min(cacheSize, Math.min(storageCacheContent.size(), storageCacheSize)); //iterate over as many items as possible, starting with most recently accessed
+            for (int i = 0; i < size; i++) { //THJ: optimization
+                Object key = ((Object[]) storageCacheContent.elementAt(i))[1];
+                Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
+                if (v != null) {
+                    put(key, v.elementAt(0));
+                }
             }
-        }
-        alwaysStore = oldAlwaysStore;
+            alwaysStore = oldAlwaysStore;
         }
     }
 

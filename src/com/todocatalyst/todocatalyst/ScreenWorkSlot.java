@@ -122,9 +122,10 @@ public class ScreenWorkSlot extends MyForm {
 //            item.revert(); //forgetChanges***/refresh
 //            previousForm.showBack(); //drop any changes
             DAO.getInstance().delete(workSlot);
-            previousForm.refreshAfterEdit();
-//            previousForm.revalidate();
-            previousForm.showBack(); //drop any changes
+//            previousForm.refreshAfterEdit();
+////            previousForm.revalidate();
+//            previousForm.showBack(); //drop any changes
+            showPreviousScreenOrDefault(true);
         });
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToSideMenu("New Task", icon, (e) -> {

@@ -28,7 +28,8 @@ import java.util.List;
  */
 public class WorkSlot extends ParseObject /*extends BaseItem*/
         implements RepeatRuleObjectInterface,
-        //SumField, ItemAndListCommonInterface, 
+        //SumField, 
+//        ItemAndListCommonInterface, 
         Externalizable //Comparable /* * , IComparable 
 {
 

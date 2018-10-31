@@ -28,6 +28,15 @@ MyButton {
     background-color: blue;
 }
 
+Title {
+    cn1-derive: Button;
+    background-color: blue;
+}
+TitleSmall {
+    cn1-derive: Button;
+    background-color: red;
+}
+
 /*************** EDIT ITEM ***********/
 
 Spacer {
