@@ -165,7 +165,9 @@ public class RepeatRuleParseObject
             setDayInYear(0); //TODO: choosing the middle day of the year, eg365/2=182 would make it faster to choose right date in a scrolling list, but is less intuitive
             setNumberFutureRepeatsToGenerateAhead(1);
             setNumberOfDaysRepeatsAreGeneratedAhead(0);
+            setSpecifiedStartDate(new Date()); //default start date today/now
 //        setLastDateGeneratedFor(Long.MIN_VALUE); //=0; //
+//        setLastGeneratedDate(Long.MIN_VALUE); //=0; //
             setLastGeneratedDate(new Date(MyDate.MIN_DATE)); //=0; //
             setListOfUndoneRepeatInstances(new ArrayList()); // = 1; //
 //            setDatesListXXX(new ArrayList()); // = 1; //

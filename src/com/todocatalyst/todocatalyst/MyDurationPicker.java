@@ -18,6 +18,7 @@ import java.util.Map;
 class MyDurationPicker extends Picker implements SwipeClear {
 
     private String zeroValuePattern;
+    private String DEFAULT_ZERO_VALUE_PATTERN = "";
     private int defaultValueInMinutes;
 //        String title;
 //        String parseId;
@@ -74,7 +75,8 @@ class MyDurationPicker extends Picker implements SwipeClear {
         this.setType(Display.PICKER_TYPE_DURATION);
         this.zeroValuePattern = zeroValuePatternVal;
         if (this.zeroValuePattern == null) {
-            this.zeroValuePattern = ""; // "<set>";
+//            this.zeroValuePattern = ""; // "<set>";
+            this.zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN; // "<set>";
         }
         this.defaultValueInMinutes = defaultValueInMinutes;
 //        Integer i = (getDurationInMinutes != null ? getDurationInMinutes.get() : this.defaultValueInMinutes);
@@ -102,7 +104,8 @@ class MyDurationPicker extends Picker implements SwipeClear {
         super();
         setUIID("LabelValue");
         this.setType(Display.PICKER_TYPE_DURATION);
-        this.zeroValuePattern = ""; // "<set>";
+//        this.zeroValuePattern = ""; // "<set>";
+        this.zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN; // "<set>";
         this.defaultValueInMinutes = 0;
 //        setFormatter(new SimpleDateFormat() {
 //            public String format(Object value) {
@@ -118,6 +121,23 @@ class MyDurationPicker extends Picker implements SwipeClear {
 
     public int getDurationMinutes() {
         return (int) getDuration() / MyDate.MINUTE_IN_MILLISECONDS;
+    }
+
+    /**
+    pattern show when zero value, in most screens where there is an edit button, "" is the best pattern, but for example in Timer, "0:00" (or similar localized version) shows that there is an editable/clickable
+    @param zeroValuePattern 
+     */
+    public void setZeroValuePattern(String zeroValuePattern) {
+        this.zeroValuePattern = zeroValuePattern;
+    }
+
+    public void setShowZeroValueAsZeroDuration(boolean showZeroValuePattern) {
+        MyDate d;
+        if (showZeroValuePattern) {
+            this.zeroValuePattern = "0:00"; //MyDate.formatTimeDuration(0, 0); //TODO!!!! localize zero duration
+        } else {
+            this.zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN;
+        }
     }
 
     private Button clearButton = null;

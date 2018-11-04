@@ -725,12 +725,12 @@ public class ScreenRepair extends MyForm {
             }
         }));
         
-        content.add(new Button(new MyReplayCommand("replayTest","Test ScreenEdit2") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        content.add(new Button( MyReplayCommand.create("Test ScreenEdit2","Test ScreenEdit2", null, (e)->  {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
                 new ScreenItem2(new Item(), ScreenRepair.this, ()->{}).show();
             }
-        }));
+        )));
         
         content.add(new Button(new Command("Show files in FileSystemStorage") {
             @Override
@@ -1066,7 +1066,7 @@ public class ScreenRepair extends MyForm {
                     ) {
                         RepeatRuleParseObject repeatRule = new RepeatRuleParseObject();
                         repeatRule.setSpecifiedStartDate(new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 48).getTime());
-                        new ScreenRepeatRuleNew("test", repeatRule, new Item("taskX", 15, new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 24)), (MyForm) content.getComponentForm(), () -> {
+                        new ScreenRepeatRule("test", repeatRule, new Item("taskX", 15, new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 24)), (MyForm) content.getComponentForm(), () -> {
                         }, true).show();
                     }
                 }

@@ -2449,7 +2449,7 @@ public class MyForm extends Form {
             parseIdMap2.put(fieldIdentifier, () -> {
 //        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
                 ASSERT.that(getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
-                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
+//                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
                 if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
 //            item.setEffortEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
                     putOrg.setVal(getField.getVal()); //if value has been changed, update item

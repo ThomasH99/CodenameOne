@@ -949,11 +949,14 @@ public class ScreenLogin extends MyForm {
         }
 
         String password = PasswordGenerator.getInstance().generate(12);
+        if (validEmail.equals("thomas.hjelm@email.com"))
+                password = "ItsThomas";
         try {
             ParseUser parseUser = ParseUser.create(validEmail, password);
             parseUser.setEmail(validEmail);
-            setDefaultACL(parseUser);
+//            setDefaultACL(parseUser); //NB cannot set ACL for user with a null id
             parseUser.signUp(); //perform sign up / account creation
+            setDefaultACL(parseUser); //NB cannot set ACL for user with a null id
             saveCurrentUserSessionToStorage();
             //No cache/memory setup needed for new account
             return null;

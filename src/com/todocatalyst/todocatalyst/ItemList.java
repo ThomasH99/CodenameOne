@@ -3069,10 +3069,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public Date getRemainingEffortD() {
-        return new Date(getRemainingEffort());
-    }
+//    @Override
+//    public Date getRemainingEffortD() {
+//        return new Date(getRemainingEffort());
+//    }
 
     @Override
     public long getRemainingEffort() {

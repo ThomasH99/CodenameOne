@@ -41,6 +41,7 @@ import java.util.Map;
             setText(getValue.get());
             parseIdMap.put(this, () -> setValue.accept(getText()));
         }
+        
         MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint                ) {
             super("", rows, columns, constraint);
 //            if (rows != 1) {

@@ -1993,7 +1993,7 @@ public class ScreenTimer extends MyForm {
         status.setStatus(updatedItem.getStatus());
         comment.setText(updatedItem.getComment());
         effortEstimate.setTime((int) updatedItem.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS);
-        remainingEffort.setTime((int) updatedItem.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS);
+        remainingEffort.setTime((int) updatedItem.getRemainingEffort(false) / MyDate.MINUTE_IN_MILLISECONDS);
 //        remainingEffort.setTime(updatedItem.getRemainingEffortInMinutes()); //DOES not change
 //        effortEstimate.setTime(updatedItem.getRemainingEffortInMinutes()); //DOES not change
 //        updateTotalActualEffort(updatedItem.getActualEffort(false), elapsedTimePicker.getTime());
@@ -2246,7 +2246,7 @@ public class ScreenTimer extends MyForm {
         ));
         cont.add(BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton));
 
-        remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) timerStack.currEntry.timedItem.getRemainingEffortNoDefault() / MyDate.MINUTE_IN_MILLISECONDS,
+        remainingEffort = new MyDurationPicker(parseIdMap2, () -> (int) timerStack.currEntry.timedItem.getRemainingEffort(false) / MyDate.MINUTE_IN_MILLISECONDS,
                 (i) -> timerStack.currEntry.timedItem.setRemainingEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
 //        remainingEffort.setFormatter(myFormatter); //don't format with seconds
 
@@ -2328,7 +2328,7 @@ long addlEffort = ((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLIS
                     effortEstimate.repaint();
                 }
                 //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
-                if (effortEstimate.getTime() != 0 && timerStack.currEntry.timedItem.getRemainingEffortNoDefault() == 0 && remainingEffort.getTime() == 0) {
+                if (effortEstimate.getTime() != 0 && timerStack.currEntry.timedItem.getRemainingEffort(false) == 0 && remainingEffort.getTime() == 0) {
                     remainingEffort.setTime(effortEstimate.getTime());
                     remainingEffort.repaint();
                 }

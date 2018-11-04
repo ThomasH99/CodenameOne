@@ -26,6 +26,7 @@ public class Inbox extends ItemList {
 
 //    public static String CLASS_NAME = "Inbox";
     private static String INBOX_RESERVED_NAME = "$$$Inbox$$$";
+//    private static String INBOX_RESERVED_NAME = "Inbox"; //NB name is visible e.g. in Timer
 
 //    final static String PARSE_INBOX_LIST = ItemList.PARSE_ITEMLIST; //reuse column name from ItemList to ensure any non-overwritten calls (notably getListFull()) works, was: "categoryList";
     private static ItemList INSTANCE = null;

@@ -43,7 +43,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     public long getActualEffort();
 //    public long getWorkTimeSum();
 
-    public Date getRemainingEffortD(); //TODO use getRemainingEffortD everywhere instead of getRemainingEffort
+//    public Date getRemainingEffortD(); //TODO use getRemainingEffortD everywhere instead of getRemainingEffort
 
     /**
      * returns null if no workslots

@@ -111,10 +111,10 @@ public class ScreenItem2 extends MyForm {
 //    private MyTree2 subTaskTree;
 //    private int lastTabSelected = -1;
     private boolean templateEditMode;
-    private String FILE_LOCAL_EDITED_ITEMXXX = "ScreenItem-EditedItem";
-    private String FILE_LOCAL_EDITED_OWNER = "ScreenItem-EditedOwner";
-    private String FILE_LOCAL_EDITED_CATEGORIES = "ScreenItem-EditedCategories";
-    private String FILE_LOCAL_EDITED_REPEAT_RULE = "ScreenItem-EditedRepeatRule";
+//    private String FILE_LOCAL_EDITED_ITEMXXX = "ScreenItem-EditedItem";
+//    private String FILE_LOCAL_EDITED_OWNER = "ScreenItem-EditedOwner";
+//    private String FILE_LOCAL_EDITED_CATEGORIES = "ScreenItem-EditedCategories";
+//    private String FILE_LOCAL_EDITED_REPEAT_RULE = "ScreenItem-EditedRepeatRule";
 //    private boolean localSave; //true when save of item is only local (on app pause/exit). Hack to reuse putEditedValues2!
     private boolean remainingEffortSetManually = false; //true when reaminingEffort has been edited to a different value than the original one from item
     private boolean remainingEffortSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
@@ -170,7 +170,7 @@ public class ScreenItem2 extends MyForm {
 //        } else {
 //            itemLS = this.item; //if no locally saved edits, then use item to 'feed' the edits fields
 //        }
-            itemLS = this.item; //quick hack. TODO!! replace all references to itemLS with item
+        itemLS = this.item; //quick hack. TODO!! replace all references to itemLS with item
         //restore locally edited Owner
 //        locallyEditedOwner = restoreNewOwner_N();
 //        locallyEditedCategories = restoreNewCategories_N();
@@ -736,8 +736,15 @@ public class ScreenItem2 extends MyForm {
 //        MyTextField description = new MyTextField("Task", 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2, () -> item.getText(), (s) -> item.setText(s));
 //        MyTextField description = new MyTextField(Item.DESCRIPTION_HINT, 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
 //                () -> itemLS.getText(), (s) -> item.setText(s));
-        description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
-                () -> itemLS.getText(), (s) -> item.setText(s)) {
+//        description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
+//                () -> itemLS.getText(), (s) -> item.setText(s)) {
+//            @Override
+//            public void longPointerPress(int x, int y) {
+//                Log.p("longPointerPress on text area");
+//                //TODO!!! call templatePicker
+//            }
+//        };
+        description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
             @Override
             public void longPointerPress(int x, int y) {
                 Log.p("longPointerPress on text area");
@@ -778,7 +785,7 @@ public class ScreenItem2 extends MyForm {
         remainingEffort = new MyDurationPicker();
 //        makeField(Item.EFFORT_REMAINING, Item.EFFORT_REMAINING_HELP, effortEstimate, Item.PARSE_REMAINING_EFFORT, () -> item.getRemainingEffort(), (l) -> item.setRemainingEffort((long) l),
 //                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), null);
-        makeField(Item.PARSE_REMAINING_EFFORT, effortEstimate, () -> item.getRemainingEffort(), (l) -> item.setRemainingEffort((long) l),
+        makeField(Item.PARSE_REMAINING_EFFORT, remainingEffort, () -> item.getRemainingEffort(false), (l) -> item.setRemainingEffort((long) l),
                 () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l));
 
         description.addActionListener((e) -> {
@@ -803,7 +810,11 @@ public class ScreenItem2 extends MyForm {
         makeField(Item.PARSE_STATUS, status, () -> item.getStatus(), (t) -> item.setStatus((ItemStatus) t),
                 () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t));
 
-        parseIdMap2.put(status, () -> item.setStatus(status.getStatus()));
+//        parseIdMap2.put(status, () -> {
+//            if (!item.getStatus().equals(status.getStatus())) {
+//                item.setStatus(status.getStatus());
+//            }
+//        });
 //        Container taskCont = new Container(new BoxLayout(BoxLayout.X_AXIS));
         Container taskCont = new Container(new BorderLayout());
 
@@ -832,7 +843,7 @@ public class ScreenItem2 extends MyForm {
                 () -> {
                     return starred.getIcon().equals(Icons.iconStarSelectedLabelStyle);
                 }, (b) -> {
-                    starred.setIcon((boolean) b ?  Icons.iconStarSelectedLabelStyle:Icons.iconStarUnselectedLabelStyle);
+                    starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
 //                    starred.repaint();
                 }); //add taskCont just to avoid creating an unnecessary field container
 
@@ -918,10 +929,10 @@ public class ScreenItem2 extends MyForm {
 //        mainCont.add(layout(Item.DUE_DATE, dueDate.makeContainerWithClearButton(), "**"));
 //</editor-fold>
 
-//        mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
 //        mainCont.add(makeField(Item.DUE_DATE, Item.DUE_DATE_HELP, dueDate, Item.PARSE_DUE_DATE, () -> item.getDueDateD(), (t) -> item.setDueDate((Date) t),
         makeField(Item.PARSE_DUE_DATE, dueDate, () -> item.getDueDateD(), (t) -> item.setDueDate((Date) t),
                 () -> dueDate.getDate(), (d) -> dueDate.setDate((Date) d));
+        mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
 
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
         //FINISH_TIME
@@ -993,7 +1004,7 @@ public class ScreenItem2 extends MyForm {
 //        WrapButton editOwnerButton = new WrapButton(getListAsCommaSeparatedString(editedCats));
 
 //        Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
-        Command categoryEditCmd = new Command( "") { //"<click to set categories>"
+        Command categoryEditCmd = new Command("") { //"<click to set categories>"
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem2.this);
@@ -1081,12 +1092,12 @@ public class ScreenItem2 extends MyForm {
 //        WrapButton repeatRuleButton = new WrapButton(repeatVal!= null && !repeatVal.equals(REPEAT_RULE_DELETED_MARKER)
 //                ? ((RepeatRuleParseObject) previousValues.get(Item.REPEAT_RULE)).getText()
 //                : item.getRepeatRule() != null ? item.getRepeatRule().getText() : "");
-        WrapButton repeatRuleButton = new WrapButton(repeatRuleButtonStr);
+        WrapButton repeatRuleButton = new WrapButton();
 
 //        RepeatRule 
 //        locallyEditedRepeatRule = item.getRepeatRule();
 //        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRules", "", null, (e) -> {
-        Command repeatRuleEditCmd = Command.create( "", null, (e) -> {
+        Command repeatRuleEditCmd = Command.create(repeatRuleButtonStr, null, (e) -> {
             //TODO!!!! by making this a ReplayCommand, it is also necessary to store the edited values within the screen, otherwise the user is returned, but the values are lost => annoying!
 //DON'T set a string since SpanButton shows both Command string and SpanLabel string
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1118,10 +1129,16 @@ public class ScreenItem2 extends MyForm {
                 return;
             }
 
-            RepeatRuleParseObject locallyEditedRepeatRule
-                    = previousValues.get(Item.PARSE_REPEAT_RULE) != null
-                    ? ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)) //fetch previously edited instance/copy of the repeat Rule
-                    : new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if returns null, creates a fresh RR
+//            RepeatRuleParseObject locallyEditedRepeatRule
+//                    = previousValues.get(Item.PARSE_REPEAT_RULE) != null
+//                    ? ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)) //fetch previously edited instance/copy of the repeat Rule
+//                    : new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if returns null, creates a fresh RR
+            RepeatRuleParseObject locallyEditedRepeatRule;
+            if (previousValues.get(Item.PARSE_REPEAT_RULE) == null || previousValues.get(Item.PARSE_REPEAT_RULE).equals(REPEAT_RULE_DELETED_MARKER)) {
+                locallyEditedRepeatRule = new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
+            } else {
+                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
+            }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (orgRepeatRule == null && editedRepeatRuleCopy == null) {
 //                    editedRepeatRuleCopy = new RepeatRuleParseObject(); //if no rule exists already, create a fresh one
@@ -1157,9 +1174,12 @@ public class ScreenItem2 extends MyForm {
                 if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
                     previousValues.remove(Item.PARSE_REPEAT_RULE);
                     repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
+                } else if (locallyEditedRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+                    previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
+                    repeatRuleButton.setText(""); //"<click to make task/project repeat>"
                 } else {
                     previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
-                    repeatRuleButton.setText(locallyEditedRepeatRule.getText()); //"<click to make task/project repeat>"
+                    repeatRuleButton.setText(locallyEditedRepeatRule.getText());
                 }
 //                    repeatRuleButton.revalidate();
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1169,7 +1189,10 @@ public class ScreenItem2 extends MyForm {
 //                        dueDate.repaint(); //enough to refresh on screen?? NO
 //                        refreshAfterEdit(); //optimize!!
 //</editor-fold>
-                revalidate(); //enough to update? YES //needed to allow space for additional text on RR button?!
+//                revalidate(); //enough to update? YES //needed to allow space for additional text on RR button?!
+//                repeatRuleButton.revalidate(); //enough to update? NO (overwrites label text on left)
+//                repeatRuleButton.getParent().revalidate(); //enough to update? NO
+                mainCont.revalidate(); //enough to update? NO
 //                    }
             }, true, dueDate.getDate()).show(); //TODO false<=>editing startdate not allowed - correct???
         }
@@ -1213,7 +1236,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                    repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
 //                } else {
             Object repeatRuleVal = previousValues.get(Item.PARSE_REPEAT_RULE);
-            if (repeatRuleVal instanceof RepeatRuleParseObject) { //A certain indication that the RR has been edited
+            if (repeatRuleVal instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
                 item.setRepeatRule((RepeatRuleParseObject) repeatRuleVal);
             } else if (repeatRuleVal != null && repeatRuleVal.equals(REPEAT_RULE_DELETED_MARKER)) {
                 item.setRepeatRule(null); //delete repeatRule (if any, if null before, no change)
@@ -1238,10 +1261,11 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        mainCont.add(layout(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> item.setRepeatRule(null), false, false, false));
 //        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> item.setRepeatRule(null)));
 //</editor-fold>
-        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> {
-            previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
-            repeatRuleButton.setText("");
-        }));
+//        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> {
+//            previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
+//            repeatRuleButton.setText("");
+//        }));
+        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, null));
         //TODO deleting should not delete in item but delete editcopy and when saving via parseIdMap
         //<editor-fold defaultstate="collapsed" desc="comment">
         //        if (false) {
@@ -1410,12 +1434,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         MyDurationPicker actualEffort;
         String actualTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF : Item.EFFORT_ACTUAL;
         String actualHelpTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF_HELP : Item.EFFORT_ACTUAL_HELP;
-//        actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffortProjectTaskItselfFromParse() / MyDate.MINUTE_IN_MILLISECONDS,
+//        actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS,
 //                (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
-        actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffortProjectTaskItselfFromParse() / MyDate.MINUTE_IN_MILLISECONDS,
+        actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS,
                 (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
         makeField(Item.PARSE_ACTUAL_EFFORT, actualEffort,
-                () -> item.getActualEffortProjectTaskItselfFromParse() / MyDate.MINUTE_IN_MILLISECONDS,
+                () -> item.getActualEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS,
                 (min) -> item.setActualEffort(((long) min) * MyDate.MINUTE_IN_MILLISECONDS),
                 () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 
@@ -2067,13 +2091,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        }
 //        ItemAndListCommonInterface prevOwner = DAO.getInstance().fetchItemOwner((String) previousValues.get(Item.PARSE_OWNER_ITEM));
         WrapButton editOwnerButton = new WrapButton(previousValues.get(Item.PARSE_OWNER_ITEM) != null
-                ? DAO.getInstance().fetchItemOwner((String) previousValues.get(Item.PARSE_OWNER_ITEM)).getText()
-                : (item.getOwner()!=null?item.getOwner().getText():""));
+                ? DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)).getText()
+                : (item.getOwner() != null ? item.getOwner().getText() : ""));
 
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
 //        Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
-        Command editOwnerCmd = Command.create( item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
+        Command editOwnerCmd = Command.create(item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
             List projects = DAO.getInstance().getAllProjects(false);
             projects.remove(item); //Must not be possible to select the item itself as its own owner
 
@@ -2135,7 +2159,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
             if (previousValues.get(Item.PARSE_OWNER_ITEM) != null) {
                 if (((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0) {
-                    item.setOwner(DAO.getInstance().fetchItem(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)));
+//                    item.setOwner(DAO.getInstance().fetchItem(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)));
+                    item.setOwner(DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)));
                 } else {
                     item.setOwner(null);
                 }
@@ -2168,30 +2193,29 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //TODO!!!! implement DependsOn properly before enabling it
         //TODO!!! add objectPicker showing only subtasks/projects in this project
 //<editor-fold defaultstate="collapsed" desc="comment">
-        if (false) {
-            if (item.getDependingOnTask() != null) {
-                MyTextArea dependsOn = new MyTextArea(Item.DEPENDS_ON, 20, TextArea.ANY, parseIdMap2, () -> {
-                    Item dependingOnTask = item.getDependingOnTask();
-                    return dependingOnTask == null ? "" : dependingOnTask.getText();
-                },
-                        (d) -> {
-                            //TODO implement editing of owner directly (~Move to another project or list)
-                        });
-                dependsOn.setEditable(false);
-            }
-
-            Item dependingOnTask = item.getDependingOnTask();
-            if (dependingOnTask != null) {
-                Label dependsOnLabel = new Label(dependingOnTask == null ? "" : dependingOnTask.getText());
-
-//        statusCont.add(new Label(Item.DEPENDS_ON)).add(dependsOn); //.add(new SpanLabel("Click to move task to other projects or lists"));
-//        statusCont.add(layout(Item.DEPENDS_ON, dependsOn, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-//                statusCont.add(layout(Item.DEPENDS_ON, dependsOnLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-                statusCont.add(layoutN(Item.DEPENDS_ON, dependsOnLabel, Item.DEPENDS_ON_HELP)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-            }
-        }
+//        if (false) {
+//            if (item.getDependingOnTask() != null) {
+//                MyTextArea dependsOn = new MyTextArea(Item.DEPENDS_ON, 20, TextArea.ANY, parseIdMap2, () -> {
+//                    Item dependingOnTask = item.getDependingOnTask();
+//                    return dependingOnTask == null ? "" : dependingOnTask.getText();
+//                },
+//                        (d) -> {
+//                            //TODO implement editing of owner directly (~Move to another project or list)
+//                        });
+//                dependsOn.setEditable(false);
+//            }
+//
+//            Item dependingOnTask = item.getDependingOnTask();
+//            if (dependingOnTask != null) {
+//                Label dependsOnLabel = new Label(dependingOnTask == null ? "" : dependingOnTask.getText());
+//
+////        statusCont.add(new Label(Item.DEPENDS_ON)).add(dependsOn); //.add(new SpanLabel("Click to move task to other projects or lists"));
+////        statusCont.add(layout(Item.DEPENDS_ON, dependsOn, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+////                statusCont.add(layout(Item.DEPENDS_ON, dependsOnLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//                statusCont.add(layoutN(Item.DEPENDS_ON, dependsOnLabel, Item.DEPENDS_ON_HELP)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//            }
+//        }
 //</editor-fold>
-
         //ORIGINAL SOURCE
         if (item.getSource() != null) { //don't show unless defined
             //TODO!! what happens if source is set to template or other item, then saved locally on app exit and THEN recreated via Replay???
@@ -2517,5 +2541,4 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        return (RepeatRuleParseObject) Storage.getInstance().readObject(FILE_LOCAL_EDITED_REPEAT_RULE);
 //    }
 //</editor-fold>
-
 }

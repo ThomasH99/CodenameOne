@@ -124,11 +124,12 @@ public class MyDate extends Date {
         setTime(MyDate.getNow()); //set date
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 ///**
-// * create a new Date. 
+// * create a new Date.
 // * @param useDefaultDate initialize date to current date. If false, set Jan 1st, 1970 (so only time of day is set)
 // * @param useDefaultTimeOfDay initialize date to default settings for hour/minute of day getDefaultHourOfDay(). If false, use current date from now()
-// */    
+// */
 //    public MyDate(boolean useDefaultDate, boolean useDefaultTimeOfDay) {
 ////        timeWithFlags = MyDate.getNow();
 //        if (useDefaultDate) {
@@ -140,11 +141,11 @@ public class MyDate extends Date {
 //        }
 //    }
     /**
-     * create a new Date.
-     *
-     * @param useDefaultTimeOfDay initialize date to current time. If false, use
-     * default settings for hour/minute of day getDefaultHourOfDay().
-     */
+    * create a new Date.
+    *
+    * @param useDefaultTimeOfDay initialize date to current time. If false, use
+    * default settings for hour/minute of day getDefaultHourOfDay().
+    */
 //    public MyDate(boolean useDefaultTimeOfDay) {
 ////        this(false, useDefaultTimeOfDay);
 //        this();
@@ -152,6 +153,7 @@ public class MyDate extends Date {
 //            setTime(Settings.getInstance().defaultHourOfDay.getInt(), Settings.getInstance().defaultMinuteOfDay.getInt());
 //        }
 //    }
+//</editor-fold>
     public MyDate(long time) {
 //        this.timeWithFlags = time;
         setTime(time);
@@ -170,6 +172,7 @@ public class MyDate extends Date {
      * creates a new date with day, month, year, and hours/minutes set to
      * midnight
      */
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public MyDate(int day, int month, int year) {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.setTime(new Date(0)); //also sets hour/minute/second/milliesecond to 0
@@ -224,6 +227,7 @@ public class MyDate extends Date {
 //        setTimeAndFlags(calendar.getTime().getTime(), true, true);
 ////        time = calendar.getTime().getTime();
 //    }
+//</editor-fold>
     public long getTime() {
 //        return time;
 //        return (timeWithFlags & topmostSignbit) == 0 ? (timeWithFlags & timeMask) : (timeWithFlags & timeMask) | flagMask; //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
@@ -264,11 +268,12 @@ public class MyDate extends Date {
         timeWithFlags = ((timeWithFlags & timeMask) + value) | (timeWithFlags & flagMask);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
-     * adds value to time, AND sets time bit and or date bit. Used to easily
-     * update time and set appropriate bits. Does NOT reset the bits to zero if
-     * setTimeBit or setDateBit are false!
-     */
+    * adds value to time, AND sets time bit and or date bit. Used to easily
+    * update time and set appropriate bits. Does NOT reset the bits to zero if
+    * setTimeBit or setDateBit are false!
+    */
 //    private void addToTimeSetFlags(long value, boolean setTimeBit, boolean setDateBit) {
 //        addToTimeKeepFlags(value);
 //        timeWithFlags = timeWithFlags | (setTimeBit ? timeSetBit : 0) | (setDateBit ? dateSetBit : 0);
@@ -290,17 +295,17 @@ public class MyDate extends Date {
 //        }
 //    }
     /**
-     * sets both time and date bits - as a convinient shortcut
-     */
+    * sets both time and date bits - as a convinient shortcut
+    */
 //    void setTimeAndDateBit(boolean timeSet, boolean dateSet) {
 //        setTimeBit(timeSet);
 //        setDateBit(dateSet);
 //    }
     /**
-     * time is set either if the timebit is set, OR time is defined (!=0), and
-     * both time bit and date bit are zero (meaning that time was set without
-     * using the time/date bits)
-     */
+    * time is set either if the timebit is set, OR time is defined (!=0), and
+    * both time bit and date bit are zero (meaning that time was set without
+    * using the time/date bits)
+    */
 //    public boolean isTimeSet() {
 ////        long time = getTime();
 ////        return ((time & timeSetBit) != 0) || (time != 0 && (time & timeSetBit) == 0 && (time & dateSetBit) == 0);
@@ -319,6 +324,7 @@ public class MyDate extends Date {
 ////        return ((timeWithFlags & dateSetBit) != 0) || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
 //        return ((timeWithFlags & dateSetBit) != 0); // || (timeWithFlags != 0 && (timeWithFlags & timeSetBit) == 0 && (timeWithFlags & dateSetBit) == 0);
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public String toString() {
@@ -340,6 +346,7 @@ public class MyDate extends Date {
 //        }
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public String xtoString() {
 //        String dateString = "";
 //        dateString += this.getDay() + "-";
@@ -441,9 +448,9 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }
     /**
-     * resets both date and time to 0 (and resets date and time set flags as
-     * well)
-     */
+    * resets both date and time to 0 (and resets date and time set flags as
+    * well)
+    */
 //    public void resetDateAndTime() {
 ////        setTime(0);
 //        timeWithFlags = 0;
@@ -561,8 +568,8 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }// </editor-fold>
     /**
-     * returns day in month, 1..31
-     */
+    * returns day in month, 1..31
+    */
 //    public static int getDay(Date date) {
 //        Calendar cal = Calendar.getInstance();
 //        cal.setTime(new Date(date.getTime()));
@@ -653,17 +660,17 @@ public class MyDate extends Date {
 //        return cal.get(Calendar.AM_PM);
 //    }
     /**
-     * returns the week number within the year (according to ISO definition).
-     * See definition overview:
-     * http://en.wikipedia.org/wiki/Week_number#Week_numbering
-     * http://en.wikipedia.org/wiki/Talk:ISO_week_date#Algorithms: Determine its
-     * Day of Week, D Use that to move to the nearest Thursday (-3..+3 days)
-     * Note the year of that date, Y Obtain January 1 of that year Get the
-     * Ordinal Date of that Thursday, DDD of YYYY-DDD Then W is 1 + (DDD-1) div
-     * 7
-     *
-     * @return
-     */
+    * returns the week number within the year (according to ISO definition).
+    * See definition overview:
+    * http://en.wikipedia.org/wiki/Week_number#Week_numbering
+    * http://en.wikipedia.org/wiki/Talk:ISO_week_date#Algorithms: Determine its
+    * Day of Week, D Use that to move to the nearest Thursday (-3..+3 days)
+    * Note the year of that date, Y Obtain January 1 of that year Get the
+    * Ordinal Date of that Thursday, DDD of YYYY-DDD Then W is 1 + (DDD-1) div
+    * 7
+    *
+    * @return
+    */
 //    public static int getWeekOfYear(Date date) {
 //        if (Settings.getInstance().useISOWeekNumbering()) {
 //            Calendar cal = Calendar.getInstance();
@@ -709,6 +716,7 @@ public class MyDate extends Date {
 //            return (weekNum);
 //        }
 //    }
+//</editor-fold>
     static Date getStartOfWeek(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -855,10 +863,11 @@ public class MyDate extends Date {
         return dayOfMonth;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
-     * moves date one month back. If setToFirstInMonth then also sets day of
-     * that month to the 1st day of the month
-     */
+    * moves date one month back. If setToFirstInMonth then also sets day of
+    * that month to the 1st day of the month
+    */
 //    public void retreatMonth(Date date, boolean setToFirstInMonth) {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.setTime(new Date(getTime()));
@@ -881,9 +890,9 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }
     /**
-     * moves date one month forward. If setToFirstInMonth then also sets day of
-     * that month to the 1st day of the month
-     */
+    * moves date one month forward. If setToFirstInMonth then also sets day of
+    * that month to the 1st day of the month
+    */
 //    public void advanceMonth(Date date, boolean setToFirstInMonth) {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.setTime(new Date(getTime()));
@@ -930,16 +939,18 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }
     /**
-     * returns list of display text strings indicating week in month (FIRST,
-     * THIRD, LAST, ...)
-     */
+    * returns list of display text strings indicating week in month (FIRST,
+    * THIRD, LAST, ...)
+    */
 //    static String[] getMonthNames() {
 //        return MONTH_NAMES;
 //    }
+//</editor-fold>
     static String[] getShortMonthNames() {
         return MONTH_NAMES_SHORT;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public static String getMonthName(int month) {
 //        return Localize.localize(MONTH_NAMES[month - 1]);
 //    }
@@ -973,6 +984,7 @@ public class MyDate extends Date {
 //    public boolean isBefore(MyDate other) {
 //        return getTime() < other.getTime();
 //    }
+//</editor-fold>
     public static int getDaysInMonth(int month, int year) {
         switch (month) {
             case 4:
@@ -1031,9 +1043,10 @@ public class MyDate extends Date {
         return calendar.get(Calendar.DAY_OF_WEEK);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
-     * returns week day
-     */
+    * returns week day
+    */
 //    int getWeekday(Date date) {
 //        return getWeekday(this.getDay(date), this.getMonth(date), this.getYear(date));
 //    }
@@ -1045,11 +1058,11 @@ public class MyDate extends Date {
 //        return dateString;
 //    }
     /**
-     * returns true if other is the same date (day, month, year)
-     *
-     * @param other
-     * @return
-     */
+    * returns true if other is the same date (day, month, year)
+    *
+    * @param other
+    * @return
+    */
 //    public boolean equalsDate(Date date, MyDate other) {
 //        return (getDay(date) == getDay(other) && getMonth(date) == getMonth(other) && getYear(date) == getYear(other));
 ////        if (this.getDay() == other.getDay() && this.getMonth() == other.getMonth() && this.getYear() == other.getYear()) {
@@ -1058,14 +1071,15 @@ public class MyDate extends Date {
 ////        return false;
 //    }
     /**
-     * returns true if other is the same time (hour, minutes)
-     *
-     * @param other
-     * @return
-     */
+    * returns true if other is the same time (hour, minutes)
+    *
+    * @param other
+    * @return
+    */
 //    public boolean equalsHourMinutes(MyDate other) {
 //        return (getHour24() == other.getHour24() && getMinute() == other.getMinute());
 //    }
+//</editor-fold>
 // <editor-fold defaultstate="collapsed" desc="comment">
 //    final static int ONE_DAY = 0;
 //    final static int TWO_DAYS = 0;

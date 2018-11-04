@@ -60,10 +60,17 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             );
         }
 
-        Parse.initialize(
-                "https://parseapi.back4app.com",
-                "TYR54TdOmVfIGSKIl3aEmpcKMPNrbg7T9zN6QciT",
-                "SqFUD7hbLleCOPtDm0RYJWsqI3syHN31NuOiCrRv");
+        if (Config.PARSE_OFFLINE) {
+            Parse.initialize(
+                    "http://localhost:1337/parse",
+                    "l0Gw4hYdg7hJDPEG11Qzxqh59Yj9F2JXDkDdbdCc",
+                    "not important");
+        } else {
+            Parse.initialize(
+                    "https://parseapi.back4app.com",
+                    "TYR54TdOmVfIGSKIl3aEmpcKMPNrbg7T9zN6QciT",
+                    "SqFUD7hbLleCOPtDm0RYJWsqI3syHN31NuOiCrRv");
+        }
 //        ParseRegistry.registerSubclass(ParseObjectTask.class, ParseObjectTask.CLASS_NAME);
         ParseRegistry.registerSubclass(Item.class, Item.CLASS_NAME);
 //        ParseRegistry.registerParseFactory(ParseObjectTask.CLASS_NAME, new Parse.IParseObjectFactory() {
@@ -463,7 +470,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 
         }
         theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
-        
+
         Resources localizationTheme = null;
         try {
             localizationTheme = Resources.openLayered("/theme-localization");
@@ -706,13 +713,10 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        showMainForm(false, null, null);
 //        showMainForm(false, null, null);
 //</editor-fold>
-
-            InfiniteProgress.setDefaultMaterialDesignMode(true);
+        InfiniteProgress.setDefaultMaterialDesignMode(true);
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
 
-        
-        
 //        new ScreenMainP(resources).show();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) { //test subtasks
@@ -762,7 +766,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                 Log.p("Count of Item in Parse = " + count, Log.DEBUG);
 
 //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
-                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
 
                 //ALARMS - initialize
                 AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
@@ -977,7 +981,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                 ASSERT.that("on stop(), current=" + current + " (NOT Form or Component)");
             }
         }
-        
+
         ASSERT.that(current instanceof MyForm, "on stop(), current=" + current + " (NOT Form or Component)");
         if (false && current instanceof MyForm) { //not needed anymore, now saved on each edit
             ((MyForm) current).saveEditedValuesLocallyOnAppExitXXX(); //save any ongoing edits

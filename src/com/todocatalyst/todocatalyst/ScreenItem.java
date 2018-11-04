@@ -1250,7 +1250,7 @@ public class ScreenItem extends MyForm {
         MyDurationPicker actualEffort;
         String actualTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF : Item.EFFORT_ACTUAL;
         String actualHelpTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF_HELP : Item.EFFORT_ACTUAL_HELP;
-        actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffortProjectTaskItselfFromParse() / MyDate.MINUTE_IN_MILLISECONDS,
+        actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS,
                 (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
         timeCont.add(layoutN(actualTxt, actualEffort, actualHelpTxt));
 

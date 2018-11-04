@@ -33,6 +33,14 @@ public class MyPrefs {
     static PrefEntry estimateDefaultValueForZeroEstimatesInMinutes
             = new PrefEntry("Default time estimate", "estimateDefaultValueForZeroEstimatesInMinutes", 4,
                     "Default time estimate to use for non-estimated tasks. Set to typical average value of actual effort for small tasks to avoid having to estimate these. Set to 0 to de-activate.");
+   
+    static PrefEntry estimateRemainingOnlyUseSubtasksRemaining
+            = new PrefEntry("Only use subtasks' Remaining estimates", "estimateRemainingOnlyUseSubtasksRemaining", false,
+                            "Otherwise a project's remaining is the sum of the project task's own remaining and the sum of the remaining of all subtasks");
+
+    static PrefEntry estimateEffortEstimateOnlyUseSubtasksEstimates
+            = new PrefEntry("Only use subtasks' Effort estimates", "estimateEffortEstimateOnlyUseSubtasksEstimates", true,
+                            "Otherwise a project's effort estimate is the sum of the project task's own effort estimates and the sum of the remaining of all subtasks");
 
     //INSERTION OF NEW ITEMS
 //    static PrefEntry insertNewItemsInStartOfCategory = new PrefEntry("insertNewItemsInStartOfCategory", true, "Always insert new tasks at the beginning of lists (instead of at the end)");
@@ -332,7 +340,7 @@ public class MyPrefs {
     static PrefEntry localeUserSelected = new PrefEntry("Language for text", "localeUserSelected", "en", "Determines the language used. Use this setting to override the default language used on your device");
 
     static PrefEntry dateTimePickerMinuteStep = new PrefEntry("Picker minute steps", "pickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
-    static PrefEntry durationPickerMinuteStep = new PrefEntry("Duration picker minute steps", "pickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
+    static PrefEntry durationPickerMinuteStep = new PrefEntry("Duration picker minute steps", "pickerMinuteStep", 1, "Minutes in pickers, chose 1, 5, 10, 15");
 
 //LOGIN
     static PrefEntry loginStoreEmail = new PrefEntry("Show email on login", "loginStoreEmail", true, "**");

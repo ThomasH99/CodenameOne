@@ -426,7 +426,8 @@ class KeepInSameScreenPosition {
 //            }
 //</editor-fold>
                 Component scrollCont = findScrollableContainerN();
-                if (scrollCont != null) {
+//                if (scrollCont != null) {
+                if (scrollCont != null&& scrollCont instanceof ContainerScrollY) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    scrollCont.setScrollY(scrollY - relScroll);
 //                    if (scrollCont instanceof ContainerScrollY) {

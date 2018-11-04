@@ -373,7 +373,7 @@ public class DAO {
                 if (Config.TEST) {
                     int i2 = i;
                     int size2 = size;
-                    ASSERT.that((list.get(i) != null), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == null");
+                    ASSERT.that((list.get(i) != null), () -> "entry nb=" + i2 + " in list  with size=" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == null");
                     ASSERT.that((list.get(i) != JSONObject.NULL), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
                 }
 //                ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " == JSONObject.NULL");
@@ -2045,7 +2045,10 @@ public class DAO {
         });
     }
 
-    UITimer saveTimer; // = new UITimer(r);
+    private UITimer saveTimer; // = new UITimer(r);
+    public void saveInBackgroundOnTimeout(ParseObject anyParseObject) { //TODO!!!! Implemented timed save (delay save by eg 200ms to catch all updates before sending saves on their way
+        saveInBackground(anyParseObject);
+    }
 
     /**
      * saves the list of ParseObjects in the background but in sequential order
@@ -3414,7 +3417,7 @@ public class DAO {
 
     private boolean hasTemplateParent(Item item) {
         ItemAndListCommonInterface owner = item.getOwner();
-        return (owner instanceof Item && ((Item) owner).isTemplate() || hasTemplateParent((Item) owner));
+        return (owner instanceof Item && (((Item) owner).isTemplate() || hasTemplateParent((Item) owner)));
     }
 
 //    private void cleanUpBadObjectReferences(List<ParseObject> list) {

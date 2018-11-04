@@ -133,7 +133,7 @@ public class ScreenRepeatRule extends MyForm {
     }
 
     public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleParseObject repeatRuleEdited, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm, UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate) {
-        this(title, repeatRule, null, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, defaultStartDate, false);
+        this(title, repeatRule, repeatRuleEdited, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, defaultStartDate, false);
     }
 
     public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule,
@@ -197,7 +197,7 @@ public class ScreenRepeatRule extends MyForm {
             public void actionPerformed(ActionEvent evt) {
                 RepeatRuleParseObject tempMyRepeatRule = new RepeatRuleParseObject();
                 if (restoreEditedFieldsToRepeatRule(tempMyRepeatRule)) { //TODO optimization: inefficient to restore twice just to test the rule
-                    restoreEditedFieldsToRepeatRule(myRepeatRule);
+                    restoreEditedFieldsToRepeatRule(myRepeatRuleEdited);
                     DAO.getInstance().save((ParseObject) repeatRuleOwner); //if a new Item, must save before creating repeatInstances in putEditedValues2:
                     putEditedValues2(parseIdMap2);
                     updateActionOnDone.update();
@@ -217,37 +217,44 @@ public class ScreenRepeatRule extends MyForm {
         }
 
         //DELETE
-        toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {
-            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(repeatRuleOwner); //delete rule and all other instances than this one (currently edited)
-            myRepeatRule = null;
-            showPreviousScreenOrDefault(previousForm, false);
-        });
+        //TODO!! not needed, two options to delete: swipeClear or set RR to 'None'
+        if (false) {
+            if (myRepeatRule != null) {
+                toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {
+                    myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(repeatRuleOwner); //delete rule and all other instances than this one (currently edited)
+                    myRepeatRule = null;
+                    showPreviousScreenOrDefault(previousForm, false);
+                });
+            }
+        }
 
         //SHOW TASKS
         Container tasks = new Container();
-        if (isForWorkSlot) {
-            toolbar.addCommandToOverflowMenu("Show workslots", null, (e) -> {
-                //TODO!!! as popup dialog, show [3 completed >] task1 task2 task3
-                for (Object slot : myRepeatRule.getListOfUndoneRepeatInstances()) {
-                    if (slot instanceof WorkSlot) {
-                        tasks.add(((WorkSlot) slot).getText());
+        if (myRepeatRule != null) {
+            if (isForWorkSlot) {
+                toolbar.addCommandToOverflowMenu("Show workslots", null, (e) -> {
+                    //TODO!!! as popup dialog, show [3 completed >] task1 task2 task3
+                    for (Object slot : myRepeatRule.getListOfUndoneRepeatInstances()) {
+                        if (slot instanceof WorkSlot) {
+                            tasks.add(((WorkSlot) slot).getText());
+                        }
                     }
-                }
 //                Command exit = Command.create("Exit", null, (evt) -> {  });
 //                Command exit = Command.create("Exit", null, (evt) -> {  });
-                Dialog.show("WorkSlots", tasks, new Command("Exit"), new Command("Past " + myRepeatRule.getTotalNumberOfInstancesGeneratedSoFar() + " WorkSlots"));
-                Dialog.show("WorkSlots", "", "OK", "Exit");
-            });
-        } else {
-            toolbar.addCommandToOverflowMenu("Show tasks", null, (e) -> {
-                //TODO!!! as popup dialog, show [3 completed >] task1 task2 task3
-                for (Object item : myRepeatRule.getListOfUndoneRepeatInstances()) {
-                    if (item instanceof Item) {
-                        tasks.add(((Item) item).getText());
+                    Dialog.show("WorkSlots", tasks, new Command("Exit"), new Command("Past " + myRepeatRule.getTotalNumberOfInstancesGeneratedSoFar() + " WorkSlots"));
+                    Dialog.show("WorkSlots", "", "OK", "Exit");
+                });
+            } else {
+                toolbar.addCommandToOverflowMenu("Show tasks", null, (e) -> {
+                    //TODO!!! as popup dialog, show [3 completed >] task1 task2 task3
+                    for (Object item : myRepeatRule.getListOfUndoneRepeatInstances()) {
+                        if (item instanceof Item) {
+                            tasks.add(((Item) item).getText());
+                        }
                     }
-                }
-                Dialog.show("Tasks", tasks, new Command("Exit"), new Command("Past tasks"));
-            });
+                    Dialog.show("Tasks", tasks, new Command("Exit"), new Command("Past tasks"));
+                });
+            }
         }
 
         //SIMULATE DATES
@@ -295,7 +302,7 @@ public class ScreenRepeatRule extends MyForm {
         setScrollableY(true);
         motherContainer = getContentPane();
 
-        if (myRepeatRule.getListOfUndoneRepeatInstances().size() > 0) {
+        if (myRepeatRule!=null && myRepeatRule.getListOfUndoneRepeatInstances().size() > 0) {
 //                        SpanLabel itemHierarchyContainer = new SpanLabel(hierarchyStr);
             repeatRuleDetailsContainer = new Container();
             Container repeatRuleHideableDetailsContainer = new Container();
@@ -572,7 +579,7 @@ public class ScreenRepeatRule extends MyForm {
 //        showNumberFutureRepeats = new ComboBoxOffset(new ListModelInfinite(1, Settings.getInstance().getMaxFutureRepeatInstances(), "", "", 1, false, false));
 //        showNumberFutureRepeats.setSelectedValue(myRepeatRule.useNumberFutureRepeatsToGenerateAhead() ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() : 1); //use 1 as defaiæt vaæie (if NumberFutureRepeatsGeneratedAhead is not defined)
         showNumberFutureRepeats = new MyIntPicker(myRepeatRuleEdited.useNumberFutureRepeatsToGenerateAhead()
-                ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() + 1 : 1, 1, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead.getInt()); //+1: adjust rel. to UI which now says "simultaneous instances"
+                ? myRepeatRuleEdited.getNumberFutureRepeatsToGenerateAhead() + 1 : 1, 1, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead.getInt()); //+1: adjust rel. to UI which now says "simultaneous instances"
 
 //        showNumberDaysAhead = new ComboBoxOffset(new ListModelInfinite(1, Settings.getInstance().getMaxFutureRepeatInstances(), "", "", 1, false, false));
 //        showNumberDaysAhead.setSelectedValue(myRepeatRule.useNumberFutureRepeatsToGenerateAhead() ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() : 1); //use 1 as defaiæt vaæie (if NumberFutureRepeatsGeneratedAhead is not defined)
