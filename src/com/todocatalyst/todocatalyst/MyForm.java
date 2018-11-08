@@ -360,10 +360,10 @@ public class MyForm extends Form {
 
     protected void setTitleAnimation(Container scrollableComponent) {
         //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One:
-            ComponentAnimation title2 = getToolbar().getTitleComponent().createStyleAnimation("TitleSmall", 200);
-            getAnimationManager().onTitleScrollAnimation(scrollableComponent,title2);
+        ComponentAnimation title2 = getToolbar().getTitleComponent().createStyleAnimation("TitleSmall", 200);
+        getAnimationManager().onTitleScrollAnimation(scrollableComponent, title2);
     }
-    
+
     protected void setKeepPos(KeepInSameScreenPosition keepPos) {
         this.keepPos = keepPos;
     }
@@ -1204,6 +1204,7 @@ public class MyForm extends Form {
 ////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
 //                parseIdMap.get(parseId).saveEditedValueInParseObject();
 //            }
+        Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
         ASSERT.that(parseIdMap2 != null);
         if (parseIdMap2 != null) {
             UpdateField repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
@@ -3012,7 +3013,7 @@ public class MyForm extends Form {
         }
     }
 
-    ActionListener pointerReleasedListener;
+    ActionListener pointerReleasedListener = null;
 //    = (e) -> {
 //        Log.p("pointerReleased called!!!!");
 //        if (pinchInsertEnabled && pinchInsertInitiated) {
@@ -3165,7 +3166,9 @@ public class MyForm extends Form {
 ////                        MyForm.this.revalidate(); //necessary after using replace()??
 //                    }
 //                }
-                pinchInsertFinished();
+                if (false) {
+                    pinchInsertFinished();
+                }
                 //reset all values
 //                pinchContainer = null; //indicates done with this container //DOESN'T work since a pinch may be followed by another pinch w/o any drag or swipe!
 //                pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
@@ -3173,16 +3176,18 @@ public class MyForm extends Form {
 //                pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
                 super.pointerDragged(x, y);
             } else { // (x.length > 1) => PINCH ONGOING
+                ASSERT.that(pinchInsertInitiated || pointerReleasedListener == null, "pointerReleasedListener NOT null as it should be");
                 pinchInsertInitiated = true;
-                ASSERT.that(pointerReleasedListener == null, "pointerReleasedListener NOT null as it should be");
-                pointerReleasedListener = (e) -> {
-                    Log.p("pointerReleased called!!!!");
-                    if (pinchInsertEnabled && pinchInsertInitiated) {
+                if (pointerReleasedListener == null) {
+                    pointerReleasedListener = (e) -> {
+                        Log.p("pointerReleased called!!!!");
+                        if (pinchInsertEnabled && pinchInsertInitiated) {
 //            if (pinchContainer != null) {
-                        pinchInsertFinished();
+                            pinchInsertFinished();
 //            }
-                    } //else { //don't call super.pointerR if finishing pinch since it may launch other events
-                };
+                        } //else { //don't call super.pointerR if finishing pinch since it may launch other events
+                    };
+                }
                 //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
                 //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
                 int yMin = Math.min(y[1], y[0]); //y[1] <= y[0] ? y[1] : y[0];

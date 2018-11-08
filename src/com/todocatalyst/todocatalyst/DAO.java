@@ -215,7 +215,7 @@ public class DAO {
         }
         return item;
     }
-    
+
     public WorkSlot fetchWorkSlot(String objectId) {
         WorkSlot workSlot;
         if (objectId == null || objectId.length() == 0) {
@@ -241,7 +241,7 @@ public class DAO {
     Used in ScreenItem. 
     @param objectId
     @return 
-    */
+     */
     public ItemAndListCommonInterface fetchItemOwner(String objectId) {
         ItemAndListCommonInterface elt = null;
         if (objectId == null || objectId.length() == 0) {
@@ -254,7 +254,7 @@ public class DAO {
         try {
             elt = ParseObject.fetch(Item.CLASS_NAME, objectId);
             if (elt instanceof ItemAndListCommonInterface) {
-                cachePut((ParseObject)elt);
+                cachePut((ParseObject) elt);
                 return elt;
             }
         } catch (ParseException ex) {
@@ -263,7 +263,7 @@ public class DAO {
         try {
             elt = ParseObject.fetch(ItemList.CLASS_NAME, objectId);
             if (elt instanceof ItemAndListCommonInterface) {
-                cachePut((ParseObject)elt);
+                cachePut((ParseObject) elt);
                 return elt;
             }
         } catch (ParseException ex) {
@@ -368,13 +368,17 @@ public class DAO {
         assert (list != null) : "updating null list from cache";
         for (int i = 0, size = list.size(); i < size; i++) {
 //            Object cachedObject;
-            if (list.get(i) == null || list.get(i) == JSONObject.NULL) {
+            Object val = list.get(i);
+            if (val == null || val == JSONObject.NULL) {
 //                ASSERT.that((list.get(i) != null) , "entry nb=" + i + " in list  with size" + size+", name="+(list instanceof ItemList ? ((ItemList) list).getText() : "") + " == null");
                 if (Config.TEST) {
                     int i2 = i;
                     int size2 = size;
-                    ASSERT.that((list.get(i) != null), () -> "entry nb=" + i2 + " in list  with size=" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == null");
-                    ASSERT.that((list.get(i) != JSONObject.NULL), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
+                    ASSERT.that((val != null), () -> "entry nb=" + i2 + " is null! In list  with size=" + size2 + ", name=" 
+                            + (list instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) list).getText() : "<none>") + ", parseId=" 
+                            + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "<none>") 
+                    + ", toString="+list.toString());
+                    ASSERT.that((val != JSONObject.NULL), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
                 }
 //                ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " == JSONObject.NULL");
                 list.remove(i); //UI: clean up elements that don't exist anymore
@@ -687,7 +691,7 @@ public class DAO {
         return query;
     }
 
-    public List<ItemAndListCommonInterface> getDueAndOrWaitingTodayItems(boolean includeWaiting, boolean includeStartingToday) {
+    public List<ItemAndListCommonInterface> getTodayDueAndOrWaitingOrWorkSlotsItems(boolean includeWaiting, boolean includeStartingToday) {
 //        List<Item> results;
         ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
         query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
@@ -717,7 +721,12 @@ public class DAO {
                 for (WorkSlot workSlot : resultsWorkSlots) {
                     results.add(workSlot.getItemsInWorkSlotAsArticialItem()); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
                 }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (Config.INLINE_WORKSHOP_TESTCASE && resultsWorkSlots.isEmpty()) {
+//                    WorkSlot ws = new WorkSlot();
+//                    ws.getTasksInWorkSlotForToday():
+//                }
+//</editor-fold>
             }
             return results;
         } catch (ParseException ex) {
@@ -2046,6 +2055,7 @@ public class DAO {
     }
 
     private UITimer saveTimer; // = new UITimer(r);
+
     public void saveInBackgroundOnTimeout(ParseObject anyParseObject) { //TODO!!!! Implemented timed save (delay save by eg 200ms to catch all updates before sending saves on their way
         saveInBackground(anyParseObject);
     }
@@ -3381,7 +3391,8 @@ public class DAO {
         }
     }
 
-    private boolean cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(RepeatRuleParseObject repeatRule, List<ItemAndListCommonInterface> instanceList) {
+//    private boolean cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(RepeatRuleParseObject repeatRule, List<ItemAndListCommonInterface> instanceList) {
+    private boolean cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(RepeatRuleParseObject repeatRule, List<RepeatRuleObjectInterface> instanceList) {
         int i = 0;
         boolean listUpdated = false;
         while (i < instanceList.size()) {
@@ -3830,7 +3841,9 @@ public class DAO {
             }
 //            if (deleteWorkSlot) {
             if (noOwner && noRepeatRule) {
-                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationAdjusted() / MyDate.MINUTE_IN_MILLISECONDS, logLevel);
+                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" 
+                        + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" 
+                        + workSlot.getDurationAdjusted() / MyDate.MINUTE_IN_MILLISECONDS, logLevel);
 //                try {
                 if (executeCleanup) {
                     delete(workSlot); //delete filters without ref to both objectId and Screen
@@ -3877,7 +3890,8 @@ public class DAO {
             };
 
             //clean up wrong references in list of repeat instances
-            List<ItemAndListCommonInterface> repeatInstanceList = repeatRule.getListOfUndoneRepeatInstances();
+//            List<ItemAndListCommonInterface> repeatInstanceList = repeatRule.getListOfUndoneRepeatInstances();
+            List<RepeatRuleObjectInterface> repeatInstanceList = repeatRule.getListOfUndoneRepeatInstances();
 
             cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(repeatRule, repeatInstanceList);
 

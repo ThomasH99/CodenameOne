@@ -273,7 +273,8 @@ public class RepeatRuleParseObject
      */
 //    public List<ParseObject> getListOfUndoneRepeatInstances() {
 //    public List<ItemAndListCommonInterface> getListOfUndoneRepeatInstances() {
-    public List getListOfUndoneRepeatInstances() {
+//    public List<ItemAndListCommonInterface> getListOfUndoneRepeatInstances() {
+    public List<RepeatRuleObjectInterface> getListOfUndoneRepeatInstances() {
         //TODO!!!! used for WorkSlots? (is externalized as if WorkSlots could be in list)
         List list = getList(PARSE_REPEAT_INSTANCE_ITEMLIST);
         if (list != null) {
@@ -1736,6 +1737,8 @@ public class RepeatRuleParseObject
             DAO.getInstance().save(this);
         } else { //getRepeatType() == REPEAT_TYPE_FROM_DUE_DATE
             //new rule, changed REPEAT_TYPE_FROM_DUE_DATE, or rule was changed from REPEAT_TYPE_FROM_COMPLETED_DATE to REPEAT_TYPE_FROM_DUE_DATE
+//            List<? extends RepeatRuleObjectInterface> oldUndoneRepeatInstanceList = getListOfUndoneRepeatInstances();  //reuse any existing instances
+//            List<ItemAndListCommonInterface> oldUndoneRepeatInstanceList = getListOfUndoneRepeatInstances();  //reuse any existing instances
             List<RepeatRuleObjectInterface> oldUndoneRepeatInstanceList = getListOfUndoneRepeatInstances();  //reuse any existing instances
 
             ArrayList newRepeatInstanceList = new ArrayList(); //hold new created instances
@@ -2228,7 +2231,8 @@ public class RepeatRuleParseObject
 //    public RepeatRuleObjectInterface updateRepeatInstancesOnDoneCancelOrDelete(RepeatRuleObjectInterface repeatInstanceOrg) {
     public void updateRepeatInstancesOnDoneCancelOrDelete(Item item) {
 
-        List<Item> repeatInstanceItemList = getListOfUndoneRepeatInstances();
+//        List<ItemAndListCommonInterface> repeatInstanceItemList = getListOfUndoneRepeatInstances();
+        List<RepeatRuleObjectInterface> repeatInstanceItemList = getListOfUndoneRepeatInstances();
         if (!repeatInstanceItemList.contains(item)) {
             //updateRepeatInstancesOnDoneCancelOrDelete can also be called from Item.delete when the repeatRule is deleting superflous instances when rule is changed
         } else {
@@ -2270,7 +2274,8 @@ public class RepeatRuleParseObject
     }
 
     public void updateRepeatInstancesOnCancelDeleteOrExpired(WorkSlot workSlot) {
-        List<WorkSlot> workSlotInstanceItemList = getListOfUndoneRepeatInstances();
+//        List<WorkSlot> workSlotInstanceItemList = getListOfUndoneRepeatInstances();
+        List<RepeatRuleObjectInterface> workSlotInstanceItemList = getListOfUndoneRepeatInstances();
 //        WorkSlotList workSlotInstanceItemList = new WorkgetListOfUndoneRepeatInstances();
         setLatestDateCompletedOrCancelledIfGreaterThanLast(workSlot.getRepeatStartTime(getRepeatType() == REPEAT_TYPE_FROM_COMPLETED_DATE));
         ASSERT.that(workSlotInstanceItemList.size() == 0 || workSlotInstanceItemList.contains(workSlot), "Error: \"" + workSlot + "\" not in list of already generated repeat instances");
@@ -2295,7 +2300,7 @@ public class RepeatRuleParseObject
 
         //for workSlots, time may have passed since so need to update to ensure all workslots are in the future (or overlaps the future)
         if (workSlotInstanceItemList.size() > 0) {
-            workSlot = workSlotInstanceItemList.get(0);
+            workSlot = (WorkSlot)workSlotInstanceItemList.get(0);
         } else {
             workSlot = null;
         }
@@ -2311,7 +2316,7 @@ public class RepeatRuleParseObject
             setTotalNumberOfInstancesGeneratedSoFar(getTotalNumberOfInstancesGeneratedSoFar() + 1);
 
             if (workSlotInstanceItemList.size() > 0) {
-                workSlot = workSlotInstanceItemList.get(0); //get next workslot
+                workSlot = (WorkSlot)workSlotInstanceItemList.get(0); //get next workslot
 //                nextRepeatTime = getNextDueDate(); //get next date
             } else {
                 workSlot = null;
@@ -2874,21 +2879,29 @@ public class RepeatRuleParseObject
 
 //        Util.writeObject(getListOfUndoneRepeatInstances(), dos);
         //store list of undone instances as: size; type of elements [Item/WorkSlot]; list of objectIds:
-        List instances = getListOfUndoneRepeatInstances();
-        dos.writeInt(instances.size());
+//        List<ItemAndListCommonInterface> instances = getListOfUndoneRepeatInstances();
+        List<RepeatRuleObjectInterface> instances = getListOfUndoneRepeatInstances();
+        int instanceSize = instances.size();
+//        dos.writeInt(instances.size());
+        dos.writeInt(instanceSize);
         if (instances.size() > 0) { //store the type of objects
             if (instances.get(0) instanceof WorkSlot) {
                 dos.writeUTF(WorkSlot.CLASS_NAME);
             } else {
                 dos.writeUTF(Item.CLASS_NAME);
             }
-        }
 //        for (ItemAndListCommonInterface p : getListOfUndoneRepeatInstances()) {
-        for (Object p : getListOfUndoneRepeatInstances()) {
-            if (p instanceof Item) {
-                dos.writeUTF(((Item) p).getObjectIdP());
-            } else {
-                dos.writeUTF(((WorkSlot) p).getObjectIdP());
+//            for (ItemAndListCommonInterface p : getListOfUndoneRepeatInstances()) {
+            for (int i=0; i<instanceSize;i++) {
+            ItemAndListCommonInterface p = (ItemAndListCommonInterface)instances.get(i);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (p instanceof Item) {
+//                    dos.writeUTF(((Item) p).getObjectIdP());
+//                } else {
+//                    dos.writeUTF(((WorkSlot) p).getObjectIdP());
+//                }
+//</editor-fold>
+                dos.writeUTF(p.getObjectIdP());
             }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2973,13 +2986,15 @@ public class RepeatRuleParseObject
         int instancesSize = dis.readInt();
         if (instancesSize > 0) {
             String instanceType = dis.readUTF();
+            boolean isListOfTypeItems = instanceType.equals(Item.CLASS_NAME);
+
             String objectId;
             Item item;
             WorkSlot workSlot;
             List instanceList = new ArrayList();
             for (int i = 0; i < instancesSize; i++) {
                 objectId = dis.readUTF();
-                if (!instanceType.equals(WorkSlot.CLASS_NAME)) { //use !equals since faster than equals
+                if (isListOfTypeItems) { //use !equals since faster than equals
                     item = DAO.getInstance().fetchItem(objectId);
                     instanceList.add(item);
                 } else {

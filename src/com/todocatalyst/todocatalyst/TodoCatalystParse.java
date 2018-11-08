@@ -60,7 +60,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             );
         }
 
-        if (Config.PARSE_OFFLINE) {
+        if (false && Config.PARSE_OFFLINE) {
             Parse.initialize(
                     "http://localhost:1337/parse",
                     "l0Gw4hYdg7hJDPEG11Qzxqh59Yj9F2JXDkDdbdCc",

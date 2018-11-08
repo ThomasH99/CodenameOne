@@ -44,7 +44,6 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //    public long getWorkTimeSum();
 
 //    public Date getRemainingEffortD(); //TODO use getRemainingEffortD everywhere instead of getRemainingEffort
-
     /**
      * returns null if no workslots
      *
@@ -57,7 +56,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     public int getNumberOfUndoneItems(boolean includeSubTasks);
 
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus, boolean changingFromDone);
-    
+
     public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses);
 
 //    public int getNumberOfDoneItems(boolean includeSubTasks);
@@ -512,7 +511,6 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //        return workTime;
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    default public WorkTimeSlices getAvailableWorkTimeOLD() {
 //        WorkTimeSlices workTime = null;
@@ -598,12 +596,11 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @param remainingDuration
      * @return
      */
-    default public WorkTimeSlices allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
-//        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList);
-        WorkTimeAllocator wt = getWorkTimeAllocatorN();
-        return wt != null ? wt.allocateWorkTimeXXX(itemOrList) : null;
-    }
-
+//    default public WorkTimeSlices allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
+////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList);
+//        WorkTimeAllocator wt = getWorkTimeAllocatorN();
+//        return wt != null ? wt.allocateWorkTimeXXX(itemOrList) : null;
+//    }
     /**
      * allocate workTime from this element's WorkTimeDefinition to itemOrList
      * with duration remainingDuration.
@@ -612,7 +609,8 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @param remainingDuration
      * @return
      */
-    default public WorkTimeSlices allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
+//    default public WorkTimeSlices allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
+    default public WorkTimeSlices allocateWorkTime(Item itemOrList, long remainingDuration) {
 //        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList, remainingDuration);
         WorkTimeAllocator wt = getWorkTimeAllocatorN();
         return wt != null ? wt.getAllocatedWorkTime(itemOrList, remainingDuration) : null;
@@ -643,7 +641,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @return finishTime or MyDate.MAX_DATE if no workTime was available/allocated, or if or insufficient workTime to finish the task was allocated
      */
     default public long getFinishTime() {
-        long finishTime=MyDate.MAX_DATE;
+        long finishTime = MyDate.MAX_DATE;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        assert false:"getFinishTime on ItemListCommonInterface should never be called";
 //        return getFinishTime(System.currentTimeMillis());
@@ -660,7 +658,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
             }
             if (workTime.getRemainingDuration() == 0) {
 //                return workTime.getFinishTime();
-                finishTime= workTime.getFinishTime();
+                finishTime = workTime.getFinishTime();
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            else {
@@ -670,10 +668,10 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
 //            return MyDate.MAX_DATE; //cannot allocate enough time
 //</editor-fold>
         }
-        if (false &&Config.WORKTIME_TEST) {
+        if (false && Config.WORKTIME_TEST) {
             long remainingEffort = getRemainingEffort();
-            long allocated=workTime.getAllocatedDuration();
-            assert workTime == null || !(allocated > remainingEffort): "allocated too much time";
+            long allocated = workTime.getAllocatedDuration();
+            assert workTime == null || !(allocated > remainingEffort) : "allocated too much time";
         }
 //        return MyDate.MAX_DATE; // returning MAX, means cannot allocate enough time
         return finishTime; //cannot allocate enough time
@@ -722,7 +720,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
             long remainingEffort = getRemainingEffort();
             long allocatedDuration = wt.getAllocatedDuration();
             if (Config.WORKTIME_TEST) {
-                assert wt == null || !(allocatedDuration > remainingEffort): "allocated too much time";
+                assert wt == null || !(allocatedDuration > remainingEffort) : "allocated too much time";
             }
 //        return wt != null &&  allocatedDuration>= remainingEffort ? finishTime : MyDate.MAX_DATE;
             return allocatedDuration >= remainingEffort ? finishTime : MyDate.MAX_DATE;
@@ -766,6 +764,22 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * @param objectAfter
      */
     public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter);
+
+//    public void forceCalculationOfWorkTime();
+//        @Override
+    default public void forceCalculationOfWorkTime() {
+        List<? extends ItemAndListCommonInterface> subtasks = getList();
+        if (subtasks != null) {
+            int size = subtasks.size();
+            for (int i = size; i < size && i >= 0; i--) {
+                ItemAndListCommonInterface elt = subtasks.get(i);
+                if (!elt.isDone()) { //for the last unDone element
+                    elt.getFinishTime(); //getFinishTime to force calculation of  workTime for all tasks
+                    return;
+                }
+            }
+        }
+    }
 
 //    default public long getWorkTimeRequiredFromOwner() {
 ////        return getRemainingEffort(); //for lists and categories, we use the standard remaining, for Items it's a special impl

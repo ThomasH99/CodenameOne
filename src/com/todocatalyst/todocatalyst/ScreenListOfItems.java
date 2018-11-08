@@ -272,7 +272,7 @@ public class ScreenListOfItems extends MyForm {
 //        MyDragAndDropSwipeableContainer.dragEnabled = false; //always disable before setting up a new screen
 //        this.itemListOrg = itemList;
         this.getItemListFct = itemListFct;
-        this.itemListOrg = itemListFct.getUpdatedItemList();
+        this.itemListOrg = itemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!!
         this.updateActionOnDone = () -> {
             this.itemListOrg = itemListFct.getUpdatedItemList();
             updateItemListOnDone.update(this.itemListOrg);
@@ -302,7 +302,8 @@ public class ScreenListOfItems extends MyForm {
 //        optionUnmodifiableFilter = !filterCanBeModified;
 //</editor-fold>
 //        expandedObjects = new HashSet();
-        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
+//        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
+        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg.getObjectIdP()==null?getTitle():itemListOrg.getObjectIdP());
         this.stickyHeaderGen = stickyHeaderGen;
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());

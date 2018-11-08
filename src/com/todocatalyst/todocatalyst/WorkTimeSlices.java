@@ -45,7 +45,20 @@ public class WorkTimeSlices {
     public List<WorkSlotSlice> getWorkSlotSlices() {
         return workSlotSlicesSortedOnStartTime;
     }
-
+    
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//    returns true if there are any slices of workSlot
+//    @param workSlot
+//    @return
+//    */
+//    public boolean hasSlicesOf(WorkSlot workSlot){
+//        for (WorkSlotSlice wss:workSlotSlicesSortedOnStartTime) {
+//            if (wss.workSlot==workSlot) return true;
+//        }
+//        return false;
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getRemainingDuration() {
 //        return remainingDuration;
@@ -61,10 +74,10 @@ public class WorkTimeSlices {
 //    public void setLastWorkSlotIndex(int lastWorkSlotIndex) {
 //        this.lastWorkSlotIndex = lastWorkSlotIndex;
 //    }
-//</editor-fold>
 //    WorkTimeSlices() {
 //
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    WorkTimeSlices(List workSlots, long startTime, long finishTime, long remainingDuration) {
 //        this(workSlots, startTime, finishTime, remainingDuration, null, -1);
@@ -82,16 +95,19 @@ public class WorkTimeSlices {
 //        this.lastWorkSlotIndex = lastWorkSlotIndex;
 //    }
 //    WorkTimeSlices(List<WorkSlotSlice> workSlotSlicesSortedOnStartTime, long remainingDuration) {
-//</editor-fold>
 //    WorkTimeSlices(WorkSlotSlice workSlice) {
 //        this.workSlotSlicesSortedOnStartTime = new ArrayList<>();
 //        workSlotSlicesSortedOnStartTime.add(new WorkSlotSlice(workSlice));
 //    }
+//</editor-fold>
     WorkTimeSlices(List<WorkSlotSlice> workSlotSlices) {
 //        if (workSlots != null && workSlots.size() > 0) {
 //        if (workSlotSlicesSortedOnStartTime != null && workSlotSlicesSortedOnStartTime.size() > 0) {
         this.workSlotSlicesSortedOnStartTime = workSlotSlices;
         sortWorkSlotSlices();
+        for (WorkSlotSlice workSlotSlice:workSlotSlicesSortedOnStartTime) {
+            workSlotSlice.workSlot.resetItemWithSlice(); //reset previous allocations of this workslot
+        }
 //        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        this.workSlots = workSlots;

@@ -39,8 +39,13 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     @param parseObject may be null in screens which are 'singletons' (exist only once and are not used with different items)
      */
     ExpandedObjects(String screenId, ParseObject parseObject) {
+        this(screenId,(parseObject == null || parseObject.getObjectIdP()==null ||parseObject.getObjectIdP().isEmpty()? "NoParseObject" : parseObject.getObjectIdP()));
+    }
+    ExpandedObjects(String screenId, String uniqueIdForFilename) {
         assert screenId != null;
-        filename = ExpandedObjectsFilePrefix + screenId + "_" + (parseObject == null ? "NoParseObject" : parseObject.getObjectIdP());
+        assert uniqueIdForFilename != null && !uniqueIdForFilename.isEmpty();
+////        filename = ExpandedObjectsFilePrefix + screenId + "_" + (parseObject == null ? "NoParseObject" : parseObject.getObjectIdP());
+        filename = ExpandedObjectsFilePrefix + screenId + "_" + uniqueIdForFilename;
         expandedObjects = new HashSet();
         if (Storage.getInstance().exists(filename)) {
 //            expandedObjects = ((ArrayList<String>) Storage.getInstance().readObject(filename)).;

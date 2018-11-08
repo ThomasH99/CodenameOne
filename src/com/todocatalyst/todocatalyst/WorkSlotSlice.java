@@ -18,6 +18,14 @@ import java.util.Date;
 class WorkSlotSlice {
     
     WorkSlot workSlot;
+
+    public WorkSlot getWorkSlot() {
+        return workSlot;
+    }
+
+    public void setWorkSlot(WorkSlot workSlot) {
+        this.workSlot = workSlot;
+    }
     long startTime;// = Long.MIN_VALUE;
     long endTime;// = Long.MAX_VALUE;
     long missingDuration;// = 0;
@@ -90,7 +98,8 @@ class WorkSlotSlice {
         return getSlice(startTime, duration, null);
     }
     
-    private WorkSlotSlice getSlice(long startTime, long duration, ItemAndListCommonInterface allocatedTo) {
+//    private WorkSlotSlice getSlice(long startTime, long duration, ItemAndListCommonInterface allocatedTo) {
+    private WorkSlotSlice getSlice(long startTime, long duration, Item allocatedTo) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (startTime == MyDate.MIN_DATE) {
 //                startTime = workSlot.getStartAdjusted();
@@ -107,6 +116,7 @@ class WorkSlotSlice {
 //</editor-fold>
         //if either duration==0 or startTime==endTime, an empty slide will be allocated
         this.allocatedToXXX = allocatedTo;
+        workSlot.addItemWithSlice(allocatedTo);
         long actualSliceEndTime = Math.min(startTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
         return new WorkSlotSlice(workSlot, startTime,
                 actualSliceEndTime,

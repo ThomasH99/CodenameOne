@@ -143,9 +143,9 @@ public class ScreenMain extends MyForm {
                     FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE,
                             FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
                     new ScreenListOfItems(SCREEN_TODAY_TITLE,
-                            () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getDueAndOrWaitingTodayItems(true, true), filterSort, true),
+                            () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getTodayDueAndOrWaitingOrWorkSlotsItems(true, true), filterSort, true),
                             ScreenMain.this, (i) -> {
-//                new ScreenListOfItems(SCREEN_TODAY_TITLE, new ItemList(DAO.getInstance().getDueAndOrWaitingTodayItems(false, false), true), ScreenMain.this, (i) -> {
+//                new ScreenListOfItems(SCREEN_TODAY_TITLE, new ItemList(DAO.getInstance().getTodayDueAndOrWaitingOrWorkSlotsItems(false, false), true), ScreenMain.this, (i) -> {
                             },
                             //                        ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
                             //                        new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS, false), //FilterSortDef.FILTER_SHOW_DONE_TASKS
@@ -391,7 +391,7 @@ public class ScreenMain extends MyForm {
 //        next = new ItemList(SCREEN_OVERDUE_TITLE, DAO.getInstance().getOverdue(), filterToday, true);
 //        list.add(next);
 //        launchScreen.put(next, (e) -> {
-//            new ScreenListOfItems(SCREEN_TODAY_TITLE, () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getDueAndOrWaitingTodayItems(true, true), filterToday, true), ScreenMain.this, (i) -> {
+//            new ScreenListOfItems(SCREEN_TODAY_TITLE, () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getTodayDueAndOrWaitingOrWorkSlotsItems(true, true), filterToday, true), ScreenMain.this, (i) -> {
 //            },
 //                    ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
 //                    | ScreenListOfItems.OPTION_NO_WORK_TIME).show();

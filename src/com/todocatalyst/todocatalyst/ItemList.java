@@ -498,13 +498,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public Object set(int index, Object element) {
 //        return setItemAtIndex((E)element, index);
-        return setToList(index,(E)element);
+        return setToList(index, (E) element);
     }
 
     @Override
     public void add(int index, Object element) {
 //        addItemAtIndex((E) element, index);
-        addToList(index,(E) element);
+        addToList(index, (E) element);
     }
 
     @Override
@@ -993,7 +993,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
         addItemAtIndex((E) subItemOrList, index);
-        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, ()->"subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
@@ -1004,7 +1004,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public boolean addToList(ItemAndListCommonInterface positionItem, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
         int index = indexOf(positionItem);
         addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
-        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, ()->"subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
@@ -1029,7 +1029,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return status;
         removeItem(subItemOrList); //TODO: update removeItem to return boolean
 //        assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subItemOrList=" + subItemOrList + ", owner=" + getOwner() + ", list=" + this;
-        ASSERT.that(!(this instanceof ItemList) || subItemOrList.getOwner() == this, ()->"list not owner of removed subItemOrList (" + subItemOrList + "), owner=" + getOwner() + ", list=" + this); //
+        ASSERT.that(!(this instanceof ItemList) || subItemOrList.getOwner() == this, () -> "list not owner of removed subItemOrList (" + subItemOrList + "), owner=" + getOwner() + ", list=" + this); //
         subItemOrList.setOwner(null);
         return true;
     }
@@ -1581,7 +1581,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         DAO.getInstance().save(itemListList);
 
         FilterSortDef filter = getFilterSortDef();
-            DAO.getInstance().delete((ParseObject) filter); //let each item delete itself properly
+        DAO.getInstance().delete((ParseObject) filter); //let each item delete itself properly
 
         //now delete the list itself (now all owned items are deleted)
 //        try {
@@ -1635,7 +1635,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public int getSize() {
 //        return (itemList == null) ? 0 : itemList.size();
-        return (getListFull() == null) ? 0 : getListFull().size();
+List l = getListFull();
+        return ( l== null) ? 0 : l.size();
     }
 
     /**
@@ -1748,15 +1749,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     public boolean setToList(int index, ItemAndListCommonInterface subItemOrList) {
         setItemAtIndex((E) subItemOrList, index);
-        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, ()->"subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
         return true;
     }
 
-
-    
     /**
      * inserts item at special position. Used to insert at head/tail of list, or
      * before/after a referenceItem when adding new items to list. If called
@@ -1772,10 +1771,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public void addItemAtSpecialPosition(E item, E referencePositionItem, int position) {
 //        int index;
 //#mdebug
-        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || referencePositionItem != null, 
-                ()->"addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem==null, list=" + this);
-        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || getItemIndex(referencePositionItem) != -1, 
-                ()->"addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem=" + referencePositionItem + " not in list=" + this);
+        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || referencePositionItem != null,
+                () -> "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem==null, list=" + this);
+        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || getItemIndex(referencePositionItem) != -1,
+                () -> "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem=" + referencePositionItem + " not in list=" + this);
 //        ASSERT.that((position != INSERT_BEFORE_REFERENCE_ITEM && position != INSERT_AFTER_REFERENCE_ITEM) || (referenceIndex>=0 && referenceIndex<getSize()), "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referenceIndex="+referenceIndex+" outside bounds of list="+this);
 //#enddebug
         if (position == Settings.INSERT_AT_HEAD_OF_LIST) {
@@ -2122,12 +2121,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
         int nbCountChangeStatus = 0;
         for (Object elt : list) {
-            if (elt instanceof ItemAndListCommonInterface) { 
+            if (elt instanceof ItemAndListCommonInterface) {
                 nbCountChangeStatus += ((ItemAndListCommonInterface) elt).getCountOfSubtasksWithStatus(recurse, statuses);
             }
         }
         return nbCountChangeStatus;
     }
+
     public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses) {
         return getCountOfSubtasksWithStatus(getListFull(), recurse, statuses);
     }
@@ -2148,7 +2148,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return nbCountChangeStatus;
 //    }
-
     @Override
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         return getNumberOfItemsThatWillChangeStatus(getListFull(), recurse, newStatus, changingFromDone);
@@ -2935,7 +2934,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
 //    @Override
     public void clear() {
-        throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        removeAllItems();
     }
 
     @Override
@@ -2984,7 +2984,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
         if (getObjectIdP() != null && itemList.getObjectIdP() != null) {
             //compare isDirty in case we have two instances of the same 
-            ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(), ()->"comparing dirty and not dirty instance of same object=" + this);
+            ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(), () -> "comparing dirty and not dirty instance of same object=" + this);
             if (getObjectIdP().equals(itemList.getObjectIdP())) {
                 return true;
             }
@@ -3073,7 +3073,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    public Date getRemainingEffortD() {
 //        return new Date(getRemainingEffort());
 //    }
-
     @Override
     public long getRemainingEffort() {
         long sum = 0;
@@ -3220,7 +3219,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
     public boolean hasSaveableData() {
 //        return getText().length() > 0 || getComment().length() > 0; //UI: 
-        return getText().length() > 0 ; //UI: lists must have names! TODO: if comment is defined, but not name, use part of comment as default name?
+        return getText().length() > 0; //UI: lists must have names! TODO: if comment is defined, but not name, use part of comment as default name?
     }
 
     /**
@@ -3324,9 +3323,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public void resetWorkTimeDefinition() {
         workTimeAllocator = null;
-        for (Object item:getList()){
-            if (item instanceof ItemAndListCommonInterface){
-                ((ItemAndListCommonInterface)item).resetWorkTimeDefinition();
+        for (Object item : getList()) { //reset for subtasks (recursively)
+            if (item instanceof ItemAndListCommonInterface) {
+                ((ItemAndListCommonInterface) item).resetWorkTimeDefinition();
             }
         }
     }
