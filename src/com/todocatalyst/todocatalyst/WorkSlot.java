@@ -80,7 +80,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     final static String PARSE_END_TIME = "endTime"; //always set automatically, based on changes to startTime or duration
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
-    private List<Item> itemsWithSlidesOfThisWorkSlot = new ArrayList(); //unsorted /for now
+//    private List<Item> itemsWithSlicesOfThisWorkSlot = new ArrayList(); //unsorted /for now
+    private List itemsWithSlicesOfThisWorkSlot = new ArrayList(); //unsorted /for now
 
     public WorkSlot() {
         super(CLASS_NAME);
@@ -1463,11 +1464,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @param item 
      */
     public void addItemWithSlice(Item item) {
-        itemsWithSlidesOfThisWorkSlot.add(item);
+        itemsWithSlicesOfThisWorkSlot.add(item);
     }
 
     public void resetItemWithSlice() {
-        itemsWithSlidesOfThisWorkSlot = new ArrayList();
+        itemsWithSlicesOfThisWorkSlot = new ArrayList();
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -1517,11 +1518,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////</editor-fold>
     public Item getItemsInWorkSlotAsArticialItem() {
 //        List<? extends ItemAndListCommonInterface> subtasks = getTasksInWorkSlotForToday();
-         ItemAndListCommonInterface owner = getOwner();
-         owner.forceCalculationOfWorkTime();
+        ItemAndListCommonInterface owner = getOwner();
+        owner.forceCalculationOfWorkTime();
         Item artificialItem = new Item();
 //        artificialItem.setList(getTasksInWorkSlotForToday());
-        artificialItem.setList(new ArrayList(itemsWithSlidesOfThisWorkSlot)); //work on a copy!
+        artificialItem.setList(new ArrayList(itemsWithSlicesOfThisWorkSlot)); //work on a copy!
         artificialItem.setText(
                 WorkSlot.WORKSLOT
                 + " " + MyDate.formatTimeNew(getStartTimeD()) + "-" + MyDate.formatTimeNew(getEndTimeD())
@@ -1533,7 +1534,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////<editor-fold defaultstate="collapsed" desc="comment">
     @Override
     public boolean isDone() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ItemList.getNumberOfUndoneItems(getList(), true) == 0; //workSlot is considered 'done' if no undone tasks have slices from it
     }
 
     @Override
@@ -1583,7 +1584,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public int getNumberOfSubtasks(boolean onlyUndone, boolean countLeafTasks) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ItemList.getNumberOfItems(getList(), onlyUndone, countLeafTasks);
     }
 
     @Override
@@ -1658,7 +1659,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public List<ItemAndListCommonInterface> getList() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return (List<ItemAndListCommonInterface>) itemsWithSlicesOfThisWorkSlot;
     }
 
     @Override

@@ -2111,7 +2111,7 @@ public class ScreenItem extends MyForm {
         return cont;
     }
 
-    @Override
+//    @Override
     public void saveEditedValuesLocallyOnAppExitXXX() {
 //        if (item.getObjectIdP() == null) { //new item, save everything locally and restore next time
 ////            Storage.getInstance().writeObject(SCREEN_TITLE + "- EDITED ITEM", item); //save date
@@ -2126,7 +2126,7 @@ public class ScreenItem extends MyForm {
         localSave = false;
     }
 
-    @Override
+//    @Override
     public boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
 //        Item itemLS = null;
         boolean savedValues;
@@ -2145,7 +2145,7 @@ public class ScreenItem extends MyForm {
         return savedValues;
     }
 
-    @Override
+//    @Override
     public void deleteEditedValuesSavedLocallyOnAppExit() {
         Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEMXXX); //delete in case one was 
     }

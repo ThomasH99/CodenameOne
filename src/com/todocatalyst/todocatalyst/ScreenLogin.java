@@ -302,7 +302,8 @@ public class ScreenLogin extends MyForm {
 //            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
 
-        connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
+//        connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
+        connect.setCommand(Command.create("Log in", Icons.iconPerson, (ev) -> { //Start/login**
             String errorMsg;
             if ((errorMsg = loginUser(email.getText(), null, password.getText())) == null) {
                 if (MyPrefs.loginEmail.getString().length() == 0) {
@@ -1015,11 +1016,12 @@ public class ScreenLogin extends MyForm {
             switch (errCode) {
                 //http://parseplatform.org/Parse-SDK-dotNET/api/html/T_Parse_ParseException_ErrorCode.htm
                 case ParseException.OBJECT_NOT_FOUND: //<=> login failed == ObjectNotFound	101	Error code indicating the specified object doesn't exist.
-                    errorMsg = "Your email or password are not correct. Please check and try again (or reset your password if you forgot it)";
+//                    errorMsg = "Your email or password are not correct. Please check and try again (or reset your password if you forgot it)";
+                    errorMsg = "Your email or password are not correct or do not correspond to an existing account. \nTry again. \n\nYou can reset your password if you forgot it.";
                     break;
                 case ParseException.EMAIL_TAKEN:
                     //            Dialog.show("ERROR", "Your email already exists (or other error)", "Try again", null);
-                    errorMsg = "An account already exists for this email";
+                    errorMsg = "An account already exists for this email. If it is yours, please log in. ";
                     break;
 //                case ParseException.ACCOUNT_ALREADY_LINKED:
                 //Error code indicating that an an account being linked is already linked to another user.

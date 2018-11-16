@@ -147,6 +147,9 @@ ItemDetails { /*style for task details - SOUTH */
     margin:0mm;
     padding:0; /*top+bottom right+left*/
 }
+WorkSlotDetails { /*style for task details - SOUTH */
+    cn1-derive: ItemDetails;
+}
 
 ItemDetailsLabel { /*style for task details labels */
     cn1-derive: ItemListSmall;
@@ -275,6 +278,7 @@ ContainerListElement {
     /*border: 1px solid gray; /*cn1-pill-border */
     /*border-radius: 0mm;*/
 }
+
 ItemContainer {
     /*wraps item in ScreenListOfItems*/
     /*cn1-derive: Label;*/
@@ -284,6 +288,10 @@ ItemContainer {
     /*background-color: transparent;
     /*border: 1px solid gray; /*cn1-pill-border */
     /*border-radius: 0mm;*/
+}
+
+WorkSlotContainer {
+    cn1-derive: ItemContainer;
 }
 
 

@@ -89,6 +89,7 @@ public class ScreenListOfItems extends MyForm {
     //DONE refresh each item container after editing the item
     //DONE don't refresh the entire list after editing one item, make sure the list stays in same place, and only the edited item's container is updated
     final static String SCREEN_ID = "ScreenListOfItems";
+    final static String DISPLAYED_ELEMENT = "element";
 //    final static String INSERT_NEW_TASK_AS_SUBTASK_KEY = "SubtaskLevel";
 //    final static String EXISTING_NEW_TASK_CONTAINER = "NewTaskContainer"; //stores the current newSubtask container to allow to automatically close one if a new one is created elsewhere
 //    private static String screenTitle = "Tasks";
@@ -303,7 +304,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
-        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg.getObjectIdP()==null?getTitle():itemListOrg.getObjectIdP());
+        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP());
         this.stickyHeaderGen = stickyHeaderGen;
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
@@ -916,7 +917,7 @@ public class ScreenListOfItems extends MyForm {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
             }
             ));
         }
@@ -1299,7 +1300,7 @@ public class ScreenListOfItems extends MyForm {
 ////            if (topContainer.getClientProperty(MyTree2.KEY_TOP_NODE) != null) {
 ////                topContainer = (Container) topContainer.getClientProperty(MyTree2.KEY_TOP_NODE);
 ////            };
-//                        putClientProperty("LongPress", Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
+//                        putClientProperty(KEY_LONG_PRESS, Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
 //                        Log.p("longPointerPress");
 //                        Object e = swipCont.getClientProperty(MyTree2.KEY_EXPANDED);
 //                        MyTree2 myTree = MyTree2.getMyTreeTopLevelContainer(swipCont);
@@ -1489,7 +1490,7 @@ public class ScreenListOfItems extends MyForm {
 //            if (topContainer.getClientProperty(MyTree2.KEY_TOP_NODE) != null) {
 //                topContainer = (Container) topContainer.getClientProperty(MyTree2.KEY_TOP_NODE);
 //            };
-                putClientProperty("LongPress", Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
+                putClientProperty(MyTree2.KEY_LONG_PRESS, Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
                 Log.p("longPointerPress");
                 Object e = swipCont.getClientProperty(MyTree2.KEY_EXPANDED);
                 MyTree2 myTree = MyTree2.getMyTreeTopLevelContainer(swipCont);
@@ -1503,6 +1504,7 @@ public class ScreenListOfItems extends MyForm {
             }
 //        } : new Button();
         } : null;
+
 //            subTasksButton.setUIID("Label");
         if (expandSubTasksButton != null) {
             expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
@@ -1525,7 +1527,7 @@ public class ScreenListOfItems extends MyForm {
 //            showSubtasksXXX = makeSubtaskButton(item, () -> {
 //                if (swipCont != null) {
 //                    //if event comes from eg a button inside the original node, get the original node
-////                    this.putClientProperty("LongPress", Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
+////                    this.putClientProperty(MyTree2.KEY_LONG_PRESS, Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
 //                    Log.p("longPointerPress");
 //                    Object e = swipCont.getClientProperty(MyTree2.KEY_EXPANDED);
 //                    MyTree2 myTree = MyTree2.getMyTreeTopLevelContainer(swipCont);
@@ -1858,7 +1860,7 @@ public class ScreenListOfItems extends MyForm {
         editItemButton.setCommand(editItemCmd);
 
 //        mainCont.putClientProperty("item", item);
-        swipCont.putClientProperty("element", item);
+//        swipCont.putClientProperty(DISPLAYED_ELEMENT, item);
 //        editItemButton.setUIID("IconEdit");
         editItemButton.setUIID("ListOfItemsEditItemIcon");
         editItemButton.setName("EditTask");
@@ -2329,7 +2331,7 @@ refreshAfterEdit();
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                ScreenTimer.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
+                ScreenTimer2.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
 //                        }
             }));
             startTimer.setUIID("SwipeButtonTimer");
@@ -2474,6 +2476,133 @@ refreshAfterEdit();
 //        }
 //</editor-fold>
 //        swipCont.putClientProperty(SOURCE_OBJECT, item); //store source item for use in Search in screens
+        return swipCont;//ignore Swipeable for the moment
+    }
+
+    public static Container buildWorkSlotContainer(final MyForm myForm, WorkSlot workSlot, ItemAndListCommonInterface ownerItemOrItemList) //<editor-fold defaultstate="collapsed" desc="comment">
+    //            MyForm.GetBoolean isDragAndDropEnabled, MyForm.Action refreshOnItemEdits,
+    //            boolean selectionModeAllowed, ArrayList<Item> selectedObjects,
+    //            KeepInSameScreenPosition keepPos, HashSet expandedObjects, MyForm.Action animator, boolean projectEditMode, boolean singleSelectionMode
+    //</editor-fold>
+    {
+        Container mainCont = new Container(new BorderLayout());
+        mainCont.setUIID("WorkSlotContainer");
+//        SwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(swipeActionContainer, buttonSwipeContainer, mainCont) ;
+        Container swipCont = new Container() ;
+        if (myForm.keepPos != null) {
+            myForm.keepPos.testItemToKeepInSameScreenPosition(workSlot, swipCont);
+        }
+
+        Container west = new Container(BoxLayout.x());
+
+        Container southDetailsContainer = new Container(new FlowLayout());
+        southDetailsContainer.setUIID("WorkSlotDetails");
+        if (Config.TEST) {
+            southDetailsContainer.setName("WorkSlotDetails");
+        }
+
+        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks)
+                || (myForm.showDetails != null && myForm.showDetails.contains(workSlot)); //hide details by default
+        southDetailsContainer.setHidden(!showDetails); //hide details by default
+
+        //EXPAND subtasks in Item
+        Button expandSubTasksButton;
+        int numberUndoneSubtasks = workSlot.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
+        int totalNumberSubtasks = workSlot.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
+        expandSubTasksButton = numberUndoneSubtasks > 0 || totalNumberSubtasks > 0 ? new Button() {
+            @Override
+            public void longPointerPress(int x, int y) {
+                super.longPointerPress(x, y);
+                //if event comes from eg a button inside the original node, get the original node
+                putClientProperty(MyTree2.KEY_LONG_PRESS, Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
+                Log.p("longPointerPress");
+                Object e = swipCont.getClientProperty(MyTree2.KEY_EXPANDED);
+                MyTree2 myTree = MyTree2.getMyTreeTopLevelContainer(swipCont);
+                if (e != null && e.equals("true")) {
+                    myTree.collapseNode(swipCont, true);
+                } else {
+                    myTree.expandNode(false, swipCont, true);
+                }
+            }
+        } : null;
+
+        if (expandSubTasksButton != null) {
+            expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
+            expandSubTasksButton.setText(numberUndoneSubtasks + "/" + totalNumberSubtasks);
+            swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandSubTasksButton);
+        }
+
+        //ITEM TEXT
+        WorkSlotList wSlots = workSlot.getWorkSlotListN(false);
+        final Image workSLotIcon = FontImage.createMaterial(FontImage.MATERIAL_BUILD, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
+
+        Button itemLabel = new Button(
+                WorkSlot.WORKSLOT + " " + MyDate.formatTimeNew(workSlot.getStartTimeD()) + "-" + MyDate.formatTimeNew(workSlot.getEndTimeD())
+                + (workSlot.getOwner() != null ? " in " + workSlot.getOwner().getText() : ""), workSLotIcon);
+        itemLabel.setUIID(workSlot.isDone() ? "ListOfItemsTextDone" : "ListOfItemsText");
+
+        itemLabel.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                southDetailsContainer.setHidden(!southDetailsContainer.isHidden()); //toggle hidden details
+                if (myForm.showDetails != null) {
+                    if (southDetailsContainer.isHidden()) {
+                        myForm.showDetails.remove(workSlot);
+                    } else {
+                        myForm.showDetails.add(workSlot);
+                    }
+                }
+                myForm.animateMyForm();
+            }
+        });
+
+        //EAST
+        FlowLayout eastLayout = new FlowLayout();
+        eastLayout.setAlign(Component.RIGHT);
+        eastLayout.setValign(Component.CENTER);
+        eastLayout.setValignByRow(false);
+        Container east = new Container(eastLayout);
+
+//EDIT Item in list
+        Button editItemButton = new Button() {
+            @Override
+            public void longPointerPress(int x, int y) {
+                super.longPointerPress(x, y);
+                //TODO activate drag&drop/move mode
+                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
+            }
+        };
+
+        final Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
+
+        Command editItemCmd = MyReplayCommand.create("EditWorkSlot-" + workSlot.getObjectIdP(), "", editItemIcon, (e) -> {
+            //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
+            myForm.setKeepPos(new KeepInSameScreenPosition(workSlot, swipCont));
+            new ScreenWorkSlot(workSlot, (MyForm) swipCont.getComponentForm(), () -> {
+                DAO.getInstance().save(workSlot);
+                myForm.refreshAfterEdit();
+            }).show();
+        }
+        );
+        editItemButton.setCommand(editItemCmd);
+
+//        swipCont.putClientProperty(DISPLAYED_ELEMENT, workSlot);
+        editItemButton.setUIID("ListOfItemsEditItemIcon");
+        editItemButton.setName("EditTask");
+
+        //BUILD CONTAINER
+        Container itemContent = new Container(new BorderLayout());
+        Container bottomContent = new Container(new BorderLayout());
+        mainCont
+                .add(CN.EAST, editItemButton)
+                .add(CENTER,
+                        itemContent.add(CENTER, BorderLayout.west(itemLabel)) //item text + expand subtasks
+                                .add(CN.SOUTH,
+                                        bottomContent
+                                                //                                                .add(CN.WEST, BoxLayout.encloseX(prioCont, dateCont, effortCont))
+                                                //                                                .add(CN.EAST, expandSubsCont)
+                                                .add(CN.SOUTH, southDetailsContainer)));
+
         return swipCont;//ignore Swipeable for the moment
     }
 
@@ -2715,7 +2844,7 @@ refreshAfterEdit();
 ////            if (topContainer.getClientProperty(MyTree2.KEY_TOP_NODE) != null) {
 ////                topContainer = (Container) topContainer.getClientProperty(MyTree2.KEY_TOP_NODE);
 ////            };
-//                    putClientProperty("LongPress", Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
+//                    putClientProperty(MyTree2.KEY_LONG_PRESS, Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
 //                    Log.p("longPointerPress");
 //                    Object e = swipCont.getClientProperty(MyTree2.KEY_EXPANDED);
 //                    MyTree2 myTree = MyTree2.getMyTreeTopLevelContainer(swipCont);
@@ -3285,6 +3414,7 @@ refreshAfterEdit();
 //    protected static
 //</editor-fold>
     Container buildContentPaneForItemList(ItemAndListCommonInterface listOfItems //, HashSet expandedObjects, ItemAndListCommonInterface itemListOrg, MyForm myForm, KeepInSameScreenPosition keepPos
+
     ) {
 //        parseIdMapReset();
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -191,6 +191,29 @@ public class DAO {
     }
 
     /**
+    will fetch the latest version of a parseObject on the server and return the latest version if it has a new updatedAt date than the original element, otherwise it will return null
+    @param originalElement
+    @return 
+     */
+//    public ParseObject fetchIfChangedOnServer(String parseObjectClassName, String parseObjectId, ParseObject originalElement) {
+    public ParseObject fetchIfChangedOnServer(ParseObject originalElement) {
+        if (originalElement.getObjectIdP() == null) {
+            return originalElement; //if orgElt was never saved, it cannot be changed on server so just return it
+        }
+        ParseObject fetchedObject = null;
+        try {
+            fetchedObject = ParseObject.fetch(originalElement.getClassName(), originalElement.getObjectIdP());
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        if (fetchedObject != null && fetchedObject.getUpdatedAt().getTime() > originalElement.getUpdatedAt().getTime()) {
+            return fetchedObject;
+        } else {
+            return originalElement;
+        }
+    }
+
+    /**
      * fetches the Item with objectId. Returns null if no such Item.
      *
      * @param objectId
@@ -374,11 +397,13 @@ public class DAO {
                 if (Config.TEST) {
                     int i2 = i;
                     int size2 = size;
-                    ASSERT.that((val != null), () -> "entry nb=" + i2 + " is null! In list  with size=" + size2 + ", name=" 
-                            + (list instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) list).getText() : "<none>") + ", parseId=" 
-                            + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "<none>") 
-                    + ", toString="+list.toString());
-                    ASSERT.that((val != JSONObject.NULL), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name=" + (list instanceof ItemList ? ((ItemList) list).getText() : "") + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
+                    ASSERT.that((val != null), () -> "entry nb=" + i2 + " is null! In list  with size=" + size2 + ", name="
+                            + (list instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) list).getText() : "<none>") + ", parseId="
+                            + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "<none>")
+                            + ", toString=" + list.toString());
+                    ASSERT.that((val != JSONObject.NULL), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name="
+                            + (list instanceof ItemList ? ((ItemList) list).getText() : "")
+                            + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
                 }
 //                ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " == JSONObject.NULL");
                 list.remove(i); //UI: clean up elements that don't exist anymore
@@ -398,7 +423,8 @@ public class DAO {
 //                    list.set(i, cachedObject);
 //                }
 //</editor-fold>
-                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i)));
+//                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i)));
+                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
             }
         }
     }
@@ -480,8 +506,13 @@ public class DAO {
      * @return null if object does not (or no longer) exist on server
      */
     public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObject) {
-        if (parseObject == null || parseObject.getObjectIdP() == null || parseObject.getObjectIdP().equals("")) {
+        if (parseObject == null) {
             return null;
+        }
+        if (parseObject.getObjectIdP() == null || parseObject.getObjectIdP().equals("")) {
+            //this happens for example when getting elements from **
+//            cachePut(parseObject); //NO, can't cache without a objectId [//cache it to avoid duplicates (rellay necessary?)]
+            return parseObject; //for not yet saved parseObjects (pending saving), return the object itself
         }
         ParseObject temp;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -719,7 +750,8 @@ public class DAO {
 //                results.addAll(resultsWorkSlots);
 //add workslots as 'artificial' Items
                 for (WorkSlot workSlot : resultsWorkSlots) {
-                    results.add(workSlot.getItemsInWorkSlotAsArticialItem()); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
+//                    results.add(workSlot.getItemsInWorkSlotAsArticialItem()); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
+                    results.add(workSlot); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
                 }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (Config.INLINE_WORKSHOP_TESTCASE && resultsWorkSlots.isEmpty()) {
@@ -1110,6 +1142,22 @@ public class DAO {
 //        return TemplateList.getInstance();
         cachePut(templateList); //cache list 
         return templateList;
+    }
+
+//    public TimerInstance getTimerInstanceList(boolean forceLoadFromParse) {
+    public List<TimerInstance> getTimerInstanceList() {
+//        if (!forceLoadFromParse && (timerStack = (TimerInstance) cacheGet(TemplateList.CLASS_NAME)) != null) {
+//            return timerStack;
+//        }
+        List<TimerInstance> results = null;
+        ParseQuery<TimerInstance> query = ParseQuery.getQuery(TimerInstance.CLASS_NAME);
+        query.orderByAscending(Item.PARSE_CREATED_AT); //assuming TimerInstances are necessarily created in the order they appear (and interrupt previous tiemrs)
+        try {
+            results = query.find();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return results;
     }
 
     /**
@@ -3841,8 +3889,8 @@ public class DAO {
             }
 //            if (deleteWorkSlot) {
             if (noOwner && noRepeatRule) {
-                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" 
-                        + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" 
+                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime="
+                        + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)="
                         + workSlot.getDurationAdjusted() / MyDate.MINUTE_IN_MILLISECONDS, logLevel);
 //                try {
                 if (executeCleanup) {

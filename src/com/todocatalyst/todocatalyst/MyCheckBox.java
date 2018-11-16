@@ -63,6 +63,9 @@ public class MyCheckBox extends Button {
     public MyCheckBox(ItemStatus itemStatus, ProcessItemStatusChange statusChangeHandler) {//, IsItemOngoing itemOngoing) {
         this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), statusChangeHandler, null, null, null);
     }
+    public MyCheckBox(ItemStatus itemStatus) {//, IsItemOngoing itemOngoing) {
+        this(itemStatus, null);
+    }
 
 //    public MyCheckBox(Item item, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler) {
 //    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, IsItemOngoing itemOngoingXXX) {
@@ -215,6 +218,10 @@ this.itemOngoing=itemOngoing;
     void setIsItemOngoing(IsItemOngoing itemOngoing) {
         this.itemOngoing = itemOngoing;
     }
+    
+    public void setStatusChangeHandler(ProcessItemStatusChange statusChangeHandler) {
+        this.statusChangeHandler=statusChangeHandler;
+    }
 
     /**
      * sets new status value. Does nothing is new itemStatus is the same as old
@@ -223,11 +230,14 @@ this.itemOngoing=itemOngoing;
      * @param itemStatus
      */
     void setStatus(ItemStatus itemStatus) {
+        setStatus(itemStatus, true);
+    }
+    void setStatus(ItemStatus itemStatus, boolean runStatusChangeHandler) {
         //run statusChangeHandler.process *first* before changing status to have access to old status value
         if (itemStatus != this.itemStatus) {
             ItemStatus oldStatus = this.itemStatus;
             this.itemStatus = itemStatus; //update before making call below to avoid infinite loop
-            if (statusChangeHandler != null) {
+            if (runStatusChangeHandler&&statusChangeHandler != null) {
                 statusChangeHandler.processNewStatusValue(oldStatus, itemStatus);
             }
 //            setIcon(ItemStatus.icons[itemStatus.ordinal()]);

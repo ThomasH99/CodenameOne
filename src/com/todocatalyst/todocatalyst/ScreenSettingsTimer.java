@@ -50,6 +50,6 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
         addSettingInt(cont, parseIdMap2, MyPrefs.timerUpdateInterval, 1, 60, 1);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeWaitingTasks);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysExpandListHierarchy);
-        addSettingInt(cont, parseIdMap2, MyPrefs.timerMaxTimerDurationInHours, 0, 12, 1);
+        addSettingInt(cont, parseIdMap2, MyPrefs.timerMaxTimerDurationInHoursXXX, 0, 12, 1);
     }
 }

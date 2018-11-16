@@ -18,6 +18,7 @@ public class StickyHeaderMod extends Container implements ScrollListener {
 
     private boolean needToCheck = false;
     private Component comp = null;
+    private static String KEY_STICKY = "sticky";
 
     public StickyHeaderMod() {
     }
@@ -57,7 +58,7 @@ public class StickyHeaderMod extends Container implements ScrollListener {
                 pushToHeader();
             }
         } else {
-            ArrayList stack = (ArrayList) getParent().getClientProperty("sticky");
+            ArrayList stack = (ArrayList) getParent().getClientProperty(KEY_STICKY);
             if (stack != null && !stack.isEmpty() && stack.get(0) == this && position < 0) {
                 popFromHeader();
             }
@@ -72,7 +73,7 @@ public class StickyHeaderMod extends Container implements ScrollListener {
     }
 
     private void popFromHeader() {
-        ArrayList stack = (ArrayList) getParent().getClientProperty("sticky");
+        ArrayList stack = (ArrayList) getParent().getClientProperty(KEY_STICKY);
         stack.remove(0);
 
         if (!stack.isEmpty()) {
@@ -85,10 +86,11 @@ public class StickyHeaderMod extends Container implements ScrollListener {
     }
 
     private void pushToHeader() {
-        ArrayList stack = (ArrayList) getParent().getClientProperty("sticky");
+        ArrayList stack = (ArrayList) getParent().getClientProperty(KEY_STICKY);
         if (stack == null) {
             stack = new ArrayList();
-            getParent().putClientProperty("sticky", stack);
+//            getParent().putClientProperty("sticky", stack);
+            getParent().putClientProperty(KEY_STICKY, stack);
         }
         if (!stack.isEmpty()) {
             StickyHeaderMod h = (StickyHeaderMod) stack.get(0);

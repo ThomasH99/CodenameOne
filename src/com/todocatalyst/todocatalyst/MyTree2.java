@@ -84,6 +84,7 @@ public class MyTree2 extends ContainerScrollY {
     static final String KEY_TOP_NODE = "TreeContainer";
     static final String KEY_ACTION_ORIGIN = "subTasksButton";
     static final String KEY_LIST_CONTAINER = "listContainer"; //THJ: mark the container which is used as list for insertNewTask container
+    static final String KEY_LONG_PRESS = "LongPress"; //THJ: mark the container which is used as list for insertNewTask container
     static final int DEPTH_INDENT = 15;
     private EventDispatcher leafListener = new EventDispatcher();
 
@@ -907,8 +908,8 @@ public class MyTree2 extends ContainerScrollY {
 
         public void actionPerformed(ActionEvent evt) {
             Component c = (Component) evt.getComponent(); //THJ: fix for type cast error when source is a command
-            if (c.getClientProperty("LongPress") != null) {
-                c.putClientProperty("LongPress", null); //is set in ScreenItemListofItems.subtask
+            if (c.getClientProperty(KEY_LONG_PRESS) != null) {
+                c.putClientProperty(KEY_LONG_PRESS, null); //is set in ScreenItemListofItems.subtask
                 return;
             }
 

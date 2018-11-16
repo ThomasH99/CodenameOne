@@ -60,17 +60,6 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             );
         }
 
-        if (false && Config.PARSE_OFFLINE) {
-            Parse.initialize(
-                    "http://localhost:1337/parse",
-                    "l0Gw4hYdg7hJDPEG11Qzxqh59Yj9F2JXDkDdbdCc",
-                    "not important");
-        } else {
-            Parse.initialize(
-                    "https://parseapi.back4app.com",
-                    "TYR54TdOmVfIGSKIl3aEmpcKMPNrbg7T9zN6QciT",
-                    "SqFUD7hbLleCOPtDm0RYJWsqI3syHN31NuOiCrRv");
-        }
 //        ParseRegistry.registerSubclass(ParseObjectTask.class, ParseObjectTask.CLASS_NAME);
         ParseRegistry.registerSubclass(Item.class, Item.CLASS_NAME);
 //        ParseRegistry.registerParseFactory(ParseObjectTask.CLASS_NAME, new Parse.IParseObjectFactory() {
@@ -554,6 +543,20 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 
         Log.p("init()");
 
+        if (Config.PARSE_OFFLINE) {
+            Parse.initialize(
+                    "http://localhost:1337/parse",
+                    "l0Gw4hYdg7hJDPEG11Qzxqh59Yj9F2JXDkDdbdCc",
+                    "not important");
+            Log.p("using server http://localhost:1337/parse (LOCAL)");
+        } else {
+            Parse.initialize(
+                    "https://parseapi.back4app.com",
+                    "TYR54TdOmVfIGSKIl3aEmpcKMPNrbg7T9zN6QciT",
+                    "SqFUD7hbLleCOPtDm0RYJWsqI3syHN31NuOiCrRv");
+            Log.p("using server https://parseapi.back4app.com (ONLINE)");
+        }
+
         if (false) {
             Display.getInstance().addEdtErrorHandler(new ActionListener() {
                 //TODO!!!! check if keep this error handling for out of memory in production version
@@ -967,27 +970,29 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
      * usage in the background."
      */
     public void stop() {
-        Form current = Display.getInstance().getCurrent();
-//        if (current instanceof Dialog) {
-//            if (false)((Dialog) current).dispose();
-//            current = Display.getInstance().getCurrent();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Form current = Display.getInstance().getCurrent();
+////        if (current instanceof Dialog) {
+////            if (false)((Dialog) current).dispose();
+////            current = Display.getInstance().getCurrent();
+////        }
+//        if (!(current instanceof Form)) {
+////            if (current instanceof Dialog)
+////            current = ((Dialog)current).getComponentForm();
+//            if (current instanceof Component) {
+//                current = ((Component) current).getComponentForm();
+//            } else {
+//                ASSERT.that("on stop(), current=" + current + " (NOT Form or Component)");
+//            }
 //        }
-        if (!(current instanceof Form)) {
-//            if (current instanceof Dialog)
-//            current = ((Dialog)current).getComponentForm();
-            if (current instanceof Component) {
-                current = ((Component) current).getComponentForm();
-            } else {
-                ASSERT.that("on stop(), current=" + current + " (NOT Form or Component)");
-            }
-        }
-
-        ASSERT.that(current instanceof MyForm, "on stop(), current=" + current + " (NOT Form or Component)");
-        if (false && current instanceof MyForm) { //not needed anymore, now saved on each edit
-            ((MyForm) current).saveEditedValuesLocallyOnAppExitXXX(); //save any ongoing edits
-        }
+//
+//        ASSERT.that(current instanceof MyForm, "on stop(), current=" + current + " (NOT Form or Component)");
+//        if (false && current instanceof MyForm) { //not needed anymore, now saved on each edit
+//            ((MyForm) current).saveEditedValuesLocallyOnAppExitXXX(); //save any ongoing edits
+//        }
 //        ScreenTimer.getInstance().saveTimerStatusOnAppStop();
 //        ScreenTimer.getInstance().onDestroy(); //called here because destroy doesn't seem to be called
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && !MyPrefs.loginStayLoggedIn.getBoolean()) { //DOESN'T make sense to log user out here (when switched to background)
 //            try {
@@ -996,15 +1001,17 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //                Log.e(ex);
 //            }
 //        }
-//</editor-fold>
 //        setNotification(new Date(System.currentTimeMillis() + 10 * 1000));
+//</editor-fold>
         Log.p("stop()"); //do before updating badgeCount which calls network and may be too slow and get killed
-        setBadgeCount();
         //set the app icon badge count
+        setBadgeCount();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (Display.getInstance().isBadgingSupported()) {
 //            Display.getInstance().setBadgeNumber(DAO.getInstance().getBadgeCount(true));
 ////            Display.getInstance().setBadgeNumber(99);
 //        }
+//</editor-fold>
 
     }
 

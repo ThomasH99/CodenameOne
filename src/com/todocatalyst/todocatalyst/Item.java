@@ -798,7 +798,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String TASK_HELP = "TASK_HELP";// "Describe your task here";
     final static String DESCRIPTION = "DESCRIPTION"; //"Description"; // "Task text"
     final static String DESCRIPTION_HELP = "DESCRIPTION_HELP"; //"Description"; // "Task text"
-    final static String DESCRIPTION_HINT = "DESCRIPTION_HINT"; //"New task"; // "Task text"
+    final static String DESCRIPTION_HINT = "Enter new task"; //DESCRIPTION_HINT"; //Enter New task"; // "Task text"
     //        final static String FIELD_DONE = "Done", Expr.VALUE_FIELD_TYPE_STRING),
     final static String DONE = "DONE"; //"Done";
     final static String DUE_DATE = "Due"; //"DUE_DATE"; //"Due";
@@ -952,6 +952,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_PRIORITY = "priority";
     final static String PARSE_STARRED = "starred";
     final static String PARSE_EARNED_VALUE = "earnedValue";
+    final static String PARSE_EARNED_VALUE_PER_HOUR = "earnedValuePrHour";
     final static String PARSE_COMPLETED_DATE = "completedDate";
     final static String PARSE_IMPORTANCE = "importance";
     final static String PARSE_URGENCY = "urgency";
@@ -1283,14 +1284,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        } else {
 //            hierarchyStr = "Project hierarchy: " + hierarchyStr; //format "directOnwer / nextLevelOwner / Top-levelProject
 //        }
-        return hierarchyStr;
+
+        return hierarchyStr.isEmpty()?null:hierarchyStr;
     }
 
+    /**
+    returns null if no owner
+    @return 
+    */
     public String getOwnerHierarchyAsString() {
         if (getOwner() instanceof Item) {
             return getOwnerHierarchyAsString(getOwnerHierarchy());
         } else {
-            return "";
+            return null; //"";
         }
     }
 
@@ -2889,19 +2895,24 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public void setEarnedValue(double earnedVal) {
-//                if (!has("earnedValue") &&  earnedVal == 0) return; //equivalent 
-//        if (has(PARSE_EARNED_VALUE) || earnedVal != 0) {
-//            put(PARSE_EARNED_VALUE, earnedVal);
-//        }
         if (earnedVal != 0) {
             put(PARSE_EARNED_VALUE, earnedVal);
         } else {
             remove(PARSE_EARNED_VALUE);
         }
+        updateEarnedValuePerHour();
+    }
 
-//        if (this.earnedValue != val) {
-//            this.earnedValue = val;
-//        }
+    private void updateEarnedValuePerHour() {
+        setEarnedValuePerHour(calculateEarnedValuePerHour(getTotalExpectedEffort(), getEarnedValue()));
+    }
+
+    private void setEarnedValuePerHour(double earnedValPerHour) { //private since set automatically
+        if (earnedValPerHour != 0) {
+            put(PARSE_EARNED_VALUE_PER_HOUR, earnedValPerHour);
+        } else {
+            remove(PARSE_EARNED_VALUE_PER_HOUR);
+        }
     }
 
     /**
@@ -2925,6 +2936,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public double getEarnedValuePerHour() {
+////TODO introduce a setting to always calculate valuePerHour based on Estimate (to avoid it changes when once has started, e.g. if remaining is not set). MAYBE: now,it only used Remaining+Actual when Remaining is set to sth.
+//        return calculateEarnedValuePerHour(getTotalExpectedEffort(), getEarnedValue());
+////        long totalEffort = getTotalExpectedEffort();
+////        if (totalEffort > 0) {
+////            return ((getEarnedValue() * MyDate.HOUR_IN_MILISECONDS) / totalEffort);
+////        } else {
+////            return 0;
+////        }
+//
+//    }
+//</editor-fold>
     /**
      * returns earned points/ROI per hour, that is the number of earned points
      * divided by the effort. If remaining effort is defined then that + actual
@@ -2938,15 +2962,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     public double getEarnedValuePerHour() {
-//TODO introduce a setting to always calculate valuePerHour based on Estimate (to avoid it changes when once has started, e.g. if remaining is not set). MAYBE: now,it only used Remaining+Actual when Remaining is set to sth. 
-        return calculateEarnedValuePerHour(getTotalExpectedEffort(), getEarnedValue());
-//        long totalEffort = getTotalExpectedEffort();
-//        if (totalEffort > 0) {
-//            return ((getEarnedValue() * MyDate.HOUR_IN_MILISECONDS) / totalEffort);
-//        } else {
-//            return 0;
-//        }
-
+        Double earnedValPerHour = getDouble(PARSE_EARNED_VALUE_PER_HOUR); //Parse doesn't store doubles, //TODO!!!! fix issue in parse to store reals
+        return (earnedValPerHour == null) ? 0 : earnedValPerHour;
     }
 
     public long getExpiresOnDate() {
@@ -3771,6 +3788,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
 //    public Item getNextLeafItem(Item previousItem, boolean excludeWaiting) {
+    public Item getNextLeafItem(Item previousItem) {
+//        return getNextUndoneLeafItemImpl(previousItem, excludeWaiting, false);
+        List<Item> list = getLeafTasksAsList(null);
+
+        int nextIndex;
+        if (previousItem == null) {
+            nextIndex = 0;
+        } else {
+            nextIndex = list.indexOf(previousItem)+1;
+        }
+        if (nextIndex >= 0 && nextIndex < list.size() - 1) { //prevIndex<list.size()-1 => there is at least one item after the previous one
+            return list.get(nextIndex );
+        }
+        return null;
+    }
+
     public Item getNextLeafItem(Item previousItem, Condition condition) {
 //        return getNextUndoneLeafItemImpl(previousItem, excludeWaiting, false);
         return getNextUndoneLeafItemImpl(previousItem, condition, new boolean[]{previousItem == null});
@@ -3843,9 +3876,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * returns a sequential list of all leaf tasks that meet the Condition
      *
      * @param condition condition or null (will match all items)
-     * @return
+     * @return null if no matching items
      */
-    List<ItemAndListCommonInterface> getLeafTasksAsList(Condition condition) {
+//    List<ItemAndListCommonInterface> getLeafTasksAsList(Condition condition) {
+    List<Item> getLeafTasksAsList(Condition condition) {
 //        assert previousItem != null || previousItemAlreadyFound[0] : "getNextUndoneLeafItemImpl called with previousItem==null and previousItemAlreadyFound not set true";
         if (!isProject()) { //LEAF
             if (condition == null || condition.meets(this)) {
@@ -3857,9 +3891,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         } else { //Project
             List<Item> itemList = getList();
-            List<ItemAndListCommonInterface> sublist;
+//            List<ItemAndListCommonInterface> sublist;
+            List<Item> sublist;
             int size = itemList.size();
-            List<ItemAndListCommonInterface> result = null;
+//            List<ItemAndListCommonInterface> result = null;
+            List<Item> result = null;
             if (size > 0) {
                 result = new ArrayList();
                 for (int i = 0; i < size; i++) {
@@ -3975,7 +4011,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @param oldStatus
     @param changingFromDone changing all subtasks of a Done project back to some other state is special since CANCELLED tasks should remain cancelled
     @return 
-    */
+     */
     public static boolean shouldTaskStatusChange(ItemStatus newStatus, ItemStatus oldStatus, boolean changingFromDone) {
         if (changingFromDone) {
             return ((newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.WAITING || newStatus == ItemStatus.CREATED)
@@ -4131,7 +4167,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setCompletedDate(MyDate.getNow()); //UI: also use Completed date to store date when task was cancelled (for historical data)
 //            setCompletedDate(System.currentTimeMillis()); //UI: also use Completed date to store date when task was cancelled (for historical data)
             setCompletedDate(now); //UI: also use Completed date to store date when task was cancelled (for historical data)
-            ScreenTimer.getInstance().stopTimerIfRunningOnThisItem(this);
+            ScreenTimer2.getInstance().stopTimerIfRunningOnThisItem(this);
             if (getRepeatRule() != null) {
                 getRepeatRule().updateRepeatInstancesOnDoneCancelOrDelete(this);
             }
@@ -4626,14 +4662,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    private void updateSubtasks() {
 //        updateInheritedValuesInSubtasks(); //first update impacted subtasks
 //    }
-
 //    private void updateOwner() {
 //        Item owner = getOwnerItem();
 //        if (owner != null) {
 //            owner.updateValuesDerivedFromSubtasks(); //update owner hierarcy
 //        }
 //    }
-
     /**
     if this Item is a Project, then refresh all derived values (values depending on its subtasks' values) stored in Parse.
     called by subtasks owner.updateDerivedValues() whenever
@@ -4716,7 +4750,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            DAO.getInstance().saveBatch(subtasks); //save every subtask, Parse will only save those with actual changes(checked, but really working??)
 //        }
 //    }
-
     /**
     must be called before the owner updates 
      */
@@ -5150,6 +5183,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             remove(PARSE_EFFORT_ESTIMATE);
         }
+        updateEarnedValuePerHour();
     }
 
     private void setEffortEstimateProjectTaskItselfInParse(long effortEstimateMillis) {
@@ -5398,6 +5432,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             remove(PARSE_REMAINING_EFFORT);
         }
+        updateEarnedValuePerHour();
     }
 
     private void setRemainingEffortInParse(long remainingEffortProjectTaskItselfMillis) {
@@ -5450,6 +5485,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             remove(PARSE_REMAINING_EFFORT_PROJECT_TASK_ITSELF);
         }
+//        updateEarnedValuePerHour(); //NO, only update earnedVlauePerHour when the total effort is changed (done automatically when remainingForProjectTask is updated)
 //        update();
     }
 
@@ -5664,6 +5700,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             remove(PARSE_ACTUAL_EFFORT);
         }
+        updateEarnedValuePerHour();
     }
 
     private void setActualEffortTotalInParse(long actualEffortTotalMillis, boolean autoUpdateStatusAndStartedOnDate) {
@@ -5799,10 +5836,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return (actualEffort == null) ? 0L : actualEffort;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
     return the effort for the project task itself, that is, if this is not a project, return actual effort PARSE_ACTUAL_EFFORT, if it *is*
     a project, return the PARSE_ACTUAL_EFFORT_PROJECT_TASK_ITSELF
-    @return 
+    @return
      */
 //    public long getActualEffortProjectTaskItself() {
 ////        if (isProject()) {
@@ -5815,6 +5853,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public void setActualEffortInMinutes(int val) {
 //        setActualEffort(val * MyDate.MINUTE_IN_MILLISECONDS);
 //    }
+//</editor-fold>
     /**
     returns actual time worked on task or project. For a project, it is the sum of actual for subtasks PLUS actual for project itself (in case work was done on it before adding subtasks)
     @param forSubtasks
@@ -8081,7 +8120,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public WorkTimeSlices getAllocatedWorkTimeN() {
 //        return getAllocatedWorkTimeN(false);
 //    }
-
     /**
      * returns workTime for the item at index itemIndex and for an effort of
      * remainingTime. NB. The work time may have been allocated from several different sources. 
@@ -8197,7 +8235,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return workTime;
     }
 
-   
     /**
      * set workTime, especially reset to null to force recalculation.
      *

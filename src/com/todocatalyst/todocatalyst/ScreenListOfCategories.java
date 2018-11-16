@@ -247,7 +247,7 @@ public class ScreenListOfCategories extends MyForm {
 //            }
 //</editor-fold>
         };
-        swipCont.putClientProperty("element", category);
+//        swipCont.putClientProperty(ScreenListOfItems.DISPLAYED_ELEMENT, category);
 
         if (Config.TEST) {
             swipCont.setName(category.getText());

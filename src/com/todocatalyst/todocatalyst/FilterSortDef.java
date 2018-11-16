@@ -906,7 +906,8 @@ public class FilterSortDef extends ParseObject {
      * @param orgList
      * @return
      */
-    public List<? extends ItemAndListCommonInterface> filterAndSortItemList(List orgList) {
+//    public List<? extends ItemAndListCommonInterface> filterAndSortItemList(List orgList) {
+    public List<ItemAndListCommonInterface> filterAndSortItemList(List orgList) {
 //        ItemList<Item> filteredAndSorted = new ItemList(filter(orgList, filterPredicate));
 //        Collections.sort(filteredAndSorted, filterPredicate.getSortingComparator());
 //        filterAndSortList(filteredAndSorted);

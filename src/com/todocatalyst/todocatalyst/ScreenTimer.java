@@ -423,7 +423,7 @@ public class ScreenTimer extends MyForm {
         }
     }
 
-    void deleteTimerInfoInStorage() {
+    private void deleteTimerInfoInStorage() {
         if (Storage.getInstance().exists(TIMER_STACK_ID)) {
             Storage.getInstance().deleteStorageFile(TIMER_STACK_ID);
         }
@@ -1139,7 +1139,7 @@ public class ScreenTimer extends MyForm {
      * DOES currently NOT store any other values edited in the timer What
      * happens next time the timer is called??
      */
-    public void stopTimerIfRunningOnThisItem(Item item) { //boolean continueWithNextItem // 
+    private void stopTimerIfRunningOnThisItemXXX(Item item) { //boolean continueWithNextItem // 
         if (item == null) {
             return;
         }
@@ -1182,7 +1182,7 @@ public class ScreenTimer extends MyForm {
      *
      * @return
      */
-    boolean isTimerRunning() {
+    private boolean isTimerRunning() {
 //        ASSERT.that(timer == null , "Normal timer should not be running if item is null");
 //        ASSERT.that(buzzerTimer == null , "Buzzer timer should not be running if item is null");
         return timer != null; // || entry.running; //timerRunning should only be true if item!=null
@@ -1200,7 +1200,7 @@ public class ScreenTimer extends MyForm {
     private boolean maxTimerTimePassed(boolean timerShowsActualTotal, long timerValueMillis, long itemActualEffort) {
         //TODO make max timer time a setting? Why? 
         long ABSOLUTE_MAX_TIMER_VALUE = MyDate.DAY_IN_MILLISECONDS - MyDate.MINUTE_IN_MILLISECONDS; //==23:59
-        long MAX_TIMER_VALUE = Math.min(ABSOLUTE_MAX_TIMER_VALUE, MyPrefs.timerMaxTimerDurationInHours.getInt() * MyDate.HOUR_IN_MILISECONDS); //==23:59
+        long MAX_TIMER_VALUE = Math.min(ABSOLUTE_MAX_TIMER_VALUE, MyPrefs.timerMaxTimerDurationInHoursXXX.getInt() * MyDate.HOUR_IN_MILISECONDS); //==23:59
 //        return ((timerShowsActualTotal && timerValueMillis + INTERVAL_UPDATE_TIMER_MILLIS > MyDate.DAY_IN_MILLISECONDS)
 //                            || (!timerShowsActualTotal && timerValueMillis + itemActualEffort + INTERVAL_UPDATE_TIMER_MILLIS > MyDate.DAY_IN_MILLISECONDS));
         return ((timerValueMillis + INTERVAL_UPDATE_TIMER_MILLIS >= ABSOLUTE_MAX_TIMER_VALUE)
@@ -1268,7 +1268,7 @@ public class ScreenTimer extends MyForm {
      * called on regular updates of the timer screen, as well as on app relaunch
      * to ensure
      */
-    public void refreshDisplayedTimerInfo() {
+    private void refreshDisplayedTimerInfo() {
         setTaskStatusOngoingWhenMinimumThresholdPassed();
         long timerValueMillis = timerStack.currEntry.getTimerDurationInMillis();
         //UI: currently Picker time is limited to 23h59m so need to save time if that 
@@ -2672,8 +2672,8 @@ long addlEffort = ((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLIS
         return contentPane;
     }
 
-    @Override
-    public void saveEditedValuesLocallyOnAppExitXXX() {
+//    @Override
+    private void saveEditedValuesLocallyOnAppExitXXX() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (item.getObjectIdP() == null) { //new item, save everything locally and restore next time
 ////            Storage.getInstance().writeObject(SCREEN_TITLE + "- EDITED ITEM", item); //save date
@@ -2708,8 +2708,8 @@ long addlEffort = ((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLIS
 //        localSave = false;
     }
 
-    @Override
-    public boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
+//    @Override
+    private boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Item itemLS = null;
 //        //if editing of item was ongoing when app was stopped, then recover saved item
@@ -2759,8 +2759,8 @@ long addlEffort = ((long) elapsedTimePicker.getTime()) * MyDate.MINUTE_IN_MILLIS
         return savedValues;
     }
 
-    @Override
-    public void deleteEditedValuesSavedLocallyOnAppExit() {
+//    @Override
+    private void deleteEditedValuesSavedLocallyOnAppExit() {
 //        Storage.getInstance().deleteStorageFile(FILE_LOCAL_EDITED_ITEM); //delete in case one was 
         Storage.getInstance().deleteStorageFile("ScreenTimerLocalEdit.description"); //save 
         Storage.getInstance().deleteStorageFile("ScreenTimerLocalEdit.comment"); //save 

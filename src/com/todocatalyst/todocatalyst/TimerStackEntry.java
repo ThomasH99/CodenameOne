@@ -257,12 +257,14 @@ public class TimerStackEntry implements Externalizable {
         nextItem = null;
         resetValuesBeforeNewTimedItem();
         if (sourceItemOrProject != null) { //Timer is running on a single Item (possibly project)
-            nextItem = sourceItemOrProject.getNextLeafItem(timedItem, condition); //now timedItem==entry.nextItem
+//            nextItem = sourceItemOrProject.getNextLeafItem(timedItem, condition); //now timedItem==entry.nextItem
+            nextItem = sourceItemOrProject.getNextLeafItem(timedItem); //now timedItem==entry.nextItem
             return;
         } else if (itemList != null) { //Timer is running on an ItemList
             boolean[] previousItemAlreadyFound = new boolean[]{timedItem == null};
             for (int i = itemListIndex, size = itemList.size(); i < size; i++) {
-                Item tempItem = ((Item) itemList.getItemAt(i)).getNextUndoneLeafItemImpl(timedItem, condition, previousItemAlreadyFound);
+//                Item tempItem = ((Item) itemList.getItemAt(i)).getNextUndoneLeafItemImpl(timedItem, condition, previousItemAlreadyFound);
+                Item tempItem = ((Item) itemList.getItemAt(i)).getNextLeafItem(timedItem);
                 if (tempItem != null) {
                     nextItem = tempItem; //store nextItem for next time
                     itemListIndex = i;//+1; //next time, continue with next index, NO, continue with same item (can be a project)

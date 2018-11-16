@@ -136,12 +136,22 @@ public class ScreenItem2 extends MyForm {
     }
 
     ScreenItem2(Item item, MyForm previousForm, UpdateField doneAction, boolean templateEditMode) { //throws ParseException, IOException {
+        this(item, previousForm, doneAction, templateEditMode, null);
+    }
+
+    ScreenItem2(Item item, MyForm previousForm, UpdateField doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues) { //throws ParseException, IOException {
 //        super("Task", previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
         super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
         if (false) {
             ASSERT.that(item.isDataAvailable(), () -> "Item \"" + item + "\" data not available");
+        }
+
+        if (previousValues != null) {
+            this.previousValues = previousValues;
+        } else {
+            this.previousValues = new SaveEditedValuesLocally(getTitle() + "-" + item.getObjectIdP());
         }
 
         this.templateEditMode = item.isTemplate() || templateEditMode; //
@@ -778,14 +788,14 @@ public class ScreenItem2 extends MyForm {
         effortEstimate = new MyDurationPicker();
 //        makeField(Item.EFFORT_ESTIMATE, Item.EFFORT_ESTIMATE_HELP, effortEstimate, Item.PARSE_EFFORT_ESTIMATE, () -> item.getEffortEstimate(), (l) -> item.setEffortEstimate((long) l),
 //                () -> effortEstimate.getDuration(), (l) -> effortEstimate.setDuration((long) l), null);
-        makeField(Item.PARSE_EFFORT_ESTIMATE, effortEstimate, () -> item.getEffortEstimate(), (l) -> item.setEffortEstimate((long) l),
+        makeField(Item.PARSE_EFFORT_ESTIMATE, effortEstimate, () -> item.getEffortEstimate(), (l) -> item.setEffortEstimate((long) l, false),
                 () -> effortEstimate.getDuration(), (l) -> effortEstimate.setDuration((long) l));
 
 //get the effort for the project task itself:
         remainingEffort = new MyDurationPicker();
 //        makeField(Item.EFFORT_REMAINING, Item.EFFORT_REMAINING_HELP, effortEstimate, Item.PARSE_REMAINING_EFFORT, () -> item.getRemainingEffort(), (l) -> item.setRemainingEffort((long) l),
 //                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), null);
-        makeField(Item.PARSE_REMAINING_EFFORT, remainingEffort, () -> item.getRemainingEffort(false), (l) -> item.setRemainingEffort((long) l),
+        makeField(Item.PARSE_REMAINING_EFFORT, remainingEffort, () -> item.getRemainingEffort(false), (l) -> item.setRemainingEffort((long) l, false),
                 () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l));
 
         description.addActionListener((e) -> {
@@ -807,7 +817,7 @@ public class ScreenItem2 extends MyForm {
         }); //, null);
 //        makeField(Item.STATUS, Item.STATUS_HELP, status, Item.PARSE_STATUS, () -> item.getStatus(), (t) -> item.setStatus((ItemStatus) t),
 //                () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t), null);
-        makeField(Item.PARSE_STATUS, status, () -> item.getStatus(), (t) -> item.setStatus((ItemStatus) t),
+        makeField(Item.PARSE_STATUS, status, () -> item.getStatus(), (t) -> item.setStatus((ItemStatus) t, false),
                 () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t));
 
 //        parseIdMap2.put(status, () -> {
@@ -1850,7 +1860,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        statusCont.add(layout(Item.STARTED_ON_DATE, startedOnDate.makeContainerWithClearButton(), "Set automatically when using the timer")); //"click to set date when started"
 //        statusCont.add(layout(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP)); //"click to set date when started"
 //</editor-fold>
-        makeField(Item.PARSE_STARTED_ON_DATE, startedOnDate, () -> item.getStartedOnDateD(), (s) -> item.setStartedOnDate((Date) s),
+        makeField(Item.PARSE_STARTED_ON_DATE, startedOnDate, () -> item.getStartedOnDateD(), (s) -> item.setStartedOnDate((Date) s, true),
                 () -> startedOnDate.getDate(), (s) -> startedOnDate.setDate((Date) s));
 
         statusCont.add(layoutN(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP)); //"click to set date when started"

@@ -33,6 +33,7 @@ import com.codename1.ui.animations.ComponentAnimation;
 //import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
+import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
@@ -222,30 +223,13 @@ public class MyForm extends Form {
 //    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
         super(title);
         this.previousForm = previousForm;
-//        this.previousForm = getCurrentFormAfterClosingDialogOrMenu();
-//        if (Config.TEST) {
-//            MyForm mf = getCurrentFormAfterClosingDialogOrMenu();
-//        }
-//        Form f = getComponentForm();
-//        if (f instanceof MyForm) {
-//            this.previousForm = (MyForm) f;
-//        }
         setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
 
-//        setLayout(layout);
-//        getLayeredPane().setLayout(BorderLayout.center());
         ReplayLog.getInstance().deleteAllReplayCommandsFromPreviousScreen(title);
-        if (false) {
-            getFormLayeredPane(null, true).setLayout(new BorderLayout());
-        }
         SCREEN_TITLE = title;
-//        setToolbar(new Toolbar());
         getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
         setTitle(title); //do again since super(title)
         setScrollVisible(true); //show scroll bar(?)
-//        if (getToolbar().getTitleComponent() instanceof Label) {
-//            ((Label) getToolbar().getTitleComponent()).setAutoSizeMode(true); //ensure title is centered even when icons are added
-//        }//        getTitleComponent().setAutoSizeMode(true); //DOESN'T work with toolbar
         getToolbar().setTitleComponent(new Label(getTitle()) {
             public void pointerReleased(int x, int y) {
                 super.pointerReleased(x, y);
@@ -266,7 +250,7 @@ public class MyForm extends Form {
                     doubleTapTitleTimer.cancel();
                     doubleTapTitleTimer = null;
                     //doubleTapEvent(); 
-                    //scroll list to bottom
+                    //scroll list to bottom //TODO!!! improve so that doubletap scrolls back and forth between top of list and the scroll point
                     Form f = getComponentForm();
                     if (f != null) {
                         ContainerScrollY cont = findScrollableContYChild(getComponentForm());
@@ -300,6 +284,7 @@ public class MyForm extends Form {
         this.updateActionOnDone = updateActionOnDone;
         ASSERT.that(updateActionOnDone != null, () -> "doneAction should always be defined, Form=" + this);
         parseIdMapReset();
+        
 //        form = new Form();
 //        form = this;
 //        setup();
@@ -366,12 +351,16 @@ public class MyForm extends Form {
 
     protected void setKeepPos(KeepInSameScreenPosition keepPos) {
         this.keepPos = keepPos;
+//        previousValues.put(KEEP_POS_KEY,keepPos);
     }
 
+//    private static String KEEP_POS_KEY = "KeepPos";
     protected void restoreKeepPos() {
         if (this.keepPos != null) {
             this.keepPos.setNewScrollYPosition();
         }
+//        else if (previousValues.get(KEEP_POS_KEY)!=null)
+//            this.keepPos.setNewScrollYPosition();
     }
 
     interface GetParseValue {
@@ -621,6 +610,12 @@ public class MyForm extends Form {
             dia.dispose(); //close dialog
         })));
         return dia;
+    }
+
+    static void showDialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
+        if (MyPrefs.timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem.getBoolean()) {
+            dialogUpdateRemainingTime(remainingTimePicker).show();
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1199,8 +1194,8 @@ public class MyForm extends Form {
         putEditedValues2(parseIdMap2);
     }
 
-    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2) {
 //            for (String parseId : parseIdMap2.keySet()) {
+    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2) {
 ////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
 //                parseIdMap.get(parseId).saveEditedValueInParseObject();
 //            }
@@ -1216,6 +1211,10 @@ public class MyForm extends Form {
                 repeatRule.update();
             }
         }
+    }
+
+    protected void putEditedValues2() {
+        putEditedValues2(parseIdMap2);
     }
 
     void setDoneUpdater(UpdateField updateActionOnDone) {
@@ -1328,22 +1327,36 @@ public class MyForm extends Form {
 //        showPreviousScreenOrDefault(previousForm, false);
 //    }
     static void showPreviousScreenOrDefault(MyForm previousForm, boolean callRefreshAfterEdit) {
-
-        if (previousForm != null) {
-            Form f = Display.getInstance().getCurrent();
-            if (f instanceof MyForm) {
-                ((MyForm) f).deleteLocallyEditedValues();
-            }
-            if (callRefreshAfterEdit) {
-                previousForm.refreshAfterEdit();
-            }
-
-            previousForm.showBack();
-        } else {
-            Form f = Display.getInstance().getCurrent();
-            ASSERT.that(false, "should not happen anymore, screen \"" + f != null ? f.getTitle() : "<null form>");
-            new ScreenMain().show();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (previousForm != null) {
+//            Form f = Display.getInstance().getCurrent();
+//            if (f instanceof MyForm) {
+//                ((MyForm) f).deleteLocallyEditedValues();
+//            }
+//            if (callRefreshAfterEdit) {
+//                previousForm.refreshAfterEdit();
+//            }
+//
+//            previousForm.showBack();
+//        } else {
+//            Form f = Display.getInstance().getCurrent();
+//            ASSERT.that(false, "should not happen anymore, screen \"" + f != null ? f.getTitle() : "<null form>");
+//            new ScreenMain().show();
+//        }
+//</editor-fold>
+//        if (previousForm.previousValues != null) {
+//            previousForm.previousValues.deleteFile();
+//        }
+        Form f = Display.getInstance().getCurrent();
+        if (f instanceof MyForm && ((MyForm) f).previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
+            ((MyForm) f).previousValues.deleteFile();
+            ((MyForm) f).previousValues.clear(); //if still accessed
         }
+        if (callRefreshAfterEdit) {
+            previousForm.refreshAfterEdit();
+        }
+        previousForm.showBack();
+
     }
 
     void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
@@ -1473,13 +1486,13 @@ public class MyForm extends Form {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
         return MyReplayCommand.create("StartTimerFromMyForm", title, icon, (e) -> {
-            Item item = new Item();
+            Item interruptItem = new Item();
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItem());
 //                }
 //                ScreenTimer.getInstance().startTimer(item, MyForm.this);
-            ScreenTimer.getInstance().startInterrupt(item, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
+            ScreenTimer2.getInstance().startInterrupt(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
             //TODO Allow to pick a common (predefined/template) interrupt task (long-press??)
             //Open it up in editing mode with timer running
 //            setupTimerForItem(item, 0);
@@ -2352,47 +2365,48 @@ public class MyForm extends Form {
         return l;
     }
 
-    private String previousValuesFilename;
+//    private String previousValuesFilename;
+//    protected void setPreviousValuesFilename(String filename) {
+//        previousValuesFilename = filename;
+//    }
+    protected SaveEditedValuesLocally previousValues;
+//    Map<Object, Object> previousValues;
 
-    protected void setPreviousValuesFilename(String filename) {
-        previousValuesFilename = filename;
+    protected void initLocalSaveOfEditedValues(String filename) {
+//        previousValuesFilename = filename;
+        previousValues = new SaveEditedValuesLocally(filename);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        previousValues = new HashMap<Object, Object>() {
+//            void saveFile() {
+////            Storage.getInstance().writeObject("ScreenItem-" + item.getObjectIdP(), this); //save
+//                Storage.getInstance().writeObject(previousValuesFilename, this); //save
+//            }
+//
+//            public Object put(Object key, Object value) {
+//                Object previousValue = super.put(key, value);
+//                saveFile();
+//                return previousValue;
+//            }
+//
+//            public Object remove(Object key) {
+//                Object previousValue = super.remove(key);
+//                saveFile();
+//                return previousValue;
+//            }
+//
+//        };
+//        if (Storage.getInstance().exists(previousValuesFilename)) {
+//            previousValues.putAll((Map) Storage.getInstance().readObject(previousValuesFilename));
+//        }
+//</editor-fold>
     }
 
-    Map<Object, Object> previousValues;
-
-    public void initLocalSaveOfEditedValues(String filename) {
-        previousValuesFilename = filename;
-        previousValues = new HashMap<Object, Object>() {
-            void saveFile() {
-//            Storage.getInstance().writeObject("ScreenItem-" + item.getObjectIdP(), this); //save 
-                Storage.getInstance().writeObject(previousValuesFilename, this); //save 
-            }
-
-            public Object put(Object key, Object value) {
-                Object previousValue = super.put(key, value);
-                saveFile();
-                return previousValue;
-            }
-
-            public Object remove(Object key) {
-                Object previousValue = super.remove(key);
-                saveFile();
-                return previousValue;
-            }
-
-        };
-        if (Storage.getInstance().exists(previousValuesFilename)) {
-            previousValues.putAll((Map) Storage.getInstance().readObject(previousValuesFilename));
-        }
-    }
-
-    public void deleteLocallyEditedValues() {
-//            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
-        if (previousValuesFilename != null && !previousValuesFilename.isEmpty()) {
-            Storage.getInstance().deleteStorageFile(previousValuesFilename);
-        }
-    }
-
+//    public void deleteLocallyEditedValues() {
+////            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
+//        if (previousValuesFilename != null && !previousValuesFilename.isEmpty()) {
+//            Storage.getInstance().deleteStorageFile(previousValuesFilename);
+//        }
+//    }
     interface GetVal {
 
         Object getVal();
@@ -2409,7 +2423,7 @@ public class MyForm extends Form {
     }
 
     void makeField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
-        makeField(identifier, field, getVal, putVal, getField, putField, null, null);
+        this.makeField(identifier, field, getVal, putVal, getField, putField, null, null);
     }
 //    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
 //         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null);
@@ -2419,6 +2433,16 @@ public class MyForm extends Form {
 //            GetBool isInherited, ActionListener actionListener) {
     void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
             GetBool isInherited, ActionListener actionListener) {
+        makeField(fieldIdentifier, field, getOrg, putOrg, getField, putField, isInherited, actionListener, previousValues, parseIdMap2);
+    }
+
+    static void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+            SaveEditedValuesLocally previousValues,  Map<Object, UpdateField> parseIdMap2) {
+        makeField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues,parseIdMap2);
+    }
+
+    static void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+            GetBool isInherited, ActionListener actionListener, SaveEditedValuesLocally previousValues,  Map<Object, UpdateField> parseIdMap2) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
 //    }
@@ -2592,6 +2616,19 @@ public class MyForm extends Form {
         if (Config.DEBUG_LOGGING) {
             Log.p("Show MyForm: " + getTitle());
         }
+        //restore scroll position on replay
+        if (previousValues != null) {
+            int scrollY = previousValues.getScrollY();
+            if (scrollY > 0) {
+                Form f = getComponentForm();
+                if (f instanceof MyForm) {
+                    ContainerScrollY scrollYCont = findScrollableContYChild(f);
+                    if (scrollYCont != null) {
+                        scrollYCont.setScrollYPublic(scrollY);
+                    }
+                }
+            }
+        }
         if (!ReplayLog.getInstance().replayCmd(new ActionEvent(this))) { //only show screen is there was no command to replay
             super.show();
         }
@@ -2608,18 +2645,19 @@ public class MyForm extends Form {
      * destroyed later on). Does nothing in screens with no new edits. Saved
      * items must be read back in constructor of the screen.
      */
-    public void saveEditedValuesLocallyOnAppExitXXX() {
-
-    }
-
-    public boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
-        return false;
-    }
-
-    public void deleteEditedValuesSavedLocallyOnAppExit() {
-        deleteLocallyEditedValues();
-    }
-
+//    public void saveEditedValuesLocallyOnAppExitXXX() {
+//
+//    }
+//
+//    public boolean restoreEditedValuesSavedLocallyOnAppExitXXX() {
+//        return false;
+//    }
+//
+//    public void deleteEditedValuesSavedLocallyOnAppExitXXX() {
+//        if (previousValues != null) {
+//            previousValues.deleteFile();
+//        }
+//    }
     private Container pinchContainer; //Container holding the pinchComponent (and implementing the resize)
     private Component pinchContainerPrevious; //Container holding the pinchComponent (and implementing the resize)
 //    private Component pinchComponent;

@@ -31,9 +31,11 @@ import java.util.ListIterator;
  * @author Thomas
  * @param <E>
  */
+//public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         implements /*ItemListModel,*/
         MyTreeModel, /*Collection,*/ List, SumField, ItemAndListCommonInterface, Iterable { //, DataChangedListener {
+//        MyTreeModel, /*Collection,*/ List, SumField, Iterable { //, DataChangedListener {
     //TODO implement deep fetchFromCacheOnly to get all tasks and sub-tasks at any depth
     //TODO: implement caching of worksum of sub-tasks (callback from subtasks to all affected owners and categories??)
     //TODO optimization: for long lists (e.g. size>100) add a hashmap to find the index faster than linear search in getItemIndex
@@ -57,7 +59,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     private boolean noSave = false; //set to true for temporary lists, e.g. wrapping a parse search results
 //    private List<E> filteredSortedList = null;
-    private List<? extends ItemAndListCommonInterface> filteredSortedList = null;
+//    private List<? extends ItemAndListCommonInterface> cachedList = null;
+    private List<E> cachedList = null;
+//    private List<? extends ItemAndListCommonInterface> filteredSortedList = null;
+    private List<E> filteredSortedList = null;
     private int selectedIndex;// = 0;
     /**
      * contains the list of workslots (if defined, otherwise null)
@@ -915,10 +920,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        } else 
         if (itemList != null && !itemList.isEmpty()) {
             put(PARSE_ITEMLIST, itemList);
-            filteredSortedList = null; //reset to use and re-sort new list
+//            filteredSortedList = null; //reset to use and re-sort new list
         } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
             remove(PARSE_ITEMLIST); //if setting a list to null or setting an empty list, then simply delete the field
         }
+        cachedList = null; //reset
         filteredSortedList = null; //reset
     }
 
@@ -928,7 +934,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    @Override
     @Override
 //    public List<E> getList() {
-    public List<? extends ItemAndListCommonInterface> getList() {
+//    public List<? extends ItemAndListCommonInterface> getList() {
+    public List<E> getList() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////        List<E> list = getList(PARSE_ITEMLIST);
 //
@@ -959,10 +966,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
 //</editor-fold>
-        List<? extends ItemAndListCommonInterface> list = getListFull();
-        FilterSortDef filterSortDef = getFilterSortDef();
-        if (filterSortDef != null && filteredSortedList == null) { //buffer the sorted list
-            filteredSortedList = filterSortDef.filterAndSortItemList(list);
+//        List<? extends ItemAndListCommonInterface> list = getListFull();
+        List<E> list = getListFull();
+//        FilterSortDef filterSortDef = getFilterSortDef();
+        FilterSortDef filterSortDef;
+//        if (filterSortDef != null && filteredSortedList == null) { //buffer the sorted list
+        if (filteredSortedList == null && ((filterSortDef = getFilterSortDef()) != null)) { //buffer the sorted list
+            filteredSortedList = (List<E>) filterSortDef.filterAndSortItemList(list);
         }
         if (filteredSortedList != null) { //reuse
             list = filteredSortedList;
@@ -974,20 +984,27 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     returns the full (manually sorted) list, with no sorting or filtering
     @return never null
      */
+//    public List<? extends ItemAndListCommonInterface> getListFull() {
     public List<E> getListFull() {
-        {
 //            if (false && !isDataAvailable()) {
 //                DAO.getInstance().fetchIfNeededReturnCachedIfAvail(this); //WON'T WORK since new impl of fetchIfNeeded(this) may return a previously existing instance instead of simply fetching the data for 'this'
 //            }
-            List<E> list = getList(PARSE_ITEMLIST);
-            if (list != null) {
-                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
-                return list;
-            } else {
-//            return null; //returning null would mean every user must check for null and create a list. And returning a new empty ArrayList and saving it doesn't have any side-effect since a new empty list isn't actually saved
-                return new ArrayList();
-            }
+        if (cachedList != null) {
+            return cachedList;
         }
+//            List<E> list = getList(PARSE_ITEMLIST);
+        cachedList = getList(PARSE_ITEMLIST);
+//            if (list != null) {
+        if (cachedList != null) {
+//                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList);
+//            return list;
+        } else {
+//            return null; //returning null would mean every user must check for null and create a list. And returning a new empty ArrayList and saving it doesn't have any side-effect since a new empty list isn't actually saved
+//                return new ArrayList();
+            cachedList = new ArrayList();
+        }
+        return cachedList;
     }
 
     @Override
@@ -1296,14 +1313,18 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         String sepStr = "";
         switch (format) {
             case TOSTRING_COMMA_SEPARATED_LIST:
-                for (int i = 0; i < getSize(); i++) {
-                    E baseItem = getItemAt(i);
-                    if (baseItem != null) { //necessary when printing lists where change events are removing them (gives null pointerexception
+//                for (int i = 0; i < getSize(); i++) {
+//                    E baseItem = getItemAt(i);
+//                    if (baseItem != null) { //necessary when printing lists where change events are removing them (gives null pointerexception
+                for (ItemAndListCommonInterface elt : getList()) {
+//                    E baseItem = getItemAt(i);
+//                    if (baseItem != null) { //necessary when printing lists where change events are removing them (gives null pointerexception
 //                    str += sepStr + ((BaseItem) getItemAt(i)).shortString();
 //                        str += sepStr + getItemAt(i).toString(ToStringFormat.TOSTRING_DEFAULT);
-                        str += sepStr + getItemAt(i).toString();
-                        sepStr = ", ";
-                    }
+//                        str += sepStr + getItemAt(i).toString();
+                    str += sepStr + elt.toString();
+                    sepStr = ", ";
+//                    }
                 }
                 return str;
             case TOSTRING_DEFAULT:
@@ -1554,7 +1575,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public void delete() throws ParseException {
 //        List<Item> itemsOwnedByThisList = DAO.getInstance().getAllItemsOwnedBy(this);
-        List<E> itemsOwnedByThisList = getListFull();
+        List<? extends ItemAndListCommonInterface> itemsOwnedByThisList = getListFull();
         for (ItemAndListCommonInterface item : itemsOwnedByThisList) {
             if (item instanceof ParseObject) {
                 DAO.getInstance().delete((ParseObject) item); //let each item delete itself properly
@@ -1635,8 +1656,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public int getSize() {
 //        return (itemList == null) ? 0 : itemList.size();
-List l = getListFull();
-        return ( l== null) ? 0 : l.size();
+        List l = getListFull();
+        return (l == null) ? 0 : l.size();
     }
 
     /**
@@ -1691,32 +1712,47 @@ List l = getListFull();
             updatedBag.add(item);
             setItemBag(updatedBag); //then don't add to list, but just add to bag to keep track of how many times added
             //TODO!!! should the next statement be an 'else'?? 
-        } else if (!getListFull().contains(item)) {
-            //else add normally
-            //only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
+        } else {
+            List list = getListFull();
+//            if (!getListFull().contains(item)) {
+            if (!list.contains(item)) {
+                //else add normally
+                //only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
 //            if (!storeOnlySingleInstanceOfItems || getItemIndex(item) == -1) {
-            assert getItemIndex(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
+//            assert getItemIndex(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
+                assert list.indexOf(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
 //            if (index <= getSize()) { // shouldn't make this check since it might make us miss some errors
 //                itemList.insertElementAt(item, index);
 //                itemList.add(index, item);
-            List<E> editedList = getListFull();
-            editedList.add(index, item);
-            setList(editedList);
+//            List<E> editedList = getListFull();
+//            List listCopy = new ArrayList(editedList);
+//            editedList.add(index, item);
+                List listCopy = new ArrayList(list);
+                listCopy.add(index, item);
+//            list.add(index, item);
+                list.add(index, item);
+//            assert list.indexOf(item) != -1 : "item NOT in list thouygh just added (" + item + " already in list [" + this + "] at pos=" +list.indexOf(item); //if (getItemIndex(item) == -1) {
+                ASSERT.that(list.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + list.indexOf(item)); //if (getItemIndex(item) == -1) {
+//            setList(editedList);
+                setList(list);
+                ASSERT.that(list.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + list.indexOf(item)); //if (getItemIndex(item) == -1) {
 //                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
 //                    selectedIndex++;
 //                }
-            int selIdx = getSelectedIndex();
-            if (selIdx >= index && selIdx < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
-                setSelectedIndex(selIdx + 1);
-            }
-            fireDataChangedEvent(DataChangedListener.ADDED, index);
+                int selIdx = getSelectedIndex();
+                if (selIdx >= index && selIdx < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
+                    setSelectedIndex(selIdx + 1);
+                }
+                fireDataChangedEvent(DataChangedListener.ADDED, index);
 //            }
+            }
         }
     }
 
-    public E setItemAtIndex(E item, int index) {
+    public ItemAndListCommonInterface setItemAtIndex(E item, int index) {
+//        List<? extends ItemAndListCommonInterface> editedList = getListFull();
         List<E> editedList = getListFull();
-        E oldElement = editedList.get(index);
+        ItemAndListCommonInterface oldElement = editedList.get(index);
         Bag updatedBag = getItemBag();
         if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
             updatedBag.remove(oldElement);
@@ -2162,6 +2198,16 @@ List l = getListFull();
         return getNumberOfUndoneItems(getListFull(), includeSubTasks); //by default, only count direct subtasks (how many remaining subtasks *this* project has)
     }
 
+    public static int getNumberOfItems(List list, boolean onlyUndone, boolean countLeafTasks) {
+        int count = 0;
+        for (Object obj : list) {
+            if (obj instanceof ItemAndListCommonInterface) {
+                count += ((ItemAndListCommonInterface) obj).getNumberOfItems(onlyUndone, countLeafTasks);
+            }
+        }
+        return count;
+    }
+
     @Override
     public int getNumberOfItems(boolean onlyUndone, boolean countLeafTasks) {
         int count = 0;
@@ -2193,6 +2239,33 @@ List l = getListFull();
             }
         }
         return count;
+    }
+
+    /**
+    
+    @param previousItem
+    @param returnFirstItemIfPreviousNotFound if previousItem is not found, or is null, then return the first item in the list if such one exists (otherwise return null)
+    @return net item or null if no next item
+     */
+    public E getNextItemAfter(Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
+//        return getNextUndoneLeafItemImpl(previousItem, excludeWaiting, false);
+        List<E> list = getList(); //get filtered list
+        int prevIndex;
+        if (previousItem != null) {
+            prevIndex = list.indexOf(previousItem);
+        } else {
+            prevIndex = -1;
+        }
+        int nextIndex;
+        if (prevIndex < 0 && returnFirstItemIfPreviousNotFound) {
+            nextIndex = 0;
+        } else {
+            nextIndex = prevIndex + 1;
+        }
+        if (nextIndex >= 0 && nextIndex < list.size() - 1) { //if nextIndex is a valid index
+            return list.get(nextIndex);
+        }
+        return null;
     }
 
     /**

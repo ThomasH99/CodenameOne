@@ -18,6 +18,6 @@ public abstract class Config {
     public static final boolean WORKTIME_TEST = false; //
     public static final boolean WORKTIME_DETAILED_LOG = false; //NB! these logs are very time-consuming!!
     public static final boolean ENABLELOGGING = true;
-    public static final boolean PARSE_OFFLINE = false;
-    public static final boolean INLINE_WORKSHOP_TESTCASE = true;
+    public static final boolean PARSE_OFFLINE = true;
+    public static final boolean INLINE_WORKSHOP_TESTCASE = false;
 }

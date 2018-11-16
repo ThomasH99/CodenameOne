@@ -192,7 +192,7 @@ public class SubtaskContainer extends Container {
                     public void longPointerPress(int x, int y) {
                         super.longPointerPress(x, y);
                         if (true) { //TODO!! Activate longpress to expand all levels of subtasks
-                            putClientProperty("LongPress", Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
+                            putClientProperty(MyTree2.KEY_LONG_PRESS, Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
                             Log.p("longPointerPress");
 //                                Object e = swipCont.getClientProperty(MyTree2.KEY_EXPANDED);
                             Object e = subtaskContainer.getClientProperty(MyTree2.KEY_EXPANDED);

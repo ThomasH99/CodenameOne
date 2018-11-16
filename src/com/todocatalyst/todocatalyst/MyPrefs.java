@@ -33,14 +33,14 @@ public class MyPrefs {
     static PrefEntry estimateDefaultValueForZeroEstimatesInMinutes
             = new PrefEntry("Default time estimate", "estimateDefaultValueForZeroEstimatesInMinutes", 4,
                     "Default time estimate to use for non-estimated tasks. Set to typical average value of actual effort for small tasks to avoid having to estimate these. Set to 0 to de-activate.");
-   
+
     static PrefEntry estimateRemainingOnlyUseSubtasksRemaining
             = new PrefEntry("Only use subtasks' Remaining estimates", "estimateRemainingOnlyUseSubtasksRemaining", false,
-                            "Otherwise a project's remaining is the sum of the project task's own remaining and the sum of the remaining of all subtasks");
+                    "Otherwise a project's remaining is the sum of the project task's own remaining and the sum of the remaining of all subtasks");
 
     static PrefEntry estimateEffortEstimateOnlyUseSubtasksEstimates
             = new PrefEntry("Only use subtasks' Effort estimates", "estimateEffortEstimateOnlyUseSubtasksEstimates", true,
-                            "Otherwise a project's effort estimate is the sum of the project task's own effort estimates and the sum of the remaining of all subtasks");
+                    "Otherwise a project's effort estimate is the sum of the project task's own effort estimates and the sum of the remaining of all subtasks");
 
     //INSERTION OF NEW ITEMS
 //    static PrefEntry insertNewItemsInStartOfCategory = new PrefEntry("insertNewItemsInStartOfCategory", true, "Always insert new tasks at the beginning of lists (instead of at the end)");
@@ -120,8 +120,15 @@ public class MyPrefs {
     static PrefEntry timerAlwaysExpandListHierarchy
             = new PrefEntry("Show the parent list/project of the task", "timerAlwaysExpandListHierarchy", true, "**");
 
-    static PrefEntry timerMaxTimerDurationInHours
-            = new PrefEntry("Maximum time the Timer is allowed to run (hours)", "timerMaxTimerDurationInHours", 12, "Timer stops automatically when this maximum in reached. Can be used to avoid the Timer running wild since a popup is shown when reached. NB. Whatever this value, The Timer can never exceed 23h59m.");
+    static PrefEntry timerMaxTimerDurationInHoursXXX
+            = new PrefEntry("Maximum time the Timer is allowed to run (hours)", "timerMaxTimerDurationInHours", 12, "**DOESN'T MAKE SENSE since you'd still hae to fxi whatever time the timer stopped at*** Timer stops automatically when this maximum in reached. Can be used to avoid the Timer running wild since a popup is shown when reached. NB. Whatever this value, The Timer can never exceed 23h59m.");
+
+    static PrefEntry timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList
+            = new PrefEntry("Show Timer popup when no more tasks", "timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList", true, "**");
+
+    static PrefEntry timerAlwaysShowNewTimerInSmallWindow
+            = new PrefEntry("Always show new timers in current screenshow", "timerAlwaysShowNewTimerInSmallWindow", true,
+                    "Instead of showing a started timer in full screen...**");
 
     //COMMENTS
     static PrefEntry commentsAddToBeginningOfComment
@@ -205,7 +212,7 @@ public class MyPrefs {
     static PrefEntry itemInheritOwnerProjectProperties
             = new PrefEntry("Subtasks inherit properties from their project", "itemInheritOwnerProjectProperties", true, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
     //TODO!! set false for easy startup
-    
+
     static PrefEntry itemInheritOwnerProjectChallenge
             //            = new PrefEntry("Subtasks inherit "+Item.CHALLENGE+" from their project", "itemInheritOwnerProjectChallenge", true, "**");
             = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.CHALLENGE), "itemInheritOwnerProjectChallenge", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
@@ -284,7 +291,7 @@ public class MyPrefs {
 
     static PrefEntry showObjectIdsInEditScreens
             = new PrefEntry("Show ObjectIds when editing", "showObjectIdsInEditScreens", true, "show internal unique ID when editing - NOT END USER");
-  
+
     static PrefEntry showDebugInfoInLabelsEtc
             = new PrefEntry("Show debug info, e.g. add ^ to subtask", "showDebugInfoInLabelsEtc", true, "** - NOT END USER");
 
