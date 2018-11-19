@@ -71,7 +71,9 @@ public class ScreenStatistics extends MyForm {
         super(screenTitle, previousForm, updateActionOnDone);
 //        this.itemListList = itemListList;
         setScrollable(false);
-        setLayout(new BorderLayout());
+        if (!(getLayout() instanceof BorderLayout)) {
+            setLayout(new BorderLayout());
+        }
 //        expandedObjects = new HashSet();
         expandedObjects = new ExpandedObjects("ScreenStatistics"); //,null);
         addCommandsToToolbar(getToolbar());
@@ -102,8 +104,8 @@ public class ScreenStatistics extends MyForm {
         getContentPane().add(BorderLayout.CENTER, buildContentPane(itemListStats));
         revalidate();
         restoreKeepPos();
-         super.refreshAfterEdit();
-   }
+        super.refreshAfterEdit();
+    }
 
     private void sortItems() {
         sortItems(itemsSortedOnDate, SortStatsOn.dateAndTime);
@@ -142,15 +144,15 @@ public class ScreenStatistics extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
-        toolbar.addCommandToRightBar( MyReplayCommand.create("Settings",null, Icons.iconSettingsLabelStyle,(e)->{
-                int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
-                new ScreenSettingsStatistics(ScreenStatistics.this, () -> {
-                    if (daysInThePast != MyPrefs.statisticsScreenNumberPastDaysToShow.getInt()) {
-                        reloadData(); //reload data after (possibly) changing settings (number of days in the past to show)
-                    }
-                    refreshAfterEdit();
-                }).show();
-            }
+        toolbar.addCommandToRightBar(MyReplayCommand.create("Settings", null, Icons.iconSettingsLabelStyle, (e) -> {
+            int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
+            new ScreenSettingsStatistics(ScreenStatistics.this, () -> {
+                if (daysInThePast != MyPrefs.statisticsScreenNumberPastDaysToShow.getInt()) {
+                    reloadData(); //reload data after (possibly) changing settings (number of days in the past to show)
+                }
+                refreshAfterEdit();
+            }).show();
+        }
         ));
 
         //BACK

@@ -4167,7 +4167,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setCompletedDate(MyDate.getNow()); //UI: also use Completed date to store date when task was cancelled (for historical data)
 //            setCompletedDate(System.currentTimeMillis()); //UI: also use Completed date to store date when task was cancelled (for historical data)
             setCompletedDate(now); //UI: also use Completed date to store date when task was cancelled (for historical data)
-            ScreenTimer2.getInstance().stopTimerIfRunningOnThisItem(this);
+//            ScreenTimer2.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(this);
+            TimerStack.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(this);
             if (getRepeatRule() != null) {
                 getRepeatRule().updateRepeatInstancesOnDoneCancelOrDelete(this);
             }

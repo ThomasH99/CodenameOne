@@ -82,6 +82,9 @@ public class MyPrefs {
     static PrefEntry timerShowNextTask
             = new PrefEntry("Show next-coming task in Timer", "timerShowNextTask", true, "Will show the next task in a list at the bottom of the Timer screen. This can help mentally prepare but can also disturb the focus on the current task"); //TODO make timerShowNextTask a numerical value to show 0/1/2/3 next tasks and start one by clicking on it
 
+    static PrefEntry timerShowRemainingForNextTask
+            = new PrefEntry("Show remaining time for next-coming task in Timer", "timerShowRemainingForNextTask", true, "**Will show the next task in a list at the bottom of the Timer screen. This can help mentally prepare but can also disturb the focus on the current task"); //TODO make timerShowNextTask a numerical value to show 0/1/2/3 next tasks and start one by clicking on it
+
 //    static PrefEntry automaticallyStartTimerForNewItem = new PrefEntry("automaticallyStartTimerForNewItem", true);
     static PrefEntry timerShowSecondsInTimer
             = new PrefEntry("Show seconds in Timer", "showSecondsInTimer", true, "Hiding seconds may feel less stressful but doesn't visually show that the Timer is running");

@@ -63,9 +63,9 @@ public class ScreenListOfItems extends MyForm {
     //TODO how to support move-mode? Set all containers with Draggable/Focusable
     //TODO!! error: cannot expand subtasks in subtask tab (pointer error)
     //TODO when coming back to main list after editing an expanded subtask, the subtask is no longer indended (new container not generated with indend?? or is it because it should be replaced directly in its own container, not the main container)
-    //TODO refresh entire tree container, eg when an expanded subtask is changed (marked done)
+    //TODO refreshTimersFromParseServer entire tree container, eg when an expanded subtask is changed (marked done)
     //TODO redduce white space between task description and buttons
-    //TODO refresh mother
+    //TODO refreshTimersFromParseServer mother
     //TODO swipe two containers away from each other to create/insert a new task
     //TODO make DueDate and other fields shown active edit buttons to directly edit the info (same pop-up as in ScreenItem?)
     //TODO when sorting on a specific field (eg Dread/Fun) - show the field either in item-line or as floating section header
@@ -86,8 +86,8 @@ public class ScreenListOfItems extends MyForm {
     //DONE Sorting on DueDate is not working
     //DONE update display ofRemaining time from 75min to 1:15m
     //DONE number of subtasks include Done tasks
-    //DONE refresh each item container after editing the item
-    //DONE don't refresh the entire list after editing one item, make sure the list stays in same place, and only the edited item's container is updated
+    //DONE refreshTimersFromParseServer each item container after editing the item
+    //DONE don't refreshTimersFromParseServer the entire list after editing one item, make sure the list stays in same place, and only the edited item's container is updated
     final static String SCREEN_ID = "ScreenListOfItems";
     final static String DISPLAYED_ELEMENT = "element";
 //    final static String INSERT_NEW_TASK_AS_SUBTASK_KEY = "SubtaskLevel";
@@ -282,7 +282,9 @@ public class ScreenListOfItems extends MyForm {
 //        workSlotList = itemListOrg.getWorkSlotListN(); //expensive operation, only do once for the screen, or after editing WorkSlots
 
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-        setLayout(new BorderLayout());
+        if (!(getLayout() instanceof BorderLayout)) {
+            setLayout(new BorderLayout());
+        }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        addShowListener((e) -> { //DOESN'T WORK since animate doesn't trigger onShow
@@ -917,7 +919,8 @@ public class ScreenListOfItems extends MyForm {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+//                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                TimerStack.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
             }
             ));
         }
@@ -1684,7 +1687,7 @@ public class ScreenListOfItems extends MyForm {
                     myForm.refreshAfterEdit();
                     DAO.getInstance().save(item);
                     //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
-//                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refresh();}});
+//                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refreshTimersFromParseServer();}});
                 }
             }
             //                    , () -> {
@@ -1791,7 +1794,7 @@ public class ScreenListOfItems extends MyForm {
             }
         }
 
-        //TODO!!!! define lambde functions to refresh the parts of an Item container that may change when the 
+        //TODO!!!! define lambde functions to refreshTimersFromParseServer the parts of an Item container that may change when the 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        ActionListener t = (e) -> {
 //            //Actual effort may be
@@ -1833,7 +1836,7 @@ public class ScreenListOfItems extends MyForm {
                 //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
                 if (false && item.isDirty()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                        myTree.refresh();
+//                        myTree.refreshTimersFromParseServer();
 //                        refreshOnItemEdits.launchAction(); //refresh when item edited, eg update anything derived from estimates, subtasks, ...
 //                        ((ScreenListOfItems) mainCont.getComponentForm()).refreshAfterEdit(keepPos);
 //                        ((ScreenListOfItems) mainCont.getComponentForm()).refreshAfterEdit(new KeepInSameScreenPosition(item, swipCont));
@@ -1846,7 +1849,7 @@ public class ScreenListOfItems extends MyForm {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //NB. replacing swipCont will work even if swipCont is not updated since each container that replaces creates its own new
 //                    swipCont.getParent().replace(swipCont, buildTreeOrSingleItemContainer(item, motherItemList, isDragEnabled), null); //update the container with edited content
-//                    MyTree2.getMyTreeTopLevelContainer( swipCont).refresh(); //NOT necessary, done by changeListener on item
+//                    MyTree2.getMyTreeTopLevelContainer( swipCont).refreshTimersFromParseServer(); //NOT necessary, done by changeListener on item
 //                    refreshAfterEdit();
 //                    if (refreshOnItemEdits != null) {
 //                        refreshOnItemEdits.launchAction();
@@ -2331,7 +2334,8 @@ refreshAfterEdit();
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                ScreenTimer2.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
+//                ScreenTimer2.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
+                TimerStack.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm());//, true); //true == forceTimerStartOnLeafTasksWithAnyStatus
 //                        }
             }));
             startTimer.setUIID("SwipeButtonTimer");
@@ -2488,7 +2492,7 @@ refreshAfterEdit();
         Container mainCont = new Container(new BorderLayout());
         mainCont.setUIID("WorkSlotContainer");
 //        SwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(swipeActionContainer, buttonSwipeContainer, mainCont) ;
-        Container swipCont = new Container() ;
+        Container swipCont = new Container();
         if (myForm.keepPos != null) {
             myForm.keepPos.testItemToKeepInSameScreenPosition(workSlot, swipCont);
         }
@@ -2773,7 +2777,7 @@ refreshAfterEdit();
 //                        }
 //                        DAO.getInstance().save(item);
 //                        //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
-////                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refresh();}});
+////                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refreshTimersFromParseServer();}});
 //                    }
 //                }, () -> {
 //                    return item.getActualEffort() > 0;
@@ -2819,7 +2823,7 @@ refreshAfterEdit();
 //            }
 //        }
 //
-//        //TODO!!!! define lambde functions to refresh the parts of an Item container that may change when the
+//        //TODO!!!! define lambde functions to refreshTimersFromParseServer the parts of an Item container that may change when the
 //        ActionListener t = (e) -> {
 //            //Actual effort may be
 //            if (actualEffortLabel != null) {
@@ -2891,7 +2895,7 @@ refreshAfterEdit();
 ////                    Form f = new Form(item.getText());
 //                    //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
 //                    if (false && item.isDirty()) {
-////                        myTree.refresh();
+////                        myTree.refreshTimersFromParseServer();
 ////                        refreshOnItemEdits.launchAction(); //refresh when item edited, eg update anything derived from estimates, subtasks, ...
 ////                        ((ScreenListOfItems) mainCont.getComponentForm()).refreshAfterEdit(keepPos);
 ////                        ((ScreenListOfItems) mainCont.getComponentForm()).refreshAfterEdit(new KeepInSameScreenPosition(item, swipCont));
@@ -2901,7 +2905,7 @@ refreshAfterEdit();
 //                    DAO.getInstance().save(item);
 //                    //NB. replacing swipCont will work even if swipCont is not updated since each container that replaces creates its own new
 ////                    swipCont.getParent().replace(swipCont, buildTreeOrSingleItemContainer(item, motherItemList, isDragEnabled), null); //update the container with edited content
-////                    MyTree2.getMyTreeTopLevelContainer( swipCont).refresh(); //NOT necessary, done by changeListener on item
+////                    MyTree2.getMyTreeTopLevelContainer( swipCont).refreshTimersFromParseServer(); //NOT necessary, done by changeListener on item
 ////                    refreshAfterEdit();
 //                    if (refreshOnItemEdits != null) {
 //                        refreshOnItemEdits.launchAction();
@@ -3531,7 +3535,7 @@ refreshAfterEdit();
                             ASSERT.that(((Item) node).getObjectIdP() == null || ((Item) node).isDataAvailable(), () -> "Item \"" + node + "\" objId=(" + ((Item) node).getObjectIdP() + ") data not available");
                         }
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.refresh(),
+//                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.refreshTimersFromParseServer(),
 //                            false, //selectionMode not allowed for Categories??
 //                            null); //TODO any reason to support operations on multiple selected categories?
 //TODO!!! store expanded itemLists:

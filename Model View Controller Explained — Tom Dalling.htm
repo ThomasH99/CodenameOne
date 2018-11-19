@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<!-- saved from url=(0080)https://www.tomdalling.com/blog/software-design/model-view-controller-explained/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Model View Controller Explained — Tom Dalling</title>
+    <link href="./Model View Controller Explained — Tom Dalling_files/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="./Model View Controller Explained — Tom Dalling_files/font-awesome.min.css">
+    <link type="text/css" rel="stylesheet" href="./Model View Controller Explained — Tom Dalling_files/css">
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  <link rel="canonical" href="https://www.tomdalling.com/blog/software-design/model-view-controller-explained/"><script async="" src="./Model View Controller Explained — Tom Dalling_files/analytics.js"></script><script type="text/javascript" async="" src="./Model View Controller Explained — Tom Dalling_files/embed.js"></script><link rel="preload" as="style" href="https://c.disquscdn.com/next/embed/styles/lounge.d49f53e192b9080ef8880a7c9b24f1c3.css"><link rel="preload" as="script" href="https://c.disquscdn.com/next/embed/common.bundle.18932c85febf9520158697cdc31f08ae.js"><link rel="preload" as="script" href="https://c.disquscdn.com/next/embed/lounge.bundle.e7b46487e9e041aabc7c7cff31722578.js"><link rel="preload" as="script" href="https://disqus.com/next/config.js"><script charset="utf-8" src="./Model View Controller Explained — Tom Dalling_files/button.e96bb6acc0f8bda511c0c46a84ee18e4.js"></script><style type="text/css">.MathJax_Hover_Frame {border-radius: .25em; -webkit-border-radius: .25em; -moz-border-radius: .25em; -khtml-border-radius: .25em; box-shadow: 0px 0px 15px #83A; -webkit-box-shadow: 0px 0px 15px #83A; -moz-box-shadow: 0px 0px 15px #83A; -khtml-box-shadow: 0px 0px 15px #83A; border: 1px solid #A6D ! important; display: inline-block; position: absolute}
+.MathJax_Menu_Button .MathJax_Hover_Arrow {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 4px; -webkit-border-radius: 4px; -moz-border-radius: 4px; -khtml-border-radius: 4px; font-family: 'Courier New',Courier; font-size: 9px; color: #F0F0F0}
+.MathJax_Menu_Button .MathJax_Hover_Arrow span {display: block; background-color: #AAA; border: 1px solid; border-radius: 3px; line-height: 0; padding: 4px}
+.MathJax_Hover_Arrow:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_Hover_Arrow:hover span {background-color: #CCC!important}
+</style><style type="text/css">#MathJax_About {position: fixed; left: 50%; width: auto; text-align: center; border: 3px outset; padding: 1em 2em; background-color: #DDDDDD; color: black; cursor: default; font-family: message-box; font-size: 120%; font-style: normal; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; -khtml-border-radius: 15px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_About.MathJax_MousePost {outline: none}
+.MathJax_Menu {position: absolute; background-color: white; color: black; width: auto; padding: 5px 0px; border: 1px solid #CCCCCC; margin: 0; cursor: default; font: menu; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 5px; -webkit-border-radius: 5px; -moz-border-radius: 5px; -khtml-border-radius: 5px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_MenuItem {padding: 1px 2em; background: transparent}
+.MathJax_MenuArrow {position: absolute; right: .5em; padding-top: .25em; color: #666666; font-size: .75em}
+.MathJax_MenuActive .MathJax_MenuArrow {color: white}
+.MathJax_MenuArrow.RTL {left: .5em; right: auto}
+.MathJax_MenuCheck {position: absolute; left: .7em}
+.MathJax_MenuCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuRadioCheck {position: absolute; left: .7em}
+.MathJax_MenuRadioCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuLabel {padding: 1px 2em 3px 1.33em; font-style: italic}
+.MathJax_MenuRule {border-top: 1px solid #DDDDDD; margin: 4px 3px}
+.MathJax_MenuDisabled {color: GrayText}
+.MathJax_MenuActive {background-color: #606872; color: white}
+.MathJax_MenuDisabled:focus, .MathJax_MenuLabel:focus {background-color: #E8E8E8}
+.MathJax_ContextMenu:focus {outline: none}
+.MathJax_ContextMenu .MathJax_MenuItem:focus {outline: none}
+#MathJax_AboutClose {top: .2em; right: .2em}
+.MathJax_Menu .MathJax_MenuClose {top: -10px; left: -10px}
+.MathJax_MenuClose {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; font-family: 'Courier New',Courier; font-size: 24px; color: #F0F0F0}
+.MathJax_MenuClose span {display: block; background-color: #AAA; border: 1.5px solid; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; line-height: 0; padding: 8px 0 6px}
+.MathJax_MenuClose:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_MenuClose:hover span {background-color: #CCC!important}
+.MathJax_MenuClose:hover:focus {outline: none}
+</style><style type="text/css">.MathJax_Preview .MJXf-math {color: inherit!important}
+</style><style type="text/css">.MJX_Assistive_MathML {position: absolute!important; top: 0; left: 0; clip: rect(1px, 1px, 1px, 1px); padding: 1px 0 0 0!important; border: 0!important; height: 1px!important; width: 1px!important; overflow: hidden!important; display: block!important; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none}
+.MJX_Assistive_MathML.MJX_Assistive_MathML_Block {width: 100%!important}
+</style><style type="text/css">#MathJax_Zoom {position: absolute; background-color: #F0F0F0; overflow: auto; display: block; z-index: 301; padding: .5em; border: 1px solid black; margin: 0; font-weight: normal; font-style: normal; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; -webkit-box-sizing: content-box; -moz-box-sizing: content-box; box-sizing: content-box; box-shadow: 5px 5px 15px #AAAAAA; -webkit-box-shadow: 5px 5px 15px #AAAAAA; -moz-box-shadow: 5px 5px 15px #AAAAAA; -khtml-box-shadow: 5px 5px 15px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_ZoomOverlay {position: absolute; left: 0; top: 0; z-index: 300; display: inline-block; width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+#MathJax_ZoomFrame {position: relative; display: inline-block; height: 0; width: 0}
+#MathJax_ZoomEventTrap {position: absolute; left: 0; top: 0; z-index: 302; display: inline-block; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+</style><style type="text/css">.MathJax_Preview {color: #888}
+#MathJax_Message {position: fixed; left: 1em; bottom: 1.5em; background-color: #E6E6E6; border: 1px solid #959595; margin: 0px; padding: 2px 8px; z-index: 102; color: black; font-size: 80%; width: auto; white-space: nowrap}
+#MathJax_MSIE_Frame {position: absolute; top: 0; left: 0; width: 0px; z-index: 101; border: 0px; margin: 0px; padding: 0px}
+.MathJax_Error {color: #CC0000; font-style: italic}
+</style><style type="text/css">.MJXp-script {font-size: .8em}
+.MJXp-right {-webkit-transform-origin: right; -moz-transform-origin: right; -ms-transform-origin: right; -o-transform-origin: right; transform-origin: right}
+.MJXp-bold {font-weight: bold}
+.MJXp-italic {font-style: italic}
+.MJXp-scr {font-family: MathJax_Script,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-frak {font-family: MathJax_Fraktur,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-sf {font-family: MathJax_SansSerif,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-cal {font-family: MathJax_Caligraphic,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-mono {font-family: MathJax_Typewriter,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-largeop {font-size: 150%}
+.MJXp-largeop.MJXp-int {vertical-align: -.2em}
+.MJXp-math {display: inline-block; line-height: 1.2; text-indent: 0; font-family: 'Times New Roman',Times,STIXGeneral,serif; white-space: nowrap; border-collapse: collapse}
+.MJXp-display {display: block; text-align: center; margin: 1em 0}
+.MJXp-math span {display: inline-block}
+.MJXp-box {display: block!important; text-align: center}
+.MJXp-box:after {content: " "}
+.MJXp-rule {display: block!important; margin-top: .1em}
+.MJXp-char {display: block!important}
+.MJXp-mo {margin: 0 .15em}
+.MJXp-mfrac {margin: 0 .125em; vertical-align: .25em}
+.MJXp-denom {display: inline-table!important; width: 100%}
+.MJXp-denom > * {display: table-row!important}
+.MJXp-surd {vertical-align: top}
+.MJXp-surd > * {display: block!important}
+.MJXp-script-box > *  {display: table!important; height: 50%}
+.MJXp-script-box > * > * {display: table-cell!important; vertical-align: top}
+.MJXp-script-box > *:last-child > * {vertical-align: bottom}
+.MJXp-script-box > * > * > * {display: block!important}
+.MJXp-mphantom {visibility: hidden}
+.MJXp-munderover {display: inline-table!important}
+.MJXp-over {display: inline-block!important; text-align: center}
+.MJXp-over > * {display: block!important}
+.MJXp-munderover > * {display: table-row!important}
+.MJXp-mtable {vertical-align: .25em; margin: 0 .125em}
+.MJXp-mtable > * {display: inline-table!important; vertical-align: middle}
+.MJXp-mtr {display: table-row!important}
+.MJXp-mtd {display: table-cell!important; text-align: center; padding: .5em 0 0 .5em}
+.MJXp-mtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-mlabeledtr {display: table-row!important}
+.MJXp-mlabeledtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mlabeledtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 1px 3px; font-style: normal; font-size: 90%}
+.MJXp-scale0 {-webkit-transform: scaleX(.0); -moz-transform: scaleX(.0); -ms-transform: scaleX(.0); -o-transform: scaleX(.0); transform: scaleX(.0)}
+.MJXp-scale1 {-webkit-transform: scaleX(.1); -moz-transform: scaleX(.1); -ms-transform: scaleX(.1); -o-transform: scaleX(.1); transform: scaleX(.1)}
+.MJXp-scale2 {-webkit-transform: scaleX(.2); -moz-transform: scaleX(.2); -ms-transform: scaleX(.2); -o-transform: scaleX(.2); transform: scaleX(.2)}
+.MJXp-scale3 {-webkit-transform: scaleX(.3); -moz-transform: scaleX(.3); -ms-transform: scaleX(.3); -o-transform: scaleX(.3); transform: scaleX(.3)}
+.MJXp-scale4 {-webkit-transform: scaleX(.4); -moz-transform: scaleX(.4); -ms-transform: scaleX(.4); -o-transform: scaleX(.4); transform: scaleX(.4)}
+.MJXp-scale5 {-webkit-transform: scaleX(.5); -moz-transform: scaleX(.5); -ms-transform: scaleX(.5); -o-transform: scaleX(.5); transform: scaleX(.5)}
+.MJXp-scale6 {-webkit-transform: scaleX(.6); -moz-transform: scaleX(.6); -ms-transform: scaleX(.6); -o-transform: scaleX(.6); transform: scaleX(.6)}
+.MJXp-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
+.MJXp-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
+.MJXp-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
+.MathJax_PHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+</style></head>
+
+  <body><div id="MathJax_Message" style="display: none;"></div>
+
+    <div class="container">
+
+      <div class="row">
+        <div class="col-md-12">
+          <nav role="navigation" class="navbar navbar-default">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button data-target="#bs-example-navbar-collapse-1" data-toggle="collapse" class="navbar-toggle" type="button">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a href="https://www.tomdalling.com/" class="navbar-brand">Tom Dalling</a>
+              </div>
+
+              <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                  <li><a href="https://www.tomdalling.com/">Home</a></li>
+                  <li><a href="https://www.tomdalling.com/blog/">Blog</a></li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+        </div>
+      </div>
+
+      <div class="row">
+
+        <main class="col-md-8"><article class="post post-single">
+
+  <header>
+    <h1><a href="https://www.tomdalling.com/blog/software-design/model-view-controller-explained/">Model View Controller Explained</a></h1>
+    <small class="meta">
+      <span class="post-date">31 May, 2009</span>
+      —
+      Category: <a href="https://www.tomdalling.com/blog/category/software-design/" class="category">Software Design</a>
+    </small>
+    
+  </header>
+
+  <div class="post-content"><p>Model view controller (MVC) is a very useful and popular design pattern. If you're writing software, you should know it. Unfortunately it's also one of the hardest to truly understand. In this article I will provide what I think is the simplest explanation of MVC, and why you should use it.</p>
+<!--more--><h2>What is Model View Controller (MVC)?</h2><p>In a typical application you will find these three fundamental parts:</p>
+<ul>
+  <li>Data (Model)</li>
+  <li>An interface to view and modify the data (View)</li>
+  <li>Operations that can be performed on the data (Controller)</li>
+</ul><p>The MVC pattern, in a nutshell, is this:</p>
+<ol>
+  <li><p>The <strong>model</strong> represents the data, and does nothing else. The model does NOT depend on the controller or the view.</p></li>
+  <li><p>The <strong>view</strong> displays the model data, and sends user actions (e.g. button clicks) to the controller. The view can:</p>
+  <ul>
+    <li>
+    <p>be independent of both the model and the controller; or</p></li>
+  </ul>
+  <ul>
+    <li>
+    <p>actually <strong>be</strong> the controller, and therefore depend on the model.</p></li>
+  </ul></li>
+  <li><p>The <strong>controller</strong> provides model data to the view, and interprets user actions such as button clicks. The controller depends on the view and the model. In some cases, the controller and the view are the same object.</p></li>
+</ol><p>Rule 1 is the golden rule of MVC so I'll repeat it:</p>
+<blockquote><p><strong>The model represents the data, and does nothing else. The model does NOT depend on the controller or the view.</strong></p>
+</blockquote><p>Let's take an address book application as an example. The model is a list of <code>Person</code> objects, the view is a GUI window that displays the list of people, and the controller handles actions such as "Delete person", "Add person", "Email person", etc. The following example does not use MVC because the model depends on the view.</p>
+<div class="highlight"><pre><span class="c1">//Example 1:</span>
+<span class="kt">void</span> <span class="n">Person</span><span class="o">::</span><span class="n">setPicture</span><span class="p">(</span><span class="n">Picture</span> <span class="n">pict</span><span class="p">){</span>
+    <span class="n">m_picture</span> <span class="o">=</span> <span class="n">pict</span><span class="p">;</span> <span class="c1">//set the member variable</span>
+    <span class="n">m_listView</span><span class="o">-&gt;</span><span class="n">reloadData</span><span class="p">();</span> <span class="c1">//update the view</span>
+<span class="p">}</span>
+</pre></div><p>The following example uses MVC:</p>
+<div class="highlight"><pre><span class="c1">//Example 2:</span>
+<span class="kt">void</span> <span class="n">Person</span><span class="o">::</span><span class="n">setPicture</span><span class="p">(</span><span class="n">Picture</span> <span class="n">pict</span><span class="p">){</span>
+    <span class="n">m_picture</span> <span class="o">=</span> <span class="n">pict</span><span class="p">;</span> <span class="c1">//set the member variable</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">PersonListController</span><span class="o">::</span><span class="n">changePictureAtIndex</span><span class="p">(</span><span class="n">Picture</span> <span class="n">newPict</span><span class="p">,</span> <span class="kt">int</span> <span class="n">personIndex</span><span class="p">){</span>
+    <span class="n">m_personList</span><span class="p">[</span><span class="n">personIndex</span><span class="p">].</span><span class="n">setPicture</span><span class="p">(</span><span class="n">newPict</span><span class="p">);</span> <span class="c1">//modify the model</span>
+    <span class="n">m_listView</span><span class="o">-&gt;</span><span class="n">reloadData</span><span class="p">();</span> <span class="c1">//update the view</span>
+<span class="p">}</span>
+</pre></div><p>In the above example, the <code>Person</code> class knows nothing about the view. The <code>PersonListController</code> handles both changing the model, and updating the view. The view window tells the controller about user actions (in this case, it tells the controller that the user changed the picture of a person).</p><h2>What is the advantage of MVC?</h2><p>Unnecessary complexity is the devil of software development. Complexity leads to software that is buggy, and expensive to maintain. The easiest way to make code overly complex is to put dependencies everywhere. Conversely, removing unnecessary dependencies makes delightful code that is less buggy and easier to maintain because it is <strong>reusable without modification</strong>. You can happily reuse old, stable code without introducing new bugs into it.</p><p>The primary advantage of the MVC design pattern is this:</p>
+<blockquote><p><strong>MVC makes model classes reusable without modification.</strong></p>
+</blockquote><p>The purpose of the controller is to remove the view dependency from the model. By removing the view dependency from the model, the model code becomes delightful.</p><p>Why is the model code so delightful? Let's continue with the address book application example. The project manager approaches the developer and says <em>"We love the contact list window, but we need a second window that displays all the contacts by their photos only. The photos should be in a table layout, with five photos per row."</em></p><p>If the application uses MVC, this task is pretty straight forward. Currently there are three classes: <code>Person</code>, <code>PersonListController</code>, and <code>PersonListView</code>. Two classes need to be created: <code>PersonPhotoGridView</code> and&nbsp; <code>PersonPhotoGridController</code>. The <code>Person</code> class remains the same, and is easily plugged into the two different views. How delightful.</p><p>If the application is structured badly like in Example 1, then things get more complicated. Currently there are two classes <code>Person</code>, and <code>PersonListView</code>. The <code>Person</code> class can not be plugged into another view, because it contains code specific to <code>PersonListView</code>. The developer must modify the <code>Person</code> class to accommodate the new <code>PersonPhotoGridView</code>, and ends up complicating the model like so:</p>
+<div class="highlight"><pre><span class="c1">//Example 3:</span>
+<span class="kt">void</span> <span class="n">Person</span><span class="o">::</span><span class="n">setPicture</span><span class="p">(</span><span class="n">Picture</span> <span class="n">pict</span><span class="p">){</span>
+    <span class="n">m_picture</span> <span class="o">=</span> <span class="n">pict</span><span class="p">;</span> <span class="c1">//set the member variable</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">m_listView</span><span class="p">){</span> <span class="c1">//check if it's in a list view</span>
+        <span class="n">m_listView</span><span class="o">-&gt;</span><span class="n">reloadData</span><span class="p">();</span> <span class="c1">//update the list view</span>
+    <span class="p">}</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">m_gridView</span><span class="p">){</span> <span class="c1">//check if it's in a grid view</span>
+        <span class="n">m_gridView</span><span class="o">-&gt;</span><span class="n">reloadData</span><span class="p">();</span> <span class="c1">//update the grid view</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div><p>As you can see, the model code is starting to turn nasty. If the project manager then says <em>"we're porting the app to a platform with a different GUI toolkit"</em> the delightfulness is even more prominent. With MVC, the <code>Person</code> class can be displayed by different GUI toolkits without any modification. Just make a controller and a view with the new toolkit, just as you would with the old toolkit. Without MVC, it is a nightmare to support multiple GUI toolkits. The code may end up looking like this:</p>
+<div class="highlight"><pre><span class="c1">//Example 4:</span>
+<span class="kt">void</span> <span class="n">Person</span><span class="o">::</span><span class="n">setPicture</span><span class="p">(</span><span class="n">Picture</span> <span class="n">pict</span><span class="p">){</span>
+    <span class="n">m_picture</span> <span class="o">=</span> <span class="n">pict</span><span class="p">;</span>
+<span class="cp">#ifdef ORIGINAL_GUI_TOOLKIT</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">m_listView</span><span class="p">){</span> <span class="c1">//check if it's in a list view</span>
+        <span class="n">m_listView</span><span class="o">-&gt;</span><span class="n">reloadData</span><span class="p">();</span> <span class="c1">//update the list view</span>
+    <span class="p">}</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">m_gridView</span><span class="p">){</span> <span class="c1">//check if it's in a grid view</span>
+        <span class="n">m_gridView</span><span class="o">-&gt;</span><span class="n">reloadData</span><span class="p">();</span> <span class="c1">//update the grid view</span>
+    <span class="p">}</span>
+<span class="cp">#endif</span>
+<span class="cp">#ifdef NEW_GUI_TOOLKIT</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">m_listView</span><span class="p">){</span> <span class="c1">//check if it's in a list view</span>
+        <span class="n">m_listView</span><span class="o">-&gt;</span><span class="n">redisplayData</span><span class="p">();</span> <span class="c1">//update the list view</span>
+    <span class="p">}</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">m_gridView</span><span class="p">){</span> <span class="c1">//check if it's in a grid view</span>
+        <span class="n">m_gridView</span><span class="o">-&gt;</span><span class="n">redisplayData</span><span class="p">();</span> <span class="c1">//update the grid view</span>
+    <span class="p">}</span>
+<span class="cp">#endif</span>
+<span class="p">}</span>
+</pre></div><p>The <code>setPicture</code> method is basically spaghetti code at this point.</p><h2>Why not put the controller code in the view?</h2><p>One solution to the spaghetti code problem in Example 4 is to move the controller code from the model to the view like so:</p>
+<div class="highlight"><pre><span class="c1">//Example 5:</span>
+<span class="n">PersonListView</span><span class="o">::</span><span class="n">newPictureClicked</span><span class="p">(</span><span class="n">Picture</span> <span class="n">clickedPicture</span><span class="p">){</span>
+    <span class="n">m_selectedPerson</span><span class="p">.</span><span class="n">setPicture</span><span class="p">(</span><span class="n">clickedPicture</span><span class="p">);</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">reloadData</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div><p>The above example also makes the model reusable, which is the main advantage of MVC. When the view will only ever display one type of model object, then combining the view and the controller is fine. For example, a <code>SinglePersonView</code> will only ever display a <code>Person</code> object, so the <code>SinglePersonView</code> can double as the controller.</p><p>However, if the controller is separate from the view then MVC has a second advantage:</p>
+<blockquote><p><strong>MVC can also make the <em>view</em> reusable without modification.</strong></p>
+</blockquote><p>Not only does MVC make the model delightful, it can also make the view delightful. Ideally, a list view should be able to display lists of anything, not just <code>Person</code> objects. The code in Example 5 can <em>not</em> be a generic list view, because it is tied to the model (the <code>Person</code> class). In the situation where the view should be reusable (e.g. a list view, or a table view) and the model should be reusable, MVC is the only thing that will work. The controller removes the dependencies from both the model and the view, which allows them to be reused elsewhere.</p><h2>Conclusion</h2><p>The MVC design pattern inserts a controller class between the view and the model to remove the model-view dependencies. With the dependencies removed, the model, and possibly the view, can be made reusable without modification.&nbsp; This makes implementing new features and maintenance a breeze. The users get stable software quickly, the company saves money, and the developers don't go insane. How good is that?</p></div>
+
+  <footer>
+    <div class="alert alert-info subscribe-bait">
+      <p><strong>Enjoy this post?</strong></p>
+      <a class="btn btn-success" href="https://www.tomdalling.com/feed/">
+        Subscribe via RSS
+      </a>
+      <iframe id="twitter-widget-0" scrolling="no" frameborder="0" allowtransparency="true" class="twitter-follow-button twitter-follow-button-rendered" style="position: static; visibility: visible; width: 165px; height: 28px;" title="Twitter Follow Button" src="./Model View Controller Explained — Tom Dalling_files/follow_button.31bcb7ae210ce3a448d2ffc6cde7ba34.en.html" data-screen-name="tom_dalling"></iframe>
+      <script id="twitter-wjs" src="./Model View Controller Explained — Tom Dalling_files/widgets.js"></script><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    </div>
+
+    <h2>Comments</h2>
+    <div id="disqus_thread"><iframe id="dsq-app8137" name="dsq-app8137" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./Model View Controller Explained — Tom Dalling_files/saved_resource.html" style="width: 1px !important; min-width: 100% !important; border: none !important; overflow: hidden !important; height: 6745px !important;" horizontalscrolling="no" verticalscrolling="no"></iframe></div>
+    <script id="disqus_script" type="text/javascript">
+      var disqus_shortname = "tomdalling";
+      var disqus_identifier = "3 http:\/\/tomdalling.com\/?p=3";
+      var disqus_title = "Model View Controller Explained";
+      var disqus_url = "http:\/\/www.tomdalling.com\/blog\/software-design\/model-view-controller-explained\/";
+
+      (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments.</a></noscript>
+  </footer>
+
+</article></main>
+
+        <div class="col-md-4 sidebar">
+
+          <div class="panel panel-default">
+            <div class="panel-heading">Subscribe</div>
+            <ul class="list-group">
+              <li class="list-group-item">
+                <a href="https://www.tomdalling.com/blog/feed/">
+                  <i class="fa fa-rss"></i> RSS
+                </a>
+              </li>
+              <li class="list-group-item">
+                <a href="https://twitter.com/tom_dalling">
+                  <i class="fa fa-twitter"></i> Twitter
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-heading">Recent Posts</div>
+            <ul class="list-group recent-posts">
+              <li class="list-group-item">
+                <a href="https://www.tomdalling.com/blog/ruby/pure-function-as-an-object-PFAAO-pattern/">The Pure Function As An Object (PFAAO) Ruby Pattern</a>
+              </li><li class="list-group-item">
+                <a href="https://www.tomdalling.com/blog/software-design/fizzbuzz-in-too-much-detail/">FizzBuzz In Too Much Detail</a>
+              </li><li class="list-group-item">
+                <a href="https://www.tomdalling.com/blog/ruby/fruity-bat-flappy-bird-clone-in-ruby/">Making Fruity Bat (a Flappy Bird clone) in Ruby</a>
+              </li><li class="list-group-item">
+                <a href="https://www.tomdalling.com/blog/modern-opengl/08-even-more-lighting-directional-lights-spotlights-multiple-lights/">Modern OpenGL 08 – Even More Lighting: Directional Lights, Spotlights, &amp; Multiple Lights</a>
+              </li><li class="list-group-item">
+                <a href="https://www.tomdalling.com/blog/modern-opengl/opengl-in-2014/">OpenGL in 2014</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-heading">Blog Categories</div>
+            <ul class="list-group categories">
+              <li class="list-group-item">
+                <a class="category" href="https://www.tomdalling.com/blog/category/cocoa/">Cocoa</a>
+                (<span class="post-count">5</span>
+                <a href="https://www.tomdalling.com/blog/category/cocoa/feed/" class="feed"><i class="fa fa-rss"></i></a>)
+              </li><li class="list-group-item">
+                <a class="category" href="https://www.tomdalling.com/blog/category/coding-styleconventions/">Coding Style/Conventions</a>
+                (<span class="post-count">3</span>
+                <a href="https://www.tomdalling.com/blog/category/coding-styleconventions/feed/" class="feed"><i class="fa fa-rss"></i></a>)
+              </li><li class="list-group-item">
+                <a class="category" href="https://www.tomdalling.com/blog/category/coding-tips/">Coding Tips</a>
+                (<span class="post-count">4</span>
+                <a href="https://www.tomdalling.com/blog/category/coding-tips/feed/" class="feed"><i class="fa fa-rss"></i></a>)
+              </li><li class="list-group-item">
+                <a class="category" href="https://www.tomdalling.com/blog/category/random-stuff/">Miscellaneous</a>
+                (<span class="post-count">1</span>
+                <a href="https://www.tomdalling.com/blog/category/random-stuff/feed/" class="feed"><i class="fa fa-rss"></i></a>)
+              </li><li class="list-group-item">
+                <a class="category" href="https://www.tomdalling.com/blog/category/modern-opengl/">Modern OpenGL Series</a>
+                (<span class="post-count">10</span>
+                <a href="https://www.tomdalling.com/blog/category/modern-opengl/feed/" class="feed"><i class="fa fa-rss"></i></a>)
+              </li><li class="list-group-item">
+                <a class="category" href="https://www.tomdalling.com/blog/category/ruby/">Ruby</a>
+                (<span class="post-count">2</span>
+                <a href="https://www.tomdalling.com/blog/category/ruby/feed/" class="feed"><i class="fa fa-rss"></i></a>)
+              </li><li class="list-group-item">
+                <a class="category" href="https://www.tomdalling.com/blog/category/software-design/">Software Design</a>
+                (<span class="post-count">9</span>
+                <a href="https://www.tomdalling.com/blog/category/software-design/feed/" class="feed"><i class="fa fa-rss"></i></a>)
+              </li><li class="list-group-item">
+                <a class="category" href="https://www.tomdalling.com/blog/category/software-processes/">Software Processes</a>
+                (<span class="post-count">1</span>
+                <a href="https://www.tomdalling.com/blog/category/software-processes/feed/" class="feed"><i class="fa fa-rss"></i></a>)
+              </li><li class="list-group-item">
+                <a class="category" href="https://www.tomdalling.com/blog/category/web/">Web</a>
+                (<span class="post-count">1</span>
+                <a href="https://www.tomdalling.com/blog/category/web/feed/" class="feed"><i class="fa fa-rss"></i></a>)
+              </li>
+            </ul>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-heading">Blog Archives</div>
+            <ul class="list-group archives">
+              <li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2016/02/">February 2016</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2015/04/">April 2015</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2015/02/">February 2015</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2014/11/">November 2014</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2014/09/">September 2014</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2014/02/">February 2014</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2013/04/">April 2013</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2013/03/">March 2013</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2013/02/">February 2013</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2013/01/">January 2013</a>
+                (<span class="post-count">2</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2012/12/">December 2012</a>
+                (<span class="post-count">2</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2012/11/">November 2012</a>
+                (<span class="post-count">2</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2012/07/">July 2012</a>
+                (<span class="post-count">2</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2012/05/">May 2012</a>
+                (<span class="post-count">2</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2012/03/">March 2012</a>
+                (<span class="post-count">2</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2011/12/">December 2011</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2010/12/">December 2010</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2010/11/">November 2010</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2010/05/">May 2010</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2010/04/">April 2010</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2010/02/">February 2010</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2009/12/">December 2009</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2009/11/">November 2009</a>
+                (<span class="post-count">3</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2009/10/">October 2009</a>
+                (<span class="post-count">2</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2009/07/">July 2009</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2009/06/">June 2009</a>
+                (<span class="post-count">1</span>)
+              </li><li class="list-group-item">
+                <a class="month" href="https://www.tomdalling.com/blog/2009/05/">May 2009</a>
+                (<span class="post-count">1</span>)
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+      <footer class="page-footer">
+        <p>© 2009 – <span class="current-year">2016</span> Tom Dalling</p>
+
+        <p class="social">
+          <a href="https://twitter.com/tom_dalling">
+            <i class="fa fa-lg fa-twitter"></i>
+          </a>
+          <a href="https://github.com/tomdalling">
+            <i class="fa fa-lg fa-github"></i>
+          </a>
+          <a href="https://stackoverflow.com/users/108105/tom-dalling">
+            <i class="fa fa-lg fa-stack-overflow"></i>
+          </a>
+          <a href="mailto:tom%20at%20tomdalling%20com">
+            <i class="fa fa-lg fa-envelope"></i>
+          </a>
+        </p>
+      </footer>
+
+      <script src="./Model View Controller Explained — Tom Dalling_files/all.js"></script>
+      <script type="text/x-mathjax-config;executed=true">
+        MathJax.Hub.Config({
+          tex2jax: {
+            inlineMath: [['$$','$$']],
+            displayMath: [['[blockmath]', '[/blockmath]']]
+          }
+        });
+      </script>
+      <script src="./Model View Controller Explained — Tom Dalling_files/MathJax.js" id=""></script>
+    </div>
+
+<iframe style="display: none;" src="./Model View Controller Explained — Tom Dalling_files/saved_resource(1).html"></iframe><iframe scrolling="no" frameborder="0" allowtransparency="true" src="./Model View Controller Explained — Tom Dalling_files/widget_iframe.31bcb7ae210ce3a448d2ffc6cde7ba34.html" title="Twitter settings iframe" style="display: none;"></iframe></body></html>

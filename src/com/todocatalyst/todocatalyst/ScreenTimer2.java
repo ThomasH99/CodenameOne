@@ -104,7 +104,7 @@ public class ScreenTimer2 extends MyForm {
 //            return null;
 //        }
 //    }
-    private TimerStack timerStack = new TimerStack();
+//    private TimerStack timerStack = new TimerStack();
 //    private TimerStackEntry entry;
 
     private UITimer timer;
@@ -248,8 +248,8 @@ public class ScreenTimer2 extends MyForm {
         if (Display.getInstance().isScreenSaverDisableSupported() && MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer)) {
             Display.getInstance().setScreenSaverEnabled(true); //true enable normal screensaver, false keeps screen on all the time
         }
-//        super.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refresh whenever returning from Timer since tasks may have been closed
-        MyForm.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refresh whenever returning from Timer since tasks may have been closed
+//        super.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
+        MyForm.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

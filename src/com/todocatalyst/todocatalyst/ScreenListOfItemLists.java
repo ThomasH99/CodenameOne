@@ -48,7 +48,7 @@ public class ScreenListOfItemLists extends MyForm {
     //TODO!!! show expandSubTAsks button as a button, show pressed when expanded
     //TODO sort lists by: Most recently changed, Number open tasks(?), Amount of effort(?), Alphabetically, 
     //DONE stop saving the list of lists (creating unnamed new lists in Parse)
-    //DONE refresh list after adding a new task
+    //DONE refreshTimersFromParseServer list after adding a new task
     //NONE filter lists by: hide empty lists --> NO, because then you can't add to them
     //DONE show sum of effort of tasks within a list
     //DONE show total number of tasks in a list
@@ -234,7 +234,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                        }
 //                    } else if (dropTarget instanceof Item) {
 //                        if (draggedObject instanceof ItemList || draggedObject instanceof Category) {
-////                            refreshAfterDrop(); //TODO need to refresh for a drop which doesn't change anything??
+////                            refreshAfterDrop(); //TODO need to refreshTimersFromParseServer for a drop which doesn't change anything??
 //                            return; //UI: dropping an ItemList onto an Item not allowed
 //                        } else if (draggedObject instanceof Item) {
 //                            if (x < this.getWidth() / 3 * 2) {
@@ -537,7 +537,8 @@ public class ScreenListOfItemLists extends MyForm {
 //        return cont;
 //</editor-fold>
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
-            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
+//            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    Item newTemplateInstantiation = new Item();
 //                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
@@ -546,7 +547,8 @@ public class ScreenListOfItemLists extends MyForm {
 //                    }).show();
 //                ScreenTimer.getInstance().startTimerOnItemList(itemList, null, (MyForm) swipCont.getComponentForm());
 //</editor-fold>
-                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
+//                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
+                TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
             }
             )));
         }
@@ -652,8 +654,10 @@ public class ScreenListOfItemLists extends MyForm {
         }
         mainCont.addComponent(BorderLayout.EAST, east);
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
-            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
-                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
+//            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
+//                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
+                TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
             }
             )));
         }

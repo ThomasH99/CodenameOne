@@ -14,6 +14,7 @@ import com.codename1.io.Storage;
 import com.codename1.l10n.L10NManager;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
+import com.codename1.ui.CN;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.ComponentGroup;
@@ -284,7 +285,7 @@ public class MyForm extends Form {
         this.updateActionOnDone = updateActionOnDone;
         ASSERT.that(updateActionOnDone != null, () -> "doneAction should always be defined, Form=" + this);
         parseIdMapReset();
-        
+
 //        form = new Form();
 //        form = this;
 //        setup();
@@ -298,6 +299,11 @@ public class MyForm extends Form {
             setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
             setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
         }
+        Component timerContainer = TimerStack.getInstance().getTimerSmallContainer();
+        if (timerContainer != null) {
+            addComponent(CN.SOUTH, timerContainer);
+        }
+
         //<editor-fold defaultstate="collapsed" desc="comment">
         //************** CORRECT WAY TO MAKE SCROLLABLE
 //        form.setScrollable(false);
@@ -305,7 +311,6 @@ public class MyForm extends Form {
 //        form.add(BorderLayout.CENTER, myList);
 ////https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
 //****************************
-
 //        setScrollableY(true); //always allow scrolling up/down
 //        setScrollableY(true); //always allow scrolling up/down
 //        if (true) {
@@ -1465,7 +1470,7 @@ public class MyForm extends Form {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //            Log.p("Clicked");
-//            item.refresh(); or item.clear()?? //see here: https://www.parse.com/questions/make-a-copy-of-a-pfobject, revert(); //forgetChanges***/refresh, notably categories
+//            item.refreshTimersFromParseServer(); or item.clear()?? //see here: https://www.parse.com/questions/make-a-copy-of-a-pfobject, revert(); //forgetChanges***/refresh, notably categories
 //            previousForm.showBack(); //drop any changes
 //                previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
@@ -1492,7 +1497,8 @@ public class MyForm extends Form {
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItem());
 //                }
 //                ScreenTimer.getInstance().startTimer(item, MyForm.this);
-            ScreenTimer2.getInstance().startInterrupt(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
+//            ScreenTimer2.getInstance().startInterrupt(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
+            TimerStack.getInstance().startInterruptOrInstantTask(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
             //TODO Allow to pick a common (predefined/template) interrupt task (long-press??)
             //Open it up in editing mode with timer running
 //            setupTimerForItem(item, 0);
@@ -1617,20 +1623,29 @@ public class MyForm extends Form {
     final static int TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS = 80; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
     final static int ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR = 500; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
 
+    static void showToastBar(String message, int timeMillis) {
+        ToastBar.Status status = ToastBar.getInstance().createStatus();
+        status.setMessage(message);
+        int timeOut = timeMillis != 0 ? timeMillis : message.length() * TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS + ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR;
+        status.setExpires(timeOut);
+        status.show();
+    }
+
 //    protected static SpanButton addHelp(SpanButton comp, String helpText) {
     protected static Component addHelp(Component comp, String helpText) {
         if (helpText == null || helpText.length() == 0) {
             return comp;
         }
         ActionListener al = (e) -> {
-//            ToastBar.Status status = ToastBar.getInstance().createStatus().setMessage(text);
-            ToastBar.Status status = ToastBar.getInstance().createStatus();
-            status.setMessage(helpText);
-            //status.setExpires(3000);
-//                final int TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS = 65; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
-//            status.setExpires(status.getMessage().length() * TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS + ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR);
-            status.setExpires(helpText.length() * TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS + ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR);
-            status.show();
+////            ToastBar.Status status = ToastBar.getInstance().createStatus().setMessage(text);
+//            ToastBar.Status status = ToastBar.getInstance().createStatus();
+//            status.setMessage(helpText);
+//            //status.setExpires(3000);
+////                final int TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS = 65; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
+////            status.setExpires(status.getMessage().length() * TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS + ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR);
+//            status.setExpires(helpText.length() * TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS + ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR);
+//            status.show();
+            showToastBar(helpText, 0);
         };
 //        comp.setUIID("Label"); //CN1 Support: this not working for SpanButton??
         if (comp instanceof SpanButton) {
@@ -2437,12 +2452,12 @@ public class MyForm extends Form {
     }
 
     static void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
-            SaveEditedValuesLocally previousValues,  Map<Object, UpdateField> parseIdMap2) {
-        makeField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues,parseIdMap2);
+            SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
+        makeField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
     }
 
     static void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
-            GetBool isInherited, ActionListener actionListener, SaveEditedValuesLocally previousValues,  Map<Object, UpdateField> parseIdMap2) {
+            GetBool isInherited, ActionListener actionListener, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
 //    }
@@ -3258,7 +3273,7 @@ public class MyForm extends Form {
                     //we already have a pinchContainer (either being inserted or inserted previously), so do nothing other than resize
 //                    MyForm.this.revalidate(); //refresh with new size of pinchContainer
                     if (pinchContainer != null) {
-//                        MyForm.this.repaint();//is repaint enough to refresh the view?? refresh with new size of pinchContainer
+//                        MyForm.this.repaint();//is repaint enough to refreshTimersFromParseServer the view?? refreshTimersFromParseServer with new size of pinchContainer
                         if (pinchContainer.getParent() != null) {
                             pinchContainer.getParent().animateLayout(300);
                         }
