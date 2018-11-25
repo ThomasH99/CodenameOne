@@ -51,5 +51,7 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeWaitingTasks);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysExpandListHierarchy);
         addSettingInt(cont, parseIdMap2, MyPrefs.timerMaxTimerDurationInHoursXXX, 0, 12, 1);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow);
     }
 }

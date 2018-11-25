@@ -1125,23 +1125,25 @@ public class ScreenRepair extends MyForm {
                 }
                 ));
 
-        content.add(
-                new Button(new Command("TimerNew", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt
-                    ) {
-                        Item item = new Item("timerTest");
-                        item.setActualEffort(MyDate.MINUTE_IN_MILLISECONDS * 20);
-                        item.setEffortEstimate(MyDate.MINUTE_IN_MILLISECONDS * 30);
-                        item.setRemainingEffort(MyDate.MINUTE_IN_MILLISECONDS * 5);
-//                if (ScreenTimerNew.getInstance().isTimerRunning()) {
-//                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer??
-////                    item.setTaskInterrupted(ScreenTimerNew.getInstance().getTimedItemXXX());
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        content.add(
+//                new Button(new Command("TimerNew", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
+//                    @Override
+//                    public void actionPerformed(ActionEvent evt
+//                    ) {
+//                        Item item = new Item("timerTest");
+//                        item.setActualEffort(MyDate.MINUTE_IN_MILLISECONDS * 20);
+//                        item.setEffortEstimate(MyDate.MINUTE_IN_MILLISECONDS * 30);
+//                        item.setRemainingEffort(MyDate.MINUTE_IN_MILLISECONDS * 5);
+////                if (ScreenTimerNew.getInstance().isTimerRunning()) {
+////                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer??
+//////                    item.setTaskInterrupted(ScreenTimerNew.getInstance().getTimedItemXXX());
+////                }
+//                        ScreenTimer2.getInstance().startInterrupt(item, (MyForm) content.getComponentForm());
+//                    }
 //                }
-                        ScreenTimer2.getInstance().startInterrupt(item, (MyForm) content.getComponentForm());
-                    }
-                }
-                ));
+//                ));
+//</editor-fold>
 
         Button createTestValues = new Button(new Command("Create test values") {
             @Override

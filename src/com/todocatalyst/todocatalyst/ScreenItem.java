@@ -183,6 +183,7 @@ public class ScreenItem extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
+        super.refreshAfterEdit();
         //NOT needed to refresh everything when a subtask has been added
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll(); //clear old content pane

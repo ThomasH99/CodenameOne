@@ -129,8 +129,20 @@ public class MyPrefs {
     static PrefEntry timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList
             = new PrefEntry("Show Timer popup when no more tasks", "timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList", true, "**");
 
-    static PrefEntry timerAlwaysShowNewTimerInSmallWindow
+    static PrefEntry timerAlwaysStartWithNewTimerInSmallWindow
             = new PrefEntry("Always show new timers in current screenshow", "timerAlwaysShowNewTimerInSmallWindow", true,
+                    "Instead of showing a started timer in full screen...**");
+   
+    static PrefEntry timerEnableSmallTimerWindow
+            = new PrefEntry("Show small timer in other views", "timerEnableSmallTimerWindow", true,
+                    "**");
+   
+    static PrefEntry timerItemOrItemListCanInterruptExistingItemOrItemList
+            = new PrefEntry("Possible to start **Always show new timers in current screenshow", "timerItemOrItemListCanInterruptExistingItemOrItemList", true,
+                    "Instead of showing a started timer in full screen...**");
+
+    static PrefEntry timerInterruptTaskCanInterruptAlreadyRunningInterruptTask
+            = new PrefEntry("Possible to start **Always show new timers in current screenshow", "timerInterruptTaskCanInterruptAlreadyRunningInterruptTask", true,
                     "Instead of showing a started timer in full screen...**");
 
     //COMMENTS

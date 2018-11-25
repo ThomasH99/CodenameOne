@@ -156,18 +156,18 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
     
 //    public boolean updateWithEditedValues() {
-    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2) {
-        Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
-        ASSERT.that(parseIdMap2 != null);
-            UpdateField repeatRule = previousValues.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
-            for (Object parseId : parseIdMap2.keySet()) {
-//            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
-                parseIdMap2.get(parseId).update();
-            }
-            if (repeatRule != null) {
-                repeatRule.update();
-            }
-    }
+//    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2) {
+//        Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
+//        ASSERT.that(parseIdMap2 != null);
+//            UpdateField repeatRule = previousValues.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
+//            for (Object parseId : parseIdMap2.keySet()) {
+////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
+//                parseIdMap2.get(parseId).update();
+//            }
+//            if (repeatRule != null) {
+//                repeatRule.update();
+//            }
+//    }
 //    }
 
 }

@@ -97,7 +97,7 @@ public class ScreenTimer6 extends MyForm {
     final static String TIMER_REPLAY = "StartTimer-";
 
     private TimerInstance timerInstance;//= new TimerStack();
-//    private Container content = new Container(BoxLayout.y());
+    private Container timerContentainer = new Container(BoxLayout.y());
 //    private TimerStackEntry entry;
 
 //    private CheckBox startTimerAutomaticallyForNextTask; //should be unique for the Timer
@@ -113,7 +113,8 @@ public class ScreenTimer6 extends MyForm {
         if (!(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
-        addComponent(CN.CENTER, timerInstance.getTimerContainer());
+//        addComponent(CN.CENTER, timerInstance.getTimerContainer());
+        addComponent(CN.CENTER, timerContentainer);
 
         if (previousValues != null) {
             this.previousValues = previousValues;
@@ -138,7 +139,13 @@ public class ScreenTimer6 extends MyForm {
 //        buildContentPane(getTimedItem(), itemList, getContentPane()); //rebuild for new values of item etc
         timerInstance = TimerStack.getInstance().getCurrentTimerInstance();
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
-        TimerStack.buildContentPane(timerInstance.getTimerContainer(), timerInstance, true, previousValues); //also removes previous content of contentPane
+//        TimerStack.buildContentPane(timerInstance.getTimerContainer(), timerInstance, true, previousValues); //also removes previous content of contentPane
+        //clear previous edited values
+        if (previousValues != null) {
+            previousValues.deleteFile();
+        }
+        previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItem().getObjectIdP());
+        TimerStack.buildContentPaneFullScreen(timerContentainer,  previousValues); //also removes previous content of contentPane
         super.refreshAfterEdit();
     }
 

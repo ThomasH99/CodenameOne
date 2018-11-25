@@ -299,10 +299,11 @@ public class MyForm extends Form {
             setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
             setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
         }
-        Component timerContainer = TimerStack.getInstance().getTimerSmallContainer();
-        if (timerContainer != null) {
-            addComponent(CN.SOUTH, timerContainer);
-        }
+//        Component timerContainer = TimerStack.getInstance().getSmallContainer();
+//        if (timerContainer != null) {
+//            addComponent(CN.SOUTH, timerContainer);
+//        }
+        TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
 
         //<editor-fold defaultstate="collapsed" desc="comment">
         //************** CORRECT WAY TO MAKE SCROLLABLE
@@ -1242,6 +1243,7 @@ public class MyForm extends Form {
         if (Config.TEST) {
             Log.p("******* calling refreshAfterEdit for Screen: " + getTitle());
         }
+        TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -1492,12 +1494,14 @@ public class MyForm extends Form {
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
         return MyReplayCommand.create("StartTimerFromMyForm", title, icon, (e) -> {
             Item interruptItem = new Item();
+            interruptItem.setInteruptOrInstantTask(true);
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItem());
 //                }
 //                ScreenTimer.getInstance().startTimer(item, MyForm.this);
 //            ScreenTimer2.getInstance().startInterrupt(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
+//            TimerStack.getInstance().startInterruptOrInstantTask(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
             TimerStack.getInstance().startInterruptOrInstantTask(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
             //TODO Allow to pick a common (predefined/template) interrupt task (long-press??)
             //Open it up in editing mode with timer running
@@ -2438,7 +2442,7 @@ public class MyForm extends Form {
     }
 
     void makeField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
-        this.makeField(identifier, field, getVal, putVal, getField, putField, null, null);
+        makeField(identifier, field, getVal, putVal, getField, putField, null, null,null,null);
     }
 //    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
 //         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null);

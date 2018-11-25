@@ -64,6 +64,15 @@ public class TimerInstance extends ParseObject {
 //    }
     private UITimer reloadTimersFromParseServer; //used to determine how often to check if the timer state on the Parse Server has changed (e.g. 
 
+    public String toString() {
+        return (getTimedItem()!=null?"Task:"+getTimedItem().getText():"")
+                +(getTimedProject()!=null?" Proj:"+getTimedProject().getText():"")
+                +(getItemList()!=null?" List:"+getItemList().getText():"")
+                +("; Start:"+getStartTimeD()+"; Duration:"+MyDate.formatTimeDuration(getElapsedTime()))
+                +(isRunning()?" Running":" Stopped");
+//                +(isAutostart());
+    }
+    
 //    private List<ScreenTimer2> timers = new ArrayList();
     @Override
     public void save() {
@@ -129,14 +138,14 @@ public class TimerInstance extends ParseObject {
 
     private void setItemList(ItemList itemList) {
         if (itemList != null) {
-            put(PARSE_TIMED_ITEM, itemList);
+            put(PARSE_LIST, itemList);
         } else {
-            remove(PARSE_TIMED_ITEM);
+            remove(PARSE_LIST);
         }
     }
 
     public ItemList getItemList() {
-        ItemList itemList = (ItemList) getParseObject(PARSE_TIMED_ITEM);
+        ItemList itemList = (ItemList) getParseObject(PARSE_LIST);
         if (itemList != null) {
             itemList = (ItemList) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(itemList);
         }
@@ -214,7 +223,7 @@ public class TimerInstance extends ParseObject {
         }
     }
 
-    public boolean isPaused() {
+    public boolean wasInterruptedWhileRunning() {
         Boolean paused = getBoolean(PARSE_TIMER_PAUSED);
         return (paused == null) ? false : paused;
     }
@@ -289,7 +298,7 @@ public class TimerInstance extends ParseObject {
         return getTimedItem() != null;
     }
 
-    private final Object LOCK = null;
+    private final Object LOCK = new Object();
 
     public synchronized void startTimer(boolean save) {
 //        if (getStartTimeD().getTime()==0){
@@ -392,81 +401,84 @@ public class TimerInstance extends ParseObject {
         }
     }
 
-    private void refreshTimerUIWithNewItem() {
-        Container currentContainer = getTimerContainer();
-        Form form = currentContainer.getComponentForm();
-        if (form instanceof ScreenTimer6) {
-            ((MyForm) form).showPreviousScreenOrDefault(fullScreenTimer); //exit full screen Timer UI, return to previous screen
-        } else {
-            Container parent = currentContainer.getParent();
-            if (parent != null) {
-                parent.removeComponent(currentContainer); //remove small timer window from its parent
-            }
-            if (form != null) {
-                form.animateLayout(300); //animate form to remove timerPane
-            }
-        }
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void refreshTimerUIWithNewItem() {
+//        Container currentContainer = getTimerContainer();
+//        Form form = currentContainer.getComponentForm();
+//        if (form instanceof ScreenTimer6) {
+//            ((MyForm) form).showPreviousScreenOrDefault(fullScreenTimer); //exit full screen Timer UI, return to previous screen
+//        } else {
+//            Container parent = currentContainer.getParent();
+//            if (parent != null) {
+//                parent.removeComponent(currentContainer); //remove small timer window from its parent
+//            }
+//            if (form != null) {
+//                form.animateLayout(300); //animate form to remove timerPane
+//            }
+//        }
+//    }
+//</editor-fold>
 
     /**
     find next item to time for this timerInstance (e.g. next subtask or next task/project in a list)
     @return 
      */
-    Item findNextItemXXX() {
-//        return findNextItem(false); //just find and return the next item (if any)
-//    }
-//
-//    Item findNextItem(boolean updateProject) {
-        Item previousTimedItem = getTimedItem();
-        if (previousTimedItem == null) { //no previousTimerItem, start wtih *first* item (if any)
-        }
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        if (false && isRunning()) {
-//            stopTimer();
-//            addTimerElapsedTimeToItemActualEffort(previousTimedItem, getElapsedTime());
-//            DAO.getInstance().saveInBackground(previousTimedItem);
+//    Item findNextItemXXX() {
+////        return findNextItem(false); //just find and return the next item (if any)
+////    }
+////
+////    Item findNextItem(boolean updateProject) {
+//        Item previousTimedItem = getTimedItem();
+//        if (previousTimedItem == null) { //no previousTimerItem, start wtih *first* item (if any)
 //        }
-//</editor-fold>
-        Item nextTimedItem = null;// = null;
-
-        Item project = getTimedProject();
-        if (project != null) {
-            nextTimedItem = project.getNextLeafItem(previousTimedItem);
-        }
-
-        if (nextTimedItem == null) {
-            //no project or leaf task found above, let's try the itemList
-            ItemList itemList = getItemList();
-            if (itemList == null) {
-                nextTimedItem = null; //no itemList, so no more sources to explore for tasks
-//            return null; //no itemList, so no more sources to explore for tasks
-            } else {
-//                while (nextTimedItem == null) { //iterate through the list until finding a task or a project with a subtask
-                nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //false=> UI: don't expect to circle around a list and start on previous items (need to restart timer on the list for that)
-                if (nextTimedItem != null) {
-                    if (nextTimedItem.isProject()) { //temList.getNextItemAfte) should only return a project if it is not Done, meaning it must have a subtask
-                        nextTimedItem = nextTimedItem.getNextLeafItem(null); //get first subtasks
-//                            if (nextTimedItem != null && updateProject) {
-//                                setTimedProject(nextTimedItem); //set project
-//                            }
-                    } //else { //not a project
-//                            if (updateProject) {
-//                                setTimedProject(null); //set project
-//                            }
-//                        }
-                }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (false && isRunning()) {
+////            stopTimer();
+////            addTimerElapsedTimeToItemActualEffort(previousTimedItem, getElapsedTime());
+////            DAO.getInstance().saveInBackground(previousTimedItem);
+////        }
+////</editor-fold>
+//        Item nextTimedItem = null;// = null;
+//
+//        Item project = getTimedProject();
+//        if (project != null) {
+//            nextTimedItem = project.getNextLeafItem(previousTimedItem);
+//        }
+//
+//        if (nextTimedItem == null) {
+//            //no project or leaf task found above, let's try the itemList
+//            ItemList itemList = getItemList();
+//            if (itemList == null) {
+//                nextTimedItem = null; //no itemList, so no more sources to explore for tasks
+////            return null; //no itemList, so no more sources to explore for tasks
+//            } else {
+////                while (nextTimedItem == null) { //iterate through the list until finding a task or a project with a subtask
+//                nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //false=> UI: don't expect to circle around a list and start on previous items (need to restart timer on the list for that)
+//                if (nextTimedItem != null) {
+//                    if (nextTimedItem.isProject()) { //temList.getNextItemAfte) should only return a project if it is not Done, meaning it must have a subtask
+//                        nextTimedItem = nextTimedItem.getNextLeafItem(null); //get first subtasks
+////                            if (nextTimedItem != null && updateProject) {
+////                                setTimedProject(nextTimedItem); //set project
+////                            }
+//                    } //else { //not a project
+////                            if (updateProject) {
+////                                setTimedProject(null); //set project
+////                            }
+////                        }
 //                }
-            }
-//            if (nextTimedItem == null) {
-//                showNoMoreTasksDialogWhenRelevant(getTimedProject(), getItemList());
+////                }
 //            }
-        }
-//        setTimedItem(nextTimedItem);
-//        save();
-        return nextTimedItem;
-    }
-
-    Item findNextItem() {
+////            if (nextTimedItem == null) {
+////                showNoMoreTasksDialogWhenRelevant(getTimedProject(), getItemList());
+////            }
+//        }
+////        setTimedItem(nextTimedItem);
+////        save();
+//        return nextTimedItem;
+//    }
+//</editor-fold>
+    Item findNextItemXXX() {
         return updateToNextTimerItem(false, false);
     }
 
@@ -535,7 +547,7 @@ public class TimerInstance extends ParseObject {
         4b) *before* the last timed subtask => cannot be distinguished from an earlier subtask that was skipped over
      */
 //        private void updateToNextTimerItem(Item.Condition condition) {
-    boolean updateAndSaveCurrentTimedItem() {
+    boolean updateAndSaveCurrentTimedItemXXX() {
         if (isRunning()) {
             stopTimer();
             Item current = getTimedItem();
@@ -546,20 +558,22 @@ public class TimerInstance extends ParseObject {
         return false;
     }
 
-    Item updateToNextTimerItem() {
-        return updateToNextTimerItem(true);
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Item updateToNextTimerItemXXX() {
+//        return updateToNextTimerItem(true);
+//    }
+//</editor-fold>
 
-    public void pauseTimer(boolean paused, boolean save) {
-        boolean wasPaused = isPaused();
+    public void setWasInterruptedWhileRunning(boolean paused, boolean save) {
+        boolean wasPaused = wasInterruptedWhileRunning();
         setTimerPaused(paused);
         if (save && wasPaused != paused) {
             save();
         }
     }
 
-    public void pauseTimer(boolean paused) {
-        pauseTimer(paused, true);
+    public void pauseTimerXXX(boolean paused) {
+        setWasInterruptedWhileRunning(paused, true);
     }
 
     /**

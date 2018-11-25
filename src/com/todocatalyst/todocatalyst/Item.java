@@ -3798,7 +3798,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             nextIndex = list.indexOf(previousItem)+1;
         }
-        if (nextIndex >= 0 && nextIndex < list.size() - 1) { //prevIndex<list.size()-1 => there is at least one item after the previous one
+        if (nextIndex >= 0 && nextIndex < list.size() ) { //prevIndex<list.size()-1 => there is at least one item after the previous one
             return list.get(nextIndex );
         }
         return null;
