@@ -60,9 +60,11 @@ public class MyCheckBox extends Button {
     public MyCheckBox() {
         this(ItemStatus.CREATED, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null);
     }
+
     public MyCheckBox(ItemStatus itemStatus, ProcessItemStatusChange statusChangeHandler) {//, IsItemOngoing itemOngoing) {
         this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), statusChangeHandler, null, null, null);
     }
+
     public MyCheckBox(ItemStatus itemStatus) {//, IsItemOngoing itemOngoing) {
         this(itemStatus, null);
     }
@@ -86,7 +88,7 @@ public class MyCheckBox extends Button {
 //        } else {
 //            this.popupIconStyleName = "ItemStatusPopupIcon";
 //        }
-this.itemOngoing=itemOngoing;
+        this.itemOngoing = itemOngoing;
 
         this.popupIconStyleUIID = singleIconStyleUIID;
         if (this.popupIconStyleUIID == null) {
@@ -218,9 +220,9 @@ this.itemOngoing=itemOngoing;
     void setIsItemOngoing(IsItemOngoing itemOngoing) {
         this.itemOngoing = itemOngoing;
     }
-    
+
     public void setStatusChangeHandler(ProcessItemStatusChange statusChangeHandler) {
-        this.statusChangeHandler=statusChangeHandler;
+        this.statusChangeHandler = statusChangeHandler;
     }
 
     /**
@@ -232,12 +234,13 @@ this.itemOngoing=itemOngoing;
     void setStatus(ItemStatus itemStatus) {
         setStatus(itemStatus, true);
     }
+
     void setStatus(ItemStatus itemStatus, boolean runStatusChangeHandler) {
         //run statusChangeHandler.process *first* before changing status to have access to old status value
         if (itemStatus != this.itemStatus) {
             ItemStatus oldStatus = this.itemStatus;
             this.itemStatus = itemStatus; //update before making call below to avoid infinite loop
-            if (runStatusChangeHandler&&statusChangeHandler != null) {
+            if (runStatusChangeHandler && statusChangeHandler != null) {
                 statusChangeHandler.processNewStatusValue(oldStatus, itemStatus);
             }
 //            setIcon(ItemStatus.icons[itemStatus.ordinal()]);

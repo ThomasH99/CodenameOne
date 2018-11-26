@@ -81,6 +81,7 @@ public class Icons {
     final static Image iconTimerScreenAlwaysOnLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_LIGHTBULB_OUTLINE, labelStyle); //Fast Forward = Play next, 
     final static Image iconTimerInterruptedTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_FLASH_OFF, labelStyle); //Warning: triangle with '!', or use Flash Off to show it was interrupted
     final static Image iconTimerStopExitTimer = FontImage.createMaterial(FontImage.MATERIAL_STOP, labelStyle); //Warning: triangle with '!', or use Flash Off to show it was interrupted
+    final static Image iconTimerNextTask = FontImage.createMaterial(FontImage.MATERIAL_SKIP_NEXT, labelStyle); //like skip to next song
 
     //ALARM
     final static Image iconSnoozeLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_SNOOZE, labelStyle);

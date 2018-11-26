@@ -145,7 +145,7 @@ public class ScreenTimer6 extends MyForm {
             previousValues.deleteFile();
         }
         previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItem().getObjectIdP());
-        TimerStack.buildContentPaneFullScreen(timerContentainer,  previousValues); //also removes previous content of contentPane
+        TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, timerContentainer,  previousValues); //also removes previous content of contentPane
         super.refreshAfterEdit();
     }
 

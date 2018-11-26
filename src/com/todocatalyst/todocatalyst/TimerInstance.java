@@ -188,9 +188,9 @@ public class TimerInstance extends ParseObject {
         return getStartTimeD().getTime();
     }
 
-    public final void setElapsedTime(long start) {
-        if (start != 0) {
-            put(PARSE_TIMER_ELAPSED_TIME, start);
+    public final void setElapsedTime(long timerDuration) {
+        if (timerDuration != 0) {
+            put(PARSE_TIMER_ELAPSED_TIME, timerDuration);
         } else {
             remove(PARSE_TIMER_ELAPSED_TIME);
         }
@@ -203,16 +203,17 @@ public class TimerInstance extends ParseObject {
     }
 
     private final void setAutostart(boolean autostart) {
-        if (autostart) {
-            put(PARSE_AUTOSTART_TIMER, autostart);
-        } else {
-            remove(PARSE_AUTOSTART_TIMER);
-        }
+//        if (autostart) {
+//            put(PARSE_AUTOSTART_TIMER, autostart);
+//        } else {
+//            remove(PARSE_AUTOSTART_TIMER);
+//        }
     }
 
     public boolean isAutostart() {
-        Boolean autostart = getBoolean(PARSE_AUTOSTART_TIMER);
-        return (autostart == null) ? false : autostart;
+//        Boolean autostart = getBoolean(PARSE_AUTOSTART_TIMER);
+//        return (autostart == null) ? false : autostart;
+        return MyPrefs.timerAutomaticallyStartTimer.getBoolean();
     }
 
     private final void setTimerPaused(boolean paused) {
@@ -249,7 +250,7 @@ public class TimerInstance extends ParseObject {
         }
     }
 
-    public boolean isAutoGotoNextTaskl() {
+    public boolean isAutoGotoNextTask() {
         Boolean autoGotoNextTask = getBoolean(PARSE_TIMER_AUTO_GOTO_NEXT_TASK);
         return (autoGotoNextTask == null) ? false : autoGotoNextTask;
     }
