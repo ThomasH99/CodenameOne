@@ -65,14 +65,14 @@ public class TimerInstance extends ParseObject {
     private UITimer reloadTimersFromParseServer; //used to determine how often to check if the timer state on the Parse Server has changed (e.g. 
 
     public String toString() {
-        return (getTimedItem()!=null?"Task:"+getTimedItem().getText():"")
-                +(getTimedProject()!=null?" Proj:"+getTimedProject().getText():"")
-                +(getItemList()!=null?" List:"+getItemList().getText():"")
-                +("; Start:"+getStartTimeD()+"; Duration:"+MyDate.formatTimeDuration(getElapsedTime()))
-                +(isRunning()?" Running":" Stopped");
+        return (getTimedItem() != null ? "Task:" + getTimedItem().getText() : "")
+                + (getTimedProject() != null ? " Proj:" + getTimedProject().getText() : "")
+                + (getItemList() != null ? " List:" + getItemList().getText() : "")
+                + ("; Start:" + getStartTimeD() + "; Duration:" + MyDate.formatTimeDuration(getElapsedTime()))
+                + (isRunning() ? " Running" : " Stopped");
 //                +(isAutostart());
     }
-    
+
 //    private List<ScreenTimer2> timers = new ArrayList();
     @Override
     public void save() {
@@ -198,6 +198,9 @@ public class TimerInstance extends ParseObject {
     }
 
     public long getElapsedTime() {
+        if (isRunning()) {
+            return System.currentTimeMillis() - getStartTime();
+        }
         Long startTime = getLong(PARSE_TIMER_ELAPSED_TIME);
         return (startTime == null) ? 0L : startTime;
     }
@@ -419,7 +422,6 @@ public class TimerInstance extends ParseObject {
 //        }
 //    }
 //</editor-fold>
-
     /**
     find next item to time for this timerInstance (e.g. next subtask or next task/project in a list)
     @return 
@@ -564,7 +566,6 @@ public class TimerInstance extends ParseObject {
 //        return updateToNextTimerItem(true);
 //    }
 //</editor-fold>
-
     public void setWasInterruptedWhileRunning(boolean paused, boolean save) {
         boolean wasPaused = wasInterruptedWhileRunning();
         setTimerPaused(paused);
