@@ -1460,7 +1460,7 @@ public class ScreenListOfItems extends MyForm {
 
         Container west = new Container(BoxLayout.x());
         if (oldFormat) {
-            mainCont.addComponent(CN.WEST, west);
+            mainCont.addComponent(BorderLayout.WEST, west);
         }
 
         Container southDetailsContainer = new Container(new FlowLayout());
@@ -1473,7 +1473,7 @@ public class ScreenListOfItems extends MyForm {
 //        south.setHidden(!showDetailsForAllTasks || (tasksWithDetailsShown!=null && !tasksWithDetailsShown.contains(item))); //hide details by default
         southDetailsContainer.setHidden(!showDetails); //hide details by default
         if (oldFormat) {
-            mainCont.addComponent(CN.SOUTH, southDetailsContainer);
+            mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
         }
 
         Button expandSubTasksButton;// = null;//= new Button(); //null;
@@ -1873,7 +1873,7 @@ public class ScreenListOfItems extends MyForm {
         }
 
         if (oldFormat) {
-            mainCont.addComponent(CN.EAST, east);
+            mainCont.addComponent(BorderLayout.EAST, east);
         }
 
         //SOUTH
@@ -2043,6 +2043,18 @@ public class ScreenListOfItems extends MyForm {
                 southDetailsContainer.addComponent(waitingTillLabel);
             }
         }
+        //ESTIMATE
+        Label effortEstimateLabel = new Label();
+        if (item.getEffortEstimate() != 0 && MyPrefs.itemListEffortEstimate.getBoolean()) {
+//            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
+            effortEstimateLabel = new Label("E:" + MyDate.formatTimeDuration(item.getEffortEstimate()), "ItemEffortEstimateLabel");
+            if (Config.TEST) {
+                waitingTillLabel.setName("EffortEstimate");
+            }
+            if (showInDetails) {
+                southDetailsContainer.addComponent(effortEstimateLabel);
+            }
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //ACTUAL
 //        long actual = item.getActualEffort();
@@ -2077,16 +2089,16 @@ public class ScreenListOfItems extends MyForm {
         Container bottomContent = new Container(new BorderLayout());
 //        Container mainItemCont = new Container(new BorderLayout())
         mainCont
-                .add(CN.WEST, BoxLayout.encloseX(selected, status))
-                .add(CN.EAST, editItemButton)
-                .add(CENTER,
-                        itemContent.add(CENTER, BorderLayout.west(itemLabel)) //item text + expand subtasks
-                                .add(CN.SOUTH,
+                .add(BorderLayout.WEST, BoxLayout.encloseX(selected, status))
+                .add(BorderLayout.EAST, editItemButton)
+                .add(BorderLayout.CENTER,
+                        itemContent.add(BorderLayout.CENTER, BorderLayout.west(itemLabel)) //item text + expand subtasks
+                                .add(BorderLayout.SOUTH,
                                         bottomContent
                                                 //                                                .add(WEST, BorderLayout.centerEastWest(null, null, BoxLayout.encloseX(prioCont, dateCont,effortCont) ))
-                                                .add(CN.WEST, BoxLayout.encloseX(prioCont, dateCont, effortCont))
-                                                .add(CN.EAST, expandSubsCont)
-                                                .add(CN.SOUTH, southDetailsContainer)));
+                                                .add(BorderLayout.WEST, BoxLayout.encloseX(prioCont, dateCont, effortCont))
+                                                .add(BorderLayout.EAST, expandSubsCont)
+                                                .add(BorderLayout.SOUTH, southDetailsContainer)));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container eastCont = new Container(BoxLayout.x())
 //                .add(BorderLayout.east(BoxLayout.encloseX(
@@ -2598,14 +2610,14 @@ refreshAfterEdit();
         Container itemContent = new Container(new BorderLayout());
         Container bottomContent = new Container(new BorderLayout());
         mainCont
-                .add(CN.EAST, editItemButton)
-                .add(CENTER,
-                        itemContent.add(CENTER, BorderLayout.west(itemLabel)) //item text + expand subtasks
-                                .add(CN.SOUTH,
+                .add(BorderLayout.EAST, editItemButton)
+                .add(BorderLayout.CENTER,
+                        itemContent.add(BorderLayout.CENTER, BorderLayout.west(itemLabel)) //item text + expand subtasks
+                                .add(BorderLayout.SOUTH,
                                         bottomContent
                                                 //                                                .add(CN.WEST, BoxLayout.encloseX(prioCont, dateCont, effortCont))
                                                 //                                                .add(CN.EAST, expandSubsCont)
-                                                .add(CN.SOUTH, southDetailsContainer)));
+                                                .add(BorderLayout.SOUTH, southDetailsContainer)));
 
         return swipCont;//ignore Swipeable for the moment
     }

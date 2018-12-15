@@ -67,7 +67,9 @@ public class ScreenListOfAlarms extends MyForm {
 
 //        this.notificationList=notificationList;
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-        setLayout(new BorderLayout());
+        if (!(getLayout() instanceof BorderLayout)) {
+            setLayout(new BorderLayout());
+        }
 
         addCommandsToToolbar(getToolbar());
         refreshAfterEdit();

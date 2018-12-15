@@ -1285,13 +1285,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            hierarchyStr = "Project hierarchy: " + hierarchyStr; //format "directOnwer / nextLevelOwner / Top-levelProject
 //        }
 
-        return hierarchyStr.isEmpty()?null:hierarchyStr;
+        return hierarchyStr.isEmpty() ? null : hierarchyStr;
     }
 
     /**
     returns null if no owner
     @return 
-    */
+     */
     public String getOwnerHierarchyAsString() {
         if (getOwner() instanceof Item) {
             return getOwnerHierarchyAsString(getOwnerHierarchy());
@@ -3790,16 +3790,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public Item getNextLeafItem(Item previousItem, boolean excludeWaiting) {
     public Item getNextLeafItem(Item previousItem) {
 //        return getNextUndoneLeafItemImpl(previousItem, excludeWaiting, false);
-        List<Item> list = getLeafTasksAsList(null);
+        List<Item> leafTaskList = getLeafTasksAsList(null);
 
         int nextIndex;
         if (previousItem == null) {
             nextIndex = 0;
         } else {
-            nextIndex = list.indexOf(previousItem)+1;
+            nextIndex = leafTaskList.indexOf(previousItem) + 1;
         }
-        if (nextIndex >= 0 && nextIndex < list.size() ) { //prevIndex<list.size()-1 => there is at least one item after the previous one
-            return list.get(nextIndex );
+        if (nextIndex >= 0 && nextIndex < leafTaskList.size()) { //prevIndex<list.size()-1 => there is at least one item after the previous one
+            return leafTaskList.get(nextIndex);
         }
         return null;
     }
@@ -6102,8 +6102,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     static public List<Category> convCatObjectIdsListToCategoryList(List<String> categoryIdList) {
         List<Category> categories = new ArrayList();
-        for (String c : categoryIdList) {
-            categories.add(DAO.getInstance().fetchCategory(c));
+        if (categoryIdList != null) {
+            for (String c : categoryIdList) {
+                categories.add(DAO.getInstance().fetchCategory(c));
+            }
         }
         return categories;
     }

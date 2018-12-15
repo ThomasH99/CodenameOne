@@ -41,7 +41,7 @@ TitleSmall {
 
 Spacer {
     cn1-derive: Label;
-    
+
     color: darkslategray;
     background-color: blue;
     margin:3mm;
@@ -52,13 +52,13 @@ Spacer {
     padding-right:0.5mm;*/
 }
 EditFieldContainer {
-   /* cn1-derive: Label;
-    
-    color: darkslategray;
-    background-color: blue;
-    margin:3mm;
-    border-top: 1px darkgray;
-    padding:0 ; /*top+bottom right+left*/
+    /* cn1-derive: Label;
+     
+     color: darkslategray;
+     background-color: blue;
+     margin:3mm;
+     border-top: 1px darkgray;
+     padding:0 ; /*top+bottom right+left*/
     border-bottom: 4px black;
     /*padding-left:0.5mm;
     padding-right:0.5mm;*/
@@ -143,7 +143,7 @@ ItemListSmall {
 
 ItemDetails { /*style for task details - SOUTH */
     cn1-derive: Container;
-    
+
     margin:0mm;
     padding:0; /*top+bottom right+left*/
 }
@@ -463,6 +463,25 @@ TimerTimer {
     background: blue;
     text-align: center;
     color:white;
+}
+
+TimerTimerPaused {
+    cn1-derive: TimerTimer;
+    background: grey;
+}
+
+TimerTimerSmall {
+    cn1-derive: TimerTimer;
+    border: 0.5mm solid gray;
+    font-size: 100%;
+}
+TimerTimerSmallPaused {
+    cn1-derive: TimerTimerSmall;
+    background: grey;
+}
+SmallTimerContainer {
+    /*cn1-derive: TimerTimerSmall;*/
+    background: lightblue;
 }
 
 /******* TIMER ****************/

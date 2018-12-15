@@ -175,6 +175,18 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             }
         });
 
+        ParseRegistry.registerParseFactory(TimerInstance.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (TimerInstance.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new TimerInstance();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -303,7 +303,9 @@ public class MyForm extends Form {
 //        if (timerContainer != null) {
 //            addComponent(CN.SOUTH, timerContainer);
 //        }
-        TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
+        if (true || !(this instanceof ScreenTimer6)) {
+            TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
+        }
 
         //<editor-fold defaultstate="collapsed" desc="comment">
         //************** CORRECT WAY TO MAKE SCROLLABLE
@@ -2442,7 +2444,8 @@ public class MyForm extends Form {
     }
 
     void makeField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
-        makeField(identifier, field, getVal, putVal, getField, putField, null, null,null,null);
+//        makeField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
+        makeField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
     }
 //    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
 //         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null);
@@ -2473,7 +2476,7 @@ public class MyForm extends Form {
 
         //check if a previous value exists, and if yes, use that to initialize the editable field with, 
         if (putField != null && getOrg != null) { //if putField==null => not an editable field
-            if (previousValues.get(fieldIdentifier) != null) {
+            if (previousValues != null && previousValues.get(fieldIdentifier) != null) {
 //            effortEstimate.setDuration((long) previousValues.get(Item.PARSE_EFFORT_ESTIMATE)); //use a previously edited value
                 putField.setVal(previousValues.get(fieldIdentifier)); //use a previously edited value
             } else {
@@ -2509,11 +2512,13 @@ public class MyForm extends Form {
 //            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
                 ASSERT.that(getField.getVal() != null, "getField.getVal()==null, for field=" + fieldIdentifier);
                 ASSERT.that(getOrg.getVal() != null, "getOrg.getVal()==null, for field=" + fieldIdentifier);
-                if (!getField.getVal().equals(getOrg.getVal())) {
+                if (previousValues != null) {
+                    if (!getField.getVal().equals(getOrg.getVal())) {
 //                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
-                    previousValues.put(fieldIdentifier, getField.getVal());
-                } else {
-                    previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+                        previousValues.put(fieldIdentifier, getField.getVal());
+                    } else {
+                        previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+                    }
                 }
             };
             //listen to changes an update+save if edited to different value than item.orgValue

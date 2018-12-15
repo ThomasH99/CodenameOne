@@ -1603,6 +1603,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                () -> itemLS.getImportance() == null ? "" : itemLS.getImportance().getDescription(),
 //                (s) -> item.setImportance(Item.HighMediumLow.getValue(s)));
         MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), true);
+//        makeField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportance(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
         makeField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportance(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
                 () -> importance.getSelectedString(), (i) -> importance.select((String) i));
 

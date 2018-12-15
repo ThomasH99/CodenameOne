@@ -48,10 +48,14 @@ public class TimerInstance extends ParseObject {
         super(CLASS_NAME);
     }
 
-    TimerInstance(Item item, ItemList itemList, boolean autoStartTimer, boolean autoGotoNextTask) {
+//    TimerInstance(Item item, ItemList itemList, boolean autoStartTimer, boolean autoGotoNextTask) {
+    TimerInstance(Item item, ItemList itemList) {
         super(CLASS_NAME);
-        setAutostart(autoStartTimer);
-        setAutoGotoNextTask(autoGotoNextTask);
+//        setAutostart(autoStartTimer);
+//        setAutoGotoNextTask(autoGotoNextTask);
+        if (false) {
+            setShowTotalActual(MyPrefs.timerShowTotalActualInTimer.getBoolean());
+        }
         setSources(item, itemList);
     }
 
@@ -74,8 +78,8 @@ public class TimerInstance extends ParseObject {
     }
 
 //    private List<ScreenTimer2> timers = new ArrayList();
-    @Override
-    public void save() {
+//    @Override
+    public void saveMe() {
         DAO.getInstance().saveInBackground(this);
     }
 
@@ -91,25 +95,29 @@ public class TimerInstance extends ParseObject {
     @param timedItem 
      */
     private void setTimedItem(Item timedItem) {
-        Item previousItem = getTimedItem();
-        if (previousItem != null && isRunning()) {
-            stopTimer(false); //don't save because saved once below
-            addTimerElapsedTimeToItemActualEffort(previousItem, getElapsedTime());
-            DAO.getInstance().saveInBackground(previousItem);
+        if (false) {
+            Item previousItem = getTimedItem();
+            if (previousItem != null && isRunning()) {
+                stopTimer(false); //don't save because saved once below
+                addTimerElapsedTimeToItemActualEffort(previousItem, getElapsedTime());
+                DAO.getInstance().saveInBackground(previousItem);
+            }
         }
         if (timedItem != null) {
             put(PARSE_TIMED_ITEM, timedItem);
         } else {
             remove(PARSE_TIMED_ITEM);
         }
-        if (isAutostart()) {
-            setStartTimeToNow();
-            startTimer(false);
-        }
-        save();
+        if (false) {
+            if (isAutostart()) {
+                setStartTimeToNowAndStartNow();
+//            startTimer(false);
+            }
+            saveMe();
 //        if (previousItem != null && !previousItem.equals(timedItem)) {
 //            setStartTime();
 //        }
+        }
     }
 
     public Item getTimedItem() {
@@ -155,8 +163,14 @@ public class TimerInstance extends ParseObject {
     private final void setStartTime(Date start) {
         if ((start != null && start.getTime() != 0)) {
             put(PARSE_TIMER_START_TIME, start);
+            if (false) {
+                setShowTotalActual(MyPrefs.timerShowTotalActualInTimer.getBoolean()); //Capture if startTime is articially earlier 
+            }
         } else {
             remove(PARSE_TIMER_START_TIME);
+            if (false) {
+                setShowTotalActual(false);
+            }
         }
 //        setElapsedTime(0);
 
@@ -173,7 +187,7 @@ public class TimerInstance extends ParseObject {
 //        setElapsedTime(0);
     }
 
-    private final void setStartTimeToNow() {
+    private final void setStartTimeToNowAndStartNow() {
         setStartTime(new Date());
     }
 
@@ -198,11 +212,24 @@ public class TimerInstance extends ParseObject {
     }
 
     public long getElapsedTime() {
+//        long addPreviousActual = 0;
+//        if (MyPrefs.timerShowTotalActualInTimer.getBoolean()) {
+//            addPreviousActual = getTimedItem().getActualEffortProjectTaskItself();
+//        }
         if (isRunning()) {
-            return System.currentTimeMillis() - getStartTime();
+            return System.currentTimeMillis() - getStartTime(); // + addPreviousActual;
         }
         Long startTime = getLong(PARSE_TIMER_ELAPSED_TIME);
-        return (startTime == null) ? 0L : startTime;
+        return ((startTime == null) ? 0L : startTime); // + addPreviousActual;
+    }
+
+    public long getElapsedTotalTime() {
+
+        if (MyPrefs.timerShowTotalActualInTimer.getBoolean()) {
+            return getElapsedTime() + getTimedItem().getActualEffortProjectTaskItself();
+        } else {
+            return getElapsedTime();
+        }
     }
 
     private final void setAutostart(boolean autostart) {
@@ -232,7 +259,11 @@ public class TimerInstance extends ParseObject {
         return (paused == null) ? false : paused;
     }
 
-    final void setShowTotalActual(boolean showTotalActual) {
+    /**
+    show actual affects the state so cannot be changed for an already started timer
+    @param showTotalActual 
+     */
+    public void setShowTotalActual(boolean showTotalActual) {
         if (showTotalActual) {
             put(PARSE_TIMER_SHOWS_TOTAL_ACTUAL, showTotalActual);
         } else {
@@ -254,8 +285,9 @@ public class TimerInstance extends ParseObject {
     }
 
     public boolean isAutoGotoNextTask() {
-        Boolean autoGotoNextTask = getBoolean(PARSE_TIMER_AUTO_GOTO_NEXT_TASK);
-        return (autoGotoNextTask == null) ? false : autoGotoNextTask;
+//        Boolean autoGotoNextTask = getBoolean(PARSE_TIMER_AUTO_GOTO_NEXT_TASK);
+//        return (autoGotoNextTask == null) ? false : autoGotoNextTask;
+        return MyPrefs.timerAutomaticallyGotoNextTask.getBoolean();
     }
 
 //    public Container getTimerContainer() {
@@ -277,7 +309,7 @@ public class TimerInstance extends ParseObject {
     return the time the timer has been running, whether currently running or paused
     @return 
      */
-    public long getTime() {
+    public long getTimeXXX() {
         if (getElapsedTime() > 0) {
             return getElapsedTime();
         } else {
@@ -302,20 +334,19 @@ public class TimerInstance extends ParseObject {
         return getTimedItem() != null;
     }
 
-    private final Object LOCK = new Object();
-
+//    private final Object TIMER_LOCK = new Object();
     public synchronized void startTimer(boolean save) {
 //        if (getStartTimeD().getTime()==0){
-        synchronized (LOCK) {
+        synchronized (TimerStack.TIMER_LOCK) {
             if (getStartTime() == 0) {
 //            setStartTime(new Date(new Date().getTime() - getElapsedTime()));
 //            setStartTime(new Date(new Date().getTime() - getElapsedTime()));
                 setStartTime(System.currentTimeMillis() - getElapsedTime());
                 setElapsedTime(0); //reset elapsed to 0 while timer is running
             }
-        }
-        if (save) {
-            save(); //update server
+            if (save) {
+                saveMe(); //update server
+            }
         }
     }
 
@@ -327,17 +358,18 @@ public class TimerInstance extends ParseObject {
     }
 
     public void stopTimer(boolean save) {
-        synchronized (LOCK) {
-            if (getStartTime() != 0) {
+        synchronized (TimerStack.TIMER_LOCK) {
+            if (isRunning()) { //getStartTime() != 0) {
 //            setElapsedTime(new Date().getTime() - new Date().getTime());
                 setElapsedTime(System.currentTimeMillis() - getStartTime());
-                setStartTime(0);
+//                setStartTime(0);
             } else {
                 setElapsedTime(0);
             }
-        }
-        if (save) {
-            save(); //update server
+            setStartTime(0);
+            if (save) {
+                saveMe(); //update server
+            }
         }
     }
 
@@ -348,7 +380,7 @@ public class TimerInstance extends ParseObject {
         stopTimer(true);
     }
 
-    public void setTimerState(boolean startTimer) {
+    public void setTimerStateXXX(boolean startTimer) {
         if (startTimer) {
             startTimer(true);
         } else {
@@ -366,6 +398,7 @@ public class TimerInstance extends ParseObject {
         setItemList(itemList);
 
         if (item == null && itemList != null) {
+            //get first item in list
             item = (Item) itemList.getNextItemAfter(null, true); //item may become null
         }
 
@@ -530,7 +563,7 @@ public class TimerInstance extends ParseObject {
             setTimedItem(nextTimedItem);
         }
         if (save) {
-            save();
+            saveMe();
         }
         return nextTimedItem;
     }
@@ -570,7 +603,7 @@ public class TimerInstance extends ParseObject {
         boolean wasPaused = wasInterruptedWhileRunning();
         setTimerPaused(paused);
         if (save && wasPaused != paused) {
-            save();
+            saveMe();
         }
     }
 

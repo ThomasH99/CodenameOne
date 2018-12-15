@@ -2262,7 +2262,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else {
             nextIndex = prevIndex + 1;
         }
-        if (nextIndex >= 0 && nextIndex < list.size() - 1) { //if nextIndex is a valid index
+        if (nextIndex >= 0 && nextIndex < list.size() ) { //if nextIndex is a valid index
             return list.get(nextIndex);
         }
         return null;

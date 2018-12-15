@@ -97,7 +97,7 @@ public class ScreenTimer6 extends MyForm {
     final static String TIMER_REPLAY = "StartTimer-";
 
     private TimerInstance timerInstance;//= new TimerStack();
-    private Container timerContentainer = new Container(BoxLayout.y());
+//    private Container timerContentainer = new Container(BoxLayout.y());
 //    private TimerStackEntry entry;
 
 //    private CheckBox startTimerAutomaticallyForNextTask; //should be unique for the Timer
@@ -114,7 +114,7 @@ public class ScreenTimer6 extends MyForm {
             setLayout(new BorderLayout());
         }
 //        addComponent(CN.CENTER, timerInstance.getTimerContainer());
-        addComponent(CN.CENTER, timerContentainer);
+//        addComponent(CN.CENTER, timerContentainer);
 
         if (previousValues != null) {
             this.previousValues = previousValues;
@@ -131,6 +131,7 @@ public class ScreenTimer6 extends MyForm {
         //updateActionOnDone cannot be used in Timer due to interrupt tasks and since they cannot be pushed onto the stack
         this.updateActionOnDone = () -> {
         };
+        refreshAfterEdit();
     }
 
     @Override
@@ -144,10 +145,14 @@ public class ScreenTimer6 extends MyForm {
         if (previousValues != null) {
             previousValues.deleteFile();
         }
-        previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItem().getObjectIdP());
+        if (timerInstance != null) {
+            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItem().getObjectIdP());
 //        TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, timerContentainer,  previousValues); //also removes previous content of contentPane
-        timerContentainer=TimerStack.buildContentPaneFullScreen(ScreenTimer6.this,  previousValues); //also removes previous content of contentPane
-        super.refreshAfterEdit();
+            Container contentPane = getContentPane();
+            contentPane.removeAll();
+            contentPane.add(BorderLayout.CENTER, TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, previousValues)); //also removes previous content of contentPane
+            super.refreshAfterEdit();
+        }
     }
 
     // ************************** START TIMER ************************
@@ -160,11 +165,18 @@ public class ScreenTimer6 extends MyForm {
         MyForm.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
     }
 
+//    static void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
+//        Form f = Display.getInstance().getCurrent();
+//        if (f instanceof MyForm) {
+//            showPreviousScreenOrDefault((MyForm) f, callRefreshAfterEdit);
+//        }
+//    }
+
     //****************** UI *********************
     //
     private void addCommandsToToolbar(Toolbar toolbar) {
 
-        toolbar.setBackCommand(makeDoneCommandWithNoUpdate()); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
 
         //Create an interrupt task and start the timer on it
         toolbar.addCommandToRightBar(makeInterruptCommand());
