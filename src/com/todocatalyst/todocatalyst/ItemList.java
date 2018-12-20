@@ -2248,7 +2248,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @return net item or null if no next item
      */
     public E getNextItemAfter(Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
-//        return getNextUndoneLeafItemImpl(previousItem, excludeWaiting, false);
+//        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
         List<E> list = getList(); //get filtered list
         int prevIndex;
         if (previousItem != null) {

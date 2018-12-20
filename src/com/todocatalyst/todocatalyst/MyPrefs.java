@@ -102,7 +102,10 @@ public class MyPrefs {
             = new PrefEntry("Show Estimate, total time and Remaining time for task", "timerShowEffortEstimateDetails", false, "Timer will show details on estimate etc**"); //, "Reminder vibration interval when Timer is running");
 
     static PrefEntry timerIncludeWaitingTasks
-            = new PrefEntry("Include Waiting tasks even before the waiting date is met", "timerDoNotSkipWaitingTasks", false, "Normally, the Timer will skip Waiting tasks until the waiting date. This setting will include them**");
+            = new PrefEntry("Time Waiting tasks even before the waiting date is met", "timerDoNotSkipWaitingTasks", false, "Normally, the Timer will skip Waiting tasks until the waiting date. This setting will include them**");
+
+    static PrefEntry timerIncludeDoneTasks
+            = new PrefEntry("Time Done tasks", "timerIncludeDoneTasks", false, "Normally, the Timer will skip Done tasks. This setting will include them**");
 
 //    static PrefEntry timerBuzzerActive = 
 //            new PrefEntry("Buzz when Timer is running","timerBuzzerActive", false, "Buzzer active when timer is running");

@@ -263,7 +263,7 @@ public class TimerStackEntry implements Externalizable {
         } else if (itemList != null) { //Timer is running on an ItemList
             boolean[] previousItemAlreadyFound = new boolean[]{timedItem == null};
             for (int i = itemListIndex, size = itemList.size(); i < size; i++) {
-//                Item tempItem = ((Item) itemList.getItemAt(i)).getNextUndoneLeafItemImpl(timedItem, condition, previousItemAlreadyFound);
+//                Item tempItem = ((Item) itemList.getItemAt(i)).getNextLeafItemMeetingConditionImpl(timedItem, condition, previousItemAlreadyFound);
                 Item tempItem = ((Item) itemList.getItemAt(i)).getNextLeafItem(timedItem);
                 if (tempItem != null) {
                     nextItem = tempItem; //store nextItem for next time
@@ -311,7 +311,7 @@ public class TimerStackEntry implements Externalizable {
 //            for (int i = itemListIndex, size = itemList.size(); i < size; i++) {
 ////                Item tempItem = ((Item) itemList.getItemAt(itemListIndex)).getNextLeafItem(timedItem, item -> isSuitableItemForTimer(item));
 ////                Item tempItem = ((Item) itemList.getItemAt(i)).getNextLeafItem(prevTimedItem, condition);
-//                Item tempItem = ((Item) itemList.getItemAt(i)).getNextUndoneLeafItemImpl(timedItem, condition, previousItemAlreadyFound);
+//                Item tempItem = ((Item) itemList.getItemAt(i)).getNextLeafItemMeetingConditionImpl(timedItem, condition, previousItemAlreadyFound);
 ////                if (tempItem != null && !tempItem.equals(prevTimedItem)) {
 //                if (tempItem != null) {
 //                    nextItem = tempItem; //store nextItem for next time

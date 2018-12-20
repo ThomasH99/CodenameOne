@@ -615,7 +615,8 @@ public class AlarmHandler {
             Media m = MediaManager.createMedia(soundDir + MyPrefs.getString(MyPrefs.alarmSoundFile), false); //in SImulator: put mp3 file in .cn1!
             m.play();
         } catch (IOException err) {
-            Log.e(err);
+            if (false)Log.e(err);
+            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
         }
     }
 }

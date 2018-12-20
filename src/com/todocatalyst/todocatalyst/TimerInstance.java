@@ -519,48 +519,46 @@ public class TimerInstance extends ParseObject {
     }
 
     Item updateToNextTimerItem(boolean update, boolean save) {
-        Item previousTimedItem = getTimedItem();
-        if (previousTimedItem == null) {
-//            return null; //NO, if null, then the first item will be found below
-        }
-
-        Item nextTimedItem;// = null;
-
+        Item previousTimedItem = getTimedItem(); //may return null on first call, in which case the very first subtask will be returned
+        Item nextTimedItem = null;
         Item project = getTimedProject();
-        if (project != null) {
-            nextTimedItem = project.getNextLeafItem(previousTimedItem);
-//        if (nextTimedItem != null) {
-//            } else {
-            if (nextTimedItem == null) {
-                if (update) {
-                    setTimedProject(null); //this project has no more leaf tasks so removed
+        ItemList itemList = null;
+        do {
+//            Item previousSubtask = previousTimedItem;
+            while (project != null && nextTimedItem == null) {
+                nextTimedItem = project.getNextLeafItem(previousTimedItem, item -> TimerStack.isValidItemForTimer(item)); //getNextLeafItem will only return valid subtasks (matching condition), or null
+                if (nextTimedItem == null) {
+                    project = null; //this project has no more leaf tasks so removed
+                    previousTimedItem = null; //the previousTimedTask *was* in the timedProject, but there were no more suitable subtasks, set previousTimedItem=null so we'll task the first task/subtask in the next tasks/project
                 }
             }
-        }
 
-        //no project or leaf task found above, let's try the itemList
-        ItemList itemList = getItemList();
-        if (itemList == null) {
-            nextTimedItem = null; //no itemList, so no more sources to explore for tasks
-        } else {
-            nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
-            if (nextTimedItem != null) {
-                if (nextTimedItem.isProject()) {
-                    if (update) {
-                        setTimedProject(nextTimedItem); //set project
-                    }
-                    nextTimedItem = nextTimedItem.getNextLeafItem(null); //get first subtasks
-                    assert nextTimedItem != null : "if nextTimedItem.getNextLeafItem() returns a project, it should have valid subtasks for the timer";
-                } else {
-                    if (update) {
-                        setTimedProject(null); //set project null
+            if (nextTimedItem == null) { //if no subtask found in project, continue with next in list
+                itemList = getItemList();
+                if (itemList != null) {
+                    while (nextTimedItem == null && project == null && itemList != null) {
+                        nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
+                        if (nextTimedItem != null) {
+                            previousTimedItem=null; //reset previous since we've now found the following item and don't want next iteration to search for an item after previous
+                            if (nextTimedItem.isProject()) {
+                                project = nextTimedItem; //set project
+                                nextTimedItem = null; //force to repeat do while to check if there's a suitable subtask
+                            } else { //else: not a project, so we'll see if it is valid in the while(isValidItemForTimer...)
+                                if (!TimerStack.isValidItemForTimer(nextTimedItem)) {
+                                    nextTimedItem = null;
+                                }
+                            }
+                        } else {
+                            itemList = null; //no more elements in the list, stop the do while loop
+                        }
                     }
                 }
             }
-//            }
-        }
+        } while ((nextTimedItem == null || !TimerStack.isValidItemForTimer(nextTimedItem)) && (project != null || itemList != null));
+
         if (update) {
             setTimedItem(nextTimedItem);
+            setTimedProject(project); //set project
         }
         if (save) {
             saveMe();
@@ -582,8 +580,9 @@ public class TimerInstance extends ParseObject {
         4a) after the last timed subtasks => no pb, will be found
         4b) *before* the last timed subtask => cannot be distinguished from an earlier subtask that was skipped over
      */
-//        private void updateToNextTimerItem(Item.Condition condition) {
-    boolean updateAndSaveCurrentTimedItemXXX() {
+    //        private void updateToNextTimerItem(Item.Condition condition) {
+    boolean
+            updateAndSaveCurrentTimedItemXXX() {
         if (isRunning()) {
             stopTimer();
             Item current = getTimedItem();
@@ -593,12 +592,12 @@ public class TimerInstance extends ParseObject {
         }
         return false;
     }
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    private Item updateToNextTimerItemXXX() {
+    //        return updateToNextTimerItem(true);
+    //    }
+    //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    private Item updateToNextTimerItemXXX() {
-//        return updateToNextTimerItem(true);
-//    }
-//</editor-fold>
     public void setWasInterruptedWhileRunning(boolean paused, boolean save) {
         boolean wasPaused = wasInterruptedWhileRunning();
         setTimerPaused(paused);

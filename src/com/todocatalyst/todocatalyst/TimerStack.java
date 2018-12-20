@@ -610,6 +610,16 @@ class TimerStack {
         //TODO set autostart!
     }
 
+    /**
+    used to check if a found task is valid for the timer (eg if the list may contain Done/Cancelled or Waiting tasks that should be skipped).
+    Also used in TimerInstance.
+    @param item
+    @return 
+    */
+    static public boolean isValidItemForTimer(Item item) {
+        return !item.isDone() || MyPrefs.timerIncludeWaitingTasks.getBoolean() ||MyPrefs.timerIncludeDoneTasks.getBoolean() ;
+    }
+    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void startInterruptOrInstantTask(Item interruptOrInstantTask, MyForm previousForm) {
 //        //stop and push previously timed item+context
@@ -644,6 +654,23 @@ class TimerStack {
 //    public void startTimerOnNextOrExitIfNone(TimerInstance timerInstanceXXX, Container contentPane) {
 //    public void startTimerOnNextOrExitIfNone(Container contentPane, boolean fullScreenTimer) {
     private Item findNextTimedItem() {
+        TimerInstance timerInstance = getCurrentTimerInstance();
+
+        //find next item to run timer on, most likely either next in current list/project, or the one interrupted
+        Item nextTimedItem;
+        nextTimedItem = timerInstance.updateToNextTimerItem(false, false); //get next timed item without making any changes
+        //if none found try rest of timerstack (if any)
+        int index = activeTimers.size() - 2; //init to second last timerInstance
+        while (nextTimedItem == null && index >= 0 && index < TimerStack.getInstance().activeTimers.size()) { //as long as there are valid timerInstances not tried yet
+            //remove the current timer instance (which has run out of tasks, or could be an interrupt)
+            timerInstance = activeTimers.get(index); //pop last timerInstance since it has no more tasks
+            nextTimedItem = timerInstance.updateToNextTimerItem(false, false); //also update project and save
+            index--;
+        }
+        return nextTimedItem;
+    }
+    
+    private Item findNextTimedItemOLD() {
         TimerInstance timerInstance = getCurrentTimerInstance();
 
         //find next item to run timer on, most likely either next in current list/project, or the one interrupted
@@ -888,6 +915,8 @@ class TimerStack {
         if (timerInstance != null) {
             Container formContentPane = form.getContentPane();
             if (!(form instanceof ScreenTimer6)) {
+                Layout contentPaneLayout = formContentPane.getLayout();
+                if (contentPaneLayout instanceof BorderLayout) {
                 Component southComponent = getContentPaneSouth(form);
                 ASSERT.that(southComponent == null, "SOUTH should be empty in all screens where we add a small timer");
                 if (southComponent == null) { //if south container is not already used for something else //TODO!!! shouldn't happen, but need to check
@@ -900,6 +929,7 @@ class TimerStack {
                         form.animateLayout(300);
                         return true;
                     }
+                }
                 }
             }
         }

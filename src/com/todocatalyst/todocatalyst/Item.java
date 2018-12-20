@@ -3789,7 +3789,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
 //    public Item getNextLeafItem(Item previousItem, boolean excludeWaiting) {
     public Item getNextLeafItem(Item previousItem) {
-//        return getNextUndoneLeafItemImpl(previousItem, excludeWaiting, false);
+//        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
         List<Item> leafTaskList = getLeafTasksAsList(null);
 
         int nextIndex;
@@ -3805,8 +3805,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Item getNextLeafItem(Item previousItem, Condition condition) {
-//        return getNextUndoneLeafItemImpl(previousItem, excludeWaiting, false);
-        return getNextUndoneLeafItemImpl(previousItem, condition, new boolean[]{previousItem == null});
+//        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
+//        return getNextLeafItemMeetingConditionImpl(previousItem, condition, new boolean[]{previousItem == null});
+        return getNextLeafItemMeetingConditionImpl(previousItem, condition, new Boolean(previousItem == null));
 
     }
 
@@ -3823,17 +3824,37 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * (optimization)
      * @return
      */
-//    private Item getNextUndoneLeafItemImpl(Item previousItem, boolean excludeWaiting, boolean previousItemAlreadyFound) {
-    Item getNextUndoneLeafItemImpl(Item previousItem, Condition condition, boolean[] previousItemAlreadyFound) {
+//    private Item getNextLeafItemMeetingConditionImpl(Item previousItem, boolean excludeWaiting, boolean previousItemAlreadyFound) {
+//    Item getNextLeafItemMeetingConditionImpl(Item previousItem, Condition condition, boolean[] previousItemAlreadyFound) {
+    Item getNextLeafItemMeetingConditionImpl(Item previousItem, Condition condition, Boolean previousItemAlreadyFound) {
+        List<Item> leafSubtaskList = getLeafTasksAsList(condition);
+        int index = leafSubtaskList.indexOf(previousItem);
+        if (index >= 0 && index + 1 < leafSubtaskList.size()) {
+            return leafSubtaskList.get(index + 1);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+    old implementation which doesn't construct a full list of leaf tasks each time (and doesn't check condition on each subtask)
+    @param previousItem
+    @param condition
+    @param previousItemAlreadyFound
+    @return 
+    */
+    Item getNextLeafItemMeetingConditionImplOLDButOptimized(Item previousItem, Condition condition, Boolean previousItemAlreadyFound) {
 //        previousItemAlreadyFound[0] = previousItem==null;
-        assert previousItem != null || previousItemAlreadyFound[0] : "getNextUndoneLeafItemImpl called with previousItem==null and previousItemAlreadyFound not set true";
+//        assert previousItem != null || previousItemAlreadyFound[0] : "getNextLeafItemMeetingConditionImpl called with previousItem==null and previousItemAlreadyFound not set true";
+        assert previousItem != null || previousItemAlreadyFound : "getNextUndoneLeafItemImpl called with previousItem==null and previousItemAlreadyFound not set true";
 //        if (itemList == null || itemList.size() == 0) {
         if (!isProject()) { //LEAF
             //if no subtasks, previousItem found or null, and item meets the condition, then return the Item itself
 //            if ((previousItem == null || previousItemAlreadyFound[0]) && condition.meets(this)) {
 //            if (previousItemAlreadyFound[0] && condition.meets(this)) {
             if (this.equals(previousItem)) {
-                previousItemAlreadyFound[0] = true;
+//                previousItemAlreadyFound[0] = true;
+                previousItemAlreadyFound = true;
             }
             if (condition.meets(this) && (previousItem == null || !previousItem.equals(this))) { //previousItem!=null => !previousItem.equals(this)
 //                previousItemAlreadyFound[0] = true; //NO NEED since this is a single task
@@ -3849,8 +3870,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 Item subTask = (Item) itemList.get(i);
                 if (subTask.isProject()) {
                     //try to find an appropriate subtask to this project
-//                    subTask = subTask.getNextUndoneLeafItemImpl(previousItem, condition, previousItemFoundHere || previousItemAlreadyFound[0]);
-                    subTask = subTask.getNextUndoneLeafItemImpl(previousItem, condition, previousItemAlreadyFound);
+//                    subTask = subTask.getNextLeafItemMeetingConditionImpl(previousItem, condition, previousItemFoundHere || previousItemAlreadyFound[0]);
+                    subTask = subTask.getNextLeafItemMeetingConditionImplOLDButOptimized(previousItem, condition, previousItemAlreadyFound);
 //                    if (item != null && previousItemFoundHere) {
                     //if a subtask meeting the conditions is found, return it
                     if (subTask != null) {
@@ -3859,9 +3880,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     //else continue with next subtask
                 } else //                    previousItemFoundHere = previousItemFoundHere || (previousItem != null && subTask.equals(previousItem));
                 //                    previousItemAlreadyFound[0] = previousItemAlreadyFound[0] || (previousItem != null && subTask.equals(previousItem)); //set true when found and keep true
-                if (!(previousItemAlreadyFound[0])) {
+                //                if (!(previousItemAlreadyFound[0])) {
+                if (!(previousItemAlreadyFound)) {
 //                    previousItemAlreadyFound[0] = (previousItem != null && subTask.equals(previousItem)); //set true when found and keep true
-                    previousItemAlreadyFound[0] = (subTask.equals(previousItem)); //set true when found and keep true
+//                    previousItemAlreadyFound[0] = (subTask.equals(previousItem)); //set true when found and keep true
+                    previousItemAlreadyFound = (subTask.equals(previousItem)); //set true when found and keep true
 //                    if (!(previousItemAlreadyFound || previousItemFoundHere)) {
                     continue; //as long as we've not found the previous item, skip to next item
                 } else if (condition.meets(subTask)) {
@@ -3873,21 +3896,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
-     * returns a sequential list of all leaf tasks that meet the Condition
+     * returns a sequential list of all leaf tasks that meet the Condition, starting with the first subtask of the first subtask etc. 
      *
      * @param condition condition or null (will match all items)
      * @return null if no matching items
      */
 //    List<ItemAndListCommonInterface> getLeafTasksAsList(Condition condition) {
     List<Item> getLeafTasksAsList(Condition condition) {
-//        assert previousItem != null || previousItemAlreadyFound[0] : "getNextUndoneLeafItemImpl called with previousItem==null and previousItemAlreadyFound not set true";
+//        assert previousItem != null || previousItemAlreadyFound[0] : "getNextLeafItemMeetingConditionImpl called with previousItem==null and previousItemAlreadyFound not set true";
         if (!isProject()) { //LEAF
             if (condition == null || condition.meets(this)) {
 //                ArrayList list = new ArrayList(Arrays.asList(this));// list.add(this);
 //                return list;
                 return new ArrayList(Arrays.asList(this));// list.add(this);
             } else {
-                return null;
+                return new ArrayList(); //null; //always return a list (no null pointers)
             }
         } else { //Project
             List<Item> itemList = getList();
@@ -3900,9 +3923,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 result = new ArrayList();
                 for (int i = 0; i < size; i++) {
                     sublist = itemList.get(i).getLeafTasksAsList(condition);
-                    if (sublist != null) {
-                        result.addAll(sublist);
-                    }
+//                    if (sublist != null) {
+                    result.addAll(sublist);
+//                    }
                 }
             }
             return result;
