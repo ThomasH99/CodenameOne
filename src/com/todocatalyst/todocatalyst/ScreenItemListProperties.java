@@ -113,7 +113,7 @@ public class ScreenItemListProperties extends MyForm {
 //            previousForm.showBack(); //drop any changes
 //                previousForm.revalidate();
 //                previousForm.show(); //drop any changes
-                showPreviousScreenOrDefault(false);
+                showPreviousScreenOrDefault(true); //false);
             });
         }
         toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {

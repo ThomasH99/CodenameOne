@@ -23,6 +23,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
 import com.codename1.ui.Display;
 import com.codename1.io.Storage;
 import com.codename1.util.EasyThread;
@@ -102,7 +103,7 @@ public class MyCacheMap {
         this.cacheSize = cacheSize;
     }
 
-    /*private*/ static final Object LOCK = new Object(); 
+    /*private*/ static final Object LOCK = new Object();
 
     /**
      * Puts the given key/value pair in the cache
@@ -310,7 +311,13 @@ public class MyCacheMap {
         } else {
             storageCacheContent.insertElementAt(new Object[]{l, key}, offset);
         }
-        Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+        if (Config.TEST) {
+            long startTime = System.currentTimeMillis();
+            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+            Log.p("MyCacheMap: writing index file \"" + "$CACHE$Idx" + cachePrefix + "\", size=" + storageCacheContent.size() / 1024 + "kb, miliseconds="+(System.currentTimeMillis()-startTime));///MyDate.SECOND_IN_MILLISECONDS);
+        } else {
+            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+        }
     }
 
     /**

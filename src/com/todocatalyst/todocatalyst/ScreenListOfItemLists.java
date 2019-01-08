@@ -119,7 +119,8 @@ public class ScreenListOfItemLists extends MyForm {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(itemListList));
-        revalidate();
+//        revalidate();
+        revalidateWithAnimationSafety();
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
 //        }
@@ -153,13 +154,15 @@ public class ScreenListOfItemLists extends MyForm {
         ));
 
         //MOVE mode
-        toolbar.addCommandToOverflowMenu(draggableOnOff = new Command("Move ON", Icons.iconMoveUpDownToolbarStyle) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                draggableMode = !draggableMode;
-                draggableOnOff.setCommandName(draggableMode ? "Move OFF" : "Move ON");
-            }
-        });
+        if (false) { //causes a problem in the animation (out of bounds array
+            toolbar.addCommandToOverflowMenu(draggableOnOff = new Command("Move ON", Icons.iconMoveUpDownToolbarStyle) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    draggableMode = !draggableMode;
+                    draggableOnOff.setCommandName(draggableMode ? "Move OFF" : "Move ON");
+                }
+            });
+        }
 
         //BACK
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());

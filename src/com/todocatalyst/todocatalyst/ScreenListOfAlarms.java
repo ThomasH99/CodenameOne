@@ -133,7 +133,7 @@ public class ScreenListOfAlarms extends MyForm {
 //                    AlarmHandler.getInstance().removeExpiredAlarm(expired);
 //                }
                 AlarmHandler.getInstance().cancelAllExpiredAlarms();
-                showPreviousScreenOrDefault(false);
+                showPreviousScreenOrDefault(true); //false);
 
             })));
 
@@ -165,7 +165,7 @@ public class ScreenListOfAlarms extends MyForm {
 //                }
                 AlarmHandler.getInstance().snoozeAllExpiredAlarms(
                         MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + ((long) snoozeTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS)));
-                showPreviousScreenOrDefault(false);
+                showPreviousScreenOrDefault(true); //false);
             }))));
 
             getContentPane().add(BorderLayout.SOUTH, cancelAllButtonsCont);

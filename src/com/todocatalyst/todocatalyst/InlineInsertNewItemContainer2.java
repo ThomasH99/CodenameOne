@@ -343,7 +343,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
             if (element != null) {
                 element.addToList(newItem); //add to end of subtask list (depending on setting for add to beginning/end of lists)
                 if (false) {
-                    DAO.getInstance().saveInBackgroundSequential((ParseObject) newItem, (ParseObject) element);
+                    DAO.getInstance().saveInBackground((ParseObject) newItem, (ParseObject) element);
                 }
                 insertAsSubtask = false; //remove the subtask property so next task does not become a subtask to the subtask
                 myForm2.expandedObjects.add(element); //UI: expand the item to show newly added subtask
@@ -368,9 +368,9 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
                 }
             }
             if (false) {
-                DAO.getInstance().saveInBackgroundSequential((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements);
+                DAO.getInstance().saveInBackground((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements);
             } else {
-                DAO.getInstance().saveInBackgroundSequential((ParseObject) itemOrItemListForNewElements);
+                DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewElements);
             }
         } else {
             if (false) {

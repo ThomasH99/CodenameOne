@@ -133,6 +133,25 @@ public class ScreenTimer6 extends MyForm {
         };
         refreshAfterEdit();
     }
+    
+        //****************** UI *********************
+    //
+     void addCommandsToToolbar(Toolbar toolbar) {
+
+        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+
+        //Create an interrupt task and start the timer on it
+//        toolbar.addCommandToRightBar(makeInterruptCommand());
+        toolbar.addCommandToLeftBar(makeInterruptCommand()); //left like all other screens
+
+        toolbar.addCommandToRightBar(MyReplayCommand.create("TimerSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
+            new ScreenSettingsTimer(ScreenTimer6.this, () -> {
+                refreshAfterEdit();
+            }).show();
+        }
+        ));
+    }
+
 
     @Override
     public void refreshAfterEdit() {
@@ -152,6 +171,8 @@ public class ScreenTimer6 extends MyForm {
             contentPane.removeAll();
             contentPane.add(BorderLayout.CENTER, TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, previousValues)); //also removes previous content of contentPane
             super.refreshAfterEdit();
+//            revalidate();
+            revalidateWithAnimationSafety();
         }
     }
 
@@ -172,21 +193,5 @@ public class ScreenTimer6 extends MyForm {
 //        }
 //    }
 
-    //****************** UI *********************
-    //
-    private void addCommandsToToolbar(Toolbar toolbar) {
-
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
-
-        //Create an interrupt task and start the timer on it
-        toolbar.addCommandToRightBar(makeInterruptCommand());
-
-        toolbar.addCommandToRightBar(MyReplayCommand.create("TimerSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
-            new ScreenSettingsTimer(ScreenTimer6.this, () -> {
-                refreshAfterEdit();
-            }).show();
-        }
-        ));
-    }
 
 }

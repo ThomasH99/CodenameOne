@@ -161,7 +161,7 @@ public class InlineInsertNewCategoryContainer extends Container {
         } else {
             itemOrItemListForNewTasks.addToList(newCategory); //if item is null or not in orgList, insert at beginning of (potentially empty) list
         }
-        DAO.getInstance().saveInBackgroundSequential(newCategory, (ParseObject) itemOrItemListForNewTasks);
+        DAO.getInstance().saveInBackground(newCategory, (ParseObject) itemOrItemListForNewTasks);
     }
 
     private void closeInsertNewCategoryContainer() {

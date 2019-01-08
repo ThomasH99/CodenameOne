@@ -155,12 +155,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 oldOwner.removeFromList(itemOrItemList);
                 newOwner.addToList(newPos, itemOrItemList);
             }
-//            DAO.getInstance().saveInBackgroundSequential((ParseObject) oldList, (ParseObject) itemOrItemList);
-            DAO.getInstance().saveInBackgroundSequential((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
+//            DAO.getInstance().saveInBackground((ParseObject) oldList, (ParseObject) itemOrItemList);
+            DAO.getInstance().saveInBackground((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
         } else {
             oldOwner.removeFromList(itemOrItemList);
             newOwner.addToList(newPos, itemOrItemList);
-            DAO.getInstance().saveInBackgroundSequential((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList);
+            DAO.getInstance().saveInBackground((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList);
         }
     }
 
@@ -194,7 +194,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             categoryList.removeFromList(category);
             categoryList.addToList(newPos, category);
         }
-        DAO.getInstance().saveInBackgroundSequential((ParseObject) categoryList, (ParseObject) category);
+        DAO.getInstance().saveInBackground((ParseObject) categoryList, (ParseObject) category);
     }
 
     private void moveItemBetweenCategoriesAndSave(Category oldCategory, Category newCategory, Item item, int newPos) {
@@ -206,18 +206,18 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 oldCategory.removeItemFromCategory(item, true);
                 newCategory.addItemToCategory(item, newPos, true);
             }
-            DAO.getInstance().saveInBackgroundSequential((ParseObject) oldCategory, (ParseObject) item); //only save list once
+            DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) item); //only save list once
         } else {
             if (oldCategory != null && newCategory != null) {
                 oldCategory.removeItemFromCategory(item, true);
                 newCategory.addItemToCategory(item, newPos, true);
-                DAO.getInstance().saveInBackgroundSequential((ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
             } else if (newCategory != null) {
                 newCategory.addItemToCategory(item, newPos, true);
-                DAO.getInstance().saveInBackgroundSequential((ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveInBackground((ParseObject) newCategory, (ParseObject) item);
             } else if (oldCategory != null) {
                 oldCategory.removeItemFromCategory(item, true);
-                DAO.getInstance().saveInBackgroundSequential((ParseObject) oldCategory, (ParseObject) item);
+                DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) item);
             }
         }
     }
@@ -1949,7 +1949,7 @@ T3
                         //                                    boolean sameCategory = getDragAndDropCategory() == beforeCont.getDragAndDropCategory();
                         //                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
                         //                                    ((Category) beforeCont.getDragAndDropObject()).addToList(0, (Item) getDragAndDropObject()); //insert item at beginning of category's list of items
-                        //                                    DAO.getInstance().saveInBackgroundSequential((ParseObject) getDragAndDropCategory(), (ParseObject) beforeCont.getDragAndDropObject(), (ParseObject) getDragAndDropObject());
+                        //                                    DAO.getInstance().saveInBackground((ParseObject) getDragAndDropCategory(), (ParseObject) beforeCont.getDragAndDropObject(), (ParseObject) getDragAndDropObject());
                         //</editor-fold>
                         //DONE!! if category is NOT expanded, should an item be inserted at the beginning of the subtask list or at the end?? At the beginning like if it was expanded? Create an setting
                         //insert item at beginning of category's list of items (or at the end if setting is false
@@ -2017,7 +2017,7 @@ T3
 //                                    boolean sameCategory = getDragAndDropCategory() == afterCont.getDragAndDropCategory();
 //                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
 //                                    afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the
-//                                    DAO.getInstance().saveInBackgroundSequential((ParseObject) getDragAndDropCategory(), (ParseObject) afterCont.getDragAndDropCategory(), (ParseObject) getDragAndDropObject());
+//                                    DAO.getInstance().saveInBackground((ParseObject) getDragAndDropCategory(), (ParseObject) afterCont.getDragAndDropCategory(), (ParseObject) getDragAndDropObject());
 //</editor-fold>
 //                            int insertIndex = ((ItemAndListCommonInterface) afterMyDDCont.getDragAndDropCategory()).getItemIndex((Item) afterMyDDCont.getDragAndDropObject());
                             Category draggedCategory = getDragAndDropCategory();

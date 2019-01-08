@@ -1605,7 +1605,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), true);
 //        makeField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportance(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
         makeField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportance(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
-                () -> importance.getSelectedString(), (i) -> importance.select((String) i));
+                () -> importance.getSelectedString(), (i) -> importance.select((String) i.toString()));
 
 //        prioCont.add(Item.IMPORTANCE).add(FlowLayout.encloseCenterMiddle(importance));
 //        prioCont.add(layout(Item.IMPORTANCE, FlowLayout.encloseCenterMiddle(importance), "**"));
@@ -1621,7 +1621,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.URGENCY, FlowLayout.encloseMiddle(urgency), "**"));
 //        prioCont.add(layout(Item.URGENCY, urgency, Item.URGENCY_HELP, true, false, true));
         makeField(Item.PARSE_URGENCY, urgency, () -> item.getUrgency(), (t) -> item.setUrgency((Item.HighMediumLow.getValue((String) t))),
-                () -> urgency.getSelectedString(), (i) -> urgency.select((String) i));
+                () -> urgency.getSelectedString(), (i) -> urgency.select((String) i.toString()));
         prioCont.add(layoutN(Item.URGENCY, urgency, Item.URGENCY_HELP));//, null, false, false, true, true));
 
 //        MyComponentGroup challenge = new MyComponentGroup(Item.Challenge.getDescriptionList(), parseIdMap2,
@@ -1641,7 +1641,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         MyComponentGroup challenge = challenge1.getPreferredW() < Display.getInstance().getDisplayWidth() ? challenge1
                 : new MyComponentGroup(Item.Challenge.getDescriptionList(true), true);
         makeField(Item.PARSE_CHALLENGE, challenge, () -> item.getChallenge(), (t) -> item.setChallenge((Item.Challenge.getValue((String) t))),
-                () -> challenge.getSelectedString(), (s) -> challenge.select((String) s));
+                () -> challenge.getSelectedString(), (s) -> challenge.select((String) s.toString()));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        prioCont.add(new Label(Item.CHALLENGE)).add(FlowLayout.encloseCenterMiddle(challenge));
 //        prioCont.add(new Label("TEST")).add(FlowLayout.encloseCenterMiddle(new Label("11111"),new Label("22222"),new Label("33333"),new Label("44444"),new Label("55555")));
@@ -1660,7 +1660,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //</editor-fold>
         MyComponentGroup dreadFun = new MyComponentGroup(Item.DreadFunValue.getDescriptionList(), true);
         makeField(Item.PARSE_DREAD_FUN_VALUE, dreadFun, () -> item.getDreadFunValue(), (t) -> item.setDreadFunValue((Item.DreadFunValue.getValue((String) t))),
-                () -> dreadFun.getSelectedString(), (s) -> dreadFun.select((String) s));
+                () -> dreadFun.getSelectedString(), (s) -> dreadFun.select((String) s.toString()));
         prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP));//, null, false, false, true, true));
 
 //        MyNumericTextField earnedValue = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValue(), (d) -> item.setEarnedValue(d));

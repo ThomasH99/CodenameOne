@@ -1782,7 +1782,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
 
             //SOURCE OF COPY
-            destination.setSource(this);
+            if (true) { //since this is the originator of the values in the copy, link to that instead (possible to trace back to very first originator if needed, but actual originator would be lost if using the original originator)
+                destination.setSource(this);
+            } else {
+                if (getSource() != null) {
+                    destination.setSource(getSource()); //link to the very first originator/source if available
+                } else {
+                    destination.setSource(this); //otherwise (this is first copy) use this
+                }
+            }
 
         }
 
@@ -3519,7 +3527,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (has(PARSE_REPEAT_RULE) || repeatRule != null) { //no need to save a value since a null pointer is interprested as zero
 //            put(PARSE_REPEAT_RULE, repeatRule);
 //        }
-        RepeatRuleParseObject oldRepeatRule = (RepeatRuleParseObject) getParseObject(PARSE_REPEAT_RULE);
+//        RepeatRuleParseObject oldRepeatRule = (RepeatRuleParseObject) getParseObject(PARSE_REPEAT_RULE); //doesn't fetch from catch
+        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
         if (repeatRule != null) {
             if (oldRepeatRule == null) {
                 DAO.getInstance().save(repeatRule); //save the (possibly new or changed) repeatRule
@@ -3817,7 +3826,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
-     *
+     * will return first subtask if previousItem is null
      * @param previousItem
      * @param condition
      * @param previousItemAlreadyFound must be set true if previousItem==null!!
@@ -3829,7 +3838,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     Item getNextLeafItemMeetingConditionImpl(Item previousItem, Condition condition, Boolean previousItemAlreadyFound) {
         List<Item> leafSubtaskList = getLeafTasksAsList(condition);
         int index = leafSubtaskList.indexOf(previousItem);
-        if (index >= 0 && index + 1 < leafSubtaskList.size()) {
+        if (previousItem == null && leafSubtaskList.size() > 0) { //if called w null, return first item (if any)
+            return leafSubtaskList.get(0);
+        } else if (index >= 0 && index + 1 < leafSubtaskList.size()) {
             return leafSubtaskList.get(index + 1);
         } else {
             return null;
@@ -3842,7 +3853,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @param condition
     @param previousItemAlreadyFound
     @return 
-    */
+     */
     Item getNextLeafItemMeetingConditionImplOLDButOptimized(Item previousItem, Condition condition, Boolean previousItemAlreadyFound) {
 //        previousItemAlreadyFound[0] = previousItem==null;
 //        assert previousItem != null || previousItemAlreadyFound[0] : "getNextLeafItemMeetingConditionImpl called with previousItem==null and previousItemAlreadyFound not set true";

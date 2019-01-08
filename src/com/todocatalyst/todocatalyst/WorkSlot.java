@@ -78,6 +78,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     final static String PARSE_START_TIME = "startTime";
     final static String PARSE_DURATION = "duration";
     final static String PARSE_END_TIME = "endTime"; //always set automatically, based on changes to startTime or duration
+    final static String PARSE_ORIGINAL_SOURCE = Item.PARSE_ORIGINAL_SOURCE;
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
 //    private List<Item> itemsWithSlicesOfThisWorkSlot = new ArrayList(); //unsorted /for now
@@ -565,6 +566,30 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         setStartTime(repeatStartTime);
     }
 
+    public WorkSlot getSource() {
+        WorkSlot source = (WorkSlot) getParseObject(PARSE_ORIGINAL_SOURCE);
+//        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
+        return (WorkSlot) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(source);
+    }
+
+    /**
+     * store a task that this task depends on. The task this one depends on must
+     * be Done before isDependingOnTasksDone returns true. This enables
+     * filtering on (hiding) all tasks that are depending on other tasks until
+     * they are done. In a first time, only dependency on a single task is
+     * supported.
+     *
+     * @param originalWorkSlotThisOneIsACopyOf
+     */
+//    public void setTaskInterrupted(Item taskInterruptedByThisInterruptTask) {
+    public void setSource(WorkSlot originalWorkSlotThisOneIsACopyOf) {
+        if (originalWorkSlotThisOneIsACopyOf != null) {
+            put(PARSE_ORIGINAL_SOURCE, originalWorkSlotThisOneIsACopyOf);
+        } else {
+            remove(PARSE_ORIGINAL_SOURCE);
+        }
+    }
+
     @Override
     public RepeatRuleObjectInterface createRepeatCopy(Date referenceTime) {
 //        return new WorkSlot(this, referenceTime);
@@ -573,6 +598,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return newCopy;
     }
 
+    @Override
     public WorkSlot cloneMe(CopyMode copyFieldDefinition) {
         WorkSlot newCopy = new WorkSlot();
         copyMeInto(newCopy, copyFieldDefinition);
@@ -596,7 +622,18 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         destination.setDurationInMinutes(getDurationInMinutes());
         destination.setText(getText());
         destination.setOwner(getOwner()); //need to set owner here, since not done eg when creating repeat copies
+        //Contrary to Item, always use the original originator as source:
+        if (getSource() != null) {
+            destination.setSource(getSource()); //link to the very first originator/source if available
+        } else {
+            destination.setSource(this); //otherwise (this is first copy) use this
+        }
         if (copyFieldDefinition == CopyMode.COPY_TO_REPEAT_INSTANCE) {
+            RepeatRuleParseObject repeatRule = getRepeatRule();
+            boolean notSaved = false;
+            if (Config.TEST) {
+                notSaved = repeatRule.getObjectIdP() == null || repeatRule.getObjectIdP().isEmpty(); //repeatRule.isDirty() ||
+            }
             destination.setRepeatRuleNoUpdate(getRepeatRule());
         } else {
             destination.setRepeatRule(getRepeatRule());

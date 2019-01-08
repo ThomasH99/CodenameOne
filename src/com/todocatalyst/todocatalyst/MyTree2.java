@@ -382,7 +382,8 @@ public class MyTree2 extends ContainerScrollY {
 //                revalidate();
 //            }
             } else {
-                parent.revalidate();
+//                parent.revalidate();
+                parent.revalidateWithAnimationSafety();
             }
         }
 

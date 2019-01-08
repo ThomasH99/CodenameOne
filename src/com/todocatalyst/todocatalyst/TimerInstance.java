@@ -41,10 +41,10 @@ public class TimerInstance extends ParseObject {
     final static String PARSE_TIMER_SHOWS_TOTAL_ACTUAL = "showTotal"; //should Timer show total time spend on task, or only time spend during this timing sessions?
     final static String PARSE_TIMER_AUTO_GOTO_NEXT_TASK = "autoNextTask"; //should Timer show total time spend on task, or only time spend during this timing sessions?
 
-    private Container timerContainer; //the container build for this timer instane, used to add to different forms as the use navigates
-    private boolean timerIsFullScreen; //the container build for this timer instane, used to add to different forms as the use navigates
+//    private Container timerContainer; //the container build for this timer instane, used to add to different forms as the use navigates
+//    private boolean timerIsFullScreen; //the container build for this timer instane, used to add to different forms as the use navigates
 
-    TimerInstance() {
+    TimerInstance() { //used to instantiate internalized timers
         super(CLASS_NAME);
     }
 
@@ -122,9 +122,9 @@ public class TimerInstance extends ParseObject {
 
     public Item getTimedItem() {
         Item timedItem = (Item) getParseObject(PARSE_TIMED_ITEM);
-        if (timedItem != null) {
+//        if (timedItem != null) {
             timedItem = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(timedItem);
-        }
+//        }
         return timedItem;
     }
 
@@ -138,9 +138,9 @@ public class TimerInstance extends ParseObject {
 
     public Item getTimedProject() {
         Item timedItem = (Item) getParseObject(PARSE_PROJECT);
-        if (timedItem != null) {
+//        if (timedItem != null) {
             timedItem = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(timedItem);
-        }
+//        }
         return timedItem;
     }
 
@@ -154,9 +154,9 @@ public class TimerInstance extends ParseObject {
 
     public ItemList getItemList() {
         ItemList itemList = (ItemList) getParseObject(PARSE_LIST);
-        if (itemList != null) {
+//        if (itemList != null) {
             itemList = (ItemList) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(itemList);
-        }
+//        }
         return itemList;
     }
 
@@ -297,13 +297,13 @@ public class TimerInstance extends ParseObject {
 //    public void setTimerContainer(Container timerContainer) {
 //        this.timerContainer = timerContainer;
 //    }
-    public void setTimerFullScreen(boolean timerIsFullScreen) {
-        this.timerIsFullScreen = timerIsFullScreen;
-    }
-
-    public boolean isTimerFullScreen() {
-        return timerIsFullScreen;
-    }
+//    public void setTimerFullScreen(boolean timerIsFullScreen) {
+//        this.timerIsFullScreen = timerIsFullScreen;
+//    }
+//
+//    public boolean isTimerFullScreen() {
+//        return timerIsFullScreen;
+//    }
 
     /**
     return the time the timer has been running, whether currently running or paused
@@ -525,26 +525,34 @@ public class TimerInstance extends ParseObject {
         ItemList itemList = null;
         do {
 //            Item previousSubtask = previousTimedItem;
-            while (project != null && nextTimedItem == null) {
+//            while (project != null && nextTimedItem == null) {
+//                nextTimedItem = project.getNextLeafItem(previousTimedItem, item -> TimerStack.isValidItemForTimer(item)); //getNextLeafItem will only return valid subtasks (matching condition), or null
+//                if (nextTimedItem == null) {
+//                    project = null; //this project has no more leaf tasks so removed
+//                    previousTimedItem = null; //the previousTimedTask *was* in the timedProject, but there were no more suitable subtasks, set previousTimedItem=null so we'll task the first task/subtask in the next tasks/project
+//                }
+//            }
+            if (project != null) {
                 nextTimedItem = project.getNextLeafItem(previousTimedItem, item -> TimerStack.isValidItemForTimer(item)); //getNextLeafItem will only return valid subtasks (matching condition), or null
                 if (nextTimedItem == null) {
+                    previousTimedItem = project; //the previousTimedTask *was* in the timedProject, but there were no more suitable subtasks, set previousTimedItem=null so we'll use project as the first task/subtask in the next tasks/project
                     project = null; //this project has no more leaf tasks so removed
-                    previousTimedItem = null; //the previousTimedTask *was* in the timedProject, but there were no more suitable subtasks, set previousTimedItem=null so we'll task the first task/subtask in the next tasks/project
                 }
             }
 
-            if (nextTimedItem == null) { //if no subtask found in project, continue with next in list
+            if (nextTimedItem == null) { //if no suitable subtask found in project, continue with next in list
                 itemList = getItemList();
                 if (itemList != null) {
                     while (nextTimedItem == null && project == null && itemList != null) {
                         nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
                         if (nextTimedItem != null) {
-                            previousTimedItem=null; //reset previous since we've now found the following item and don't want next iteration to search for an item after previous
+                            previousTimedItem = null; //reset previous since we've now found the following item and don't want next iteration to search for an item after previous
                             if (nextTimedItem.isProject()) {
                                 project = nextTimedItem; //set project
                                 nextTimedItem = null; //force to repeat do while to check if there's a suitable subtask
                             } else { //else: not a project, so we'll see if it is valid in the while(isValidItemForTimer...)
                                 if (!TimerStack.isValidItemForTimer(nextTimedItem)) {
+                                    previousTimedItem = nextTimedItem;// get the next item *after* the nextTimeItem already found
                                     nextTimedItem = null;
                                 }
                             }
@@ -554,7 +562,8 @@ public class TimerInstance extends ParseObject {
                     }
                 }
             }
-        } while ((nextTimedItem == null || !TimerStack.isValidItemForTimer(nextTimedItem)) && (project != null || itemList != null));
+//        } while ((nextTimedItem == null || !TimerStack.isValidItemForTimer(nextTimedItem)) && (project != null || itemList != null));
+        } while ((nextTimedItem == null) && (project != null || itemList != null));
 
         if (update) {
             setTimedItem(nextTimedItem);

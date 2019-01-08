@@ -268,7 +268,7 @@ public class InlineInsertNewWorkSlotContainer extends Container {
         } else {
             itemOrItemListForNewTasks.addToList(newItemList); //if item is null or not in orgList, insert at beginning of (potentially empty) list
         }
-        DAO.getInstance().saveInBackgroundSequential(newItemList, (ParseObject) itemOrItemListForNewTasks);
+        DAO.getInstance().saveInBackground(newItemList, (ParseObject) itemOrItemListForNewTasks);
     }
 
     private void closeInsertNewCategoryContainer() {

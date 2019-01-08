@@ -202,7 +202,7 @@ public class ScreenRepeatRule extends MyForm {
                     DAO.getInstance().save((ParseObject) repeatRuleOwner); //if a new Item, must save before creating repeatInstances in putEditedValues2:
                     putEditedValues2(parseIdMap2);
                     updateActionOnDone.update();
-                    showPreviousScreenOrDefault(previousForm, false);
+                    showPreviousScreenOrDefault(previousForm, true); //false);
                 } else {
                     Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
                 }

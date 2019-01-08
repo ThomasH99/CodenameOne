@@ -2300,7 +2300,7 @@ public class RepeatRuleParseObject
 
         //for workSlots, time may have passed since so need to update to ensure all workslots are in the future (or overlaps the future)
         if (workSlotInstanceItemList.size() > 0) {
-            workSlot = (WorkSlot)workSlotInstanceItemList.get(0);
+            workSlot = (WorkSlot) workSlotInstanceItemList.get(0);
         } else {
             workSlot = null;
         }
@@ -2316,7 +2316,7 @@ public class RepeatRuleParseObject
             setTotalNumberOfInstancesGeneratedSoFar(getTotalNumberOfInstancesGeneratedSoFar() + 1);
 
             if (workSlotInstanceItemList.size() > 0) {
-                workSlot = (WorkSlot)workSlotInstanceItemList.get(0); //get next workslot
+                workSlot = (WorkSlot) workSlotInstanceItemList.get(0); //get next workslot
 //                nextRepeatTime = getNextDueDate(); //get next date
             } else {
                 workSlot = null;
@@ -2615,12 +2615,26 @@ public class RepeatRuleParseObject
         if (getRepeatType() == REPEAT_TYPE_NO_REPEAT) {
             s = REPEAT_RULE_NO_REPEAT;
         } else {
+            if (getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_FROM_COMPLETED_DATE) {
+//                s += " (when completed)";
+//                s += " When completed";
+                s += "On completed";
+            } else if (getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE) //            s+=" (from "+Item.getFieldName(Item.FIELD_DUE_DATE)+")";
+            {
+//            s += " (from " + new MyDate(getReferenceItemForDueDateAndFutureCopies().getDueDate()).formatDate(false) + ")";
+//            s += " (from " + new MyDate(getReferenceObjectForRepeatTime().getRepeatStartTime()).formatDate(false) + ")";
+//            s += " (from " + new MyDate(getSpecifiedStartDate()).formatDate(false) + ")";
+//                s += " (from " + MyDate.formatDateNew(getSpecifiedStartDate()) + ")";
+//                s = "Starting " + MyDate.formatDateNew(getSpecifiedStartDate()) + " " + s;
+                s += "Starting " + MyDate.formatDateNew(getSpecifiedStartDate());
+            }
+
             int freq = getFrequency();
 //        String s = getFreqText(freq);
             if (getInterval() > 1) {
-                s += "Every " + MyDate.addNthPostFix("" + getInterval()) + " " + getFreqText(freq, false, false, false);
+                s += ", every " + MyDate.addNthPostFix("" + getInterval()) + " " + getFreqText(freq, false, false, false);
             } else {
-                s += getFreqText(freq, true, true, false);
+                s += ", " + getFreqText(freq, true, true, false);
             }
             switch (freq) {
                 case RepeatRule.YEARLY:
@@ -2669,20 +2683,6 @@ public class RepeatRuleParseObject
                     break;
             }
 
-            if (getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_FROM_COMPLETED_DATE) {
-//                s += " (when completed)";
-//                s += " When completed";
-                s += ", on completed";
-            } else if (getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE) //            s+=" (from "+Item.getFieldName(Item.FIELD_DUE_DATE)+")";
-            {
-//            s += " (from " + new MyDate(getReferenceItemForDueDateAndFutureCopies().getDueDate()).formatDate(false) + ")";
-//            s += " (from " + new MyDate(getReferenceObjectForRepeatTime().getRepeatStartTime()).formatDate(false) + ")";
-//            s += " (from " + new MyDate(getSpecifiedStartDate()).formatDate(false) + ")";
-//                s += " (from " + MyDate.formatDateNew(getSpecifiedStartDate()) + ")";
-//                s = "Starting " + MyDate.formatDateNew(getSpecifiedStartDate()) + " " + s;
-                s += ", starting " + MyDate.formatDateNew(getSpecifiedStartDate());
-            }
-
             if (useCount()) {
                 s += " repeat " + getNumberOfRepeats() + " times";
 //        } else if (getEndDate() != 0) {
@@ -2697,14 +2697,16 @@ public class RepeatRuleParseObject
 //        else {
 //            s += " (from " + new MyDate(getStartDate()).formatDate(false) + ")";
 //        }
-            if (getNumberFutureRepeatsToGenerateAhead() != 0 || getNumberOfDaysRepeatsAreGeneratedAhead() == 0) {
+            if (getNumberFutureRepeatsToGenerateAhead() != 0) {//|| getNumberOfDaysRepeatsAreGeneratedAhead() == 0) {
 //                s += " show next " + getNumberFutureRepeatsToGenerateAhead() + " instances";
                 s += ", create next " + getNumberFutureRepeatsToGenerateAhead()
                         + " repeat" + (getNumberFutureRepeatsToGenerateAhead() > 1 ? "s" : "");
-            } else {
+            } else if (getNumberOfDaysRepeatsAreGeneratedAhead() != 0) {
 //                s += " show instances for next " + getNumberOfDaysRepeatsAreGeneratedAhead() + " days";
                 s += ", create repeats for next " + getNumberOfDaysRepeatsAreGeneratedAhead() + " day"
                         + (getNumberOfDaysRepeatsAreGeneratedAhead() > 1 ? "s" : "");
+            } else {
+
             }
         }
         return s;
@@ -2712,7 +2714,7 @@ public class RepeatRuleParseObject
 
     @Override
     public String toString() {
-        return getText();
+        return " [" + getObjectIdP() + "]" + getText();
     }
 
     public void copyMeInto(RepeatRuleParseObject destiny) {
@@ -2854,6 +2856,8 @@ public class RepeatRuleParseObject
 //            super.externalize(dos);
 //            return;
 //        }
+        dos.writeUTF(getObjectIdP());
+
         dos.writeInt(getFrequency());
         dos.writeInt(getInterval());
         dos.writeInt(getNumberOfRepeats());
@@ -2892,8 +2896,8 @@ public class RepeatRuleParseObject
             }
 //        for (ItemAndListCommonInterface p : getListOfUndoneRepeatInstances()) {
 //            for (ItemAndListCommonInterface p : getListOfUndoneRepeatInstances()) {
-            for (int i=0; i<instanceSize;i++) {
-            ItemAndListCommonInterface p = (ItemAndListCommonInterface)instances.get(i);
+            for (int i = 0; i < instanceSize; i++) {
+                ItemAndListCommonInterface p = (ItemAndListCommonInterface) instances.get(i);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (p instanceof Item) {
 //                    dos.writeUTF(((Item) p).getObjectIdP());
@@ -2959,6 +2963,8 @@ public class RepeatRuleParseObject
 //        lastGeneratedDate = dis.readLong(); //=0; //
 //        countOfInstancesGeneratedSoFar = dis.readInt();
 //</editor-fold>
+        setObjectId(dis.readUTF());
+
         setFrequency(dis.readInt());
         setInterval(dis.readInt());
         setNumberOfRepeats(dis.readInt());
@@ -2995,11 +3001,15 @@ public class RepeatRuleParseObject
             for (int i = 0; i < instancesSize; i++) {
                 objectId = dis.readUTF();
                 if (isListOfTypeItems) { //use !equals since faster than equals
-                    item = DAO.getInstance().fetchItem(objectId);
-                    instanceList.add(item);
+                    if (false) {
+                        item = DAO.getInstance().fetchItem(objectId); //not needed since will be done in getListOfUndoneRepeatInstances
+                        instanceList.add(item);
+                    }
                 } else {
-                    workSlot = DAO.getInstance().fetchWorkSlot(objectId);
-                    instanceList.add(workSlot);
+                    if (false) {
+                        workSlot = DAO.getInstance().fetchWorkSlot(objectId);
+                        instanceList.add(workSlot);
+                    }
                 }
             }
             setListOfUndoneRepeatInstances(instanceList);
@@ -4272,9 +4282,9 @@ public class RepeatRuleParseObject
         return getRepeatType() != REPEAT_TYPE_NO_REPEAT;
     }
 
-    private void setTest(Date start, int fromDue, int frequency, int interval, int intOptions, boolean genDaysAhead, int daysOrInstances, int foreverUntilNumber, Object untilOrNumber) {
+    private void setTest(Date start, int repeatType, int frequency, int interval, int intOptions, boolean genDaysAhead, int daysOrInstances, int foreverUntilNumber, Object untilOrNumber) {
         setSpecifiedStartDate(start); // eg REPEAT_TYPE_FROM_COMPLETED_DATE
-        setRepeatType(fromDue); // eg REPEAT_TYPE_FROM_COMPLETED_DATE
+        setRepeatType(repeatType); // eg REPEAT_TYPE_FROM_COMPLETED_DATE
         setFrequency(frequency);
         setInterval(interval);
         if (frequency == RepeatRule.WEEKLY) {
@@ -4313,9 +4323,9 @@ public class RepeatRuleParseObject
         return cal.getTime();
     }
 
-    private static void runTest(Date start, int fromDue, int frequency, int interval, int intOptions, boolean genDaysAhead, int daysOrInstances, int foreverUntilNumber, Object untilOrNumber) {
+    private static void runTest(Date start, int repeatType, int frequency, int interval, int intOptions, boolean genDaysAhead, int daysOrInstances, int foreverUntilNumber, Object untilOrNumber) {
         RepeatRuleParseObject rule = new RepeatRuleParseObject();
-        rule.setTest(start, fromDue, frequency, interval, intOptions, genDaysAhead, daysOrInstances, foreverUntilNumber, untilOrNumber);
+        rule.setTest(start, repeatType, frequency, interval, intOptions, genDaysAhead, daysOrInstances, foreverUntilNumber, untilOrNumber);
         Log.p(rule.toString());
         Log.p(rule.getRepeatRule().toString());
         rule.listDates(10);

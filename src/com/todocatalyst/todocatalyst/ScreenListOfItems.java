@@ -441,9 +441,10 @@ public class ScreenListOfItems extends MyForm {
         parseIdMapReset();
         Container scrollableContainer = buildContentPaneForItemList(this.itemListOrg);
         getContentPane().add(CENTER, scrollableContainer);
-        setTitleAnimation(scrollableContainer);
+//        setTitleAnimation(scrollableContainer);
 
-        revalidate(); //TODO: needed? YES
+//        revalidate(); //TODO: needed? YES
+        revalidateWithAnimationSafety(); //TODO: needed? YES
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
 //        }
@@ -453,6 +454,7 @@ public class ScreenListOfItems extends MyForm {
 //        revalidate(); //TODO: needed? YES
 //        animateHierarchy(300); not good since it visibly refreshes the screen
         super.refreshAfterEdit();
+        setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -647,7 +649,8 @@ public class ScreenListOfItems extends MyForm {
 //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
                             //DONE!!! reload/recalc workslots
                             itemListOrg.resetWorkTimeDefinition(); //ensure workTime is recalculated
-                            ScreenListOfItems.this.refreshAfterEdit();
+//                            ScreenListOfItems.this.refreshAfterEdit();
+                            refreshAfterEdit();
                         }, null, false).show();
             }
             ));
@@ -871,7 +874,8 @@ public class ScreenListOfItems extends MyForm {
                             toolbar.addCommandToOverflowMenu(cmdUnselectAll);
                             toolbar.addCommandToOverflowMenu(cmdInvertSelection);
                             toolbar.addCommandToOverflowMenu(cmdDeleteSelected);
-                            ScreenListOfItems.this.refreshAfterEdit(); //TODO!!!! keep same position, OR: simply make existing containers expand by traversing the list and adding the selectionButton and removing afterwards (faster!)
+//                            ScreenListOfItems.this.refreshAfterEdit(); //TODO!!!! keep same position, OR: simply make existing containers expand by traversing the list and adding the selectionButton and removing afterwards (faster!)
+                            refreshAfterEdit(); //TODO!!!! keep same position, OR: simply make existing containers expand by traversing the list and adding the selectionButton and removing afterwards (faster!)
 //                        Component componentForm = getComponentForm();
 //                        Component parent = getParent();
 //                        if (parent != null) {
@@ -900,8 +904,9 @@ public class ScreenListOfItems extends MyForm {
                             toolbar.removeOverflowCommand(cmdUnselectAll);
                             toolbar.removeOverflowCommand(cmdInvertSelection);
                             toolbar.removeOverflowCommand(cmdDeleteSelected);
-                            ScreenListOfItems.this.revalidate(); //needed to make the commands actually disappear??
-                            ScreenListOfItems.this.refreshAfterEdit();
+                            if (false)ScreenListOfItems.this.revalidate(); //needed to make the commands actually disappear??
+//                            ScreenListOfItems.this.refreshAfterEdit();
+                            refreshAfterEdit();
                         }
                     }
                 });

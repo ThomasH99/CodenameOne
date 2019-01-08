@@ -39,6 +39,7 @@ import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
+import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.ui.util.UITimer;
@@ -268,7 +269,7 @@ public class MyForm extends Form {
                 }
             }
         });
-        getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
+//        getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
 
         if (false) {
             getToolbar().setScrollOffUponContentPane(true);
@@ -1242,10 +1243,10 @@ public class MyForm extends Form {
 //            editFieldOnShowOrRefresh.startEditingAsync();
             inlineInsertContainer.getTextArea().startEditingAsync();
         }
-        if (Config.TEST) {
-            Log.p("******* calling refreshAfterEdit for Screen: " + getTitle());
-        }
         TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
+        if (Config.TEST) {
+            Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
+        }
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -1428,7 +1429,7 @@ public class MyForm extends Form {
         return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit, canGoBack, errorMsg);
     }
 
-    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, GetBoolean canGoBack, String errorMsg) {
+    private Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, GetBoolean canGoBack, String errorMsg) {
         Command cmd = new Command(title, icon) {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -1491,7 +1492,7 @@ public class MyForm extends Form {
         return makeInterruptCommand("", Icons.iconInterruptToolbarStyle()); //"Interrupt", "New Interrupt"
     }
 
-    public Command makeInterruptCommand(String title, Image icon) {
+    private Command makeInterruptCommand(String title, Image icon) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
         return MyReplayCommand.create("StartTimerFromMyForm", title, icon, (e) -> {
@@ -1786,125 +1787,126 @@ public class MyForm extends Form {
         return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton);
     }
 
-    protected static Component layoutNXXX(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
-            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton) {
-        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
-//            field.getAllStyles().setPaddingRight(6);
-        } else {
-            if (field instanceof WrapButton) {
-//                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
-                ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
-                ((WrapButton) field).setUIID("Container");
-            } else {//if (!(field instanceof MyComponentGroup)) {
-                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
-            }
-        }
-
-        //EDIT FIELD
-        Component visibleField = null; //contains the edit field and possibly the edit button
-//        if (hideEditButton) {
-        if (!visibleEditButton && hiddenEditButton) {
-            visibleField = field;
-        } else { //place a visible or invisible button
-            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
-//            boolean editButtonHidden = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
-//            editFieldButton.setVisible(!editButtonInvisible);
+////<editor-fold defaultstate="collapsed" desc="comment">
+//    protected static Component layoutNXXX(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+//            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton) {
+//        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
+////            field.getAllStyles().setPaddingRight(6);
+//        } else {
+//            if (field instanceof WrapButton) {
+////                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
+//                ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
+//                ((WrapButton) field).setUIID("Container");
+//            } else {//if (!(field instanceof MyComponentGroup)) {
+//                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
+//            }
+//        }
+//
+//        //EDIT FIELD
+//        Component visibleField = null; //contains the edit field and possibly the edit button
+////        if (hideEditButton) {
+//        if (!visibleEditButton && hiddenEditButton) {
+//            visibleField = field;
+//        } else { //place a visible or invisible button
+//            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
+////            boolean editButtonHidden = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
+////            editFieldButton.setVisible(!editButtonInvisible);
+////            editFieldButton.setVisible(!showAsFieldUneditable || visibleEditButton); //Visible, but still using space
 //            editFieldButton.setVisible(!showAsFieldUneditable || visibleEditButton); //Visible, but still using space
-            editFieldButton.setVisible(!showAsFieldUneditable || visibleEditButton); //Visible, but still using space
-//            editFieldButton.setVisible(!hideEditButton);
-            editFieldButton.setHidden(hiddenEditButton); //hidden, not taking any space
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
-//            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton);
-//            visibleField = BoxLayout.encloseX(field, editFieldButton);
-//            visibleField = BorderLayout.centerEastWest(null, field, editFieldButton);
+////            editFieldButton.setVisible(!hideEditButton);
+//            editFieldButton.setHidden(hiddenEditButton); //hidden, not taking any space
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
+////            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton);
+////            visibleField = BoxLayout.encloseX(field, editFieldButton);
+////            visibleField = BorderLayout.centerEastWest(null, field, editFieldButton);
+////</editor-fold>
+//            visibleField = BorderLayout.centerEastWest(field, editFieldButton, null);
+//            if (field instanceof WrapButton) {
+//                ((Container) visibleField).setLeadComponent(((WrapButton) field).getActualButton());
+//            } else {
+//                ((Container) visibleField).setLeadComponent(field);
+//            }
+//        }
+//
+//        Container fieldContainer = new Container(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+//
+//        //SWIPE CLEAR
+//        if (swipeClear != null) { //ADD SWIPE to delete
+//            SwipeableContainer swipeCont;
+//            assert !showAsFieldUneditable : "showAsUneditableField should never be true if we also define a swipeClear function";
+//            Button swipeDeleteFieldButton = new Button();
+//            swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
+//            ActionListener l = (ev) -> {
+//                swipeClear.clearFieldValue();
+//                fieldContainer.revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
+//                swipeCont.close();
+//            };
+//            swipeCont.addSwipeOpenListener(l);
+//            swipeDeleteFieldButton.setCommand(Command.create("", Icons.iconCloseCircleLabelStyle, l));
+//            visibleField = swipeCont;
+//        }
+//
+//        //FIELD LABEL
+//        Component fieldLabel = makeHelpButton(fieldLabelTxt, help, wrapText);
+//        if (wrapText) {
+//            int availDisplWidth = (Display.getInstance().getDisplayWidth() * 90) / 100; //asumme roughly 90% of width is available after margins
+////            int availDisplWidthParent = getPaDisplay.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
+//            int labelPreferredW = fieldLabel.getPreferredW();
+//            int fieldPreferredW = visibleField.getPreferredW();
+//            if (labelPreferredW + fieldPreferredW > availDisplWidth) { //if too wide
+//                if (field instanceof MyComponentGroup) { //MyComponentGroups cannot wrap and must be shown fully so split on *two* lines
+//                    fieldContainer.add(BorderLayout.NORTH, fieldLabel);
+//                    fieldContainer.add(BorderLayout.EAST, visibleField);
+//                } else {
+//                    int widthFirstColumn = 0;
+//                    int labelRelativeWidthPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
+//                    int labelScreenWidthPercent = labelPreferredW * 100 / (availDisplWidth);
+//                    if (true) {
+//                        if (labelScreenWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
+//                            widthFirstColumn = labelScreenWidthPercent;
+//                        }
+//                    } else {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////field should not be less than 30% of width
+////                    int labelRelativeWidthPercent = labelPreferredW * 100/ availDisplWidth ;
+////                    int fieldRelativeWidthPercent = fieldPreferredW * 100/ availDisplWidth ;
+////                        int labelRelativeWidthPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
+////                    int fieldRelativeWidthPercent = 100 - labelPreferredW;
+////                    if (fieldRelativeWidthPercent < 30) { //visibleField takes up less than 30% of avail space
+////                        int widthFirstColumn = Math.min(Math.max(fieldLabelPreferredW / visibleFieldPreferredW * 100, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
+////                        widthFirstColumn = 100 - fieldRelativeWidthPercent; //first column gets the rest
+////</editor-fold>
+//                        if (labelRelativeWidthPercent > 70) { //visibleField takes up less than 30% of avail space
+//                            widthFirstColumn = 70; //first column gets the rest
+//                        } else if (labelRelativeWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
+//                            widthFirstColumn = labelRelativeWidthPercent; //give it full space (no wrap)
+//                        } else if (labelRelativeWidthPercent < 30) { //visibleField takes up less than 30% of avail space
+////                        int widthVisibleFieldPercent = 100 - widthFieldLabelPercent;
+////                        int widthLabelPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
+//                            widthFirstColumn = 30; //Math.min(Math.max(widthLabelPercent, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
+//                        }
+//                    }
+//                    TableLayout tl = new TableLayout(1, 2);
+//                    tl.setGrowHorizontally(true); //grow the remaining right-most column
+////                fieldContainer = new Container(tl);
+//                    fieldContainer.setLayout(tl);
+//                    fieldContainer.
+//                            add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.LEFT).widthPercentage(widthFirstColumn), fieldLabel).
+//                            add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.RIGHT), visibleField); //align center right
+//                }
+//            } else {
+//                fieldContainer.add(BorderLayout.WEST, fieldLabel);
+//                fieldContainer.add(BorderLayout.EAST, visibleField);
+//            }
+//        } else {
+//            fieldContainer.add(BorderLayout.WEST, fieldLabel);
+//            fieldContainer.add(BorderLayout.EAST, visibleField);
+//        }
+//        fieldContainer.revalidate(); //right way to get the full text to size up?
+//        return fieldContainer;
+//    }
 //</editor-fold>
-            visibleField = BorderLayout.centerEastWest(field, editFieldButton, null);
-            if (field instanceof WrapButton) {
-                ((Container) visibleField).setLeadComponent(((WrapButton) field).getActualButton());
-            } else {
-                ((Container) visibleField).setLeadComponent(field);
-            }
-        }
-
-        Container fieldContainer = new Container(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
-
-        //SWIPE CLEAR
-        if (swipeClear != null) { //ADD SWIPE to delete
-            SwipeableContainer swipeCont;
-            assert !showAsFieldUneditable : "showAsUneditableField should never be true if we also define a swipeClear function";
-            Button swipeDeleteFieldButton = new Button();
-            swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
-            ActionListener l = (ev) -> {
-                swipeClear.clearFieldValue();
-                fieldContainer.revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
-                swipeCont.close();
-            };
-            swipeCont.addSwipeOpenListener(l);
-            swipeDeleteFieldButton.setCommand(Command.create("", Icons.iconCloseCircleLabelStyle, l));
-            visibleField = swipeCont;
-        }
-
-        //FIELD LABEL
-        Component fieldLabel = makeHelpButton(fieldLabelTxt, help, wrapText);
-        if (wrapText) {
-            int availDisplWidth = (Display.getInstance().getDisplayWidth() * 90) / 100; //asumme roughly 90% of width is available after margins
-//            int availDisplWidthParent = getPaDisplay.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
-            int labelPreferredW = fieldLabel.getPreferredW();
-            int fieldPreferredW = visibleField.getPreferredW();
-            if (labelPreferredW + fieldPreferredW > availDisplWidth) { //if too wide
-                if (field instanceof MyComponentGroup) { //MyComponentGroups cannot wrap and must be shown fully so split on *two* lines
-                    fieldContainer.add(BorderLayout.NORTH, fieldLabel);
-                    fieldContainer.add(BorderLayout.EAST, visibleField);
-                } else {
-                    int widthFirstColumn = 0;
-                    int labelRelativeWidthPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
-                    int labelScreenWidthPercent = labelPreferredW * 100 / (availDisplWidth);
-                    if (true) {
-                        if (labelScreenWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
-                            widthFirstColumn = labelScreenWidthPercent;
-                        }
-                    } else {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//field should not be less than 30% of width
-//                    int labelRelativeWidthPercent = labelPreferredW * 100/ availDisplWidth ;
-//                    int fieldRelativeWidthPercent = fieldPreferredW * 100/ availDisplWidth ;
-//                        int labelRelativeWidthPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
-//                    int fieldRelativeWidthPercent = 100 - labelPreferredW;
-//                    if (fieldRelativeWidthPercent < 30) { //visibleField takes up less than 30% of avail space
-//                        int widthFirstColumn = Math.min(Math.max(fieldLabelPreferredW / visibleFieldPreferredW * 100, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
-//                        widthFirstColumn = 100 - fieldRelativeWidthPercent; //first column gets the rest
-//</editor-fold>
-                        if (labelRelativeWidthPercent > 70) { //visibleField takes up less than 30% of avail space 
-                            widthFirstColumn = 70; //first column gets the rest
-                        } else if (labelRelativeWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
-                            widthFirstColumn = labelRelativeWidthPercent; //give it full space (no wrap)
-                        } else if (labelRelativeWidthPercent < 30) { //visibleField takes up less than 30% of avail space 
-//                        int widthVisibleFieldPercent = 100 - widthFieldLabelPercent;
-//                        int widthLabelPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
-                            widthFirstColumn = 30; //Math.min(Math.max(widthLabelPercent, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
-                        }
-                    }
-                    TableLayout tl = new TableLayout(1, 2);
-                    tl.setGrowHorizontally(true); //grow the remaining right-most column
-//                fieldContainer = new Container(tl);
-                    fieldContainer.setLayout(tl);
-                    fieldContainer.
-                            add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.LEFT).widthPercentage(widthFirstColumn), fieldLabel).
-                            add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.RIGHT), visibleField); //align center right
-                }
-            } else {
-                fieldContainer.add(BorderLayout.WEST, fieldLabel);
-                fieldContainer.add(BorderLayout.EAST, visibleField);
-            }
-        } else {
-            fieldContainer.add(BorderLayout.WEST, fieldLabel);
-            fieldContainer.add(BorderLayout.EAST, visibleField);
-        }
-        fieldContainer.revalidate(); //right way to get the full text to size up?
-        return fieldContainer;
-    }
-
     protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
         return layout(fieldLabelTxt, field, help, swipeClear, wrapText, makeFieldUneditable, hideEditButton, false);
@@ -2023,185 +2025,310 @@ public class MyForm extends Form {
         return fieldContainer;
     }
 
-    protected static Component layoutOLD4(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean checkForTooLargeWidth, boolean showAsUneditableField, boolean noEditButton) {
-
-        if (field instanceof OnOffSwitch) {
-            field.getAllStyles().setPaddingRight(6);
-        } else {
-            field.setUIID(showAsUneditableField ? "LabelFixed" : "LabelValue");
-            if (field instanceof SpanButton) {
-                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
-            }
-        }
-
-        //EDIT FIELD
-        Component visibleField = null; //contains the edit field and possibly the edit button
-        if (noEditButton) {
-            visibleField = field;
-        } else { //place a visible or invisible button
-            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
-            editFieldButton.setVisible(!showAsUneditableField && !noEditButton);
-//            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
-//            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton);
-            visibleField = BoxLayout.encloseX(field, editFieldButton);
-//BoxLayout box = new BoxLayout(BoxLayout.X_AXIS);
-//box.
-//            visibleField = BorderLayout.centerEastWest(null, field, editFieldButton);
-            ((Container) visibleField).setLeadComponent(field);
-        }
-
-        Container fieldContainer = new Container(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
-
-        //SWIPE CLEAR
-        if (swipeClear != null) { //ADD SWIPE to delete
-            SwipeableContainer swipeCont;
-            assert !showAsUneditableField : "showAsUneditableField should never be true if we also define a swipeClear fucntion";
-            Button swipeDeleteFieldButton = new Button();
-            swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
-            swipeDeleteFieldButton.setCommand(Command.create("", Icons.iconCloseCircleLabelStyle, (ev) -> {
-                swipeClear.clearFieldValue();
-                fieldContainer.revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
-                swipeCont.close();
-            }));
-            visibleField = swipeCont;
-        }
-
-        //FIELD LABEL
-        Component fieldLabel = makeHelpButton(fieldLabelTxt, help, checkForTooLargeWidth);
-        if (checkForTooLargeWidth) {
-            int availDisplWidth = Display.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
-            int fieldLabelPreferredW = fieldLabel.getPreferredW();
-            int visibleFieldPreferredW = visibleField.getPreferredW();
-            if (fieldLabelPreferredW + visibleFieldPreferredW > availDisplWidth) { //if too wide
-                fieldLabel.getAllStyles().setMarginBottom(0);
-                fieldLabel.getAllStyles().setPaddingBottom(0); //reduce space between label and field
-                visibleField.getAllStyles().setMarginBottom(0);
-                visibleField.getAllStyles().setPaddingTop(0);
-                fieldContainer.add(BorderLayout.NORTH, fieldLabel);
-                fieldContainer.add(BorderLayout.EAST, visibleField); //label NORTH
-            } else {
-                fieldContainer.add(BorderLayout.WEST, fieldLabel);
-                fieldContainer.add(BorderLayout.EAST, visibleField);  //label WEST
-            }
-        } else {
-            fieldContainer.add(BorderLayout.WEST, fieldLabel);
-            fieldContainer.add(BorderLayout.EAST, visibleField);
-        }
-
-        return fieldContainer;
-    }
-
-    protected static Component layoutOLD3(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean checkForTooLargeWidth, boolean showAsUneditableField, boolean noButton) {
-//        return BorderLayout.center(addHelp(new Button(label), help)).add(BorderLayout.EAST, field);
-//        new SwipeClearContainer(BoxLayout.encloseXNoGrow(field), swipeClear);
-        boolean labelAndFieldOnSeparateLines = false;
-
-        if (field instanceof OnOffSwitch) {
-            field.getAllStyles().setPaddingRight(6);
-        } else {
-            field.setUIID(showAsUneditableField ? "LabelFixed" : "LabelValue");
-            if (field instanceof SpanButton) {
-//                ((SpanButton) field).setUIID(showAsUneditableField ? "LabelFixed" : "LabelValue");
-                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
-            }
-        }
-
-//        Container fieldContainer = null; //contains the edit field and possibly the edit button
-        Component visibleField = null; //contains the edit field and possibly the edit button
-        if (noButton) {
-            visibleField = field;
-        } else { //place a visible or invisible button
 //<editor-fold defaultstate="collapsed" desc="comment">
-//            Label editFieldButton = null;
-//Define [>] button
-//            editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "LabelValue"); // [>]
-//</editor-fold>
-            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
-            editFieldButton.setVisible(!showAsUneditableField && !noButton);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            editFieldIcon.setHidden(noVisibleEditButton);
-//            editFieldButton.getAllStyles().setMarginLeft(0);
-//            editFieldButton.getAllStyles().setPaddingLeft(0); //TODO move this formatting to theme
-//            fieldValueEdit = FlowLayout.encloseIn(swipeCont, editFieldIcon);
-//            fieldValueEdit = FlowLayout.encloseRightMiddle(swipeCont, editFieldIcon);
-//            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton); //keeps left position as size of content varies
-//</editor-fold>
-            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
-//            ((Container) fieldContainer).setLeadComponent(field);
-            ((Container) visibleField).setLeadComponent(field);
-        }
-
-        Container l = new Container(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
-
-        //SWIPE CLEAR
-//        SwipeableContainer fieldCont = new SwipeableContainer(null, BoxLayout.encloseXNoGrow(deleteFieldButton), field);
-        if (swipeClear != null) { //ADD SWIPE to delete
-            SwipeableContainer swipeCont;
-            assert !showAsUneditableField : "showAsUneditableField should never be true if we also define a swipeClear fucntion";
-            Button swipeDeleteFieldButton = new Button();
-//        SwipeableContainer fieldCont = new SwipeableContainer(null, deleteFieldButton, field);
-            swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
-//            swipeDeleteFieldButton.setCommand(Command.create("Delete", Icons.iconCloseCircleLabelStyle, (ev) -> {
-            swipeDeleteFieldButton.setCommand(Command.create("", Icons.iconCloseCircleLabelStyle, (ev) -> {
-                swipeClear.clearFieldValue();
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                field.repaint(); //??
-//                visibleField.repaint(); //??
-//                swipeCont.getComponentAt(1).repaint();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
-//                ((Container)swipeCont.getComponentAt(1)).revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
-//</editor-fold>
-                l.revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
-                swipeCont.close();
-//                field.repaint(); //??
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            cont.repaint();
-//            this.getParent().revalidate(); //enough to relayout/resize the field eg when adding a date to a previously empty field? NO, shows Delete button on top of <set>
-//            repaint();
-//            getComponentForm().revalidate(); //enough to relayout/resize the field eg when adding a date to a previously empty field?
-//</editor-fold>
-            }));
-            visibleField = swipeCont;
-        }
-
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        Container l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, FlowLayout.encloseCenterMiddle(field));
-//        Container fieldValueEdit = FlowLayout.encloseCenter(fieldCont, new Label(Icons.iconEditSymbolLabelStyle, "LabelValue"));
-//        Container fieldValueEdit = FlowLayout.encloseCenter(fieldCont, editFieldIcon);
-//</editor-fold>
-        Component fieldLabel;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (checkForTooLargeWidth) {
+//    protected static Component layoutOLD4(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean checkForTooLargeWidth, boolean showAsUneditableField, boolean noEditButton) {
+//
+//        if (field instanceof OnOffSwitch) {
+//            field.getAllStyles().setPaddingRight(6);
 //        } else {
-//            fieldLabel = makeHelpButton(fieldLabelTxt, help, !checkForTooLargeWidth);
+//            field.setUIID(showAsUneditableField ? "LabelFixed" : "LabelValue");
+//            if (field instanceof SpanButton) {
+//                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
+//            }
 //        }
+//
+//        //EDIT FIELD
+//        Component visibleField = null; //contains the edit field and possibly the edit button
+//        if (noEditButton) {
+//            visibleField = field;
+//        } else { //place a visible or invisible button
+//            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
+//            editFieldButton.setVisible(!showAsUneditableField && !noEditButton);
+////            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
+////            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton);
+//            visibleField = BoxLayout.encloseX(field, editFieldButton);
+////BoxLayout box = new BoxLayout(BoxLayout.X_AXIS);
+////box.
+////            visibleField = BorderLayout.centerEastWest(null, field, editFieldButton);
+//            ((Container) visibleField).setLeadComponent(field);
+//        }
+//
+//        Container fieldContainer = new Container(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+//
+//        //SWIPE CLEAR
+//        if (swipeClear != null) { //ADD SWIPE to delete
+//            SwipeableContainer swipeCont;
+//            assert !showAsUneditableField : "showAsUneditableField should never be true if we also define a swipeClear fucntion";
+//            Button swipeDeleteFieldButton = new Button();
+//            swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
+//            swipeDeleteFieldButton.setCommand(Command.create("", Icons.iconCloseCircleLabelStyle, (ev) -> {
+//                swipeClear.clearFieldValue();
+//                fieldContainer.revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
+//                swipeCont.close();
+//            }));
+//            visibleField = swipeCont;
+//        }
+//
+//        //FIELD LABEL
+//        Component fieldLabel = makeHelpButton(fieldLabelTxt, help, checkForTooLargeWidth);
+//        if (checkForTooLargeWidth) {
+//            int availDisplWidth = Display.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
+//            int fieldLabelPreferredW = fieldLabel.getPreferredW();
+//            int visibleFieldPreferredW = visibleField.getPreferredW();
+//            if (fieldLabelPreferredW + visibleFieldPreferredW > availDisplWidth) { //if too wide
+//                fieldLabel.getAllStyles().setMarginBottom(0);
+//                fieldLabel.getAllStyles().setPaddingBottom(0); //reduce space between label and field
+//                visibleField.getAllStyles().setMarginBottom(0);
+//                visibleField.getAllStyles().setPaddingTop(0);
+//                fieldContainer.add(BorderLayout.NORTH, fieldLabel);
+//                fieldContainer.add(BorderLayout.EAST, visibleField); //label NORTH
+//            } else {
+//                fieldContainer.add(BorderLayout.WEST, fieldLabel);
+//                fieldContainer.add(BorderLayout.EAST, visibleField);  //label WEST
+//            }
+//        } else {
+//            fieldContainer.add(BorderLayout.WEST, fieldLabel);
+//            fieldContainer.add(BorderLayout.EAST, visibleField);
+//        }
+//
+//        return fieldContainer;
+//    }
 //</editor-fold>
-        fieldLabel = makeHelpButton(fieldLabelTxt, help, checkForTooLargeWidth);
-
-        if (checkForTooLargeWidth) {
-//            l.revalidate();
-//            if (fieldLabel.getWidth() < fieldLabel.getPreferredW() || fieldValueEdit.getWidth() < fieldValueEdit.getPreferredW()) { //if either of the fields got less width than needed
-            int availDisplWidth = Display.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
-            int fieldLabelPreferredW = fieldLabel.getPreferredW();
-            int visibleFieldPreferredW = visibleField.getPreferredW();
-            if (fieldLabelPreferredW + visibleFieldPreferredW > availDisplWidth) { //if too wide
-                fieldLabel.getAllStyles().setMarginBottom(0);
-                fieldLabel.getAllStyles().setPaddingBottom(0); //reduce space between label and field
-                visibleField.getAllStyles().setMarginBottom(0);
-                visibleField.getAllStyles().setPaddingTop(0);
 //<editor-fold defaultstate="collapsed" desc="comment">
+//    protected static Component layoutOLD3(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean checkForTooLargeWidth, boolean showAsUneditableField, boolean noButton) {
+////        return BorderLayout.center(addHelp(new Button(label), help)).add(BorderLayout.EAST, field);
+////        new SwipeClearContainer(BoxLayout.encloseXNoGrow(field), swipeClear);
+//        boolean labelAndFieldOnSeparateLines = false;
+//
+//        if (field instanceof OnOffSwitch) {
+//            field.getAllStyles().setPaddingRight(6);
+//        } else {
+//            field.setUIID(showAsUneditableField ? "LabelFixed" : "LabelValue");
+//            if (field instanceof SpanButton) {
+////                ((SpanButton) field).setUIID(showAsUneditableField ? "LabelFixed" : "LabelValue");
+//                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
+//            }
+//        }
+//
+////        Container fieldContainer = null; //contains the edit field and possibly the edit button
+//        Component visibleField = null; //contains the edit field and possibly the edit button
+//        if (noButton) {
+//            visibleField = field;
+//        } else { //place a visible or invisible button
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            Label editFieldButton = null;
+////Define [>] button
+////            editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "LabelValue"); // [>]
+////</editor-fold>
+//            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
+//            editFieldButton.setVisible(!showAsUneditableField && !noButton);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            editFieldIcon.setHidden(noVisibleEditButton);
+////            editFieldButton.getAllStyles().setMarginLeft(0);
+////            editFieldButton.getAllStyles().setPaddingLeft(0); //TODO move this formatting to theme
+////            fieldValueEdit = FlowLayout.encloseIn(swipeCont, editFieldIcon);
+////            fieldValueEdit = FlowLayout.encloseRightMiddle(swipeCont, editFieldIcon);
+////            visibleField = BoxLayout.encloseXNoGrow(field, editFieldButton); //keeps left position as size of content varies
+////</editor-fold>
+//            visibleField = FlowLayout.encloseRightMiddle(field, editFieldButton);
+////            ((Container) fieldContainer).setLeadComponent(field);
+//            ((Container) visibleField).setLeadComponent(field);
+//        }
+//
+//        Container l = new Container(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+//
+//        //SWIPE CLEAR
+////        SwipeableContainer fieldCont = new SwipeableContainer(null, BoxLayout.encloseXNoGrow(deleteFieldButton), field);
+//        if (swipeClear != null) { //ADD SWIPE to delete
+//            SwipeableContainer swipeCont;
+//            assert !showAsUneditableField : "showAsUneditableField should never be true if we also define a swipeClear fucntion";
+//            Button swipeDeleteFieldButton = new Button();
+////        SwipeableContainer fieldCont = new SwipeableContainer(null, deleteFieldButton, field);
+//            swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
+////            swipeDeleteFieldButton.setCommand(Command.create("Delete", Icons.iconCloseCircleLabelStyle, (ev) -> {
+//            swipeDeleteFieldButton.setCommand(Command.create("", Icons.iconCloseCircleLabelStyle, (ev) -> {
+//                swipeClear.clearFieldValue();
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                field.repaint(); //??
+////                visibleField.repaint(); //??
+////                swipeCont.getComponentAt(1).repaint();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
+////                ((Container)swipeCont.getComponentAt(1)).revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
+////</editor-fold>
+//                l.revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
+//                swipeCont.close();
+////                field.repaint(); //??
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            cont.repaint();
+////            this.getParent().revalidate(); //enough to relayout/resize the field eg when adding a date to a previously empty field? NO, shows Delete button on top of <set>
+////            repaint();
+////            getComponentForm().revalidate(); //enough to relayout/resize the field eg when adding a date to a previously empty field?
+////</editor-fold>
+//            }));
+//            visibleField = swipeCont;
+//        }
+//
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        Container l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, FlowLayout.encloseCenterMiddle(field));
+////        Container fieldValueEdit = FlowLayout.encloseCenter(fieldCont, new Label(Icons.iconEditSymbolLabelStyle, "LabelValue"));
+////        Container fieldValueEdit = FlowLayout.encloseCenter(fieldCont, editFieldIcon);
+////</editor-fold>
+//        Component fieldLabel;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (checkForTooLargeWidth) {
+////        } else {
+////            fieldLabel = makeHelpButton(fieldLabelTxt, help, !checkForTooLargeWidth);
+////        }
+////</editor-fold>
+//        fieldLabel = makeHelpButton(fieldLabelTxt, help, checkForTooLargeWidth);
+//
+//        if (checkForTooLargeWidth) {
+////            l.revalidate();
+////            if (fieldLabel.getWidth() < fieldLabel.getPreferredW() || fieldValueEdit.getWidth() < fieldValueEdit.getPreferredW()) { //if either of the fields got less width than needed
+//            int availDisplWidth = Display.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
+//            int fieldLabelPreferredW = fieldLabel.getPreferredW();
+//            int visibleFieldPreferredW = visibleField.getPreferredW();
+//            if (fieldLabelPreferredW + visibleFieldPreferredW > availDisplWidth) { //if too wide
+//                fieldLabel.getAllStyles().setMarginBottom(0);
+//                fieldLabel.getAllStyles().setPaddingBottom(0); //reduce space between label and field
+//                visibleField.getAllStyles().setMarginBottom(0);
+//                visibleField.getAllStyles().setPaddingTop(0);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                l.removeComponent(fieldLabel); //
+//////                l = BorderLayout.north(fieldLabel).add(BorderLayout.EAST, fieldValueEdit);
+////                l.add(BorderLayout.NORTH, fieldLabel);
+////                l = BorderLayout.north(fieldLabel).add(BorderLayout.EAST, visibleField); //label NORTH
+////</editor-fold>
+//                l.add(BorderLayout.NORTH, fieldLabel);
+//                l.add(BorderLayout.EAST, visibleField); //label NORTH
+//            } else //            l = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);  //label WEST
+//            {
+////                l = BorderLayout.west(fieldLabel).add(BorderLayout.EAST, visibleField);  //label WEST
+//                l.add(BorderLayout.WEST, fieldLabel);
+//                l.add(BorderLayout.EAST, visibleField);  //label WEST
+//            }//<editor-fold defaultstate="collapsed" desc="comment">
+////            if (false) {
+//////    int availDisplWidth = Display.getInstance().getDisplayWidth() * 9 / 10; //asumme roughly 90% of width is available after margins
+//////    int fieldLabelPreferredW = fieldLabel.getPreferredW();
+//////    int fieldValueEditPreferredW = fieldValueEdit.getPreferredW();
+//////    if (fieldLabelPreferredW + fieldValueEditPreferredW > availDisplWidth) { //if too wide
+//////{
+//////            } else {
+//////            }
+////                if (false && checkForTooLargeWidth) {
+////                    if (l.getPreferredW() > Display.getInstance().getDisplayWidth()) { //if too wide, put label in North (so it becomes two separate lines)
+////                        if (field instanceof TextArea || field instanceof TextField) {
+//////                    field.setSameWidth(d);
+////                            Dimension d = field.getPreferredSize();
+////                            d.setWidth(Display.getInstance().getDisplayWidth() / 2); //allow a textField to take up mox half the screen size.
+////                            field.setPreferredSize(d); //TODO!!! CN1 Support: setPreferredSize deprecated, but what is right way then??
+////                        } else {
+//////                    l.removeAll(); //remove already added components to avoid getting an error about adding twice
+////                            field.getParent().removeComponent(field); //remove already added components to avoid getting an error about adding twice
+////                            l = BorderLayout.north(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, field);
+////                        }
+////                    }
+////                }
+////
+////                if (false) {
+////                    if (labelAndFieldOnSeparateLines) {
+//////                        l = BorderLayout.north(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, fieldContainer);
+////                    } else {
+//////                        l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.SOUTH, fieldContainer);
+////                    }
+////                }
+////            }
+////</editor-fold>
+//        } else {
+////            l = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+////            l = BorderLayout.west(fieldLabel).add(BorderLayout.EAST, visibleField);
+//            l.add(BorderLayout.WEST, fieldLabel);
+//            l.add(BorderLayout.EAST, visibleField);
+//        }
+//
+////        return BorderLayout.center(helpBut(label, help)).add(BorderLayout.EAST, field);
+//        return l;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    protected static Component layoutOLD2(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean checkForTooLargeWidth, boolean showAsUneditableField, boolean noVisibleEditButton) {
+////        return BorderLayout.center(addHelp(new Button(label), help)).add(BorderLayout.EAST, field);
+////        new SwipeClearContainer(BoxLayout.encloseXNoGrow(field), swipeClear);
+//        boolean labelAndFieldOnSeparateLines = false;
+//
+//        field.setUIID(showAsUneditableField ? "LabelFixed" : "LabelValue");
+//
+//        Label editFieldIcon = null;
+//        if (!noVisibleEditButton) {
+//            //Define [>] button
+//            editFieldIcon = new Label(Icons.iconEditSymbolLabelStyle, "LabelValue"); // [>]
+//            editFieldIcon.setVisible(!showAsUneditableField && !noVisibleEditButton);
+////            editFieldIcon.setHidden(noVisibleEditButton);
+//            editFieldIcon.getAllStyles().setMarginLeft(0);
+//            editFieldIcon.getAllStyles().setPaddingLeft(0); //TODO move this formatting to theme
+//        }
+//
+////        SwipeableContainer fieldCont = new SwipeableContainer(null, BoxLayout.encloseXNoGrow(deleteFieldButton), field);
+//        Component fieldContainer = null;
+//        SwipeableContainer swipeCont;
+//        if (swipeClear != null) { //ADD SWIPE to delete
+//            assert !showAsUneditableField : "showAsUneditableField should never be true if we also define a swipeClear fucntion";
+//            Button deleteFieldButton = new Button();
+////        SwipeableContainer fieldCont = new SwipeableContainer(null, deleteFieldButton, field);
+//            swipeCont = new SwipeableContainer(null, deleteFieldButton, field);
+//            deleteFieldButton.setCommand(Command.create("Delete", Icons.iconCloseCircleLabelStyle, (ev) -> {
+//                swipeClear.clearFieldValue();
+//                swipeCont.close();
+//                field.repaint(); //??
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            cont.repaint();
+////            this.getParent().revalidate(); //enough to relayout/resize the field eg when adding a date to a previously empty field? NO, shows Delete button on top of <set>
+////            repaint();
+////            getComponentForm().revalidate(); //enough to relayout/resize the field eg when adding a date to a previously empty field?
+////</editor-fold>
+//            }));
+////            fieldValueEdit = FlowLayout.encloseIn(swipeCont, editFieldIcon);
+////            fieldValueEdit = FlowLayout.encloseRightMiddle(swipeCont, editFieldIcon);
+//            if (swipeClear != null) {
+//                fieldContainer = swipeCont;
+//            } else {
+//                fieldContainer = BoxLayout.encloseXNoGrow(swipeCont, editFieldIcon);
+//                ((Container) fieldContainer).setLeadComponent(field);
+//            }
+//        } else {
+////            fieldValueEdit = FlowLayout.encloseIn(field, editFieldIcon);
+////            fieldValueEdit = FlowLayout.encloseRightMiddle(field, editFieldIcon);
+//            if (noVisibleEditButton) {
+////                fieldContainer = swipeCont;
+//            } else {
+//                fieldContainer = BoxLayout.encloseXNoGrow(field, editFieldIcon);
+//                if (!showAsUneditableField) {
+//                    ((Container) fieldContainer).setLeadComponent(field);
+//                }
+//            }
+//        }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        Container l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, FlowLayout.encloseCenterMiddle(field));
+////        Container fieldValueEdit = FlowLayout.encloseCenter(fieldCont, new Label(Icons.iconEditSymbolLabelStyle, "LabelValue"));
+////        Container fieldValueEdit = FlowLayout.encloseCenter(fieldCont, editFieldIcon);
+////</editor-fold>
+//        Component fieldLabel = makeHelpButton(fieldLabelTxt, help);
+//
+//        Container l = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, fieldContainer);
+//
+//        if (checkForTooLargeWidth) {
+////            l.revalidate();
+////            if (fieldLabel.getWidth() < fieldLabel.getPreferredW() || fieldValueEdit.getWidth() < fieldValueEdit.getPreferredW()) { //if either of the fields got less width than needed
+//            int availDisplWidth = Display.getInstance().getDisplayWidth() * 9 / 10; //asumme roughly 90% of width is available after margins
+//            int fieldLabelPreferredW = fieldLabel.getPreferredW();
+//            int fieldValueEditPreferredW = fieldContainer.getPreferredW();
+//            if (fieldLabelPreferredW + fieldValueEditPreferredW > availDisplWidth) { //if too wide
+//                fieldLabel.getAllStyles().setMarginBottom(0);
+//                fieldLabel.getAllStyles().setPaddingBottom(0); //reduce space between label and field
 //                l.removeComponent(fieldLabel); //
 ////                l = BorderLayout.north(fieldLabel).add(BorderLayout.EAST, fieldValueEdit);
 //                l.add(BorderLayout.NORTH, fieldLabel);
-//                l = BorderLayout.north(fieldLabel).add(BorderLayout.EAST, visibleField); //label NORTH
-//</editor-fold>
-                l.add(BorderLayout.NORTH, fieldLabel);
-                l.add(BorderLayout.EAST, visibleField); //label NORTH
-            } else //            l = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);  //label WEST
-            {
-//                l = BorderLayout.west(fieldLabel).add(BorderLayout.EAST, visibleField);  //label WEST
-                l.add(BorderLayout.WEST, fieldLabel);
-                l.add(BorderLayout.EAST, visibleField);  //label WEST
-            }//<editor-fold defaultstate="collapsed" desc="comment">
+//            }
+////<editor-fold defaultstate="collapsed" desc="comment">
 //            if (false) {
 ////    int availDisplWidth = Display.getInstance().getDisplayWidth() * 9 / 10; //asumme roughly 90% of width is available after margins
 ////    int fieldLabelPreferredW = fieldLabel.getPreferredW();
@@ -2227,165 +2354,44 @@ public class MyForm extends Form {
 //
 //                if (false) {
 //                    if (labelAndFieldOnSeparateLines) {
-////                        l = BorderLayout.north(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, fieldContainer);
+//                        l = BorderLayout.north(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, fieldContainer);
 //                    } else {
-////                        l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.SOUTH, fieldContainer);
+//                        l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.SOUTH, fieldContainer);
 //                    }
 //                }
 //            }
+////</editor-fold>
+//        }
+//
+////        return BorderLayout.center(helpBut(label, help)).add(BorderLayout.EAST, field);
+//        return l;
+//    }
 //</editor-fold>
-        } else {
-//            l = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
-//            l = BorderLayout.west(fieldLabel).add(BorderLayout.EAST, visibleField);
-            l.add(BorderLayout.WEST, fieldLabel);
-            l.add(BorderLayout.EAST, visibleField);
-        }
-
-//        return BorderLayout.center(helpBut(label, help)).add(BorderLayout.EAST, field);
-        return l;
-    }
-
-    protected static Component layoutOLD2(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean checkForTooLargeWidth, boolean showAsUneditableField, boolean noVisibleEditButton) {
-//        return BorderLayout.center(addHelp(new Button(label), help)).add(BorderLayout.EAST, field);
-//        new SwipeClearContainer(BoxLayout.encloseXNoGrow(field), swipeClear);
-        boolean labelAndFieldOnSeparateLines = false;
-
-        field.setUIID(showAsUneditableField ? "LabelFixed" : "LabelValue");
-
-        Label editFieldIcon = null;
-        if (!noVisibleEditButton) {
-            //Define [>] button
-            editFieldIcon = new Label(Icons.iconEditSymbolLabelStyle, "LabelValue"); // [>]
-            editFieldIcon.setVisible(!showAsUneditableField && !noVisibleEditButton);
-//            editFieldIcon.setHidden(noVisibleEditButton);
-            editFieldIcon.getAllStyles().setMarginLeft(0);
-            editFieldIcon.getAllStyles().setPaddingLeft(0); //TODO move this formatting to theme
-        }
-
-//        SwipeableContainer fieldCont = new SwipeableContainer(null, BoxLayout.encloseXNoGrow(deleteFieldButton), field);
-        Component fieldContainer = null;
-        SwipeableContainer swipeCont;
-        if (swipeClear != null) { //ADD SWIPE to delete
-            assert !showAsUneditableField : "showAsUneditableField should never be true if we also define a swipeClear fucntion";
-            Button deleteFieldButton = new Button();
-//        SwipeableContainer fieldCont = new SwipeableContainer(null, deleteFieldButton, field);
-            swipeCont = new SwipeableContainer(null, deleteFieldButton, field);
-            deleteFieldButton.setCommand(Command.create("Delete", Icons.iconCloseCircleLabelStyle, (ev) -> {
-                swipeClear.clearFieldValue();
-                swipeCont.close();
-                field.repaint(); //??
 //<editor-fold defaultstate="collapsed" desc="comment">
-//            cont.repaint();
-//            this.getParent().revalidate(); //enough to relayout/resize the field eg when adding a date to a previously empty field? NO, shows Delete button on top of <set>
-//            repaint();
-//            getComponentForm().revalidate(); //enough to relayout/resize the field eg when adding a date to a previously empty field?
-//</editor-fold>
-            }));
-//            fieldValueEdit = FlowLayout.encloseIn(swipeCont, editFieldIcon);
-//            fieldValueEdit = FlowLayout.encloseRightMiddle(swipeCont, editFieldIcon);
-            if (swipeClear != null) {
-                fieldContainer = swipeCont;
-            } else {
-                fieldContainer = BoxLayout.encloseXNoGrow(swipeCont, editFieldIcon);
-                ((Container) fieldContainer).setLeadComponent(field);
-            }
-        } else {
-//            fieldValueEdit = FlowLayout.encloseIn(field, editFieldIcon);
-//            fieldValueEdit = FlowLayout.encloseRightMiddle(field, editFieldIcon);
-            if (noVisibleEditButton) {
-//                fieldContainer = swipeCont;
-            } else {
-                fieldContainer = BoxLayout.encloseXNoGrow(field, editFieldIcon);
-                if (!showAsUneditableField) {
-                    ((Container) fieldContainer).setLeadComponent(field);
-                }
-            }
-        }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        Container l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, FlowLayout.encloseCenterMiddle(field));
-//        Container fieldValueEdit = FlowLayout.encloseCenter(fieldCont, new Label(Icons.iconEditSymbolLabelStyle, "LabelValue"));
-//        Container fieldValueEdit = FlowLayout.encloseCenter(fieldCont, editFieldIcon);
-//</editor-fold>
-        Component fieldLabel = makeHelpButton(fieldLabelTxt, help);
-
-        Container l = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, fieldContainer);
-
-        if (checkForTooLargeWidth) {
-//            l.revalidate();
-//            if (fieldLabel.getWidth() < fieldLabel.getPreferredW() || fieldValueEdit.getWidth() < fieldValueEdit.getPreferredW()) { //if either of the fields got less width than needed
-            int availDisplWidth = Display.getInstance().getDisplayWidth() * 9 / 10; //asumme roughly 90% of width is available after margins
-            int fieldLabelPreferredW = fieldLabel.getPreferredW();
-            int fieldValueEditPreferredW = fieldContainer.getPreferredW();
-            if (fieldLabelPreferredW + fieldValueEditPreferredW > availDisplWidth) { //if too wide
-                fieldLabel.getAllStyles().setMarginBottom(0);
-                fieldLabel.getAllStyles().setPaddingBottom(0); //reduce space between label and field
-                l.removeComponent(fieldLabel); //
-//                l = BorderLayout.north(fieldLabel).add(BorderLayout.EAST, fieldValueEdit);
-                l.add(BorderLayout.NORTH, fieldLabel);
-            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-            if (false) {
-//    int availDisplWidth = Display.getInstance().getDisplayWidth() * 9 / 10; //asumme roughly 90% of width is available after margins
-//    int fieldLabelPreferredW = fieldLabel.getPreferredW();
-//    int fieldValueEditPreferredW = fieldValueEdit.getPreferredW();
-//    if (fieldLabelPreferredW + fieldValueEditPreferredW > availDisplWidth) { //if too wide
-//{
-//            } else {
+//    protected static Component layoutOLD(String fieldLabelTxt, Component field, String help, boolean checkForTooLargeWidth) {
+////        return BorderLayout.center(addHelp(new Button(label), help)).add(BorderLayout.EAST, field);
+////        Container l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, FlowLayout.encloseCenterMiddle(field)); //CenterMiddle seems to shift down a bit
+//        Container l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, FlowLayout.encloseCenter(field));
+////        field.setUIID("LabelValue");
+//        if (checkForTooLargeWidth) {
+//            if (l.getPreferredW() > Display.getInstance().getDisplayWidth()) { //if too wide, put label in North (so it becomes two separate lines)
+//                if (field instanceof TextArea || field instanceof TextField) {
+////                    field.setSameWidth(d);
+//                    Dimension d = field.getPreferredSize();
+//                    d.setWidth(Display.getInstance().getDisplayWidth() / 2); //allow a textField to take up mox half the screen size.
+//                    field.setPreferredSize(d); //TODO!!! CN1 Support: setPreferredSize deprecated, but what is right way then??
+//                } else {
+////                    l.removeAll(); //remove already added components to avoid getting an error about adding twice
+//                    field.getParent().removeComponent(field); //remove already added components to avoid getting an error about adding twice
+//                    l = BorderLayout.north(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, field);
+//                }
 //            }
-                if (false && checkForTooLargeWidth) {
-                    if (l.getPreferredW() > Display.getInstance().getDisplayWidth()) { //if too wide, put label in North (so it becomes two separate lines)
-                        if (field instanceof TextArea || field instanceof TextField) {
-//                    field.setSameWidth(d);
-                            Dimension d = field.getPreferredSize();
-                            d.setWidth(Display.getInstance().getDisplayWidth() / 2); //allow a textField to take up mox half the screen size.
-                            field.setPreferredSize(d); //TODO!!! CN1 Support: setPreferredSize deprecated, but what is right way then??
-                        } else {
-//                    l.removeAll(); //remove already added components to avoid getting an error about adding twice
-                            field.getParent().removeComponent(field); //remove already added components to avoid getting an error about adding twice
-                            l = BorderLayout.north(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, field);
-                        }
-                    }
-                }
-
-                if (false) {
-                    if (labelAndFieldOnSeparateLines) {
-                        l = BorderLayout.north(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, fieldContainer);
-                    } else {
-                        l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.SOUTH, fieldContainer);
-                    }
-                }
-            }
+//        }
+//
+////        return BorderLayout.center(helpBut(label, help)).add(BorderLayout.EAST, field);
+//        return l;
+//    }
 //</editor-fold>
-        }
-
-//        return BorderLayout.center(helpBut(label, help)).add(BorderLayout.EAST, field);
-        return l;
-    }
-
-    protected static Component layoutOLD(String fieldLabelTxt, Component field, String help, boolean checkForTooLargeWidth) {
-//        return BorderLayout.center(addHelp(new Button(label), help)).add(BorderLayout.EAST, field);
-//        Container l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, FlowLayout.encloseCenterMiddle(field)); //CenterMiddle seems to shift down a bit
-        Container l = BorderLayout.center(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, FlowLayout.encloseCenter(field));
-//        field.setUIID("LabelValue");
-        if (checkForTooLargeWidth) {
-            if (l.getPreferredW() > Display.getInstance().getDisplayWidth()) { //if too wide, put label in North (so it becomes two separate lines)
-                if (field instanceof TextArea || field instanceof TextField) {
-//                    field.setSameWidth(d);
-                    Dimension d = field.getPreferredSize();
-                    d.setWidth(Display.getInstance().getDisplayWidth() / 2); //allow a textField to take up mox half the screen size. 
-                    field.setPreferredSize(d); //TODO!!! CN1 Support: setPreferredSize deprecated, but what is right way then??
-                } else {
-//                    l.removeAll(); //remove already added components to avoid getting an error about adding twice
-                    field.getParent().removeComponent(field); //remove already added components to avoid getting an error about adding twice
-                    l = BorderLayout.north(makeHelpButton(fieldLabelTxt, help)).add(BorderLayout.EAST, field);
-                }
-            }
-        }
-
-//        return BorderLayout.center(helpBut(label, help)).add(BorderLayout.EAST, field);
-        return l;
-    }
-
 //    private String previousValuesFilename;
 //    protected void setPreviousValuesFilename(String filename) {
 //        previousValuesFilename = filename;
@@ -3298,104 +3304,105 @@ public class MyForm extends Form {
         }
     }
 
-    public void pointerDraggedOLD(int[] x, int[] y) {
-        if (!pinchInsertEnabled) {
-//            super.pointerDragged(x, y);
-        } else { //pinchInsertEnabled
-//            } else { //pinchContainer != null) => we already have a pinchContainer (either being inserted or inserted previously)
-            if (x.length <= 1) { //PinchOut is either finished or not ongoing (newPinchContainer!=null means a pinch was ongoing before)
-//                if (pinchContainer == null) { //no previous pinchContainer, do nothing
-////                    super.pointerDragged(x, y);
-//                } else { //a pinch container already exists, do nothing, insertContainer already in place
-                if (pinchContainer != null) { //a pinch container already exists, do nothing, insertContainer already in place
-//                    if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//add new item into underlying list - NO, done in the pinchConatiner itself when hitting Enter or [>]
-//                    itemList.addItemAtIndex(pinchItem, pos);
-//insert pinchContainer into the displayed list at the right position
-//                        insertPinchContainer(prevComponentAbove, prevComponentBelow, pinchContainer); //ALREADY inserted when growing, just leave it in place
-//replace pinchContainer by (temporary) new Element container to quickly update (before regenerating the list) - NO, done in pinchContainer itself as well
-//                        pinchContainer.getParent().replace(pinchContainer, createElementComponent.createFinalComponent(itemList), null); //TODO!!! add meaningful animation
-//                        pinchContainer = null; //keep the container if there's a later pinchIn
-//</editor-fold>
-//                    } else {
-                    if (!minimumPinchSizeReached(pinchDistance, pinchContainer)) {
-                        //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
-//                        Label emptyLabel = new Label();
-                        Container pinchContainerParent = pinchContainer.getParent();
-//                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
-//                        pinchContainerParent.removeComponent(emptyLabel);
-//                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
-                        pinchContainerParent.removeComponent(pinchContainer);
-                        pinchContainer = null; //indicates done with this container
-//                        MyForm.this.refreshAfterEdit();
-                        MyForm.this.revalidate(); //necessary after using replace()??
-                    }
-                    pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
-                }
-//                display(x, y, false);
-            } else { // (x.length > 1) => PINCH ONGOING
-                //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
-                //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
-                int yMin = Math.min(y[1], y[0]); //y[1] <= y[0] ? y[1] : y[0];
-                int yMax = Math.max(y[1], y[0]); // y[1] > y[0] ? y[1] : y[0];
-//                int xMin = y[1] <= y[0] ? x[1] : x[0]; //xMin is the x[n] corresponding to the minimal y[n] 
-//                int xMax = y[1] > y[0] ? x[1] : x[0];
-                int newYDist = yMax - yMin;
-//                if (newYDist<0)newYDist=0; //should not be allowed to become negative
-                if (pinchInitialYDistance == Integer.MIN_VALUE) {
-                    pinchInitialYDistance = newYDist; //Math.abs(y[1]-y[0]);
-                }
-                pinchDistance = Math.max(0, newYDist - pinchInitialYDistance); //not allowed to become negative
-
-                if (pinchContainer == null && pinchDistance > 0) {
-                    //for now: simply decrease the size of the existing container
-//                    if (pinchOut) {
-//                    if (pinchDistance > 0) { //as soon as we have a positive pinchOut, create and insert the insertContainer
-                    //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
-//                        pinchComponent = createAndInsertPinchComponent.createAndInsert(x, y, true, () -> pinchDistance);
-//                        pinchComponent = createAndInsert(x, y, true, () -> pinchDistance);
-                    pinchContainer = createAndInsertPinchContainer(x, y);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                        if (pinchComponent != null) { //pinchOut makes sense here, a new pinchInsert container with the right type of element is created and inserted
-//                            pinchContainer = new Container(BorderLayout.center()) {
-//                                public Dimension calcPreferredSize() {
-////                                    Dimension orgPrefSize = super.calcPreferredSize();
-//                                    Dimension orgPrefSize = pinchComponent.getPreferredSize();
+//    public void pointerDraggedOLD(int[] x, int[] y) {
+//        if (!pinchInsertEnabled) {
+////            super.pointerDragged(x, y);
+//        } else { //pinchInsertEnabled
+////            } else { //pinchContainer != null) => we already have a pinchContainer (either being inserted or inserted previously)
+//            if (x.length <= 1) { //PinchOut is either finished or not ongoing (newPinchContainer!=null means a pinch was ongoing before)
+////                if (pinchContainer == null) { //no previous pinchContainer, do nothing
+//////                    super.pointerDragged(x, y);
+////                } else { //a pinch container already exists, do nothing, insertContainer already in place
+//                if (pinchContainer != null) { //a pinch container already exists, do nothing, insertContainer already in place
+////                    if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
 ////<editor-fold defaultstate="collapsed" desc="comment">
-////                                    if (oldPinchContainer != null && oldPinchContainer == Container.this) { //I am now the old pinchContainer
-////                                        return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
-////if I'm old pinchContainer, and reduced to zero size
-////                                    } else {
+////add new item into underlying list - NO, done in the pinchConatiner itself when hitting Enter or [>]
+////                    itemList.addItemAtIndex(pinchItem, pos);
+////insert pinchContainer into the displayed list at the right position
+////                        insertPinchContainer(prevComponentAbove, prevComponentBelow, pinchContainer); //ALREADY inserted when growing, just leave it in place
+////replace pinchContainer by (temporary) new Element container to quickly update (before regenerating the list) - NO, done in pinchContainer itself as well
+////                        pinchContainer.getParent().replace(pinchContainer, createElementComponent.createFinalComponent(itemList), null); //TODO!!! add meaningful animation
+////                        pinchContainer = null; //keep the container if there's a later pinchIn
 ////</editor-fold>
-//                                    return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
-//                                }
-//                            };
-//                            pinchContainer.add(BorderLayout.CENTER, pinchComponent);
-//                        }
-//</editor-fold>
-//                        MyForm.this.refreshAfterEdit(); //really necessary? //no, should only be done once the new element is effectively inserted (so, should be done by the InsertContainer itself)
-                    MyForm.this.revalidate(); //refresh
-//                    } else {
-                    //reduce size of existing container
-                    //DO NOTHING (don't create a new pinchContainer if pinching in)
+////                    } else {
+//                    if (!minimumPinchSizeReached(pinchDistance, pinchContainer)) {
+//                        //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
+////                        Label emptyLabel = new Label();
+//                        Container pinchContainerParent = pinchContainer.getParent();
+////                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
+////                        pinchContainerParent.removeComponent(emptyLabel);
+////                        pinchContainerParent.replace(pinchContainer, emptyLabel, null); //TODO!!! add meaningful animation
+//                        pinchContainerParent.removeComponent(pinchContainer);
+//                        pinchContainer = null; //indicates done with this container
+////                        MyForm.this.refreshAfterEdit();
+//                        MyForm.this.revalidate(); //necessary after using replace()??
 //                    }
-                } else { //pinchContainer != null
-//                    if (pinchDistance > 0) { //as soon as we have a positive pinchOut, create and insert the insertContainer
-                    //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
-                    //TODO!! check if the pinch container is between the two fingers and only decrease it then??
-                    //we already have a pinchContainer (either being inserted or inserted previously), so do nothing other than resize
-                    Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
-                    MyForm.this.revalidate(); //refresh with new size of pinchContainer
-//                    display(x, y, true);
-                }
-            }
-        }
-        super.pointerDragged(x, y);
-//        displayTest(x, y, true);
-        //            super.pointerDragged(x[0], y[0]);
-    }
-
+//                    pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
+//                }
+////                display(x, y, false);
+//            } else { // (x.length > 1) => PINCH ONGOING
+//                //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
+//                //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
+//                int yMin = Math.min(y[1], y[0]); //y[1] <= y[0] ? y[1] : y[0];
+//                int yMax = Math.max(y[1], y[0]); // y[1] > y[0] ? y[1] : y[0];
+////                int xMin = y[1] <= y[0] ? x[1] : x[0]; //xMin is the x[n] corresponding to the minimal y[n]
+////                int xMax = y[1] > y[0] ? x[1] : x[0];
+//                int newYDist = yMax - yMin;
+////                if (newYDist<0)newYDist=0; //should not be allowed to become negative
+//                if (pinchInitialYDistance == Integer.MIN_VALUE) {
+//                    pinchInitialYDistance = newYDist; //Math.abs(y[1]-y[0]);
+//                }
+//                pinchDistance = Math.max(0, newYDist - pinchInitialYDistance); //not allowed to become negative
+//
+//                if (pinchContainer == null && pinchDistance > 0) {
+//                    //for now: simply decrease the size of the existing container
+////                    if (pinchOut) {
+////                    if (pinchDistance > 0) { //as soon as we have a positive pinchOut, create and insert the insertContainer
+//                    //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
+////                        pinchComponent = createAndInsertPinchComponent.createAndInsert(x, y, true, () -> pinchDistance);
+////                        pinchComponent = createAndInsert(x, y, true, () -> pinchDistance);
+//                    pinchContainer = createAndInsertPinchContainer(x, y);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                        if (pinchComponent != null) { //pinchOut makes sense here, a new pinchInsert container with the right type of element is created and inserted
+////                            pinchContainer = new Container(BorderLayout.center()) {
+////                                public Dimension calcPreferredSize() {
+//////                                    Dimension orgPrefSize = super.calcPreferredSize();
+////                                    Dimension orgPrefSize = pinchComponent.getPreferredSize();
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////                                    if (oldPinchContainer != null && oldPinchContainer == Container.this) { //I am now the old pinchContainer
+//////                                        return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
+//////if I'm old pinchContainer, and reduced to zero size
+//////                                    } else {
+//////</editor-fold>
+////                                    return new Dimension(orgPrefSize.getWidth(), getInsertContainerHeight(orgPrefSize.getHeight())); //Math.max(0, since pinch distance may become negative when fingers cross vertically
+////                                }
+////                            };
+////                            pinchContainer.add(BorderLayout.CENTER, pinchComponent);
+////                        }
+////</editor-fold>
+////                        MyForm.this.refreshAfterEdit(); //really necessary? //no, should only be done once the new element is effectively inserted (so, should be done by the InsertContainer itself)
+//                    MyForm.this.revalidate(); //refresh
+////                    } else {
+//                    //reduce size of existing container
+//                    //DO NOTHING (don't create a new pinchContainer if pinching in)
+////                    }
+//                } else { //pinchContainer != null
+////                    if (pinchDistance > 0) { //as soon as we have a positive pinchOut, create and insert the insertContainer
+//                    //TODO!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
+//                    //TODO!! check if the pinch container is between the two fingers and only decrease it then??
+//                    //we already have a pinchContainer (either being inserted or inserted previously), so do nothing other than resize
+//                    Log.p("PointerDragged dist=" + pinchDistance + ", x=" + x + ", y=" + y);
+//                    MyForm.this.revalidate(); //refresh with new size of pinchContainer
+////                    display(x, y, true);
+//                }
+//            }
+//        }
+//        super.pointerDragged(x, y);
+////        displayTest(x, y, true);
+//        //            super.pointerDragged(x[0], y[0]);
+//    }
+//</editor-fold>
     @Override
     public void animateHierarchy(final int duration) {
         Log.p("*******animateHierarchy(" + duration + ") - expensive call");
@@ -3446,6 +3453,59 @@ public class MyForm extends Form {
             }
         }
         return null;
+    }
+
+    private static Container getContentPaneSouth(Form form) {
+//        Form form = Display.getInstance().getCurrent();
+        if (form != null) {
+            Container formContentPane = form.getContentPane();
+            if (!(form instanceof ScreenTimer6)) {
+                Layout contentPaneLayout = formContentPane.getLayout();
+                if (contentPaneLayout instanceof BorderLayout) {
+                    Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                    if (southComponent instanceof Container) {
+                        return (Container) southComponent;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+//    private static Container getContentPaneSouth() {
+//        return getContentPaneSouth(Display.getInstance().getCurrent());
+//    }
+    /**
+    return the container into which the smallTimer should be interted. Return null if no smallTimer should be shown. 
+    Override to disable smallTimer or place it somewhere else. 
+    @return 
+     */
+    static protected Container getContainerForSmallTimer() {
+        return getContainerForSmallTimer(Display.getInstance().getCurrent());
+    }
+
+    static protected Container getContainerForSmallTimer(Form form) {
+        Container timerContainer = null;
+//        Form form = this;
+        if (form instanceof ScreenListOfItemLists || form instanceof ScreenListOfItems
+                || form instanceof ScreenStatistics
+                || form instanceof ScreenListOfWorkSlots || form instanceof ScreenListOfCategories) {
+//        }else {
+            Container formContentPane = form.getContentPane();
+            Layout contentPaneLayout = formContentPane.getLayout();
+            if (contentPaneLayout instanceof BorderLayout) {
+//                timerContainer = getContentPaneSouth(form);
+                Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                if (southComponent instanceof Container) {
+                    timerContainer = (Container) southComponent;
+                } else if (southComponent==null) {
+                    Container newCont = new Container( BoxLayout.y());
+                    formContentPane.add(BorderLayout.SOUTH, newCont);
+                    timerContainer=newCont;
+                }
+            }
+        }
+        return timerContainer;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

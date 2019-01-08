@@ -196,7 +196,7 @@ public class ScreenCategoryPicker extends MyForm {
 //        });
 //        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
 //</editor-fold>
-backCommand = makeDoneUpdateWithParseIdMapCommand(false);
+backCommand = makeDoneUpdateWithParseIdMapCommand(true); //false);
         toolbar.setBackCommand(backCommand); //false: don't refresh ScreenItem when returning from Category selector
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
