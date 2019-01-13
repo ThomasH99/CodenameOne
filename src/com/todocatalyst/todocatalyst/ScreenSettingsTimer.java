@@ -41,9 +41,10 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowEffortEstimateDetails);
         addSettingInt(cont, parseIdMap2, MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds, 0, 30, 1);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowSecondsInTimer);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowTotalActualInTimer);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowTotalActualInTimer); 
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerKeepScreenAlwaysOnInTimer);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeDoneTasks);
         if (false) {
             addSettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
         }

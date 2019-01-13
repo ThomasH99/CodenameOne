@@ -117,14 +117,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        this(taskText, remainingEffortInMinutes, dueDate, false);
         this();
         setText(taskText);
-        setRemainingEffort(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+        setRemainingEffort(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS,true);
         setDueDate(dueDate);
     }
 
     public Item(String taskText, int remainingEffortInMinutes, Date dueDate, boolean saveToDAO) {
         this();
         setText(taskText);
-        setRemainingEffort(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+        setRemainingEffort(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS, true);
         setDueDate(dueDate);
         if (saveToDAO) {
             DAO.getInstance().save(this);
@@ -1078,7 +1078,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case FIELD_EFFORT_ESTIMATE:
 //                setEffortEstimate(((Duration)fieldValue).getDays());
-                setEffortEstimate(((Long) fieldValue));
+                setEffortEstimate(((Long) fieldValue),false);
                 break;
             case FIELD_EFFORT_ACTUAL:
 //                setActualEffort(((Duration)fieldValue).getDays());
@@ -1086,7 +1086,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case FIELD_EFFORT_REMAINING:
 //                setRemainingEffortXXX(((Duration)fieldValue).getDays());
-                setRemainingEffort(((Long) fieldValue));
+                setRemainingEffort(((Long) fieldValue),false);
                 break;
             case FIELD_PRIORITY:
                 setPriority(((Integer) fieldValue));
@@ -1672,7 +1672,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if ((copyExclusions & COPY_EXCLUDE_EFFORT_ESTIMATE) == 0) {
                 if (destination.getEffortEstimate() == 0) { //copy from template, iff nothing's already set for item
 //                    destination.setEffortEstimate(getEffortEstimate(), fromTempl || toRepeatInst, true); //ensure remaining is set
-                    destination.setEffortEstimate(getEffortEstimate(), fromTempl || toRepeatInst); //TODO!!! WHY auto-update Remaining if (and only if) fromTempl || toRepeatInst????!!
+//                    destination.setEffortEstimate(getEffortEstimate(), fromTempl || toRepeatInst); //TODO!!! WHY auto-update Remaining if (and only if) fromTempl || toRepeatInst????!!
+                    destination.setEffortEstimate(getEffortEstimate(), false); //TODO!!! WHY auto-update Remaining if (and only if) fromTempl || toRepeatInst????!!
                 }
             }
             //CHALLENGE
@@ -1803,7 +1804,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            destination.setCreatedDate(getCreatedDate());
             destination.setWaitingTillDate(getWaitingTillDateD().getTime());
             destination.setDateWhenSetWaiting(getDateWhenSetWaiting());
-            destination.setRemainingEffort(getRemainingEffort());
+            destination.setRemainingEffort(getRemainingEffort(),false);
             destination.setActualEffort(getActualEffort());
 //            destination.setLastModifiedDate(getLastModifiedDate());
 //            destination.setEarnedValue(getEarnedValue());
@@ -3813,6 +3814,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return null;
     }
 
+    /**
+    this won't work if previousItem doesn't meet condition since it will then be excluded from the leaf list
+    @param previousItem
+    @param condition
+    @return 
+    */
     public Item getNextLeafItem(Item previousItem, Condition condition) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
 //        return getNextLeafItemMeetingConditionImpl(previousItem, condition, new boolean[]{previousItem == null});
@@ -4448,7 +4455,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                            DAO.getInstance().saveInBackgroundSequential(item);
                     }
                 }
-                DAO.getInstance().saveInBackgroundSequential(subtasksToSave);
+//                DAO.getInstance().saveInBackgroundSequential(subtasksToSave);
+                DAO.getInstance().saveInBackground(subtasksToSave);
             }
 //            }
         }
@@ -5264,7 +5272,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (effortEstimateTotalMillis != currentProjectEffortEstimate) {
 //                owner.setEffortEstimateInParse(currentProjectEffortEstimate);
                 owner.updateOnEffortEstimateChangeInSubtask(currentProjectEffortEstimate, effortEstimateTotalMillis);
-                DAO.getInstance().saveInBackgroundOnTimeout(this);
+//                DAO.getInstance().saveInBackgroundOnTimeout(this);
+                DAO.getInstance().saveInBackground(this);
 //                DAO.getInstance().saveInBackground(owner);
             }
         }
@@ -5292,7 +5301,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (autoUpdateRemainingEffort && effortEstimateProjectTaskItselfMillis > 0
                 && MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
                 && getRemainingEffortProjectTaskItself() == 0) {
-            setRemainingEffort(effortEstimateProjectTaskItselfMillis - getActualEffortProjectTaskItself()); //TODO actualEffort should be set *before* effort estimate for this to work
+            setRemainingEffort(effortEstimateProjectTaskItselfMillis - getActualEffortProjectTaskItself(),false); //TODO actualEffort should be set *before* effort estimate for this to work
         } else { // *increase* remaining //UI: 
             if (autoUpdateRemainingEffort
                     && MyPrefs.getBoolean(MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual)
@@ -5336,7 +5345,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public void setEffortEstimate(long effortEstimateProjectTaskItselfMillis) {
-        setEffortEstimate(effortEstimateProjectTaskItselfMillis, true);
+        setEffortEstimate(effortEstimateProjectTaskItselfMillis, false); //false=> don't update the other field by default, only if explicitly defined
     }
 
 //    public void setEffortEstimateInMinutes(int val) {
@@ -5602,7 +5611,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public void setRemainingEffort(long remainingEffortProjectTaskItselfMillis) {
-        setRemainingEffort(remainingEffortProjectTaskItselfMillis, true);
+//        setRemainingEffort(remainingEffortProjectTaskItselfMillis, true);
+        setRemainingEffort(remainingEffortProjectTaskItselfMillis, false); //false=> don't update the other field by default, only if explicitly defined
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -7543,14 +7553,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (toCSV) {
                     list.add((MyDate.formatTimeDuration(getEffortEstimate())));
                 } else {
-                    setEffortEstimate((Long) val);
+                    setEffortEstimate((Long) val, false);
                 }
                 break;
             case PARSE_REMAINING_EFFORT:
                 if (toCSV) {
                     list.add((MyDate.formatTimeDuration(getRemainingEffortFromParse())));
                 } else {
-                    setRemainingEffort((Long) val); //UI: import of project estimates
+                    setRemainingEffort((Long) val, false); //UI: import of project estimates
                 }
                 break;
             case PARSE_ACTUAL_EFFORT:
@@ -8377,7 +8387,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 newItem.setActualEffort(itemBefore.getActualEffort()); //UI: same prio as item just before
                 break;
             case Item.PARSE_REMAINING_EFFORT:
-                newItem.setRemainingEffort(itemBefore.getRemainingEffort()); //UI: same prio as item just before
+                newItem.setRemainingEffort(itemBefore.getRemainingEffort(),false); //UI: same prio as item just before
                 break;
             case Item.PARSE_INTERRUPTED_TASK:
                 newItem.setInteruptOrInstantTask(itemBefore.isInteruptOrInstantTask()); //UI: same prio as item just before

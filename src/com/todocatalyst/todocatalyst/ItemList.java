@@ -45,15 +45,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
 //    protected Vector<E> itemVector; // initialized in constructors //STORED
 //    private List<E> itemList; // = new ArrayList(); // initialized in constructors //STORED
-    final static String PARSE_TEXT = "description";
-    final static String PARSE_COMMENT = "comment";
+    final static String PARSE_TEXT = Item.PARSE_TEXT; //"description";
+    final static String PARSE_COMMENT = Item.PARSE_COMMENT; //"comment";
     final static String PARSE_ITEMLIST = "itemList"; //subtasks
     final static String PARSE_ITEM_BAG = "itemBag"; //??
     final static String PARSE_WORKTIME_DEFINITION = "workTimeDef";
     final static String PARSE_OWNER = "owner";
     final static String PARSE_SOURCE_LISTS = "sourceLists"; //for meta-lists, not used yet
     final static String PARSE_META_LISTS = "metaLists";
-    final static String PARSE_FILTER_SORT_DEF = "filterSort";
+    final static String PARSE_FILTER_SORT_DEF = Item.PARSE_FILTER_SORT_DEF; //"filterSort";
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
@@ -1010,8 +1010,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
         addItemAtIndex((E) subItemOrList, index);
-        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
-//        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
+        if (Config.TEST) {
+            ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this),
+                    () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        }//        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
         return true;
@@ -1021,8 +1023,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public boolean addToList(ItemAndListCommonInterface positionItem, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
         int index = indexOf(positionItem);
         addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
-        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
-//        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
+        if (Config.TEST) {
+            ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this), 
+                    () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        }//        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
         return true;
@@ -2247,6 +2251,27 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @param returnFirstItemIfPreviousNotFound if previousItem is not found, or is null, then return the first item in the list if such one exists (otherwise return null)
     @return net item or null if no next item
      */
+    public static Item getNextItemAfter(List<Item> list, Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
+//        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
+//        List<E> list = getList(); //get filtered list
+        int prevIndex;
+        if (previousItem != null) {
+            prevIndex = list.indexOf(previousItem);
+        } else {
+            prevIndex = -1;
+        }
+        int nextIndex;
+        if (prevIndex < 0 && returnFirstItemIfPreviousNotFound) {
+            nextIndex = 0;
+        } else {
+            nextIndex = prevIndex + 1;
+        }
+        if (nextIndex >= 0 && nextIndex < list.size()) { //if nextIndex is a valid index
+            return (Item)list.get(nextIndex);
+        }
+        return null;
+    }
+    
     public E getNextItemAfter(Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
         List<E> list = getList(); //get filtered list
@@ -2262,11 +2287,16 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else {
             nextIndex = prevIndex + 1;
         }
-        if (nextIndex >= 0 && nextIndex < list.size() ) { //if nextIndex is a valid index
+        if (nextIndex >= 0 && nextIndex < list.size()) { //if nextIndex is a valid index
             return list.get(nextIndex);
         }
         return null;
     }
+    
+//    public E getNextItemAfter(Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
+////     return getNextItemAfter((List<E>)getList(), previousItem, returnFirstItemIfPreviousNotFound);
+//     return getNextItemAfter(getList(), previousItem, returnFirstItemIfPreviousNotFound);
+//    }
 
     /**
      * set all items which are not already in state done to or itemlists in this

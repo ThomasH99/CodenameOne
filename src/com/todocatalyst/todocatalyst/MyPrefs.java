@@ -99,13 +99,16 @@ public class MyPrefs {
             = new PrefEntry("Minimum timer threshold (seconds)", "timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds", (int) 5, "Tasks will not be marked ongoing and the time will not be saved until after this number seconds. Useful to avoid that skipping a task in Timer marks it ongoing"); //, "Reminder vibration interval when Timer is running");
 
     static PrefEntry timerShowEffortEstimateDetails
-            = new PrefEntry("Show Estimate, total time and Remaining time for task", "timerShowEffortEstimateDetails", false, "Timer will show details on estimate etc**"); //, "Reminder vibration interval when Timer is running");
+            = new PrefEntry("Show Estimate, total time and Remaining time for task", "timerShowEffortEstimateDetails", false, 
+                    "Timer will show details on estimate etc**"); //, "Reminder vibration interval when Timer is running");
 
     static PrefEntry timerIncludeWaitingTasks
-            = new PrefEntry("Time Waiting tasks even before the waiting date is met", "timerDoNotSkipWaitingTasks", false, "Normally, the Timer will skip Waiting tasks until the waiting date. This setting will include them**");
+            = new PrefEntry("Time Waiting tasks even before the waiting date is met", "timerDoNotSkipWaitingTasks", false, 
+                    "Normally, the Timer will skip Waiting tasks until the waiting date. This setting will include them**");
 
     static PrefEntry timerIncludeDoneTasks
-            = new PrefEntry("Time Done tasks", "timerIncludeDoneTasks", false, "Normally, the Timer will skip Done tasks. This setting will include them**");
+            = new PrefEntry("Time Done tasks", "timerIncludeDoneTasks", false, 
+                    "Normally, the Timer will skip Done tasks. This setting will include them**");
 
 //    static PrefEntry timerBuzzerActive = 
 //            new PrefEntry("Buzz when Timer is running","timerBuzzerActive", false, "Buzzer active when timer is running");
@@ -114,23 +117,28 @@ public class MyPrefs {
 //    static PrefEntry timerShowTaskContext = 
 //            new PrefEntry("timerShowTaskContext", false, "Show the List and/or Project the task belongs to");
     static PrefEntry timerShowTotalActualInTimer
-            = new PrefEntry("Show total time in timer (PRO)", "timerShowTotalActualInTimer", false, "Timer always shows the total amount of elapsed time, not just from this timer session");
+            = new PrefEntry("Show total time in timer", "timerShowTotalActualInTimer", false, 
+                    "Timer always shows the total amount of elapsed time, not just from this timer session");
 
     static PrefEntry timerKeepScreenAlwaysOnInTimer
-            = new PrefEntry("Keep screen on when Timer is active", "timerKeepScreenAlwaysOnInTimer", false, "Prevents device screen saver from closing while Timer is active");
+            = new PrefEntry("Keep screen on when Timer is active", "timerKeepScreenAlwaysOnInTimer", false, 
+                    "Prevents device screen saver from closing while Timer is active");
 
     static PrefEntry timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem
             = new PrefEntry("Show popup to ask to update Remaining time after timing a task", "timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem", true,
                     "Helps you not forget to update remaining when you stop working on a task**");
 
     static PrefEntry timerAlwaysExpandListHierarchy
-            = new PrefEntry("Show the parent list/project of the task", "timerAlwaysExpandListHierarchy", true, "**");
+            = new PrefEntry("Show the parent list/project of the task", "timerAlwaysExpandListHierarchy", true, 
+                    "**");
 
     static PrefEntry timerMaxTimerDurationInHoursXXX
-            = new PrefEntry("Maximum time the Timer is allowed to run (hours)", "timerMaxTimerDurationInHours", 12, "**DOESN'T MAKE SENSE since you'd still hae to fxi whatever time the timer stopped at*** Timer stops automatically when this maximum in reached. Can be used to avoid the Timer running wild since a popup is shown when reached. NB. Whatever this value, The Timer can never exceed 23h59m.");
+            = new PrefEntry("Maximum time the Timer is allowed to run (hours)", "timerMaxTimerDurationInHours", 12, 
+                    "**DOESN'T MAKE SENSE since you'd still hae to fxi whatever time the timer stopped at*** Timer stops automatically when this maximum in reached. Can be used to avoid the Timer running wild since a popup is shown when reached. NB. Whatever this value, The Timer can never exceed 23h59m.");
 
     static PrefEntry timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList
-            = new PrefEntry("Show Timer popup when no more tasks", "timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList", true, "**");
+            = new PrefEntry("Show Timer popup when no more tasks", "timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList", true, 
+                    "**");
 
     static PrefEntry timerAlwaysStartWithNewTimerInSmallWindow
             = new PrefEntry("Always show new timers in current screenshow", "timerAlwaysShowNewTimerInSmallWindow", true,
@@ -145,7 +153,7 @@ public class MyPrefs {
                     "Instead of showing a started timer in full screen...**");
 
     static PrefEntry timerInterruptTaskCanInterruptAlreadyRunningInterruptTask
-            = new PrefEntry("Possible to start **Always show new timers in current screenshow", "timerInterruptTaskCanInterruptAlreadyRunningInterruptTask", true,
+            = new PrefEntry("Possible to start **Always show new timers in current screenshow (PRO)", "timerInterruptTaskCanInterruptAlreadyRunningInterruptTask", true,
                     "Instead of showing a started timer in full screen...**");
 
     //COMMENTS

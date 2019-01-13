@@ -320,7 +320,8 @@ public class ScreenListOfItems extends MyForm {
                 int nonLabelCount = 0;
 //                int prevLabelPos = 0;
                 boolean searchOnLowerCaseOnly;
-                Label lastLabel = null;
+//                Label lastLabel = null;
+                Component lastLabel = null;
                 boolean hide;
 //                for (int i = 0, size = this.itemListFilteredSorted.size(); i < size; i++) {
                 for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
@@ -342,7 +343,8 @@ public class ScreenListOfItems extends MyForm {
                         nonLabelCount = 0; //reset count on every Label
                         labelCount++; //hack: StickyHeaders are Labels, so count them and add to count
 //                        prevLabelPos=i;
-                        lastLabel = (Label) comp;
+//                        lastLabel = (Label) comp;
+                        lastLabel = comp;
                     } else {
 //                        nonLabelCount++;
                         if (searchOnLowerCaseOnly) {
@@ -920,7 +922,7 @@ public class ScreenListOfItems extends MyForm {
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
         if (!optionTemplateEditMode && !optionNoTimer) {
 //            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
-            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer-"+getTitle(), "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort

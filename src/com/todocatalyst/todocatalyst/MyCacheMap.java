@@ -311,10 +311,10 @@ public class MyCacheMap {
         } else {
             storageCacheContent.insertElementAt(new Object[]{l, key}, offset);
         }
-        if (Config.TEST) {
+        if (Config.TEST_CACHE) {
             long startTime = System.currentTimeMillis();
             Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
-            Log.p("MyCacheMap: writing index file \"" + "$CACHE$Idx" + cachePrefix + "\", size=" + storageCacheContent.size() / 1024 + "kb, miliseconds="+(System.currentTimeMillis()-startTime));///MyDate.SECOND_IN_MILLISECONDS);
+            Log.p("MyCacheMap: writing index file \"" + "$CACHE$Idx" + cachePrefix + "\", size=" + storageCacheContent.size() + "elts, miliseconds="+(System.currentTimeMillis()-startTime));///MyDate.SECOND_IN_MILLISECONDS);
         } else {
             Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
         }

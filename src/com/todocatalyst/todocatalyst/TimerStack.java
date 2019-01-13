@@ -134,7 +134,7 @@ class TimerStack {
 //    private static List<TimerInstance> INSTANCE;
     private static TimerStack INSTANCE;
     final static String TIMER_REPLAY = "StartTimer-";
-    
+
     final static Object TIMER_LOCK = new Object(); //lock operations on Timer such as updating/saving instances or refreshing Timers from Server
 
     public static TimerStack getInstance() {
@@ -145,7 +145,7 @@ class TimerStack {
         }
         return INSTANCE;
     }
-    
+
     private TimerStack(List<TimerInstance> timerList) {
         activeTimers = timerList;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -166,11 +166,12 @@ class TimerStack {
 //        INSTANCE = DAO.getInstance().getTimerInstanceList();
 //</editor-fold>
     }
-    
+
     TimerInstance getCurrentTimerInstance() {
         int size = activeTimers.size();
         if (size > 0) {
-            return activeTimers.get(size - 1); //return last timer
+            TimerInstance t = activeTimers.get(size - 1); //return last timer
+            return t; //return last timer
         }
         return null;
     }
@@ -353,7 +354,7 @@ class TimerStack {
             Dialog.show("´Timer", "Timer already active for \"" + itemOrListName + "\". Stop before starting on another ", "OK", null);
         }
     }
-    
+
     private static void showTimerWasAlreadyRunningForTaskTimeSavedNotification(Item timedItem, long elapsedTimeMillis, Item project, ItemList itemList) {
         ToastBar.Status status = ToastBar.getInstance().createStatus();
 //        String itemOrListName = (itemList != null ? itemList.getText() : timedItem.getText()); //UI: if arrived at last subtask in a project which is the last in a list, use the name of the list!
@@ -516,34 +517,39 @@ class TimerStack {
      * happens next time the timer is called??
      */
     public void stopTimerIfRunningOnThisItemOnStartTimerOnNext(Item item) { //boolean continueWithNextItem // 
-        if (item == null) {
+        if (item == null || getCurrentTimerInstance() == null) {
 //            return false;
             return;
         }
-//        for (TimerInstance timer:activeTimers) {
-        Iterator<TimerInstance> it = activeTimers.iterator();
-        while (it.hasNext()) {
-            TimerInstance timerInstance = it.next();
-            
-            if (item.equals(timerInstance.getTimedItem())) { //if timer is (or was if down in the stack) running on this specific task
-                boolean timerWasRunning = timerInstance.isRunning();
-                if (timerWasRunning) {
-                    //stop, update this item
-                    timerInstance.stopTimer(false);
-                }
-                //update item with elapsed time 
+
+        if (item.equals(getCurrentTimerInstance().getTimedItem())) { //if it's currently timed task...
+            moveToNextTask(); //simply move to next one
+        } else { //see if interrupted timers were timing item
+            int timerIndex = activeTimers.size() - 1;
+            timerIndex--; //skip current one since we dealt with it above
+            while (timerIndex >= 0) { //ccheck starting with most recent interrupted timer
+                TimerInstance timerInstance = activeTimers.get(timerIndex);
+
+                if (item.equals(timerInstance.getTimedItem())) { //if timer is (or was if down in the stack) running on this specific task
+                    boolean timerWasRunning = timerInstance.isInterruptedWhileRunning();
+                    if (true || timerWasRunning) {
+                        //update item with elapsed time 
+                        item.setActualEffort(item.getActualEffortProjectTaskItself() + timerInstance.getElapsedTime());
+                    }
 //                item.setActualEffort(timerInstance.isTimerShowActualTotal() ? timerInstance.getElapsedTime()
 //                        : item.getActualEffortProjectTaskItself() + timerInstance.getElapsedTime());
-                item.setActualEffort(item.getActualEffortProjectTaskItself() + timerInstance.getElapsedTime());
-                //don't save item, it'll be done from whereever this method was called
+                    //don't save item, it'll be done from whereever this method was called
 
-                //start next or exit timer if no more available
+                    //start next or exit timer if no more available
 //                return goToNextTimedItem(); //TODO!!!! this should refreshTimersFromParseServer the UI - how?
-                goToNextTimedItem(); //TODO!!!! this should refreshTimersFromParseServer the UI - how?
-                refreshOrShowTimerUI();
+//if no more items to time on this timer instance, then remove it (scenario: last task T in project/list is interrupted, then T is marked Done manually in a screen (while interrupt is timed), when timer f interrupt is stopped, 
+//                goToNextTimedItem(); //TODO!!!! this should refreshTimersFromParseServer the UI - how?
+                    moveToNextTask(); //TODO!!!! this should refreshTimersFromParseServer the UI - how?
+//                refreshOrShowTimerUI();
+                }
             }
-        }
 //        return false;
+        }
     }
 
     /**
@@ -561,12 +567,12 @@ class TimerStack {
 //        launchTimerImpl(item, null, null, previousForm, true);
         ASSERT.that(!interruptOrInstantTask || itemList == null, "cannot have an interrupt task with a list");
         boolean previousTaskWasInterrupted = false;
-        
+
         TimerInstance previousTimerInstance = getCurrentTimerInstance();
+
         if (previousTimerInstance != null) {
-            
-            if ((timedItemOrProject != null && previousTimerInstance.getTimedItem().equals(timedItemOrProject)) //if re-launcing timer on already timed Item
-                    || (itemList != null && previousTimerInstance.getItemList().equals(itemList))) {//or re-launcing timer on already timed ItemList
+            if ((timedItemOrProject != null && timedItemOrProject.equals(previousTimerInstance.getTimedItem())) //if re-launcing timer on already timed Item
+                    || (itemList != null && itemList.equals(previousTimerInstance.getItemList()))) {//or re-launcing timer on already timed ItemList
                 String s = previousTimerInstance.getTimedItem() != null ? Item.TASK + " \"" + previousTimerInstance.getTimedItem().getText() + "\""
                         : (previousTimerInstance.getItemList() != null ? ItemList.ITEM_LIST + " \"" + previousTimerInstance.getItemList().getText() : "");
                 MyForm.showToastBar("Timer already running for \"" + previousTimerInstance.getTimedItem().getText() + "\""
@@ -577,9 +583,10 @@ class TimerStack {
                     || (!previousTimerInstance.getTimedItem().isInteruptOrInstantTask() && !interruptOrInstantTask && MyPrefs.timerItemOrItemListCanInterruptExistingItemOrItemList.getBoolean())) { //normal item/itemList interrupt other item/itemList
                 if (previousTimerInstance.isRunning()) { //pause current timer if running
                     previousTaskWasInterrupted = true;
-                    previousTimerInstance.setWasInterruptedWhileRunning(true, true); //pause and save!
+                    previousTimerInstance.setWasRunningWhenInterrupted(true, true); //pause and save!
                     if (interruptOrInstantTask) {
                         timedItemOrProject.setTaskInterrupted(previousTimerInstance.getTimedItem()); //only set if timer was actually running, otherwise does not qualify as an interrupt but only as an InstantTask
+                        DAO.getInstance().saveInBackground(timedItemOrProject);
                     }
 //                    MyForm.showToastBar("Already running Timer paused for \"" + previousTimerInstance.getTimedItem().getText() + "\", will continue after this "
                     MyForm.showToastBar("Timer paused for \"" + previousTimerInstance.getTimedItem().getText() + "\", will continue after this "
@@ -592,11 +599,13 @@ class TimerStack {
                 }
             } //not a valid 
         }
-        
+
         assert !interruptOrInstantTask || timedItemOrProject.isInteruptOrInstantTask(); //timedItem.setInteruptOrInstantTask(true); //in any case (whether interrupting another task or not), mark as interrupt OR instant task
 
 //        TimerInstance newTimerInstance = new TimerInstance(timedItemOrProject, itemList, MyPrefs.timerAutomaticallyStartTimer.getBoolean(), MyPrefs.timerAutomaticallyGotoNextTask.getBoolean());
-        DAO.getInstance().saveInBackground(timedItemOrProject); //save *before* saving timerInstance (otherwise parse error about unreferenced object
+        if (false && timedItemOrProject != null) {
+            DAO.getInstance().saveInBackground(timedItemOrProject); //save *before* saving timerInstance (otherwise parse error about unreferenced object
+        }
         TimerInstance newTimerInstance = new TimerInstance(timedItemOrProject, itemList);
         //TODO!!! should timerAutomaticallyGotoNextTask and timerAutomaticallyStartTimer be properties at TimerStack level instead if TimerInstance?? Depends also on whether one list/project may interrupt another
         Item timedItem = newTimerInstance.getTimedItem();
@@ -609,16 +618,16 @@ class TimerStack {
             showNoMoreTasksNotificationWhenRelevant(newTimerInstance.getTimedProject(), newTimerInstance.getItemList());
         }
     }
-    
+
     public void startTimerOnItem(Item timedItem, MyForm previousForm) {
         startTimer(timedItem, null, previousForm, false);
     }
-    
+
     public void startTimerOnItemList(ItemList itemList, MyForm previousForm) {
         startTimer(null, itemList, previousForm, false);
         //TODO set autostart!
     }
-    
+
     public void startInterruptOrInstantTask(Item interruptOrInstantTask, MyForm previousForm) {
         ASSERT.that(interruptOrInstantTask.isInteruptOrInstantTask());
         startTimer(interruptOrInstantTask, null, previousForm, true);
@@ -632,7 +641,11 @@ class TimerStack {
     @return 
      */
     static public boolean isValidItemForTimer(Item item) {
-        return !item.isDone() || MyPrefs.timerIncludeWaitingTasks.getBoolean() || MyPrefs.timerIncludeDoneTasks.getBoolean();
+//        return !item.isDone() || MyPrefs.timerIncludeWaitingTasks.getBoolean() || MyPrefs.timerIncludeDoneTasks.getBoolean();
+        return (!item.isDone() && !item.isWaiting()) //valid if not done and not waiting (so this expr is true for all other status values!)
+                || (item.isWaiting() && MyPrefs.timerIncludeWaitingTasks.getBoolean()) ////or if waiting, but settings allow to time waiting tasks
+                || (item.isDone() && MyPrefs.timerIncludeDoneTasks.getBoolean()) //or if done, but settings allow to time done tasks
+                ;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -643,7 +656,7 @@ class TimerStack {
 //        TimerInstance currentTimer = getCurrentTimerInstance();
 //        if (currentTimer != null) {
 //            if (currentTimer.isRunning()) { //pause current timer if running
-//                currentTimer.setWasInterruptedWhileRunning(true, true); //pause and save!
+//                currentTimer.setWasRunningWhenInterrupted(true, true); //pause and save!
 //                interruptOrInstantTask.setTaskInterrupted(currentTimer.getTimedItem()); //only set if timer was actually running, otherwise does not qualify as an interrupt
 //            }
 //        }
@@ -668,99 +681,226 @@ class TimerStack {
      */
 //    public void startTimerOnNextOrExitIfNone(TimerInstance timerInstanceXXX, Container contentPane) {
 //    public void startTimerOnNextOrExitIfNone(Container contentPane, boolean fullScreenTimer) {
-    private Item getTimedItem() {
+    /**
+    the preferred way to get whatever item is being timed (will also initialize the value if needed)
+    @return 
+     */
+    public Item getTimedItem() {
         TimerInstance timerInstance = getCurrentTimerInstance();
 
         //find next item to run timer on, most likely either next in current list/project, or the one interrupted
         Item timedItem = timerInstance.getTimedItem();
         if (timedItem == null) {
-//            timedItem = timerInstance.updateToNextTimerItem(false, false); //get next timed item without making any changes
-            timedItem = timerInstance.updateToNextTimerItem(true, true); //get next timed item without making any changes
-
-            //if none found try rest of timerstack (if any)
-            int index = activeTimers.size() - 2; //init to second last timerInstance
-            while (timedItem == null && index >= 0 && index < TimerStack.getInstance().activeTimers.size()) { //as long as there are valid timerInstances not tried yet
-                //remove the current timer instance (which has run out of tasks, or could be an interrupt)
-                timerInstance = activeTimers.get(index); //pop last timerInstance since it has no more tasks
-//                timedItem = timerInstance.updateToNextTimerItem(false, false); //also update project and save
-                timedItem = timerInstance.updateToNextTimerItem(true, true); //also update project and save
-                index--;
-            }
+            goToNextTimedItem();
+            timedItem = timerInstance.getTimedItem();
         }
         return timedItem;
     }
-    
-    private Item findNextTimedItemOLD() {
-        TimerInstance timerInstance = getCurrentTimerInstance();
 
-        //find next item to run timer on, most likely either next in current list/project, or the one interrupted
-        Item nextTimedItem;
-        nextTimedItem = timerInstance.updateToNextTimerItem(false, false); //get next timed item without making any changes
-        //if none found try rest of timerstack (if any)
-        int index = activeTimers.size() - 2; //init to second last timerInstance
-        while (nextTimedItem == null && index >= 0 && index < TimerStack.getInstance().activeTimers.size()) { //as long as there are valid timerInstances not tried yet
-            //remove the current timer instance (which has run out of tasks, or could be an interrupt)
-            timerInstance = activeTimers.get(index); //pop last timerInstance since it has no more tasks
-            nextTimedItem = timerInstance.updateToNextTimerItem(false, false); //also update project and save
-            index--;
-        }
-        return nextTimedItem;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Item getTimedItemXXX() {
+//        TimerInstance timerInstance = getCurrentTimerInstance();
+//
+//        //find next item to run timer on, most likely either next in current list/project, or the one interrupted
+//        Item timedItem = timerInstance.getTimedItem();
+//        if (timedItem == null) {
+////            timedItem = timerInstance.updateToNextTimerItem(false, false); //get next timed item without making any changes
+//            timedItem = timerInstance.updateToNextTimerItem(true, true); //get next timed item without making any changes
+//
+//            //if none found try rest of timerstack (if any)
+//            int index = activeTimers.size() - 2; //init to second last timerInstance
+//            while (timedItem == null && index >= 0 && index < TimerStack.getInstance().activeTimers.size()) { //as long as there are valid timerInstances not tried yet
+//                //remove the current timer instance (which has run out of tasks, or could be an interrupt)
+//                timerInstance = activeTimers.get(index); //pop last timerInstance since it has no more tasks
+////                timedItem = timerInstance.updateToNextTimerItem(false, false); //also update project and save
+//                if (false) {
+//                    timedItem = timerInstance.updateToNextTimerItem(true, true); //also update project and save //NO, do not move to next timer on popped timer (e.g. it may be popped because was interrupted)
+//                }
+//                timerInstance.getTimedItem();
+//                index--;
+//            }
+//        }
+//        return timedItem;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Item findNextTimedItemOLD() {
+//        TimerInstance timerInstance = getCurrentTimerInstance();
+//
+//        //find next item to run timer on, most likely either next in current list/project, or the one interrupted
+//        Item nextTimedItem;
+//        nextTimedItem = timerInstance.updateToNextTimerItem(false, false); //get next timed item without making any changes
+//        //if none found try rest of timerstack (if any)
+//        int index = activeTimers.size() - 2; //init to second last timerInstance
+//        while (nextTimedItem == null && index >= 0 && index < TimerStack.getInstance().activeTimers.size()) { //as long as there are valid timerInstances not tried yet
+//            //remove the current timer instance (which has run out of tasks, or could be an interrupt)
+//            timerInstance = activeTimers.get(index); //pop last timerInstance since it has no more tasks
+//            nextTimedItem = timerInstance.updateToNextTimerItem(false, false); //also update project and save
+//            index--;
+//        }
+//        return nextTimedItem;
+//    }
+//</editor-fold>
     /**
     find next suitable for timer and (re-)start the timer if it was running when interrupted
     returns true if timer was started on another item. 
      */
 //    private boolean startTimerOnNext() {
-    private boolean goToNextTimedItem() {
-//        TimerInstance timerInstance = activeTimers.get(activeTimers.size() - 1);
+//    private boolean goToNextTimedItem() {
+    private Item nextTimedItemImpl(boolean update) {
         TimerInstance timerInstance = getCurrentTimerInstance();
 
+        if (timerInstance != null) {
+            return null;
+        }
         //find next item to run timer on, most likely either next in current list/project, or the one interrupted
         Item nextTimedItem;
-//        TimerInstance lastValidTimerInstance = timerInstance;
-        nextTimedItem = timerInstance.updateToNextTimerItem(true, true); //get next timed item if any, also update project and save
+        nextTimedItem = timerInstance.updateToNextTimerItem(update, update); //get next timed item if any, also update project and save
         //if none found try rest of timerstack (if any)
-        while (nextTimedItem == null && TimerStack.getInstance().activeTimers.size() > 0) { //if no more tasks in current timer, try earlier ones
-//            getInstance().removelasttimer(); 
+        int currentTimerStackIndex = activeTimers.size() - 2; //start with second-last (before current)
+//        while (nextTimedItem == null && activeTimers.size() > 0) { //if no more tasks in current timer, try earlier ones
+        while (nextTimedItem == null && currentTimerStackIndex >= 0) { //if no more tasks in current timer, try earlier ones
             //remove the current timer instance (which has run out of tasks, or could be an interrupt)
-            activeTimers.remove(activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
-//            if (timerInstance != null) {
-//                lastValidTimerInstance = timerInstance;
-//            }
-            timerInstance.deleteInstance();
-            if (!activeTimers.isEmpty()) { //try with (new)  timerInstance (if any)
-                timerInstance = activeTimers.get(activeTimers.size() - 1);
-                if (timerInstance != null) {
-                    nextTimedItem = timerInstance.updateToNextTimerItem(true, true); //also update project and save
-                }
+//            activeTimers.remove(activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
+//            timerInstance.deleteInstance();
+//            if (!activeTimers.isEmpty()) { //try with (new)  timerInstance (if any)
+//                timerInstance = getCurrentTimerInstance();
+            timerInstance = activeTimers.get(currentTimerStackIndex);
+//                if (timerInstance != null) {
+            nextTimedItem = timerInstance.updateToNextTimerItem(update, update); //also update project and save
+//                }
+            if (nextTimedItem == null) {
+                currentTimerStackIndex--;
+            }
+        }
+        //if update,  discard/delete all skipped (no longer having tasks to time) timers:
+        if (update) {
+            while (activeTimers.size() - 1 > currentTimerStackIndex) {
+                activeTimers.remove(activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
+                timerInstance.deleteInstance();
             }
         }
 
-        //if a next item was found
+//<editor-fold defaultstate="collapsed" desc="comment">
+//if a next item was found
+//        if (false) {
+//            if (nextTimedItem != null) {
+//                if (timerInstance.isInterruptedWhileRunning() || timerInstance.isAutostart()) {
+//                    timerInstance.startTimer(true); //timerInstance.isInterruptedWhileRunning());
+//                    if (timerInstance.isInterruptedWhileRunning()) {
+//                        timerInstance.setWasRunningWhenInterrupted(false, true); //un-pause this timer for next time (needed?)
+//                    }
+//                }
+//                refreshOrShowTimerUI();
+//            } else { //no more tasks, show popup (or Toastbar?)
+//                if (timerInstance.getTimedProject() != null || timerInstance.getItemList() != null) {
+//                    showNoMoreTasksNotificationWhenRelevant(timerInstance.getTimedProject(), timerInstance.getItemList());
+//                } //else: inbterrupt, so don't display any messages
+//            }
+//        }
+//</editor-fold>
+        return nextTimedItem;
+    }
+
+    private void goToNextTimedItem() {
+        nextTimedItemImpl(true);
+    }
+
+    public boolean isAutostart() {
+//        Boolean autostart = getBoolean(PARSE_AUTOSTART_TIMER);
+//        return (autostart == null) ? false : autostart;
+        return MyPrefs.timerAutomaticallyStartTimer.getBoolean();
+    }
+
+    /**
+    go to next task (if any), start Timer if needed, refresh UI. Called in user commands
+    @return true if a next task was found
+     */
+    private boolean moveToNextTask() {
+        goToNextTimedItem();
+        Item nextTimedItem = getTimedItem();
+        TimerInstance timerInstance = getCurrentTimerInstance(); //NB! Call *after* getTimedItem() since getTimedItem() may move to an pushed/earlier/previous timerInstance!
         if (nextTimedItem != null) {
-            if (timerInstance.wasInterruptedWhileRunning() || timerInstance.isAutostart()) {
-                timerInstance.startTimer(true); //timerInstance.wasInterruptedWhileRunning());
-                if (timerInstance.wasInterruptedWhileRunning()) {
-                    timerInstance.setWasInterruptedWhileRunning(false, true); //un-pause this timer for next time (needed?)
+            if (timerInstance.isInterruptedWhileRunning() || isAutostart()) {
+                timerInstance.startTimer(true); //timerInstance.isInterruptedWhileRunning());
+                if (timerInstance.isInterruptedWhileRunning()) {
+                    timerInstance.setWasRunningWhenInterrupted(false, true); //un-pause this timer for next time (needed?)
                 }
             }
             refreshOrShowTimerUI();
             return true;
         } else { //no more tasks, show popup (or Toastbar?)
-//            if (lastValidTimerInstance.getTimedProject() != null || lastValidTimerInstance.getItemList() != null) {
-//                showNoMoreTasksNotificationWhenRelevant(lastValidTimerInstance.getTimedProject(), lastValidTimerInstance.getItemList());
             if (timerInstance.getTimedProject() != null || timerInstance.getItemList() != null) {
                 showNoMoreTasksNotificationWhenRelevant(timerInstance.getTimedProject(), timerInstance.getItemList());
-                //remove timer UI
-                if (false) {
-                    removeTimerSmallContainer();
-                }
             } //else: inbterrupt, so don't display any messages
+            refreshOrShowTimerUI();
             return false;
         }
     }
 
+    private Item getTheNextComingTimedItem() {
+        return nextTimedItemImpl(false);
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void goToNextTimedItemXXX() {
+////        TimerInstance timerInstance = activeTimers.get(activeTimers.size() - 1);
+//        TimerInstance timerInstance = getCurrentTimerInstance();
+//
+//        if (timerInstance != null) {
+//            return;
+//        }
+//        //find next item to run timer on, most likely either next in current list/project, or the one interrupted
+//        Item nextTimedItem;
+////        TimerInstance lastValidTimerInstance = timerInstance;
+//        nextTimedItem = timerInstance.updateToNextTimerItem(true, true); //get next timed item if any, also update project and save
+//        //if none found try rest of timerstack (if any)
+////            while (nextTimedItem == null && TimerStack.getInstance().activeTimers.size() > 0) { //if no more tasks in current timer, try earlier ones
+//        while (nextTimedItem == null && activeTimers.size() > 0) { //if no more tasks in current timer, try earlier ones
+////            getInstance().removelasttimer();
+//            //remove the current timer instance (which has run out of tasks, or could be an interrupt)
+//            activeTimers.remove(activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
+//            timerInstance.deleteInstance();
+////            if (timerInstance != null) {
+////                lastValidTimerInstance = timerInstance;
+////            }
+//            if (!activeTimers.isEmpty()) { //try with (new)  timerInstance (if any)
+////                    timerInstance = activeTimers.get(activeTimers.size() - 1);
+//                timerInstance = getCurrentTimerInstance();
+//                if (timerInstance != null) {
+//                    nextTimedItem = timerInstance.updateToNextTimerItem(true, true); //also update project and save
+////                    if (nextTimedItem != null && timerInstance.isInterruptedWhileRunning()) { //DONE below
+////                        timerInstance.startTimer(true); //if previous timer was running, then restart it and save state
+////                    }
+//                }
+//            }
+//        }
+//
+//        //if a next item was found
+//        if (nextTimedItem != null) {
+//            if (timerInstance.isInterruptedWhileRunning() || timerInstance.isAutostart()) {
+//                timerInstance.startTimer(true); //timerInstance.isInterruptedWhileRunning());
+//                if (timerInstance.isInterruptedWhileRunning()) {
+//                    timerInstance.setWasRunningWhenInterrupted(false, true); //un-pause this timer for next time (needed?)
+//                }
+//            }
+//            refreshOrShowTimerUI();
+////                return true;
+//        } else { //no more tasks, show popup (or Toastbar?)
+////            if (lastValidTimerInstance.getTimedProject() != null || lastValidTimerInstance.getItemList() != null) {
+////                showNoMoreTasksNotificationWhenRelevant(lastValidTimerInstance.getTimedProject(), lastValidTimerInstance.getItemList());
+//            if (timerInstance.getTimedProject() != null || timerInstance.getItemList() != null) {
+//                showNoMoreTasksNotificationWhenRelevant(timerInstance.getTimedProject(), timerInstance.getItemList());
+//                //remove timer UI
+//                if (false) {
+//                    removeTimerSmallContainer();
+//                }
+//            } //else: inbterrupt, so don't display any messages
+////                return false;
+//        }
+////        }
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void startTimerOnNextOrExitIfNoneXXX() {
 //        TimerInstance timerInstance = activeTimers.get(activeTimers.size() - 1);
@@ -813,36 +953,37 @@ class TimerStack {
 //
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
     stop and delete all ongoing timers, quitting the timer completely (on this and consequently on other devices)
      */
 //    private void deleteAllActiveTimersOnExit() {
-    private void exitTimer() {
-        while (TimerStack.getInstance().activeTimers.size() > 0) {
-//            getInstance().removelasttimer(); 
-            TimerInstance timerInstance = activeTimers.remove(activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
-
-            if (timerInstance.getElapsedTime() > 0) {
-                Item timedItem = timerInstance.getTimedItem(); //get the item that is/was timed
-//                timedItem.setActualEffort(timerInstance.isTimerShowActualTotal() //update actual
-//                        ? timerInstance.getElapsedTime()
-//                        : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
-                timedItem.setActualEffort(timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
-                DAO.getInstance().saveInBackground(timedItem);
-            }
-            timerInstance.deleteInstance();
-        }
-//        removeTimerSmallContainer();
-        refreshOrShowTimerUI();
-    }
-
+//    private void exitTimerXXX() {
+//        while (TimerStack.getInstance().activeTimers.size() > 0) {
+////            getInstance().removelasttimer();
+//TimerInstance timerInstance = activeTimers.remove(activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
+//
+//if (timerInstance.getElapsedTime() > 0) {
+//    Item timedItem = timerInstance.getTimedItem(); //get the item that is/was timed
+////                timedItem.setActualEffort(timerInstance.isTimerShowActualTotal() //update actual
+////                        ? timerInstance.getElapsedTime()
+////                        : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
+//timedItem.setActualEffort(timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
+//DAO.getInstance().saveInBackground(timedItem);
+//}
+//timerInstance.deleteInstance();
+//        }
+////        removeTimerSmallContainer();
+//refreshOrShowTimerUI();
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private void addSmallTimerUIToCurrentForm() {
 //        addSmallTimerWindowIfTimerIsRunning(Display.getInstance().getCurrent());
 //    }
     /**
     refresh timer UI if timers change for some reason (e.g. change on parse server, change because a timed item was deleted elsewhere, ...) or create a new UI if none was shown previously
      */
-//<editor-fold defaultstate="collapsed" desc="comment">
 //    public void refreshOrAddTimerUIToCurrentFormXXX() {
 //        smallContainer = null;
 //        if (MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean()) {
@@ -859,11 +1000,12 @@ class TimerStack {
     private void resetTimerSmallContainer() {
         setSmallContainer(null);
     }
-    
+
     private void setSmallContainer(Container smallContainer) {
         this.smallContainer = smallContainer;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private Container getSmallContainerXXX() {
 ////        return smallContainer;
 ////        Container south = getContentPaneSouth();
@@ -885,6 +1027,7 @@ class TimerStack {
 //            return true;
 //        }
 //    }
+//</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    private  Container getOrMakeSmallContainer() {
     //        Container smallContainer = getSmallContainer();
@@ -912,7 +1055,7 @@ class TimerStack {
 //        return addSmallTimerWindowIfTimerIsRunning(form, buildContentPaneSmall(form)); //make a new container each time
         return addSmallTimerWindowIfTimerIsRunning(form, null); //make a new container each time
     }
-    
+
     public static boolean addSmallTimerWindowIfTimerIsRunning(Form form, Container timerContainer) {
 //        TimerInstance timerInstance = getInstance().getCurrentTimerInstance();
 //        if (timerInstance != null) {
@@ -926,15 +1069,20 @@ class TimerStack {
                 if (timerContainer == null) {
                     timerContainer = buildContentPaneSmall(form);
                 }
+                if (timerContainer != null) { //buildContentPaneSmall returns null if no timer active
 //            Container timerForContainer = MyForm.getContainerForSmallTimer();
 //                if (timerContainer != null && timerContainer.getParent() != null) {
-                if (timerContainer.getParent() != null) {
-                    timerContainer.getParent().removeComponent(timerContainer); //remove from previous parent before adding to new
+                    if (timerContainer.getParent() != null) {
+                        timerContainer.getParent().removeComponent(timerContainer); //remove from previous parent before adding to new
+                    }
+                    timerForContainer.add(timerContainer);
+                    TimerStack.getInstance().smallContainer = timerContainer;
+//                if (form.get)
+                    if (false) {
+                        form.animateLayout(300); //this call may be creating index out of bound in toolbar if called before the form is shown
+                    }
+                    return true;
                 }
-                timerForContainer.add(timerContainer);
-                TimerStack.getInstance().smallContainer = timerContainer;
-                form.animateLayout(300);
-                return true;
             }
         }
         return false;
@@ -996,6 +1144,7 @@ class TimerStack {
 //    }
 //</editor-fold>
     private void removeTimerSmallContainer() {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //         removeTimerSmallContainer(smallContainer);
 //remove small timer UI
 //        Container smallContainer = getSmallContainer();
@@ -1014,6 +1163,7 @@ class TimerStack {
 //                setSmallContainer(null);
 //            }
 //        }
+//</editor-fold>
         if (smallContainer != null && smallContainer.getParent() != null) {
             smallContainer.getParent().removeComponent(smallContainer);
             smallContainer = null;
@@ -1024,7 +1174,7 @@ class TimerStack {
     update the UI based on current timer (if any). Either add (or remove!) a small timer to current screen or launch the full screen timer UI
      */
     void refreshOrShowTimerUI() {
-        
+
         Form form = Display.getInstance().getCurrent();
         if (form == null || !(form instanceof MyForm)) {
             return;
@@ -1067,9 +1217,6 @@ class TimerStack {
     }
 
     //**************** BUILD THE UI ****************
-    /**
-     * build the user interface of the Timer
-     */
 //    protected static Container buildContentPaneFullScreen(Form form, Container contentPane, SaveEditedValuesLocally formPreviousValues) {
     protected static Container buildContentPaneFullScreen(Form form, SaveEditedValuesLocally formPreviousValues) {
 //       return buildContentPane(form, contentPane, true, formPreviousValues);
@@ -1082,9 +1229,17 @@ class TimerStack {
         return buildContentPane(form, false, null);
     }
 
+    /**
+     * build the user interface of the Timer
+    
+    @param form
+    @param fullScreenTimer
+    @param formPreviousValues
+    @return null if no active timer
+     */
 //    private static Container buildContentPane(Form form, Container contentPane, boolean fullScreenTimer, SaveEditedValuesLocally formPreviousValues) {
     private static Container buildContentPane(Form form, boolean fullScreenTimer, SaveEditedValuesLocally formPreviousValues) {
-        
+
         ASSERT.that(form != null, "form cannot be null since it's needed for the UITimer");
 //        contentPane.removeAll();
 //        Container contentPane = fullScreenTimer?new Container(BoxLayout.y()):new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
@@ -1096,10 +1251,10 @@ class TimerStack {
         if (timerInstance == null) {
             return null;
         }
-        
+
         Item timedItem = timerInstance.getTimedItem(); //currEntry.timedItem;
         ItemList itemList = timerInstance.getItemList();
-        
+
         Button elapsedTimeButton = new Button("", "TimerTimer" + (fullScreenTimer ? "" : "Small"));
         MyTextArea description;
         MyCheckBox status = new MyCheckBox(timedItem.getStatus());
@@ -1111,7 +1266,7 @@ class TimerStack {
         Label totalActualEffort = new Label();
         Button editItemButton;
         Button timerStartStopButton = new Button();
-        SpanButton gotoNextTaskButtonWithItemText;
+        SpanButton gotoNextTaskButtonWithItemText=null;
 //        Picker elapsedTimePicker;
 //        UITimer timer;
 //        UITimer buzzerTimer;
@@ -1127,7 +1282,7 @@ class TimerStack {
             totalActualEffort.repaint();
 //            totalActualEffort.getParent().revalidate();
         };
-        
+
         ActionListener refreshElapsedTime = (e) -> {
 //            elapsedTimeButton.setText(MyDate.formatTimeDuration(timerInstance.getElapsedTime(), MyPrefs.timerShowSecondsInTimer.getBoolean()));
 //            elapsedTimeButton.repaint(); //this is enough to update the value on the screen
@@ -1140,7 +1295,7 @@ class TimerStack {
                 timerStartStopButton.getParent().revalidateWithAnimationSafety();//this is enough to update the value on the screen
             }
         };
-        
+
         Runnable updateTimerDisplayForCurrentForm = () -> {
 //                new Runnable() {   public void run() {
             // refreshDisplayedTimerInfo();  called on regular updates of the timer screen, as well as on app relaunch
@@ -1163,7 +1318,7 @@ class TimerStack {
             refreshTotalActualEffort.actionPerformed(null);
 //            Log.p("RefreshTimer");
         };
-        
+
         final int BUZZER_DURATION = 300;
         UITimer timerTimer = new UITimer(updateTimerDisplayForCurrentForm);
         UITimer buzzerTimer = new UITimer(() -> {
@@ -1183,6 +1338,15 @@ class TimerStack {
 //</editor-fold>
         });
 
+        ActionListener stopUITimers = (e) -> {
+            if (timerTimer != null) {
+                timerTimer.cancel(); //the timers may have been stopped manually when calling the commands
+            }
+            if (buzzerTimer != null) {
+                buzzerTimer.cancel();
+            }
+        };
+
 //        timerContainer.setLeadComponent(elapsedTimePicker); //ensure that the button behaves like a Picker
 //        timerContainer.add(elapsedTimeButton, elapsedTimePicker);
 //        elapsedTimePicker.setUIID("TimerTimer");
@@ -1190,7 +1354,7 @@ class TimerStack {
 //        timerStartStopButton.setCommand(Command.create(null, null, (e) -> {
         if (false) { //TODO!!!!! longpress should activate the duration picker
             timerStartStopButton.setCommand(Command.create(null, null, (e) -> {
-                
+
                 Picker elapsedTimePicker = new Picker();
                 elapsedTimePicker.setHidden(true);
 //            elapsedTimeButton.getParent().add(elapsedTimePicker); //must belong to a form
@@ -1210,16 +1374,20 @@ class TimerStack {
                 elapsedTimePicker.startEditingAsync();
             }));
         }
-        
-        parseIdMap2.put("ElapsedTime", () -> {
-//            timedItem.setActualEffort(timerInstance.isTimerShowActualTotal()
-//                    ? timerInstance.getElapsedTime()
-//                    : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
-            timedItem.setActualEffort(timerInstance.getElapsedTotalTime());
-        });
-        
-        SaveEditedValuesLocally previousValues = formPreviousValues != null ? formPreviousValues : new SaveEditedValuesLocally("Timer-" + timedItem.getObjectIdP());
-        
+
+//        parseIdMap2.put("ElapsedTime", () -> {
+////            timedItem.setActualEffort(timerInstance.isTimerShowActualTotal()
+////                    ? timerInstance.getElapsedTime()
+////                    : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
+////            timedItem.setActualEffort(timerInstance.getElapsedTotalTime());
+//            timedItem.setActualEffort(timedItem.getActualEffortProjectTaskItself() + timerInstance.getElapsedTime());
+//        });
+//        SaveEditedValuesLocally previousValues = formPreviousValues != null ? formPreviousValues : new SaveEditedValuesLocally("Timer-" + timedItem.getObjectIdP());
+//        ActionListener saveEditedItem = (evt) -> {
+//            MyForm.putEditedValues2(parseIdMap2);//update item with edited/changed values
+//            DAO.getInstance().saveInBackground(timedItem);
+//            previousValues.deleteFile();
+//        };
         if (Display.getInstance().isScreenSaverDisableSupported()) {
             Display.getInstance().setScreenSaverEnabled(!MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer));
         }
@@ -1229,22 +1397,24 @@ class TimerStack {
         Command cmdStartNextTask = new Command("", null) { //"StartNextTask" - stop and save current task and move to next (autostart if set)
             @Override
             public void actionPerformed(ActionEvent evt) {
-                if (timerTimer != null) {
-                    timerTimer.cancel();
-                }
-                if (buzzerTimer != null) {
-                    buzzerTimer.cancel();
-                }
-                
-                timerInstance.stopTimer(true);                //stop this timer, save item, //DON'T change status (is normally ONGOING)
+//                if (timerTimer != null) {
+//                    timerTimer.cancel();
+//                }
+//                if (buzzerTimer != null) {
+//                    buzzerTimer.cancel();
+//                }
+                stopUITimers.actionPerformed(null);
 
-                MyForm.putEditedValues2(parseIdMap2);//update item with edited/changed values
-                DAO.getInstance().saveInBackground(timedItem);
-                previousValues.deleteFile();
+//                timerInstance.stopTimer(true);                //stop this timer, save item, //DON'T change status (is normally ONGOING)
+                timerInstance.stopTimerUpdateTimedTaskActualsAndSave(true); //stop this timer, save item, //DON'T change status (is normally ONGOING)
 
+//                MyForm.putEditedValues2(parseIdMap2);//update item with edited/changed values
+//                DAO.getInstance().saveInBackground(timedItem);
+//                previousValues.deleteFile();
 //                if (timerInstance.isAutoGotoNextTask()) { //
-                TimerStack.getInstance().goToNextTimedItem();
-                getInstance().refreshOrShowTimerUI();
+//                TimerStack.getInstance().goToNextTimedItem();
+//                getInstance().refreshOrShowTimerUI();
+                TimerStack.getInstance().moveToNextTask();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (TimerStack.getInstance().getCurrentTimerInstance() != null) {
 //                    buildContentPane(contentPane, fullScreenTimer, previousValues); //rebuild
@@ -1266,135 +1436,125 @@ class TimerStack {
         Command cmdStopTimerAndGotoNextTaskOrExit = new Command("Next", Icons.iconTimerNextTask) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                if (timerTimer != null) {
-                    timerTimer.cancel();
-                }
-                if (buzzerTimer != null) {
-                    buzzerTimer.cancel();
-                }
-                
-                timerInstance.stopTimer(true);                //stop this timer, save item, 
+//                if (timerTimer != null) {
+//                    timerTimer.cancel();
+//                }
+//                if (buzzerTimer != null) {
+//                    buzzerTimer.cancel();
+//                }
+                stopUITimers.actionPerformed(null);
+
+//                timerInstance.stopTimer(true);                //stop this timer, save item, 
+                timerInstance.stopTimerUpdateTimedTaskActualsAndSave(true);
 //                status.setStatus(ItemStatus.DONE, false);
 
-                MyForm.putEditedValues2(parseIdMap2);//update item with edited/changed values
-                DAO.getInstance().saveInBackground(timedItem);
-                previousValues.deleteFile();
-                
-                if (timerInstance.isAutoGotoNextTask()) {
-//                    cmdStartNextTask.actionPerformed(null);
-                    TimerStack.getInstance().goToNextTimedItem();
-                }
-                getInstance().refreshOrShowTimerUI();
+//                MyForm.putEditedValues2(parseIdMap2);//update item with edited/changed values
+//                DAO.getInstance().saveInBackground(timedItem);
+//                previousValues.deleteFile();
+//                if (timerInstance.isAutoGotoNextTask()) {
+////                    cmdStartNextTask.actionPerformed(null);
+//                    TimerStack.getInstance().goToNextTimedItem();
+//                }
+//                getInstance().refreshOrShowTimerUI();
+                TimerStack.getInstance().moveToNextTask();
             }
         };
-        
+
         Command cmdSaveAndExit = new Command("Exit", Icons.iconTimerStopExitTimer) { //"Stop/Exit" "Close/Exit" //TODO select icon for Exit from timer
             @Override
             public void actionPerformed(ActionEvent evt) {
-                if (timerTimer != null) {
-                    timerTimer.cancel(); //the timers may have been stopped manually when calling the commands
-                }
-                if (buzzerTimer != null) {
-                    buzzerTimer.cancel();
-                }
-                
-                timerInstance.stopTimer(false); //no need to save since about to be deleted
-
-                MyForm.putEditedValues2(parseIdMap2);//update item with edited/changed values
-                DAO.getInstance().saveInBackground(timedItem);
-                previousValues.deleteFile();
-                
-                TimerStack.getInstance().exitTimer();  //remove this timerInstance
-//                Form f= Display.getInstance().getCurrent();
-//                if ()
-                showPreviousScreenOrDefault(((MyForm) Display.getInstance().getCurrent()).previousForm, true);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                //either move back from full screen timer to previous screen, or close small timer window
-//                Form form = contentPane.getComponentForm();
-//                if (form instanceof ScreenTimer6) { //we may have launched
-//                    assert fullScreenTimer; //TODO we should also be able to test on this simply
-//                    showPreviousScreenOrDefault(((ScreenTimer6) form).previousForm, fullScreenTimer);
-//                } else {
-//                    Container parent = contentPane.getParent();
-//                    if (parent != null) {
-//                        parent.removeComponent(contentPane);
-//                        parent.animateLayout(300);
-//                    }
+//                if (timerTimer != null) {
+//                    timerTimer.cancel(); //the timers may have been stopped manually when calling the commands
 //                }
-//</editor-fold>
+//                if (buzzerTimer != null) {
+//                    buzzerTimer.cancel();
+//                }
+                stopUITimers.actionPerformed(null);
+
+                //exit timer altogether: save each timed item, pop/delete all timers
+                while (TimerStack.getInstance().activeTimers.size() > 0) {
+                    TimerInstance timerInstance = TimerStack.getInstance().activeTimers.remove(TimerStack.getInstance().activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
+                    timerInstance.stopTimerUpdateTimedTaskActualsAndSave(false); //no save since deleted below
+                    timerInstance.deleteInstance();
+                }
+
+                showPreviousScreenOrDefault(((MyForm) Display.getInstance().getCurrent()).previousForm, true);
             }
         };
-        
+
         Command cmdSetCompletedAndGotoNextTaskOrExit = new Command("Completed", Icons.iconCheckboxDone) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                if (timerTimer != null) {
-                    timerTimer.cancel();
-                }
-                if (buzzerTimer != null) {
-                    buzzerTimer.cancel();
-                }
-                
+//                if (timerTimer != null) {
+//                    timerTimer.cancel();
+//                }
+//                if (buzzerTimer != null) {
+//                    buzzerTimer.cancel();
+//                }
+                stopUITimers.actionPerformed(null);
+
                 timerInstance.stopTimer(true);                //stop this timer, save item, 
                 status.setStatus(ItemStatus.DONE, false);
-                
-                MyForm.putEditedValues2(parseIdMap2);//update item with edited/changed values
-                DAO.getInstance().saveInBackground(timedItem);
-                previousValues.deleteFile();
-                
-                if (timerInstance.isAutoGotoNextTask()) {
-//                    cmdStartNextTask.actionPerformed(null);
-                    TimerStack.getInstance().goToNextTimedItem();
-                }
-                getInstance().refreshOrShowTimerUI();
+
+//                MyForm.putEditedValues2(parseIdMap2);//update item with edited/changed values
+//                DAO.getInstance().saveInBackground(timedItem);
+//                previousValues.deleteFile();
+//                if (timerInstance.isAutoGotoNextTask()) {
+////                    cmdStartNextTask.actionPerformed(null);
+//                    TimerStack.getInstance().goToNextTimedItem();
+//                }
+//                getInstance().refreshOrShowTimerUI();
+                TimerStack.getInstance().moveToNextTask();
             }
         };
-        
+
         Command cmdSetTaskWaitingAndGotoNextTaskOrExit = new Command("Wait", Icons.iconCheckboxWaiting) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                if (timerTimer != null) {
-                    timerTimer.cancel();
-                }
-                if (buzzerTimer != null) {
-                    buzzerTimer.cancel();
-                }
-                
+//                if (timerTimer != null) {
+//                    timerTimer.cancel();
+//                }
+//                if (buzzerTimer != null) {
+//                    buzzerTimer.cancel();
+//                }
+                stopUITimers.actionPerformed(null);
+
                 timerInstance.stopTimer(true);
                 status.setStatus(ItemStatus.WAITING, false);
-                
+
                 MyForm.showDialogUpdateRemainingTime(remainingEffort);
-                
-                MyForm.putEditedValues2(parseIdMap2); //update item with edited/changed values
-                DAO.getInstance().saveInBackground(timedItem);
-                previousValues.deleteFile();
-                
-                if (timerInstance.isAutoGotoNextTask()) {
-//                    cmdStartNextTask.actionPerformed(null);
-                    TimerStack.getInstance().goToNextTimedItem();
-                }
-                getInstance().refreshOrShowTimerUI();
+
+//                MyForm.putEditedValues2(parseIdMap2); //update item with edited/changed values
+//                DAO.getInstance().saveInBackground(timedItem);
+//                previousValues.deleteFile();
+//                if (timerInstance.isAutoGotoNextTask()) {
+////                    cmdStartNextTask.actionPerformed(null);
+//                    TimerStack.getInstance().goToNextTimedItem();
+//                }
+//                getInstance().refreshOrShowTimerUI();
+                TimerStack.getInstance().moveToNextTask();
             }
         };
-        
+
         Command cmdSetTaskCancelledAndGotoNextTaskOrExit = new Command("Cancel", Icons.iconCheckboxCancelled) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                timerTimer.cancel();
-                buzzerTimer.cancel();
-                
+//                timerTimer.cancel();
+//                buzzerTimer.cancel();
+                stopUITimers.actionPerformed(null);
+
                 timerInstance.stopTimer(true);
                 status.setStatus(ItemStatus.CANCELLED, false);
-                
-                MyForm.putEditedValues2(parseIdMap2); //update item with edited/changed values
-                DAO.getInstance().saveInBackground(timedItem);
-                previousValues.deleteFile();
-                
-                if (timerInstance.isAutoGotoNextTask()) {
-//                    cmdStartNextTask.actionPerformed(null);
-                    TimerStack.getInstance().goToNextTimedItem();
-                }
-                getInstance().refreshOrShowTimerUI();
+
+//                MyForm.putEditedValues2(parseIdMap2); //update item with edited/changed values
+//                DAO.getInstance().saveInBackground(timedItem);
+//                previousValues.deleteFile();
+//                if (timerInstance.isAutoGotoNextTask()) {
+////                    cmdStartNextTask.actionPerformed(null);
+//                    TimerStack.getInstance().goToNextTimedItem();
+//                }
+//                getInstance().refreshOrShowTimerUI();
+                TimerStack.getInstance().moveToNextTask();
             }
         };
 
@@ -1402,200 +1562,208 @@ class TimerStack {
         //TODO optimization: only construct nextTask containers etc if there is one and it is shown
         //TODO show button to select auto-start Timer on task or not
 //        Item nextItem = TimerStack.getInstance().findNextTimedItem();
-        Item nextItem = TimerStack.getInstance().getTimedItem();
-        if (nextItem != null) {
+//        Item nextItem = TimerStack.getInstance().getTimedItem();
+        Item nextComingItem = TimerStack.getInstance().getTheNextComingTimedItem();
+
+        if (nextComingItem != null) {
+//            return null;
             gotoNextTaskButtonWithItemText = MyPrefs.timerShowNextTask.getBoolean()
-                    ? new SpanButton("Next: \"" + nextItem.getText() + "\""
-                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatTimeDuration(nextItem.getRemainingEffort()) + "]") : ""))
+                    ? new SpanButton("Next: \"" + nextComingItem.getText() + "\""
+                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatTimeDuration(nextComingItem.getRemainingEffort()) + "]") : ""))
                     : new SpanButton(""); //gotoNextTask button is hidden unless timerAutomaticallyGotoNextTask is false
             gotoNextTaskButtonWithItemText.setCommand(cmdStartNextTask);
-            
-            Command cmdGotoFullScreenTimer = null;
-            if (!fullScreenTimer) {
-//                cmdGotoFullScreenTimer = new Command("FullScreenTimer", Icons.iconEditSymbolLabelStyle) {
-                cmdGotoFullScreenTimer = new Command("", Icons.iconEditSymbolLabelStyle) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        //save edited values //TODO!!!!
-//                        new ScreenTimer6((MyForm) contentPane.getComponentForm(), timerInstance).show();
-                        new ScreenTimer6((MyForm) form, timerInstance).show();
-                    }
-                };
-            }
-            
             if (MyPrefs.getBoolean(MyPrefs.timerAutomaticallyGotoNextTask)) {
 //                gotoNextTaskButtonWithItemText.setUIID("Label");
                 gotoNextTaskButtonWithItemText.setTextUIID("Label");
             }
             gotoNextTaskButtonWithItemText.setHidden(!MyPrefs.timerShowNextTask.getBoolean());
-            
-            status.setStatusChangeHandler((oldStatus, newStatus) -> {/*//TODO call commands*/
-                if (newStatus != oldStatus) {
-                    switch (newStatus) {
-                        case DONE:
-                            cmdSetCompletedAndGotoNextTaskOrExit.actionPerformed(null);
-                            break;
-                        case WAITING:
-                            cmdSetTaskWaitingAndGotoNextTaskOrExit.actionPerformed(null);
-                            break;
-                        case CANCELLED:
-//                    processCurrentItemAndLaunchNextOrExit(null, false, true, false, false); //TODO!!! when cancelling a task, should we still store the time stored?
-                            cmdSetTaskCancelledAndGotoNextTaskOrExit.actionPerformed(null);
-                            break;
-                        case ONGOING:
-                        //do nothing - should already be set to Ongoing when starting timer
-                        case CREATED:
-                        //do nothing - user forces status back to empty checkbox
-                    }
+        }
+
+        Command cmdGotoFullScreenTimer = null;
+        if (!fullScreenTimer) {
+//                cmdGotoFullScreenTimer = new Command("FullScreenTimer", Icons.iconEditSymbolLabelStyle) {
+            cmdGotoFullScreenTimer = new Command("", Icons.iconEditSymbolLabelStyle) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    //save edited values //TODO!!!!
+//                        new ScreenTimer6((MyForm) contentPane.getComponentForm(), timerInstance).show();
+                    new ScreenTimer6((MyForm) form, timerInstance).show();
                 }
-            });
+            };
+        }
+
+        status.setStatusChangeHandler((oldStatus, newStatus) -> {/*//TODO call commands*/
+            if (newStatus != oldStatus) {
+                switch (newStatus) {
+                    case DONE:
+                        cmdSetCompletedAndGotoNextTaskOrExit.actionPerformed(null);
+                        break;
+                    case WAITING:
+                        cmdSetTaskWaitingAndGotoNextTaskOrExit.actionPerformed(null);
+                        break;
+                    case CANCELLED:
+//                    processCurrentItemAndLaunchNextOrExit(null, false, true, false, false); //TODO!!! when cancelling a task, should we still store the time stored?
+                        cmdSetTaskCancelledAndGotoNextTaskOrExit.actionPerformed(null);
+                        break;
+                    case ONGOING:
+                    //do nothing - should already be set to Ongoing when starting timer
+                    case CREATED:
+                    //do nothing - user forces status back to empty checkbox
+                    }
+            }
+        });
 
 //            Container contentPane = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
-            Container contentPane = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+        Container contentPane = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
 
 //            contentPane.removeAll(); //clear before rebuilding
 //            Container cont = new Container(BoxLayout.y());
 //            cont.setScrollableY(true);
 //            Container contentPane = contentPane;
 //            contentPane.add(BorderLayout.CENTER, cont);
-            if (fullScreenTimer) {
+        if (fullScreenTimer) {
 
 //                comment = new MyTextArea(Item.COMMENT, 20, 2, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
-                comment.addActionListener((e) -> {
-                    timedItem.setComment(comment.getText());
-                    DAO.getInstance().saveInBackground(timedItem);
+            comment.addActionListener((e) -> {
+                timedItem.setComment(comment.getText());
+                DAO.getInstance().saveInBackground(timedItem);
+            });
+
+            //find and show hierarchy context for the item (List to which it belongs, and if a subtask, the (hierarchical) project context
+            String listName = null; //"TEMP - Name of the list";
+            if (itemList != null) {
+                listName = itemList instanceof Category ? "Category: " : "List: " + itemList.getText(); //source is an ItemList 
+            } else if (timedItem.isInteruptOrInstantTask()) {
+                listName = timedItem.getTaskInterrupted() == null ? "INSTANT TASK" : "INTERRUPT TASK";
+            } //else: listName remains null, e.g. if only a single task is timed
+
+            String hierarchyStr = timedItem.getOwnerHierarchyAsString();
+            if (listName == null) { //if no list, nor interrupt task, use project hierarchy as top-level context
+                listName = hierarchyStr;
+                hierarchyStr = null;
+            }
+
+            if (hierarchyStr != null) {
+                SpanLabel itemHierarchyContainer = new SpanLabel("Project: " + hierarchyStr);
+                itemHierarchyContainer.setHidden(!MyPrefs.getBoolean((MyPrefs.timerAlwaysExpandListHierarchy))); //initial state of visibility
+
+                Button buttonShowItemHierarchy = new Button(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle);
+                buttonShowItemHierarchy.addActionListener((e) -> {
+                    itemHierarchyContainer.setHidden(!itemHierarchyContainer.isHidden()); //inverse visibility
+                    buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
+                    buttonShowItemHierarchy.getParent().animateLayout(300);
                 });
 
-                //find and show hierarchy context for the item (List to which it belongs, and if a subtask, the (hierarchical) project context
-                String listName = null; //"TEMP - Name of the list";
-                if (itemList != null) {
-                    listName = itemList instanceof Category ? "Category: " : "List: " + itemList.getText(); //source is an ItemList 
-                } else if (timedItem.isInteruptOrInstantTask()) {
-                    listName = timedItem.getTaskInterrupted() == null ? "INSTANT TASK" : "INTERRUPT TASK";
-                } //else: listName remains null, e.g. if only a single task is timed
+                contentPane.add(BorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName))).add(BorderLayout.EAST, buttonShowItemHierarchy).add(BorderLayout.SOUTH, itemHierarchyContainer));
+            } else if (listName != null) {
+                contentPane.add(BorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName))));
+            } //else: no context to show, show nothing
+        }
 
-                String hierarchyStr = timedItem.getOwnerHierarchyAsString();
-                if (listName == null) { //if no list, nor interrupt task, use project hierarchy as top-level context
-                    listName = hierarchyStr;
-                    hierarchyStr = null;
+        if (fullScreenTimer) {
+            //TODO!!! do NOT use item.isInteruptTask() since we may later continue working on a task that was originally created as an interrupt but after that is just treated as a normal task
+            description = new MyTextArea(Item.DESCRIPTION_HINT, 100, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
+                @Override
+                public void longPointerPress(int x, int y) {
+                    Log.p("longPointerPress on Timer text area");
+                    //TODO!!! call "Regular tasks"
                 }
-                
-                if (hierarchyStr != null) {
-                    SpanLabel itemHierarchyContainer = new SpanLabel("Project: " + hierarchyStr);
-                    itemHierarchyContainer.setHidden(!MyPrefs.getBoolean((MyPrefs.timerAlwaysExpandListHierarchy))); //initial state of visibility
-
-                    Button buttonShowItemHierarchy = new Button(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle);
-                    buttonShowItemHierarchy.addActionListener((e) -> {
-                        itemHierarchyContainer.setHidden(!itemHierarchyContainer.isHidden()); //inverse visibility
-                        buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
-                        buttonShowItemHierarchy.getParent().animateLayout(300);
-                    });
-                    
-                    contentPane.add(BorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName))).add(BorderLayout.EAST, buttonShowItemHierarchy).add(BorderLayout.SOUTH, itemHierarchyContainer));
-                } else if (listName != null) {
-                    contentPane.add(BorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName))));
-                } //else: no context to show, show nothing
-            }
-            
-            if (fullScreenTimer) {
-                //TODO!!! do NOT use item.isInteruptTask() since we may later continue working on a task that was originally created as an interrupt but after that is just treated as a normal task
-                description = new MyTextArea(Item.DESCRIPTION_HINT, 100, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
-                    @Override
-                    public void longPointerPress(int x, int y) {
-                        Log.p("longPointerPress on Timer text area");
-                        //TODO!!! call "Regular tasks"
-                    }
-                };
-                description.setColumns(100);
-                description.setActAsLabel(true);
+            };
+            description.setColumns(100);
+            description.setActAsLabel(true);
 //                MyForm.makeField(Item.PARSE_TEXT, description, () -> timedItem.getText(),
 //                        (t) -> timedItem.setText((String) t), () -> description.getText(), (t) -> description.setText((String) t), previousValues, parseIdMap2);
-                description.addActionListener((e) -> {
-                    timedItem.setText(description.getText());
-                    DAO.getInstance().saveInBackground(timedItem);
-                });
-                if (timedItem.isInteruptOrInstantTask() && description.getText().equals("")) {
+//            description.addActionListener((e) -> {
+//                timedItem.setText(description.getText());
+//                DAO.getInstance().saveInBackground(timedItem);
+//            });
+            if (timedItem.isInteruptOrInstantTask() && description.getText().equals("")) {
 //                    contentPane.getComponentForm().setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
-                    form.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
-                }
-                description.setText(timedItem.getText());
-            } else {
-                description = new MyTextArea(Item.DESCRIPTION_HINT, 100, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY);
-                description.setColumns(100);
-                description.setActAsLabel(true);
-                description.setUIID("Label");
-                description.setEditable(true); //true=editable (but will look like a label until clicked), false=not editable in small container
-                description.setText(timedItem.getText());
+                form.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
             }
+            description.setText(timedItem.getText());
+        } else {
+            description = new MyTextArea(Item.DESCRIPTION_HINT, 100, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY);
+            description.setColumns(100);
+            description.setActAsLabel(true);
+            description.setUIID("Label");
+            description.setEditable(true); //true=editable (but will look like a label until clicked), false=not editable in small container
+            description.setText(timedItem.getText());
+        }
+        description.addActionListener((e) -> {
+            timedItem.setText(description.getText());
+            DAO.getInstance().saveInBackground(timedItem);
+        });
 
 //            MyForm.makeField(Item.PARSE_STATUS, status, () -> timedItem.getStatus(), (t) -> timedItem.setStatus((ItemStatus) t),
 //                    () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t), previousValues, parseIdMap2);
-            status.addActionListener((e) -> {
-                timedItem.setStatus(status.getStatus());
-                DAO.getInstance().saveInBackground(timedItem);
-            });
-            editItemButton = new Button(MyReplayCommand.create("EditItem", "", Icons.iconEditSymbolLabelStyle, (e) -> {
+        status.addActionListener((e) -> {
+            timedItem.setStatus(status.getStatus());
+            DAO.getInstance().saveInBackground(timedItem);
+        });
+        editItemButton = new Button(MyReplayCommand.create("EditItem", "", Icons.iconEditSymbolLabelStyle, (e) -> {
 //                MyForm.putEditedValues2(parseIdMap2, timedItem); //first update Item with any values changed in Timer
 //                ScreenItem2 screenItem = new ScreenItem2(timedItem, (MyForm) contentPane.getComponentForm(), () -> {
-                ScreenItem2 screenItem = new ScreenItem2(timedItem, (MyForm) form, () -> {
-                    //TODO!!!!!! if item values like description or comment were edited in Timer, they must be shown when editing the item. Simply pass previousValues?!
-                    DAO.getInstance().saveInBackground(timedItem);
-                    description.setText(timedItem.getText());
-                    status.setStatus(timedItem.getStatus());
-                    comment.setText(timedItem.getComment());
-                    effortEstimate.setTime((int) timedItem.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS);
-                    remainingEffort.setTime((int) timedItem.getRemainingEffort(false) / MyDate.MINUTE_IN_MILLISECONDS);
-                    refreshTotalActualEffort.actionPerformed(null);
+            ScreenItem2 screenItem = new ScreenItem2(timedItem, (MyForm) form, () -> {
+                //TODO!!!!!! if item values like description or comment were edited in Timer, they must be shown when editing the item. Simply pass previousValues?!
+                DAO.getInstance().saveInBackground(timedItem);
+                description.setText(timedItem.getText());
+                status.setStatus(timedItem.getStatus());
+                comment.setText(timedItem.getComment());
+                effortEstimate.setTime((int) timedItem.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS);
+                remainingEffort.setTime((int) timedItem.getRemainingEffort(false) / MyDate.MINUTE_IN_MILLISECONDS);
+                refreshTotalActualEffort.actionPerformed(null);
 //                ScreenTimer6.this.revalidate();
 //                    ((MyForm) contentPane.getComponentForm()).revalidate();
 //                    ((MyForm) form).revalidate();
-                    ((MyForm) form).revalidateWithAnimationSafety();
-                }, false, previousValues); //previousValues: pass locally edited value to ScreenItem
-                screenItem.show();
-            }
-            ));
-            
-            if (fullScreenTimer) {
-                contentPane.add(BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton));
-            }
-            
-            ActionListener startFormUpdateTimers = (e) -> {
-                timerTimer.schedule(Math.max(1, MyPrefs.timerUpdateInterval.getInt()) * MyDate.SECOND_IN_MILLISECONDS, true, form); //UI: max(): update at least every second. TODO change to every minute when timer>60s. Make this an option!
+                ((MyForm) form).revalidateWithAnimationSafety();
+            }, false, null); //previousValues: pass locally edited value to ScreenItem
+            screenItem.show();
+        }
+        ));
+
+        if (fullScreenTimer) {
+            contentPane.add(BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton));
+        }
+
+        ActionListener startFormUpdateTimers = (e) -> {
+            timerTimer.schedule(Math.max(1, MyPrefs.timerUpdateInterval.getInt()) * MyDate.SECOND_IN_MILLISECONDS, true, form); //UI: max(): update at least every second. TODO change to every minute when timer>60s. Make this an option!
 //                if (MyPrefs.timerBuzzerInterval.getInt() != 0) { //Start Buzzer
 ////                    buzzerTimer.schedule(MyPrefs.timerBuzzerInterval.getInt(), true, contentPane.getComponentForm());
 //                    buzzerTimer.schedule(MyPrefs.timerBuzzerInterval.getInt(), true, form);
 //                }
-                //TODO!!! find better solution than activating the buzzerTimer with Integer.MAX
-                buzzerTimer.schedule(MyPrefs.timerBuzzerInterval.getInt() != 0 ? MyPrefs.timerBuzzerInterval.getInt() : Integer.MAX_VALUE, true, form); //Integer.MAX_VALUE=25days so little risk of unexpceted buzz
-            };
+            //TODO!!! find better solution than activating the buzzerTimer with Integer.MAX
+            buzzerTimer.schedule(MyPrefs.timerBuzzerInterval.getInt() != 0 ? MyPrefs.timerBuzzerInterval.getInt() : Integer.MAX_VALUE, true, form); //Integer.MAX_VALUE=25days so little risk of unexpceted buzz
+        };
 
 //            elapsedTimeButton = new Button("TimerTimer");
-            ActionListener stopTimers = (e) -> {
-                timerTimer.cancel(); //stop timer as first thing
+        ActionListener stopTimers = (e) -> {
+            timerTimer.cancel(); //stop timer as first thing
 //                if (buzzerTimer != null) { //buzzer is optional
 //                if (MyPrefs.timerBuzzerInterval.getInt() != 0) { //buzzer is optional, only cancel if actually started (otherwise nullpointerexception
-                buzzerTimer.cancel();
+            buzzerTimer.cancel();
 //                }
-            };
+        };
 
 //            elapsedTimeButton = new Button("TimerTimer");
-            //If go to nexttask
+        //If go to nexttask
 //            timerStartStopButton = new Button();
-            Command timerStartStopCmd = Command.create(null, null, (e) -> {
+        Command timerStartStopCmd = Command.create(null, null, (e) -> {
 //            if (timer == null) {
-                if (!timerInstance.isRunning()) {                    //start Timer
-                    //UI: It is OK to start timer on a completed task, it will simply add more time to actual
+            if (!timerInstance.isRunning()) {                    //start Timer
+                //UI: It is OK to start timer on a completed task, it will simply add more time to actual
 //                    setTaskStatusOngoingWhenMinimumThresholdPassed(); //done when updating the display
-                    timerInstance.startTimer();
-                    if (false) {
-                        elapsedTimeButton.setEnabled(false); //disable while running
-                    }
-                    if (false) {
-                        timerStartStopButton.setIcon(Icons.iconTimerPauseLabelStyle);
-                    }
+//                    timerInstance.startTimer();
+                timerInstance.startTimer(true);
+                if (false) {
+                    elapsedTimeButton.setEnabled(false); //disable while running
+                }
+                if (false) {
+                    timerStartStopButton.setIcon(Icons.iconTimerPauseLabelStyle);
+                }
 //                    timerStartStopButton.repaint(); //this is enough to update the value on the screen
 //                    timerStartStopButton.getParent().revalidate();//this is enough to update the value on the screen
-                    timerStartStopButton.getParent().revalidateWithAnimationSafety();//this is enough to update the value on the screen
+                timerStartStopButton.getParent().revalidateWithAnimationSafety();//this is enough to update the value on the screen
 
 //                    timerTimer.schedule(Math.max(1, MyPrefs.timerUpdateInterval.getInt()) * MyDate.SECOND_IN_MILLISECONDS, true, contentPane.getComponentForm()); //UI: max(): update at least every second. TODO change to every minute when timer>60s. Make this an option!
 //                    timerTimer.schedule(Math.max(1, MyPrefs.timerUpdateInterval.getInt()) * MyDate.SECOND_IN_MILLISECONDS, true, form); //UI: max(): update at least every second. TODO change to every minute when timer>60s. Make this an option!
@@ -1603,65 +1771,84 @@ class TimerStack {
 //                        buzzerTimer.schedule(MyPrefs.timerBuzzerInterval.getInt(), true, contentPane.getComponentForm());
 //                    }
 //                    timerStartStopButton.setUIID("TimerTimer" + (fullScreenTimer ? "" : "Small")); //iconTimerStartTimer);
-                    startFormUpdateTimers.actionPerformed(null);
+                startFormUpdateTimers.actionPerformed(null);
 //    }
-                } else {
-                    timerInstance.stopTimer();
+            } else {
+                timerInstance.stopTimer();
 //                    timerTimer.cancel(); //stop timer as first thing
 //                    buzzerTimer.cancel();
-                    stopTimers.actionPerformed(null);
-                    if (false) {
-                        elapsedTimeButton.setEnabled(true); //enable the picker when timer is paused
-                    }
+                stopTimers.actionPerformed(null);
+                if (false) {
+                    elapsedTimeButton.setEnabled(true); //enable the picker when timer is paused
+                }
 //                    timerStartStopButton.setIcon(Icons.iconTimerStartLabelStyle); //iconTimerStartTimer);
 //                    timerStartStopButton.setUIID("TimerTimer" + (fullScreenTimer ? "" : "Small") + "Paused"); //iconTimerStartTimer);
 //                    timerStartStopButton.repaint(); //this is enough to update the value on the screen? NOPE: doesn't increase the size as hours are added!
 //                    timerStartStopButton.getParent().revalidate();
-                    timerStartStopButton.getParent().revalidateWithAnimationSafety();
-                }
-                timerStartStopButton.setUIID("TimerTimer" + (fullScreenTimer ? "" : "Small") + (timerInstance.isRunning() ? "" : "Paused")); //iconTimerStartTimer);
-            });
-            timerStartStopButton.setCommand(timerStartStopCmd);
+                timerStartStopButton.getParent().revalidateWithAnimationSafety();
+            }
             timerStartStopButton.setUIID("TimerTimer" + (fullScreenTimer ? "" : "Small") + (timerInstance.isRunning() ? "" : "Paused")); //iconTimerStartTimer);
+        });
+        timerStartStopButton.setCommand(timerStartStopCmd);
+        timerStartStopButton.setUIID("TimerTimer" + (fullScreenTimer ? "" : "Small") + (timerInstance.isRunning() ? "" : "Paused")); //iconTimerStartTimer);
 //            timerStartStopButton.set(); //iconTimerStartTimer);
-            refreshElapsedTime.actionPerformed(null); //update timerStartStopButton with initial time
+        refreshElapsedTime.actionPerformed(null); //update timerStartStopButton with initial time
 
-            if (timerInstance.isRunning()) {
+        if (timerInstance.isRunning()) {
 //                timerStartStopCmd.actionPerformed(null); //start the UI timer
-                startFormUpdateTimers.actionPerformed(null); //start the UI timer
-            }
-            
-            if (false) {
-                timerStartStopButton.setIcon(timerInstance.isRunning() ? Icons.iconTimerPauseLabelStyle : Icons.iconTimerStartLabelStyle);
-            }
-            
-            if (fullScreenTimer) { //smallContainer
+            startFormUpdateTimers.actionPerformed(null); //start the UI timer
+        }
+
+        if (false) {
+            timerStartStopButton.setIcon(timerInstance.isRunning() ? Icons.iconTimerPauseLabelStyle : Icons.iconTimerStartLabelStyle);
+        }
+
+        if (fullScreenTimer) { //smallContainer
 
 //            remainingEffort = new MyDurationPicker();
-                remainingEffort.setShowZeroValueAsZeroDuration(true); //show "0:00"
+            remainingEffort.setShowZeroValueAsZeroDuration(true); //show "0:00"
 
 //                MyForm.makeField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
 //                        () -> timedItem.getRemainingEffort(false), (l) -> timedItem.setRemainingEffort((long) l),
 //                        () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), previousValues, parseIdMap2);
 //                effortEstimate = new MyDurationPicker();
-                effortEstimate.setShowZeroValueAsZeroDuration(true); //show "0:00"
+            effortEstimate.setShowZeroValueAsZeroDuration(true); //show "0:00"
 //                MyForm.makeField(Item.PARSE_EFFORT_ESTIMATE, effortEstimate, () -> timedItem.getEffortEstimate(), (l) -> timedItem.setEffortEstimate((long) l),
 //                        () -> effortEstimate.getDuration(), (l) -> effortEstimate.setDuration((long) l), previousValues, parseIdMap2);
-                effortEstimate.addActionListener((e) -> {
-                    timedItem.setEffortEstimate(effortEstimate.getDuration()); //saved immediately on edit
-                    DAO.getInstance().saveInBackground(timedItem);
-                });
-                remainingEffort.addActionListener((e) -> {
-                    timedItem.setRemainingEffort(remainingEffort.getDuration()); //saved immediately on edit
-                    DAO.getInstance().saveInBackground(timedItem);
-                });
-                
-                effortEstimate.setDuration(timedItem.getEffortEstimate());
-                remainingEffort.setDuration(timedItem.getRemainingEffort());
+            boolean effortEstimateBeingAutoupdated = false;
+            boolean remainingEstimateBeingAutoupdated = false;
+
+            effortEstimate.addActionListener((e) -> {
+//                effortEstimateBeingAutoupdated=true;
+                timedItem.setEffortEstimate(effortEstimate.getDuration(), false); //saved immediately on edit
+                if (timedItem.getRemainingEffortProjectTaskItself() == 0 && remainingEffort.getDuration() == 0 && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()) {
+//                    timedItem.setRemainingEffort(effortEstimate.getDuration(), false); //NB. not necessary because updating the duration picker will trigger the other actionListener
+                    remainingEffort.setDuration(effortEstimate.getDuration());
+                    remainingEffort.repaint();
+                }
+                DAO.getInstance().saveInBackground(timedItem);
+//                effortEstimateBeingAutoupdated=false;
+            });
+
+            remainingEffort.addActionListener((e) -> {
+//                remainingEstimateBeingAutoupdated=true;
+                timedItem.setRemainingEffort(remainingEffort.getDuration(), false); //saved immediately on edit
+                if (timedItem.getEffortEstimate() == 0 && effortEstimate.getDuration() == 0 && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()) {
+//                    timedItem.setEffortEstimate(remainingEffort.getDuration(), false);
+                    effortEstimate.setDuration(remainingEffort.getDuration());
+                    effortEstimate.repaint();
+                }
+                DAO.getInstance().saveInBackground(timedItem);
+//                remainingEstimateBeingAutoupdated=false;
+            });
+
+            effortEstimate.setDuration(timedItem.getEffortEstimate());
+            remainingEffort.setDuration(timedItem.getRemainingEffort());
 
 //            totalActualEffort = new Label(); //MyDate.formatTime(calcTotalEffortInMinutes(item, elapsedTimePicker.getTime(), MyPrefs.getBoolean((MyPrefs.timerShowTotalActualInTimer))), showSeconds), "Button");
-                refreshTotalActualEffort.actionPerformed(null);
+            refreshTotalActualEffort.actionPerformed(null);
 
+            if (false) { //Now done in action listeners above on each field
                 //Automatically update Estimate and Remaining when one of them is set (and no value is defined manually). NB. This will only work for the first one being set. 
                 ActionListener estimateAndRemainingUpdater = new ActionListener() {
                     @Override
@@ -1680,108 +1867,112 @@ class TimerStack {
                 };
                 remainingEffort.addActionListener(estimateAndRemainingUpdater);
                 effortEstimate.addActionListener(estimateAndRemainingUpdater);
-                
-                TableLayout tl = new TableLayout(2, 3);
-                final Container estimateTable = new Container(tl);
-                Container effortDetailsCont = null;
-                Button showEffortDetailsButton = new Button(Icons.iconShowMoreLabelStyle);
-                
-                showEffortDetailsButton.addActionListener(
-                        (e) -> {
-                            showEffortDetailsButton.setIcon(showEffortDetailsButton.getIcon() == Icons.iconShowMoreLabelStyle ? Icons.iconShowLessLabelStyle : Icons.iconShowMoreLabelStyle);
-                            estimateTable.setHidden(!estimateTable.isHidden());
-                            MyPrefs.flipBoolean(MyPrefs.timerShowEffortEstimateDetails);
-//                            contentPane.getComponentForm().animateLayout(300);
-                            form.animateLayout(300);
-                        }
-                );
-                effortDetailsCont = LayeredLayout.encloseIn(
-                        FlowLayout.encloseRightMiddle(showEffortDetailsButton), //!!: reuse same strings as from ScreenItem!
-                        //                        GridLayout.encloseIn(3, new Label(""), elapsedTimeButton, FlowLayout.encloseIn(timerStartStopButton))
-                        GridLayout.encloseIn(3, new Label(""), timerStartStopButton)
-                );
-                
-                contentPane.add(effortDetailsCont);
-                
-                estimateTable.add(tl.createConstraint().widthPercentage(33).horizontalAlign(Component.CENTER), new Label(Item.EFFORT_ESTIMATE_SHORT)); //"Estimate")); //leftalign labels (like the Tickers)
-                estimateTable.add(tl.createConstraint().widthPercentage(34).horizontalAlign(Component.CENTER), new Label(Item.EFFORT_TOTAL_SHORT)); //"Total"));
-                estimateTable.add(tl.createConstraint().widthPercentage(33).horizontalAlign(Component.CENTER), new Label(Item.EFFORT_REMAINING_SHORT)); //"Remaining"));
-                //TODO make the effort Pickers small (size as the time, not as the cell) and centered (and center the labels above again)
-                estimateTable.add(effortEstimate).add(totalActualEffort).add(remainingEffort);  //!!: reuse same strings as from ScreenItem!
-                estimateTable.setHidden(!MyPrefs.getBoolean(MyPrefs.timerShowEffortEstimateDetails)); //hide initially
-                contentPane.add(BorderLayout.center(estimateTable));
-                
-                MyForm.makeField(Item.PARSE_COMMENT, comment, () -> timedItem.getComment(), (t) -> timedItem.setComment((String) t),
-                        () -> comment.getText(), (t) -> comment.setText((String) t), previousValues, parseIdMap2);
-                Container commentContainer = ScreenItem.makeCommentContainer(comment);
-                
-                contentPane.add(BorderLayout.center(commentContainer)); //TODO add full screen edit for Notes
+            }
 
-                //Action buttons
-                //Show interrupted tasks
+            TableLayout tl = new TableLayout(2, 3);
+            final Container estimateTable = new Container(tl);
+            Container effortDetailsCont = null;
+            Button showEffortDetailsButton = new Button(Icons.iconShowMoreLabelStyle);
+
+            showEffortDetailsButton.addActionListener(
+                    (e) -> {
+                        showEffortDetailsButton.setIcon(showEffortDetailsButton.getIcon() == Icons.iconShowMoreLabelStyle ? Icons.iconShowLessLabelStyle : Icons.iconShowMoreLabelStyle);
+                        estimateTable.setHidden(!estimateTable.isHidden());
+                        MyPrefs.flipBoolean(MyPrefs.timerShowEffortEstimateDetails);
+//                            contentPane.getComponentForm().animateLayout(300);
+                        form.animateLayout(300);
+                    }
+            );
+            effortDetailsCont = LayeredLayout.encloseIn(
+                    FlowLayout.encloseRightMiddle(showEffortDetailsButton), //!!: reuse same strings as from ScreenItem!
+                    //                        GridLayout.encloseIn(3, new Label(""), elapsedTimeButton, FlowLayout.encloseIn(timerStartStopButton))
+                    GridLayout.encloseIn(3, new Label(""), timerStartStopButton)
+            );
+
+            contentPane.add(effortDetailsCont);
+
+            estimateTable.add(tl.createConstraint().widthPercentage(33).horizontalAlign(Component.CENTER), new Label(Item.EFFORT_ESTIMATE_SHORT)); //"Estimate")); //leftalign labels (like the Tickers)
+            estimateTable.add(tl.createConstraint().widthPercentage(34).horizontalAlign(Component.CENTER), new Label(Item.EFFORT_TOTAL_SHORT)); //"Total"));
+            estimateTable.add(tl.createConstraint().widthPercentage(33).horizontalAlign(Component.CENTER), new Label(Item.EFFORT_REMAINING_SHORT)); //"Remaining"));
+            //TODO make the effort Pickers small (size as the time, not as the cell) and centered (and center the labels above again)
+            estimateTable.add(effortEstimate).add(totalActualEffort).add(remainingEffort);  //!!: reuse same strings as from ScreenItem!
+            estimateTable.setHidden(!MyPrefs.getBoolean(MyPrefs.timerShowEffortEstimateDetails)); //hide initially
+            contentPane.add(BorderLayout.center(estimateTable));
+
+            MyForm.makeField(Item.PARSE_COMMENT, comment, () -> timedItem.getComment(), (t) -> timedItem.setComment((String) t),
+                    () -> comment.getText(), (t) -> comment.setText((String) t), null, parseIdMap2);
+            Container commentContainer = ScreenItem.makeCommentContainer(comment);
+
+            contentPane.add(BorderLayout.center(commentContainer)); //TODO add full screen edit for Notes
+
+            //Action buttons
+            //Show interrupted tasks
 //        if (currEntry.interruptOrInstantTask) {
-                int textPos = Button.RIGHT; //BOTTOM;
-                if (timedItem.isInteruptOrInstantTask()) {
-                    Item interruptedItem = timedItem.getTaskInterrupted();
-                    if (interruptedItem != null) { //a task was interrupted
-                        //UI: not possible to Exit Timer when an interrupted task is pending, must first deal w ith interrupt and then chose an action on the interrupted task
-                        Button c1 = new Button(cmdStopTimerAndGotoNextTaskOrExit);//"Next"),
-                        c1.setTextPosition(textPos);
-                        Button c2 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"),
-                        c2.setTextPosition(textPos);
-                        Button c3 = new Button(cmdSetCompletedAndGotoNextTaskOrExit); //"Completed")));
-                        c3.setTextPosition(textPos);
-                        contentPane.add(GridLayout.encloseIn(2, c1, c2)); //autofit
-                        contentPane.add(GridLayout.encloseIn(1, c3)); //autofit
-                        //UI: as long as there is interrupted task(s!) show only those (not next tasks)
-                        contentPane.add(new SpanLabel("Interrupted: " + interruptedItem.getText()));
-                    } else {
+            int textPos = Button.RIGHT; //BOTTOM;
+            if (timedItem.isInteruptOrInstantTask()) {
+                Item interruptedItem = timedItem.getTaskInterrupted();
+                if (interruptedItem != null) { //a task was interrupted
+                    //UI: not possible to Exit Timer when an interrupted task is pending, must first deal w ith interrupt and then chose an action on the interrupted task
+                    Button c1 = new Button(cmdStopTimerAndGotoNextTaskOrExit);//"Next"),
+                    c1.setTextPosition(textPos);
+                    Button c2 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"),
+                    c2.setTextPosition(textPos);
+                    Button c3 = new Button(cmdSetCompletedAndGotoNextTaskOrExit); //"Completed")));
+                    c3.setTextPosition(textPos);
+                    contentPane.add(GridLayout.encloseIn(2, c1, c2)); //autofit
+                    contentPane.add(GridLayout.encloseIn(1, c3)); //autofit
+                    //UI: as long as there is interrupted task(s!) show only those (not next tasks)
+                    contentPane.add(new SpanLabel("Interrupted: " + interruptedItem.getText()));
+                } else {
 //                    assert size() == 1 : "timerStack should always be size==1 when no tasks was interrupted";
 //                    Button c4 = new Button(cmdExitTimer); //"Stop"),
-                        Button c4 = new Button(cmdSaveAndExit); //"Stop"),
-                        c4.setTextPosition(textPos);
-                        Button c5 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"),
-                        c5.setTextPosition(textPos);
-                        Button c6 = new Button(cmdSetCompletedAndGotoNextTaskOrExit); //"Completed")));
-                        c6.setTextPosition(textPos);
-                        contentPane.add(GridLayout.encloseIn(2, c4, c5));
-                        contentPane.add(GridLayout.encloseIn(1, c6));
-                    }
-//            } else if (currEntry.nextItem == null) {
-                } else if (gotoNextTaskButtonWithItemText == null) {
-                    //DONE!!! use task checkbox to mark task Done/Waiting? Only keep Exit/Next to leave it ongoing
-                    Button c7 = new Button(cmdSaveAndExit); //"Exit"),
-                    c7.setTextPosition(textPos);
-                    Button c8 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit);
-                    c8.setTextPosition(textPos);
-                    Button c9 = new Button(cmdSetCompletedAndGotoNextTaskOrExit); //"Completed")));
-                    c9.setTextPosition(textPos);
-                    contentPane.add(GridLayout.encloseIn(2, c7, c8));
-                    contentPane.add(GridLayout.encloseIn(1, c9));
-                } else {
-                    Button c10 = new Button(cmdSaveAndExit); //"Exit"),
-                    c10.setTextPosition(textPos);
-                    Button c11 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"), 
-                    c11.setTextPosition(textPos);
-                    Button c12 = new Button(cmdStopTimerAndGotoNextTaskOrExit); //"Stop", "Next", 
-                    c12.setTextPosition(textPos);
-                    Button c13 = new Button(cmdSetCompletedAndGotoNextTaskOrExit);
-                    c13.setTextPosition(textPos);
-                    contentPane.add(GridLayout.encloseIn(3, c10, c11, c12));
-                    contentPane.add(GridLayout.encloseIn(1, c13));
-//                        nextTaskCont.add(gotoNextTaskButtonWithItemText);
-                    contentPane.add(gotoNextTaskButtonWithItemText);
+                    Button c4 = new Button(cmdSaveAndExit); //"Stop"),
+                    c4.setTextPosition(textPos);
+                    Button c5 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"),
+                    c5.setTextPosition(textPos);
+                    Button c6 = new Button(cmdSetCompletedAndGotoNextTaskOrExit); //"Completed")));
+                    c6.setTextPosition(textPos);
+                    contentPane.add(GridLayout.encloseIn(2, c4, c5));
+                    contentPane.add(GridLayout.encloseIn(1, c6));
                 }
-            } else { //small timer container
+//            } else if (currEntry.nextItem == null) {
+            } else if (gotoNextTaskButtonWithItemText == null) {
+                //DONE!!! use task checkbox to mark task Done/Waiting? Only keep Exit/Next to leave it ongoing
+                Button c7 = new Button(cmdSaveAndExit); //"Exit"),
+                c7.setTextPosition(textPos);
+                Button c8 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit);
+                c8.setTextPosition(textPos);
+                Button c9 = new Button(cmdSetCompletedAndGotoNextTaskOrExit); //"Completed")));
+                c9.setTextPosition(textPos);
+                contentPane.add(GridLayout.encloseIn(2, c7, c8));
+                contentPane.add(GridLayout.encloseIn(1, c9));
+            } else {
+                Button c10 = new Button(cmdSaveAndExit); //"Exit"),
+                c10.setTextPosition(textPos);
+                Button c11 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"), 
+                c11.setTextPosition(textPos);
+                Button c12 = new Button(cmdStopTimerAndGotoNextTaskOrExit); //"Stop", "Next", 
+                c12.setTextPosition(textPos);
+                Button c13 = new Button(cmdSetCompletedAndGotoNextTaskOrExit);
+                c13.setTextPosition(textPos);
+                contentPane.add(GridLayout.encloseIn(3, c10, c11, c12));
+                contentPane.add(GridLayout.encloseIn(1, c13));
+//                        nextTaskCont.add(gotoNextTaskButtonWithItemText);
+                contentPane.add(gotoNextTaskButtonWithItemText);
+            }
+        } else { //small timer container
 //                Container swipeSmallContainer = new SwipeableContainer(nextTask, null, contentPane);
-                boolean interruptTask = false;
-                Button nextTask = new Button(cmdStopTimerAndGotoNextTaskOrExit); //, Icons.iconTimerNextTask);
-                nextTask.setText("");
-                Container swipeable = new SwipeableContainer(nextTask, null, contentPane);
+            boolean interruptTask = false;
+            Button nextTask = new Button(cmdStopTimerAndGotoNextTaskOrExit); //, Icons.iconTimerNextTask);
+            Button exitTimer = new Button(cmdSaveAndExit); //, Icons.iconTimerNextTask);
+            exitTimer.setText(""); //remove text in small timer
+            nextTask.setText("");
+//                Container swipeable = new SwipeableContainer(BoxLayout.encloseX(nextTask,exitTimer), null, contentPane);
+            Container swipeable = new SwipeableContainer(nextTask, exitTimer, contentPane);
 //                contentPane.setUIID("SmallTimerContainer");
-                swipeable.setUIID("SmallTimerContainer");
+            swipeable.setUIID("SmallTimerContainer");
 //                nextTask.setTextPosition(CN.BOTTOM);
-                Button fullScreenTimerButton = new Button(cmdGotoFullScreenTimer);
+            Button fullScreenTimerButton = new Button(cmdGotoFullScreenTimer);
 //                Container timerContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //                timerContainer.addAll(elapsedTimeButton, timerStartStopButton);
 //                timerContainer.addAll(timerStartStopButton);
@@ -1789,28 +1980,32 @@ class TimerStack {
 //                contentPane.add(BorderLayout.centerCenterEastWest(
 //                contentPane.add(BorderLayout.center(
 //                contentPane.add(BorderLayout.CENTER, interruptTask ? BoxLayout.encloseX(new Label(Icons.iconInterruptToolbarStyle), description) : description);
-                //                        /*Center*/interruptTask ? BoxLayout.encloseXNoGrow(new Label(Icons.iconInterruptToolbarStyle), description) : description,
-                /*Center*/
-                //                        BorderLayout.west(status).add(BorderLayout.CENTER, interruptTask ? BoxLayout.encloseXNoGrow(new Label(Icons.iconInterruptToolbarStyle), description) : description).add(BorderLayout.EAST, editItemButton),
-                /*East*/
-                contentPane.add(BorderLayout.EAST, BoxLayout.encloseXNoGrow(timerStartStopButton, fullScreenTimerButton));
-                //                                : description).add(BorderLayout.EAST, editItemButton),
-                //                        BoxLayout.encloseXNoGrow(timerContainer, nextTask, fullScreenTimerButton),
-                //                        BoxLayout.encloseXNoGrow(timerContainer,  fullScreenTimerButton),
-                Container west = BoxLayout.encloseXNoGrow(status);
-                if (interruptTask) {
-                    west.add(new Label(Icons.iconInterruptToolbarStyle));
-                }
-                west.add(description);
-                /*West*/
-//                contentPane.add(BorderLayout.WEST, status);
-                contentPane.add(BorderLayout.WEST, west);
-                return swipeable;
+            //                        /*Center*/interruptTask ? BoxLayout.encloseXNoGrow(new Label(Icons.iconInterruptToolbarStyle), description) : description,
+            /*Center*/
+            //                        BorderLayout.west(status).add(BorderLayout.CENTER, interruptTask ? BoxLayout.encloseXNoGrow(new Label(Icons.iconInterruptToolbarStyle), description) : description).add(BorderLayout.EAST, editItemButton),
+            /*East*/
+            contentPane.add(BorderLayout.EAST, BoxLayout.encloseXNoGrow(timerStartStopButton, fullScreenTimerButton));
+            //                                : description).add(BorderLayout.EAST, editItemButton),
+            //                        BoxLayout.encloseXNoGrow(timerContainer, nextTask, fullScreenTimerButton),
+            //                        BoxLayout.encloseXNoGrow(timerContainer,  fullScreenTimerButton),
+            Container west = BoxLayout.encloseXNoGrow(status);
+            if (interruptTask) {
+                west.add(new Label(Icons.iconInterruptToolbarStyle));
             }
-            
-            return contentPane;
+            if (timedItem.isInteruptOrInstantTask() && (timedItem.getText() == null || timedItem.getText().isEmpty())) {
+                west.add(description); //only make task text editable if empty interrupt task
+            } else {
+                west.add(new Label(timedItem.getText())); //otherwise just show as label
+            }
+            /*West*/
+//                contentPane.add(BorderLayout.WEST, status);
+            contentPane.add(BorderLayout.WEST, west);
+            return swipeable;
         }
-        return null;
+
+        return contentPane;
+//        }
+//        return null;
     }
-    
+
 }

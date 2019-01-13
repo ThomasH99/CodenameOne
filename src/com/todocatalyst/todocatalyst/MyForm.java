@@ -1498,6 +1498,7 @@ public class MyForm extends Form {
         return MyReplayCommand.create("StartTimerFromMyForm", title, icon, (e) -> {
             Item interruptItem = new Item();
             interruptItem.setInteruptOrInstantTask(true);
+            
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItem());
