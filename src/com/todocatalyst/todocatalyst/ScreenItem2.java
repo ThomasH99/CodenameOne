@@ -246,10 +246,11 @@ public class ScreenItem2 extends MyForm {
         toolbar.addCommandToOverflowMenu(new Command("Work time", Icons.iconSettingsApplicationLabelStyle) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotListN(), item, ScreenItem2.this, null, //(iList) -> {
+//                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotListN(), item, ScreenItem2.this, null, //(iList) -> {
+                new ScreenListOfWorkSlots(item, ScreenItem2.this, null, //(iList) -> {
                         //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
                         //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
-                        null, false).show();
+                         false).show();
             }
         });
 //        }
@@ -1875,14 +1876,14 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         MyDateAndTimePicker dateSetWaitingDate = new MyDateAndTimePicker();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        statusCont.add(new Label(Item.COMPLETED_DATE)).add(addDatePickerWithClearButton(completedDate)).add(new SpanLabel("Set automatically when a task is completed"));
-//        statusCont.add(new Label(Item.WAIT_WHEN_SET_WAITING_DATE)).add(dateSetWaitingDate.makeContainerWithClearButton()).add(new SpanLabel("Set automatically when a task is set Waiting"));
-//        statusCont.add(layout(Item.WAIT_WHEN_SET_WAITING_DATE, dateSetWaitingDate.makeContainerWithClearButton(), "Set automatically when a task is set Waiting"));
-//        statusCont.add(layout(Item.WAIT_WHEN_SET_WAITING_DATE, dateSetWaitingDate, Item.WAIT_WHEN_SET_WAITING_DATE_HELP));
+//        statusCont.add(new Label(Item.DATE_WHEN_SET_WAITING)).add(dateSetWaitingDate.makeContainerWithClearButton()).add(new SpanLabel("Set automatically when a task is set Waiting"));
+//        statusCont.add(layout(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate.makeContainerWithClearButton(), "Set automatically when a task is set Waiting"));
+//        statusCont.add(layout(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate, Item.DATE_WHEN_SET_WAITING_HELP));
 //</editor-fold>
         makeField(Item.PARSE_DATE_WHEN_SET_WAITING, dateSetWaitingDate, () -> item.getDateWhenSetWaitingD(), (s) -> item.setDateWhenSetWaiting((Date) s),
                 () -> dateSetWaitingDate.getDate(), (s) -> dateSetWaitingDate.setDate((Date) s));
 
-        statusCont.add(layoutN(Item.WAIT_WHEN_SET_WAITING_DATE, dateSetWaitingDate, Item.WAIT_WHEN_SET_WAITING_DATE_HELP));
+        statusCont.add(layoutN(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate, Item.DATE_WHEN_SET_WAITING_HELP));
         dateSetWaitingDate.addActionListener((e) -> {
             if (dateSetWaitingDate.getDate().getTime() != 0) {
                 if (status.getStatus() != ItemStatus.WAITING) {

@@ -310,6 +310,16 @@ public class ScreenListOfItems extends MyForm {
         this.stickyHeaderGen = stickyHeaderGen;
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
+
+        addPullToRefresh(() -> {
+            //refresh worktime
+            itemListOrg.resetWorkTimeDefinition();
+            //TODO!!!! load any changed data from server
+            //TODO optionally, remove done tasks??
+            setKeepPos(null); //remove any scroll position since pull to refresh means we're at top of list
+            refreshAfterEdit();
+        });
+
         getToolbar().addSearchCommand((e) -> {
             String text = (String) e.getSource();
             Container compList = null;
@@ -646,14 +656,15 @@ public class ScreenListOfItems extends MyForm {
         if (!optionTemplateEditMode && !optionNoWorkTime) {
             toolbar.addCommandToOverflowMenu(MyReplayCommand.create("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
                 setKeepPos(new KeepInSameScreenPosition());
-                new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotListN(),
-                        itemListOrg, ScreenListOfItems.this, (iList) -> {
+//                new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotListN(),
+                new ScreenListOfWorkSlots(itemListOrg, ScreenListOfItems.this, () -> {
 //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
-                            //DONE!!! reload/recalc workslots
-                            itemListOrg.resetWorkTimeDefinition(); //ensure workTime is recalculated
+                    //DONE!!! reload/recalc workslots
+//                    itemListOrg.setWorkSlotList((WorkSlotList) iList); //NOT necessary, done in the screen on each change
+//                    itemListOrg.resetWorkTimeDefinition(); //ensure workTime is recalculated
 //                            ScreenListOfItems.this.refreshAfterEdit();
-                            refreshAfterEdit();
-                        }, null, false).show();
+                    refreshAfterEdit();
+                }, false).show();
             }
             ));
         }
@@ -906,8 +917,9 @@ public class ScreenListOfItems extends MyForm {
                             toolbar.removeOverflowCommand(cmdUnselectAll);
                             toolbar.removeOverflowCommand(cmdInvertSelection);
                             toolbar.removeOverflowCommand(cmdDeleteSelected);
-                            if (false)ScreenListOfItems.this.revalidate(); //needed to make the commands actually disappear??
-//                            ScreenListOfItems.this.refreshAfterEdit();
+                            if (false) {
+                                ScreenListOfItems.this.revalidate(); //needed to make the commands actually disappear??
+                            }//                            ScreenListOfItems.this.refreshAfterEdit();
                             refreshAfterEdit();
                         }
                     }
@@ -922,7 +934,7 @@ public class ScreenListOfItems extends MyForm {
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
         if (!optionTemplateEditMode && !optionNoTimer) {
 //            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
-            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer-"+getTitle(), "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer-" + getTitle(), "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort

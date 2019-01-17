@@ -140,8 +140,8 @@ public class ScreenMain extends MyForm {
         makeAndAddButtons(overdue, toolbar, cont, "Overdue tasks, you probably want to deal with these before moving on to other tasks");
 
         Command today = MyReplayCommand.create(SCREEN_TODAY_TITLE, SCREEN_TODAY_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
-                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE,
-                            FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
+                    //TODO!!!!! FilterSort currently works on Items, but today view also show workslots                    
+                    FilterSortDef filterSort = null; //new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
                     new ScreenListOfItems(SCREEN_TODAY_TITLE,
                             () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getTodayDueAndOrWaitingOrWorkSlotsItems(true, true), filterSort, true),
                             ScreenMain.this, (i) -> {
@@ -216,10 +216,16 @@ public class ScreenMain extends MyForm {
 //            public void actionPerformed(ActionEvent evt) {
         MyReplayCommand workSlots = (MyReplayCommand) MyReplayCommand.create(ScreenListOfWorkSlots.SCREEN_TITLE, null, (e) -> {
 //                super.actionPerformed(e);
-            new ScreenListOfWorkSlots("", DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), null, ScreenMain.this, (i) -> {
-
-//            }, (obj) -> DAO.getInstance().getWorkSlotsN(new Date(System.currentTimeMillis()), new Date(MyDate.MAX_DATE)), true).show();
-            }, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), true).show();
+//            new ScreenListOfWorkSlots("", DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), null, ScreenMain.this, (i) -> {
+//            new ScreenListOfWorkSlots("", DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), null, ScreenMain.this, (i) -> {
+            ItemList tempWorkSlotOwnerList = new ItemList();
+            tempWorkSlotOwnerList.setWorkSlotList(new WorkSlotList(DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis()))));
+//            new ItemList().setWorkSlotList(DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())));
+//            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())).getWorkSlotList(), true).show();
+//            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), true).show();
+            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null,
+                    () -> {/*no need to refresh workslotlist from DAO since it will be updated within the screen in a consistent way with the parse server list */
+                    }, true).show();
         }
         );
         makeAndAddButtons(workSlots, toolbar, cont, "**");

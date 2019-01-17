@@ -215,7 +215,7 @@ public class ScreenRepair extends MyForm {
         TableLayout.Constraint span2 = new TableLayout.Constraint().horizontalSpan(2);
         TableLayout.Constraint w40 = new TableLayout.Constraint().widthPercentage(40);
         TableLayout.Constraint right = new TableLayout.Constraint().horizontalAlign(Component.RIGHT);
-                hi.setScrollableY(true);
+        hi.setScrollableY(true);
 
         hi.
                 add(w40, new SpanLabel("Density:")).add(right, new SpanLabel(density)).
@@ -742,6 +742,19 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
+        content.add(new Button(new Command("Move workslots into owners' list") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                List<WorkSlot> unallocated = DAO.getInstance().initWorkSlotListsForWorkSlotOwners();
+                if (unallocated.size() > 0 && Dialog.show("", "Delete WorkSlots with no owner (" + unallocated + ")?", "OK", null)) {
+                    for (WorkSlot workSlot : unallocated) {
+                        Log.p("Deleting: "+workSlot);
+                        DAO.getInstance().delete(workSlot);
+                    }
+                }
+            }
+        }));
+
         content.add(new Button(new Command("Storage location info") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -1054,7 +1067,6 @@ public class ScreenRepair extends MyForm {
 //                showSystemPropertiesXXXX().show();
 //            }
 //        }));
-
 //        content.add(
 //                new Button(new Command("Delete Timer storage", Icons.get().iconSettingsLabelStyle) {
 //                    @Override
@@ -1066,7 +1078,6 @@ public class ScreenRepair extends MyForm {
 //                    }
 //                }
 //                ));
-
         content.add(new Button(new Command("Show localization info") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -1144,7 +1155,6 @@ public class ScreenRepair extends MyForm {
 //                }
 //                ));
 //</editor-fold>
-
         Button createTestValues = new Button(new Command("Create test values") {
             @Override
             public void actionPerformed(ActionEvent evt) {

@@ -2490,40 +2490,25 @@ public class DAO {
      */
     //    public List<WorkSlot> getWorkSlotsN(ItemList itemList) {
     //    public List<WorkSlot> getWorkSlotsN(ItemAndListCommonInterface itemWithWorkSlots) {
-    public WorkSlotList
-            getWorkSlotsN(ItemAndListCommonInterface itemWithWorkSlots
-            ) {
-        return DAO.this.getWorkSlotsN(itemWithWorkSlots,
-                true);
-
+    public WorkSlotList getWorkSlotsN(ItemAndListCommonInterface itemWithWorkSlots) {
+        return DAO.this.getWorkSlotsN(itemWithWorkSlots, true);
     }
 
-    public WorkSlotList
-            getWorkSlotsN(ItemAndListCommonInterface itemWithWorkSlots,
-                    boolean onlyReturnFutureWorkSlots
-            ) {
-        if (itemWithWorkSlots
-                == null || (itemWithWorkSlots instanceof ParseObject
-                && ((ParseObject) itemWithWorkSlots).getObjectIdP() == null)) {
+    public WorkSlotList getWorkSlotsN(ItemAndListCommonInterface itemWithWorkSlots, boolean onlyReturnFutureWorkSlots) {
+        if (itemWithWorkSlots == null || (itemWithWorkSlots instanceof ParseObject && ((ParseObject) itemWithWorkSlots).getObjectIdP() == null)) {
             return null;
-
         }
 
         WorkSlot workSlot;
 //        List<WorkSlot> results = null;
-
         WorkSlotList results = null;
 //        long now = System.currentTimeMillis();
-
         boolean reload = true; //if one workSlot has expired, we'll need to start over loading since it may regenerate several future 
-
         while (reload) {
             reload = false;
 //            results = new ArrayList(); //reset list if need for reload
             results = new WorkSlotList(); //reset list if need for reload
-
-            if (true || cacheWorkSlots
-                    != null) {
+            if (true || cacheWorkSlots != null) {
                 Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
 //                Vector keys = cache.getKeysInCache();
 
@@ -2537,15 +2522,12 @@ public class DAO {
 //                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
 //                if (workSlot != null) {
 //</editor-fold>
-                    ASSERT.that(workSlot != null, () -> "WorkSlot in cache for key=\"" + key
-                            + "\" is null. Key type=" + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
+                    ASSERT.that(workSlot != null, () -> "WorkSlot in cache for key=\"" + key + "\" is null. Key type=" + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
                     Object owner = workSlot.getOwner();
                     //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
-
                     if (owner != null && owner.equals(itemWithWorkSlots)) {
                         RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
 //                        repeatRule=(RepeatRuleParseObject)DAO.getInstance().fetchIfNeededReturnCachedIfAvail(repeatRule); //not necessary, dont in workSlot.getRepeatRule()
-
                         if (repeatRule != null && workSlot.getEndTime() < System.currentTimeMillis() && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (workSlot.getRepeatRule()!=null) { //if repeating workslot
@@ -2566,7 +2548,6 @@ public class DAO {
                             repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
                             reload = true;
                             break; //exit the for loop to reload workslots
-
                         } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
                             results.add(workSlot);
                         }
@@ -2681,6 +2662,44 @@ public class DAO {
         }
     }
 
+    public List<WorkSlot> initWorkSlotListsForWorkSlotOwners() {
+        WorkSlot workSlot;
+        WorkSlotList results = new WorkSlotList(); //reset list if need for reload
+        List<WorkSlot> unallocated = new ArrayList<>(); //reset list if need for reload
+        HashSet<ItemAndListCommonInterface> owners = new HashSet<>(); //list of every owner with workslots
+        Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
+        for (Object key : workSlotKeys) {
+            workSlot = (WorkSlot) cacheWorkSlots.get(key);
+            ASSERT.that(workSlot != null, () -> "WorkSlot in cache for key=\"" + key + "\" is null. Key type=" + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
+            ItemAndListCommonInterface owner = workSlot.getOwner();
+            ASSERT.that(owner != null, "WorkSlot " + workSlot + " has no owner - should be deleted");
+
+            if (owner == null) {
+                unallocated.add(workSlot);
+            } else {
+                WorkSlotList workslots = owner.getWorkSlotListN();
+                if (workslots == null) {
+                    workslots = new WorkSlotList();
+                }
+                if (!workslots.contains(workSlot)) {
+                    workslots.add(workSlot);
+                }
+                owner.setWorkSlotList(workslots);
+                owners.add(owner); //collect list of owners
+            }
+        }
+        //now all workslots have been added to their owner
+        for (ItemAndListCommonInterface owner : owners) {
+//            WorkSlotList sortedList = owner.getWorkSlotListN();
+            owner.setWorkSlotList(owner.getWorkSlotListN().sortWorkSlotList()); //sort list
+//            sortedList.sortWorkSlotList();
+//            owner.setWorkSlotList(sortedList);
+            saveInBackground((ParseObject) owner); //save owner with updated list
+        }
+//        saveBatch(Arrays.asList(owners.toArray()));
+        return unallocated;
+    }
+
     /**
      * get all workslots that have at least some available time within the
      * interval between startDate and endDate. after* startDate and NOT after
@@ -2692,67 +2711,37 @@ public class DAO {
      * @return
      */
 //    public WorkSlotList getWorkSlotsN(Date startDate, Date endDate) {
-    public WorkSlotList
-            getWorkSlots(Date startDate
-            ) {
-        return getWorkSlots(startDate,
-                new Date(MyDate.MAX_DATE
-                ));
-
+//    public WorkSlotList getWorkSlots(Date startDate) {
+    public List<WorkSlot> getWorkSlots(Date startDate) {
+        return getWorkSlots(startDate, new Date(MyDate.MAX_DATE));
     }
 
-    public WorkSlotList
-            getWorkSlots(Date startDate,
-                    Date endDate
-            ) {
+//    private WorkSlotList getWorkSlots(Date startDate, Date endDate) {
+    private List<WorkSlot> getWorkSlots(Date startDate, Date endDate) {
 
-        ParseQuery<WorkSlot> query
-                = ParseQuery
-                        .getQuery(WorkSlot.CLASS_NAME
-                        );
-
+        ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
 //        query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_START_TIME, startDate); //enough to search for endTime later than Now
-        query
-                .whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME,
-                        startDate
-                ); //enough to search for endTime later than Now
+        query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME, startDate); //enough to search for endTime later than Now
 //        query.whereLessThan(WorkSlot.PARSE_START_TIME, endDate);
-        query
-                .whereLessThan(WorkSlot.PARSE_START_TIME,
-                        endDate
-                );
-        query
-                .addAscendingOrder(WorkSlot.PARSE_START_TIME
-                ); //sort on startTime
-        query
-                .setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries
-                        .getInt());
+        query.whereLessThan(WorkSlot.PARSE_START_TIME, endDate);
+        query.addAscendingOrder(WorkSlot.PARSE_START_TIME); //sort on startTime
+        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
 
-        query
-                .selectKeys(new ArrayList()); //just get search result, no data (these are cached)
-
-        WorkSlotList results
-                = null;// = new WorkSlotList();
-        List<WorkSlot> list;
+        query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+//        WorkSlotList results = null;// = new WorkSlotList();
+        List<WorkSlot> list = null;
 
         try {
-            list
-                    = query
-                            .find();
-            fetchListElementsIfNeededReturnCachedIfAvail(list
-            );
-            results
-                    = new WorkSlotList(list
-                    );
-
+            list = query.find();
+            fetchListElementsIfNeededReturnCachedIfAvail(list);
+//            results = new WorkSlotList(list);
+//            results = new WorkSlotList(list);
+            return list;
         } catch (ParseException ex) {
-            Log
-                    .e(ex
-                    );
-
+            Log.e(ex);
         }
-        return results;
-
+//        return results;
+        return new ArrayList();
     }
 
 //    public List<WorkSlot> getWorkSlotsInThePast() {
@@ -2760,12 +2749,9 @@ public class DAO {
 //        return getWorkSlotsInThePast(new Date(System.currentTimeMillis() - MyPrefs.completionLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS));
 //    }
 //    public List<WorkSlot> getWorkSlotsInThePast(Date startDate) {
-    public WorkSlotList
-            getWorkSlotsInThePast(Date startDate
-            ) {
+    public WorkSlotList getWorkSlotsInThePast(Date startDate) {
 //        List<WorkSlot> results = new ArrayList();
-        WorkSlotList results
-                = new WorkSlotList();
+        WorkSlotList results = new WorkSlotList();
 //        WorkSlot workSlot;
 
         ParseQuery<WorkSlot> query
@@ -3388,85 +3374,42 @@ public class DAO {
 //        int alarmQueryLimit = 32;
 
         ParseQuery<Item> queryReminderAlarm
-                = ParseQuery
-                        .getQuery(Item.CLASS_NAME
-                        );
+                = ParseQuery.getQuery(Item.CLASS_NAME);
 //        setupStandardItemQuery(queryReminderAlarm);
-        queryReminderAlarm
-                .whereDoesNotExist(Item.PARSE_TEMPLATE
-                ); //don't fetchFromCacheOnly any templates
+        queryReminderAlarm.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
 //        queryReminderAlarm.setLimit(MyPrefs.alarmMaxNumberItemsForWhichToSetupAlarms.getInt());
 //        queryAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //item that are NOT DONE
         //also need to avoid items that are cancelled
 //        queryAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.CANCELLED.toString()); //item that are NOT DONE
 //        queryReminderAlarm.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 //        setupAlarmQuery(queryReminderAlarm, Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem, lastTimeForNextAlarm);
-        queryReminderAlarm
-                .whereGreaterThan(Item.PARSE_ALARM_DATE,
-                        timeAfterWhichToFindNextItem
-                );
-        queryReminderAlarm
-                .whereLessThanOrEqualTo(Item.PARSE_ALARM_DATE,
-                        lastTimeForNextAlarm
-                );
+        queryReminderAlarm.whereGreaterThan(Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem);
+        queryReminderAlarm.whereLessThanOrEqualTo(Item.PARSE_ALARM_DATE, lastTimeForNextAlarm);
 //        queryAlarm.addAscendingOrder(parseAlarmField); //sort on the alarm field //NOT necessary to sort?! (only reason could be to if we get more than the limit number back in which case some would be ignored)
-        queryReminderAlarm
-                .whereNotContainedIn(Item.PARSE_STATUS,
-                        new ArrayList(Arrays
-                                .asList(ItemStatus.DONE
-                                        .toString(), ItemStatus.CANCELLED
-                                                .toString()))); //item that are NOT DONE or CANCELLED
+        queryReminderAlarm.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 
-        ParseQuery<Item> queryWaitingAlarm
-                = ParseQuery
-                        .getQuery(Item.CLASS_NAME
-                        );
-        queryReminderAlarm
-                .whereDoesNotExist(Item.PARSE_TEMPLATE
-                ); //don't fetchFromCacheOnly any templates
+        ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        queryReminderAlarm.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
 //        setupItemQueryNoTemplatesLimit1000(queryWaitingAlarm);
 //        queryWaitingAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //item that are NOT DONE
         //also need to avoid items that are cancelled
 //        queryWaitingAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.CANCELLED.toString()); //item that are NOT DONE
 //        queryWaitingAlarm.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 //        setupAlarmQuery(queryWaitingAlarm, Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem, lastTimeForNextAlarm);
-        queryWaitingAlarm
-                .whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE,
-                        timeAfterWhichToFindNextItem
-                );
-        queryWaitingAlarm
-                .whereLessThanOrEqualTo(Item.PARSE_WAITING_ALARM_DATE,
-                        lastTimeForNextAlarm
-                );
-        queryWaitingAlarm
-                .whereNotContainedIn(Item.PARSE_STATUS,
-                        new ArrayList(Arrays
-                                .asList(ItemStatus.DONE
-                                        .toString(), ItemStatus.CANCELLED
-                                                .toString()))); //item that are NOT DONE or CANCELLED
+        queryWaitingAlarm.whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem);
+        queryWaitingAlarm.whereLessThanOrEqualTo(Item.PARSE_WAITING_ALARM_DATE, lastTimeForNextAlarm);
+        queryWaitingAlarm.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 
 //        ParseQuery<Item> queryGetAllItemsWithAlarms = null;
         try {
             //        ParseQuery<Item> queryOr = ParseQuery<Item>.getOrQuery(new ArrayList(){queryAlarm, queryWaitingAlarm});
-            ParseQuery<Item> queryGetAllItemsWithAlarms
-                    = ParseQuery
-                            .getOrQuery(Arrays
-                                    .asList(queryReminderAlarm,
-                                            queryWaitingAlarm
-                                    ));
+            ParseQuery<Item> queryGetAllItemsWithAlarms = ParseQuery.getOrQuery(Arrays.asList(queryReminderAlarm, queryWaitingAlarm));
 
-            queryGetAllItemsWithAlarms
-                    .selectKeys(new ArrayList(Arrays
-                            .asList(Item.PARSE_TEXT,
-                                    Item.PARSE_DUE_DATE,
-                                    Item.PARSE_ALARM_DATE,
-                                    Item.PARSE_WAITING_ALARM_DATE
-                            ))); // just fetchFromCacheOnly the data needed to set alarms
+            queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(
+                    Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
 
 //            queryGetAllItemsWithAlarms.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
-            queryGetAllItemsWithAlarms
-                    .setLimit(alarmMaxNumberItems
-                    ); //item that are NOT DONE or CANCELLED
+            queryGetAllItemsWithAlarms.setLimit(alarmMaxNumberItems); //item that are NOT DONE or CANCELLED
 
 //            queryGetAllItemsWithAlarms.selectKeys(null); //just get search result, no data (these are cached)
 //            setupItemQuery(queryGetAllItemsWithAlarms);
@@ -3476,18 +3419,13 @@ public class DAO {
 //            //TODO: need also to avoid items that are Waiting? No, it can be waiting, but you still want any alarm to work normally
 //            queryGetAllItemsWithAlarms.addAscendingOrder(Item.PARSE_ALARM_DATE);
 //            ArrayList<Item> results = new ArrayList<Item>(queryGetAllItemsWithAlarms.find());
-            List<Item> results
-                    = queryGetAllItemsWithAlarms
-                            .find();
+            List<Item> results = queryGetAllItemsWithAlarms.find();
 //            fetchAllElementsInSublist(results);
 
             return results;
 
         } catch (ParseException ex) {
-            Log
-                    .e(ex
-                    );
-
+            Log.e(ex);
         }
 
 //        query.setLimit(1);
@@ -3508,112 +3446,58 @@ public class DAO {
      * @param timeAfterWhichToFindNextItem
      * @return
      */
-    public Item
-            getNextItemWithAlarm(Date timeAfterWhichToFindNextItem
-            ) {
-        ParseQuery<Item> queryReminderAlarm
-                = ParseQuery
-                        .getQuery(Item.CLASS_NAME
-                        );
-        setupItemQueryNotTemplateNotDeletedLimit10000(queryReminderAlarm,
-                true);
+    public Item getNextItemWithAlarm(Date timeAfterWhichToFindNextItem) {
+        ParseQuery<Item> queryReminderAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryReminderAlarm, true);
 //        setupAlarmQuery(queryReminderAlarm, Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
-        queryReminderAlarm
-                .whereGreaterThan(Item.PARSE_ALARM_DATE,
-                        timeAfterWhichToFindNextItem
-                );
-        queryReminderAlarm
-                .setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
+        queryReminderAlarm.whereGreaterThan(Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem);
+        queryReminderAlarm.setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
 //        queryReminderAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
-        queryReminderAlarm
-                .selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
+        queryReminderAlarm.selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
 
-        ParseQuery<Item> queryWaitingAlarm
-                = ParseQuery
-                        .getQuery(Item.CLASS_NAME
-                        );
-        setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingAlarm,
-                true);
+        ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingAlarm, true);
 //        setupAlarmQuery(queryWaitingAlarm, Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
-        queryWaitingAlarm
-                .whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE,
-                        timeAfterWhichToFindNextItem
-                );
-        queryWaitingAlarm
-                .setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
+        queryWaitingAlarm.whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem);
+        queryWaitingAlarm.setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
 //        queryWaitingAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
-        queryWaitingAlarm
-                .selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
+        queryWaitingAlarm.selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
 
-        Item nextItemWithAlarm
-                = null;
+        Item nextItemWithAlarm = null;
 
         try {
-            List<Item> resultsNextAlarm
-                    = queryReminderAlarm
-                            .find();
-            List<Item> resultsNextWaiting
-                    = queryWaitingAlarm
-                            .find();
+            List<Item> resultsNextAlarm = queryReminderAlarm.find();
+            List<Item> resultsNextWaiting = queryWaitingAlarm.find();
 
-            if (resultsNextAlarm
-                    != null && resultsNextAlarm
-                            .size() >= 1) {
-                if (resultsNextWaiting
-                        != null && resultsNextWaiting
-                                .size() >= 1) {
-                    if (resultsNextAlarm
-                            .get(0).getAlarmDateD().getTime() < resultsNextWaiting
-                            .get(0).getWaitingAlarmDateD().getTime()) {
+            if (resultsNextAlarm != null && resultsNextAlarm.size() >= 1) {
+                if (resultsNextWaiting != null && resultsNextWaiting.size() >= 1) {
+                    if (resultsNextAlarm.get(0).getAlarmDateD().getTime() < resultsNextWaiting.get(0).getWaitingAlarmDateD().getTime()) {
 //                        return resultsNextAlarm.get(0);
-                        nextItemWithAlarm
-                                = resultsNextAlarm
-                                        .get(0);
+                        nextItemWithAlarm = resultsNextAlarm.get(0);
 
                     } else {
 //                        return resultsNextWaiting.get(0);
-                        nextItemWithAlarm
-                                = resultsNextWaiting
-                                        .get(0);
-
+                        nextItemWithAlarm = resultsNextWaiting.get(0);
                     }
                 } else {
 //                    return resultsNextAlarm.get(0);
-                    nextItemWithAlarm
-                            = resultsNextAlarm
-                                    .get(0);
-
+                    nextItemWithAlarm = resultsNextAlarm.get(0);
                 }
-            } else if (resultsNextWaiting
-                    != null && resultsNextWaiting
-                            .size() >= 1) {
+            } else if (resultsNextWaiting != null && resultsNextWaiting.size() >= 1) {
 //                return resultsNextWaiting.get(0);
-                nextItemWithAlarm
-                        = resultsNextWaiting
-                                .get(0);
-
+                nextItemWithAlarm = resultsNextWaiting.get(0);
             };
 
         } catch (ParseException ex) {
-            Log
-                    .e(ex
-                    );
-
+            Log.e(ex);
         }
-        ASSERT
-                .that(cache
-                        != null, "cache must be initialized");
+        ASSERT.that(cache != null, "cache must be initialized");
 
-        if (nextItemWithAlarm
-                != null) {
+        if (nextItemWithAlarm != null) {
 //            nextItemWithAlarm = (Item) cache.get(nextItemWithAlarm.getObjectIdP());
-            nextItemWithAlarm
-                    = (Item) cacheGet(nextItemWithAlarm
-                            .getObjectIdP());
-
+            nextItemWithAlarm = (Item) cacheGet(nextItemWithAlarm.getObjectIdP());
         }
         return nextItemWithAlarm;
-
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3706,89 +3590,44 @@ public class DAO {
      * same screen
      * @return
      */
-    public FilterSortDef
-            getFilterSortDef(String screenId,
-                    String objectId
-            ) { //, String filterName) {
-        ParseQuery<FilterSortDef> query
-                = ParseQuery
-                        .getQuery(FilterSortDef.CLASS_NAME
-                        );
-        query
-                .whereEqualTo(FilterSortDef.PARSE_SCREEN_ID,
-                        screenId
-                );
-        query
-                .whereEqualTo(FilterSortDef.PARSE_FILTERED_OBJECT_ID,
-                        objectId
-                );
-        List<FilterSortDef> results
-                = null;
+    public FilterSortDef getFilterSortDef(String screenId, String objectId) { //, String filterName) {
+        ParseQuery<FilterSortDef> query = ParseQuery.getQuery(FilterSortDef.CLASS_NAME);
+        query.whereEqualTo(FilterSortDef.PARSE_SCREEN_ID, screenId);
+        query.whereEqualTo(FilterSortDef.PARSE_FILTERED_OBJECT_ID, objectId);
+        List<FilterSortDef> results = null;
 
         try {
-            results
-                    = query
-                            .find();
-
+            results = query.find();
         } catch (ParseException ex) {
-            Log
-                    .e(ex
-                    );
-
+            Log.e(ex);
         }
 //        return results != null && results.size() > 0 ? results.get(0) : null;
-        FilterSortDef filterSortDef
-                = results
-                != null && results
-                        .size() > 0 ? results
-                                .get(0) : null;
+        FilterSortDef filterSortDef = results != null && results.size() > 0 ? results.get(0) : null;
 
-        if (filterSortDef
-                != null) {
-            filterSortDef
-                    .getFilterOptions(); //update all the filter values
-
+        if (filterSortDef != null) {
+            filterSortDef.getFilterOptions(); //update all the filter values
         }
         return filterSortDef;
-
     }
 
-    public FilterSortDef
-            getFilterSortDef(String objectId
-            ) {//, String filterName) {
+    public FilterSortDef getFilterSortDef(String objectId) {//, String filterName) {
         //TODO!! change the use of objectId as a string to usual Parse pattern
-        FilterSortDef filterSortDef
-                = null;
+        FilterSortDef filterSortDef = null;
 
         try {
 //            Object res = cache.get(objectId);
-            Object res
-                    = cacheGet(objectId
-                    );
-
-            if (res
-                    != null) {
-                filterSortDef
-                        = (FilterSortDef) res;
-
+            Object res = cacheGet(objectId);
+            if (res != null) {
+                filterSortDef = (FilterSortDef) res;
             } else {
-                filterSortDef
-                        = new FilterSortDef();
-                filterSortDef
-                        .setObjectId(objectId
-                        );
-                filterSortDef
-                        .fetchIfNeeded();
-
+                filterSortDef = new FilterSortDef();
+                filterSortDef.setObjectId(objectId);
+                filterSortDef.fetchIfNeeded();
             }
         } catch (ParseException ex) {
-            Log
-                    .e(ex
-                    ); //TODO proper error handling
-
+            Log.e(ex); //TODO proper error handling
         }
         return filterSortDef;
-
     }
 
     /**
@@ -3800,12 +3639,12 @@ public class DAO {
             return;
         }
         String objId = anyParseObject.getObjectIdP();
-        
-            try {
-                anyParseObject.delete();
-            } catch (ParseException ex) {
-                Log.e(ex);
-            }
+
+        try {
+            anyParseObject.delete();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
 
         if (objId != null) {
             cacheDelete(anyParseObject);
@@ -3817,7 +3656,7 @@ public class DAO {
             return;
         }
         String objId = anyParseObject.getObjectIdP();
-        
+
         if (backgroundSaveThread == null) {
             backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
         }
@@ -5340,21 +5179,15 @@ public class DAO {
                         .size(); i
                 < size;
                 i++) {
-            WorkSlot workSlot
-                    = listOfWorkSlots
-                            .get(i
-                            );
+            WorkSlot workSlot = listOfWorkSlots.get(i);
             //test if workSlot has multiple owners (Category, Item, ItemList) - NOT necessary since the priority is defined by getOwner()
 //            if (workSlot.getOwner())
 
-            boolean deleteWorkSlot
-                    = true; //if all owners are missing, then remove
+            boolean deleteWorkSlot = true; //if all owners are missing, then remove
 
-            boolean noOwner
-                    = false; //if all owners are missing, then remove
+            boolean noOwner = false; //if all owners are missing, then remove
 
-            boolean noRepeatRule
-                    = false; //if all owners are missing, then remove
+            boolean noRepeatRule = false; //if all owners are missing, then remove
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (workSlot.getOwnerList() != null) {// || workSlot.getOwnerList().equals("")) {
 ////                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerList(" + workSlot.getOwnerList() + ")", logLevel);
@@ -5413,98 +5246,57 @@ public class DAO {
     @param category 
      */
     private void cleanUpRepeatRules() {
-        List<RepeatRuleParseObject> allRepeatRules
-                = getAllRepeatRulesFromParse();
+        List<RepeatRuleParseObject> allRepeatRules = getAllRepeatRulesFromParse();
 
         //delete repeat rules not referenced by any Item or WorkSlot
         //construct hashmpas to effectively search for elements that point to a filter
-        Map<RepeatRuleParseObject, Item> itemsWithRepeatRule
-                = new HashMap<>();
+        Map<RepeatRuleParseObject, Item> itemsWithRepeatRule = new HashMap<>();
 
-        for (Item item
-                : getAllItems()) {
-            if (item
-                    .getRepeatRule() != null) {
-                itemsWithRepeatRule
-                        .put(item
-                                .getRepeatRule(), item
-                        );
-
+        for (Item item : getAllItems()) {
+            if (item.getRepeatRule() != null) {
+                itemsWithRepeatRule.put(item.getRepeatRule(), item);
             }
         }
 
         Map<RepeatRuleParseObject, WorkSlot> workSlotsWithFilter
                 = new HashMap<>();
 
-        for (WorkSlot workSlot
-                : getAllWorkSlotsFromParse()) {
-            if (workSlot
-                    .getRepeatRule() != null) {
-                workSlotsWithFilter
-                        .put(workSlot
-                                .getRepeatRule(), workSlot
-                        );
-
+        for (WorkSlot workSlot : getAllWorkSlotsFromParse().getWorkSlotList()) {
+            if (workSlot.getRepeatRule() != null) {
+                workSlotsWithFilter.put(workSlot.getRepeatRule(), workSlot);
             }
         }
 //        for (int i = 0, size = allRepeatRules.size(); i < size; i++) {
 //            RepeatRuleParseObject repeatRule = allRepeatRules.get(i);
-        for (RepeatRuleParseObject repeatRule
-                : allRepeatRules) {
+        for (RepeatRuleParseObject repeatRule : allRepeatRules) {
 
             //for every repeatRule, check if it is referenced and if not delete it
-            if (workSlotsWithFilter
-                    .get(repeatRule
-                    ) == null && workSlotsWithFilter
-                            .get(repeatRule
-                            ) == null) { //no refs to repeatRule
-                Log
-                        .p("CLEANUP: RepeatRule (ObjId=" + repeatRule
-                                .getObjectIdP() + ") is not referenced by any Item or WorkSlot", logLevel
-                        );
-
+            if (workSlotsWithFilter.get(repeatRule) == null && workSlotsWithFilter.get(repeatRule) == null) { //no refs to repeatRule
+                Log.p("CLEANUP: RepeatRule (ObjId=" + repeatRule.getObjectIdP() + ") is not referenced by any Item or WorkSlot", logLevel);
                 if (executeCleanup) {
-                    delete(repeatRule
-                    ); //delete filters without ref to both objectId and Screen
-                    allRepeatRules
-                            .remove(repeatRule
-                            );
-
+                    delete(repeatRule); //delete filters without ref to both objectId and Screen
+                    allRepeatRules.remove(repeatRule);
                 }
             };
 
             //clean up wrong references in list of repeat instances
 //            List<ItemAndListCommonInterface> repeatInstanceList = repeatRule.getListOfUndoneRepeatInstances();
-            List<RepeatRuleObjectInterface> repeatInstanceList
-                    = repeatRule
-                            .getListOfUndoneRepeatInstances();
+            List<RepeatRuleObjectInterface> repeatInstanceList = repeatRule.getListOfUndoneRepeatInstances();
 
-            cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(repeatRule,
-                    repeatInstanceList
-            );
+            cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(repeatRule, repeatInstanceList);
 
             //clean up duplicates in list of repeat instances
-            cleanUpDuplicatesInList("RepeatRule instances " + repeatRule,
-                    repeatInstanceList,
-                    executeCleanup
-            );
+            cleanUpDuplicatesInList("RepeatRule instances " + repeatRule, repeatInstanceList, executeCleanup);
 
             if (executeCleanup) {
-                repeatRule
-                        .setListOfUndoneRepeatInstances(repeatInstanceList
-                        );
-                save(repeatRule
-                );
-
+                repeatRule.setListOfUndoneRepeatInstances(repeatInstanceList);
+                save(repeatRule);
             }
         }
     }
 
-    public void setExecuteCleanup(boolean executeCleanup
-    ) {
-        this.executeCleanup
-                = executeCleanup;
-
+    public void setExecuteCleanup(boolean executeCleanup) {
+        this.executeCleanup = executeCleanup;
     }
 
     /**
@@ -5734,87 +5526,43 @@ public class DAO {
 
     }
 
-    private List<WorkSlot> getAllWorkSlotsFromParse(Date afterDate,
-            Date beforeDate
-    ) {
+//    private List<WorkSlot> getAllWorkSlotsFromParse(Date afterDate,
+//    private WorkSlotList getAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
+    private List<WorkSlot> getAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
-        ParseQuery<WorkSlot> query
-                = ParseQuery
-                        .getQuery(WorkSlot.CLASS_NAME
-                        );
-        query
-                .whereGreaterThan(Item.PARSE_UPDATED_AT,
-                        afterDate
-                );
-        query
-                .whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT,
-                        beforeDate
-                );
-        query
-                .setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries
-                        .getInt()); //TODO!!!!
-        List<WorkSlot> results
-                = null;
+        ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+        query.whereGreaterThan(Item.PARSE_UPDATED_AT, afterDate);
+        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, beforeDate);
+        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
+        List<WorkSlot> results = null;
 
         try {
-            results
-                    = query
-                            .find();
-
+            results = query.find();
         } catch (ParseException ex) {
-            Log
-                    .e(ex
-                    );
-
+            Log.e(ex);
         }
+//        return new WorkSlotList(results);
         return results;
-
     }
 
-    private boolean cacheAllWorkSlotsFromParse(Date afterDate,
-            Date beforeDate
-    ) {
+    private boolean cacheAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
-        List<WorkSlot> results
-                = getAllWorkSlotsFromParse(afterDate,
-                        beforeDate
-                );
-        cacheList(results
-        );
-
-        return !results
-                .isEmpty();
-
+        List<WorkSlot> results = getAllWorkSlotsFromParse(afterDate, beforeDate);
+//        WorkSlotList results = getAllWorkSlotsFromParse(afterDate, beforeDate);
+        cacheList(results);
+        return !results.isEmpty();
     }
 
-    private boolean cacheAllWorkSlotsFromParseXXX(Date afterDate,
-            Date beforeDate
-    ) {
+    private boolean cacheAllWorkSlotsFromParseXXX(Date afterDate, Date beforeDate) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
-        boolean result
-                = false;
-        ParseQuery<WorkSlot> query
-                = ParseQuery
-                        .getQuery(WorkSlot.CLASS_NAME
-                        );
-        query
-                .whereGreaterThan(Item.PARSE_UPDATED_AT,
-                        afterDate
-                );
-        query
-                .whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT,
-                        beforeDate
-                );
-        query
-                .setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries
-                        .getInt()); //TODO!!!!
-        List<WorkSlot> results
-                = null;
-
+        boolean result = false;
+        ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+        query.whereGreaterThan(Item.PARSE_UPDATED_AT, afterDate);
+        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, beforeDate);
+        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
+        List<WorkSlot> results = null;
         try {
-            results
-                    = query
-                            .find();
+            results = query.find();
 //            for (ParseObject o : results) {
 ////                ASSERT.that(o.isDataAvailable(), "isDataAvailable() false for WorkSlot ObjId=" + o.getObjectId());
 ////                cache.put(o.getObjectId(), o);
@@ -5827,17 +5575,10 @@ public class DAO {
 //                cachePut(o);
 //                result = true;
 //            }
-            cacheList(results
-            );
-            result
-                    = !results
-                            .isEmpty();
-
+            cacheList(results);
+            result = !results.isEmpty();
         } catch (ParseException ex) {
-            Log
-                    .e(ex
-                    );
-
+            Log.e(ex);
         }
         //do this update AFTER having cached all items to be able to update all subtask and ownerItem references to the cached instances
 //        for (ParseObject o : results) {
@@ -6737,23 +6478,15 @@ public class DAO {
 //    private void initAndConfigureCache(boolean forceCreationOfNewInMemoryCache) {
     private void initAndConfigureCache() {
 //        if (cache == null || forceCreationOfNewInMemoryCache) {
-        if (true || cache
-                == null) { //NO reason to keep old cache, even if cleaned??!
+        if (true || cache == null) { //NO reason to keep old cache, even if cleaned??!
 //            cache = null; //force GC
-            cache
-                    = new MyCacheMap("ALL");
+            cache = new MyCacheMap("ALL");
 
         }
-        cache
-                .setCacheSize(MyPrefs.cacheDynamicSize
-                        .getInt()); //persist cached elements
+        cache.setCacheSize(MyPrefs.cacheDynamicSize.getInt()); //persist cached elements
         //activate or de-activate local storage
-        cache
-                .setAlwaysStore(MyPrefs.cacheLocalStorageSize
-                        .getInt() > 0); //persist cached elements
-        cache
-                .setStorageCacheSize(MyPrefs.cacheLocalStorageSize
-                        .getInt()); //persist cached elements //TODO!!!! will this automatically too many locally cached elements?? At first look, seems not
+        cache.setAlwaysStore(MyPrefs.cacheLocalStorageSize.getInt() > 0); //persist cached elements
+        cache.setStorageCacheSize(MyPrefs.cacheLocalStorageSize.getInt()); //persist cached elements //TODO!!!! will this automatically too many locally cached elements?? At first look, seems not
 //        if (resetAndDeleteLocallyCachedData) cache.clearAllCache();
 //        if (resetAndDeleteLocallyCachedData) {
 //            cache.clearStorageCache();
@@ -6806,36 +6539,23 @@ public class DAO {
 //    }
 //</editor-fold>
     public void resetAndDeleteAndReloadAllCachedData() {
-        Dialog ip
-                = new InfiniteProgress().showInfiniteBlocking();
-        Storage
-                .getInstance().deleteStorageFile(FILE_DATE_FOR_LAST_CACHE_REFRESH
-                ); //delete date so all data will be reloaded in cacheLoadDataChangedOnServer()
+        Dialog ip = new InfiniteProgress().showInfiniteBlocking();
+        Storage.getInstance().deleteStorageFile(FILE_DATE_FOR_LAST_CACHE_REFRESH); //delete date so all data will be reloaded in cacheLoadDataChangedOnServer()
 
-        if (cache
-                != null) {
+        if (cache != null) {
 //            cache.clearStorageCache(); //delete any locally cached data/files
-            cache
-                    .clearAllCache(); //clear any cached data (even in memory to make sure we get a completely fresh copy)
-            cache
-                    = null;  //force GC and creation of new cache in initAndConfigureCache()
-
+            cache.clearAllCache(); //clear any cached data (even in memory to make sure we get a completely fresh copy)
+            cache = null;  //force GC and creation of new cache in initAndConfigureCache()
         }
 //        initAndConfigureCache(true);
         initAndConfigureCache();
         cacheLoadDataChangedOnServer(true, false);
-        ip
-                .dispose();
-
+        ip.dispose();
     }
 
     public void updateCacheWhenSettingsChangeNOT_TESTED() {
-        if (MyPrefs.cacheLocalStorageSize
-                .getInt() <= 0) {
-            Storage
-                    .getInstance().deleteStorageFile(FILE_DATE_FOR_LAST_CACHE_REFRESH
-                    );
-
+        if (MyPrefs.cacheLocalStorageSize.getInt() <= 0) {
+            Storage.getInstance().deleteStorageFile(FILE_DATE_FOR_LAST_CACHE_REFRESH);
         }
 //        initAndConfigureCache(false); //if cache size increases, additional objects will automatically be cached
         initAndConfigureCache(); //if cache size increases, additional objects will automatically be cached
@@ -6866,99 +6586,52 @@ public class DAO {
 //    public boolean cacheLoadDataChangedOnServer(boolean loadingChangedDataFromParseServerForTesting) {
 //        
 //    }
-    public boolean cacheLoadDataChangedOnServer(boolean loadingChangedDataFromParseServerForTesting,
-            boolean inBackground
-    ) {
+    public boolean cacheLoadDataChangedOnServer(boolean loadingChangedDataFromParseServerForTesting, boolean inBackground) {
         //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
 //        initAndConfigureCache(); //now done in DAO constructor
 ////\        loadCacheToMemory(); //first load 
 
-        cache
-                .loadCacheToMemory(); //first load to memory
+        cache.loadCacheToMemory(); //first load to memory
 
         if (loadingChangedDataFromParseServerForTesting) {
-            Dialog ip
-                    = null;
-
+            Dialog ip = null;
             if (!inBackground) {
-                ip
-                        = new InfiniteProgress().showInfiniteBlocking();
-
+                ip = new InfiniteProgress().showInfiniteBlocking();
             }
-            Date now
-                    = new Date(); //UI: only cache data that was already changed when update was launched
-            Date lastCacheRefreshDate
-                    = new Date(MyDate.MIN_DATE
-                    );
+            Date now = new Date(); //UI: only cache data that was already changed when update was launched
+            Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
 
-            if (MyPrefs.cacheLocalStorageSize
-                    .getInt() > 0) { //only store if local cache is active
+            if (MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active
                 //get date when local cache was last updated
-                if (Storage
-                        .getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH
-                        )) {
-                    lastCacheRefreshDate
-                            = (Date) Storage
-                                    .getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH
-                                    ); //read in when initializing the Timer - from here on it is only about saving updates
-
+                if (Storage.getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH)) {
+                    lastCacheRefreshDate = (Date) Storage.getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH); //read in when initializing the Timer - from here on it is only about saving updates
                 }
-                Storage
-                        .getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH,
-                                now
-                        ); //save date
-
+                Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
             }
-            boolean result
-                    = cacheAllData(lastCacheRefreshDate,
-                            now
-                    );
-
-            if (ip
-                    != null) {
-                ip
-                        .dispose();
-
+            boolean result = cacheAllData(lastCacheRefreshDate, now);
+            if (ip != null) {
+                ip.dispose();
             }
             return result;
-
         }
         return false;
-
     }
 
-    public boolean cacheLoadDataChangedOnServerInBackground(boolean loadChangedDataFromParseServer
-    ) {
+    public boolean cacheLoadDataChangedOnServerInBackground(boolean loadChangedDataFromParseServer) {
         //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
 //        initAndConfigureCache(); //now done in DAO constructor
 ////\        loadCacheToMemory(); //first load 
-        cache
-                .loadCacheToMemory(); //first load 
+        cache.loadCacheToMemory(); //first load 
 
         if (loadChangedDataFromParseServer) {
-            Date now
-                    = new Date(); //UI: only cache data that was already changed when update was launched
-            Date lastCacheRefreshDate
-                    = new Date(MyDate.MIN_DATE
-                    );
-
-            if (MyPrefs.cacheLocalStorageSize
-                    .getInt() > 0) { //only store if local cache is active
+            Date now = new Date(); //UI: only cache data that was already changed when update was launched
+            Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
+            if (MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active
                 //get date when local cache was last updated
-                if (Storage
-                        .getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH
-                        )) {
-                    lastCacheRefreshDate
-                            = (Date) Storage
-                                    .getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH
-                                    ); //read in when initializing the Timer - from here on it is only about saving updates
-
+                if (Storage.getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH)) {
+                    lastCacheRefreshDate = (Date) Storage.getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH); //read in when initializing the Timer - from here on it is only about saving updates
                 }
-                Storage
-                        .getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH,
-                                now
-                        ); //save date
-
+                Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
             }
 
             //TODO!!!! run all these queries in parallel and continue when they've all returned
@@ -6970,6 +6643,7 @@ public class DAO {
             List<ItemList> itemLists = getAllItemListsFromParse(lastCacheRefreshDate, now);
             Log.p("Caching WorkSlots");
             List<WorkSlot> workSlots = getAllWorkSlotsFromParse(lastCacheRefreshDate, now);
+//            WorkSlotList workSlots = getAllWorkSlotsFromParse(lastCacheRefreshDate, now);
             Log.p("Caching Filters");
             List<FilterSortDef> filters = getAllFilterSortDefsFromParse(lastCacheRefreshDate, now);
             Log.p("Caching RepeatRules");
@@ -7047,50 +6721,26 @@ public class DAO {
     ) {
         boolean somethingWasLoaded;
 
-        Log
-                .p("Caching Items");
-        somethingWasLoaded
-                = cacheAllItemsFromParse(afterDate,
-                        beforeDate
-                );
-        Log
-                .p("Caching Categories");
-        somethingWasLoaded
-                = cacheAllCategoriesFromParse(afterDate,
-                        beforeDate
-                ) || somethingWasLoaded;
+        Log.p("Caching Items");
+        somethingWasLoaded = cacheAllItemsFromParse(afterDate, beforeDate);
+        Log.p("Caching Categories");
+        somethingWasLoaded = cacheAllCategoriesFromParse(afterDate, beforeDate) || somethingWasLoaded;
 
-        Log
-                .p("Caching ItemLists");
-        somethingWasLoaded
-                = cacheAllItemListsFromParse(afterDate,
-                        beforeDate
-                ) || somethingWasLoaded;
+        Log.p("Caching ItemLists");
+        somethingWasLoaded = cacheAllItemListsFromParse(afterDate, beforeDate) || somethingWasLoaded;
 
-        Log
-                .p("Caching WorkSlots");
-        somethingWasLoaded
-                = cacheAllWorkSlotsFromParse(afterDate,
-                        beforeDate
-                ) || somethingWasLoaded;
+        Log.p("Caching WorkSlots");
+        somethingWasLoaded = cacheAllWorkSlotsFromParse(afterDate, beforeDate) || somethingWasLoaded;
 
-        Log
-                .p("Caching Filters");
-        somethingWasLoaded
-                = cacheAllFilterSortDefsFromParse(afterDate,
-                        beforeDate
-                ) || somethingWasLoaded;
+        Log.p("Caching Filters");
+        somethingWasLoaded = cacheAllFilterSortDefsFromParse(afterDate, beforeDate) || somethingWasLoaded;
 //        getAllCategoriesFromParse();
 //        getAllCategoriesFromParse(reloadUpdateAfterThis, now);
 //        getAllItemListsFromParse();
 //        getAllItemListsFromParse(reloadUpdateAfterThis, now);
 
-        Log
-                .p("Caching RepeatRules");
-        somethingWasLoaded
-                = cacheAllRepeatRulesFromParse(afterDate,
-                        beforeDate
-                ) || somethingWasLoaded;
+        Log.p("Caching RepeatRules");
+        somethingWasLoaded = cacheAllRepeatRulesFromParse(afterDate, beforeDate) || somethingWasLoaded;
 //        getCategoryList(); //will cache the list of Categories
 //        getItemListList(); //will cache the list of ItemLists
 //        getTemplateList(); //will cache the list of Templates
@@ -7098,26 +6748,16 @@ public class DAO {
         Log.p("Caching CategoryList");
         somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
 
-        Log
-                .p("Caching ItemListList");
+        Log.p("Caching ItemListList");
         somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
 
-        Log
-                .p("Caching TemplateList");
-        somethingWasLoaded
-                = cacheTemplateList(afterDate,
-                        beforeDate
-                ) || somethingWasLoaded; //will cache the list of Templates
+        Log.p("Caching TemplateList");
+        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
 //        cacheUpdateAllCategoryItemReferences(categoryList);
 //        cacheUpdateAllItemListItemReferences(itemListLists);
 //        cacheUpdateAllItemReferences();
-
-        Log
-                .p("cacheAllData FINISHED updating cache" + (somethingWasLoaded
-                        ? " NEW DATA LOADED" : " no data loaded"));
-
+        Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
         return somethingWasLoaded;
-
     }
 
 }

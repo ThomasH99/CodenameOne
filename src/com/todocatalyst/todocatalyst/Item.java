@@ -117,7 +117,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        this(taskText, remainingEffortInMinutes, dueDate, false);
         this();
         setText(taskText);
-        setRemainingEffort(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS,true);
+        setRemainingEffort(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS, true);
         setDueDate(dueDate);
     }
 
@@ -862,9 +862,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String ALARM_DATE_HELP = "Set a Reminder for this task. Shown as a local notification on your phone or device when the app is not running, or as a reminder ** when you are using the app."; // "Alarm date", "Alarm"
     final static String WAIT_UNTIL_DATE = "Waiting until"; // "Wait until date" "Wait until"
     final static String WAIT_UNTIL_DATE_HELP = "**Waiting until"; // "Wait until date" "Wait until"
-    final static String WAIT_WHEN_SET_WAITING_DATE = "Waiting since"; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting"
-//    final static String WAIT_WHEN_SET_WAITING_DATE_HELP = "The time when this task was set "+ItemStatus.WAITING+". Is automatically set. "; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting"
-    final static String WAIT_WHEN_SET_WAITING_DATE_HELP = "The time when this task was set [WAITING]. Is automatically set. "; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting", "Set automatically when a task is set Waiting"
+    final static String DATE_WHEN_SET_WAITING = "Waiting since"; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting"
+//    final static String DATE_WHEN_SET_WAITING_HELP = "The time when this task was set "+ItemStatus.WAITING+". Is automatically set. "; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting"
+    final static String DATE_WHEN_SET_WAITING_HELP = "The time when this task was set [WAITING]. Is automatically set. "; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting", "Set automatically when a task is set Waiting"
     final static String WAITING_ALARM_DATE = "Waiting reminder"; // "Waiting alarm"
     final static String WAITING_ALARM_DATE_HELP = "**Waiting alarm help"; // 
     final static String STARTED_ON_DATE = "Started"; //"Started",  "Date work on tasks started", "Task started on"
@@ -973,6 +973,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
     final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the 
     final static String PARSE_FILTER_SORT_DEF = "filterSort";
+    final static String PARSE_WORKSLOTS = "workslots";
 //    final static String PARSE_FINISH_TIME = "finishTimexx"; //NOT a parse field, just used to store the field with
 //    final static String PARSE_ = "";
 
@@ -1078,7 +1079,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case FIELD_EFFORT_ESTIMATE:
 //                setEffortEstimate(((Duration)fieldValue).getDays());
-                setEffortEstimate(((Long) fieldValue),false);
+                setEffortEstimate(((Long) fieldValue), false);
                 break;
             case FIELD_EFFORT_ACTUAL:
 //                setActualEffort(((Duration)fieldValue).getDays());
@@ -1086,7 +1087,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case FIELD_EFFORT_REMAINING:
 //                setRemainingEffortXXX(((Duration)fieldValue).getDays());
-                setRemainingEffort(((Long) fieldValue),false);
+                setRemainingEffort(((Long) fieldValue), false);
                 break;
             case FIELD_PRIORITY:
                 setPriority(((Integer) fieldValue));
@@ -1443,7 +1444,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public String getText() {
         String s = getString(PARSE_TEXT);
-        if (Config.TEST && (s == null || s.isEmpty())) {// && getObjectIdP() != null) {
+        if (Config.TEST_SHOW_ITEM_TEXT_AS_OBJECTID && (s == null || s.isEmpty())) {// && getObjectIdP() != null) {
             return "<" + getObjectIdP() + ">";
         }
         return (s == null) ? "" : s;
@@ -1804,7 +1805,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            destination.setCreatedDate(getCreatedDate());
             destination.setWaitingTillDate(getWaitingTillDateD().getTime());
             destination.setDateWhenSetWaiting(getDateWhenSetWaiting());
-            destination.setRemainingEffort(getRemainingEffort(),false);
+            destination.setRemainingEffort(getRemainingEffort(), false);
             destination.setActualEffort(getActualEffort());
 //            destination.setLastModifiedDate(getLastModifiedDate());
 //            destination.setEarnedValue(getEarnedValue());
@@ -3819,7 +3820,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @param previousItem
     @param condition
     @return 
-    */
+     */
     public Item getNextLeafItem(Item previousItem, Condition condition) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
 //        return getNextLeafItemMeetingConditionImpl(previousItem, condition, new boolean[]{previousItem == null});
@@ -4855,7 +4856,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
             if (MyPrefs.itemInheritOwnerProjectTemplate.getBoolean()) {
                 setTemplate(owner.isTemplate());
-            }
+        }
         }
 
     }
@@ -5301,7 +5302,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (autoUpdateRemainingEffort && effortEstimateProjectTaskItselfMillis > 0
                 && MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
                 && getRemainingEffortProjectTaskItself() == 0) {
-            setRemainingEffort(effortEstimateProjectTaskItselfMillis - getActualEffortProjectTaskItself(),false); //TODO actualEffort should be set *before* effort estimate for this to work
+            setRemainingEffort(effortEstimateProjectTaskItselfMillis - getActualEffortProjectTaskItself(), false); //TODO actualEffort should be set *before* effort estimate for this to work
         } else { // *increase* remaining //UI: 
             if (autoUpdateRemainingEffort
                     && MyPrefs.getBoolean(MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual)
@@ -5652,7 +5653,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
 //    public long getRemainingEffort(boolean forSubtasks, boolean useDefaultEstimateForZeroEstimates) {
     public long getRemainingEffort(boolean useDefaultEstimateForZeroEstimates) {
-        if (isDone()) {
+        return getRemainingEffort(useDefaultEstimateForZeroEstimates, true);
+    }
+    public long getRemainingEffort(boolean useDefaultEstimateForZeroEstimates, boolean returnZeroForDoneTasks) {
+        if (returnZeroForDoneTasks && isDone()) {
             return 0;
         }
         long effort = getRemainingEffortFromParse();
@@ -7160,19 +7164,117 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
 //    public List<WorkSlot> getWorkSlotListN() {
     public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
-        if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
-            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
+//        if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
+//            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
+//        }
+//        return workSlotListBuffer;
+        List<WorkSlot> workslots = getList(PARSE_WORKSLOTS);
+        if (workslots != null) {
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
+            return new WorkSlotList(workslots);
+        } else {
+            return null;//new WorkSlotList();
         }
-        return workSlotListBuffer;
+
+    }
+
+//    @Override
+//    public WorkSlotList getWorkSlotListN() {
+//        if (workSlotListBuffer == null) {
+//            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
+//        }
+//        return workSlotListBuffer;
+//    }
+//    public void setWorkSlotList(List<WorkSlot> workSlotList) {
+    @Override
+    public void setWorkSlotList(WorkSlotList workSlotList) {
+        //TODO currently not stored in ItemList but get from DAO
+//        workSlotListBuffer = null;
+//        workSlotListBuffer = workSlotList;
+//        workTimeAllocator = null;
+        if (workSlotList != null && workSlotList.size() > 0) {
+            put(PARSE_WORKSLOTS, workSlotList.getWorkSlotList());
+        } else {
+            remove(PARSE_WORKSLOTS);
+        }
     }
 
     @Override
-    public WorkSlotList getWorkSlotListN() {
-        if (workSlotListBuffer == null) {
-            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
-        }
-        return workSlotListBuffer;
+    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
+        if (forceWorkTimeCalculation || workTimeAllocator == null || reset) {
+            if (Config.WORKTIME_DETAILED_LOG) {
+                Log.p("-> .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"");
+            }
 
+//            WorkTimeSlices availableWorkTime = getAvailableWorkTime();
+            WorkTimeSlices availableWorkTime = getAllocatedWorkTimeN();
+            if (availableWorkTime != null) {
+//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), availableWorkTime);
+//                wtd = new WorkTimeAllocator(getList(), availableWorkTime, this);
+                workTimeAllocator = new WorkTimeAllocator(availableWorkTime, this);
+            }
+        }
+        if (Config.WORKTIME_DETAILED_LOG) {
+            Log.p("<  .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"returning=" + workTimeAllocator.toString());
+        }
+        return workTimeAllocator;
+    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public WorkTimeDefinition getWorkTimeAllocatorN(boolean reset) {
+//        if (wtd != null && !reset) {
+//            return wtd;
+//        } else { //get right workSlots
+//            WorkSlotList workSlots = getWorkSlotListN();
+//            if (workSlots != null && workSlots.hasComingWorkSlots()) {
+//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), workSlots);
+//                return wtd;
+//            } else {
+//                WorkTimeDefinition workTimeDef;
+//                ItemAndListCommonInterface owner = getOwner();
+//                if (owner != null) {
+//                    workTimeDef = owner.getWorkTimeAllocatorN(reset);
+//                    if (workTimeDef != null) {
+//                        return workTimeDef;
+//                    }
+//                }
+//                List<Category> categories = getCategories();
+//                for (Category cat : categories) {
+//                    workTimeDef = cat.getWorkTimeAllocatorN(reset);
+//                    if (workTimeDef != null) {
+//                        return workTimeDef;
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public WorkTimeDefinition getWorkTimeDefinitionOLD(boolean reset) {
+//        if (wtd == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
+////            wtd = new WorkTimeDefinition(getList(), this);
+////            wtd = new WorkTimeDefinition(getList(), getWorkSlotListN());
+//            WorkSlotList workSlots = getWorkSlotListN();
+//            if (workSlots != null && !workSlots.isEmpty()) {
+////            wtd = new WorkTimeDefinition(getLeafTaskSAsList(item -> !item.isDone()) , getWorkSlotListN());
+//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), workSlots);
+//            }
+//        }
+//        return wtd;
+//    }
+//</editor-fold>
+
+    /**
+     * forces a recalculation of workTime
+     */
+    @Override
+    public void resetWorkTimeDefinition() {
+        workTimeAllocator = null;
+        for (Object subtask : getList()) {
+            if (subtask instanceof Item) {// && ((Item)subtask).isProject()) {
+                ((Item) subtask).resetWorkTimeDefinition();
+            }
+        }
     }
 
     /**
@@ -7692,7 +7794,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (hasWorkTimeDefinition()) {
 //UI: if an item has BOTH own workSlots AND a category with WorkSLots, then it will first try to get workTime from its own workslots (otherwise, why would it have them?!)
         WorkSlotList ownWorkSlotList = getWorkSlotListN();
-        if (ownWorkSlotList != null && !ownWorkSlotList.isEmpty()) {//ownWorkSlotList.hasComingWorkSlots()) {
+//        if (ownWorkSlotList != null && !ownWorkSlotList.isEmpty()) {//ownWorkSlotList.hasComingWorkSlots()) {
+        if (ownWorkSlotList != null && ownWorkSlotList.size() > 0) {//ownWorkSlotList.hasComingWorkSlots()) {
             if (true || !potentialProviders.contains(this)) { //no need to test here
                 potentialProviders.add(this);
             }
@@ -7808,84 +7911,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getWorkTimeAllocatorN(false);
 //    }
 //</editor-fold>
-
-    @Override
-    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
-        if (forceWorkTimeCalculation || workTimeAllocator == null || reset) {
-            if (Config.WORKTIME_DETAILED_LOG) {
-                Log.p("-> .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"");
-            }
-
-//            WorkTimeSlices availableWorkTime = getAvailableWorkTime();
-            WorkTimeSlices availableWorkTime = getAllocatedWorkTimeN();
-            if (availableWorkTime != null) {
-//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), availableWorkTime);
-//                wtd = new WorkTimeAllocator(getList(), availableWorkTime, this);
-                workTimeAllocator = new WorkTimeAllocator(availableWorkTime, this);
-            }
-        }
-        if (Config.WORKTIME_DETAILED_LOG) {
-            Log.p("<  .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"returning=" + workTimeAllocator.toString());
-        }
-        return workTimeAllocator;
-    }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public WorkTimeDefinition getWorkTimeAllocatorN(boolean reset) {
-//        if (wtd != null && !reset) {
-//            return wtd;
-//        } else { //get right workSlots
-//            WorkSlotList workSlots = getWorkSlotListN();
-//            if (workSlots != null && workSlots.hasComingWorkSlots()) {
-//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), workSlots);
-//                return wtd;
-//            } else {
-//                WorkTimeDefinition workTimeDef;
-//                ItemAndListCommonInterface owner = getOwner();
-//                if (owner != null) {
-//                    workTimeDef = owner.getWorkTimeAllocatorN(reset);
-//                    if (workTimeDef != null) {
-//                        return workTimeDef;
-//                    }
-//                }
-//                List<Category> categories = getCategories();
-//                for (Category cat : categories) {
-//                    workTimeDef = cat.getWorkTimeAllocatorN(reset);
-//                    if (workTimeDef != null) {
-//                        return workTimeDef;
-//                    }
-//                }
-//            }
-//        }
-//        return null;
-//    }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public WorkTimeDefinition getWorkTimeDefinitionOLD(boolean reset) {
-//        if (wtd == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
-////            wtd = new WorkTimeDefinition(getList(), this);
-////            wtd = new WorkTimeDefinition(getList(), getWorkSlotListN());
-//            WorkSlotList workSlots = getWorkSlotListN();
-//            if (workSlots != null && !workSlots.isEmpty()) {
-////            wtd = new WorkTimeDefinition(getLeafTaskSAsList(item -> !item.isDone()) , getWorkSlotListN());
-//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), workSlots);
-//            }
-//        }
-//        return wtd;
-//    }
-//</editor-fold>
-
-    /**
-     * forces a recalculation of workTime
-     */
-    @Override
-    public void resetWorkTimeDefinition() {
-        workTimeAllocator = null;
-        for (Object subtask : getList()) {
-            if (subtask instanceof Item) {// && ((Item)subtask).isProject()) {
-                ((Item) subtask).resetWorkTimeDefinition();
-            }
-        }
-    }
 
     @Override
 //    public long getWorkTimeRequiredFromOwner() {
@@ -8387,7 +8412,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 newItem.setActualEffort(itemBefore.getActualEffort()); //UI: same prio as item just before
                 break;
             case Item.PARSE_REMAINING_EFFORT:
-                newItem.setRemainingEffort(itemBefore.getRemainingEffort(),false); //UI: same prio as item just before
+                newItem.setRemainingEffort(itemBefore.getRemainingEffort(), false); //UI: same prio as item just before
                 break;
             case Item.PARSE_INTERRUPTED_TASK:
                 newItem.setInteruptOrInstantTask(itemBefore.isInteruptOrInstantTask()); //UI: same prio as item just before

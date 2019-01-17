@@ -81,6 +81,7 @@ public class RepeatRuleParseObject
 //    private final static String PARSE_DATES_LIST = "datesList";
 //    final static String LAST_DATE_GENERATED_FOR = "lastDateGeneratedFor";
     private final static String PARSE_LAST_DATE_GENERATED = "lastGeneratedDate";
+    private final static String PARSE_NEXTCOMING_REPEAT_DATE = "nextcomingDate"; //the nextcoming date for which a new repeat instance, also used to check if a RepeatRule need to generate new repeat instances
     final static String PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR = "countOfInstancesGeneratedSoFar";
     final static String PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED = "dateLastCompleted";
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
@@ -1366,50 +1367,9 @@ public class RepeatRuleParseObject
         return repeatInstance;
     }
 
-    /**
-     * calculate the number of dates to calculate. Capped to total number of
-     * reepeats defined minus the number of repeats already generated, as well
-     * as the max number of future repeats to generate. Returns
-     * Integer.MAX_VALUE if no limits is defined for number of repeats.
-     *
-     * @return
-     */
-    private int calcNumberOfRepeats() {
-//        int requestedCount = numberInstancesToGenerate == -1 ? Integer.MAX_VALUE - 1 : numberInstancesToGenerate; // +1 since we need to generate the last generated date again 
-        int count = Integer.MAX_VALUE;
-        int countMaxRemaining;
-        int countFutureRepeats = 0;//Integer.MAX_VALUE;
-        if (useCount()) {
-            //if rule is limited to number of counts, then take remaining number of repeats into account
-            countMaxRemaining = Math.min(count, getNumberOfRepeats() - getTotalNumberOfInstancesGeneratedSoFar()); //cap count number of remaining repeats
-            count = countMaxRemaining;
-        }
-        if (getNumberFutureRepeatsToGenerateAhead() != 0) {
-            countFutureRepeats = getNumberFutureRepeatsToGenerateAhead();
-            count = Math.min(count, countFutureRepeats); //cap count to getNumberFutureRepeatsToGenerateAhead()
-        }
-        return count;
-    }
-
-//    private Date calcSubsetEndDate(Date earliestDate) {
-    private Date calcSubsetEndDate(Date earliestDate) {
-//        if (useCount()) {
-        if (getNumberFutureRepeatsToGenerateAhead() != 0) {
-            return new Date(MyDate.MAX_DATE);
-        } else {
-            ASSERT.that(getNumberOfDaysRepeatsAreGeneratedAhead() != 0, "Both getNumberFutureRepeatsToGenerateAhead() and getNumberOfDaysRepeatsAreGeneratedAhead() are 0 for RepeatRule=" + this);
-            Date subEndDate = MyDate.getEndOfDay(new Date(System.currentTimeMillis() + getNumberOfDaysRepeatsAreGeneratedAhead() * MyDate.DAY_IN_MILLISECONDS));
-            if (subEndDate.getTime() >= earliestDate.getTime()) {
-                return subEndDate;
-            } else {
-                return earliestDate;
-            }
-        }
-    }
-
-    private Date calcSubsetBeginDate() {
-        return new Date(Math.max(getLastGeneratedDateD().getTime(), getSpecifiedStartDateD().getTime())); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
-    }
+//    private Date calcSubsetBeginDateXXX() {
+//        return new Date(Math.max(getLastGeneratedDateD().getTime(), getSpecifiedStartDateD().getTime())); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
+//    }
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    public void updateRepeatInstancesWhenItemIsDoneOrCancelled(RepeatRuleObjectInterface repeatRuleOriginator, ItemAndListCommonInterface listForNewCreatedRepeatInstances, int insertIndex) {
     //        assert false;
@@ -1418,7 +1378,6 @@ public class RepeatRuleParseObject
     //
     //    }
     //</editor-fold>
-
     /**
      * creates (from scratch) a new set of repeat instances, possibly reusing
      * previously generated instances (in case they were edited manually).
@@ -2073,6 +2032,47 @@ public class RepeatRuleParseObject
     //    }
     //</editor-fold>
 
+    /**
+     * calculate the number of dates to calculate. Capped to total number of
+     * reepeats defined minus the number of repeats already generated, as well
+     * as the max number of future repeats to generate. Returns
+     * Integer.MAX_VALUE if no limits is defined for number of repeats.
+     *
+     * @return
+     */
+    private int calcNumberOfRepeats() {
+//        int requestedCount = numberInstancesToGenerate == -1 ? Integer.MAX_VALUE - 1 : numberInstancesToGenerate; // +1 since we need to generate the last generated date again 
+        int count = Integer.MAX_VALUE;
+        int countMaxRemaining;
+        int countFutureRepeats = 0;//Integer.MAX_VALUE;
+        if (useCount()) {
+            //if rule is limited to number of counts, then take remaining number of repeats into account
+            countMaxRemaining = Math.min(count, getNumberOfRepeats() - getTotalNumberOfInstancesGeneratedSoFar()); //cap count number of remaining repeats
+            count = countMaxRemaining;
+        }
+        if (getNumberFutureRepeatsToGenerateAhead() != 0) {
+            countFutureRepeats = getNumberFutureRepeatsToGenerateAhead();
+            count = Math.min(count, countFutureRepeats); //cap count to getNumberFutureRepeatsToGenerateAhead()
+        }
+        return count;
+    }
+
+//    private Date calcSubsetEndDate(Date earliestDate) {
+    private Date calcSubsetEndDate(Date earliestDate) {
+//        if (useCount()) {
+        if (getNumberFutureRepeatsToGenerateAhead() != 0) {
+            return new Date(MyDate.MAX_DATE);
+        } else {
+            ASSERT.that(getNumberOfDaysRepeatsAreGeneratedAhead() != 0, "Both getNumberFutureRepeatsToGenerateAhead() and getNumberOfDaysRepeatsAreGeneratedAhead() are 0 for RepeatRule=" + this);
+            Date subEndDate = MyDate.getEndOfDay(new Date(System.currentTimeMillis() + getNumberOfDaysRepeatsAreGeneratedAhead() * MyDate.DAY_IN_MILLISECONDS));
+            if (subEndDate.getTime() >= earliestDate.getTime()) {
+                return subEndDate;
+            } else {
+                return earliestDate;
+            }
+        }
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public RepeatRuleObjectInterface updateRepeatInstancesOnDoneCancelOrDeleteXXX(WorkSlot workSlot) {
 //        List<RepeatRuleObjectInterface> repeatInstanceItemList = getListOfUndoneRepeatInstances();
@@ -2188,7 +2188,7 @@ public class RepeatRuleParseObject
             repeatRule.setInt(RepeatRule.COUNT, 2); //1 or 2 (2 if we generate the last generated date again)
             //TODO!!! need to add 1 day to subsetBeginningDate to avoid repeat same date as last generated Date???
 //        Vector<Date> newDates = repeatRule.datesAsVector(getSpecifiedStartDate(), getSubsetBeginningDate(), getEndDate()); //CREATE new dates
-            ASSERT.that(getLastGeneratedDate() != MyDate.MIN_DATE, "getLastGeneratedDate() should have been defined when we get to here");
+            ASSERT.that(getLastGeneratedDateD().getTime() != MyDate.MIN_DATE, "getLastGeneratedDate() should have been defined when we get to here");
 //        long subsetBeginningDate = getLastGeneratedDate() != 0 ? Math.min(getLastGeneratedDate(), getEndDate()) : getEndDate(); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
         }
 //        Vector<Date> newDates = repeatRule.datesAsVector(getSpecifiedStartDate(), getSubsetBeginningDate(), MAX_DATE); //CREATE new dates
@@ -2197,8 +2197,12 @@ public class RepeatRuleParseObject
 //        Date date = getFirstNotEqualDate(dates, new Date(getSubsetBeginningDate()));
 //        Date date = getFirstNotEqualDate(dates, subsetBeginningDate);
 //        Date subsetBeginningDate = new Date(Math.max(getLastGeneratedDateD().getTime(), getSpecifiedStartDateD().getTime())); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
-        Date subsetBeginningDate = calcSubsetBeginDate(); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
-        List<Date> dates = generateListOfDates(subsetBeginningDate, calcSubsetEndDate(subsetBeginningDate), calcNumberOfRepeats(), getNumberOfDaysRepeatsAreGeneratedAhead() != 0);
+//        Date subsetBeginningDate = calcSubsetBeginDate(); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
+        Date subsetBeginningDate
+                = new Date(Math.max(getLastGeneratedDateD().getTime(), getSpecifiedStartDateD().getTime())); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
+        //get the last date we've generated so far, Math.min since endDate may get set to larger than 
+        List<Date> dates = generateListOfDates(subsetBeginningDate, calcSubsetEndDate(subsetBeginningDate),
+                calcNumberOfRepeats(), getNumberOfDaysRepeatsAreGeneratedAhead() != 0);
 //        Date date = null;
         if (!dates.isEmpty()) {
             return dates.get(0);
@@ -2878,7 +2882,7 @@ public class RepeatRuleParseObject
         dos.writeLong(getSpecifiedStartDate());
 
         dos.writeLong(getLatestDateCompletedOrCancelled().getTime()); //=0; //
-        dos.writeLong(getLastGeneratedDate()); //=0; //
+        dos.writeLong(getLastGeneratedDateD().getTime()); //=0; //
         dos.writeInt(getTotalNumberOfInstancesGeneratedSoFar());
 
 //        Util.writeObject(getListOfUndoneRepeatInstances(), dos);
@@ -3291,12 +3295,11 @@ public class RepeatRuleParseObject
         return (date == null) ? new Date(MyDate.MIN_DATE) : date;
     }
 
-    public long getLastGeneratedDate() {
-//        return lastGeneratedDate;
-//        return getLong(LAST_DATE_GENERATED_FOR);
-        return getLastGeneratedDateD().getTime();
-    }
-
+//    public long getLastGeneratedDateXXX() {
+////        return lastGeneratedDate;
+////        return getLong(LAST_DATE_GENERATED_FOR);
+//        return getLastGeneratedDateD().getTime();
+//    }
 //    private void setLastGeneratedDateIfGreaterThanLastDate(long lastGeneratedDate) {
 //        setLastGeneratedDateIfGreaterThanLastDate(new Date(lastGeneratedDate));
 //    }
@@ -3311,6 +3314,33 @@ public class RepeatRuleParseObject
             put(PARSE_LAST_DATE_GENERATED, lastGeneratedDate);
         } else {
             remove(PARSE_LAST_DATE_GENERATED);
+        }
+    }
+
+    public Date getNextcomingDateD() {
+        Date date = getDate(PARSE_NEXTCOMING_REPEAT_DATE);
+        return (date == null) ? new Date(MyDate.MIN_DATE) : date;
+    }
+
+//    public long getLastGeneratedDateXXX() {
+////        return lastGeneratedDate;
+////        return getLong(LAST_DATE_GENERATED_FOR);
+//        return getLastGeneratedDateD().getTime();
+//    }
+//    private void setLastGeneratedDateIfGreaterThanLastDate(long lastGeneratedDate) {
+//        setLastGeneratedDateIfGreaterThanLastDate(new Date(lastGeneratedDate));
+//    }
+    /**
+     * the latest date of any of the instances generated
+     */
+    private void setNextcomingDate(Date nextcomingRepeatDate) {
+        ASSERT.that(getDate(PARSE_NEXTCOMING_REPEAT_DATE) == null || nextcomingRepeatDate == null
+                || nextcomingRepeatDate.getTime() > getDate(PARSE_NEXTCOMING_REPEAT_DATE).getTime(),
+                "new lastGeneratedDate should always be higher than previous");
+        if (nextcomingRepeatDate != null && nextcomingRepeatDate.getTime() != MyDate.MIN_DATE) {
+            put(PARSE_NEXTCOMING_REPEAT_DATE, nextcomingRepeatDate);
+        } else {
+            remove(PARSE_NEXTCOMING_REPEAT_DATE);
         }
     }
 

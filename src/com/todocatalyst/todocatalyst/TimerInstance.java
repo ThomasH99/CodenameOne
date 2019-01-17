@@ -204,6 +204,10 @@ public class TimerInstance extends ParseObject {
 
     }
 
+    /**
+    when startTime != 0, it means the timer is running, if ==0, then elapsesTime indicates time elapsed (0 if new timer, >0 if paused timer)
+    @param start 
+    */
     private final void setStartTime(long start) {
 //        if ((startTimer != null && startTimer.getTime() != 0)) {
 //        if (startTimer != 0) {
@@ -365,7 +369,7 @@ public class TimerInstance extends ParseObject {
             if (!isRunning()) { //do nothing if already running
 //            setStartTime(new Date(new Date().getTime() - getElapsedTime()));
 //            setStartTime(new Date(new Date().getTime() - getElapsedTime()));
-                setStartTime(System.currentTimeMillis() - getElapsedTime());
+                setStartTime(System.currentTimeMillis() - getElapsedTime()); //set a 'virtual' start time elapsed seconds before 'now'
                 setElapsedTime(0); //reset elapsed to 0 while timer is running
                 if (save) {
                     saveMe(); //update server
@@ -385,14 +389,19 @@ public class TimerInstance extends ParseObject {
             if (isRunning()) { //getStartTime() != 0) {
 //            setElapsedTime(new Date().getTime() - new Date().getTime());
                 setElapsedTime(System.currentTimeMillis() - getStartTime());
+                setStartTime(0);
 //                setStartTime(0);
-            } else {
-                setElapsedTime(0);
-            }
-            setStartTime(0);
-            if (save) {
-                saveMe(); //update server
-            }
+                if (save) {
+                    saveMe(); //update server
+                }
+            } 
+//            else {
+//                setElapsedTime(0);
+//            }
+//            setStartTime(0);
+//            if (save) {
+//                saveMe(); //update server
+//            }
         }
     }
 
@@ -610,10 +619,10 @@ public class TimerInstance extends ParseObject {
                                     project = nextTimedItem; //set project
                                     nextTimedItem = null; //force to repeat do while to check if there's a suitable subtask
                                 } else { //else: not a project, so we'll see if it is valid in the while(isValidItemForTimer...)
-                                    if (!TimerStack.isValidItemForTimer(nextTimedItem)) {
+//                                    if (!TimerStack.isValidItemForTimer(nextTimedItem)) {
                                         previousTimedItem = nextTimedItem;// get the next item *after* the nextTimeItem already found
                                         nextTimedItem = null;
-                                    }
+//                                    }
                                 }
                             }
                         } else { // nextTimedItem == null

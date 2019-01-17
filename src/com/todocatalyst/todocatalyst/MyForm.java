@@ -431,15 +431,16 @@ public class MyForm extends Form {
         void update(ItemList itemList);
     }
 
-    interface GetWorkSlotList {
-
-        void update(List<WorkSlot> workSlotList);
-//        void update(List workSlotList);
-    }
+//    interface GetWorkSlotList {
+//        void update(List<WorkSlot> workSlotList);
+////        void update(List workSlotList);
+//    }
 
     interface FetchWorkSlotList {
 
-        List<WorkSlot> getUpdatedWorkSlotList(Object objworkSlotList);
+//        List<WorkSlot> getUpdatedWorkSlotList(Object objworkSlotList);
+//        List<WorkSlot> getUpdatedWorkSlotList();
+        WorkSlotList getUpdatedWorkSlotList();
 //        void update(List workSlotList);
     }
 
@@ -1495,10 +1496,10 @@ public class MyForm extends Form {
     private Command makeInterruptCommand(String title, Image icon) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
-        return MyReplayCommand.create("StartTimerFromMyForm", title, icon, (e) -> {
+        return MyReplayCommand.create("StartTimerFromMyForm-"+title, title, icon, (e) -> {
             Item interruptItem = new Item();
             interruptItem.setInteruptOrInstantTask(true);
-            
+            DAO.getInstance().saveInBackground(interruptItem);
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItem());

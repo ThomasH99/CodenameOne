@@ -15,6 +15,7 @@ public abstract class Config {
      */
     public static final boolean TEST_CACHE = false; //false;
     public static final boolean TEST = true; //false;
+    public static final boolean TEST_SHOW_ITEM_TEXT_AS_OBJECTID = false; //false;
     public static final boolean DEBUG_LOGGING = true; //logs only enabled during 
     public static final boolean WORKTIME_TEST = false; //
     public static final boolean WORKTIME_DETAILED_LOG = false; //NB! these logs are very time-consuming!!

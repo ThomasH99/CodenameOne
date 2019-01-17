@@ -53,7 +53,7 @@ public class MyCacheMap {
     private int storageCacheSize = 0;
     private Vector storageCacheContentVec;
     private String cachePrefix = "";
-    private boolean alwaysStore;
+    private boolean alwaysStore; //avoid to update idx when loading a (long) list of items from storage
     private int storageKey = -1;
 
     private Vector getStorageCacheContent() {

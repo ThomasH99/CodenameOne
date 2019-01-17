@@ -86,11 +86,12 @@ public class MyPrefs {
             = new PrefEntry("Show remaining time for next-coming task in Timer", "timerShowRemainingForNextTask", true, "**Will show the next task in a list at the bottom of the Timer screen. This can help mentally prepare but can also disturb the focus on the current task"); //TODO make timerShowNextTask a numerical value to show 0/1/2/3 next tasks and start one by clicking on it
 
 //    static PrefEntry automaticallyStartTimerForNewItem = new PrefEntry("automaticallyStartTimerForNewItem", true);
+    //TODO! setting update interval to minutes (60sec) should also prevent showing seconds in timer display (otherwise you may end up with eg 36s frozen, but changing sometimes due to relative imprecision of timer update!! and only minutes advancing)
     static PrefEntry timerShowSecondsInTimer
             = new PrefEntry("Show seconds in Timer", "showSecondsInTimer", true, "Hiding seconds may feel less stressful but doesn't visually show that the Timer is running");
 
     static PrefEntry timerBuzzerInterval
-            = new PrefEntry("Buzz interval when Timer is running", "timerBuzzerInterval", (int) 0, ""); //, "Reminder vibration interval when Timer is running");
+            = new PrefEntry("Buzz interval when Timer is running (minutes)", "timerBuzzerInterval", (int) 0, ""); //, "Reminder vibration interval when Timer is running");
 
     static PrefEntry timerUpdateInterval
             = new PrefEntry("Interval between Timer updates (seconds)", "timerUpdateInterval", (int) 1, ""); //, "Reminder vibration interval when Timer is running");
@@ -235,54 +236,68 @@ public class MyPrefs {
             = new PrefEntry("Confirm changing status for this many subtasks", "itemMaxNbSubTasksToChangeStatusForWithoutConfirmation", 2, "For a project, ask for confirmation when changing the status of this many subtasks");
 
     // ************** inherit values from owning Project *************
+    final static String INHERITS = "Subtasks inherit ";
     static PrefEntry itemInheritOwnerProjectProperties
             = new PrefEntry("Subtasks inherit properties from their project", "itemInheritOwnerProjectProperties", true, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
     //TODO!! set false for easy startup
 
     static PrefEntry itemInheritOwnerProjectChallenge
             //            = new PrefEntry("Subtasks inherit "+Item.CHALLENGE+" from their project", "itemInheritOwnerProjectChallenge", true, "**");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.CHALLENGE), "itemInheritOwnerProjectChallenge", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.CHALLENGE), "itemInheritOwnerProjectChallenge", true, 
+                    INHERITS+Item.CHALLENGE);
 
     static PrefEntry itemInheritOwnerStarredProperties
             //            = new PrefEntry(Format.f("Subtasks inherit %1 from their project","propert", "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.STARRED), "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.STARRED), "itemInheritOwnerStarredProperties", true, 
+                    INHERITS+Item.STARRED);
 
     static PrefEntry itemInheritOwnerProjectPriority
             //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectPriority", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.PRIORITY), "itemInheritOwnerProjectPriority", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.PRIORITY), "itemInheritOwnerProjectPriority", true, 
+                    INHERITS+Item.PRIORITY);
 
     static PrefEntry itemInheritOwnerProjectDreadFun
             //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectDreadFun", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.FUN_DREAD), "itemInheritOwnerProjectDreadFun", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.FUN_DREAD), "itemInheritOwnerProjectDreadFun", true, 
+                    INHERITS+Item.FUN_DREAD);
 
     static PrefEntry itemInheritOwnerProjectImportance
             //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectImportance", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.IMPORTANCE), "itemInheritOwnerProjectImportance", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.IMPORTANCE), "itemInheritOwnerProjectImportance", true, 
+                    INHERITS+Item.IMPORTANCE);
 
     static PrefEntry itemInheritOwnerProjectUrgency
             //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectUrgency", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.URGENCY), "itemInheritOwnerProjectUrgency", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.URGENCY), "itemInheritOwnerProjectUrgency", true, 
+                    INHERITS+Item.URGENCY);
 
     static PrefEntry itemInheritOwnerProjectDueDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.DUE_DATE), "itemInheritOwnerProjectDueDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.DUE_DATE), "itemInheritOwnerProjectDueDate", true, 
+                    INHERITS+Item.DUE_DATE);
 
     static PrefEntry itemInheritOwnerProjectExpiresOnDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.EXPIRES_ON_DATE), "itemInheritOwnerProjectExpiresOnDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.EXPIRES_ON_DATE), "itemInheritOwnerProjectExpiresOnDate", true, 
+                    INHERITS+Item.EXPIRES_ON_DATE);
 
     static PrefEntry itemInheritOwnerProjectStartByDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.START_BY_TIME), "itemInheritOwnerProjectStartByDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.START_BY_TIME), "itemInheritOwnerProjectStartByDate", true, 
+                    INHERITS+Item.START_BY_TIME);
 
     static PrefEntry itemInheritOwnerProjectWaitingTillDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.WAIT_UNTIL_DATE), "itemInheritOwnerProjectWaitingTillDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.WAIT_UNTIL_DATE), "itemInheritOwnerProjectWaitingTillDate", true, 
+                    INHERITS+Item.WAIT_UNTIL_DATE);
 
     static PrefEntry itemInheritOwnerProjectDateWhenSetWaiting
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.WAIT_WHEN_SET_WAITING_DATE), "itemInheritOwnerProjectDateWhenSetWaiting", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.DATE_WHEN_SET_WAITING), "itemInheritOwnerProjectDateWhenSetWaiting", true, 
+                    INHERITS+Item.DATE_WHEN_SET_WAITING);
 
     static PrefEntry itemInheritOwnerProjectHideUntilDate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.HIDE_UNTIL), "itemInheritOwnerProjectHideUntilDate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.HIDE_UNTIL), "itemInheritOwnerProjectHideUntilDate", true, 
+                    INHERITS+Item.HIDE_UNTIL);
 
-    static PrefEntry itemInheritOwnerProjectTemplate
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.TEMPLATE), "itemInheritOwnerProjectTemplate", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+    static PrefEntry itemInheritOwnerProjectTemplate //doesn't make sense to inherit this, each template subtask should have this set directly?! 
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.TEMPLATE), "itemInheritOwnerProjectTemplate", true, 
+                    INHERITS+Item.TEMPLATE);
 
     // ************** END inherit values from owning Project *************
     static PrefEntry itemEffortEstimateExtractFromStringInTaskText

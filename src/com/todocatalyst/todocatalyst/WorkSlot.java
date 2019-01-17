@@ -1721,7 +1721,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public void resetWorkTimeDefinition() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//do nothing, may be called from Today screen in Main
     }
 
 //    @Override
@@ -1762,6 +1763,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses) {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void setWorkSlotList(WorkSlotList workSlotList) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

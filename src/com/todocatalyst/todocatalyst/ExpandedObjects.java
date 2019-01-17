@@ -42,7 +42,7 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
         this(screenId,(parseObject == null || parseObject.getObjectIdP()==null ||parseObject.getObjectIdP().isEmpty()? "NoParseObject" : parseObject.getObjectIdP()));
     }
     ExpandedObjects(String uniqueIdForFilename) {
-        this(uniqueIdForFilename,"");
+        this(uniqueIdForFilename,"_");
     }
     ExpandedObjects(String screenId, String uniqueIdForFilename) {
         assert screenId != null;

@@ -47,11 +47,18 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
     /**
      * returns null if no workslots
      *
+     * @param refreshWorkSlotListFromDAO
      * @return
      */
-    public WorkSlotList getWorkSlotListN();
-
     public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO);
+//    public WorkSlotList getWorkSlotListN();
+    default public WorkSlotList getWorkSlotListN() {
+//        return getWorkSlotListN(true);
+        return getWorkSlotListN(false);
+    }
+
+    
+        public void setWorkSlotList(WorkSlotList workSlotList);
 
     public int getNumberOfUndoneItems(boolean includeSubTasks);
 

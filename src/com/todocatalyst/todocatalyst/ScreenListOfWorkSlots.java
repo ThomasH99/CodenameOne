@@ -16,6 +16,7 @@ import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.ScreenListOfItems.makeSubtaskButton;
 import java.util.Date;
 import java.util.List;
@@ -46,12 +47,12 @@ public class ScreenListOfWorkSlots extends MyForm {
     static String SCREEN_TITLE = "Work time";
 //    private ItemList workSlotList;
 //    private Object owner;
-    private ItemAndListCommonInterface owner;
+    private ItemAndListCommonInterface workSlotListOwner;
     private long now = new Date().getTime();
 //    private List<WorkSlot> workSlotList;
-    private WorkSlotList workSlotList;
+//    private WorkSlotList workSlotList;
 //    private KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
-    private FetchWorkSlotList refreshWorkSlotList;
+//    private FetchWorkSlotList refreshWorkSlotList;
     private boolean showOwner; //true if show owner of workslots inline in list of workslots
 
     /**
@@ -83,20 +84,27 @@ public class ScreenListOfWorkSlots extends MyForm {
      * @param updateItemListOnDone called to update the workTime for the tasks after the workSlots have been edited to refresh the workTime, e.g. if new slots were added/changed/removed
      * @param refreshWorkSlotList
      */
-    ScreenListOfWorkSlots(String nameOfOwner, WorkSlotList workSlotList, ItemAndListCommonInterface owner, MyForm previousForm,
-            GetWorkSlotList updateItemListOnDone, FetchWorkSlotList refreshWorkSlotList, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+//    ScreenListOfWorkSlots(String nameOfOwner, WorkSlotList workSlotList, ItemAndListCommonInterface owner, MyForm previousForm,
+    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, UpdateField updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+        this(owner, previousForm, null, updateActionOnDone, showOwner);
+    }
+
+    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, FetchWorkSlotList refreshWorkSlotList, UpdateField updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
-        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm,
-                () -> {
-                    if (updateItemListOnDone != null) {
-                        updateItemListOnDone.update(workSlotList);
-                    }
-                });
+//        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm,
+        super(SCREEN_TITLE + ((owner.getText() != null && owner.getText().length() > 0) ? " for " + owner.getText() : ""), previousForm, updateActionOnDone);
+//                () -> {
+//                    if (updateItemListOnDone != null) {
+////                        updateItemListOnDone.update(workSlotList);
+////                        updateItemListOnDone.update(workSlotList.getWorkSlotList());
+//                        updateItemListOnDone.update(owner.getWorkSlotListN().getWorkSlotList());
+//                    }
+//                });
 //        setUpdateItemListOnDone(updateItemListOnDone);
 //        this.workSlotList = workSLotList;
-        this.owner = owner;
-        this.workSlotList = workSlotList;
-        this.refreshWorkSlotList = refreshWorkSlotList;
+        this.workSlotListOwner = owner;
+//        this.workSlotList = workSlotList;
+//        this.refreshWorkSlotList = refreshWorkSlotList;
         this.showOwner = showOwner;
 //        this.previousForm = previousForm;
 //        this.updateItemListOnDone = updateItemListOnDone;
@@ -124,23 +132,25 @@ public class ScreenListOfWorkSlots extends MyForm {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
 //        List<WorkSlot> wsList = null;
-        WorkSlotList wsList = null;
-//        wsList = DAO.getInstance().getWorkSlotsN( owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//        if (owner instanceof ItemList) {
-//            wsList = DAO.getInstance().getWorkSlotsN((ItemList) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//        } else if (owner instanceof Item) {
-//            wsList = DAO.getInstance().getWorkSlotsN((Item) owner);
-//        }
-//        if (owner instanceof ItemAndListCommonInterface) {
-//            wsList = DAO.getInstance().getWorkSlotsN((ItemList) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-        if (owner != null) {
-            wsList = DAO.getInstance().getWorkSlotsN(owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-        } else if (refreshWorkSlotList != null) {
-            wsList = new WorkSlotList(refreshWorkSlotList.getUpdatedWorkSlotList(workSlotList));
-        }
+//        if (false) { //below code is a hack
+//            WorkSlotList wsList = null;
+////        wsList = DAO.getInstance().getWorkSlotsN( owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+////        if (owner instanceof ItemList) {
+////            wsList = DAO.getInstance().getWorkSlotsN((ItemList) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+////        } else if (owner instanceof Item) {
+////            wsList = DAO.getInstance().getWorkSlotsN((Item) owner);
+////        }
+////        if (owner instanceof ItemAndListCommonInterface) {
+////            wsList = DAO.getInstance().getWorkSlotsN((ItemList) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//            if (workSlotListOwner != null) {
+//                wsList = DAO.getInstance().getWorkSlotsN(workSlotListOwner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//            } else if (refreshWorkSlotList != null) {
+//                wsList = new WorkSlotList(refreshWorkSlotList.getUpdatedWorkSlotList(workSlotList));
+//            }
 //        }
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForWorkSlotList(wsList));
-        getContentPane().add(buildContentPaneForWorkSlotList(wsList));
+//        getContentPane().add(buildContentPaneForWorkSlotList(wsList));
+        getContentPane().add(buildContentPaneForWorkSlotList(workSlotListOwner.getWorkSlotListN()));
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
 //        }
@@ -152,11 +162,11 @@ public class ScreenListOfWorkSlots extends MyForm {
 
         //NEW WORKSLOT
         toolbar.addCommandToRightBar(MyReplayCommand.create("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
-            WorkSlot workSlot = new WorkSlot();
-            workSlot.setOwner(owner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
+            WorkSlot newWorkSlot = new WorkSlot();
+            newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
             setKeepPos(new KeepInSameScreenPosition());
-            new ScreenWorkSlot(workSlot, ScreenListOfWorkSlots.this, () -> {
-                if (workSlot.hasSaveableData()) {
+            new ScreenWorkSlot(newWorkSlot, ScreenListOfWorkSlots.this, () -> {
+                if (newWorkSlot.hasSaveableData()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    workSlot.setOwner(owner);
 //                    //set Owner of new workSlot
@@ -171,23 +181,31 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                    } else assert false: "should never happen";
 //</editor-fold>
                     //save new workSlot
-                    DAO.getInstance().save(workSlot); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    DAO.getInstance().saveInBackground(newWorkSlot); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    workSlotList.addItemAtIndex(workSlot, 0);
                     //save updated owner of workslot //TODO not necessary to save the owners (they are not modified for workslots since these are fetched via a Parse query)??!!
-                    if (false) {
-                        if (owner instanceof ItemList) {
-                            DAO.getInstance().save((ItemList) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        } else if (owner instanceof Item) {
-                            DAO.getInstance().save((Item) owner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//                    } else { //TODO:
-//                        throw RuntimeException("Unknown type of owner");
-                        }
+//                    if (false) {
+//                        if (workSlotListOwner instanceof ItemList) {
+//                            DAO.getInstance().save((ItemList) workSlotListOwner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        } else if (workSlotListOwner instanceof Item) {
+//                            DAO.getInstance().save((Item) workSlotListOwner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+////                    } else { //TODO:
+////                        throw RuntimeException("Unknown type of owner");
+//                        }
+//                    }
+//                    if (false) { //shouldn't be necessary since workSlotList will be re-read in refreshAfterEdit()
+//                        workSlotList.add(newWorkSlot);
+////                            WorkSlot.sortWorkSlotList(workSlotList);
+//                        workSlotList.sortWorkSlotList();
+//                    }
+
+                    WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
+                    if (workSlotList == null) {
+                        workSlotList = new WorkSlotList();
                     }
-                    if (false) { //shouldn't be necessary since workSlotList will be re-read in refreshAfterEdit()
-                        workSlotList.add(workSlot);
-//                            WorkSlot.sortWorkSlotList(workSlotList);
-                        workSlotList.sortWorkSlotList();
-                    }
+                    workSlotList.add(newWorkSlot);
+                    workSlotListOwner.setWorkSlotList(workSlotList);
+                    DAO.getInstance().saveInBackground((ParseObject) workSlotListOwner);
                     refreshAfterEdit();
                 }
             }).show();
@@ -390,7 +408,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        long now = System.currentTimeMillis();
         if (workSlotList != null) {
             long now = workSlotList.getNow();
-            for (WorkSlot workSlot : workSlotList) {
+//            for (WorkSlot workSlot : workSlotList) {
+            for (WorkSlot workSlot : workSlotList.getWorkSlotList()) {
 
 //                if (Test.DEBUG || workSlot.getEndTime() <= now) { //ignore workSlots in the past
                 if (Config.WORKTIME_TEST || workSlot.getEndTime() >= now) { //ignore workSlots in the past

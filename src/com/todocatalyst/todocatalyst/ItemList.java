@@ -9,6 +9,7 @@ import com.codename1.ui.tree.TreeModel;
 import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.Item.PARSE_WORKSLOTS;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
 import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
 //import com.todocatalyst.todocatalyst.MyTree.MyTreeModel;
@@ -54,6 +55,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_SOURCE_LISTS = "sourceLists"; //for meta-lists, not used yet
     final static String PARSE_META_LISTS = "metaLists";
     final static String PARSE_FILTER_SORT_DEF = Item.PARSE_FILTER_SORT_DEF; //"filterSort";
+    final static String PARSE_WORKSLOTS = Item.PARSE_WORKSLOTS; //"filterSort";
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
@@ -72,7 +74,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     private EventDispatcher selectionListener; // = new EventDispatcher();
 //    private Bag<E> itemBag; // = new HashtableAddedDirectly();
 //    private List<WorkSlot> workSlotListBuffer;
-    private WorkSlotList workSlotListBuffer;
+//    private WorkSlotList workSlotListBuffer;
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
     private WorkTimeAllocator workTimeAllocator; //calculated when needed
 
@@ -3364,13 +3366,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return getWorkSlotListN(false);
 //    }
 //    public List<WorkSlot> getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
-    @Override
-    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
-        if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
-            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
-        }
-        return workSlotListBuffer;
-    }
+//    @Override
+//    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
+//        if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
+//            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
+//        }
+//        return workSlotListBuffer;
+//    }
 
     /**
      * returns the future workSlots for this list
@@ -3378,20 +3380,58 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @return
      */
 //    public List<WorkSlot> getWorkSlotListN() {
-    @Override
-    public WorkSlotList getWorkSlotListN() {
-//        return getWorkSlotListN(true);
-        return getWorkSlotListN(false);
-    }
+//    @Override
+//    public WorkSlotList getWorkSlotListN() {
+////        return getWorkSlotListN(true);
+//        return getWorkSlotListN(false);
+//    }
 
 //    public void setWorkSlotList(List<WorkSlot> workSlotList) {
+//    public void setWorkSlotList(WorkSlotList workSlotList) {
+//        //TODO currently not stored in ItemList but get from DAO
+////        workSlotListBuffer = null;
+//        workSlotListBuffer = workSlotList;
+//        workTimeAllocator = null;
+//    }
+    
+    
+    @Override
+    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
+//        if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
+//            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
+//        }
+//        return workSlotListBuffer;
+        List<WorkSlot> workslots = getList(PARSE_WORKSLOTS);
+        if (workslots != null) {
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
+            return new WorkSlotList(workslots);
+        } else {
+            return null; //new WorkSlotList();
+        }
+
+    }
+
+//    @Override
+//    public WorkSlotList getWorkSlotListN() {
+//        if (workSlotListBuffer == null) {
+//            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
+//        }
+//        return workSlotListBuffer;
+//    }
+//    public void setWorkSlotList(List<WorkSlot> workSlotList) {
+    @Override
     public void setWorkSlotList(WorkSlotList workSlotList) {
         //TODO currently not stored in ItemList but get from DAO
 //        workSlotListBuffer = null;
-        workSlotListBuffer = workSlotList;
-        workTimeAllocator = null;
+//        workSlotListBuffer = workSlotList;
+//        workTimeAllocator = null;
+        if (workSlotList != null && workSlotList.size() > 0) {
+            put(PARSE_WORKSLOTS, workSlotList.getWorkSlotList());
+        } else {
+            remove(PARSE_WORKSLOTS);
+        }
+        resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
     }
-
     /**
      * use this to check if a WorkTimeDefinition exists *before* calling
  getWorkTimeAllocatorN() since otherwise it will create a new
@@ -3424,8 +3464,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     /**
      * forces a recalculation of workTime
      */
+    @Override
     public void resetWorkTimeDefinition() {
-        workTimeAllocator = null;
+//        workSlotListBuffer = null; //force reload of workslots from server
+        workTimeAllocator = null; //recalculate worktime
         for (Object item : getList()) { //reset for subtasks (recursively)
             if (item instanceof ItemAndListCommonInterface) {
                 ((ItemAndListCommonInterface) item).resetWorkTimeDefinition();
