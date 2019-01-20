@@ -103,6 +103,7 @@ public class MyPrefs {
             = new PrefEntry("Show Estimate, total time and Remaining time for task", "timerShowEffortEstimateDetails", false, 
                     "Timer will show details on estimate etc**"); //, "Reminder vibration interval when Timer is running");
 
+    //TODO!!!! in Timer: check waiting date when skipping, or not, waiting tasks
     static PrefEntry timerIncludeWaitingTasks
             = new PrefEntry("Time Waiting tasks even before the waiting date is met", "timerDoNotSkipWaitingTasks", false, 
                     "Normally, the Timer will skip Waiting tasks until the waiting date. This setting will include them**");
@@ -130,7 +131,7 @@ public class MyPrefs {
                     "Helps you not forget to update remaining when you stop working on a task**");
 
     static PrefEntry timerAlwaysExpandListHierarchy
-            = new PrefEntry("Show the parent list/project of the task", "timerAlwaysExpandListHierarchy", true, 
+            = new PrefEntry("Show task's parent list & project", "timerAlwaysExpandListHierarchy", true, 
                     "**");
 
     static PrefEntry timerMaxTimerDurationInHoursXXX
@@ -156,6 +157,10 @@ public class MyPrefs {
     static PrefEntry timerInterruptTaskCanInterruptAlreadyRunningInterruptTask
             = new PrefEntry("Possible to start **Always show new timers in current screenshow (PRO)", "timerInterruptTaskCanInterruptAlreadyRunningInterruptTask", true,
                     "Instead of showing a started timer in full screen...**");
+
+    static PrefEntry timerCanBeSwipeStartedEvenOnInvalidItem
+            = new PrefEntry("Allow to swipe-start Timer on any task/project **", "timerCanBeSwipeStartedEvenOnInvalidItem", true,
+                    "Start Timer directly on any swiped task or project"); //be force-started on tasks which are normally skipped, e.g. Done, Cancelled or Waiting tasks (depend on settings)**");
 
     //COMMENTS
     static PrefEntry commentsAddToBeginningOfComment

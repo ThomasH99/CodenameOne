@@ -38,20 +38,21 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowNextTaskWithRemainingTime);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAutomaticallyGotoNextTask);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowEffortEstimateDetails);
+        if (false)addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowEffortEstimateDetails);
         addSettingInt(cont, parseIdMap2, MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds, 0, 30, 1);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowSecondsInTimer);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowTotalActualInTimer); 
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerKeepScreenAlwaysOnInTimer);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeWaitingTasks);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeDoneTasks);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem);
         if (false) {
             addSettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
         }
         addSettingInt(cont, parseIdMap2, MyPrefs.timerUpdateInterval, 1, 60, 1);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeWaitingTasks);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysExpandListHierarchy);
-        addSettingInt(cont, parseIdMap2, MyPrefs.timerMaxTimerDurationInHoursXXX, 0, 12, 1);
+        if (false)addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysExpandListHierarchy);
+        if (false)addSettingInt(cont, parseIdMap2, MyPrefs.timerMaxTimerDurationInHoursXXX, 0, 12, 1);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow);
     }

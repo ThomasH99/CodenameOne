@@ -1376,7 +1376,7 @@ public class ScreenItem extends MyForm {
         prioCont.add(layoutN(Item.PRIORITY, priority, Item.PRIORITY_HELP));//, null, true, false, false, true));
 
         MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
-                () -> itemLS.getImportance() == null ? "" : itemLS.getImportance().getDescription(),
+                () -> itemLS.getImportanceN() == null ? "" : itemLS.getImportanceN().getDescription(),
                 (s) -> item.setImportance(Item.HighMediumLow.getValue(s)));
 //        prioCont.add(Item.IMPORTANCE).add(FlowLayout.encloseCenterMiddle(importance));
 //        prioCont.add(layout(Item.IMPORTANCE, FlowLayout.encloseCenterMiddle(importance), "**"));
@@ -1384,7 +1384,7 @@ public class ScreenItem extends MyForm {
         prioCont.add(layoutN(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP));//, null, false, false, true, true));
 
         MyComponentGroup urgency = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
-                () -> itemLS.getUrgency() == null ? "" : itemLS.getUrgency().getDescription(),
+                () -> itemLS.getUrgencyN() == null ? "" : itemLS.getUrgencyN().getDescription(),
                 (s) -> item.setUrgency(Item.HighMediumLow.getValue(s)));
 //        cont.add(new Label("Urgency")).add(urgency);
 //        prioCont.add(Item.URGENCY).add(FlowLayout.encloseMiddle(urgency));
@@ -1410,7 +1410,7 @@ public class ScreenItem extends MyForm {
         prioCont.add(layoutN(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP));//, null, false, false, true, true));
 
         MyComponentGroup dreadFun = new MyComponentGroup(Item.DreadFunValue.getDescriptionList(), parseIdMap2,
-                () -> itemLS.getDreadFunValue() == null ? "" : itemLS.getDreadFunValue().getDescription(),
+                () -> itemLS.getDreadFunValueN() == null ? "" : itemLS.getDreadFunValueN().getDescription(),
                 (s) -> item.setDreadFunValue(Item.DreadFunValue.getValue(s)));
 //        prioCont.add(new Label(Item.FUN_DREAD)).add(dreadFun);
 //        prioCont.add(layout(Item.FUN_DREAD, FlowLayout.encloseCenterMiddle(dreadFun), Item.FUN_DREAD_HELP));

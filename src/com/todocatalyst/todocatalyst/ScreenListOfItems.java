@@ -1697,6 +1697,7 @@ public class ScreenListOfItems extends MyForm {
         } else {
             status = new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
                 if (newStatus != oldStatus) {
+                    TimerStack.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(item); //call this here to avoid triggering if status is changed from within the Timer
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
                     myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
                     item.setStatus(newStatus);
@@ -1957,9 +1958,9 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //DREAD/FUN
-        if (item.getDreadFunValue() != null) {
+        if (item.getDreadFunValueN() != null) {
             Label funDreadLabel; // = new Label();
-            funDreadLabel = new Label(item.getDreadFunValue().toString(), "ItemDetailsLabel");
+            funDreadLabel = new Label(item.getDreadFunValueN().toString(), "ItemDetailsLabel");
             if (Config.TEST) {
                 funDreadLabel.setName("FunDread");
             }
@@ -2366,7 +2367,8 @@ refreshAfterEdit();
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
 //                ScreenTimer2.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
-                TimerStack.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm());//, true); //true == forceTimerStartOnLeafTasksWithAnyStatus
+                TimerStack.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), 
+                        MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem.getBoolean());//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
 //                        }
             }));
             startTimer.setUIID("SwipeButtonTimer");

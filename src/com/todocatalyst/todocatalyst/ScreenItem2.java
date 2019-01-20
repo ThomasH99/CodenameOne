@@ -1589,12 +1589,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         prioCont.add(layoutN(Item.PRIORITY, priority, Item.PRIORITY_HELP));//, null, true, false, false, true));
 
 //        MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
-//                () -> itemLS.getImportance() == null ? "" : itemLS.getImportance().getDescription(),
+//                () -> itemLS.getImportanceN() == null ? "" : itemLS.getImportanceN().getDescription(),
 //                (s) -> item.setImportance(Item.HighMediumLow.getValue(s)));
         MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), true);
-//        makeField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportance(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
-        makeField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportance(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
-                () -> importance.getSelectedString(), (i) -> importance.select((String) i.toString()));
+//        makeField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportanceN(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
+        makeField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportanceN(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
+                () -> importance.getSelectedString(), (i) -> {if (i!=null)importance.select((String) i.toString());});
 
 //        prioCont.add(Item.IMPORTANCE).add(FlowLayout.encloseCenterMiddle(importance));
 //        prioCont.add(layout(Item.IMPORTANCE, FlowLayout.encloseCenterMiddle(importance), "**"));
@@ -1602,14 +1602,14 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         prioCont.add(layoutN(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP));//, null, false, false, true, true));
 
 //        MyComponentGroup urgency = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
-//                () -> itemLS.getUrgency() == null ? "" : itemLS.getUrgency().getDescription(),
+//                () -> itemLS.getUrgencyN() == null ? "" : itemLS.getUrgencyN().getDescription(),
 //                (s) -> item.setUrgency(Item.HighMediumLow.getValue(s)));
         MyComponentGroup urgency = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), true);
 //        cont.add(new Label("Urgency")).add(urgency);
 //        prioCont.add(Item.URGENCY).add(FlowLayout.encloseMiddle(urgency));
 //        prioCont.add(layout(Item.URGENCY, FlowLayout.encloseMiddle(urgency), "**"));
 //        prioCont.add(layout(Item.URGENCY, urgency, Item.URGENCY_HELP, true, false, true));
-        makeField(Item.PARSE_URGENCY, urgency, () -> item.getUrgency(), (t) -> item.setUrgency((Item.HighMediumLow.getValue((String) t))),
+        makeField(Item.PARSE_URGENCY, urgency, () -> item.getUrgencyN(), (t) -> item.setUrgency((Item.HighMediumLow.getValue((String) t))),
                 () -> urgency.getSelectedString(), (i) -> urgency.select((String) i.toString()));
         prioCont.add(layoutN(Item.URGENCY, urgency, Item.URGENCY_HELP));//, null, false, false, true, true));
 
@@ -1641,14 +1641,14 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyComponentGroup dreadFun = new MyComponentGroup(Item.DreadFunValue.getDescriptionList(), parseIdMap2,
-//                () -> itemLS.getDreadFunValue() == null ? "" : itemLS.getDreadFunValue().getDescription(),
+//                () -> itemLS.getDreadFunValueN() == null ? "" : itemLS.getDreadFunValueN().getDescription(),
 //                (s) -> item.setDreadFunValue(Item.DreadFunValue.getValue(s)));
 //        prioCont.add(new Label(Item.FUN_DREAD)).add(dreadFun);
 //        prioCont.add(layout(Item.FUN_DREAD, FlowLayout.encloseCenterMiddle(dreadFun), Item.FUN_DREAD_HELP));
 //        prioCont.add(layout(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, true, false, true));
 //</editor-fold>
         MyComponentGroup dreadFun = new MyComponentGroup(Item.DreadFunValue.getDescriptionList(), true);
-        makeField(Item.PARSE_DREAD_FUN_VALUE, dreadFun, () -> item.getDreadFunValue(), (t) -> item.setDreadFunValue((Item.DreadFunValue.getValue((String) t))),
+        makeField(Item.PARSE_DREAD_FUN_VALUE, dreadFun, () -> item.getDreadFunValueN(), (t) -> item.setDreadFunValue((Item.DreadFunValue.getValue((String) t))),
                 () -> dreadFun.getSelectedString(), (s) -> dreadFun.select((String) s.toString()));
         prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP));//, null, false, false, true, true));
 

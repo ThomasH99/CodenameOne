@@ -1034,7 +1034,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             case FIELD_TIMESPAN:
                 return getTimeSpan();
             case FIELD_DREAD_FUN:
-                return getDreadFunValue();
+                return getDreadFunValueN();
             case FIELD_CHALLENGE:
                 return getChallenge();
             default:
@@ -1685,15 +1685,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
             //DREAD / FUN
             if ((copyExclusions & COPY_EXCLUDE_DREAD_FUN) == 0) {
-                if (destination.getDreadFunValue() == null) { //copy from template, iff nothing's already set for item
-                    destination.setDreadFunValue(getDreadFunValue());
+                if (destination.getDreadFunValueN() == null) { //copy from template, iff nothing's already set for item
+                    destination.setDreadFunValue(getDreadFunValueN());
                 }
             }
             //IMPORTANCE / URGENCY
             if ((copyExclusions & COPY_EXCLUDE_IMP_URG) == 0) {
                 if (destination.getImpUrgPrioValue() == 0) { //copy from template, iff nothing's already set for item
-                    destination.setImportance(getImportance());
-                    destination.setUrgency(getUrgency());
+                    destination.setImportance(getImportanceN());
+                    destination.setUrgency(getUrgencyN());
                 }
             }
             //COMMENT
@@ -2644,7 +2644,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public static int[] getDreadFunValuesArray() {
 //        return dreadFunValues;
 //    }
-//    public int getDreadFunValue() {
+//    public int getDreadFunValueN() {
 //        Integer dreadFunValue = getInt(PARSE_DREAD_FUN_VALUE);
 //        return (dreadFunValue == null) ? 0 : dreadFunValue;
 ////        return dreadFunValue;
@@ -2659,21 +2659,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        }
 //    }
 //</editor-fold>
-//    public String getDreadFunValue() {
+//    public String getDreadFunValueN() {
     /**
      * returns null if no value is defined
      *
      * @return
      */
-    public DreadFunValue getDreadFunValue() {
-        return getDreadFunValue(true);
+    public DreadFunValue getDreadFunValueN() {
+        return getDreadFunValueN(true);
     }
 
-    public DreadFunValue getDreadFunValue(boolean useInheritedValue) {
+    public DreadFunValue getDreadFunValueN(boolean useInheritedValue) {
         String dreadFunValue = getString(PARSE_DREAD_FUN_VALUE);
         if (dreadFunValue == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean()) {
             if (getOwnerItem() != null) {
-                return getOwnerItem().getDreadFunValue();
+                return getOwnerItem().getDreadFunValueN();
             }
         }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
@@ -2687,7 +2687,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public boolean isDreadFunInherited() {
         String dreadFunValue = getString(PARSE_DREAD_FUN_VALUE);
         return dreadFunValue == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getDreadFunValue() != null;
+                && getOwnerItem() != null && getOwnerItem().getDreadFunValueN() != null;
     }
 
     /**
@@ -2706,7 +2706,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (dreadFunValue != null) {// && !dreadFunValue.equals("")) {
         if (dreadFunValue != null
                 && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getDreadFunValue() != dreadFunValue)) {
+                || getOwnerItem() == null || getOwnerItem().getDreadFunValueN() != dreadFunValue)) {
             put(PARSE_DREAD_FUN_VALUE, dreadFunValue.toString());
         } else {
             remove(PARSE_DREAD_FUN_VALUE);
@@ -2727,7 +2727,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (importance != null) {// && !dreadFunValue.equals("")) {
         if (importance != null
                 && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getImportance() != importance)) {
+                || getOwnerItem() == null || getOwnerItem().getImportanceN() != importance)) {
             put(PARSE_IMPORTANCE, importance.toString());
         } else {
             remove(PARSE_IMPORTANCE);
@@ -2735,12 +2735,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
     }
 
-//    public HighMediumLow getImportance() {
-    public HighMediumLow getImportance() {
-        return getImportance(true);
+//    public HighMediumLow getImportanceN() {
+    public HighMediumLow getImportanceN() {
+        return getImportanceN(true);
     }
 
-    public HighMediumLow getImportance(boolean useInheritedValue) {
+    public HighMediumLow getImportanceN(boolean useInheritedValue) {
 //        String importance = getString(PARSE_IMPORTANCE);
 ////        return (importance == null) ? HighMediumLow.LOW : HighMediumLow.valueOf(importance); //Created is initial value
 ////        return (importance == null) ? HighMediumLow.LOW.toString() : importance; //Created is initial value
@@ -2748,7 +2748,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         String imp = getString(PARSE_IMPORTANCE);
         if (imp == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()) {
             if (getOwnerItem() != null) {
-                return getOwnerItem().getImportance();
+                return getOwnerItem().getImportanceN();
             }
         }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
@@ -2763,7 +2763,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public boolean isImportanceInherited() {
         String imp = getString(PARSE_IMPORTANCE);
         return imp == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getImportance() != null;
+                && getOwnerItem() != null && getOwnerItem().getImportanceN() != null;
     }
 
 //    void setUrgency(HighMediumLow urgency) {
@@ -2776,19 +2776,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (urgency != null) {// && !dreadFunValue.equals("")) {
         if (urgency != null
                 && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectUrgency.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getUrgency() != urgency)) {
+                || getOwnerItem() == null || getOwnerItem().getUrgencyN() != urgency)) {
             put(PARSE_URGENCY, urgency.toString());
         } else {
             remove(PARSE_URGENCY);
         }
     }
 
-//    public HighMediumLow getUrgency() {
-    public HighMediumLow getUrgency() {
-        return getUrgency(true);
+//    public HighMediumLow getUrgencyN() {
+    public HighMediumLow getUrgencyN() {
+        return getUrgencyN(true);
     }
 
-    public HighMediumLow getUrgency(boolean useInheritedValue) {
+    public HighMediumLow getUrgencyN(boolean useInheritedValue) {
 //        String urgency = getString(PARSE_URGENCY);
 ////        return (status == null) ? HighMediumLow.LOW : HighMediumLow.valueOf(status); //Created is initial value
 ////        return (status == null) ? HighMediumLow.LOW.toString() : status; //Created is initial value
@@ -2796,7 +2796,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         String urgency = getString(PARSE_URGENCY);
         if (urgency == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectUrgency.getBoolean()) {
             if (getOwnerItem() != null) {
-                return getOwnerItem().getUrgency();
+                return getOwnerItem().getUrgencyN();
             }
         }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
@@ -2810,7 +2810,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public boolean isUrgencyInherited() {
         String urgency = getString(PARSE_URGENCY);
         return urgency == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getUrgency() != null;
+                && getOwnerItem() != null && getOwnerItem().getUrgencyN() != null;
     }
 
     /**
@@ -2831,8 +2831,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            matrixVector.addElement(new PriorityPair(LOW, MED, 1));
 //            matrixVector.addElement(new PriorityPair(LOW, LOW, Settings.getInstance().getDefaultPriority())); //Must be 0 or less!!
 
-//        String impStr = getImportance();
-//        String urgStr = getUrgency();
+//        String impStr = getImportanceN();
+//        String urgStr = getUrgencyN();
 //        if (!impStr.equals("") && !urgStr.equals("")) {
 ////            ItemStatus itemTest = ItemStatus.valueOf(ItemStatus.STATUS_ONGOING.getDescription()); //TODO test code, remove
 ////            ItemStatus.valueOf(status);
@@ -2844,8 +2844,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
          * indexed by
          */
 //    int[HighMediumLow][HighMediumLow] prio2 = {{1,2,3},{4,6,7},{5,8,9}};
-        HighMediumLow imp = getImportance();
-        HighMediumLow urg = getUrgency();
+        HighMediumLow imp = getImportanceN();
+        HighMediumLow urg = getUrgencyN();
         int[][] prio = {{1, 2, 3}, {4, 6, 7}, {5, 8, 9}}; //allow editing of the prio values for the pairs - TODO how to avoid indexing by ordinals and use the enum constants directly, EnumMap in two dimensions?
 //        if (imp != null && urg != null) {
 //            return prio[imp.ordinal()][urg.ordinal()];
@@ -2893,8 +2893,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public String getImpUrgPrioValueAsString() {
 
-//        return getImpUrgPrioValue() != 0 ? getImportance().getDescription().substring(0, 1) + "/" + getUrgency().getDescription().substring(0, 1) : getPriority() != 0 ? getPriority() + "" : " ";
-        return getImpUrgPrioValue() != 0 ? getImportance().getDescription().substring(0, 1) + "/" + getUrgency().getDescription().substring(0, 1) : "";
+//        return getImpUrgPrioValue() != 0 ? getImportanceN().getDescription().substring(0, 1) + "/" + getUrgencyN().getDescription().substring(0, 1) : getPriority() != 0 ? getPriority() + "" : " ";
+        return getImpUrgPrioValue() != 0 ? getImportanceN().getDescription().substring(0, 1) + "/" + getUrgencyN().getDescription().substring(0, 1) : "";
     }
 
     public double getEarnedValue() {
@@ -4157,11 +4157,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //        }
 //</editor-fold>
-        put(PARSE_STATUS, newStatus.toString());
+        if (Config.TEST) {
+            ASSERT.that(newStatus != null, "status should never be reset to CREATED by storing a null status");
+        }
+        if (newStatus != null) {
+            put(PARSE_STATUS, newStatus.toString());
+        } else {
+            remove(PARSE_STATUS);
+        }
 //        update();
     }
 
-    private void updateDependentFields(ItemStatus previousStatus, ItemStatus newStatus, Date now) {
+    private static void updateDependentFields(Item item, ItemStatus previousStatus, ItemStatus newStatus, Date now) {
         //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (false) {
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -4195,10 +4202,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //</editor-fold>
         //StartedOnDate SET:
-        if (getStartedOnDate() == 0 && (newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.DONE)) {//|| newStatus == ItemStatus.WAITING)) { UI: setting Waiting => task was started?! No, not really
+        if (item.getStartedOnDate() == 0 && (newStatus == ItemStatus.ONGOING || newStatus == ItemStatus.DONE)) {//|| newStatus == ItemStatus.WAITING)) { UI: setting Waiting => task was started?! No, not really
 //                setStartedOnDate(MyDate.getNow());
 //            setStartedOnDate(System.currentTimeMillis());
-            setStartedOnDate(now);
+            item.setStartedOnDate(now);
         }
         //StartedOnDate RESET: not relevant, always keep the first set StartedOnDate (unless manually deleted)
 
@@ -4208,19 +4215,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             //TODO!!!! should actual effort be reduced to zero?? No, any effort spend should be kept even for Cancelled tasks
 //                setCompletedDate(MyDate.getNow()); //UI: also use Completed date to store date when task was cancelled (for historical data)
 //            setCompletedDate(System.currentTimeMillis()); //UI: also use Completed date to store date when task was cancelled (for historical data)
-            setCompletedDate(now); //UI: also use Completed date to store date when task was cancelled (for historical data)
+            item.setCompletedDate(now); //UI: also use Completed date to store date when task was cancelled (for historical data)
 //            ScreenTimer2.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(this);
-            TimerStack.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(this);
-            if (getRepeatRule() != null) {
-                getRepeatRule().updateRepeatInstancesOnDoneCancelOrDelete(this);
+//            TimerStack.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(this);
+            if (item.getRepeatRule() != null) {
+                item.getRepeatRule().updateRepeatInstancesOnDoneCancelOrDelete(item);
             }
         }
         //CompletedDate: RESET if changing from Done/Cancelled to other state
         //CompletedDate: set if changing to Done/Cancelled from other state, set to Now if changing to Done/Cancelled
-        if (getCompletedDate() != 0 && (previousStatus == ItemStatus.DONE || previousStatus == ItemStatus.CANCELLED)
+        if (item.getCompletedDate() != 0 && (previousStatus == ItemStatus.DONE || previousStatus == ItemStatus.CANCELLED)
                 && (newStatus != ItemStatus.DONE && newStatus != ItemStatus.CANCELLED)) {
             //if item changes from Done/Cancelled to some other value, then reset CompletedDate
-            setCompletedDate(0L);
+            item.setCompletedDate(0L);
         }
 
         //WaitingActivatedDate:
@@ -4229,26 +4236,26 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                  */) { //UI: always only save the last time the task was set Waiting //-only save the first setWaitingDate (TODO!!!: or is it more intuitive that it's the last, eg it set waiting by mistake?)
 //                setDateWhenSetWaiting(MyDate.getNow()); //always save
 //            setDateWhenSetWaiting(System.currentTimeMillis()); //always save
-            setDateWhenSetWaiting(now); //always save
+            item.setDateWhenSetWaiting(now); //always save
         }
 //<editor-fold defaultstate="collapsed" desc="deactivated updates">
-        if (false && (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && getWaitingTillDateD().getTime() != 0L)) { //reset WaitingTillDate
-            setWaitingTillDate(0); //reset waitingTill date
-            if (getWaitingAlarmDate() != 0) { //automatically turn off
-                setWaitingAlarmDate(0);
+        if (false && (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && item.getWaitingTillDateD().getTime() != 0L)) { //reset WaitingTillDate
+            item.setWaitingTillDate(0); //reset waitingTill date
+            if (item.getWaitingAlarmDate() != 0) { //automatically turn off
+                item.setWaitingAlarmDate(0);
             }
 //                setWaitingLastActivatedDate(0); //-waitingActivateDate is not changed (until the task is possibly set waiting again)
         }
 
 //RemainingEffort: set to zero for Done/Cancelled tasks
         if (false && newStatus == ItemStatus.DONE) {// || newStatus == ItemStatus.STATUS_CANCELLED) { //NO reason to delete remaining effort because a task is cancelled
-            setRemainingEffort(0L); //reset Remaining when marked done
+            item.setRemainingEffort(0L); //reset Remaining when marked done
         }
 
 //reset Alarms for Done/Cancelled tasks
 //TODO shouldn't be necessary to reset alarmDate when using Parse to find relevant next alarmdate
         if (false && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
-            setAlarmDate(0); //Cancel any set alarms //TODO: to support reverting when a task is marked Done, the alarm time should be kept, but not activated (AlarmServer should ignore alarms for Done tasks)
+            item.setAlarmDate(0); //Cancel any set alarms //TODO: to support reverting when a task is marked Done, the alarm time should be kept, but not activated (AlarmServer should ignore alarms for Done tasks)
         }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -4462,8 +4469,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
         }
 
+        setStatusInParse(newStatus); //must set *before* updating supertasks
+        
         if (updateDependentFields) {
-            updateDependentFields(oldStatus, newStatus, now);
+            updateDependentFields(this, oldStatus, newStatus, now);
         }
 
         if (updateSupertasks) {
@@ -4475,7 +4484,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
 
-        setStatusInParse(newStatus);
+//        setStatusInParse(newStatus);
 
 //        else {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -4843,11 +4852,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
 
             if (MyPrefs.itemInheritOwnerProjectUrgency.getBoolean()) {
-                setUrgency(owner.getUrgency());
+                setUrgency(owner.getUrgencyN());
             }
 
             if (MyPrefs.itemInheritOwnerProjectImportance.getBoolean()) {
-                setImportance(owner.getImportance());
+                setImportance(owner.getImportanceN());
             }
 
             if (MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()) {
@@ -4856,7 +4865,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
             if (MyPrefs.itemInheritOwnerProjectTemplate.getBoolean()) {
                 setTemplate(owner.isTemplate());
-        }
+            }
         }
 
     }
@@ -5655,6 +5664,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public long getRemainingEffort(boolean useDefaultEstimateForZeroEstimates) {
         return getRemainingEffort(useDefaultEstimateForZeroEstimates, true);
     }
+
     public long getRemainingEffort(boolean useDefaultEstimateForZeroEstimates, boolean returnZeroForDoneTasks) {
         if (returnZeroForDoneTasks && isDone()) {
             return 0;
@@ -7555,7 +7565,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_DREAD_FUN_VALUE:
                 if (toCSV) {
-                    list.add(getDreadFunValue().getDescription());
+                    list.add(getDreadFunValueN().getDescription());
                 } else {
                     setDreadFunValue(DreadFunValue.getValue((String) val));
                 }
@@ -7705,14 +7715,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_IMPORTANCE:
                 if (toCSV) {
-                    list.add(getImportance().getDescription());
+                    list.add(getImportanceN().getDescription());
                 } else {
                     setImportance(HighMediumLow.getValue((String) val));
                 }
                 break;
             case PARSE_URGENCY:
                 if (toCSV) {
-                    list.add(getUrgency().getDescription());
+                    list.add(getUrgencyN().getDescription());
                 } else {
                     setUrgency(HighMediumLow.getValue((String) val));
                 }
@@ -8394,13 +8404,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 newItem.setPriority(itemBefore.getPriority()); //UI: same prio as item just before
                 break;
             case Item.PARSE_DREAD_FUN_VALUE:
-                newItem.setDreadFunValue(itemBefore.getDreadFunValue()); //UI: same prio as item just before
+                newItem.setDreadFunValue(itemBefore.getDreadFunValueN()); //UI: same prio as item just before
                 break;
             case Item.PARSE_IMPORTANCE:
-                newItem.setImportance(itemBefore.getImportance()); //UI: same prio as item just before
+                newItem.setImportance(itemBefore.getImportanceN()); //UI: same prio as item just before
                 break;
             case Item.PARSE_URGENCY:
-                newItem.setUrgency(itemBefore.getUrgency()); //UI: same prio as item just before
+                newItem.setUrgency(itemBefore.getUrgencyN()); //UI: same prio as item just before
                 break;
             case Item.PARSE_EARNED_VALUE:
                 newItem.setEarnedValue(itemBefore.getEarnedValue()); //UI: same prio as item just before

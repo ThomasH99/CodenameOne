@@ -127,17 +127,17 @@ public class MultipleSelection {
             if (itm.getPriority() != 0) {
                 item.setPriority(itm.getPriority());
             }
-            if (itm.getImportance() != null) {
-                item.setImportance(itm.getImportance());
+            if (itm.getImportanceN() != null) {
+                item.setImportance(itm.getImportanceN());
             }
-            if (itm.getUrgency() != null) {
-                item.setUrgency(itm.getUrgency());
+            if (itm.getUrgencyN() != null) {
+                item.setUrgency(itm.getUrgencyN());
             }
             if (itm.getChallenge() != null) {
                 item.setChallenge(itm.getChallenge());
             }
-            if (itm.getDreadFunValue() != null) {
-                item.setDreadFunValue(itm.getDreadFunValue());
+            if (itm.getDreadFunValueN() != null) {
+                item.setDreadFunValue(itm.getDreadFunValueN());
             }
             if (itm.getEarnedValue() != 0) {
                 item.setEarnedValue(itm.getEarnedValue());

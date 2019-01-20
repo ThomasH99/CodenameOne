@@ -1502,7 +1502,7 @@ public class MyForm extends Form {
             DAO.getInstance().saveInBackground(interruptItem);
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
-//                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItem());
+//                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItemN());
 //                }
 //                ScreenTimer.getInstance().startTimer(item, MyForm.this);
 //            ScreenTimer2.getInstance().startInterrupt(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
@@ -1632,6 +1632,14 @@ public class MyForm extends Form {
     final static int TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS = 80; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
     final static int ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR = 500; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
 
+    /**
+    show toastbar for the time necessary to read the text
+    @param message 
+    */
+    static void showToastBar(String message) {
+        showToastBar(message, 0);
+    }
+    
     static void showToastBar(String message, int timeMillis) {
         ToastBar.Status status = ToastBar.getInstance().createStatus();
         status.setMessage(message);

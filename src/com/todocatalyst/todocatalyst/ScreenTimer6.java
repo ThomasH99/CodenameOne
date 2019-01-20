@@ -119,8 +119,9 @@ public class ScreenTimer6 extends MyForm {
         if (previousValues != null) {
             this.previousValues = previousValues;
         } else {
-//            this.previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItem().getObjectIdP());
-            this.previousValues = new SaveEditedValuesLocally("Timer-" + TimerStack.getInstance().getTimedItem().getObjectIdP());
+//            this.previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
+//            this.previousValues = new SaveEditedValuesLocally("Timer-" + TimerStack.getInstance().getTimedItemN().getObjectIdP());
+            this.previousValues = new SaveEditedValuesLocally("Timer" );
         }
 
 //        setScrollable(false);
@@ -158,9 +159,9 @@ public class ScreenTimer6 extends MyForm {
     @Override
     public void refreshAfterEdit() {
 //        getContentPane().removeAll(); //clear existing contentPane
-//        buildContentPane(getTimedItem(), itemList, getContentPane()); //rebuild for new values of item etc
-//        timerInstance = TimerStack.getInstance().getCurrentTimerInstance();
-        Item timedItem = TimerStack.getInstance().getTimedItem();
+//        buildContentPane(getTimedItemN(), itemList, getContentPane()); //rebuild for new values of item etc
+//        timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
+        Item timedItem = TimerStack.getInstance().getTimedItemN();
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
 //        TimerStack.buildContentPane(timerInstance.getTimerContainer(), timerInstance, true, previousValues); //also removes previous content of contentPane
         //clear previous edited values
@@ -169,8 +170,8 @@ public class ScreenTimer6 extends MyForm {
         }
 //        if (timerInstance != null) {
         if (timedItem != null) {
-//            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItem().getObjectIdP());
-//            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItem().getObjectIdP());
+//            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
+//            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
             previousValues = new SaveEditedValuesLocally("Timer-" + timedItem.getObjectIdP());
 //        TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, timerContentainer,  previousValues); //also removes previous content of contentPane
             Container contentPane = getContentPane();

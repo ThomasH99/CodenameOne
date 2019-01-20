@@ -776,12 +776,12 @@ public class FilterSortDef extends ParseObject {
                         : (i1, i2) -> compareNullValueLast(i2.getChallenge(), i1.getChallenge());
             case Item.PARSE_DREAD_FUN_VALUE:
                 return sortDescending
-                        //                        ? (i1, i2) -> i1.getDreadFunValue().compareTo(i2.getDreadFunValue())
-                        //                        : (i1, i2) -> i2.getDreadFunValue().compareTo(i1.getDreadFunValue());
-                        //                        ? (i1, i2) -> compareDreadFunValue(i1.getDreadFunValue(), i2.getDreadFunValue())
-                        //                        : (i1, i2) -> compareDreadFunValue(i2.getDreadFunValue(), i1.getDreadFunValue());
-                        ? (i1, i2) -> compareNullValueLast(i1.getDreadFunValue(), i2.getDreadFunValue())
-                        : (i1, i2) -> compareNullValueLast(i2.getDreadFunValue(), i1.getDreadFunValue());
+                        //                        ? (i1, i2) -> i1.getDreadFunValueN().compareTo(i2.getDreadFunValueN())
+                        //                        : (i1, i2) -> i2.getDreadFunValueN().compareTo(i1.getDreadFunValueN());
+                        //                        ? (i1, i2) -> compareDreadFunValue(i1.getDreadFunValueN(), i2.getDreadFunValueN())
+                        //                        : (i1, i2) -> compareDreadFunValue(i2.getDreadFunValueN(), i1.getDreadFunValueN());
+                        ? (i1, i2) -> compareNullValueLast(i1.getDreadFunValueN(), i2.getDreadFunValueN())
+                        : (i1, i2) -> compareNullValueLast(i2.getDreadFunValueN(), i1.getDreadFunValueN());
             case Item.PARSE_EARNED_VALUE:
                 return sortDescending
                         ? (i1, i2) -> compareDouble(i1.getEarnedValue(), i2.getEarnedValue()) //show highest on top
