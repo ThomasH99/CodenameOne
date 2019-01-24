@@ -133,7 +133,7 @@ public class ScreenItem extends MyForm {
         super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
         if (false) {
-            ASSERT.that(item.isDataAvailable(), ()->"Item \"" + item + "\" data not available");
+            ASSERT.that(item.isDataAvailable(), () -> "Item \"" + item + "\" data not available");
         }
 
         this.templateEditMode = item.isTemplate() || templateEditMode; //
@@ -239,10 +239,10 @@ public class ScreenItem extends MyForm {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotListN(), item, ScreenItem.this, null, //(iList) -> {
-                new ScreenListOfWorkSlots( item, ScreenItem.this, null, //(iList) -> {
+                new ScreenListOfWorkSlots(item, ScreenItem.this, null, //(iList) -> {
                         //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
                         //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
-                         false).show();
+                        false).show();
             }
         });
 //        }
@@ -943,23 +943,24 @@ public class ScreenItem extends MyForm {
         }
 //        SpanButton categoriesButton = new SpanButton(); //DOESN'T WORK WITH SPANBUTTON
         WrapButton categoriesButton = new WrapButton();
-        Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem.this,() -> {
-                    categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
-                    categoriesButton.revalidate(); //layout new list of categories, working??
-                    parseIdMap2.put("ItemScreen.EditedCategories", () -> {
-                        if (localSave) {
-                            saveNewCategories(locallyEditedCategories);
-                        } else {
-                            item.updateCategories(locallyEditedCategories); //TODO this won't work with Cancel - need to store the update in parsemap and only update the button text                        //DAO.getInstance().save(item); //NOT neeeded here since saved when exiting screen
-                        }
-                    });
+//        Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
+        Command categoryEditCmd = MyReplayCommand.create("PickCategories", "", null, (e) -> { //"<click to set categories>"
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+            ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem.this, () -> {
+                categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
+                categoriesButton.revalidate(); //layout new list of categories, working??
+                parseIdMap2.put("ItemScreen.EditedCategories", () -> {
+                    if (localSave) {
+                        saveNewCategories(locallyEditedCategories);
+                    } else {
+                        item.updateCategories(locallyEditedCategories); //TODO this won't work with Cancel - need to store the update in parsemap and only update the button text                        //DAO.getInstance().save(item); //NOT neeeded here since saved when exiting screen
+                    }
                 });
-                screenCatPicker.show();
-            }
-        };
+            });
+            screenCatPicker.show();
+//            }
+        });
         categoriesButton.setCommand(categoryEditCmd);
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -120,12 +120,12 @@ public class ScreenStatisticsLists extends MyForm {
 
         //TODO!!! Add an explanation to each of these (definition + why/when work on it)
         //TODO!! check old filters from first version of TodoCatalyst
-        content.add(new Button(new MyReplayCommand("Cancelled tasks with time recorded")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(new MyReplayCommand("Most interrupted tasks")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(new MyReplayCommand("Days/times with most interrupts")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(new MyReplayCommand("Over estimated tasks")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(new MyReplayCommand("Under estimated tasks")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(new MyReplayCommand("Big difference between estimates of Done Projects and subtasks' actual**")));  //Badly estimated projects: for Done Projects, with estimates at Project level, which have the big difference with sum of actuals of subtasks?
+        content.add(new Button( MyReplayCommand.create("Cancelled tasks with time recorded")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("Most interrupted tasks")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("Days/times with most interrupts")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("Over estimated tasks")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("Under estimated tasks")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("Big difference between estimates of Done Projects and subtasks' actual**")));  //Badly estimated projects: for Done Projects, with estimates at Project level, which have the big difference with sum of actuals of subtasks?
 
         return content;
     }

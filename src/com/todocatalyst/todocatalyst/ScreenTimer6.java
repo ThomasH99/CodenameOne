@@ -97,6 +97,7 @@ public class ScreenTimer6 extends MyForm {
     final static String TIMER_REPLAY = "StartTimer-";
 
     private TimerInstance timerInstance;//= new TimerStack();
+    private Command backCommand = null;
 //    private Container timerContentainer = new Container(BoxLayout.y());
 //    private TimerStackEntry entry;
 
@@ -121,7 +122,7 @@ public class ScreenTimer6 extends MyForm {
         } else {
 //            this.previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
 //            this.previousValues = new SaveEditedValuesLocally("Timer-" + TimerStack.getInstance().getTimedItemN().getObjectIdP());
-            this.previousValues = new SaveEditedValuesLocally("Timer" );
+            this.previousValues = new SaveEditedValuesLocally("Timer");
         }
 
 //        setScrollable(false);
@@ -136,12 +137,13 @@ public class ScreenTimer6 extends MyForm {
         };
         refreshAfterEdit();
     }
-    
-        //****************** UI *********************
-    //
-     void addCommandsToToolbar(Toolbar toolbar) {
 
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+    //****************** UI *********************
+    //
+    void addCommandsToToolbar(Toolbar toolbar) {
+
+        backCommand = makeDoneUpdateWithParseIdMapCommand(true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+        toolbar.setBackCommand(backCommand); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
 
         //Create an interrupt task and start the timer on it
 //        toolbar.addCommandToRightBar(makeInterruptCommand());
@@ -154,7 +156,6 @@ public class ScreenTimer6 extends MyForm {
         }
         ));
     }
-
 
     @Override
     public void refreshAfterEdit() {
@@ -199,6 +200,15 @@ public class ScreenTimer6 extends MyForm {
 //            showPreviousScreenOrDefault((MyForm) f, callRefreshAfterEdit);
 //        }
 //    }
-
+    @Override
+    public void show() {
+        //only show if an item is (still) timed, otherwisw showback to return to previous screen, check since show can be called during Replay
+        if (TimerStack.getInstance().getTimedItemN() == null) {
+            //TODO could do sth more fancy here, like show a message that timer was stopped on othr device...
+            backCommand.actionPerformed(null);
+        } else {
+            super.show();
+        }
+    }
 
 }

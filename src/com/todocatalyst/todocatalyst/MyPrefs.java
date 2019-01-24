@@ -146,7 +146,7 @@ public class MyPrefs {
             = new PrefEntry("Always show new timers in current screenshow", "timerAlwaysShowNewTimerInSmallWindow", true,
                     "Instead of showing a started timer in full screen...**");
    
-    static PrefEntry timerEnableSmallTimerWindow
+    static PrefEntry timerEnableShowingSmallTimerWindow
             = new PrefEntry("Show small timer in other views", "timerEnableSmallTimerWindow", true,
                     "**");
    

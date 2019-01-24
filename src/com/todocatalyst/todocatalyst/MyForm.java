@@ -1496,7 +1496,7 @@ public class MyForm extends Form {
     private Command makeInterruptCommand(String title, Image icon) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
-        return MyReplayCommand.create("StartTimerFromMyForm-"+title, title, icon, (e) -> {
+        return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
             Item interruptItem = new Item();
             interruptItem.setInteruptOrInstantTask(true);
             DAO.getInstance().saveInBackground(interruptItem);

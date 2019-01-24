@@ -118,32 +118,32 @@ public class ScreenInspirationalLists extends MyForm {
 
         //TODO!!! Add an explanation to each of these (definition + why/when work on it)
         //TODO!! check old filters from first version of TodoCatalyst
-        content.add(new Button(new MyReplayCommand("Highest earned ROI relative to remaining time")));  //the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)
-        content.add(new Button(new MyReplayCommand("Tasks in progress but without any actual time recorded")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(new MyReplayCommand("Get that almost finished project done completely")));  //projects where most tasks are done (high ratio done - not done)
-        content.add(new Button(new MyReplayCommand("Longest duration between creation and start work or complete (procrastinating what type of tasks?)")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(new MyReplayCommand("On top of the mountain")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(new MyReplayCommand("Really that urgent?")));  //tasks marked Urgent that are not done after e.g. 7 days
-        content.add(new Button(new MyReplayCommand("Should have been postponed?")));  //tasks marked were marked Import=Low but still done quickly after creation?
-        content.add(new Button(new MyReplayCommand("Maybe start focusing on what's Important?")));  //tasks marked were marked Import=High but still done/started after eg 30 days?
-        content.add(new Button(new MyReplayCommand("What never gets done")));  //Important but not urgent, sorted by ROI
-        content.add(new Button(new MyReplayCommand("Warm up")));  //getting started when 
-        content.add(new Button(new MyReplayCommand("Quickies")));  //less than 2 minutes
-        content.add(new Button(new MyReplayCommand("Fits a timeslot")));  //most important tasks I have the time to do in a certain time (e.g. I have just 1 hour)
-        content.add(new Button(new MyReplayCommand("Here and Now")));  //due date today, waiting until today, starred
-        content.add(new Button(new MyReplayCommand("Waited the longest time")));  //by due date
-        content.add(new Button(new MyReplayCommand("Deadline coming up")));  //by due date
-        content.add(new Button(new MyReplayCommand("Fast and easy")));  //low challenge, low estimate
-        content.add(new Button(new MyReplayCommand("Almost finished"))); //lowest percentage remaining compared to total effort (actual+remaining)
-        content.add(new Button(new MyReplayCommand("Instance gratification")));  
-        content.add(new Button(new MyReplayCommand("High value for the effort"))); //highest total value divided by remaining effort
-        content.add(new Button(new MyReplayCommand("Important and Urgent"))); 
-        content.add(new Button(new MyReplayCommand("Important and Fast"))); //sort by lowest effort
-        content.add(new Button(new MyReplayCommand("Urgent"))); 
-        content.add(new Button(new MyReplayCommand("Dusty/Moldy/Clean up"))); //oldest created tasks still not started
-        content.add(new Button(new MyReplayCommand("Stalled"))); //still incomplete tasks by age of 'last worked on' (last update or last time timer was used or actuals updated)
-        content.add(new Button(new MyReplayCommand("Better start early")));  //projects that it might be a good idea to look at early (e.g. large effort, challenging, due date approaching)
-        content.add(new Button(new MyReplayCommand("Lazy day")));  //??easy and fun
+        content.add(new Button(MyReplayCommand.create("Highest earned ROI relative to remaining time")));  //the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)
+        content.add(new Button(MyReplayCommand.create("Tasks in progress but without any actual time recorded")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("Get that almost finished project done completely")));  //projects where most tasks are done (high ratio done - not done)
+        content.add(new Button(MyReplayCommand.create("Longest duration between creation and start work or complete (procrastinating what type of tasks?)")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("On top of the mountain")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("Really that urgent?")));  //tasks marked Urgent that are not done after e.g. 7 days
+        content.add(new Button(MyReplayCommand.create("Should have been postponed?")));  //tasks marked were marked Import=Low but still done quickly after creation?
+        content.add(new Button(MyReplayCommand.create("Maybe start focusing on what's Important?")));  //tasks marked were marked Import=High but still done/started after eg 30 days?
+        content.add(new Button(MyReplayCommand.create("What never gets done")));  //Important but not urgent, sorted by ROI
+        content.add(new Button(MyReplayCommand.create("Warm up")));  //getting started when 
+        content.add(new Button(MyReplayCommand.create("Quickies")));  //less than 2 minutes
+        content.add(new Button(MyReplayCommand.create("Fits a timeslot")));  //most important tasks I have the time to do in a certain time (e.g. I have just 1 hour)
+        content.add(new Button(MyReplayCommand.create("Here and Now")));  //due date today, waiting until today, starred
+        content.add(new Button(MyReplayCommand.create("Waited the longest time")));  //by due date
+        content.add(new Button(MyReplayCommand.create("Deadline coming up")));  //by due date
+        content.add(new Button(MyReplayCommand.create("Fast and easy")));  //low challenge, low estimate
+        content.add(new Button(MyReplayCommand.create("Almost finished"))); //lowest percentage remaining compared to total effort (actual+remaining)
+        content.add(new Button(MyReplayCommand.create("Instance gratification")));  
+        content.add(new Button(MyReplayCommand.create("High value for the effort"))); //highest total value divided by remaining effort
+        content.add(new Button(MyReplayCommand.create("Important and Urgent"))); 
+        content.add(new Button(MyReplayCommand.create("Important and Fast"))); //sort by lowest effort
+        content.add(new Button(MyReplayCommand.create("Urgent"))); 
+        content.add(new Button(MyReplayCommand.create("Dusty/Moldy/Clean up"))); //oldest created tasks still not started
+        content.add(new Button(MyReplayCommand.create("Stalled"))); //still incomplete tasks by age of 'last worked on' (last update or last time timer was used or actuals updated)
+        content.add(new Button(MyReplayCommand.create("Better start early")));  //projects that it might be a good idea to look at early (e.g. large effort, challenging, due date approaching)
+        content.add(new Button(MyReplayCommand.create("Lazy day")));  //??easy and fun
 //        content.add(new Button(Command.create("Show items in another list than the item's ownerList", null, (e)->{}))); 
 
         return content;

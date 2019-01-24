@@ -72,7 +72,7 @@ public class TimerInstance extends ParseObject {
     public String toString() {
         return ((getItemList() != null ? " List:" + getItemList().getText() : "")
                 + (getTimedProject() != null ? " Proj:" + getTimedProject().getText() : "")
-                + (getTimedItemImpl() != null ? "Task:" + getTimedItemImpl().getText() : "")
+                + (getTimedItem() != null ? "Task:" + getTimedItem().getText() : "")
                 + (getStartTimeD().getTime() != 0 ? " Start:" + getStartTimeD() : "")
                 + (getElapsedTime() != 0 ? " Duration:" + MyDate.formatTimeDuration(getElapsedTime()) : "")
                 + (isRunning() ? " Running" : " Stopped")
@@ -98,7 +98,7 @@ public class TimerInstance extends ParseObject {
     @param timedItem 
      */
     private void setTimedItem(Item timedItem) {
-        Item previousItem = getTimedItemImpl();
+        Item previousItem = getTimedItem();
 //        if ((timedItem != null && !timedItem.equals(previousItem))                ||) {
 //        if (!Objects.equals(timedItem, previousItem)) {
         //definition from Objects.equals() => return (a == b) || (a != null && a.equals(b))
@@ -152,11 +152,11 @@ public class TimerInstance extends ParseObject {
     don't call directly, go via timerStack to ensure the available item is returned
     @return 
      */
-    Item getTimedItemImpl() {
+    Item getTimedItem() {
         Item timedItem = (Item) getParseObject(PARSE_TIMED_ITEM);
-//        if (timedItem != null) {
-        timedItem = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(timedItem);
-//        }
+        if (timedItem != null) {
+            timedItem = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(timedItem);
+        }
         return timedItem;
     }
 
@@ -262,7 +262,7 @@ public class TimerInstance extends ParseObject {
     public long getElapsedTotalTime() {
 
         if (MyPrefs.timerShowTotalActualInTimer.getBoolean()) {
-            return getElapsedTime() + getTimedItemImpl().getActualEffortProjectTaskItself();
+            return getElapsedTime() + getTimedItem().getActualEffortProjectTaskItself();
         } else {
             return getElapsedTime();
         }
@@ -358,7 +358,7 @@ public class TimerInstance extends ParseObject {
     }
 
 //    private boolean isThereATaskToTime() {
-//        return getTimedItemImpl()!= null;
+//        return getTimedItem()!= null;
 //    }
 //    private final Object TIMER_LOCK = new Object();
     /**
@@ -423,7 +423,7 @@ public class TimerInstance extends ParseObject {
         stopTimer(false); //false: saved below
         TimerInstance timerInstance = this;
         if (timerInstance.getElapsedTime() > 0) {
-            Item timedItem = timerInstance.getTimedItemImpl(); //get the item that is/was timed
+            Item timedItem = timerInstance.getTimedItem(); //get the item that is/was timed
 //                timedItem.setActualEffort(timerInstance.isTimerShowActualTotal() //update actual
 //                        ? timerInstance.getElapsedTime()
 //                        : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
@@ -452,6 +452,8 @@ public class TimerInstance extends ParseObject {
         ASSERT.that(itemOrProject != null || itemList != null);
         setItemList(itemList);
         setTimedItem(itemOrProject);
+
+        updateToNextTimerItem(true, false); //initialize to first element to time (itemOrProject; first subtask in itemOrProject; or first item in itemList or first subtask in first project in itemList)
 
         if (false) { //don't update here, first access to TiemrStack.getTimedItemN will do that
             if (TimerStack.isValidItemForTimer(itemOrProject)) {
@@ -598,7 +600,7 @@ public class TimerInstance extends ParseObject {
 //        return updateToNextTimerItem(false, false);
 //    }
     Item updateToNextTimerItem(boolean update, boolean save) {
-        Item previousTimedItem = getTimedItemImpl(); //may return null on first call, in which case the very first subtask will be returned
+        Item previousTimedItem = getTimedItem(); //may return null on first call, in which case the very first subtask will be returned
         Item nextTimedItem = null;
         Item project = getTimedProject();
         ItemList itemList = null;

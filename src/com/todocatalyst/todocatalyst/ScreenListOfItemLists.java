@@ -543,7 +543,7 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY + itemList.getObjectIdP(), null, Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY , null, Icons.iconNewItemFromTemplate, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    Item newTemplateInstantiation = new Item();
 //                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
@@ -660,7 +660,7 @@ public class ScreenListOfItemLists extends MyForm {
         mainCont.addComponent(BorderLayout.EAST, east);
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY + itemList.getObjectIdP(), null, Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY , null, Icons.iconNewItemFromTemplate, (e) -> {
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
                 TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
             }
