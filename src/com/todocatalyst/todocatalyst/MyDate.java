@@ -1656,7 +1656,7 @@ public class MyDate extends Date {
      * @param dontShowZeroHours
      * @return
      */
-    private static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes, boolean dontShowZeroHours) {
+    private static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes, boolean dontShowZeroHours) {//, boolean roundLessThan1MinuteUp) {
 //        boolean SHOW_SECONDS = false;
 //        boolean SHOW_LEADING_ZERO_FOR_HOUR = true;
         String s; // = "";
@@ -1676,7 +1676,10 @@ public class MyDate extends Date {
         if (roundUpMinutes && seconds >= 30) {
             minutes++;
         }
-        if (showSeconds) {
+//        if (roundLessThan1MinuteUp && minutes==0 && seconds>0) {
+//            minutes=1; 
+//        }
+        if (showSeconds||(minutes==0&&hours==0)) { //avoid to show actual duration of say 17s as 0, round up to 1min //TODO!!!!
             s += ":" + (seconds < 10 ? "0" + seconds : "" + seconds);
         }
 //<editor-fold defaultstate="collapsed" desc="comment">

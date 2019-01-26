@@ -42,7 +42,7 @@ public class MyCheckBox extends Button {
 
     private ProcessItemStatusChange statusChangeHandler;
     private IsItemOngoing itemOngoing;
-    private ItemStatus itemStatus=null;
+    private ItemStatus itemStatus = null;
     private static String singleIconStyleUIID; //style for the single status icon shown for example in items in lists
     private static String popupIconStyleUIID; //style for icons in popup menu (to select any status)
     private static String groupStyleUIID; //style for popup menu (a ComponentGroup)
@@ -165,11 +165,9 @@ public class MyCheckBox extends Button {
         this.activateFullMenuOnSingleClick = activateFullMenuOnSingleClick;
         this.statusChangeHandler = statusChangeHandler;
 
-        addActionListener(
-                new ActionListener() { //Handle single-click
+        addActionListener(new ActionListener() { //Handle single-click
             @Override
-            public void actionPerformed(ActionEvent evt
-            ) {
+            public void actionPerformed(ActionEvent evt) {
                 if (MyCheckBox.this.activateFullMenuOnSingleClick) {
                     selectNewStatus();
                 } else {

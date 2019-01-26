@@ -1036,7 +1036,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             case FIELD_DREAD_FUN:
                 return getDreadFunValueN();
             case FIELD_CHALLENGE:
-                return getChallenge();
+                return getChallengeN();
             default:
                 ASSERT.that("Item: Field Identifier not defined " + fieldId);
         }
@@ -1679,8 +1679,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
             //CHALLENGE
             if ((copyExclusions & COPY_EXCLUDE_CHALLENGE) == 0) {
-                if (destination.getChallenge() == null) { //copy from template, iff nothing's already set for item
-                    destination.setChallenge(getChallenge());
+                if (destination.getChallengeN() == null) { //copy from template, iff nothing's already set for item
+                    destination.setChallenge(getChallengeN());
                 }
             }
             //DREAD / FUN
@@ -2490,11 +2490,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public static int[] getChallengeValuesArray() {
 //        return challengeValues;
 //    }
-    public Challenge getChallenge() {
-        return getChallenge(true);
+    public Challenge getChallengeN() {
+        return getChallengeN(true);
     }
 
-    public Challenge getChallenge(boolean useInheritedValue) {
+    public Challenge getChallengeN(boolean useInheritedValue) {
 //        String challenge = getString(PARSE_CHALLENGE);
 //        return (challenge == null) ? Challenge.AVERAGE.getDescription() : challenge;
 //        String challenge = getString(PARSE_CHALLENGE);
@@ -2502,7 +2502,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         String challenge = getString(PARSE_CHALLENGE);
         if (challenge == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()) {
             if (getOwnerItem() != null) {
-                return getOwnerItem().getChallenge();
+                return getOwnerItem().getChallengeN();
             }
         }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
@@ -2516,7 +2516,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public boolean isChallengeInherited() {
         String challenge = getString(PARSE_CHALLENGE);
         return challenge == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getChallenge() != null;
+                && getOwnerItem() != null && getOwnerItem().getChallengeN() != null;
     }
 
     public void setChallenge(Challenge challenge) {
@@ -2529,18 +2529,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            remove(PARSE_CHALLENGE);
 //        }
 //        if (challenge != null) {// && !dreadFunValue.equals("")) {
-        // A=> B <=> !A or B: inherit => getOwnerItem().getChallenge() != challenge
+        // A=> B <=> !A or B: inherit => getOwnerItem().getChallengeN() != challenge
         //inherit && hasOwner && newValue!=oldValue
         if (challenge != null
                 && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getChallenge() != challenge)) {
+                || getOwnerItem() == null || getOwnerItem().getChallengeN() != challenge)) {
             put(PARSE_CHALLENGE, challenge.toString());
         } else {
             //remove value if (inherits && hasOwner && newValue==inheritedValue) <=> 
             //store newValue if !remove <=> !inherits || !hasOwner || newValue!=inheritedValue
             //where inherits == MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean() (both must be true)
             // <=> !(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()) ||
-            //     getOwnerItem() == null || getOwnerItem().getChallenge() != challenge
+            //     getOwnerItem() == null || getOwnerItem().getChallengeN() != challenge
             remove(PARSE_CHALLENGE);
         }
 
@@ -7572,7 +7572,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_CHALLENGE:
                 if (toCSV) {
-                    list.add(getChallenge().getDescription());
+                    list.add(getChallengeN().getDescription());
                 } else {
                     setChallenge(Challenge.getValue((String) val));
                 }
@@ -8396,7 +8396,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         Item itemAfter = (Item) objectAfter;
         switch (fieldParseId) {
             case Item.PARSE_CHALLENGE:
-                newItem.setChallenge(itemBefore.getChallenge()); //UI: same prio as item just before
+                newItem.setChallenge(itemBefore.getChallengeN()); //UI: same prio as item just before
                 break;
             case Item.PARSE_PRIORITY:
 //            int diffPrio = itemAfter.getPriority() -itemBefore.getPriority() ;

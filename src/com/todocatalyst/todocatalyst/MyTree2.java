@@ -1122,10 +1122,10 @@ public class MyTree2 extends ContainerScrollY {
                         newStr = getDiffStr(newStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
                         break;
                     case Item.PARSE_CHALLENGE:
-                        newStr = getDiffStr(newStickyStr, Item.CHALLENGE + " " + item.getChallenge().toString());
+                        newStr = getDiffStr(newStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
                         break;
                     case Item.PARSE_TEXT: //no header for text, could do a letter 'A' but not valuable
-//                        newStr = getDiffStr(newStickyStr, Item.CHALLENGE + " " + item.getChallenge().toString());
+//                        newStr = getDiffStr(newStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
                         break;
                     case FilterSortDef.FILTER_SORT_TODAY_VIEW:
                         //show headers "Due today", "Waiting until today", "Start today", "WorkSlots?!"

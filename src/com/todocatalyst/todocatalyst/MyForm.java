@@ -220,6 +220,7 @@ public class MyForm extends Form {
 //        });
 //    }
     private UITimer doubleTapTitleTimer;
+    private static int TIME_FOR_DOUBLE_TAP = 200; //50 works on simulator, but not on iPhone (probably too short)
 
     MyForm(String title, MyForm previousForm, UpdateField updateActionOnDone) { //throws ParseException, IOException {
 //    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
@@ -236,7 +237,7 @@ public class MyForm extends Form {
             public void pointerReleased(int x, int y) {
                 super.pointerReleased(x, y);
                 if (doubleTapTitleTimer == null) {
-                    doubleTapTitleTimer = UITimer.timer(50, false, getComponentForm(), () -> {
+                    doubleTapTitleTimer = UITimer.timer(TIME_FOR_DOUBLE_TAP, false, getComponentForm(), () -> {
                         // singleTapEvent();
                         //scroll list to top
                         ContainerScrollY cont = findScrollableContYChild(getComponentForm());
@@ -361,6 +362,10 @@ public class MyForm extends Form {
     protected void setKeepPos(KeepInSameScreenPosition keepPos) {
         this.keepPos = keepPos;
 //        previousValues.put(KEEP_POS_KEY,keepPos);
+    }
+
+    protected KeepInSameScreenPosition getKeepPos() {
+        return keepPos;
     }
 
 //    private static String KEEP_POS_KEY = "KeepPos";
@@ -1358,11 +1363,11 @@ public class MyForm extends Form {
 //        if (previousForm.previousValues != null) {
 //            previousForm.previousValues.deleteFile();
 //        }
-        Form f = Display.getInstance().getCurrent();
+      if (false){  Form f = Display.getInstance().getCurrent();
         if (f instanceof MyForm && ((MyForm) f).previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
             ((MyForm) f).previousValues.deleteFile();
             ((MyForm) f).previousValues.clear(); //if still accessed
-        }
+        }}
         if (callRefreshAfterEdit) {
             previousForm.refreshAfterEdit();
         }
@@ -2511,7 +2516,7 @@ public class MyForm extends Form {
             //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
             parseIdMap2.put(fieldIdentifier, () -> {
 //        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-                ASSERT.that(getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
+                ASSERT.that(true||getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
 //                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
                 if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
 //            item.setEffortEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item

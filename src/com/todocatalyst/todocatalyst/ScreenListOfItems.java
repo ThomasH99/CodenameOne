@@ -311,14 +311,14 @@ public class ScreenListOfItems extends MyForm {
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
 
-        addPullToRefresh(() -> {
-            //refresh worktime
-            itemListOrg.resetWorkTimeDefinition();
-            //TODO!!!! load any changed data from server
-            //TODO optionally, remove done tasks??
-            setKeepPos(null); //remove any scroll position since pull to refresh means we're at top of list
-            refreshAfterEdit();
-        });
+//        addPullToRefresh(() -> {
+//            //refresh worktime
+//            itemListOrg.resetWorkTimeDefinition();
+//            //TODO!!!! load any changed data from server
+//            //TODO optionally, remove done tasks??
+//            setKeepPos(null); //remove any scroll position since pull to refresh means we're at top of list
+//            refreshAfterEdit();
+//        });
 
         getToolbar().addSearchCommand((e) -> {
             String text = (String) e.getSource();
@@ -426,6 +426,9 @@ public class ScreenListOfItems extends MyForm {
     @Override
     public void refreshAfterEdit() {
 //    public void setupList() {
+        if (getKeepPos() == null) { //if no position set before, try to keep same scroll position
+            setKeepPos(new KeepInSameScreenPosition());
+        }
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
 
         getContentPane().removeAll();
@@ -452,21 +455,31 @@ public class ScreenListOfItems extends MyForm {
 //        getContentPane().add(CENTER, buildContentPaneForItemList(this.itemListFilteredSorted));
         parseIdMapReset();
         Container scrollableContainer = buildContentPaneForItemList(this.itemListOrg);
+                scrollableContainer.addPullToRefresh(() -> {
+            //refresh worktime
+            itemListOrg.resetWorkTimeDefinition();
+            //TODO!!!! load any changed data from server
+            //TODO optionally, remove done tasks??
+            setKeepPos(null); //remove any scroll position since pull to refresh means we're at top of list
+            refreshAfterEdit();
+        });
         getContentPane().add(CENTER, scrollableContainer);
 //        setTitleAnimation(scrollableContainer);
 
 //        revalidate(); //TODO: needed? YES
-        revalidateWithAnimationSafety(); //TODO: needed? YES
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
 //        }
-        restoreKeepPos();
+//        restoreKeepPos();
 //        InlineInsertNewElementContainer.setTextFieldEditableOnShowStatic(this); //if there is a InlineInsertNewTaskContainer then focus the input field
 
 //        revalidate(); //TODO: needed? YES
 //        animateHierarchy(300); not good since it visibly refreshes the screen
-        super.refreshAfterEdit();
         setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
+        super.refreshAfterEdit();
+        revalidateWithAnimationSafety(); //TODO: needed? YES
+        restoreKeepPos();
+//        setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1304,7 +1317,7 @@ public class ScreenListOfItems extends MyForm {
     }
 //    public static Button makeSubtaskButton(Item item, Container swipCont) {
 
-    public static Button makeSubtaskButton(Item item, SubtaskButtonFct longPressFunction) {
+    public static Button makeSubtaskButtonXXX(Item item, SubtaskButtonFct longPressFunction) {
         int numberUndoneSubtasks = item.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
         int totalNumberSubtasks = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 //        int totalNumberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks; //true: get subtasks, always necessary for a project
@@ -1831,7 +1844,7 @@ public class ScreenListOfItems extends MyForm {
 ////        if (keepPos!=null) keepPos.
 //</editor-fold>
 //EDIT Item in list
-        Button editItemButton = new Button() {
+        Button editItemButtonLongPress = new Button() {
             @Override
             public void longPointerPress(int x, int y) {
                 super.longPointerPress(x, y);
@@ -1839,6 +1852,7 @@ public class ScreenListOfItems extends MyForm {
                 Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
             }
         };
+        Button editItemButton = new Button();
 
         final Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
 
@@ -1970,9 +1984,9 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //CHALLENGE
-        if (item.getChallenge() != null) {
+        if (item.getChallengeN() != null) {
             Label challengeLabel; // = new Label();
-            challengeLabel = new Label(item.getChallenge().toString(), "ItemDetailsLabel");
+            challengeLabel = new Label(item.getChallengeN().toString(), "ItemDetailsLabel");
             if (Config.TEST) {
                 challengeLabel.setName("Challenge");
             }
@@ -2367,8 +2381,7 @@ refreshAfterEdit();
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
 //                ScreenTimer2.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
-                TimerStack.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), 
-                        MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem.getBoolean());//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+                TimerStack.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm());//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
 //                        }
             }));
             startTimer.setUIID("SwipeButtonTimer");
@@ -2601,7 +2614,7 @@ refreshAfterEdit();
         Container east = new Container(eastLayout);
 
 //EDIT Item in list
-        Button editItemButton = new Button() {
+        Button editItemButtonLongPress = new Button() {
             @Override
             public void longPointerPress(int x, int y) {
                 super.longPointerPress(x, y);
@@ -2609,6 +2622,7 @@ refreshAfterEdit();
                 Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
             }
         };
+        Button editItemButton = new Button();
 
         final Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
 

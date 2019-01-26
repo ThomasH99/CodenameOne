@@ -133,8 +133,8 @@ public class MultipleSelection {
             if (itm.getUrgencyN() != null) {
                 item.setUrgency(itm.getUrgencyN());
             }
-            if (itm.getChallenge() != null) {
-                item.setChallenge(itm.getChallenge());
+            if (itm.getChallengeN() != null) {
+                item.setChallenge(itm.getChallengeN());
             }
             if (itm.getDreadFunValueN() != null) {
                 item.setDreadFunValue(itm.getDreadFunValueN());

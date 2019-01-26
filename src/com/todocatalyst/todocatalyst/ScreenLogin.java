@@ -25,6 +25,7 @@ import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import com.parse4cn1.ParseQuery;
 import com.parse4cn1.ParseUser;
+import static com.todocatalyst.todocatalyst.MyUtil.cleanEmail;
 
 /**
  * The newsfeed form
@@ -292,8 +293,9 @@ public class ScreenLogin extends MyForm {
 
         createAccount.setCommand(Command.create("Create my account", Icons.iconPersonNew, (e2) -> {
             String errorMsg;
-            if ((errorMsg = createAccount(email.getText())) == null) {
-                MyPrefs.setString(MyPrefs.loginEmail, email.getText()); //store email for future use
+            String cleanEmail = cleanEmail(email.getText());
+            if ((errorMsg = createAccount(cleanEmail)) == null) {
+                MyPrefs.setString(MyPrefs.loginEmail, cleanEmail); //store email for future use
                 MyPrefs.setBoolean(MyPrefs.loginStoreEmail, true); //store email for future use
                 new ScreenMain().show();
             } else {
@@ -305,9 +307,10 @@ public class ScreenLogin extends MyForm {
 //        connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
         connect.setCommand(Command.create("Log in", Icons.iconPerson, (ev) -> { //Start/login**
             String errorMsg;
-            if ((errorMsg = loginUser(email.getText(), null, password.getText())) == null) {
+            String cleanEmail = cleanEmail(email.getText());
+            if ((errorMsg = loginUser(cleanEmail, null, password.getText())) == null) {
                 if (MyPrefs.loginEmail.getString().length() == 0) {
-                    MyPrefs.setString(MyPrefs.loginEmail, email.getText()); //store email for future use
+                    MyPrefs.setString(MyPrefs.loginEmail, cleanEmail); //store email for future use
                     MyPrefs.setBoolean(MyPrefs.loginStoreEmail, true); //store email for future use
                 }
                 new ScreenMain().show();
@@ -318,11 +321,12 @@ public class ScreenLogin extends MyForm {
         }));
 
         forgottenPassword.setCommand(Command.create("Forgot password", null, (ev) -> {
-            String errorMsg = validEmail(email.getText());
+            String cleanEmail = cleanEmail(email.getText());
+            String errorMsg = validEmail(cleanEmail);
             if (errorMsg == null) {
                 if (Dialog.show("Reset password", "Select OK to receive an email to reset your password", "OK", "Not now")) {
                     try {
-                        ParseUser.requestPasswordReset(email.getText()); //TODO read password - copy Amazon usability
+                        ParseUser.requestPasswordReset(cleanEmail); //TODO read password - copy Amazon usability
                     } catch (ParseException ex) {
                         Log.e(ex);
                     }

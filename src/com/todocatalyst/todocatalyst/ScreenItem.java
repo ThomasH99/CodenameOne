@@ -1394,14 +1394,14 @@ public class ScreenItem extends MyForm {
         prioCont.add(layoutN(Item.URGENCY, urgency, Item.URGENCY_HELP));//, null, false, false, true, true));
 
         MyComponentGroup challenge = new MyComponentGroup(Item.Challenge.getDescriptionList(), parseIdMap2,
-                () -> itemLS.getChallenge() == null ? "" : itemLS.getChallenge().getDescription(),
+                () -> itemLS.getChallengeN() == null ? "" : itemLS.getChallengeN().getDescription(),
                 (s) -> item.setChallenge(Item.Challenge.getValue(s)));
 //        cont.add(new Label("Difficulty")).add(challenge);
 //        prioCont.add(new Label("Difficulty")).add(BorderLayout.center(Container.encloseIn(new FlowLayout(),challenge)));
         if (challenge.getPreferredW() > Display.getInstance().getDisplayWidth()) { //if too wide, replace with the short version
             parseIdMap2.remove(challenge); //remove previous field!!
             challenge = new MyComponentGroup(Item.Challenge.getDescriptionList(true), parseIdMap2,
-                    () -> itemLS.getChallenge() == null ? "" : itemLS.getChallenge().getDescription(true),
+                    () -> itemLS.getChallengeN() == null ? "" : itemLS.getChallengeN().getDescription(true),
                     (s) -> item.setChallenge(Item.Challenge.getValue(s, true)));
         }
 //        prioCont.add(new Label(Item.CHALLENGE)).add(FlowLayout.encloseCenterMiddle(challenge));

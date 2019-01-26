@@ -10,7 +10,7 @@ package com.todocatalyst.todocatalyst;
  * @author Thomas
  */
 public class MyUtil {
-
+    
     public static String removeTrailingPrecedingSpacesNewLinesEtc(String inputStr) {
         //remove spaces in start of string:
         if (inputStr == null || inputStr.length() == 0) {
@@ -31,6 +31,10 @@ public class MyUtil {
 //        inputStr = inputStr.replace('\n',""); //remove 
         return inputStr;
     }
+    
+    public static String cleanEmail(String inputStr) {
+        return removeTrailingPrecedingSpacesNewLinesEtc(inputStr);
+    }
 
     /**
     https://stackoverflow.com/questions/11208479/how-do-i-initialize-a-byte-array-in-java
@@ -46,5 +50,5 @@ public class MyUtil {
         }
         return data;
     }
-
+    
 }

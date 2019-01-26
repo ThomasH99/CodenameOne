@@ -16,7 +16,7 @@ import com.codename1.ui.events.ActionEvent;
  */
 public class MyButtonLongPress extends Button {
 
-    Command shortPressCmd;
+//    Command shortPressCmd;
     Command longPressCmd;
     boolean ignoreActionEvent = false;
     boolean longPointerPress = false;
@@ -52,8 +52,8 @@ public class MyButtonLongPress extends Button {
     //    }
     //</editor-fold>
     public MyButtonLongPress(Command shortPressCmd, Command longPressCmd, Image icon) {
-        super();
-        this.shortPressCmd = shortPressCmd;
+        super(shortPressCmd);
+//        this.shortPressCmd = shortPressCmd;
         this.longPressCmd = longPressCmd;
         setCommand(shortPressCmd);
         setUIID("Label");
@@ -77,6 +77,7 @@ public class MyButtonLongPress extends Button {
     ////        ignoreActionEvent = true;
     //    }
     //</editor-fold>
+    @Override
     public void longPointerPress(int x, int y) {
         Log.p("MyButtonLongPress.longPointerPress(" + x + ", " + y + ")");
         super.longPointerPress(x, y);

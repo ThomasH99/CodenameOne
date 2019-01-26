@@ -770,10 +770,10 @@ public class FilterSortDef extends ParseObject {
                         : (i1, i2) -> compareLong(i2.getEffortEstimate(), i1.getEffortEstimate());
             case Item.PARSE_CHALLENGE:
                 return sortDescending
-                        //                        ? (i1, i2) -> i1.getChallenge().compareTo(i2.getChallenge())
-                        //                        : (i1, i2) -> i2.getChallenge().compareTo(i1.getChallenge());
-                        ? (i1, i2) -> compareNullValueLast(i1.getChallenge(), i2.getChallenge())
-                        : (i1, i2) -> compareNullValueLast(i2.getChallenge(), i1.getChallenge());
+                        //                        ? (i1, i2) -> i1.getChallengeN().compareTo(i2.getChallengeN())
+                        //                        : (i1, i2) -> i2.getChallengeN().compareTo(i1.getChallengeN());
+                        ? (i1, i2) -> compareNullValueLast(i1.getChallengeN(), i2.getChallengeN())
+                        : (i1, i2) -> compareNullValueLast(i2.getChallengeN(), i1.getChallengeN());
             case Item.PARSE_DREAD_FUN_VALUE:
                 return sortDescending
                         //                        ? (i1, i2) -> i1.getDreadFunValueN().compareTo(i2.getDreadFunValueN())
