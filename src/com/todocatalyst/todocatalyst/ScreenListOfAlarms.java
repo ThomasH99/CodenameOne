@@ -81,7 +81,7 @@ public class ScreenListOfAlarms extends MyForm {
         Form current = getCurrentFormAfterClosingDialogOrMenu();
 //        if ((current instanceof ScreenListOfAlarms)) { 
 //        if ((current == this)) {
-//            //if a new alarm has expired refresh the current screen
+//            //if a new alarm has expired removeFromCache the current screen
 ////            refreshAfterEdit();
 //        } else {
 //            //if listOfAlarms already shown when new alarm expires then keep the previous

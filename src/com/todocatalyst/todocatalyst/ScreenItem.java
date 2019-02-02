@@ -184,10 +184,10 @@ public class ScreenItem extends MyForm {
     @Override
     public void refreshAfterEdit() {
         super.refreshAfterEdit();
-        //NOT needed to refresh everything when a subtask has been added
+        //NOT needed to removeFromCache everything when a subtask has been added
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll(); //clear old content pane
-        buildContentPane(getContentPane()); //rebuild and refresh
+        buildContentPane(getContentPane()); //rebuild and removeFromCache
         revalidate(); //refresh form
         //TODO!!!! restore scroll position in expanded list of subtasks 
 //       super();
@@ -444,7 +444,7 @@ public class ScreenItem extends MyForm {
 //            @Override
 //            protected Component createNode(Object node, int depth) {
 //                Component cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> {
-//                    subTaskTree.refresh();
+//                    subTaskTree.removeFromCache();
 //                    subTaskTree.revalidate();
 //                }, false, //selectionMode not allowed for subtasks
 //                        null); //TODO save expandedObjects even for subtasks
@@ -462,7 +462,7 @@ public class ScreenItem extends MyForm {
 ////            protected Component createNode(Object node, int depth) {
 //////                Component cmp = ItemContainer.buildItemContainer((Item) node, itemList);
 ////                Component cmp = ScreenListOfItems.buildItemContainer((Item) node, itemList, () -> true, () -> {
-////                    subTaskTree.refresh();
+////                    subTaskTree.removeFromCache();
 ////                    subTaskTree.revalidate();
 ////                });
 //////                cmp.getSelectedStyle().setMargin(LEFT, depth * myDepthIndent);
@@ -1052,7 +1052,7 @@ public class ScreenItem extends MyForm {
 //                    if (dueDate.getDate().getTime() == 0 
 //                            && locallyEditedRepeatRule.getSpecifiedStartDateD().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
                 dueDate.setDate(locallyEditedRepeatRule.getSpecifiedStartDateD()); //set dueDate if set in RepeatRule //TODO!!!! or if due date *changed* in RepeatRule??
-//                        dueDate.repaint(); //enough to refresh on screen?? NO
+//                        dueDate.repaint(); //enough to removeFromCache on screen?? NO
 //                        refreshAfterEdit(); //optimize!!
                 revalidate(); //enough to update? YES
 //                    }
@@ -1184,7 +1184,7 @@ public class ScreenItem extends MyForm {
 //            @Override
 //            protected Component createNode(Object node, int depth) {
 //                Component cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> {
-//                    subTaskTree.refresh();
+//                    subTaskTree.removeFromCache();
 //                    subTaskTree.revalidate();
 //                }, false, //selectionMode not allowed for subtasks
 //                        null); //TODO save expandedObjects even for subtasks
@@ -1946,7 +1946,7 @@ public class ScreenItem extends MyForm {
 //        Container subTaskCont = new MyTree2(item) {
 //            @Override
 //            protected Component createNode(Object node, int depth) {
-//                Container cmp = buildItemContainer((Item) node, null, () -> true, () -> subTaskTree.refresh());
+//                Container cmp = buildItemContainer((Item) node, null, () -> true, () -> subTaskTree.removeFromCache());
 //                setIndent(cmp, depth);
 //                return cmp;
 //            }

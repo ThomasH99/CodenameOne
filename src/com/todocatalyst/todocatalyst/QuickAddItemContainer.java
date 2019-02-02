@@ -92,7 +92,7 @@ public class QuickAddItemContainer extends Container {
                 Item newItem = new Item(taskText,true);
                 newItem.setTemplate(optionTemplateEditMode);
                 MyForm thisForm = ((MyForm) getComponentForm());
-                new ScreenItem(newItem, (MyForm) getComponentForm(), () -> {
+                new ScreenItem2(newItem, (MyForm) getComponentForm(), () -> {
                     DAO.getInstance().save(newItem);
                     ScreenListOfItems.addNewTaskToListAndSave(newItem, itemListOrg, MyPrefs.insertNewSubtasksInScreenItemInStartOfLists.getBoolean()); //UI: always add subtasks to end of list (otherwise not natual)
 //                    ((MyForm) getComponentForm()).refreshAfterEdit();

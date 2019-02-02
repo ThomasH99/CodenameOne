@@ -105,7 +105,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
         textEntryField2 = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField2.setHint(element == null ? ENTER_TASK_NO_SWIPE_RIGHT : ENTER_TASK); //if no item, then don't show hint about swipe right for subtask
         textEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
-//        myForm.setEditOnShowOrRefresh(textEntryField2); //ensure fields enters edit mode after show() or refresh
+//        myForm.setEditOnShowOrRefresh(textEntryField2); //ensure fields enters edit mode after show() or removeFromCache
         if (element != null) {
             swipC.addSwipeOpenListener((ev) -> { //Swipe RIGHT/LEFT for subtask/task
                 //swipe right == make it a subtask //TODO!!!! use button/icon instead to mark it subtask eg [S] or indented subtask icon
@@ -121,7 +121,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
                     myForm.refreshAfterEdit();
                 } else {
                     textEntryField2.repaint(); //update with new hint
-                    revalidate(); //ensure refresh?! TODO necessary??!!
+                    revalidate(); //ensure removeFromCache?! TODO necessary??!!
                 }
             });
         }

@@ -43,8 +43,8 @@ class MyDurationPicker extends Picker implements SwipeClear {
 
     @Override
     protected void updateValue() {
-//        if (getType()==Display.PICKER_TYPE_TIME && getTime() != 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
 //        if (getType()==Display.PICKER_TYPE_TIME && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
+//        if (getType()==Display.PICKER_TYPE_TIME && getTime() != 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
         if (getType() == Display.PICKER_TYPE_DURATION && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
             setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
         } else {
@@ -107,11 +107,11 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //        this.zeroValuePattern = ""; // "<set>";
         this.zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN; // "<set>";
         this.defaultValueInMinutes = 0;
-//        setFormatter(new SimpleDateFormat() {
-//            public String format(Object value) {
-//                return MyDate.formatTimeDuration((Long) value);
-//            }
-//        });
+        setFormatter(new SimpleDateFormat() {
+            public String format(Object value) {
+                return MyDate.formatTimeDuration((Long) value);
+            }
+        });
         setMinuteStep(MyPrefs.durationPickerMinuteStep.getInt()); //TODO!! setting to select interval of 1/5 minutes
     }
 

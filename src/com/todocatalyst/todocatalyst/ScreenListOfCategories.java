@@ -288,7 +288,7 @@ public class ScreenListOfCategories extends MyForm {
 //                        }
 //                    } else if (dropTarget instanceof Item) {
 //                        if (draggedObject instanceof ItemList || draggedObject instanceof Category) {
-////                            refreshAfterDrop(); //TODO need to refresh for a drop which doesn't change anything??
+////                            refreshAfterDrop(); //TODO need to removeFromCache for a drop which doesn't change anything??
 //                            return; //UI: dropping an ItemList onto an Item not allowed
 //                        } else if (draggedObject instanceof Item) {
 //                            if (x < this.getWidth() / 3 * 2) {
@@ -514,7 +514,7 @@ public class ScreenListOfCategories extends MyForm {
                 Container cmp = null;
                 if (node instanceof Item) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.refresh(),
+//                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.removeFromCache(),
 //                            false, //selectionMode not allowed for Categories??
 //                            null); //TODO any reason to support operations on multiple selected categories?
 //TODO!!! store expanded itemLists:

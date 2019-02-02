@@ -3932,18 +3932,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 return new ArrayList(); //null; //always return a list (no null pointers)
             }
         } else { //Project
-            List<Item> itemList = getList();
+            List<Item> subtasks = getList();
 //            List<ItemAndListCommonInterface> sublist;
-            List<Item> sublist;
-            int size = itemList.size();
+            List<Item> leaftasks;
+            int size = subtasks.size();
 //            List<ItemAndListCommonInterface> result = null;
             List<Item> result = null;
             if (size > 0) {
                 result = new ArrayList();
                 for (int i = 0; i < size; i++) {
-                    sublist = itemList.get(i).getLeafTasksAsList(condition);
+                    leaftasks = subtasks.get(i).getLeafTasksAsList(condition);
 //                    if (sublist != null) {
-                    result.addAll(sublist);
+                    result.addAll(leaftasks);
 //                    }
                 }
             }
@@ -4438,6 +4438,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //if setting Waiting, ask if set 
         if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
             MyForm.dialogSetWaitingDateAndAlarm(this); //only call if we're changing TO Waiting status
+        }
+        //if setting Done, ask if set actual
+        if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
+            MyForm.dialogUpdateActualTime(this); //only call if we're changing TO Waiting status
         }
 
         if (updateSubtasks && isProject()) {
@@ -7173,6 +7177,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
 //    public List<WorkSlot> getWorkSlotListN() {
+    @Override
     public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
 //        if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
 //            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
@@ -8212,10 +8217,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public WorkTimeSlices getAllocatedWorkTimeN() {
         boolean reset = false;
+        
         WorkTimeSlices workTime = null;
         if (Config.WORKTIME_DETAILED_LOG) {
             Log.p("-> .getAllocatedWorkTime(" + reset + ") for Item \"" + this + "\"");
         }
+        
         //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
         long remaining = 0;
         List<? extends ItemAndListCommonInterface> subtasks = getList();
@@ -8226,6 +8233,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else { //I'm a leaf task
             remaining = getRemainingEffort(); //how much total workTime is required?
         }
+        
         //now iterate over workTimeProviders (returned by prio order) and get as much as possible from each
         List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
         for (ItemAndListCommonInterface prov : potentialProviders) {

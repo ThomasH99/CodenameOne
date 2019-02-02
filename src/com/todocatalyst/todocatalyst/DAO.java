@@ -43,7 +43,7 @@ public class DAO {
 
     private static DAO INSTANCE;
 //    private static final int QUERY_LIMIT = 10000;
-    private static final String FILE_DATE_FOR_LAST_CACHE_REFRESH = "TDC_cacheRefreshDate"; //marker for last local cache refresh - it stored only updated parseObjects will be cached
+    private static final String FILE_DATE_FOR_LAST_CACHE_REFRESH = "TDC_cacheRefreshDate"; //marker for last local cache removeFromCache - it stored only updated parseObjects will be cached
 
     public static DAO getInstance() {
         if (INSTANCE == null) {
@@ -72,8 +72,10 @@ public class DAO {
 
 //    CacheMap<String, ParseObject> cache = new CacheMap();
 //    CacheMap cache; // = new CacheMap(); //always initialize since DAO may be called before initializing cache via start() (https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html)
-    MyCacheMap cache; // = new CacheMap(); //always initialize since DAO may be called before initializing cache via start() (https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html)
-    MyCacheMap cacheWorkSlots;// = new CacheMap(); //optimize speed when searching only for WorkSlots
+//    MyCacheMap cache; // = new CacheMap(); //always initialize since DAO may be called before initializing cache via start() (https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html)
+    MyCacheMapHash cache; // = new CacheMap(); //always initialize since DAO may be called before initializing cache via start() (https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html)
+//    MyCacheMap cacheWorkSlots;// = new CacheMap(); //optimize speed when searching only for WorkSlots
+    MyCacheMapHash cacheWorkSlots;// = new CacheMap(); //optimize speed when searching only for WorkSlots
     Date latestCacheUpdateDate = new Date(MyDate.MIN_DATE); //start wtih minimal date
 //    Object temp;
 
@@ -188,6 +190,22 @@ public class DAO {
             } else if (parseObject instanceof Inbox) {
                 cache.delete(Inbox.CLASS_NAME);
             }
+        }
+    }
+
+    /**
+    remove parseObject from cache, if sub
+    @param parseObject 
+     */
+    public void removeFromCache(ParseObject parseObject) {
+        if (parseObject instanceof WorkSlot) {
+            cacheWorkSlots.delete(parseObject.getObjectIdP());
+        } else {
+            ItemAndListCommonInterface elt = (ItemAndListCommonInterface) parseObject;
+            for (ItemAndListCommonInterface subelt : elt.getList()) {
+                removeFromCache((ParseObject) subelt);
+            }
+            cache.delete(parseObject.getObjectIdP());
         }
     }
 
@@ -1457,6 +1475,10 @@ public class DAO {
     }
 
     public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks) {
+        return getAllItems(includeTemplates, onlyLeafTasks, false);
+    }
+
+    public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks, boolean onlyWithoutOwner) {
 
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         if (!includeTemplates) {
@@ -1465,6 +1487,11 @@ public class DAO {
         if (onlyLeafTasks) {
             query.whereDoesNotExist(Item.PARSE_SUBTASKS); //exclude if has subtasks
         }//        query2.include(Item.PARSE_TEXT);
+        if (onlyWithoutOwner) {
+            query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude if has subtasks
+            query.whereDoesNotExist(Item.PARSE_OWNER_LIST); //exclude if has subtasks
+            query.whereDoesNotExist(Item.PARSE_OWNER_TEMPLATE_LIST); //exclude if has subtasks
+        }
 //        query2.include(Item.PARSE_SUBTASKS);
 //        query2.include(Item.PARSE_CATEGORIES);
 //        query2.include(Item.PARSE_OWNER_ITEM); //ensure we fetchFromCacheOnly the owner (eg for drag & drop)
@@ -1755,6 +1782,28 @@ public class DAO {
         //Projects are defined as containing subtasks and not being owner by another Item
 //        query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
         query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, new Date(System.currentTimeMillis() - MyPrefs.touchedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS));
+//        query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, MyDate.getStartOfToday()); //NOT needed since cannot be touched in future
+        query.orderByDescending(Item.PARSE_UPDATED_AT);
+        query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+
+        List<Item> results = null;
+        try {
+            results = query.find();
+            fetchListElementsIfNeededReturnCachedIfAvail(results);
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return results;
+//        return (List<Item>) getAll(Item.CLASS_NAME);
+    }
+
+    public List<Item> getTouched24hLog() {
+        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(query);
+
+        //Projects are defined as containing subtasks and not being owner by another Item
+//        query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
+        query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, new Date(System.currentTimeMillis() - MyDate.DAY_IN_MILLISECONDS));
 //        query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, MyDate.getStartOfToday()); //NOT needed since cannot be touched in future
         query.orderByDescending(Item.PARSE_UPDATED_AT);
         query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
@@ -2717,6 +2766,12 @@ public class DAO {
     }
 
 //    private WorkSlotList getWorkSlots(Date startDate, Date endDate) {
+    /**
+    return sorted on startDate
+    @param startDate
+    @param endDate
+    @return 
+     */
     private List<WorkSlot> getWorkSlots(Date startDate, Date endDate) {
 
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
@@ -6480,7 +6535,8 @@ public class DAO {
 //        if (cache == null || forceCreationOfNewInMemoryCache) {
         if (true || cache == null) { //NO reason to keep old cache, even if cleaned??!
 //            cache = null; //force GC
-            cache = new MyCacheMap("ALL");
+//            cache = new MyCacheMap("ALL");
+            cache = new MyCacheMapHash("ALL");
 
         }
         cache.setCacheSize(MyPrefs.cacheDynamicSize.getInt()); //persist cached elements
@@ -6498,7 +6554,8 @@ public class DAO {
         if (cacheWorkSlots
                 == null) { // || forceCreationOfNewCache) {
             cacheWorkSlots
-                    = new MyCacheMap("WS"); //prefix neccessary to not confuse locally cached items
+                    //                    = new MyCacheMap("WS"); //prefix neccessary to not confuse locally cached items
+                    = new MyCacheMapHash("WS"); //prefix neccessary to not confuse locally cached items
             cacheWorkSlots
                     .setCacheSize(MyPrefs.cacheDynamicSizeWorkSlots
                             .getInt()); //persist cached elements
@@ -6524,7 +6581,7 @@ public class DAO {
     }
 
     /**
-     * reset and refresh cache (from repair menu)
+     * reset and removeFromCache cache (from repair menu)
      */
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void cacheClearAndRefreshAllDataXXX() {
@@ -6650,13 +6707,13 @@ public class DAO {
             List<RepeatRuleParseObject> repeatRules = getAllRepeatRulesFromParse(lastCacheRefreshDate, now);
             Log.p("Caching CategoryList");
 //            CategoryList categoryList = getCategoryList(true); //will cache the list of Categories
-            cacheDelete(CategoryList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will refresh an update cache
+            cacheDelete(CategoryList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
             Log.p("Caching ItemListList");
 //            ItemListList itemListList = getItemListList(true); //will cache the list of ItemLists
-            cacheDelete(ItemListList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will refresh an update cache
+            cacheDelete(ItemListList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
             Log.p("Caching TemplateList");
 //            TemplateList templateList = getTemplateList(true); //will cache the list of Templates
-            cacheDelete(TemplateList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will refresh an update cache
+            cacheDelete(TemplateList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
 //            Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
 
             Display.getInstance().callSerially(() -> {

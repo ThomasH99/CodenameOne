@@ -224,7 +224,7 @@ public class ScreenMain extends MyForm {
 //            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())).getWorkSlotList(), true).show();
 //            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), true).show();
             new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null,
-                    () -> {/*no need to refresh workslotlist from DAO since it will be updated within the screen in a consistent way with the parse server list */
+                    () -> {/*no need to removeFromCache workslotlist from DAO since it will be updated within the screen in a consistent way with the parse server list */
                     }, true).show();
         }
         );
@@ -287,12 +287,31 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(touched, toolbar, cont, "**");
 
+        Command touched24h = MyReplayCommand.create(SCREEN_TOUCHED_24H/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
+                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true); //true => show most recent first
+                    new ScreenListOfItems(SCREEN_TOUCHED_24H, () -> new ItemList(SCREEN_TOUCHED_24H, 
+                            DAO.getInstance().getTouched24hLog(), filterSort, true), ScreenMain.this, (i) -> {
+                    },
+                            ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                            | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
+                    ).show();
+                }
+        );
+        makeAndAddButtons(touched24h, toolbar, cont, "**");
+
         Command allTasks = MyReplayCommand.create(SCREEN_ALL_TASKS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     new ScreenListOfItems(SCREEN_ALL_TASKS_TITLE, () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(), true), ScreenMain.this, (i) -> {
                     }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                 }
         );
-        makeAndAddButtons(allTasks, toolbar, cont, "**");
+        Command allTasksWithoutOwner = MyReplayCommand.create("Tasks without owner**"/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
+                    new ScreenListOfItems("Tasks without owner**", 
+                            () -> new ItemList("Tasks without owner", DAO.getInstance().getAllItems(false,false,true), true), 
+                            ScreenMain.this, (i) -> {
+                    }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                }
+        );
+        makeAndAddButtons(allTasksWithoutOwner, toolbar, cont, "**");
 
         Command tutorial = MyReplayCommand.create(SCREEN_TUTORIAL/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     new ScreenListOfItems(SCREEN_TUTORIAL, () -> new ItemList(SCREEN_TUTORIAL, DAO.getInstance().getAllItems(), true), ScreenMain.this, (i) -> {

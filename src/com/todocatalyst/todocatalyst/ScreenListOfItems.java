@@ -316,10 +316,9 @@ public class ScreenListOfItems extends MyForm {
 //            itemListOrg.resetWorkTimeDefinition();
 //            //TODO!!!! load any changed data from server
 //            //TODO optionally, remove done tasks??
-//            setKeepPos(null); //remove any scroll position since pull to refresh means we're at top of list
+//            setKeepPos(null); //remove any scroll position since pull to removeFromCache means we're at top of list
 //            refreshAfterEdit();
 //        });
-
         getToolbar().addSearchCommand((e) -> {
             String text = (String) e.getSource();
             Container compList = null;
@@ -455,13 +454,16 @@ public class ScreenListOfItems extends MyForm {
 //        getContentPane().add(CENTER, buildContentPaneForItemList(this.itemListFilteredSorted));
         parseIdMapReset();
         Container scrollableContainer = buildContentPaneForItemList(this.itemListOrg);
-                scrollableContainer.addPullToRefresh(() -> {
+        scrollableContainer.addPullToRefresh(() -> {
+            Log.p("Pull to refresh...");
+            DAO.getInstance().removeFromCache(itemListOrg);
             //refresh worktime
             itemListOrg.resetWorkTimeDefinition();
             //TODO!!!! load any changed data from server
             //TODO optionally, remove done tasks??
-            setKeepPos(null); //remove any scroll position since pull to refresh means we're at top of list
+            setKeepPos(null); //remove any scroll position since pull to removeFromCache means we're at top of list
             refreshAfterEdit();
+            Log.p("Pull to refresh...DONE");
         });
         getContentPane().add(CENTER, scrollableContainer);
 //        setTitleAnimation(scrollableContainer);
@@ -472,7 +474,6 @@ public class ScreenListOfItems extends MyForm {
 //        }
 //        restoreKeepPos();
 //        InlineInsertNewElementContainer.setTextFieldEditableOnShowStatic(this); //if there is a InlineInsertNewTaskContainer then focus the input field
-
 //        revalidate(); //TODO: needed? YES
 //        animateHierarchy(300); not good since it visibly refreshes the screen
         setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
@@ -516,7 +517,7 @@ public class ScreenListOfItems extends MyForm {
 //                    ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                     setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllElementsInSublist(item, true);
-                    new ScreenItem(item, ScreenListOfItems.this, () -> {
+                    new ScreenItem2(item, ScreenListOfItems.this, () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                    DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        boolean addToList = (itemListOrg != null && itemListOrg.getObjectId() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
@@ -625,7 +626,7 @@ public class ScreenListOfItems extends MyForm {
                     }
 //                        setKeepPos(new KeepInSameScreenPosition()); //NO, move to position of new item
                     selectedTemplate.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
-                    new ScreenItem(newTemplateInstantiation, ScreenListOfItems.this, () -> {
+                    new ScreenItem2(newTemplateInstantiation, ScreenListOfItems.this, () -> {
 //                        DAO.getInstance().save(newTemplateInstance); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            newTemplateInstance.setOwner(itemListOrg); //works for any type of owner
 //                            DAO.getInstance().save(newTemplateInstance); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
@@ -822,7 +823,7 @@ public class ScreenListOfItems extends MyForm {
                     if (isSelectionMode()) {
                         Item itemWithNewValues = new Item();
                         setKeepPos(new KeepInSameScreenPosition());
-                        new ScreenItem(itemWithNewValues, ScreenListOfItems.this, () -> {
+                        new ScreenItem2(itemWithNewValues, ScreenListOfItems.this, () -> {
 //                        MultipleSelection.performOnAll(itemListFilteredSorted, MultipleSelection.setAnything(itemWithNewValues));
                             MultipleSelection.performOnAll(selectedObjects, MultipleSelection.setAnything(itemWithNewValues));
                             refreshAfterEdit();
@@ -1710,9 +1711,16 @@ public class ScreenListOfItems extends MyForm {
         } else {
             status = new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
                 if (newStatus != oldStatus) {
-                    TimerStack.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(item); //call this here to avoid triggering if status is changed from within the Timer
+                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(item); //call this here to avoid triggering if status is changed from within the Timer
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
+
+                    //Ask to update 
+                    if (!wasTimerRunningForTheTask && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
+                        dialogUpdateActualTime(item);
+                    }
+
                     myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
+
                     item.setStatus(newStatus);
 //                        if (refreshOnItemEdits != null) {
 //                            refreshOnItemEdits.launchAction();
@@ -1861,7 +1869,7 @@ public class ScreenListOfItems extends MyForm {
 //                Item item = (Item) mainCont.getClientProperty("item"); //TODO!!!! is this needed, why notjust access 'item'??
 //                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
             myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-            new ScreenItem(item, (MyForm) swipCont.getComponentForm(), () -> {
+            new ScreenItem2(item, (MyForm) swipCont.getComponentForm(), () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    KeepInSameScreenPosition keepPos = new KeepInSameScreenPosition(null, swipCont); //TODO!!!!!! porblem with access to this
 //                    KeepInSameScreenPosition keepPos = new KeepInSameScreenPosition(); //TODO!!!!!! porblem with access to this
@@ -2201,7 +2209,7 @@ refreshAfterEdit();
         //SWIPEABLE INSERT TASK/SUBTASK
 //        if (myForm instanceof ScreenItem || myForm instanceof ScreenListOfItems) { //TODO!!!! only activate in manually sorted (and persisted) lists
         boolean insertSwipeNewTaskCont = (myForm instanceof ScreenListOfItems && !((ScreenListOfItems) myForm).isSortOn())
-                || (myForm instanceof ScreenItem); //TODO!!!! only activate in manually sorted (and persisted) lists
+                || (myForm instanceof ScreenItem2); //TODO!!!! only activate in manually sorted (and persisted) lists
         if (false && insertSwipeNewTaskCont) { //TODO!!!! only activate in manually sorted (and persisted) lists
 //            buttonSwipeContainer.add(new Label("  "));
             swipeActionContainer.add(new Label("  "));
@@ -2390,7 +2398,7 @@ refreshAfterEdit();
             Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, Icons.iconNewItemFromTemplate, (e) -> {
                 Item newTemplateInstantiation = new Item();
                 item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
-                new ScreenItem(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
+                new ScreenItem2(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
                     DAO.getInstance().save(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
                     ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation));
 //                            refreshOnItemEdits.launchAction(); //NOT necessary, since item not saved in list of templates

@@ -76,7 +76,7 @@ public class ScreenListOfWorkSlots extends MyForm {
      * @param workSlotList
      * @param owner
      * @param previousForm
-     * @param updateItemListOnDone called to update the workTime for the tasks after the workSlots have been edited to refresh the workTime, e.g. if new slots were added/changed/removed
+     * @param updateItemListOnDone called to update the workTime for the tasks after the workSlots have been edited to removeFromCache the workTime, e.g. if new slots were added/changed/removed
      * @param refreshWorkSlotList
      */
 //    ScreenListOfWorkSlots(String nameOfOwner, WorkSlotList workSlotList, ItemAndListCommonInterface owner, MyForm previousForm,
@@ -314,13 +314,19 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        west.add(L10NManager.getInstance().formatDateTimeShort(workSlot.getStartTime()));
 //        west.add(MyDate.formatDateTimeNew(workSlot.getStartTimeD())+" - "+MyDate.formatDateTimeNew(new Date(workSlot.getEndTime())));
 //</editor-fold>
-        String startTimeStr = (workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime())
-                ? "Now"
-                : MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
-        startTimeStr += "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
+//        String startTimeStr = (workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime())
+//                ? "Now"
+//                : MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
+//        startTimeStr += "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
+//                + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
+        String startTimeStr = MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
+        Label startTimeLabel = new Label(startTimeStr,
+                workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime");
+        String endTimeStr = "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
                 + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
-        //                + " " + MyDate.formatTimeDuration(workSlot.getDurationAdjusted())// + ")" //DON'T show duration since end-time is shown
-        west.add(startTimeStr);
+        Label endTimeLabel = new Label(endTimeStr, "WorkSlotEndTime");
+//        west.add(startTimeStr);
+        west.add(startTimeLabel).add(endTimeLabel);
 //            static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate, boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat) {
 
 //        east.addComponent(new Label("[" + workSlot.getDurationAdjustedInMinutes(now) + "]"));

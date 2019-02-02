@@ -260,7 +260,7 @@ public class InlineInsertNewElementContainer extends Container {
 //                if (false) {
 //                    getComponentForm().animateLayout(300);//TODO: enough to update the field?
 //                }
-//                revalidate(); //ensure refresh?!
+//                revalidate(); //ensure removeFromCache?!
 //            });
 ////            westCont.add(swipeIconLabel);
 //        }

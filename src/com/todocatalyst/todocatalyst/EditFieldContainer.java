@@ -5,7 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.components.OnOffSwitch;
+//import com.codename1.components.OnOffSwitch;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
@@ -38,7 +38,8 @@ public class EditFieldContainer extends Container {
         setUIID("EditFieldContainer");
         Container fieldContainer = this;
 
-        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
+//        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
+        if ( field instanceof MyOnOffSwitch) {
         } else {
             if (field instanceof WrapButton) {
                 ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");

@@ -117,11 +117,11 @@ public class SubtaskContainer extends Container {
 //        subtaskContainer.setPreferredSize(d);
 
         //ADD NEW SUBTASK - SOUTH
-//        Container quickAddTaskField = new QuickAddItemContainer("Add subtask", item, templateEditMode, () -> revalidate()); //TODO!!!! must refresh Screen when adding first tasks!
+//        Container quickAddTaskField = new QuickAddItemContainer("Add subtask", item, templateEditMode, () -> revalidate()); //TODO!!!! must removeFromCache Screen when adding first tasks!
         Container quickAddTaskField = new QuickAddItemContainer("Add subtask", item, templateEditMode, () -> {
             myForm.refreshAfterEdit();
             myForm.scrollListToTopOrBottom(!MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //scroll to where new item was inserted
-        }, myForm); //TODO!!!! must refresh Screen when adding first tasks!
+        }, myForm); //TODO!!!! must removeFromCache Screen when adding first tasks!
         quickAddTaskField.setHidden(hasSubtasks && !MyPrefs.alwaysShowSubtasksExpandedInScreenItem.getBoolean()); //hide quickAdd if either has no subtasks or if default setting is to show Subtasks
         subtaskContainer.add(BorderLayout.SOUTH, quickAddTaskField);
 //            addSubtaskField.setHidden(!(!hasSubtasks || MyPrefs.alwaysShowSubtasksExpandedInScreenItem.getBoolean()));

@@ -23,10 +23,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.ui.Display;
 import com.codename1.io.Storage;
-import java.io.IOException;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -53,17 +50,17 @@ public class MyCacheMapHash {
     private String cachePrefix = "";
     private boolean alwaysStore;
     private int storageKey = -1;
+    private static String CACHE_ID = "$CACHE$";
 
-    private Hashtable getStorageCacheContent() {
-        if (storageCacheContentVec == null) {
-            storageCacheContentVec = (Hashtable) Storage.getInstance().readObject("$CACHE$Idx" + cachePrefix);
-            if (storageCacheContentVec == null) {
-                storageCacheContentVec = new Hashtable();
-            }
-        }
-        return storageCacheContentVec;
-    }
-
+//    private Hashtable getStorageCacheContent() {
+//        if (storageCacheContentVec == null) {
+//            storageCacheContentVec = (Hashtable) Storage.getInstance().readObject("$CACHE$Idx" + cachePrefix);
+//            if (storageCacheContentVec == null) {
+//                storageCacheContentVec = new Hashtable();
+//            }
+//        }
+//        return storageCacheContentVec;
+//    }
     /**
      * Default constructor
      */
@@ -101,6 +98,8 @@ public class MyCacheMapHash {
         this.cacheSize = cacheSize;
     }
 
+    /*private*/ static final Object LOCK = new Object();
+    
     /**
      * Puts the given key/value pair in the cache
      *
@@ -108,31 +107,39 @@ public class MyCacheMapHash {
      * @param value the value
      */
     public void put(Object key, Object value) {
-        if (cacheSize <= memoryCache.size()) {
-            // we need to find the oldest entry
-            Enumeration e = memoryCache.keys();
-            long oldest = System.currentTimeMillis();
-            Object oldestKey = null;
-            Object[] oldestValue = null;
-            while (e.hasMoreElements()) { //optimization: if stored in age order, iterate from end of list?
-                Object currentKey = e.nextElement();
-                Object[] currentValue = (Object[]) memoryCache.get(currentKey);
-                long currentAge = ((Long) currentValue[0]).longValue();
-                if (currentAge <= oldest || oldestValue == null) {
-                    oldest = currentAge;
-                    oldestKey = currentKey;
-                    oldestValue = currentValue;
-                }
-            }
-            placeInStorageCache(oldestKey, oldest, oldestValue[1]);
-            weakCache.put(oldestKey, Display.getInstance().createSoftWeakRef(oldestValue[1]));
-            memoryCache.remove(oldestKey);
+//        if (cacheSize <= memoryCache.size()) {
+//            // we need to find the oldest entry
+//            Enumeration e = memoryCache.keys();
+//            long oldest = System.currentTimeMillis();
+//            Object oldestKey = null;
+//            Object[] oldestValue = null;
+//            while (e.hasMoreElements()) { //optimization: if stored in age order, iterate from end of list?
+//                Object currentKey = e.nextElement();
+//                Object[] currentValue = (Object[]) memoryCache.get(currentKey);
+//                long currentAge = ((Long) currentValue[0]).longValue();
+//                if (currentAge <= oldest || oldestValue == null) {
+//                    oldest = currentAge;
+//                    oldestKey = currentKey;
+//                    oldestValue = currentValue;
+//                }
+//            }
+//            placeInStorageCache(oldestKey, oldest, oldestValue[1]);
+//            weakCache.put(oldestKey, Display.getInstance().createSoftWeakRef(oldestValue[1]));
+//            memoryCache.remove(oldestKey);
+//        }
+//        long lastAccess = System.currentTimeMillis();
+//        memoryCache.put(key, new Object[]{new Long(lastAccess), value});
+//        if (alwaysStore) {
+//            placeInStorageCache(key, lastAccess, value);
+//        }
+//        if (get(key) == null) {
+ synchronized (LOCK) {
+        Object val = memoryCache.get(key);
+        if (val == null || !val.equals(value)) {
+            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value);
         }
-        long lastAccess = System.currentTimeMillis();
-        memoryCache.put(key, new Object[]{new Long(lastAccess), value});
-        if (alwaysStore) {
-            placeInStorageCache(key, lastAccess, value);
-        }
+        memoryCache.put(key, value);
+    }
     }
 
     /**
@@ -141,9 +148,9 @@ public class MyCacheMapHash {
      * @param key entry to remove from the cache
      */
     public void delete(Object key) {
-        memoryCache.remove(key);
-        weakCache.remove(key);
-        Hashtable storageCacheContent = getStorageCacheContent();
+//        memoryCache.remove(key);
+//        weakCache.remove(key);
+//        Hashtable storageCacheContent = getStorageCacheContent();
 //        int s = storageCacheContent.size();
 //        for (int iter = 0; iter < s; iter++) {
 //            Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
@@ -156,10 +163,18 @@ public class MyCacheMapHash {
 //                return;
 //            }
 //        }
-        if (storageCacheContent.remove(key) != null) {
-            Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + key.toString());
-            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
-        }
+//        if (storageCacheContent.remove(key) != null) {
+//            Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + key.toString());
+//            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+//        }
+//        if (memoryCache.remove(key) != null) {
+//            Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString());
+////            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+//        }
+synchronized (LOCK) {
+        memoryCache.remove(key);
+        Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString()); //always remove, even if not in memoryCache
+    }
     }
 
     /**
@@ -169,46 +184,58 @@ public class MyCacheMapHash {
      * @return value from a previous put or null
      */
     public Object get(Object key) {
-        Object[] o = (Object[]) memoryCache.get(key);
-        if (o != null) {
-            return o[1];
-        }
-        Object ref = weakCache.get(key);
-        if (ref != null) {
-            ref = Display.getInstance().extractHardRef(ref);
-            if (ref != null) {
-                // cache hit! Promote it to the hard cache again
-                put(key, ref);
-                return ref;
+        Object val=null;
+synchronized (LOCK) {        
+     val = memoryCache.get(key);
+        if (val == null) {
+            val = Storage.getInstance().readObject(CACHE_ID + cachePrefix + key.toString());
+            if (val != null) {
+                put(key, val);
             }
         }
-        if (storageCacheSize > 0) {
-            Hashtable storageCacheContent = getStorageCacheContent();
-//            for (int iter = 0, size = storageCacheContent.size(); iter < size; iter++) { //THJ: optimization
-//                Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
-//                if (obj[1].equals(key)) { //THJ: stored format: { value, lastAccessed, key } so must be '2'. NOPE: index is {lastAccessed, key}
-//                    // place the object back into the memory cache and return the value
-//                    Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
-//                    if (v != null) {
-//                        Object val = v.elementAt(0);
-//                        put(key, val);
-//                        return val;
-//                    }
-//                    return null;
-//                }
+        }
+        return val;
+////                 
+//        Object[] o = (Object[]) memoryCache.get(key);
+//        if (o != null) {
+//            return o[1];
+//        }
+//        Object ref = weakCache.get(key);
+//        if (ref != null) {
+//            ref = Display.getInstance().extractHardRef(ref);
+//            if (ref != null) {
+//                // cache hit! Promote it to the hard cache again
+//                put(key, ref);
+//                return ref;
 //            }
-            Object temp = storageCacheContent.get(key);
-            if (temp != null) {
-                Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
-                if (v != null) {
-                    Object val = v.elementAt(0);
-                    put(key, val);
-                    return val;
-                }
-                return null;
-            }
-        }
-        return null;
+//        }
+//        if (storageCacheSize > 0) {
+//            Hashtable storageCacheContent = getStorageCacheContent();
+////            for (int iter = 0, size = storageCacheContent.size(); iter < size; iter++) { //THJ: optimization
+////                Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
+////                if (obj[1].equals(key)) { //THJ: stored format: { value, lastAccessed, key } so must be '2'. NOPE: index is {lastAccessed, key}
+////                    // place the object back into the memory cache and return the value
+////                    Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
+////                    if (v != null) {
+////                        Object val = v.elementAt(0);
+////                        put(key, val);
+////                        return val;
+////                    }
+////                    return null;
+////                }
+////            }
+//            Object temp = storageCacheContent.get(key);
+//            if (temp != null) {
+//                Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
+//                if (v != null) {
+//                    Object val = v.elementAt(0);
+//                    put(key, val);
+//                    return val;
+//                }
+//                return null;
+//            }
+//        }
+//        return null;
     }
 
     /**
@@ -216,19 +243,19 @@ public class MyCacheMapHash {
      * load as many as possible to memory to speed up access.
      */
     public void loadCacheToMemory() {
-        Hashtable storageCacheContent = getStorageCacheContent();
-        boolean oldAlwaysStore = alwaysStore;
-        alwaysStore = false; //avoid to persist to StorageCache (very slow)
-        int size = Math.min(cacheSize, Math.min(storageCacheContent.size(), storageCacheSize)); //iterate over as many items as possible, starting with most recently accessed
-//        for (int i = 0; i < size; i++) { //THJ: optimization
-//            Object key = ((Object[]) storageCacheContent.elementAt(i))[1];
-        for (Object key : storageCacheContent.keySet()) {
-            Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
-            if (v != null) {
-                put(key, v.elementAt(0));
-            }
-        }
-        alwaysStore = oldAlwaysStore;
+//        Hashtable storageCacheContent = getStorageCacheContent();
+//        boolean oldAlwaysStore = alwaysStore;
+//        alwaysStore = false; //avoid to persist to StorageCache (very slow)
+//        int size = Math.min(cacheSize, Math.min(storageCacheContent.size(), storageCacheSize)); //iterate over as many items as possible, starting with most recently accessed
+////        for (int i = 0; i < size; i++) { //THJ: optimization
+////            Object key = ((Object[]) storageCacheContent.elementAt(i))[1];
+//        for (Object key : storageCacheContent.keySet()) {
+//            Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
+//            if (v != null) {
+//                put(key, v.elementAt(0));
+//            }
+//        }
+//        alwaysStore = oldAlwaysStore;
     }
 
     /**
@@ -236,7 +263,7 @@ public class MyCacheMapHash {
      */
     public void clearAllCache() {
         clearMemoryCache();
-        clearStorageCache();
+//        clearStorageCache();
     }
 
     /**
@@ -244,7 +271,7 @@ public class MyCacheMapHash {
      */
     public void clearMemoryCache() {
         memoryCache.clear();
-        weakCache.clear();
+//        weakCache.clear();
     }
 
     private void placeInStorageCache(Object key, long lastAccessed, Object value) {
@@ -294,25 +321,24 @@ public class MyCacheMapHash {
 //        }
     }
 
-    private void placeInStorageCache(int offset, Object key, long lastAccessed, Object value) {
-        Vector v = new Vector();
-        // stored format: { value, lastAccessed, key } 
-        v.addElement(value);
-        Long l = new Long(lastAccessed);
-        v.addElement(l);
-        v.addElement(key);
-        Storage.getInstance().writeObject("$CACHE$" + cachePrefix + key.toString(), v);
-        Hashtable storageCacheContent = getStorageCacheContent();
-        if (storageCacheContent.size() > offset) {
-//            storageCacheContent.setElementAt(new Object[]{l, key}, offset); //format of storage index: { lastAccessed, key } 
-            storageCacheContent.put(key, value); //format of storage index: { lastAccessed, key } 
-        } else {
-//            storageCacheContent.insertElementAt(new Object[]{l, key}, offset);
-            storageCacheContent.put(key, value); //format of storage index: { lastAccessed, key } 
-        }
-        Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
-    }
-
+//    private void placeInStorageCache(int offset, Object key, long lastAccessed, Object value) {
+//        Vector v = new Vector();
+//        // stored format: { value, lastAccessed, key } 
+//        v.addElement(value);
+//        Long l = new Long(lastAccessed);
+//        v.addElement(l);
+//        v.addElement(key);
+//        Storage.getInstance().writeObject("$CACHE$" + cachePrefix + key.toString(), v);
+//        Hashtable storageCacheContent = getStorageCacheContent();
+//        if (storageCacheContent.size() > offset) {
+////            storageCacheContent.setElementAt(new Object[]{l, key}, offset); //format of storage index: { lastAccessed, key } 
+//            storageCacheContent.put(key, value); //format of storage index: { lastAccessed, key } 
+//        } else {
+////            storageCacheContent.insertElementAt(new Object[]{l, key}, offset);
+//            storageCacheContent.put(key, value); //format of storage index: { lastAccessed, key } 
+//        }
+//        Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+//    }
     /**
      * Returns the keys for all the objects currently in cache, this is useful
      * to traverse all the objects and refresh them without actually deleting
@@ -324,28 +350,28 @@ public class MyCacheMapHash {
      * cache.
      */
     public Vector getKeysInCache() {
-        Vector r = new Vector();
-        Enumeration en = memoryCache.keys();
-        while (en.hasMoreElements()) {
-            r.addElement(en.nextElement());
-        }
-//        Vector storageCacheContent = getStorageCacheContent();
-//        for (int iter = 0; iter < storageCacheContent.size(); iter++) {
-//            Object[] o = (Object[]) storageCacheContent.elementAt(iter);
-//            if (!r.contains(o[1])) {
-//                r.addElement(o[1]);
-//            }
+//        Vector r = new Vector();
+//        Enumeration en = memoryCache.keys();
+//        while (en.hasMoreElements()) {
+//            r.addElement(en.nextElement());
 //        }
-        return r;
+////        Vector storageCacheContent = getStorageCacheContent();
+////        for (int iter = 0; iter < storageCacheContent.size(); iter++) {
+////            Object[] o = (Object[]) storageCacheContent.elementAt(iter);
+////            if (!r.contains(o[1])) {
+////                r.addElement(o[1]);
+////            }
+////        }
+//        return r;
+        return new Vector(memoryCache.keySet());
     }
 
-    private Vector fetchFromStorageCache(int offset) {
-//        Vector v = getStorageCacheContent();
-//        Object[] arr = (Object[]) v.elementAt(offset);
-//        return (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + arr[1].toString());
-return null;
-    }
-
+//    private Vector fetchFromStorageCache(int offset) {
+////        Vector v = getStorageCacheContent();
+////        Object[] arr = (Object[]) v.elementAt(offset);
+////        return (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + arr[1].toString());
+//        return null;
+//    }
     /**
      * Clears the storage cache
      */

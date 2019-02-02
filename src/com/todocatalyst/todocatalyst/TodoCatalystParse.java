@@ -1,5 +1,6 @@
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.analytics.AnalyticsService;
 import com.codename1.background.BackgroundFetch;
 import com.codename1.components.InfiniteProgress;
 import com.codename1.io.ConnectionRequest;
@@ -187,6 +188,8 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             }
         });
 
+        AnalyticsService.init("UA-133276111-1", "todocatalyst.com");
+        AnalyticsService.setAppsMode(true);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -642,7 +645,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         com.codename1.io.Util.register(FilterSortDef.CLASS_NAME, FilterSortDef.class); //register Externalizable class
         com.codename1.io.Util.register(WorkSlot.CLASS_NAME, WorkSlot.class); //register Externalizable class
 
-        Display.getInstance().setLongPointerPressInterval(600); //UI: 700 is maybe a bit long, 650 a bit too long. set delay for activating LongPress (default 800 is too fast??)
+        Display.getInstance().setLongPointerPressInterval(400); //UI: 600 too long, 700 is maybe a bit long, 650 a bit too long. set delay for activating LongPress (default 800 is too fast??)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //add a 'theme layer' on top of an existing theme
 //            UIManager.getInstance().addThemeProps(theme.getTheme("NameOfLayerTheme"));
@@ -781,7 +784,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                 Log.p("Count of Item in Parse = " + count, Log.DEBUG);
 
 //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
-                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 
                 //ALARMS - initialize
                 AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
@@ -799,6 +802,10 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //            new ScreenLogin(theme).go();
             new ScreenLogin().go();
         }
+        
+        Display.getInstance().setProperty("iosHideToolbar", "true"); //prevent ttoolbar over keyboard to show (Done/Next button): https://stackoverflow.com/questions/48727116/codename-one-done-button-of-ios-virtual-keyboard
+        if (Display.getInstance().canForceOrientation())
+        Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
 

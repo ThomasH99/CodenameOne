@@ -3408,8 +3408,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else {
             return null; //new WorkSlotList();
         }
-
     }
+    
+     public WorkSlotList getWorkSlotListCurrent(boolean refreshWorkSlotListFromDAO) {
+         WorkSlotList workSlots = getWorkSlotListN(refreshWorkSlotListFromDAO);
+         return null;
+     }
 
 //    @Override
 //    public WorkSlotList getWorkSlotListN() {

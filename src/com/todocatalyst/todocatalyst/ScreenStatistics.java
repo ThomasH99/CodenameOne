@@ -4,25 +4,12 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.components.Accordion;
-import com.codename1.ui.Command;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.Container;
-import com.codename1.ui.Button;
-import com.codename1.ui.CheckBox;
-import com.codename1.ui.Label;
 import com.codename1.ui.Component;
-import com.codename1.ui.TextField;
-import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.BoxLayout;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
-import static com.todocatalyst.todocatalyst.ScreenListOfItemLists.buildItemListContainer;
-import java.util.HashSet;
 import java.util.List;
-import static com.todocatalyst.todocatalyst.ScreenListOfItems.buildItemContainer;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 //import com.java4less.rchart.*;
@@ -38,7 +25,7 @@ import java.util.Date;
 public class ScreenStatistics extends MyForm {
     //TODO 
 
-    private static String screenTitle = "Lists";
+    private static final String screenTitle = "Lists";
 //    private ItemList itemListList;
 //    private boolean draggableMode = false;
 //    Command sortOnOff = null;
@@ -137,7 +124,7 @@ public class ScreenStatistics extends MyForm {
         Date startDate = new Date(System.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
         Date endDate = new Date();
 //        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
-        workSlots = new WorkSlotList(DAO.getInstance().getWorkSlots(startDate));
+        workSlots = new WorkSlotList(DAO.getInstance().getWorkSlots(startDate), true,true);
         itemsSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate);
 //        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
     }
@@ -586,7 +573,7 @@ public class ScreenStatistics extends MyForm {
 ////                        }
 ////                    } else if (dropTarget instanceof Item) {
 ////                        if (draggedObject instanceof ItemList || draggedObject instanceof Category) {
-//////                            refreshAfterDrop(); //TODO need to refresh for a drop which doesn't change anything??
+//////                            refreshAfterDrop(); //TODO need to removeFromCache for a drop which doesn't change anything??
 ////                            return; //UI: dropping an ItemList onto an Item not allowed
 ////                        } else if (draggedObject instanceof Item) {
 ////                            if (x < this.getWidth() / 3 * 2) {

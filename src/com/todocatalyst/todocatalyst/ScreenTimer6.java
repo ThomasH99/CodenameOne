@@ -94,7 +94,7 @@ public class ScreenTimer6 extends MyForm {
     //DONE the Total should show the sum of the previous Actual and the Timer (and be updated as the timer is)
     //
     final static String SCREEN_TITLE = "Timer";
-    final static String TIMER_REPLAY = "StartTimer-";
+//    final static String TIMER_REPLAY = "StartTimer-";
 
     private TimerInstance timerInstance;//= new TimerStack();
     private Command backCommand = null;

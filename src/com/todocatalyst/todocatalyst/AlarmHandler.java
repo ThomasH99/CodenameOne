@@ -29,7 +29,7 @@ import java.util.List;
  * @author Thomas
  */
 public class AlarmHandler {
-    //DONE when changing the repeat alarm interval, refresh all already set alarms (or cancel all set repeat alarms if deactivating repeat alarms)
+    //DONE when changing the repeat alarm interval, removeFromCache all already set alarms (or cancel all set repeat alarms if deactivating repeat alarms)
     //DONE enough with only one snooze allowed for a task (eg are separate snoozes needed for normal alarm and waiting alarm??). Yes, unlikely there'll be overlap, and more than one snooze reminder would be confusing/annoying
     //TODO 
 

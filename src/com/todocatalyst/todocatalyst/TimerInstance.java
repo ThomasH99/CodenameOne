@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class TimerInstance extends ParseObject {
     //TODO re-read timer stack from server regularly to check (in particular) if a timer has been started on another device so to update UI
-    //TODO save timer stack fo server, in background, and refresh
+    //TODO save timer stack fo server, in background, and removeFromCache
     //TODO when starting app, check if timer stack is non-empty, and show if so (e.g. show little timer window at bottom of screen, even for paused timer)
     //TODO 
     //TODO 
@@ -262,6 +262,18 @@ public class TimerInstance extends ParseObject {
             remove(PARSE_TIMER_ELAPSED_TIME);
         }
 //        setStartTime(new Date(0));
+    }
+
+    /**
+    updates elapsed time after the user editing it, will either update startTime if currently running, or elapsed time if stopped/paused
+    @param newElapsedTime 
+    */
+    public final void updateElapsedTime(long newElapsedTime) {
+           if (isRunning()) {
+             setStartTime(System.currentTimeMillis() - newElapsedTime); // + addPreviousActual;
+        } else {
+               setElapsedTime(newElapsedTime);
+           }
     }
 
     public long getElapsedTime() {

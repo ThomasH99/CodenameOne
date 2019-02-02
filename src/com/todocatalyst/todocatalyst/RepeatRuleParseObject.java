@@ -1432,7 +1432,7 @@ public class RepeatRuleParseObject
     //    public void updateRepeatInstancesWhenRuleWasEditedOLD(RepeatRuleObjectInterface repeatRuleOriginator) {
     ////<editor-fold defaultstate="collapsed" desc="comment">
     //        /**
-    //         * //algorithm: ~refresh (reuse existing rule, to avoid
+    //         * //algorithm: ~removeFromCache (reuse existing rule, to avoid
     //         * creating/deleting when edited) //get any already created repeat
     //         * instances //create dates for new/edited rule //for as many instances
     //         * as should be generated (encapsulate this! w moreInstances() and
@@ -1515,7 +1515,7 @@ public class RepeatRuleParseObject
     //    public void updateRepeatInstancesWhenRuleWasCreatedOrEditedPrev(RepeatRuleObjectInterface repeatRuleOriginator) {
     ////<editor-fold defaultstate="collapsed" desc="comment">
     //        /**
-    //         * //algorithm: ~refresh (reuse existing rule, to avoid
+    //         * //algorithm: ~removeFromCache (reuse existing rule, to avoid
     //         * creating/deleting when edited) //get any already created repeat
     //         * instances //create dates for new/edited rule //for as many instances
     //         * as should be generated (encapsulate this! w moreInstances() and
@@ -1796,7 +1796,7 @@ public class RepeatRuleParseObject
     //    public void updateRepeatInstancesWhenRuleWasCreatedOrEditedXXX(RepeatRuleObjectInterface repeatRuleOriginator) {
     ////<editor-fold defaultstate="collapsed" desc="comment">
     //        /**
-    //         * //algorithm: ~refresh (reuse existing rule, to avoid
+    //         * //algorithm: ~removeFromCache (reuse existing rule, to avoid
     //         * creating/deleting when edited) //get any already created repeat
     //         * instances //create dates for new/edited rule //for as many instances
     //         * as should be generated (encapsulate this! w moreInstances() and
@@ -1878,7 +1878,7 @@ public class RepeatRuleParseObject
     //    public void updateRepeatInstancesWhenRuleWasCreatedOrEditedOLD(RepeatRuleObjectInterface repeatRuleOriginator) {
     ////<editor-fold defaultstate="collapsed" desc="comment">
     //        /**
-    //         * //algorithm: ~refresh (reuse existing rule, to avoid
+    //         * //algorithm: ~removeFromCache (reuse existing rule, to avoid
     //         * creating/deleting when edited) //get any already created repeat
     //         * instances //create dates for new/edited rule //for as many instances
     //         * as should be generated (encapsulate this! w moreInstances() and
@@ -2422,7 +2422,7 @@ public class RepeatRuleParseObject
 //    public void updateRepeatInstancesWhenRuleIsCreatedXXX(RepeatRuleObjectInterface repeatRuleOriginator) {
 ////<editor-fold defaultstate="collapsed" desc="comment">
 //        /**
-//         * //algorithm: ~refresh (reuse existing rule, to avoid
+//         * //algorithm: ~removeFromCache (reuse existing rule, to avoid
 //         * creating/deleting when edited) //get any already created repeat
 //         * instances //create dates for new/edited rule //for as many instances
 //         * as should be generated (encapsulate this! w moreInstances() and

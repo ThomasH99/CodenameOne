@@ -26,6 +26,9 @@ import com.parse4cn1.ParseObject;
 import com.parse4cn1.ParseQuery;
 import com.parse4cn1.ParseUser;
 import static com.todocatalyst.todocatalyst.MyUtil.cleanEmail;
+//import com.codename1.admob;
+//import com.codename1.nui.*;
+//import com.codename1.nui.NTextField;
 
 /**
  * The newsfeed form
@@ -61,6 +64,9 @@ public class ScreenLogin extends MyForm {
         //TODO change login screen to show 2 text/ad screens, swipe them left to get to login fields (like ?? app)
         super("Login", null, () -> {
         });
+        
+//        AdMobManager ad;
+//        NTextField n;
     }
 
     public void go() {
@@ -71,15 +77,15 @@ public class ScreenLogin extends MyForm {
         EasyThread thread = EasyThread.start("cacheUpdate");
 //            if (true) {
 //                thread.run(() -> {
-//                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //                });
 //            } else {
-//                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            }
 //            boolean refreshDataInBackground = true;
         if (refreshDataInBackground) {
             thread.run((success) -> {
-                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true)) { //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true)) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
                     success.onSucess(null);
                 }
                 thread.kill();
@@ -88,7 +94,7 @@ public class ScreenLogin extends MyForm {
                 Display.getInstance().callSerially(() -> {
 //                if (newDataLoaded) {
                     Form f = Display.getInstance().getCurrent();
-                    //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values - not with new version!)
+                    //don't removeFromCache: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values - not with new version!)
                     if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain)) { // && !(f instanceof ScreenItem)) {
                         //TODO!!! show "Running" symbyl after like 2 seconds
 //                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
@@ -102,7 +108,7 @@ public class ScreenLogin extends MyForm {
         } else {
 //            Dialog ip = new InfiniteProgress().showInfiniteBlocking(); //DONE in DAO.cacheLoadDataChangedOnServer
             //TODO!!!! show waiting symbol "loading your tasks..."
-            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            ip.dispose();
         }
         //ALARMS - initialize
@@ -121,7 +127,7 @@ public class ScreenLogin extends MyForm {
     }
 
     public void go(boolean forceLaunchForTest) {
-        //Check if already logged in, if so, refresh cache
+        //Check if already logged in, if so, removeFromCache cache
         //if not logged in, show window to create account or log in
         ParseUser parseUser = getLastUserSessionFromStorage();
         Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
@@ -145,15 +151,15 @@ public class ScreenLogin extends MyForm {
 //            EasyThread thread = EasyThread.start("cacheUpdate");
 ////            if (true) {
 ////                thread.run(() -> {
-////                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+////                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 ////                });
 ////            } else {
-////                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+////                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 ////            }
 //            boolean refreshDataInBackground = true;
 //            if (refreshDataInBackground) {
 //                thread.run((success) -> {
-//                    if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//                    if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //                        success.onSucess(null);
 //                    }
 //                    thread.kill();
@@ -162,7 +168,7 @@ public class ScreenLogin extends MyForm {
 //                    Display.getInstance().callSerially(() -> {
 ////                if (newDataLoaded) {
 //                        Form f = Display.getInstance().getCurrent();
-//                        //don't refresh: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
+//                        //don't removeFromCache: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
 //                        if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain) && !(f instanceof ScreenItem)) {
 //                            //TODO!!! show "Running" symbyl after like 2 seconds
 ////                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
@@ -174,7 +180,7 @@ public class ScreenLogin extends MyForm {
 //                    });
 //                });
 //            } else {
-//                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            }
 //            //ALARMS - initialize
 //            AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
@@ -218,6 +224,8 @@ public class ScreenLogin extends MyForm {
         }
 
         TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
+//        NTextField password = new NTextField("", "Password", 20, TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+//        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 
 //        BorderLayout b1 = new BorderLayout();
 //        b1.defineLandscapeSwap(BorderLayout.NORTH, BorderLayout.WEST);
@@ -643,7 +651,7 @@ public class ScreenLogin extends MyForm {
 //
 //    private void initCacheAndStorageXXX() {
 //        //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
-//        DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//        DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //
 //    }
 //
@@ -679,7 +687,7 @@ public class ScreenLogin extends MyForm {
 //                Log.p("Count of Item in Parse = " + count, Log.DEBUG);
 //
 ////            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
-//                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and refresh as data comes in
+//                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //
 //                //ALARMS - initialize
 //                AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background

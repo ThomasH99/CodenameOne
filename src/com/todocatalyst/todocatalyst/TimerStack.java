@@ -24,6 +24,7 @@ import com.codename1.ui.TextArea;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.events.DataChangedListener;
+import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
@@ -196,7 +197,7 @@ class TimerStack {
         if (timerInstance != null) {
             //find next item to run timer on, most likely either next in current list/project, or the one interrupted
             Item timedItem = timerInstance.getTimedItem();
-            if (timedItem == null || !isValidItemForTimer(timedItem)) {
+            if (timedItem == null) {// || !isValidItemForTimer(timedItem)) { //isValid only relevant if used to initialize a new list
                 goToNextTimedItem();
                 timerInstance = getCurrentTimerInstanceN();
                 if (timerInstance != null) {
@@ -859,15 +860,18 @@ class TimerStack {
      *
      * DOES currently NOT store any other values edited in the timer What
      * happens next time the timer is called??
+    return true if Timer was running for the task. 
      */
-    public void stopTimerIfRunningOnThisItemOnStartTimerOnNext(Item item) { //boolean continueWithNextItem // 
+    public boolean stopTimerIfRunningOnThisItemOnStartTimerOnNext(Item item) { //boolean continueWithNextItem // 
+        boolean wasTimerRunningForTheTask = false;
         if (item == null || getCurrentTimerInstanceN() == null) {
 //            return false;
-            return;
+            return wasTimerRunningForTheTask;
         }
 
 //        if (item.equals(getCurrentTimerInstanceN().getTimedItemN())) { //if it's currently timed task...
         if (item.equals(getTimedItemN())) { //if it's currently timed task...
+            wasTimerRunningForTheTask = true;
             moveToNextTask(); //simply move to next one
         } else { //see if interrupted timers were timing item
             int timerIndex = activeTimers.size() - 1;
@@ -877,6 +881,7 @@ class TimerStack {
 
 //                if (item.equals(timerInstance.getTimedItemN())) { //if timer is (or was if down in the stack) running on this specific task
                 if (item.equals(getTimedItemN())) { //if timer is (or was if down in the stack) running on this specific task
+                    wasTimerRunningForTheTask = true;
                     boolean timerWasRunning = timerInstance.isInterruptedWhileRunning();
                     if (true || timerWasRunning) {
                         //update item with elapsed time 
@@ -896,6 +901,7 @@ class TimerStack {
             }
 //        return false;
         }
+        return wasTimerRunningForTheTask;
     }
 
     private boolean isItemOrListAlreadyBeingTimed(Item timedItemOrProject, ItemList itemList) {
@@ -994,8 +1000,7 @@ class TimerStack {
         }
 
         boolean timeEvenInvalidItemsOrProjects = startedOnIndividualItemOrProject
-                && (timedItemOrProject != null
-                && !isValidItemForTimer(timedItemOrProject))
+                && (timedItemOrProject != null && !isValidItemForTimer(timedItemOrProject))
                 && MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem.getBoolean();
         TimerInstance newTimerInstance = new TimerInstance(timedItemOrProject, itemList, timeEvenInvalidItemsOrProjects);
         Item newTimedItem = newTimerInstance.getTimedItem();
@@ -1250,6 +1255,63 @@ class TimerStack {
     ) {
         this.smallContainer = smallContainer;
     }
+//    private static Container getContentPaneSouth() {
+//        return getContentPaneSouth(Display.getInstance().getCurrent());
+//    }
+
+    private static Container getContentPaneSouth(Form form) {
+//        Form form = Display.getInstance().getCurrent();
+        if (form != null) {
+            Container formContentPane = form.getContentPane();
+            if (!(form instanceof ScreenTimer6)) {
+                Layout contentPaneLayout = formContentPane.getLayout();
+                if (contentPaneLayout instanceof BorderLayout) {
+                    Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                    if (southComponent instanceof Container) {
+                        return (Container) southComponent;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+    return the container into which the smallTimer should be interted. Return null if no smallTimer should be shown. 
+    Override to disable smallTimer or place it somewhere else. 
+    @return 
+     */
+    static protected Container getContainerForSmallTimer() {
+        return getContainerForSmallTimer(Display.getInstance().getCurrent());
+    }
+
+    static protected Container getContainerForSmallTimer(Form form) {
+        Container timerContainer = null;
+//        Form form = this;
+//        if (form instanceof ScreenListOfItemLists || form instanceof ScreenListOfItems
+//                || form instanceof ScreenStatistics
+//                || form instanceof ScreenListOfWorkSlots || form instanceof ScreenListOfCategories) {
+        if (form instanceof MyForm && !(form instanceof ScreenCategoryPicker
+                || form instanceof ScreenListOfAlarms
+                || form instanceof ScreenLogin || form instanceof ScreenObjectPicker
+                || form instanceof ScreenRepair || form instanceof ScreenTimer6)) {
+//        }else {
+            Container formContentPane = form.getContentPane();
+            Layout contentPaneLayout = formContentPane.getLayout();
+            if (contentPaneLayout instanceof BorderLayout) {
+//                timerContainer = getContentPaneSouth(form);
+                Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                if (southComponent instanceof Container) {
+                    timerContainer = (Container) southComponent;
+                } else if (southComponent == null) {
+                    Container newCont = new Container(BoxLayout.y());
+                    formContentPane.add(BorderLayout.SOUTH, newCont);
+                    timerContainer = newCont;
+                }
+            }
+        }
+        return timerContainer;
+    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private Container getSmallContainerXXX() {
@@ -1309,7 +1371,7 @@ class TimerStack {
 ////            Container timerForContainer = MyForm.getContainerForSmallTimer();
 //            Container timerForContainer = MyForm.getContainerForSmallTimer(form);
 //            if (timerForContainer != null) {
-        Container timerForContainer = MyForm.getContainerForSmallTimer(form);
+        Container timerForContainer = getContainerForSmallTimer(form);
 
         if (timerForContainer != null) { //if no container, do nothing (avoid e.g. the case where ScreenLogin tries to load timers before login completed)
             TimerInstance timerInstance = getInstance().getCurrentTimerInstanceN();
@@ -1439,7 +1501,7 @@ class TimerStack {
 
         MyForm myCurrentForm = (MyForm) currentForm;
         if (myCurrentForm instanceof ScreenTimer6) {
-            //full screen timer currently shown, so refresh it
+            //full screen timer currently shown, so removeFromCache it
             myCurrentForm.refreshAfterEdit();
         } else { //other form than ScreenTimer6
             myCurrentForm.setKeepPos(new KeepInSameScreenPosition());
@@ -1447,7 +1509,7 @@ class TimerStack {
             if (MyPrefs.timerEnableShowingSmallTimerWindow.getBoolean() && MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean()) {
                 Container small = buildContentPaneSmall(myCurrentForm); //refresh the small container
                 addSmallTimerWindowIfTimerIsRunning(myCurrentForm, small);
-                myCurrentForm.refreshAfterEdit(); //always refresh, e.g. to update for Done tasks
+                myCurrentForm.refreshAfterEdit(); //always removeFromCache, e.g. to update for Done tasks
             } else { //show full screen timer
                 new ScreenTimer6(myCurrentForm, timerInstance).show();
             }
@@ -1468,7 +1530,7 @@ class TimerStack {
         }
         MyForm myForm = (MyForm) form;
         if (myForm instanceof ScreenTimer6) {
-            //full screen timer currently shown, so refresh it
+            //full screen timer currently shown, so removeFromCache it
 //            ((ScreenTimer6) form).refreshAfterEdit();
             myForm.refreshAfterEdit();
         } else { //other form than ScreenTimer6
@@ -1489,7 +1551,7 @@ class TimerStack {
                         setSmallContainer(small); //if successfully added, then save it
                     }
                 }
-                myForm.refreshAfterEdit(); //always refresh, e.g. to update for Done tasks
+                myForm.refreshAfterEdit(); //always removeFromCache, e.g. to update for Done tasks
             } else { //show full screen timer
 //                Form form = Display.getInstance().getCurrent();
 //                if (form instanceof MyForm || isReplayInProgress) {
@@ -1550,7 +1612,7 @@ class TimerStack {
         ItemList itemList = timerInstance.getItemList();
 
         Button elapsedTimeButton = new Button("", "TimerTimer" + (fullScreenTimer ? "" : "Small"));
-        MyTextArea description;
+        MyTextField description;
 
         MyCheckBox status = new MyCheckBox(timedItem.getStatus());
 //    private Button status;
@@ -1562,48 +1624,19 @@ class TimerStack {
         Button editItemButton;
         Picker hiddenElapsedTimePicker = new MyDurationPicker();
         hiddenElapsedTimePicker.setHidden(true); //hiddenElapsedTimePicker must be added to a Form, but we don't want to show it, only activate it via a longpress on the timer button
-        Button timerStartStopButton = new Button() {
+        MyButtonLongPress timerStartStopButton = new MyButtonLongPress() {
+            int maxWidthSoFar = 0;
+
             @Override
-            public void longPointerPress(int x, int y) {
-                if (false) {
-                    super.longPointerPress(x, y); //seems calling super.longPointerPress will start/stop the timer on longPress
-                }
-                hiddenElapsedTimePicker.setDuration(timerInstance.getElapsedTimeToDisplay()); //must edit total elapsed time since that is what is shown
-                hiddenElapsedTimePicker.startEditingAsync();
-                hiddenElapsedTimePicker.addActionListener((e) -> {
-                    TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
-                    //UI: OK to longPress a running timer (no need to stop it, will simply adjust timer on Done
-                    if (timerInstance != null) {
-
-                        long oldElapsedTime = timerInstance.getElapsedTime();
-                        long oldElapsedTotalDisplayedTime = timerInstance.getElapsedTimeToDisplay();
-
-                        if (MyPrefs.timerShowTotalActualInTimer.getBoolean()) {
-                            //adjust elapsed time
-                            long editedElapsedTime = hiddenElapsedTimePicker.getDuration();
-                            long diff = editedElapsedTime - oldElapsedTotalDisplayedTime; //NB can also be negative if timer was increased
-                            long newElapsedTime = Math.max(0, oldElapsedTime + diff);
-                            timerInstance.setElapsedTime(newElapsedTime);
-
-                            //since we have edited the total (elapsed+old actual) we may also need to reduce the old actual 
-//                            long itemActualReduction = -diff > oldElapsedTime ? -diff - oldElapsedTime : 0;
-                            long itemActualReduction = oldElapsedTime + diff < 0 ? -(oldElapsedTime + diff) : 0;
-                            if (itemActualReduction > 0) {
-                                long itemOldActual = timedItem.getActualEffortProjectTaskItself();
-                                long itemNewActual = itemOldActual - itemActualReduction;
-                                timedItem.setActualEffort(itemNewActual);
-                            }
-                        } else { //enough to just adjust the elapsed time
-                            long editedElapsedTime = hiddenElapsedTimePicker.getDuration();
-                            timerInstance.setElapsedTime(editedElapsedTime);
-                        }
-                    }
-                    hiddenElapsedTimePicker.stopEditing(null);
-                    refreshOrShowTimerUI();
-                });
-                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
+            public Dimension getPreferredSize() {
+                Dimension newDimension = super.getPreferredSize();
+                maxWidthSoFar = Math.max(maxWidthSoFar, newDimension.getWidth());
+                newDimension.setWidth(maxWidthSoFar);
+                return newDimension;
             }
         };
+
+//        };
         //TODO!!!!! longpress should activate the duration picker 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -1629,7 +1662,6 @@ class TimerStack {
 //            }));
 //        }
 //</editor-fold>
-
         SpanButton gotoNextTaskButtonWithItemText = null;
 //        Picker elapsedTimePicker;
 //        UITimer timer;
@@ -1661,6 +1693,51 @@ class TimerStack {
             }
         };
 
+        timerStartStopButton.setLongPressCommand(Command.create("", null, ev -> {//));{
+//            @Override
+//            public void longPointerPress(int x, int y) {
+//                if (false) {
+//                    super.longPointerPress(x, y); //seems calling super.longPointerPress will start/stop the timer on longPress
+//                }
+            hiddenElapsedTimePicker.setDuration(timerInstance.getElapsedTimeToDisplay()); //must edit total elapsed time since that is what is shown
+            hiddenElapsedTimePicker.startEditingAsync();
+            hiddenElapsedTimePicker.addActionListener((e) -> {
+                TimerInstance timerInstance2 = TimerStack.getInstance().getCurrentTimerInstanceN();
+                //UI: OK to longPress a running timer (no need to stop it, will simply adjust timer on Done
+                if (timerInstance2 != null) {
+
+                    long oldElapsedTime = timerInstance2.getElapsedTime();
+                    long oldElapsedTotalDisplayedTime = timerInstance2.getElapsedTimeToDisplay();
+
+                    if (MyPrefs.timerShowTotalActualInTimer.getBoolean()) {
+                        //adjust elapsed time
+                        long editedElapsedTime = hiddenElapsedTimePicker.getDuration();
+                        long diff = editedElapsedTime - oldElapsedTotalDisplayedTime; //NB can also be negative if timer was increased
+                        long newElapsedTime = Math.max(0, oldElapsedTime + diff);
+//                        timerInstance2.setElapsedTime(newElapsedTime);
+                        timerInstance2.updateElapsedTime(newElapsedTime);
+
+                        //since we have edited the total (elapsed+old actual) we may also need to reduce the old actual 
+//                            long itemActualReduction = -diff > oldElapsedTime ? -diff - oldElapsedTime : 0;
+                        long itemActualReduction = oldElapsedTime + diff < 0 ? -(oldElapsedTime + diff) : 0;
+                        if (itemActualReduction > 0) {
+                            long itemOldActual = timedItem.getActualEffortProjectTaskItself();
+                            long itemNewActual = itemOldActual - itemActualReduction;
+                            timedItem.setActualEffort(itemNewActual);
+                        }
+                    } else { //enough to just adjust the elapsed time
+                        long editedElapsedTime = hiddenElapsedTimePicker.getDuration();
+//                        timerInstance2.setElapsedTime(editedElapsedTime);
+                        timerInstance2.updateElapsedTime(editedElapsedTime);
+                    }
+                }
+                hiddenElapsedTimePicker.stopEditing(null);
+                refreshElapsedTime.actionPerformed(null);
+                refreshTotalActualEffort.actionPerformed(null);
+            });
+//                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
+        }));
+
         Runnable updateTimerDisplayForCurrentForm = () -> {
 //                new Runnable() {   public void run() {
             // refreshDisplayedTimerInfo();  called on regular updates of the timer screen, as well as on app relaunch
@@ -1685,8 +1762,11 @@ class TimerStack {
 //</editor-fold>
             //UI: It is OK to start timer on a completed task, it will simply add more time to actual
             if (status.getStatus() == ItemStatus.CREATED //DON'T revert eg cancelled/done/waiting task to ongoing just because time is spent on it
-                    && timerInstance.getElapsedTime() >= MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS) {
-                ASSERT.that(timedItem.getStatus() == ItemStatus.CREATED, "timedItem.status is CREATED, while status.getStatus()=" + status.getStatus());
+                    //use getElapsedTotalTime since we don't want to change only because elpased itself gets bigger than threshold
+                    && timerInstance.getElapsedTotalTime()
+                    >= MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS) {
+                ASSERT.that(timedItem.getStatus() == ItemStatus.CREATED,
+                        "timedItem.status is " + timedItem.getStatus() + " while status.getStatus()=" + status.getStatus());
                 status.setStatus(ItemStatus.ONGOING, false); //UI: as soon as Timer is started, task status is set to Ongoing (except if Waiting or Ongoing or Completed)   
                 timedItem.setStatus(ItemStatus.ONGOING);
                 status.repaint(); //update UI
@@ -1983,7 +2063,7 @@ class TimerStack {
 
         status.setStatusChangeHandler((oldStatus, newStatus) -> {
             if (newStatus != oldStatus) {
-                timedItem.setStatus(status.getStatus()); //must do *before* calling commands, otherwise refresh will show old value!
+                timedItem.setStatus(status.getStatus()); //must do *before* calling commands, otherwise removeFromCache will show old value!
                 switch (newStatus) {
                     case DONE:
                         cmdSetCompletedAndGotoNextTaskOrExit.actionPerformed(null);
@@ -2059,13 +2139,14 @@ class TimerStack {
 
         if (fullScreenTimer) {
             //TODO!!! do NOT use item.isInteruptTask() since we may later continue working on a task that was originally created as an interrupt but after that is just treated as a normal task
-            description = new MyTextArea(Item.DESCRIPTION_HINT, 100, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
+            description = new MyTextField(Item.DESCRIPTION_HINT, 100, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
                 @Override
                 public void longPointerPress(int x, int y) {
                     Log.p("longPointerPress on Timer text area");
                     //TODO!!! call "Regular tasks"
                 }
             };
+            description.setUIID("ScreenItemTaskText");
             description.setColumns(100);
             description.setActAsLabel(true);
 //                MyForm.makeField(Item.PARSE_TEXT, description, () -> timedItem.getText(),
@@ -2080,14 +2161,19 @@ class TimerStack {
                 form.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
             }
             description.setText(timedItem.getText());
-        } else {
-            description = new MyTextArea(Item.DESCRIPTION_HINT, 100, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY);
+        } else { //smallTimer
+            description = new MyTextField(Item.DESCRIPTION_HINT, 100, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY);
             description.setColumns(100);
             description.setActAsLabel(true);
             description.setUIID("Label");
             description.setEditable(true); //true=editable (but will look like a label until clicked), false=not editable in small container
             description.setText(timedItem.getText());
+            if (timedItem.isInteruptOrInstantTask() && description.getText().equals("")) {
+//                    contentPane.getComponentForm().setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
+                form.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
+            }
         }
+
         description.addActionListener((e) -> {
             timedItem.setText(description.getText());
             DAO.getInstance().saveInBackground(timedItem);
@@ -2178,6 +2264,7 @@ class TimerStack {
                 }
                 //refresh timer whens topped (since update of display may be a bit behind - otherwise a new timer on a different device may show a different value
                 refreshElapsedTime.actionPerformed(null);
+                refreshTotalActualEffort.actionPerformed(null);
 //                    timerStartStopButton.setIcon(Icons.iconTimerStartLabelStyle); //iconTimerStartTimer);
 //                    timerStartStopButton.setUIID("TimerTimer" + (fullScreenTimer ? "" : "Small") + "Paused"); //iconTimerStartTimer);
 //                    timerStartStopButton.repaint(); //this is enough to update the value on the screen? NOPE: doesn't increase the size as hours are added!
@@ -2307,7 +2394,7 @@ class TimerStack {
                     () -> timedItem.getComment(), (t) -> timedItem.setComment((String) t),
                     () -> comment.getText(), (t) -> comment.setText((String) t), null, parseIdMap2
             );
-            Container commentContainer = ScreenItem.makeCommentContainer(comment);
+            Container commentContainer = ScreenItem2.makeCommentContainer(comment);
             contentPane.add(BorderLayout.center(commentContainer)); //TODO add full screen edit for Notes
 
             //Action buttons
@@ -2316,6 +2403,7 @@ class TimerStack {
             int textPos = Button.RIGHT; //BOTTOM;
 
             contentPane.add(hiddenElapsedTimePicker);
+            contentPane.setScrollableY(true); //since the size of the timer may overflow
 
             if (timedItem.isInteruptOrInstantTask()) {
                 Item interruptedItem = timedItem.getTaskInterrupted();

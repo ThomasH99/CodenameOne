@@ -192,10 +192,10 @@ public class ScreenItem2 extends MyForm {
     @Override
     public void refreshAfterEdit() {
         super.refreshAfterEdit();
-        //NOT needed to refresh everything when a subtask has been added
+        //NOT needed to removeFromCache everything when a subtask has been added
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll(); //clear old content pane
-        buildContentPane(getContentPane()); //rebuild and refresh
+        buildContentPane(getContentPane()); //rebuild and removeFromCache
         revalidate(); //refresh form
         //TODO!!!! restore scroll position in expanded list of subtasks 
 //       super();
@@ -452,7 +452,7 @@ public class ScreenItem2 extends MyForm {
 //            @Override
 //            protected Component createNode(Object node, int depth) {
 //                Component cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> {
-//                    subTaskTree.refresh();
+//                    subTaskTree.removeFromCache();
 //                    subTaskTree.revalidate();
 //                }, false, //selectionMode not allowed for subtasks
 //                        null); //TODO save expandedObjects even for subtasks
@@ -470,7 +470,7 @@ public class ScreenItem2 extends MyForm {
 ////            protected Component createNode(Object node, int depth) {
 //////                Component cmp = ItemContainer.buildItemContainer((Item) node, itemList);
 ////                Component cmp = ScreenListOfItems.buildItemContainer((Item) node, itemList, () -> true, () -> {
-////                    subTaskTree.refresh();
+////                    subTaskTree.removeFromCache();
 ////                    subTaskTree.revalidate();
 ////                });
 //////                cmp.getSelectedStyle().setMargin(LEFT, depth * myDepthIndent);
@@ -615,6 +615,7 @@ public class ScreenItem2 extends MyForm {
 //            comment.startEditing(); //TODO in CN bug db #1827: start using startEditAsync() is a better approach
 //        }));
 //</editor-fold>
+//if (false){
         comment.getAllStyles().setMarginRight(0);
         comment.getAllStyles().setPaddingRight(0);
 
@@ -623,7 +624,7 @@ public class ScreenItem2 extends MyForm {
         addTimeStampToComment.getAllStyles().setPaddingLeft(0);
         addTimeStampToComment.getAllStyles().setMarginRight(0);
         addTimeStampToComment.getAllStyles().setPaddingRight(0);
-
+//}
 //        mainCont.add(new Label(Item.COMMENT)).add(comment);
 //        mainCont.add(new Label(Item.COMMENT)).add(FlowLayout.encloseIn(new Label(Item.COMMENT), addTimeStampToComment));
 //        mainCont.add(FlowLayout.encloseIn(makeHelpButton(Item.COMMENT, "**"), addTimeStampToComment));
@@ -1186,7 +1187,7 @@ public class ScreenItem2 extends MyForm {
 //                    if (dueDate.getDate().getTime() == 0
 //                            && locallyEditedRepeatRule.getSpecifiedStartDateD().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
 //                dueDate.setDate(locallyEditedRepeatRule.getSpecifiedStartDateD()); //set dueDate if set in RepeatRule //TODO!!!! or if due date *changed* in RepeatRule??
-//                        dueDate.repaint(); //enough to refresh on screen?? NO
+//                        dueDate.repaint(); //enough to removeFromCache on screen?? NO
 //                        refreshAfterEdit(); //optimize!!
 //</editor-fold>
 //                revalidate(); //enough to update? YES //needed to allow space for additional text on RR button?!
@@ -1365,7 +1366,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            @Override
 //            protected Component createNode(Object node, int depth) {
 //                Component cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> {
-//                    subTaskTree.refresh();
+//                    subTaskTree.removeFromCache();
 //                    subTaskTree.revalidate();
 //                }, false, //selectionMode not allowed for subtasks
 //                        null); //TODO save expandedObjects even for subtasks
@@ -1907,43 +1908,46 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             public void actionPerformed(ActionEvent evt) {
                 //if status is set Ongoing and startedOnDate is not set and has not been set explicitly 
                 //if status is changed
-                //TODO!!! move this logic into Item as static method
-                if (status.getStatus() != item.getStatus()) {
-                    if (status.getStatus() == ItemStatus.ONGOING) {
+                //TODO!!! move this logic into Item as static method (or ensure consistent with changes made there)
+                ItemStatus newStatus = status.getStatus();
+                Date now = new Date();
+                Date zero = new Date(0);
+                if (newStatus != item.getStatus()) {
+                    if (newStatus == ItemStatus.ONGOING) {
 //                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
                         if (startedOnDate.getDate().getTime() == 0) {
-                            startedOnDate.setDate(new Date());
+                            startedOnDate.setDate(now);
                             startedOnDate.repaint();
                         }
-                    } else if (status.getStatus() == ItemStatus.DONE || status.getStatus() == ItemStatus.CANCELLED) {
+                    } else if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
 //                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
                         if (startedOnDate.getDate().getTime() == 0) {
-                            startedOnDate.setDate(new Date());
+                            startedOnDate.setDate(now);
                             startedOnDate.repaint();
                         }
 //                        if (completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) {
-                        if (completedDate.getDate().getTime() == 0) {
-                            completedDate.setDate(new Date());
+                        if (completedDate.getDate().getTime() == 0) { //UI: will not change if already set
+                            completedDate.setDate(now);
                             completedDate.repaint();
                         }
-                    } else if (status.getStatus() == ItemStatus.WAITING) {
+                    } else if (newStatus == ItemStatus.WAITING) {
 //                        if (dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getDateWhenSetWaiting()) {
-                        dateSetWaitingDate.setDate(new Date());
+                        dateSetWaitingDate.setDate(now);
                         dateSetWaitingDate.repaint();
 //                        }
                         //UI: set startedOnDate when setting Waiting (even if no effort registered)?
 //                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
                         if (startedOnDate.getDate().getTime() == 0) {
-                            startedOnDate.setDate(new Date());
+                            startedOnDate.setDate(now);
                             startedOnDate.repaint();
                         }
-                    } else if (status.getStatus() == ItemStatus.CREATED) {
+                    } else if (newStatus == ItemStatus.CREATED) {
                         //if set back to Created, force startedOnDate and completedDate and WaitingDate and ?? back
                         //TODO!!!!
                         //set back to 0 or if the date was only changed in the UI (item.getStartedOnDate()==0)
 //                        if ((startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) || item.getStartedOnDate() == 0) {
                         if (startedOnDate.getDate().getTime() != 0) {
-                            startedOnDate.setDate(new Date(0));
+                            startedOnDate.setDate(zero);
                             startedOnDate.repaint();
                         }
                         //TODO!!!!!! check the logic for setting dates back to 0!! 
@@ -1951,7 +1955,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                         //TODO extract the logic for which changed fields impact others? Add new Item.setters embedding th needed logic for updating other fields and use those in the places where the automatic updates are needed
 //                        if ((completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
                         if (completedDate.getDate().getTime() != 0) {
-                            completedDate.setDate(new Date(0));
+                            completedDate.setDate(zero);
                             completedDate.repaint();
                         }
 //                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
@@ -1959,8 +1963,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                            completedDate.setDate(new Date(0));
 //                        }
                     }
-                    if (status.getStatus() != ItemStatus.WAITING && dateSetWaitingDate.getDate().getTime() != 0) {
-                        dateSetWaitingDate.setDate(new Date(0));
+                    if (newStatus != ItemStatus.WAITING && dateSetWaitingDate.getDate().getTime() != 0) {
+                        dateSetWaitingDate.setDate(zero);
                         dateSetWaitingDate.repaint();
                     }
 
@@ -2273,7 +2277,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        Container subTaskCont = new MyTree2(item) {
 //            @Override
 //            protected Component createNode(Object node, int depth) {
-//                Container cmp = buildItemContainer((Item) node, null, () -> true, () -> subTaskTree.refresh());
+//                Container cmp = buildItemContainer((Item) node, null, () -> true, () -> subTaskTree.removeFromCache());
 //                setIndent(cmp, depth);
 //                return cmp;
 //            }

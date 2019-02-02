@@ -4,7 +4,8 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.components.OnOffSwitch;
+import com.codename1.analytics.AnalyticsService;
+//import com.codename1.components.OnOffSwitch;
 import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.Switch;
@@ -22,6 +23,7 @@ import com.codename1.ui.ComponentGroup;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
+import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 //import com.codename1.ui.Form;
 import com.codename1.ui.Image;
@@ -40,6 +42,8 @@ import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.Layout;
+import com.codename1.ui.plaf.Style;
+import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.ui.util.UITimer;
@@ -155,6 +159,7 @@ public class MyForm extends Form {
     static final String SCREEN_OVERDUE_TITLE = "Overdue"; // "Creation log", "Created tasks"
     static final String SCREEN_TUTORIAL = "Tutorial";
     static final String SCREEN_TOUCHED = "Touched";
+    static final String SCREEN_TOUCHED_24H = "Touched last 24h";
     static final String SCREEN_STATISTICS = "Achievements"; //"Statistics", "History"
 
     protected static final String REPEAT_RULE_KEY = "$REPEAT_RULE$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
@@ -440,7 +445,6 @@ public class MyForm extends Form {
 //        void update(List<WorkSlot> workSlotList);
 ////        void update(List workSlotList);
 //    }
-
     interface FetchWorkSlotList {
 
 //        List<WorkSlot> getUpdatedWorkSlotList(Object objworkSlotList);
@@ -603,6 +607,38 @@ public class MyForm extends Form {
         dia.show();
 //        return dia;
     }
+    
+        static void dialogUpdateActualTime(Item item) {
+        if (!MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
+            return; //do nothing if both waiting dates are already set
+        }
+        Map<Object, UpdateField> parseIdMap2 = new HashMap<Object, UpdateField>();
+        Dialog dia = new Dialog();
+        dia.setTitle("Set Actual effort");
+        dia.setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+        dia.setCommandsAsButtons(true);
+        dia.setAutoDispose(true); //should be default according to javadoc, but doesn't autodispose on [OK]
+
+        Container cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        dia.add(cont);
+
+        //TODO!!!! if marking a project, with undone subtasks, Done, then also show sum of subtask actuals to know how much time was spend on them
+        MyDurationPicker actualPicker = new MyDurationPicker( parseIdMap2, () -> {
+            return ((int)item.getActualEffortProjectTaskItself()/MyDate.MINUTE_IN_MILLISECONDS);
+        }, (d) -> {
+            item.setActualEffort(d*MyDate.MINUTE_IN_MILLISECONDS);
+        });
+        cont.add(new Label(Item.EFFORT_ACTUAL)).add(actualPicker)
+                .add(new SpanLabel("Set how much time was spend on this task."));
+
+        cont.addComponent(new Button(Command.create("OK", null, (e) -> {
+            putEditedValues2(parseIdMap2);
+            dia.dispose(); //close dialog
+        })));
+        dia.show();
+    }
+
+
 
     static Dialog dialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
         Dialog dia = new Dialog();
@@ -633,6 +669,8 @@ public class MyForm extends Form {
         }
     }
 
+
+    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    static Dialog dialogUpdateRemainingTimeXXX(Item item, Map<Object, UpdateField> parseIdMap2) {
 //        Dialog dia = new Dialog();
@@ -1363,11 +1401,13 @@ public class MyForm extends Form {
 //        if (previousForm.previousValues != null) {
 //            previousForm.previousValues.deleteFile();
 //        }
-      if (false){  Form f = Display.getInstance().getCurrent();
-        if (f instanceof MyForm && ((MyForm) f).previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
-            ((MyForm) f).previousValues.deleteFile();
-            ((MyForm) f).previousValues.clear(); //if still accessed
-        }}
+        if (false) {
+            Form f = Display.getInstance().getCurrent();
+            if (f instanceof MyForm && ((MyForm) f).previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
+                ((MyForm) f).previousValues.deleteFile();
+                ((MyForm) f).previousValues.clear(); //if still accessed
+            }
+        }
         if (callRefreshAfterEdit) {
             previousForm.refreshAfterEdit();
         }
@@ -1577,7 +1617,7 @@ public class MyForm extends Form {
         Command cmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewTaskToolbarStyle(), (e) -> {
             Item item = new Item();
             setKeepPos(new KeepInSameScreenPosition());
-            new ScreenItem(item, (MyForm) getComponentForm(), () -> {
+            new ScreenItem2(item, (MyForm) getComponentForm(), () -> {
                 if (item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
                     //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
                     //only save if data (don't save if no relevant data)
@@ -1603,48 +1643,53 @@ public class MyForm extends Form {
     public static Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
-        return new Button(Command.create(null, Icons.iconAddTimeStampToCommentLabelStyle, (e) -> {
+         Button button=new Button(Command.create(null, Icons.iconAddTimeStampToCommentLabelStyle, (e) -> {
             comment.setText(Item.addTimeToComment(comment.getText()));
 //                    comment.setstartEditing(); //TODO how to position cursor at end of text (if not done automatically)?
 //comment.setCursor //only on TextField, not TextArea
 //            comment.startEditing(); //TODO in CN bug db #1827: start using startEditAsync() is a better approach
             comment.startEditingAsync();//TODO in CN bug db #1827: start using startEditAsync() is a better approach
         }));
+         
+//         button..
+         button.setIcon(FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, UIManager.getInstance().getComponentStyle("ItemCommentIcon")));
+         return button;
     }
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    void restartScreenXXX() {
-//        //TODO
-//        //TODO store info on current screen when calling stop()??!!
-//        //TODO restart screen with same lists expanded
-//        //TODO restart a screen with the same placement in the list
-//        Item item = null;
-//        ItemList itemList = null;
-//        FilterSortDef filter = null;
-//        String screenName = null; //read from local storage
-//        switch (screenName) {
-//            case ScreenTimer.SCREEN_TITLE:
-//                break;
-//            case ScreenListOfItems.SCREEN_ID:
-//                new ScreenListOfItems(itemList, null, null).show();
-//                break;
-//            default:
-//                new ScreenMain().show();
-//                return;
-//        }
-//    }
-//</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////    void restartScreenXXX() {
+////        //TODO
+////        //TODO store info on current screen when calling stop()??!!
+////        //TODO restart screen with same lists expanded
+////        //TODO restart a screen with the same placement in the list
+////        Item item = null;
+////        ItemList itemList = null;
+////        FilterSortDef filter = null;
+////        String screenName = null; //read from local storage
+////        switch (screenName) {
+////            case ScreenTimer.SCREEN_TITLE:
+////                break;
+////            case ScreenListOfItems.SCREEN_ID:
+////                new ScreenListOfItems(itemList, null, null).show();
+////                break;
+////            default:
+////                new ScreenMain().show();
+////                return;
+////        }
+////    }
+////</editor-fold>
+    
     final static int TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS = 80; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
     final static int ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR = 500; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
 
     /**
     show toastbar for the time necessary to read the text
     @param message 
-    */
+     */
     static void showToastBar(String message) {
         showToastBar(message, 0);
     }
-    
+
     static void showToastBar(String message, int timeMillis) {
         ToastBar.Status status = ToastBar.getInstance().createStatus();
         status.setMessage(message);
@@ -1930,7 +1975,8 @@ public class MyForm extends Form {
     protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton, boolean forceVisibleEditButton) {
 
-        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
+//        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
+        if ( field instanceof MyOnOffSwitch) {
 //            field.getAllStyles().setPaddingRight(6);
         } else {
             if (field instanceof WrapButton) {
@@ -2516,7 +2562,7 @@ public class MyForm extends Form {
             //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
             parseIdMap2.put(fieldIdentifier, () -> {
 //        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-                ASSERT.that(true||getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
+                ASSERT.that(true || getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
 //                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
                 if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
 //            item.setEffortEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
@@ -2675,6 +2721,8 @@ public class MyForm extends Form {
             }
         }
         if (!ReplayLog.getInstance().replayCmd(new ActionEvent(this))) { //only show screen is there was no command to replay
+            Form prevForm = Display.getInstance().getCurrent();
+            AnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
             super.show();
         }
     }
@@ -3468,59 +3516,6 @@ public class MyForm extends Form {
             }
         }
         return null;
-    }
-
-    private static Container getContentPaneSouth(Form form) {
-//        Form form = Display.getInstance().getCurrent();
-        if (form != null) {
-            Container formContentPane = form.getContentPane();
-            if (!(form instanceof ScreenTimer6)) {
-                Layout contentPaneLayout = formContentPane.getLayout();
-                if (contentPaneLayout instanceof BorderLayout) {
-                    Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
-                    if (southComponent instanceof Container) {
-                        return (Container) southComponent;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-//    private static Container getContentPaneSouth() {
-//        return getContentPaneSouth(Display.getInstance().getCurrent());
-//    }
-    /**
-    return the container into which the smallTimer should be interted. Return null if no smallTimer should be shown. 
-    Override to disable smallTimer or place it somewhere else. 
-    @return 
-     */
-    static protected Container getContainerForSmallTimer() {
-        return getContainerForSmallTimer(Display.getInstance().getCurrent());
-    }
-
-    static protected Container getContainerForSmallTimer(Form form) {
-        Container timerContainer = null;
-//        Form form = this;
-        if (form instanceof ScreenListOfItemLists || form instanceof ScreenListOfItems
-                || form instanceof ScreenStatistics
-                || form instanceof ScreenListOfWorkSlots || form instanceof ScreenListOfCategories) {
-//        }else {
-            Container formContentPane = form.getContentPane();
-            Layout contentPaneLayout = formContentPane.getLayout();
-            if (contentPaneLayout instanceof BorderLayout) {
-//                timerContainer = getContentPaneSouth(form);
-                Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
-                if (southComponent instanceof Container) {
-                    timerContainer = (Container) southComponent;
-                } else if (southComponent==null) {
-                    Container newCont = new Container( BoxLayout.y());
-                    formContentPane.add(BorderLayout.SOUTH, newCont);
-                    timerContainer=newCont;
-                }
-            }
-        }
-        return timerContainer;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

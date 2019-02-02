@@ -5,7 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.components.OnOffSwitch;
+//import com.codename1.components.OnOffSwitch;
 import com.codename1.components.Switch;
 import java.util.Map;
 

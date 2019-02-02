@@ -33,8 +33,17 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
     @param workSlot 
      */
     public void add(WorkSlot workSlot) {
-        workslotList.add(workSlot);
-        sortWorkSlotList(); //TODO!!! //optimization: insert sorted instead of do entire bubblesort
+//        workslotList.add(workSlot);
+//        sortWorkSlotList(); //TODO!!! //optimization: insert sorted instead of do entire bubblesort
+        for (int i = workslotList.size() - 1; i >= 0; i--) {
+            if (workslotList.get(i).getStartTimeD().getTime() < workSlot.getStartTimeD().getTime()) {
+                workslotList.add(i + 1, workSlot);
+                return;
+            }
+        }
+        //if no earlier slot found above, then insert at start of (possibly empty) list
+        workslotList.add(0, workSlot);
+        //simple solution: new workSlots are likely be the most recent, so simply search from end of list to find where to insert
     }
 
     public WorkSlot get(int index) {
@@ -49,28 +58,47 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
         return workslotList;
     }
 
-    public WorkSlotList(List<WorkSlot> list) {
+    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted, boolean removeExpiredWorkSlots) {
         this();
+//<editor-fold defaultstate="collapsed" desc="comment">
         //http://stackoverflow.com/questions/8441664/how-do-i-copy-the-contents-of-one-arraylist-into-another
         //http://stackoverflow.com/questions/17036405/how-to-copy-a-array-into-another-array-that-already-has-data-in-it
-        if (false) {
-            int size = list.size();
-            workslotList.ensureCapacity(size);
-            System.arraycopy(list.toArray(), 0, this, 0, size);
-        } else {
-//            if (workslots==null) 
-//                workslots= new ArrayList<>();
-            if (workslotList.isEmpty()) {
-                workslotList.addAll(list); //optimization
-            } else {
-                for (WorkSlot ws : list) {
-                    if (!workslotList.contains(ws)) {
-                        workslotList.add(ws); //optimization
-                    }
-                }
-            }
+//        if (false) {
+//            if (false) {
+//                int size = list.size();
+//                workslotList.ensureCapacity(size);
+//                System.arraycopy(list.toArray(), 0, this, 0, size);
+//            } else {
+////            if (workslots==null)
+////                workslots= new ArrayList<>();
+//                if (workslotList.isEmpty()) {
+//                    workslotList.addAll(list); //optimization
+//                } else {
+//                    for (WorkSlot ws : list) {
+//                        if (!workslotList.contains(ws)) {
+//                            workslotList.add(ws); //optimization
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//</editor-fold>
+        if (!alreadySorted) {
+            sortWorkSlotList();
         }
-//        this.copyOf(list);
+        if (removeExpiredWorkSlots) {
+            workslotList.addAll(removePastWorkSlots(list, now)); //optimization - this makes a copy of the list, is it really necessary??
+        } else {
+            workslotList.addAll(list); //optimization - this makes a copy of the list, is it really necessary??
+        }//        this.copyOf(list);
+    }
+
+    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
+        this(list, alreadySorted, true);
+    }
+
+    public WorkSlotList(List<WorkSlot> list) {
+        this(list, false);
     }
 
     public long getNow() {
@@ -248,6 +276,30 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
         return workslotList.size();
     }
 
+    /**
+    remove workSlots that are expired, used to only calculate finishTime based on current workslots
+    @param workSlotList
+    @param now
+    @return 
+     */
+    public static List<WorkSlot> removePastWorkSlots(List<WorkSlot> workSlots, long now) {
+        final int WORKSLOT_LIMIT = 200;
+
+        List<WorkSlot> result = new ArrayList<>();
+
+//        ASSERT.that(!workSlots.isSorted(), "workSlots must be sorted for this algo to work");
+//        long nowLong = now.getTime();
+//        List<WorkSlot>  workSlots =workSlotList.getWorkSlotList();
+        for (int i = workSlots.size() - 1; i >= 0; i--) {
+            if (workSlots.get(i).getEndTime()<= now) {
+                result = workSlots.subList(i, workSlots.size() - 1);
+                return result;
+            }
+        }
+        //if we get to here, no workslots had endTime in the past, so we don't have to remove
+        return workSlots;
+    }
+
     public static WorkSlotList removeWorkSlotsInInterval(WorkSlotList workSlotList, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
         final int WORKSLOT_LIMIT = 200;
         long startTime = includeFullDay ? MyDate.getStartOfDay(startDate).getTime() : startDate.getTime();
@@ -260,6 +312,7 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
         if (!isSorted) {
             workSlotList.sortWorkSlotList(false);
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            Iterator<WorkSlot> it = workSlotList.iterator();
 //            WorkSlot workSlot = null;
 //            //for all elements, efficient when elements are removed (it skips going through elements that that start *after* endTime)
@@ -271,12 +324,14 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
 //                    }
 //                }
 //            } //skip all elements that end *before* startTime, stops nu with workSlot
+//</editor-fold>
         //skip all elements that end *before* startTime, stops nu with workSlot
-        for (WorkSlot ws : workSlotList.workslotList) {
+        for (WorkSlot ws : workSlotList.workslotList) { //optimization: optimize for fact that workslotList is now sorted
             if (ws.getStartTimeD().getTime() < endTime && ws.hasDurationInInterval(startTime, endTime)) {
                 result.add(ws);
             }
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        } else {
 //            //go through every workslot (less efficient if many, but doesn't require them to be sorted)
 //            Iterator<WorkSlot> it = workSlotList.iterator();
@@ -290,9 +345,11 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
 //                }
 //            }
 //        }
+//</editor-fold>
         return new WorkSlotList(result);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public static WorkSlotList removeWorkSlotsInInterval(WorkSlotList workSlots, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
 //        final int WORKSLOT_LIMIT = 200;
 //        long startTime = includeFullDay ? MyDate.getStartOfDay(startDate).getTime() : startDate.getTime();
@@ -331,6 +388,7 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
 //        return result;
 //    }
 //
+//</editor-fold>
     /**
      * returns true if there are future workslots (the list may contain expired
      * workslots). The use of this function to test find the workslots to use to
@@ -347,8 +405,13 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
             return false; //return size()>0; //TODO!!!!!
         }
 //        long now = System.currentTimeMillis();
-        for (WorkSlot workSlot : workslotList) {
-            if (workSlot.getEndTime() > now) {
+//        for (WorkSlot workSlot : workslotList) {
+//            if (workSlot.getEndTime() > now) {
+//                return true;
+//            }
+//        }
+        for (int i = workslotList.size() - 1; i >= 0; i--) {
+            if (workslotList.get(i).getEndTime() > now) {
                 return true;
             }
         }

@@ -62,7 +62,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private boolean lastDragDirectionUp = false; //x value for last component this was dragged over
     private Label newDropPlaceholder = null;
 
-    boolean formNeedRefresh = false; //set true if a screen refresh is needed
+    boolean formNeedRefresh = false; //set true if a screen removeFromCache is needed
 
     public enum InsertPositionType {
         //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
@@ -2821,7 +2821,7 @@ T3
 //            if (dropExecuted) {
 //                ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //simply keep same position as whereto the list was scrolled during the drag, then inserted element should 'stay in place'
 //
-//                //moved the dragged container to new position to quickly refresh the screen
+//                //moved the dragged container to new position to quickly removeFromCache the screen
 //                if (false) {
 //                    Container draggedParentContainer = dragged.getParent();
 //                    draggedParentContainer.removeComponent(this);
@@ -3630,7 +3630,7 @@ T3
             dropPlaceholder = null;
 //            animate = true;
         }
-        //always refresh (eg if dropped outside a droptarget)
+        //always removeFromCache (eg if dropped outside a droptarget)
         if (f != null) {
             f.animateHierarchy(300); //refresh after hiding dropPlaceholder
         }
@@ -3707,7 +3707,7 @@ T3
 //                }
 //            } else if (dropTarget instanceof Item) {
 //                if (draggedObject instanceof ItemList || draggedObject instanceof Category) {
-////                            refreshAfterDrop(); //TODO need to refresh for a drop which doesn't change anything??
+////                            refreshAfterDrop(); //TODO need to removeFromCache for a drop which doesn't change anything??
 //                    return; //UI: dropping an ItemList onto an Item not allowed
 //                } else //CATEGORY dragging an item1 from a category1 and dropping on the item2 of another category2 => move to new category2 at the position of item2
 //                {
@@ -3821,7 +3821,7 @@ T3
 //            }
 //            dragged.setDraggable(false); //set draggable false once the drop (activated by longPress) is completed
 //            dragged.setFocusable(false); //set draggable false once the drop (activated by longPress) is completed
-////            getParent().drop(dragged, x, y); //call CN1 built-in drop to move the visible container (without needing to refresh the entire list)
+////            getParent().drop(dragged, x, y); //call CN1 built-in drop to move the visible container (without needing to removeFromCache the entire list)
 //            boolean moveContainer = false; //should the existing container be moved - not meaningful if entire tree is redrawn
 //            if (moveContainer) {
 //                Container oldParent = dragged.getParent(); //BorderLayout.NORTH container
@@ -3897,7 +3897,7 @@ T3
 //            }
 //            dragged.setDraggable(false); //set draggable false once the drop (activated by longPress) is completed
 //            dragged.setFocusable(false); //set draggable false once the drop (activated by longPress) is completed
-////            getParent().drop(dragged, x, y); //call CN1 built-in drop to move the visible container (without needing to refresh the entire list)
+////            getParent().drop(dragged, x, y); //call CN1 built-in drop to move the visible container (without needing to removeFromCache the entire list)
 //            boolean moveContainer = false; //should the existing container be moved - not meaningful if entire tree is redrawn
 //            if (moveContainer) {
 //                Container oldParent = dragged.getParent(); //BorderLayout.NORTH container
@@ -3946,7 +3946,7 @@ T3
 //            }
 //            dragged.setDraggable(false); //set draggable false once the drop (activated by longPress) is completed
 //            dragged.setFocusable(false); //set draggable false once the drop (activated by longPress) is completed
-////            getParent().drop(dragged, x, y); //call CN1 built-in drop to move the visible container (without needing to refresh the entire list)
+////            getParent().drop(dragged, x, y); //call CN1 built-in drop to move the visible container (without needing to removeFromCache the entire list)
 //            boolean moveContainer = false; //should the existing container be moved - not meaningful if entire tree is redrawn
 //            if (moveContainer) {
 //                Container oldParent = dragged.getParent(); //BorderLayout.NORTH container
