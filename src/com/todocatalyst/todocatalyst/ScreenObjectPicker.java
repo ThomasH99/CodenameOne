@@ -229,7 +229,8 @@ public class ScreenObjectPicker<E> extends MyForm {
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //UI: always enable Cancel to make it easy to regret any changes
             toolbar.addCommandToOverflowMenu(
                     "Cancel", null, (e) -> {
-                        showPreviousScreenOrDefault(previousForm, false); //restore originally selected categories
+//                        showPreviousScreenOrDefault(previousForm, false); //restore originally selected categories
+                        showPreviousScreenOrDefault( false); //restore originally selected categories
                     }
             );
         }

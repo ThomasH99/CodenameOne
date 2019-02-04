@@ -6,6 +6,7 @@ import com.codename1.components.InfiniteProgress;
 import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
+import com.codename1.nui.NTextField;
 import com.codename1.ui.Button;
 import com.codename1.ui.CN;
 import com.codename1.ui.Command;
@@ -218,13 +219,14 @@ public class ScreenLogin extends MyForm {
         //hide titlebar: http://stackoverflow.com/questions/42871223/how-do-i-hide-get-rid-the-title-bar-on-a-form-codename-one
 //        getToolbar().setUIID("Container");
 //        getToolbar().hideToolbar();
-        TextField email = new TextField("", "Email", 20, TextArea.EMAILADDR);
+//        TextField email = new TextField("", "Email", 20, TextArea.EMAILADDR);
+        NTextField email = new NTextField(TextArea.EMAILADDR);
         if (MyPrefs.loginStoreEmail.getBoolean()) {
             email.setText(MyPrefs.loginEmail.getString());
         }
 
-        TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
-//        NTextField password = new NTextField("", "Password", 20, TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+//        TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
+        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 
 //        BorderLayout b1 = new BorderLayout();

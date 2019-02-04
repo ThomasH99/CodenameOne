@@ -222,7 +222,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
                     //TODO!!!! create even if no text was entered into field
                     myForm.setKeepPos(new KeepInSameScreenPosition(element, this)); //if Cancel, keep the current item in place 
 //                        new ScreenItem(lastCreatedItem, (MyForm) getComponentForm(), () -> {
-                    new ScreenItem(newItem, myForm, () -> {
+                    new ScreenItem2(newItem, myForm, () -> {
                         //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
 //                            DAO.getInstance().save(newTask);
                         insertNewTaskAndSaveChanges(newItem);

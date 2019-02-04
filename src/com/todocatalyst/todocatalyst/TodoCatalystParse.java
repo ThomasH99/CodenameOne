@@ -1,6 +1,6 @@
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.analytics.AnalyticsService;
+//import com.codename1.analytics.AnalyticsService;
 import com.codename1.background.BackgroundFetch;
 import com.codename1.components.InfiniteProgress;
 import com.codename1.io.ConnectionRequest;
@@ -47,6 +47,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
     private int count = 0;
     final static String APP_NAME = "TodoCatalyst";
     public static Resources theme = null;
+    private Form current=null;
 
     //TODO add startup picture (also shown as automatically generated CN1 image)
     public TodoCatalystParse() {
@@ -188,8 +189,8 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             }
         });
 
-        AnalyticsService.init("UA-133276111-1", "todocatalyst.com");
-        AnalyticsService.setAppsMode(true);
+        MyAnalyticsService.init("UA-133276111-1", "todocatalyst.com");
+        MyAnalyticsService.setAppsMode(true);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -513,6 +514,30 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                     if (true) {//consumeError
                         evt.consume();
                     }
+
+                    //start using google analytics crashreports, see https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#exception
+                    StringBuilder s = new StringBuilder();
+//                    s.append("Exception in " + Display.getInstance().getProperty("AppName", "app"));
+//                    s.append(" version " + Display.getInstance().getProperty("AppVersion", "Unknown"));
+//                    s.append("OS " + Display.getInstance().getPlatformName());
+//                    s.append("Error " + evt.getSource());
+                    s.append(Display.getInstance().getPlatformName());
+                    s.append("|");
+                    s.append(evt.getSource());
+                    s.append("|");
+                    s.append("Form[" + (Display.getInstance().getCurrent() != null ? Display.getInstance().getCurrent().getName() : "none") + "]");
+                    byte[] read1 = new byte[]{(byte) 0xe0};//['a'];
+                    String rs = "";
+                    try {
+                        read1 = com.codename1.io.Util.readInputStream(Storage.getInstance().createInputStream("CN1Log__$"));
+                        rs = new String(read1, "BaSE64");
+                    } catch (IOException ex) {
+                        Log.p(TodoCatalystParse.class.getName(), Log.ERROR);
+                    }
+                    s.append("\nLOG:\n").append(rs); //TODO!!!: shorten stack trace to only show the methods called. For now, the first, most significant, part of trace will be included
+
+                    MyAnalyticsService.sendCrashReport((Throwable) evt.getSource(), s.toString(), false);
+
                     p("Exception in " + Display.getInstance().getProperty("AppName", "app") + " version " + Display.getInstance().getProperty("AppVersion", "Unknown"));
                     p("OS " + Display.getInstance().getPlatformName());
                     p("Error " + evt.getSource());
@@ -698,7 +723,10 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        if (Display.getInstance().isTablet()) { //TODO!!!! is not working
 //            Toolbar.setPermanentSideMenu(true); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
         Toolbar.setPermanentSideMenu(Display.getInstance().isTablet()); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
-//        }
+        Display.getInstance().setPureTouch(true);
+        if (Display.getInstance().isTablet()) {
+            Display.getInstance().lockOrientation(true); //lock screen rotation to portrait=true, https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+        }//        }
 
 //        Display d = Display.getInstance();
 //        Label supported = new Label();
@@ -802,10 +830,11 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //            new ScreenLogin(theme).go();
             new ScreenLogin().go();
         }
-        
+
         Display.getInstance().setProperty("iosHideToolbar", "true"); //prevent ttoolbar over keyboard to show (Done/Next button): https://stackoverflow.com/questions/48727116/codename-one-done-button-of-ios-virtual-keyboard
-        if (Display.getInstance().canForceOrientation())
-        Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+        if (Display.getInstance().canForceOrientation()) {
+            Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+        }
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
 
@@ -849,7 +878,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         if (false) {
             Display.getInstance().setBadgeNumber(0);
         }
-        Form current = Display.getInstance().getCurrent();
+//        Form current = Display.getInstance().getCurrent();
         if (current != null) {
 //            if (false && current == ScreenTimer.getInstance()) { //NOT necessary since current.show() should update the timemr
 //                ScreenTimer.getInstance().refreshDisplayedTimerInfo();//repaint to update timer count (especially necessary if timer is only updating every minute or so, otherwise it will show wrong time for a long time)
@@ -1025,6 +1054,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         Log.p("stop()"); //do before updating badgeCount which calls network and may be too slow and get killed
         //set the app icon badge count
         setBadgeCount();
+        current = Display.getInstance().getCurrent();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (Display.getInstance().isBadgingSupported()) {
 //            Display.getInstance().setBadgeNumber(DAO.getInstance().getBadgeCount(true));

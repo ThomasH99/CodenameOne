@@ -186,12 +186,20 @@ public class ScreenTimer6 extends MyForm {
 
     // ************************** START TIMER ************************
     //
-    static void showPreviousScreenOrDefault(MyForm previousForm, boolean callRefreshAfterEdit) {
+//    static void showPreviousScreenOrDefaultXXX(MyForm previousForm, boolean callRefreshAfterEdit) {
+//        if (Display.getInstance().isScreenSaverDisableSupported() && MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer)) {
+//            Display.getInstance().setScreenSaverEnabled(true); //true enable normal screensaver, false keeps screen on all the time
+//        }
+////        super.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
+//        MyForm.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
+//    }
+    
+     void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
         if (Display.getInstance().isScreenSaverDisableSupported() && MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer)) {
             Display.getInstance().setScreenSaverEnabled(true); //true enable normal screensaver, false keeps screen on all the time
         }
 //        super.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
-        MyForm.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
+        super.showPreviousScreenOrDefault(callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
     }
 
 //    static void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {

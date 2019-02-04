@@ -17,9 +17,10 @@ import java.util.Map;
  */
 class MyDurationPicker extends Picker implements SwipeClear {
 
-    private String zeroValuePattern;
-    private String DEFAULT_ZERO_VALUE_PATTERN = "";
-    private int defaultValueInMinutes;
+    private final static String DEFAULT_ZERO_VALUE_PATTERN = "";
+    private String zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN;
+//    private int defaultValueInMinutes = 0;
+    private Long preserveMillis = null;
 //        String title;
 //        String parseId;
 //    @Override
@@ -45,81 +46,124 @@ class MyDurationPicker extends Picker implements SwipeClear {
     protected void updateValue() {
 //        if (getType()==Display.PICKER_TYPE_TIME && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
 //        if (getType()==Display.PICKER_TYPE_TIME && getTime() != 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
-        if (getType() == Display.PICKER_TYPE_DURATION && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
+//        if (getType() == Display.PICKER_TYPE_DURATION && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
+        if (getType() == Display.PICKER_TYPE_DURATION && getDuration() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
             setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
         } else {
             super.updateValue(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
-    MyDurationPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
-        this(null, parseIdMap, getDurationInMinutes, setDurationInMinutes);
-    }
+//    MyDurationPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
+//        this(null, parseIdMap, getDurationInMinutes, setDurationInMinutes);
+//    }
+//    MyDurationPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetLong getDurationInMillis, MyForm.PutLong setDurationInMillis) {
+//        this(null, parseIdMap, getDurationInMillis, setDurationInMillis);
+//    }
 
-    MyDurationPicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
-        this(zeroValuePatternVal, 0, parseIdMap, getDurationInMinutes, setDurationInMinutes);
-    }
+//    MyDurationPicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
+//        this(zeroValuePatternVal, 0, parseIdMap, getDurationInMinutes, setDurationInMinutes);
+//    }
+//    private MyDurationPicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetLong getDurationInMillis, MyForm.PutLong setDurationInMillis) {
+//        this(zeroValuePatternVal, 0, parseIdMap, getDurationInMillis, setDurationInMillis);
+//    }
+//    private MyDurationPicker(String zeroValuePatternVal, MyForm.GetLong getDurationInMillis, MyForm.PutLong setDurationInMillis) {
+//        this(zeroValuePatternVal, 0, null, getDurationInMillis, setDurationInMillis);
+//    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    MyDurationPicker(int defaultValueInMinutes) {
+//        this("", defaultValueInMinutes, null, null, null);
+//    }
+//    MyDurationPicker(int defaultValueInMillis) {
+//        this("", defaultValueInMillis, null, null, null);
+//    }
+//</editor-fold>
 
-    MyDurationPicker(int defaultValueInMinutes) {
-        this("", defaultValueInMinutes, null, null, null);
-    }
-
-    MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap,
-            MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
+    MyDurationPicker(long durationInMillis,String zeroValuePatternVal) {
         super();
-//        setUIID("Button");
-        setUIID("LabelValue");
-//            this.title = title;
-//            this.parseId = parseId;
-//        this.setType(Display.PICKER_TYPE_TIME);
         this.setType(Display.PICKER_TYPE_DURATION);
-        this.zeroValuePattern = zeroValuePatternVal;
-        if (this.zeroValuePattern == null) {
-//            this.zeroValuePattern = ""; // "<set>";
-            this.zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN; // "<set>";
+         if (zeroValuePatternVal != null) {
+            this.zeroValuePattern = zeroValuePatternVal;
         }
-        this.defaultValueInMinutes = defaultValueInMinutes;
-//        Integer i = (getDurationInMinutes != null ? getDurationInMinutes.get() : this.defaultValueInMinutes);
-        int i = (getDurationInMinutes != null ? getDurationInMinutes.get() : this.defaultValueInMinutes);
-        if (i != 0) {
-//            this.setTime(i);
-            this.setDuration(((long) i) * MyDate.MINUTE_IN_MILLISECONDS);
-        } else {
-            //
-        }
-//            parseIdMap.put(parseId, () -> parseObject.put(parseId, this.getTime()));
-        if (parseIdMap != null) {
-            parseIdMap.put(this, () -> setDurationInMinutes.accept(this.getTime()));
-        }
-//        setFormatter((s)->{return MyDate.formatTimeDuration(s);});
-        setFormatter(new SimpleDateFormat() {
-            public String format(Object value) {
-                return MyDate.formatTimeDuration((Long) value);
-            }
-        });
-        setMinuteStep(1);
-    }
-
-    MyDurationPicker() {
-        super();
+        setDuration(durationInMillis);
         setUIID("LabelValue");
-        this.setType(Display.PICKER_TYPE_DURATION);
 //        this.zeroValuePattern = ""; // "<set>";
-        this.zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN; // "<set>";
-        this.defaultValueInMinutes = 0;
         setFormatter(new SimpleDateFormat() {
             public String format(Object value) {
-                return MyDate.formatTimeDuration((Long) value);
+                long val = ((Long) value).longValue();
+                if (val == 0) {
+                    return zeroValuePattern;
+                }
+                long seconds = val % MyDate.SECOND_IN_MILLISECONDS;
+                if (seconds != 0) {
+                    return MyDate.formatTimeDuration((Long) value, true); //if any seconds defined, show them
+                } else {
+                    return MyDate.formatTimeDuration((Long) value);
+                }
             }
         });
         setMinuteStep(MyPrefs.durationPickerMinuteStep.getInt()); //TODO!! setting to select interval of 1/5 minutes
     }
+    MyDurationPicker(long durationInMillis){
+        this(durationInMillis, null);
+    }
+    MyDurationPicker(){
+        this(0, null);
+    }
 
-    public void setDurationMinutes(int minutes) {
+//    MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap,
+//            MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
+//    private MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, 
+//            MyForm.GetLong getDurationInMillis) {
+//        this(zeroValuePatternVal, defaultValueInMinutes, null, getDurationInMillis, null);
+//    }
+    
+//    private MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap,
+//            MyForm.GetLong getDurationInMillis, MyForm.PutLong setDurationInMillis) {
+//    private MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes) {
+//        this( defaultValueInMinutes * MyDate.MINUTE_IN_MILLISECONDS);
+//        if (zeroValuePatternVal != null) {
+//            this.zeroValuePattern = zeroValuePatternVal;
+//        }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        this.defaultValueInMinutes = defaultValueInMinutes;
+////        Integer i = (getDurationInMinutes != null ? getDurationInMinutes.get() : this.defaultValueInMinutes);
+////        long l = (getDurationInMillis != null ? getDurationInMillis.get() : this.defaultValueInMinutes * MyDate.MINUTE_IN_MILLISECONDS);
+////        if (l != 0) {
+////            this.setDuration(l);
+////        }
+////</editor-fold>
+////        if (parseIdMap != null) {
+////            parseIdMap.put(this, () -> setDurationInMillis.accept(this.getDuration()));
+////        }
+//    }
+
+    public void setDurationMinutesXXX(int minutes) {
         this.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
     }
 
-    public int getDurationMinutes() {
+    @Override
+    public void setDuration(long timeInMillis) {
+        long millis = timeInMillis % 1000;
+        if (millis != 0) {
+            preserveMillis = millis;
+        }
+//        super.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
+        super.setDuration(timeInMillis);
+    }
+
+    @Override
+    public long getDuration() {
+        long editedMillis = super.getDuration();
+        long millis = editedMillis % 1000;
+        if (millis != 0 && preserveMillis != null) { //if milliseconds were removed during editing, and were preserved before editing, then add back again
+            editedMillis += preserveMillis;
+            preserveMillis = null;
+        }
+        return editedMillis;
+    }
+
+    public int getDurationMinutesXXX() {
         return (int) getDuration() / MyDate.MINUTE_IN_MILLISECONDS;
     }
 

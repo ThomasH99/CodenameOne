@@ -83,6 +83,11 @@ public class SaveEditedValuesLocally {//extends HashMap {
         return previousValues.get(key);
     }
 
+    public Object get(Object key, Object defaultValue) {
+        Object val = previousValues.get(key);
+        return val != null ? val : defaultValue;
+    }
+
     public Object remove(Object key) {
         Object previousValue = previousValues.remove(key);
         saveFile();
@@ -138,10 +143,10 @@ public class SaveEditedValuesLocally {//extends HashMap {
         Storage.getInstance().deleteStorageFile(previousValuesFilename);
 //        }
     }
-    
+
     /**
     clear data (use e.g. if previousValues are passed from Timer to ScreenItem which then applies and saves the item after which the old saved values are meaningless and should be deleted. 
-    */
+     */
     public void clear() {
 //            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
 //        if (previousValuesFilename != null && !previousValuesFilename.isEmpty()) {
@@ -154,7 +159,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         previousValues.clear();
 //        }
     }
-    
+
 //    public boolean updateWithEditedValues() {
 //    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2) {
 //        Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
@@ -169,5 +174,4 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //            }
 //    }
 //    }
-
 }

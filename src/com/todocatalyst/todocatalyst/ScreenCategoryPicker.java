@@ -209,7 +209,8 @@ backCommand = makeDoneUpdateWithParseIdMapCommand(true); //false);
 //                    previousForm.revalidate();
 //                    previousForm.showBack();
 //</editor-fold>
-                        showPreviousScreenOrDefault(previousForm, false);
+//                        showPreviousScreenOrDefault(previousForm, false);
+                        showPreviousScreenOrDefault( false);
                     }
             );
         }

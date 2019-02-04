@@ -4,7 +4,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.analytics.AnalyticsService;
+//import com.codename1.analytics.AnalyticsService;
 //import com.codename1.components.OnOffSwitch;
 import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
@@ -504,6 +504,16 @@ public class MyForm extends Form {
         void accept(int i);
     }
 
+    interface GetLong {
+
+        long get();
+    }
+
+    interface PutLong {
+
+        void accept(long l);
+    }
+
     interface GetDouble {
 
         double get();
@@ -607,8 +617,8 @@ public class MyForm extends Form {
         dia.show();
 //        return dia;
     }
-    
-        static void dialogUpdateActualTime(Item item) {
+
+    static void dialogUpdateActualTime(Item item) {
         if (!MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
             return; //do nothing if both waiting dates are already set
         }
@@ -623,11 +633,12 @@ public class MyForm extends Form {
         dia.add(cont);
 
         //TODO!!!! if marking a project, with undone subtasks, Done, then also show sum of subtask actuals to know how much time was spend on them
-        MyDurationPicker actualPicker = new MyDurationPicker( parseIdMap2, () -> {
-            return ((int)item.getActualEffortProjectTaskItself()/MyDate.MINUTE_IN_MILLISECONDS);
-        }, (d) -> {
-            item.setActualEffort(d*MyDate.MINUTE_IN_MILLISECONDS);
-        });
+        MyDurationPicker actualPicker = new MyDurationPicker(item.getActualEffortProjectTaskItself());
+        actualPicker.addActionListener((e) -> item.setActualEffort(actualPicker.getDuration()));
+//        }, (l) -> {
+////            item.setActualEffort(d*MyDate.MINUTE_IN_MILLISECONDS);
+//            item.setActualEffort(l);
+//        });
         cont.add(new Label(Item.EFFORT_ACTUAL)).add(actualPicker)
                 .add(new SpanLabel("Set how much time was spend on this task."));
 
@@ -637,8 +648,6 @@ public class MyForm extends Form {
         })));
         dia.show();
     }
-
-
 
     static Dialog dialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
         Dialog dia = new Dialog();
@@ -669,8 +678,6 @@ public class MyForm extends Form {
         }
     }
 
-
-    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    static Dialog dialogUpdateRemainingTimeXXX(Item item, Map<Object, UpdateField> parseIdMap2) {
 //        Dialog dia = new Dialog();
@@ -1255,7 +1262,12 @@ public class MyForm extends Form {
         Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
         ASSERT.that(parseIdMap2 != null);
         if (parseIdMap2 != null) {
-            UpdateField repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+//            UpdateField repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+            UpdateField repeatRule = parseIdMap2.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
+            if (repeatRule != null) {
+                DAO.getInstance().saveInBackground((ParseObject)repeatRule); //MUST save before saving Item, since item will reference a new repeatRule
+            }
+            
             for (Object parseId : parseIdMap2.keySet()) {
 //            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
                 parseIdMap2.get(parseId).update();
@@ -1380,45 +1392,54 @@ public class MyForm extends Form {
 ////        showPreviousScreenOrDefault(previousForm, true);
 //        showPreviousScreenOrDefault(previousForm, false);
 //    }
-    static void showPreviousScreenOrDefault(MyForm previousForm, boolean callRefreshAfterEdit) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (previousForm != null) {
+//    static void showPreviousScreenOrDefaultXXX(MyForm previousForm, boolean callRefreshAfterEdit) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (previousForm != null) {
+////            Form f = Display.getInstance().getCurrent();
+////            if (f instanceof MyForm) {
+////                ((MyForm) f).deleteLocallyEditedValues();
+////            }
+////            if (callRefreshAfterEdit) {
+////                previousForm.refreshAfterEdit();
+////            }
+////
+////            previousForm.showBack();
+////        } else {
+////            Form f = Display.getInstance().getCurrent();
+////            ASSERT.that(false, "should not happen anymore, screen \"" + f != null ? f.getTitle() : "<null form>");
+////            new ScreenMain().show();
+////        }
+////</editor-fold>
+////        if (previousForm.previousValues != null) {
+////            previousForm.previousValues.deleteFile();
+////        }
+//        if (false) {
 //            Form f = Display.getInstance().getCurrent();
-//            if (f instanceof MyForm) {
-//                ((MyForm) f).deleteLocallyEditedValues();
+//            if (f instanceof MyForm && ((MyForm) f).previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
+//                ((MyForm) f).previousValues.deleteFile();
+//                ((MyForm) f).previousValues.clear(); //if still accessed
 //            }
-//            if (callRefreshAfterEdit) {
-//                previousForm.refreshAfterEdit();
-//            }
-//
-//            previousForm.showBack();
-//        } else {
-//            Form f = Display.getInstance().getCurrent();
-//            ASSERT.that(false, "should not happen anymore, screen \"" + f != null ? f.getTitle() : "<null form>");
-//            new ScreenMain().show();
 //        }
-//</editor-fold>
-//        if (previousForm.previousValues != null) {
-//            previousForm.previousValues.deleteFile();
+//        if (callRefreshAfterEdit) {
+//            previousForm.refreshAfterEdit();
 //        }
-        if (false) {
-            Form f = Display.getInstance().getCurrent();
-            if (f instanceof MyForm && ((MyForm) f).previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
-                ((MyForm) f).previousValues.deleteFile();
-                ((MyForm) f).previousValues.clear(); //if still accessed
-            }
+//        previousForm.showBack();
+//    }
+
+    void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
+        if (previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
+            previousValues.deleteFile();
+            previousValues.clear(); //if still accessed
         }
         if (callRefreshAfterEdit) {
             previousForm.refreshAfterEdit();
         }
         previousForm.showBack();
-
     }
 
-    void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
-        showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
-    }
-
+//    void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
+//        showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public Command makeTimerCommand(String title, Image icon, ItemList orgItemList, FilterSortDef filterSortDef) {
 ////    public Command makeTimerCommand(String title, Image icon, ItemList orgItemList) {
@@ -1461,7 +1482,8 @@ public class MyForm extends Form {
                     updateActionOnDone.update();
 //                previousForm.refreshAfterEdit();
 //                previousForm.showBack();
-                    showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
+//                    showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
+                    showPreviousScreenOrDefault(callRefreshAfterEdit);
                 } else {
                     Dialog.show("INFO", errorMsg, "OK", null);
                 }
@@ -1486,7 +1508,8 @@ public class MyForm extends Form {
                         updateActionOnDone.update();
 //                previousForm.refreshAfterEdit();
 //                previousForm.showBack();
-                        showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
+//                        showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
+                        showPreviousScreenOrDefault(callRefreshAfterEdit);
                     } else {
                         Dialog.show("INFO", errorMsg, "OK", null);
                     }
@@ -1505,7 +1528,8 @@ public class MyForm extends Form {
             public void actionPerformed(ActionEvent evt) {
 //                previousForm.refreshAfterEdit();
 //                previousForm.showBack();
-                showPreviousScreenOrDefault(previousForm, false);
+//                showPreviousScreenOrDefault(previousForm, false);
+                showPreviousScreenOrDefault(false);
             }
         };
         cmd.putClientProperty("android:showAsAction", "withText");
@@ -1526,7 +1550,8 @@ public class MyForm extends Form {
 //                previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
 //                previousForm.showBack(); //drop any changes
-                showPreviousScreenOrDefault(previousForm, false);
+//                showPreviousScreenOrDefault(previousForm, false);
+                showPreviousScreenOrDefault(false);
 
             }
         };
@@ -1643,17 +1668,17 @@ public class MyForm extends Form {
     public static Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
-         Button button=new Button(Command.create(null, Icons.iconAddTimeStampToCommentLabelStyle, (e) -> {
+        Button button = new Button(Command.create(null, Icons.iconAddTimeStampToCommentLabelStyle, (e) -> {
             comment.setText(Item.addTimeToComment(comment.getText()));
 //                    comment.setstartEditing(); //TODO how to position cursor at end of text (if not done automatically)?
 //comment.setCursor //only on TextField, not TextArea
 //            comment.startEditing(); //TODO in CN bug db #1827: start using startEditAsync() is a better approach
             comment.startEditingAsync();//TODO in CN bug db #1827: start using startEditAsync() is a better approach
         }));
-         
+
 //         button..
-         button.setIcon(FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, UIManager.getInstance().getComponentStyle("ItemCommentIcon")));
-         return button;
+        button.setIcon(FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, UIManager.getInstance().getComponentStyle("ItemCommentIcon")));
+        return button;
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -1678,7 +1703,6 @@ public class MyForm extends Form {
 ////        }
 ////    }
 ////</editor-fold>
-    
     final static int TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS = 80; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
     final static int ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR = 500; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
 
@@ -1976,7 +2000,7 @@ public class MyForm extends Form {
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton, boolean forceVisibleEditButton) {
 
 //        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
-        if ( field instanceof MyOnOffSwitch) {
+        if (field instanceof MyOnOffSwitch) {
 //            field.getAllStyles().setPaddingRight(6);
         } else {
             if (field instanceof WrapButton) {
@@ -2510,33 +2534,33 @@ public class MyForm extends Form {
         boolean getVal();
     }
 
-    void makeField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
-//        makeField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
-        makeField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
+    void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
+//        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
+        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
     }
-//    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
-//         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null);
+//    private void initField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
+//         initField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null);
 //    }
 
-//    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
+//    private void initField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
 //            GetBool isInherited, ActionListener actionListener) {
-    void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+    void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
             GetBool isInherited, ActionListener actionListener) {
-        makeField(fieldIdentifier, field, getOrg, putOrg, getField, putField, isInherited, actionListener, previousValues, parseIdMap2);
+        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, isInherited, actionListener, previousValues, parseIdMap2);
     }
 
-    static void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
             SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
-        makeField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
+        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
     }
 
-    static void makeField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
             GetBool isInherited, ActionListener actionListener, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//         makeField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
+//         initField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
 //    }
 //
-//    private void makeField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
+//    private void initField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
 //            GetBool isInherited, ActionListener actionListener, Container componentCont) {
 //                if (previousValues.get(Item.PARSE_EFFORT_ESTIMATE) != null) {
 //</editor-fold>
@@ -2564,7 +2588,8 @@ public class MyForm extends Form {
 //        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
                 ASSERT.that(true || getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
 //                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
-                if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
+//                if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
+                if (!(getField.getVal() == null ? getOrg.getVal() == null : getField.getVal().equals(getOrg.getVal()))) {
 //            item.setEffortEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
                     putOrg.setVal(getField.getVal()); //if value has been changed, update item
                 }
@@ -2577,14 +2602,17 @@ public class MyForm extends Form {
                     actionListener.actionPerformed(e);
                 }
 //            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-                ASSERT.that(getField.getVal() != null, "getField.getVal()==null, for field=" + fieldIdentifier);
-                ASSERT.that(getOrg.getVal() != null, "getOrg.getVal()==null, for field=" + fieldIdentifier);
+                if (false) { //OK now that values can be null
+                    ASSERT.that(getField.getVal() != null, "getField.getVal()==null, for field=" + fieldIdentifier);
+                    ASSERT.that(getOrg.getVal() != null, "getOrg.getVal()==null, for field=" + fieldIdentifier);
+                }
                 if (previousValues != null) {
-                    if (!getField.getVal().equals(getOrg.getVal())) {
-//                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
-                        previousValues.put(fieldIdentifier, getField.getVal());
-                    } else {
+//                    if (!getField.getVal().equals(getOrg.getVal())) {
+                    //(a == null) ? (a == b) : a.equals(b) <=> (a == null) ? b == null : a.equals(b)  -->> https://stackoverflow.com/questions/1402030/compare-two-objects-with-a-check-for-null
+                    if (getField.getVal() == null ? getOrg.getVal() == null : getField.getVal().equals(getOrg.getVal())) { //values are the same
                         previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+                    } else { //value's been edited
+                        previousValues.put(fieldIdentifier, getField.getVal());
                     }
                 }
             };
@@ -2722,7 +2750,7 @@ public class MyForm extends Form {
         }
         if (!ReplayLog.getInstance().replayCmd(new ActionEvent(this))) { //only show screen is there was no command to replay
             Form prevForm = Display.getInstance().getCurrent();
-            AnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
+            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
             super.show();
         }
     }

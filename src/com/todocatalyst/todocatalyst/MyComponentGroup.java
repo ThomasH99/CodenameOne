@@ -156,7 +156,7 @@ class MyComponentGroup extends ComponentGroup {
     public String getSelectedString() {
         int selected = getSelectedIndex();
         int size = this.getComponentCount();
-        if (selected >= 0 && selected < size - 1) {
+        if (selected >= 0 && selected < size ) {
             return ((RadioButton) this.getComponentAt(selected)).getText();
         }
         return null;

@@ -123,12 +123,15 @@ public class ScreenSettingsCommon extends MyForm {
         if (tableLayout) {
             cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
 
-            cont.add(rightAdj, new MyDurationPicker(parseIdMap2, () -> {
-//                return MyPrefs.getInt(prefEntry);
-                return prefEntry.getInt();
-            }, (i) -> {
-                MyPrefs.setInt(prefEntry, i);
-            }));
+//            cont.add(rightAdj, new MyDurationPicker(parseIdMap2, () -> {
+////                return MyPrefs.getInt(prefEntry);
+//                return prefEntry.getInt()*MyDate.MINUTE_IN_MILLISECONDS;
+//            }, (l) -> {
+//                MyPrefs.setInt(prefEntry, (int)(l/MyDate.MINUTE_IN_MILLISECONDS));
+//            }));
+            MyDurationPicker durationPicker = new MyDurationPicker(prefEntry.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
+            durationPicker.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) durationPicker.getDuration() / MyDate.MINUTE_IN_MILLISECONDS)));
+            cont.add(rightAdj, durationPicker);
 
             if (!prefEntry.getHelpText().equals("")) {
                 cont.add(span2Cols, new SpanLabel(prefEntry.getHelpText()));
@@ -139,12 +142,9 @@ public class ScreenSettingsCommon extends MyForm {
 //            }, (i) -> {
 //                MyPrefs.setInt(prefEntry, i);
 //            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
-            cont.add(layout(prefEntry.getFieldScription(), new MyDurationPicker(parseIdMap2, () -> {
-//                return MyPrefs.getInt(prefEntry);
-                return prefEntry.getInt();
-            }, (i) -> {
-                MyPrefs.setInt(prefEntry, i);
-            }), prefEntry.getHelpText()));
+            MyDurationPicker durationPicker2 = new MyDurationPicker(prefEntry.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
+            durationPicker2.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) durationPicker2.getDuration() / MyDate.MINUTE_IN_MILLISECONDS)));
+            cont.add(layout(prefEntry.getFieldScription(), durationPicker2, prefEntry.getHelpText()));
         }
     }
 

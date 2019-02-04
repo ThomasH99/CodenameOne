@@ -104,7 +104,8 @@ public class ScreenCategory extends MyForm {
 //            previousForm.revalidate();
 
 //            previousForm.show(); //drop any changes
-                showPreviousScreenOrDefault(previousForm, false);
+//                showPreviousScreenOrDefault(previousForm, false);
+                showPreviousScreenOrDefault(false);
             });
         }
 
@@ -117,7 +118,8 @@ public class ScreenCategory extends MyForm {
 //            previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
-            showPreviousScreenOrDefault(previousForm, true);
+//            showPreviousScreenOrDefault(previousForm, true);
+            showPreviousScreenOrDefault( true);
         });
 //        toolbar.addCommandToSideMenu("New Task", icon, (e) -> {
 //            Log.p("Clicked");

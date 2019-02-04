@@ -275,7 +275,7 @@ public class TimerInstance extends ParseObject {
                setElapsedTime(newElapsedTime);
            }
     }
-
+/*elapsed time in milliseconds*/
     public long getElapsedTime() {
 //        long addPreviousActual = 0;
 //        if (MyPrefs.timerShowTotalActualInTimer.getBoolean()) {
@@ -284,8 +284,8 @@ public class TimerInstance extends ParseObject {
         if (isRunning()) {
             return System.currentTimeMillis() - getStartTime(); // + addPreviousActual;
         }
-        Long startTime = getLong(PARSE_TIMER_ELAPSED_TIME);
-        return ((startTime == null) ? 0L : startTime); // + addPreviousActual;
+        Long elapsedTime = getLong(PARSE_TIMER_ELAPSED_TIME);
+        return ((elapsedTime == null) ? 0L : elapsedTime); // + addPreviousActual;
     }
 
     public long getElapsedTotalTime() {

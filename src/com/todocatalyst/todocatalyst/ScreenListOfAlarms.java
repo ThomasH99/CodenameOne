@@ -137,7 +137,7 @@ public class ScreenListOfAlarms extends MyForm {
 
             })));
 
-            MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt());
+            MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt()*MyDate.MINUTE_IN_MILLISECONDS);
 
             cancelAllButtonsCont.add(BorderLayout.EAST, Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(Command.create("Snooze All", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //                Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
@@ -256,7 +256,8 @@ public class ScreenListOfAlarms extends MyForm {
                     AlarmHandler.getInstance().removeExpiredAlarm(expiredAlarm);
 
                     if (AlarmHandler.getInstance().getExpiredAlarms().isEmpty()) { //exit screen if all alarms are dealt with
-                        showPreviousScreenOrDefault(previousForm, true);
+//                        showPreviousScreenOrDefault(previousForm, true);
+                        myForm.showPreviousScreenOrDefault( true);
                     } else {
                         refreshOnItemEdits.launchAction();
                     }
@@ -277,7 +278,8 @@ public class ScreenListOfAlarms extends MyForm {
                     AlarmHandler.getInstance().snoozeAlarm(expiredAlarm, snoozeExpireTimeInMillis);
 
                     if (AlarmHandler.getInstance().getExpiredAlarms().isEmpty()) { //exit screen if all alarms are dealt with
-                        showPreviousScreenOrDefault(previousForm, true);
+//                        showPreviousScreenOrDefault(previousForm, true);
+                        myForm.showPreviousScreenOrDefault(true);
                     } else {
                         refreshOnItemEdits.launchAction();
                     };

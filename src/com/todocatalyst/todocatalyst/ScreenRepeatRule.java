@@ -154,7 +154,7 @@ public class ScreenRepeatRule extends MyForm {
 //        this.myRepeatRule = (RepeatRuleParseObject) value;
         this.myRepeatRule = repeatRule;
         this.myRepeatRuleEdited = repeatRuleEdited; //the editable/edited copy of the repeatRule, used to edit only the end-user edtaible fields
-        if ((this.startDate = myRepeatRuleEdited.getSpecifiedStartDateD()).getTime() == 0) {
+        if (myRepeatRuleEdited != null && (this.startDate = myRepeatRuleEdited.getSpecifiedStartDateD()).getTime() == 0) {
             this.startDate = defaultStartDate; //only use defaultStartDate if rule doesn't have one already
 //            this.startDate = myRepeatRule.getSpecifiedStartDateD(); //use rule's existing startDate if it has one
 //        } else {
@@ -202,7 +202,8 @@ public class ScreenRepeatRule extends MyForm {
                     DAO.getInstance().save((ParseObject) repeatRuleOwner); //if a new Item, must save before creating repeatInstances in putEditedValues2:
                     putEditedValues2(parseIdMap2);
                     updateActionOnDone.update();
-                    showPreviousScreenOrDefault(previousForm, true); //false);
+//                    showPreviousScreenOrDefault(previousForm, true); //false);
+                    showPreviousScreenOrDefault(true); //false);
                 } else {
                     Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
                 }
@@ -224,7 +225,8 @@ public class ScreenRepeatRule extends MyForm {
                 toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {
                     myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(repeatRuleOwner); //delete rule and all other instances than this one (currently edited)
                     myRepeatRule = null;
-                    showPreviousScreenOrDefault(previousForm, false);
+//                    showPreviousScreenOrDefault(previousForm, false);
+                    showPreviousScreenOrDefault(false);
                 });
             }
         }
@@ -303,7 +305,7 @@ public class ScreenRepeatRule extends MyForm {
         setScrollableY(true);
         motherContainer = getContentPane();
 
-        if (myRepeatRule!=null && myRepeatRule.getListOfUndoneRepeatInstances().size() > 0) {
+        if (myRepeatRule != null && myRepeatRule.getListOfUndoneRepeatInstances().size() > 0) {
 //                        SpanLabel itemHierarchyContainer = new SpanLabel(hierarchyStr);
             repeatRuleDetailsContainer = new Container();
             Container repeatRuleHideableDetailsContainer = new Container();

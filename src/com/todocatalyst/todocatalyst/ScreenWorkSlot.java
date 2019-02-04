@@ -190,10 +190,21 @@ public class ScreenWorkSlot extends MyForm {
 //        content.add(layout("Start by",startByDate, "**"));
         content.add(layoutN(WorkSlot.START_TIME, startByDate, WorkSlot.START_TIME_HELP));
 
-        MyDurationPicker duration = new MyDurationPicker(parseIdMap2,
-                () -> (workSlot.getDurationInMinutes() == 0 && MyPrefs.workSlotDefaultDuration.getInt() != 0)
-                ? MyPrefs.workSlotDefaultDuration.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
-                (i) -> workSlot.setDurationInMinutes((int) i));
+//        MyDurationPicker duration = new MyDurationPicker(parseIdMap2,
+//                () -> (workSlot.getDurationInMinutes() == 0 && MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0)
+//                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
+//                (i) -> workSlot.setDurationInMinutes((int) i));
+        MyDurationPicker duration = new MyDurationPicker();
+//           initField(Item.PARSE_REMAINING_EFFORT, remainingEffort, 
+//                () -> item.getRemainingEffort(false), (l) -> item.setRemainingEffort((long) l, false),
+//                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l));
+        initField(WorkSlot.PARSE_DURATION, duration,
+                () -> (workSlot.getDurationInMinutes() == 0 && MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0)
+                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS
+                : workSlot.getDurationInMillis(),
+                (l) -> workSlot.setDuration((long) l),
+                () -> duration.getDuration(), (l) -> duration.setDuration((long) l));
+
         content.add(layoutN(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
 
 //        MyTextField workSlotName = new MyTextField("Description", parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s));
@@ -224,7 +235,7 @@ public class ScreenWorkSlot extends MyForm {
             if (repeatRuleCopyBeforeEdit == null && workSlot.getRepeatRule() != null) {
                 repeatRuleCopyBeforeEdit = workSlot.getRepeatRule().cloneMe(); //make a copy of the *original* repeatRule
             }
-            ASSERT.that(workSlot.getRepeatRule() == null || (repeatRuleCopyBeforeEdit.equals(locallyEditedRepeatRule) && locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)), 
+            ASSERT.that(workSlot.getRepeatRule() == null || (repeatRuleCopyBeforeEdit.equals(locallyEditedRepeatRule) && locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)),
                     "problem in cloning repeatRule");
 
             new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRule, workSlot, ScreenWorkSlot.this, () -> {
@@ -330,19 +341,18 @@ public class ScreenWorkSlot extends MyForm {
         }
         content.add(layoutN("Unallocated time", new Label(MyDate.formatTimeDuration(workSlot.getUnallocatedTime())), "How much of this work slot is still free",
                 true, true, false));
-        
+
         if (Config.WORKTIME_TEST) {
             content.add(layoutN("WorkTimeAllocator (TEST)", new Label(workSlot.getWorkSlotAllocationsAsStringForTEST()), "**",
                     true, true, false));
         }
 
-                if (MyPrefs.showObjectIdsInEditScreens.getBoolean()){
+        if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
 
-        Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
-        content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
-                }
+            Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
+            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+        }
         return content;
     }
-
 
 }

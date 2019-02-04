@@ -2909,6 +2909,9 @@ public class RepeatRuleParseObject
 //                    dos.writeUTF(((WorkSlot) p).getObjectIdP());
 //                }
 //</editor-fold>
+                if (Config.DEBUG_LOGGING) {
+                    ASSERT.that(p.getObjectIdP() != null, "RepeatRule: " + this + " references elt:" + p + " with getObjectIdP()==null");
+                }
                 dos.writeUTF(p.getObjectIdP());
             }
         }

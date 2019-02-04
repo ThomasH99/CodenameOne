@@ -408,7 +408,8 @@ public class MyPrefs {
     static PrefEntry loginFirstTimeLogin = new PrefEntry("Is this the first time someone opens TodoCtatalyst on this device (NOT an end-user setting)", "loginFirstTimeLogin", true, "**");
 
     //WORKSLOT
-    static PrefEntry workSlotDefaultDuration = new PrefEntry("Default work slot duration (min)", "workSlotDefaultDuration", 60, "**");
+    static PrefEntry workSlotDefaultDurationInMinutes = new PrefEntry("Default work slot duration (min)", 
+            "workSlotDefaultDurationInMinutes", 60, "**");
     static PrefEntry workSlotDefaultStartDateIsNow = new PrefEntry("Use current time as Default work slot start time", "workSlotDefaultStartDateIsNow", true, "**");
 
     MyPrefs() {

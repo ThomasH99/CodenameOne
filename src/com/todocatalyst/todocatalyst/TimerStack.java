@@ -9,9 +9,7 @@ import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
-import com.codename1.io.Storage;
 import com.codename1.ui.Button;
-import com.codename1.ui.CN;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
@@ -23,21 +21,16 @@ import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
-import com.codename1.ui.events.DataChangedListener;
 import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.GridLayout;
-import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 //import com.codename1.ui.util.UITimer;
-import static com.todocatalyst.todocatalyst.ScreenTimer6.showPreviousScreenOrDefault;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -1371,11 +1364,10 @@ class TimerStack {
 ////            Container timerForContainer = MyForm.getContainerForSmallTimer();
 //            Container timerForContainer = MyForm.getContainerForSmallTimer(form);
 //            if (timerForContainer != null) {
-        Container timerForContainer = getContainerForSmallTimer(form);
-
-        if (timerForContainer != null) { //if no container, do nothing (avoid e.g. the case where ScreenLogin tries to load timers before login completed)
-            TimerInstance timerInstance = getInstance().getCurrentTimerInstanceN();
-            if (timerInstance != null) {
+        TimerInstance timerInstance = getInstance().getCurrentTimerInstanceN();
+        if (timerInstance != null) {
+            Container timerForContainer = getContainerForSmallTimer(form);
+            if (timerForContainer != null) { //if no container, do nothing (avoid e.g. the case where ScreenLogin tries to load timers before login completed)
                 if (timerContainer == null) {
                     timerContainer = buildContentPaneSmall(form);
                 }
@@ -1919,7 +1911,8 @@ class TimerStack {
                     timerInstance.deleteInstance();
                 }
 
-                showPreviousScreenOrDefault(((MyForm) Display.getInstance().getCurrent()).previousForm, true);
+//                showPreviousScreenOrDefault(((MyForm) Display.getInstance().getCurrent()).previousForm, true);
+                ((MyForm) Display.getInstance().getCurrent()).showPreviousScreenOrDefault(true);
             }
         };
 
@@ -2149,7 +2142,7 @@ class TimerStack {
             description.setUIID("ScreenItemTaskText");
             description.setColumns(100);
             description.setActAsLabel(true);
-//                MyForm.makeField(Item.PARSE_TEXT, description, () -> timedItem.getText(),
+//                MyForm.initField(Item.PARSE_TEXT, description, () -> timedItem.getText(),
 //                        (t) -> timedItem.setText((String) t), () -> description.getText(), (t) -> description.setText((String) t), previousValues, parseIdMap2);
 //            description.addActionListener((e) -> {
 //                timedItem.setText(description.getText());
@@ -2179,7 +2172,7 @@ class TimerStack {
             DAO.getInstance().saveInBackground(timedItem);
         });
 
-//            MyForm.makeField(Item.PARSE_STATUS, status, () -> timedItem.getStatus(), (t) -> timedItem.setStatus((ItemStatus) t),
+//            MyForm.initField(Item.PARSE_STATUS, status, () -> timedItem.getStatus(), (t) -> timedItem.setStatus((ItemStatus) t),
 //                    () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t), previousValues, parseIdMap2);
         if (false) {
             status.addActionListener((e) -> { //is NOT called when status Button's text is changed! BUT when clicked, so must keep!
@@ -2198,9 +2191,11 @@ class TimerStack {
                         description.setText(timedItem.getText());
                         status.setStatus(timedItem.getStatus());
                         comment.setText(timedItem.getComment());
-                        effortEstimate.setTime((int) timedItem.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS);
+//                        effortEstimate.setTime((int) timedItem.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS);
+                        effortEstimate.setDuration(timedItem.getEffortEstimate());
 //                remainingEffort.setTime((int) timedItem.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
-                        remainingEffort.setTime((int) timedItem.getRemainingEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
+//                        remainingEffort.setTime((int) timedItem.getRemainingEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
+                        remainingEffort.setDuration((int) timedItem.getRemainingEffortProjectTaskItself()); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
                         refreshTotalActualEffort.actionPerformed(null);
 //                ScreenTimer6.this.revalidate();
 //                    ((MyForm) contentPane.getComponentForm()).revalidate();
@@ -2290,12 +2285,12 @@ class TimerStack {
         if (fullScreenTimer) { //smallContainer
 //            remainingEffort = new MyDurationPicker();
             remainingEffort.setShowZeroValueAsZeroDuration(true); //show "0:00"
-//                MyForm.makeField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
+//                MyForm.initField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
 //                        () -> timedItem.getRemainingEffort(false), (l) -> timedItem.setRemainingEffort((long) l),
 //                        () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), previousValues, parseIdMap2);
 //                effortEstimate = new MyDurationPicker();
             effortEstimate.setShowZeroValueAsZeroDuration(true); //show "0:00"
-//                MyForm.makeField(Item.PARSE_EFFORT_ESTIMATE, effortEstimate, () -> timedItem.getEffortEstimate(), (l) -> timedItem.setEffortEstimate((long) l),
+//                MyForm.initField(Item.PARSE_EFFORT_ESTIMATE, effortEstimate, () -> timedItem.getEffortEstimate(), (l) -> timedItem.setEffortEstimate((long) l),
 //                        () -> effortEstimate.getDuration(), (l) -> effortEstimate.setDuration((long) l), previousValues, parseIdMap2);
 //            boolean effortEstimateBeingAutoupdated = false;
 //            boolean remainingEstimateBeingAutoupdated = false;
@@ -2390,7 +2385,7 @@ class TimerStack {
                     .setHidden(!MyPrefs.getBoolean(MyPrefs.timerShowEffortEstimateDetails)); //hide initially
             contentPane.add(BorderLayout.center(estimateTable));
 
-            MyForm.makeField(Item.PARSE_COMMENT, comment,
+            MyForm.initField(Item.PARSE_COMMENT, comment,
                     () -> timedItem.getComment(), (t) -> timedItem.setComment((String) t),
                     () -> comment.getText(), (t) -> comment.setText((String) t), null, parseIdMap2
             );

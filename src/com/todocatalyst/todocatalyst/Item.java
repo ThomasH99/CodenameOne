@@ -4003,18 +4003,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * used in the UI to update status when actual is changing. If no reason to
      * change status, returns newStatus (already set status => no change)
      *
-     * @param oldActual old value (item value before editing)
-     * @param newActual new value (possibly manually edited by user)
+     * @param oldActualMillis old value (item value before editing)
+     * @param newActualMillis new value (possibly manually edited by user)
      * @param oldStatus old value (item value before editing)
      * @param newStatus new value (possibly manually edited by user)
      * @return
      */
-    static public ItemStatus updateStatusOnActualChange(long oldActual, long newActual, ItemStatus oldStatus, ItemStatus newStatus, boolean areAnySubtasksOngoing) {
-        if (oldActual == newActual) {
+    static public ItemStatus updateStatusOnActualChange(long oldActualMillis, long newActualMillis, ItemStatus oldStatus, ItemStatus newStatus, boolean areAnySubtasksOngoing) {
+        if (oldActualMillis == newActualMillis) {
             return oldStatus; //return if no change
         } else if (areAnySubtasksOngoing) { //if some subtasks are done
             return ItemStatus.ONGOING;
-        } else if (newActual > 0) { //if user has changed actual
+        } else if (newActualMillis > 0) { //if user has changed actual
             if (oldStatus == ItemStatus.CREATED /*don't change WAITING/CANCELLED/ONGOING*/
                     && (newStatus == oldStatus/*status not manually changed*/
                     || oldStatus == ItemStatus.ONGOING /*setting back to existing value*/)) {
@@ -4474,7 +4474,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         setStatusInParse(newStatus); //must set *before* updating supertasks
-        
+
         if (updateDependentFields) {
             updateDependentFields(this, oldStatus, newStatus, now);
         }
@@ -4489,7 +4489,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
 //        setStatusInParse(newStatus);
-
 //        else {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), true);
@@ -5724,7 +5723,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return 0;
 //        }
 //        return getRemainingEffortFromParse();
-        return getRemainingEffort(true);
+        return getRemainingEffort(true,true);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getRemainingEffortNoDefault() {
@@ -5745,8 +5744,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     ////////////// ACTUAL ///////////////
     private void setActualEffortProjectTaskItselfInParse(long actualEffortProjectTaskItselfMillis) {
-        if (actualEffortProjectTaskItselfMillis != 0) {
-            put(PARSE_ACTUAL_EFFORT_PROJECT_TASK_ITSELF, actualEffortProjectTaskItselfMillis);
+//        long rounded = ((actualEffortProjectTaskItselfMillis + 500) / 1000) * 1000; //https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
+        long rounded = actualEffortProjectTaskItselfMillis ; //https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
+        if (rounded != 0) {
+            put(PARSE_ACTUAL_EFFORT_PROJECT_TASK_ITSELF, rounded);
         } else {
             remove(PARSE_ACTUAL_EFFORT_PROJECT_TASK_ITSELF);
         }
@@ -5757,9 +5758,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        setActualEffortTotalInParse(actualEffortMillis, true);
 //    }
     private void setActualEffortTotalInParseImpl(long actualEffortTotalMillis) {
-
-        if (actualEffortTotalMillis > 0) {
-            put(PARSE_ACTUAL_EFFORT, actualEffortTotalMillis);
+//        long rounded = ((actualEffortTotalMillis + 500) / 1000) * 1000; //https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
+        long rounded = actualEffortTotalMillis ; //no need to round, picker now handles millis - https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
+        if (rounded > 0) {
+            put(PARSE_ACTUAL_EFFORT, rounded);
         } else {
             remove(PARSE_ACTUAL_EFFORT);
         }
@@ -5807,10 +5809,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         setActualEffortTotalInParseImpl(actualEffortTotalMillis);
 
 //        if (actualEffortMillis != oldActualEffort) {
-        Item owner = getOwnerItem();
+        Item ownerProject = getOwnerItem(); //only relevant to update owners when it is a project (only projects keep total of subtasks)
 //            update();
-        if (owner != null && actualEffortTotalMillis != oldActualEffort) {
-            ((Item) owner).updateActualEffortOnSubtaskChange(oldActualEffort, actualEffortTotalMillis);
+        if (ownerProject != null && actualEffortTotalMillis != oldActualEffort) {
+            ((Item) ownerProject).updateActualEffortOnSubtaskChange(oldActualEffort, actualEffortTotalMillis);
         }
 //        }
 //        update(); //DONE at the caller
@@ -6652,13 +6654,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    static long getTotalExpectedEffort(long remainingEffort, long actualEffort, long effortEstimate) {
+    static long getTotalExpectedEffort(long remainingEffortMillis, long actualEffortMillis, long effortEstimateMillis) {
 //        return getRemainingEffort() + getActualEffort();
         long totEff;// = 0;
-        if (remainingEffort != 0) {
-            totEff = remainingEffort + actualEffort; //whether actual is zero or not, and whether estimate is larger or not
+        if (remainingEffortMillis != 0) {
+            totEff = remainingEffortMillis + actualEffortMillis; //whether actual is zero or not, and whether estimate is larger or not
         } else {
-            totEff = Math.max(actualEffort, effortEstimate);
+            totEff = Math.max(actualEffortMillis, effortEstimateMillis);
         }
 //            if (actualEffort > effortEstimate) {
 //            totEff = actualEffort;
@@ -8217,12 +8219,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public WorkTimeSlices getAllocatedWorkTimeN() {
         boolean reset = false;
-        
+
         WorkTimeSlices workTime = null;
         if (Config.WORKTIME_DETAILED_LOG) {
             Log.p("-> .getAllocatedWorkTime(" + reset + ") for Item \"" + this + "\"");
         }
-        
+
         //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
         long remaining = 0;
         List<? extends ItemAndListCommonInterface> subtasks = getList();
@@ -8233,7 +8235,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else { //I'm a leaf task
             remaining = getRemainingEffort(); //how much total workTime is required?
         }
-        
+
         //now iterate over workTimeProviders (returned by prio order) and get as much as possible from each
         List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
         for (ItemAndListCommonInterface prov : potentialProviders) {

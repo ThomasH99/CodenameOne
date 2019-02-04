@@ -2391,6 +2391,8 @@ refreshAfterEdit();
 //                ScreenTimer2.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
                 TimerStack.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm());//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
 //                        }
+                swipCont.close(); //close before save 
+
             }));
             startTimer.setUIID("SwipeButtonTimer");
             buttonSwipeContainer.add(startTimer);
@@ -2403,6 +2405,7 @@ refreshAfterEdit();
                     ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation));
 //                            refreshOnItemEdits.launchAction(); //NOT necessary, since item not saved in list of templates
                 }).show();
+                swipCont.close(); //close before save 
             }));
 //                    newFromTemplate.setUIID("SwipeButton");
             newFromTemplate.setUIID("SwipeButtonNewFromTemplate");

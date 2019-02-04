@@ -1673,14 +1673,14 @@ public class MyDate extends Date {
                 + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes
                         + (dontShowZeroHours && !showSeconds ? "m" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
         int seconds = (int) (restAfterHours % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS; //1000;
-        if (roundUpMinutes && seconds >= 30) {
+        if (roundUpMinutes && !showSeconds&& seconds >= 30) {
             minutes++;
         }
 //        if (roundLessThan1MinuteUp && minutes==0 && seconds>0) {
 //            minutes=1; 
 //        }
         if (showSeconds||(minutes==0&&hours==0)) { //avoid to show actual duration of say 17s as 0, round up to 1min //TODO!!!!
-            s += ":" + (seconds < 10 ? "0" + seconds : "" + seconds);
+            s += "s" + (seconds < 10 ? "0" + seconds : "" + seconds);
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        } else {
