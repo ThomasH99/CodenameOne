@@ -294,6 +294,7 @@ public class ScreenLogin extends MyForm {
             createAccount.setHidden(true);
             connect.setHidden(false);
             email.setHidden(false);
+            //TODO!!! cn1 support setEditOnShow(email); //startup editor in email field
             password.setHidden(false);
             forgottenPassword.setHidden(false);
             backToSignupSignIn.setHidden(false);

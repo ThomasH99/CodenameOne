@@ -116,7 +116,7 @@ public class MultipleSelection {
                 item.setRemainingEffort(itm.getRemainingEffort());
             }
             if (itm.getActualEffort() != 0) {
-                item.setActualEffort(itm.getActualEffort());
+                item.setActualEffort(itm.getActualEffort(),false);
             }
             if (itm.getHideUntilDateD().getTime() != 0) {
                 item.setHideUntilDate(itm.getHideUntilDateD());

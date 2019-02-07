@@ -200,12 +200,14 @@ public class DAO {
     public void removeFromCache(ParseObject parseObject) {
         if (parseObject instanceof WorkSlot) {
             cacheWorkSlots.delete(parseObject.getObjectIdP());
-        } else {
+        } else if (parseObject instanceof ParseObject) {
             ItemAndListCommonInterface elt = (ItemAndListCommonInterface) parseObject;
             for (ItemAndListCommonInterface subelt : elt.getList()) {
                 removeFromCache((ParseObject) subelt);
             }
             cache.delete(parseObject.getObjectIdP());
+        } else {
+            ASSERT.that("trying to delete non-ParseObject =" + parseObject);
         }
     }
 
@@ -1251,7 +1253,7 @@ public class DAO {
     @param name
     @return 
      */
-    public ItemList getSpecialNamedItemListFromParse(String name) {
+    public ItemList getSpecialNamedItemListFromParse(String name, String visibleName) {
         ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
         query.whereEqualTo(ItemList.PARSE_TEXT, name);
         query.whereDoesNotExist(ItemList.PARSE_OWNER); //only get lists that do not belong to the ItemListList
@@ -1264,17 +1266,18 @@ public class DAO {
         int s = results.size();
         ASSERT.that(results.size() <= 1, () -> "too many lists (" + s + ") with reserved name: " + name);
         if (s > 0) {
+            results.get(0).setText(visibleName);
             return results.get(0);
         } else {
             return null;
         }
     }
 
-    public ItemList getInbox(String name) {
+    public ItemList getInbox(String name, String visibleName) {
 //        if (!forceFromParse && (inbox = (Inbox) cacheGet(Inbox.CLASS_NAME)) != null) {
 //            return inbox;
 //        } //NO need for caching since this is done in the instance/singleton
-        ItemList inbox = getSpecialNamedItemListFromParse(name);
+        ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
         if (inbox == null) {
             //if no Inbox already saved, initialize it with existing categories
             inbox = new ItemList();
@@ -1533,6 +1536,7 @@ public class DAO {
         query.whereDoesNotExist(Item.PARSE_OWNER_ITEM);
         query.whereDoesNotExist(Item.PARSE_OWNER_LIST);
         query.whereDoesNotExist(Item.PARSE_OWNER_TEMPLATE_LIST);
+        query.whereDoesNotExist(Item.PARSE_TEMPLATE);
         query.orderByDescending(Item.PARSE_UPDATED_AT);
         query.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
         query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
@@ -4123,135 +4127,61 @@ public class DAO {
 
         //CATEGORIES
 //        cleanUpBadObjectReferences(item.getCategories()); //remove links to non-existing Categories
-        for (Category cat
-                : item
-                        .getCategories()) {
+        for (Category cat : item.getCategories()) {
 //            List list;
             //DON'T test for templates (the template should not be in the category
-            if (item
-                    .isTemplate()) {
-                if (cat
-                        .contains(item
-                        )) {
-                    Log
-                            .p("CLEANUP: Template \"" + item
-                                    .getText() + "\" is wrongly referenced in Category \"" + cat,
-                                    logLevel
-                            );
-
+            if (item.isTemplate()) {
+                if (cat.contains(item)) {
+                    Log.p("CLEANUP: Template \"" + item.getText() + "\" is wrongly referenced in Category \"" + cat, logLevel);
                     if (executeCleanup) {
-                        cat
-                                .removeItemFromCategory(item,
-                                        false);
-
+                        cat.removeItemFromCategory(item, false);
                     }
                 }
             } else {
-                List list2
-                        = cat
-                                .getList();
+                List list2 = cat.getList();
 //                if ((list = cleanUpMissingInclusionInList("Item \"" + item + "\" has Category \"" + cat + "\" but category does not reference the item, category's list (" + cat.getList() + ")", item, list2)) != null) {
 //                cat.addItemToCategory(item, false); //add item to category //NO, done in cleanupMissing
-
-                if (list2
-                        != null && !list2
-                                .contains(item
-                                )) {
-                    Log
-                            .p("CLEANUP: Item \"" + item
-                                    + "\" (ObjId=" + item
-                                            .getObjectIdP() + ") has Category \"" + cat
-                                    + "\" (ObjId=" + cat
-                                            .getObjectIdP() + ") but category does not reference the item, category's list (" + cat
-                                            .getList() + ")", logLevel
-                            );
-
+                if (list2 != null && !list2.contains(item)) {
+                    Log.p("CLEANUP: Item \"" + item
+                            + "\" (ObjId=" + item.getObjectIdP() + ") has Category \"" + cat
+                            + "\" (ObjId=" + cat.getObjectIdP() + ") but category does not reference the item, category's list (" + cat
+                            .getList() + ")", logLevel
+                    );
                     if (executeCleanup) {
-                        list2
-                                .add(item
-                                );
-                        cat
-                                .setList(list2
-                                );
-
+                        list2.add(item);
+                        cat.setList(list2);
                     }
                 }
             }
         }
-
-        List list3
-                = item
-                        .getCategories();
-
-        if (cleanUpDuplicatesInList("Item \"" + item
-                + "\" (ObjId=" + item
-                        .getObjectIdP() + ") list of categories", list3,
-                executeCleanup
-        ) && executeCleanup) {
+        List list3 = item.getCategories();
+        if (cleanUpDuplicatesInList("Item \"" + item + "\" (ObjId=" + item.getObjectIdP() + ") list of categories", list3, executeCleanup) && executeCleanup) {
 //        if (executeCleanup) {
-            item
-                    .setCategories(list3
-                    );
-
+            item.setCategories(list3);
         }
 
         //SUBTASKS
-        List<Item> subtasks
-                = item
-                        .getList();
+        List<Item> subtasks = item.getList();
 //        for (Item subtask : subtasks) {
-
-        int i
-                = 0;
-
-        while (i
-                < subtasks
-                        .size()) {
-            Item subtask
-                    = subtasks
-                            .get(i
-                            );
-
-            if (subtask
-                    .getOwner() == null) {
-                Log
-                        .p("CLEANUP: Item \"" + item
-                                + "\"'s subtask \"" + subtask
-                                + "\" has owner==null", logLevel
-                        );
-
+        int i = 0;
+        while (i < subtasks.size()) {
+            Item subtask = subtasks.get(i);
+            if (subtask.getOwner() == null) {
+                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has owner==null", logLevel);
                 if (executeCleanup) {
-                    subtask
-                            .setOwner(item
-                            );
-                    DAO
-                            .getInstance().save(subtask
-                            );
-
+                    subtask.setOwner(item);
+                    DAO.getInstance().save(subtask);
                 }
 //                i++;
 //            } else if (!subtask.getOwner().equals(item)) {
             }
-            if (false && !subtask
-                    .getOwner().equals(item
-                    )) { //do not this this for subtasks - incompatible with the check above
-                Log
-                        .p("CLEANUP: Item \"" + item
-                                + "\"'s subtask \"" + subtask
-                                + "\" has another owner==\"" + subtask
-                                        .getOwner() + "\"", logLevel
-                        );
-
+            if (false && !subtask.getOwner().equals(item)) { //do not this this for subtasks - incompatible with the check above
+                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has another owner==\"" + subtask.getOwner() + "\"", logLevel);
                 if (executeCleanup) {
 //                    subtasks.remove(subtask); //
-                    subtask
-                            .setOwner(item
-                            ); //force owner of subtask to this item
-                    item
-                            .setList(subtasks
-                            );
+                    subtask.setOwner(item); //force owner of subtask to this item
+                    item.setList(subtasks);
 //                } else {
-
                 }
 //                    i++;
 //            } else {

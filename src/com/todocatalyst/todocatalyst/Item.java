@@ -1083,7 +1083,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case FIELD_EFFORT_ACTUAL:
 //                setActualEffort(((Duration)fieldValue).getDays());
-                setActualEffort(((Long) fieldValue));
+                setActualEffort(((Long) fieldValue), false);
                 break;
             case FIELD_EFFORT_REMAINING:
 //                setRemainingEffortXXX(((Duration)fieldValue).getDays());
@@ -1806,7 +1806,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             destination.setWaitingTillDate(getWaitingTillDateD().getTime());
             destination.setDateWhenSetWaiting(getDateWhenSetWaiting());
             destination.setRemainingEffort(getRemainingEffort(), false);
-            destination.setActualEffort(getActualEffort());
+            destination.setActualEffort(getActualEffort(), false);
 //            destination.setLastModifiedDate(getLastModifiedDate());
 //            destination.setEarnedValue(getEarnedValue());
             destination.setInteruptOrInstantTask(isInteruptOrInstantTask());
@@ -2215,6 +2215,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     @Override
+    public boolean addToList(int index, ItemAndListCommonInterface subtask) {
+        List subtasks = getList();
+        boolean status = true;
+        subtasks.add(index, subtask);
+        assert subtask.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subtask + ", owner=" + subtask.getOwner() + ", list=" + this;
+        subtask.setOwner(this);
+        ((Item) subtask).updateValuesInheritedFromOwner();
+        setList(subtasks);
+        return status;
+    }
+
+    @Override
     public boolean addToList(ItemAndListCommonInterface subItemOrList) {
 //        List subtasks = getList();
 //        boolean status = subtasks.add(subtask);
@@ -2225,34 +2237,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     @Override
-    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
+    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subtask, boolean addAfterItem) {
         List subtasks = getList();
-        boolean status = true;
-//        try {
-        subtasks.add(index, subItemOrList);
-        assert subItemOrList.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
-        subItemOrList.setOwner(this);
-//        } catch (Exception e) {
-//            status = false;
-//        }
-        setList(subtasks);
-        return status;
-    }
-
-    @Override
-    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
-        List subtasks = getList();
-        boolean status = true;
-//        try {
-        int index = subtasks.indexOf(item);
-        subtasks.add(index + (addAfterItem ? 1 : 0), subItemOrList);
-        assert subItemOrList.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
-        subItemOrList.setOwner(this);
-//        } catch (Exception e) {
-//            status = false;
-//        }
-        setList(subtasks);
-        return status;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        boolean status = true;
+////        try {
+//        int index = subtasks.indexOf(item);
+//        subtasks.add(index + (addAfterItem ? 1 : 0), subItemOrList);
+//        assert subItemOrList.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
+//        subItemOrList.setOwner(this);
+////        } catch (Exception e) {
+////            status = false;
+////        }
+//        setList(subtasks);
+//        return status;
+//</editor-fold>
+        int index = subtasks.indexOf(item) + (addAfterItem ? 1 : 0);
+        return addToList(index, subtask);
     }
 
     @Override
@@ -2363,7 +2364,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
             put(PARSE_SUBTASKS, listOfSubtasks);
         }
-        updateValuesDerivedFromSubtasks(); //update eg if added first subtasks, meaning ActualEffort must be updated
+        updateValuesDerivedFromSubtasksWhenSubtaskListChange(); //update eg if added first subtasks, meaning ActualEffort must be updated
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (getItemListSize() == 0 && itemList.isEmpty()) // this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
 //        {
@@ -2375,43 +2376,41 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
     }
 
-    public void timerStart(Date startTime) {
-        Date timerStarted = getDate(PARSE_TIMER_STARTED);
-        if (timerStarted != null) {
-            throw new RuntimeException("Timer started while timer already running");
-        }
-        //TODO: handle an already running timer: simply stop it and update the running item correctly, possibly with a pop-up information dialog
-        put(PARSE_TIMER_STARTED, startTime); //set started time
-        remove(PARSE_TIMER_PAUSED); //remove any paused time when timer is started
-    }
-
-    public void timerPause(Date pauseTime) {
-        Date timerStarted = getDate(PARSE_TIMER_STARTED);
-        if (timerStarted != null) {
-            throw new RuntimeException("Paused when no timer was running");
-        }
-        put(PARSE_TIMER_PAUSED, pauseTime); //set timer to now
-    }
-
-    public boolean timerIsPaused() {
-        return get(PARSE_TIMER_PAUSED) != null; //set timer to now
-    }
-
-    public long timerRunningTime() {
-        Date timerStarted = getDate(PARSE_TIMER_STARTED);
-        Date timePaused = getDate(PARSE_TIMER_PAUSED);
-        long timeSpent = timerStarted == null ? 0 : (timerStarted.getTime() - (timePaused == null ? (new Date().getTime()) : timePaused.getTime()));
-        return timeSpent;
-    }
-
-    public void timerStopAndUpdateActualEffort() {
-        long timeSpent = timerRunningTime();
-        remove(PARSE_TIMER_STARTED);
-        remove(PARSE_TIMER_PAUSED);
-        setActualEffort(getActualEffort() + timeSpent); //store new actual effort
-
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void timerStart(Date startTime) {
+//        Date timerStarted = getDate(PARSE_TIMER_STARTED);
+//        if (timerStarted != null) {
+//            throw new RuntimeException("Timer started while timer already running");
+//        }
+//        //TODO: handle an already running timer: simply stop it and update the running item correctly, possibly with a pop-up information dialog
+//        put(PARSE_TIMER_STARTED, startTime); //set started time
+//        remove(PARSE_TIMER_PAUSED); //remove any paused time when timer is started
+//    }
+//
+//    public void timerPause(Date pauseTime) {
+//        Date timerStarted = getDate(PARSE_TIMER_STARTED);
+//        if (timerStarted != null) {
+//            throw new RuntimeException("Paused when no timer was running");
+//        }
+//        put(PARSE_TIMER_PAUSED, pauseTime); //set timer to now
+//    }
+//
+//    public boolean timerIsPaused() {
+//        return get(PARSE_TIMER_PAUSED) != null; //set timer to now
+//    }
+//    public long timerRunningTime() {
+//        Date timerStarted = getDate(PARSE_TIMER_STARTED);
+//        Date timePaused = getDate(PARSE_TIMER_PAUSED);
+//        long timeSpent = timerStarted == null ? 0 : (timerStarted.getTime() - (timePaused == null ? (new Date().getTime()) : timePaused.getTime()));
+//        return timeSpent;
+//    }
+//    public void timerStopAndUpdateActualEffortXXX() {
+//        long timeSpent = timerRunningTime();
+//        remove(PARSE_TIMER_STARTED);
+//        remove(PARSE_TIMER_PAUSED);
+//        setActualEffort(getActualEffort() + timeSpent); //store new actual effort
+//    }
+//</editor-fold>
 //    private final static String[] challengeNames = new String[]{"Piece of cake", "Easy", "Average", "Tough", "Hard"};
 //    private final static int[] challengeValues = new int[]{0, 1, 2, 3, 4};
     public enum Challenge {
@@ -2483,74 +2482,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-//    public static String[] getChallengeStringArray() {
-//        return challengeNames;
-//    }
-//
-//    public static int[] getChallengeValuesArray() {
-//        return challengeValues;
-//    }
-    public Challenge getChallengeN() {
-        return getChallengeN(true);
-    }
-
-    public Challenge getChallengeN(boolean useInheritedValue) {
-//        String challenge = getString(PARSE_CHALLENGE);
-//        return (challenge == null) ? Challenge.AVERAGE.getDescription() : challenge;
-//        String challenge = getString(PARSE_CHALLENGE);
-//        return (challenge == null) ? "" : challenge;
-        String challenge = getString(PARSE_CHALLENGE);
-        if (challenge == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()) {
-            if (getOwnerItem() != null) {
-                return getOwnerItem().getChallengeN();
-            }
-        }
-//        return (dreadFunValue == null) ? "" : dreadFunValue;
-        return (challenge == null) ? null : Challenge.valueOf(challenge); //Created is initial value
-    }
-
-    /**
-    returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
-    @return 
-     */
-    public boolean isChallengeInherited() {
-        String challenge = getString(PARSE_CHALLENGE);
-        return challenge == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getChallengeN() != null;
-    }
-
-    public void setChallenge(Challenge challenge) {
-//        if (has(PARSE_CHALLENGE)) { // || !challenge.equals(Challenge.AVERAGE.getDescription())) { //no need to save a value since a null pointer is interprested as zero
-//            put(PARSE_CHALLENGE, challenge);
-//        }
-//        if (challenge != null && !challenge.equals("")) {
-//            put(PARSE_CHALLENGE, challenge);
-//        } else {
-//            remove(PARSE_CHALLENGE);
-//        }
-//        if (challenge != null) {// && !dreadFunValue.equals("")) {
-        // A=> B <=> !A or B: inherit => getOwnerItem().getChallengeN() != challenge
-        //inherit && hasOwner && newValue!=oldValue
-        if (challenge != null
-                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getChallengeN() != challenge)) {
-            put(PARSE_CHALLENGE, challenge.toString());
-        } else {
-            //remove value if (inherits && hasOwner && newValue==inheritedValue) <=> 
-            //store newValue if !remove <=> !inherits || !hasOwner || newValue!=inheritedValue
-            //where inherits == MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean() (both must be true)
-            // <=> !(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()) ||
-            //     getOwnerItem() == null || getOwnerItem().getChallengeN() != challenge
-            remove(PARSE_CHALLENGE);
-        }
-
-    }
-
     public void setStarred(boolean starred) {
 //        if (starred) {
-        if (starred
-                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean())
-                || getOwnerItem() == null || !getOwnerItem().isStarred())) {
+//        if (starred
+//                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean())
+//                || getOwnerItem() == null || !getOwnerItem().isStarred())) {
+        if (starred) {
             put(PARSE_STARRED, true);
         } else {
             remove(PARSE_STARRED); //no value set means not starred
@@ -2562,9 +2499,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public boolean isStarInherited() {
-        Boolean starred = getBoolean(PARSE_STARRED);
-        return starred == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().isStarred();
+//        Boolean starred = getBoolean(PARSE_STARRED);
+        Boolean starred = isStarred();
+//        return starred == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
+        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
+                && getOwnerItem() != null && getOwnerItem().isStarred() == starred;
     }
 
     public boolean isStarred() {
@@ -2573,25 +2512,25 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public boolean isStarred(boolean useInheritedValue) {
         Boolean b = getBoolean(PARSE_STARRED);
-        if (b == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()) {
-            if (getOwnerItem() != null) {
-                return getOwnerItem().isStarred();
-            }
-        }
+//        if (b == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()) {
+//            if (getOwnerItem() != null) {
+//                return getOwnerItem().isStarred();
+//            }
+//        }
         return getBoolean(PARSE_STARRED) != null;
     }
 
     public int getPriority() {
-        return getPriority(true);
-    }
-
-    public int getPriority(boolean useInheritedValue) {
+//        return getPriority(true);
+//    }
+//
+//    public int getPriority(boolean useInheritedValue) {
         Integer i = getInt(PARSE_PRIORITY);
-        if (i == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()) {
-            if (getOwnerItem() != null) {
-                return getOwnerItem().getPriority();
-            }
-        }
+//        if (i == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()) {
+//            if (getOwnerItem() != null) {
+//                return getOwnerItem().getPriority();
+//            }
+//        }
         return i == null ? 0 : i;
 ////        return priority;
 //        return priority.getPriority();
@@ -2602,24 +2541,40 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public boolean isPriorityInherited() {
-        Integer i = getInt(PARSE_PRIORITY);
-        return i == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getPriority() != 0;
+//        Integer i = getInt(PARSE_PRIORITY);
+        Integer i = getPriority();
+//        return i == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getPriority() != 0;
+        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()
+                && getOwnerItem() != null && getOwnerItem().getPriority() == i;
     }
 
     public Priority getPriorityObject() {
-        return getPriorityObject(true);
-    }
-
-    public Priority getPriorityObject(boolean useInheritedValue) {
+//        return getPriorityObject(true);
+//    }
+//
+//    public Priority getPriorityObject(boolean useInheritedValue) {
 //        return priority;
-        return new Priority(getPriority(useInheritedValue));
+//        return new Priority(getPriority(useInheritedValue));
+        return new Priority(getPriority());
     }
 
     public void setPriority(int prio) {
-        if (prio != 0
-                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getPriority() != prio)) {
+//        if (prio != 0
+//                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean())
+//                || getOwnerItem() == null || getOwnerItem().getPriority() != prio)) {
+        int oldVal = getPriority();
+        if (neql(prio, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getPriority(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setPriority(prio);
+                    return true;
+                }
+                return false;
+            });
+        }
+        if (prio != 0) {
             put(PARSE_PRIORITY, prio);
         } else {
             remove(PARSE_PRIORITY);
@@ -2630,6 +2585,85 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////            this.priority = val;
 //            this.priority.setPriority(prio);
 //        }
+    }
+//    public static String[] getChallengeStringArray() {
+//        return challengeNames;
+//    }
+//
+//    public static int[] getChallengeValuesArray() {
+//        return challengeValues;
+//    }
+
+    public Challenge getChallengeN() {
+        return getChallengeN(true);
+    }
+
+    public Challenge getChallengeN(boolean useInheritedValue) {
+//        String challenge = getString(PARSE_CHALLENGE);
+//        return (challenge == null) ? Challenge.AVERAGE.getDescription() : challenge;
+//        String challenge = getString(PARSE_CHALLENGE);
+//        return (challenge == null) ? "" : challenge;
+        String challenge = getString(PARSE_CHALLENGE);
+//        if (challenge == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()) {
+//            if (getOwnerItem() != null) {
+//                return getOwnerItem().getChallengeN();
+//            }
+//        }
+//        return (dreadFunValue == null) ? "" : dreadFunValue;
+        return (challenge == null) ? null : Challenge.valueOf(challenge); //Created is initial value
+    }
+
+    /**
+    returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
+    @return 
+     */
+    public boolean isChallengeInherited() {
+//        String challenge = getString(PARSE_CHALLENGE);
+        Challenge challenge = getChallengeN();
+//        return challenge == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
+        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
+                && getOwnerItem() != null && eql(getOwnerItem().getChallengeN(), challenge);
+    }
+
+    public void setChallenge(Challenge challenge) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (has(PARSE_CHALLENGE)) { // || !challenge.equals(Challenge.AVERAGE.getDescription())) { //no need to save a value since a null pointer is interprested as zero
+//            put(PARSE_CHALLENGE, challenge);
+//        }
+//        if (challenge != null && !challenge.equals("")) {
+//            put(PARSE_CHALLENGE, challenge);
+//        } else {
+//            remove(PARSE_CHALLENGE);
+//        }
+//        if (challenge != null) {// && !dreadFunValue.equals("")) {
+// A=> B <=> !A or B: inherit => getOwnerItem().getChallengeN() != challenge
+//inherit && hasOwner && newValue!=oldValue
+//        if (challenge != null
+//                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean())
+//                || getOwnerItem() == null || getOwnerItem().getChallengeN() != challenge)) {
+//</editor-fold>
+        Challenge oldVal = getChallengeN();
+        if (neql(challenge, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getChallengeN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setChallenge(challenge);
+                    return true;
+                }
+                return false;
+            });
+        }
+        if (challenge != null) {
+            put(PARSE_CHALLENGE, challenge.toString());
+        } else {
+            //remove value if (inherits && hasOwner && newValue==inheritedValue) <=> 
+            //store newValue if !remove <=> !inherits || !hasOwner || newValue!=inheritedValue
+            //where inherits == MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean() (both must be true)
+            // <=> !(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()) ||
+            //     getOwnerItem() == null || getOwnerItem().getChallengeN() != challenge
+            remove(PARSE_CHALLENGE);
+        }
+
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2671,11 +2705,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public DreadFunValue getDreadFunValueN(boolean useInheritedValue) {
         String dreadFunValue = getString(PARSE_DREAD_FUN_VALUE);
-        if (dreadFunValue == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean()) {
-            if (getOwnerItem() != null) {
-                return getOwnerItem().getDreadFunValueN();
-            }
-        }
+//        if (dreadFunValue == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean()) {
+//            if (getOwnerItem() != null) {
+//                return getOwnerItem().getDreadFunValueN();
+//            }
+//        }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
         return (dreadFunValue == null) ? null : DreadFunValue.valueOf(dreadFunValue); //Created is initial value
     }
@@ -2684,12 +2718,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
-    public boolean isDreadFunInherited() {
-        String dreadFunValue = getString(PARSE_DREAD_FUN_VALUE);
-        return dreadFunValue == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getDreadFunValueN() != null;
-    }
-
+//    public boolean isDreadFunInheritedXXX() {
+//        String dreadFunValue = getString(PARSE_DREAD_FUN_VALUE);
+//        return dreadFunValue == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getDreadFunValueN() != null;
+//    }
     /**
      * removes the value if called with null (useful when no default value is
      * defined)
@@ -2704,17 +2737,44 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            put(PARSE_DREAD_FUN_VALUE, dreadFunValue);
 //        }
 //        if (dreadFunValue != null) {// && !dreadFunValue.equals("")) {
-        if (dreadFunValue != null
-                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getDreadFunValueN() != dreadFunValue)) {
+        DreadFunValue oldVal = getDreadFunValueN();
+        if (neql(dreadFunValue, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getDreadFunValueN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setDreadFunValue(dreadFunValue);
+                    return true;
+                }
+                return false;
+            });
+        }
+//        if (dreadFunValue != null
+//                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean())
+//                || getOwnerItem() == null || getOwnerItem().getDreadFunValueN() != dreadFunValue)) {
+        if (dreadFunValue != null) {
             put(PARSE_DREAD_FUN_VALUE, dreadFunValue.toString());
         } else {
             remove(PARSE_DREAD_FUN_VALUE);
         }
     }
 
+    interface UpdateItem {
+
+        boolean update(Item item); //, Object oldValue, Object newValue);
+    }
+    List<UpdateItem> ops = new ArrayList();
+
+    static boolean eql(Object a, Object b) {
+        return a == null ? b == null : a.equals(b);
+    }
+
+    static boolean neql(Object a, Object b) {
+        return !eql(a, b); //optimize
+    }
+
 //    void setImportance(HighMediumLow importance) {
     void setImportance(HighMediumLow importance) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (has(PARSE_IMPORTANCE) || importance != HighMediumLow.LOW) {
 //        if (has(PARSE_IMPORTANCE) || !importance.equals(HighMediumLow.LOW.toString())) {
 //        if (has(PARSE_IMPORTANCE)) { // || !importance.equals(HighMediumLow.LOW.toString())) {
@@ -2725,9 +2785,29 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            remove(PARSE_IMPORTANCE);
 //        }
 //        if (importance != null) {// && !dreadFunValue.equals("")) {
-        if (importance != null
-                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getImportanceN() != importance)) {
+// if a value is defined, and inheritance
+//                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean()
+//                && MyPrefs.itemInheritOwnerProjectImportance.getBoolean())
+//        if (importance != null
+//                && (!MyPrefs.itemInheritOwnerProjectProperties.getBoolean()
+//                || !MyPrefs.itemInheritOwnerProjectImportance.getBoolean()
+//                || getOwnerItem() == null
+//                || getOwnerItem().getImportanceN() != importance)) {
+//equals: (a == null) ? (a == b) : a.equals(b) <=> (a == null) ? b == null : a.equals(b)  -->> https://stackoverflow.com/questions/1402030/compare-two-objects-with-a-check-for-null
+//!equals: (a == null) ? (a == b) : a.equals(b) <=> (a == null) ? b == null : a.equals(b)  -->> https://stackoverflow.com/questions/1402030/compare-two-objects-with-a-check-for-null
+//</editor-fold>
+        HighMediumLow oldVal = getImportanceN();
+        if (neql(importance, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getImportanceN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setImportance(importance);
+                    return true;
+                }
+                return false;
+            });
+        }
+        if (importance != null) {
             put(PARSE_IMPORTANCE, importance.toString());
         } else {
             remove(PARSE_IMPORTANCE);
@@ -2736,21 +2816,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
 //    public HighMediumLow getImportanceN() {
+//    public HighMediumLow getImportanceN() {
+//        return getImportanceN(true);
+//    }
+//    public HighMediumLow getImportanceN(boolean useInheritedValue) {
     public HighMediumLow getImportanceN() {
-        return getImportanceN(true);
-    }
-
-    public HighMediumLow getImportanceN(boolean useInheritedValue) {
 //        String importance = getString(PARSE_IMPORTANCE);
 ////        return (importance == null) ? HighMediumLow.LOW : HighMediumLow.valueOf(importance); //Created is initial value
 ////        return (importance == null) ? HighMediumLow.LOW.toString() : importance; //Created is initial value
 //        return (importance == null) ? "" : importance; //Created is initial value
         String imp = getString(PARSE_IMPORTANCE);
-        if (imp == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()) {
-            if (getOwnerItem() != null) {
-                return getOwnerItem().getImportanceN();
-            }
-        }
+//        if (imp == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()) {
+//            if (getOwnerItem() != null) {
+//                return getOwnerItem().getImportanceN();
+//            }
+//        }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
         return (imp == null) ? null : HighMediumLow.valueOf(imp); //Created is initial value
 
@@ -2760,12 +2840,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
-    public boolean isImportanceInherited() {
-        String imp = getString(PARSE_IMPORTANCE);
-        return imp == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getImportanceN() != null;
-    }
-
+//    public boolean isImportanceInheritedXXX() {
+//        String imp = getString(PARSE_IMPORTANCE);
+//        return imp == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getImportanceN() != null;
+//    }
 //    void setUrgency(HighMediumLow urgency) {
     void setUrgency(HighMediumLow urgency) {
 //        if (has(PARSE_URGENCY) || urgency != HighMediumLow.LOW) {
@@ -2774,9 +2853,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (urgency != null && !urgency.equals("")) {
 //            put(PARSE_URGENCY, urgency);
 //        if (urgency != null) {// && !dreadFunValue.equals("")) {
-        if (urgency != null
-                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectUrgency.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getUrgencyN() != urgency)) {
+        HighMediumLow oldVal = getUrgencyN();
+        if (neql(urgency, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getUrgencyN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setUrgency(urgency);
+                    return true;
+                }
+                return false;
+            });
+        }
+//        if (urgency != null
+//                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectUrgency.getBoolean())
+//                || getOwnerItem() == null || getOwnerItem().getUrgencyN() != urgency)) {
+        if (urgency != null) {
             put(PARSE_URGENCY, urgency.toString());
         } else {
             remove(PARSE_URGENCY);
@@ -2794,11 +2885,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        return (status == null) ? HighMediumLow.LOW.toString() : status; //Created is initial value
 //        return (urgency == null) ? "" : urgency; //Created is initial value
         String urgency = getString(PARSE_URGENCY);
-        if (urgency == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectUrgency.getBoolean()) {
-            if (getOwnerItem() != null) {
-                return getOwnerItem().getUrgencyN();
-            }
-        }
+//        if (urgency == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectUrgency.getBoolean()) {
+//            if (getOwnerItem() != null) {
+//                return getOwnerItem().getUrgencyN();
+//            }
+//        }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
         return (urgency == null) ? null : HighMediumLow.valueOf(urgency); //Created is initial value
     }
@@ -2807,12 +2898,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
-    public boolean isUrgencyInherited() {
-        String urgency = getString(PARSE_URGENCY);
-        return urgency == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getUrgencyN() != null;
-    }
-
+//    public boolean isUrgencyInheritedXXX() {
+//        String urgency = getString(PARSE_URGENCY);
+//        return urgency == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectImportance.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getUrgencyN() != null;
+//    }
     /**
      * returns a numerical value of the Importance/Urgency pair, or zero if only
      * one is defined
@@ -2821,6 +2911,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public int getImpUrgPrioValue() {
         //TODO define numerical priority of Imp/Urg pair when only one of them is defined, e.g. Imp=H/M/L=>9/7/3, Urg=H/M/L=>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            matrixVector.addElement(new PriorityPair(HIGH, HIGH, 8));
 //            matrixVector.addElement(new PriorityPair(HIGH, MED, 7));
 //            matrixVector.addElement(new PriorityPair(MED, HIGH, 6));
@@ -2844,6 +2935,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
          * indexed by
          */
 //    int[HighMediumLow][HighMediumLow] prio2 = {{1,2,3},{4,6,7},{5,8,9}};
+//</editor-fold>
         HighMediumLow imp = getImportanceN();
         HighMediumLow urg = getUrgencyN();
         int[][] prio = {{1, 2, 3}, {4, 6, 7}, {5, 8, 9}}; //allow editing of the prio values for the pairs - TODO how to avoid indexing by ordinals and use the enum constants directly, EnumMap in two dimensions?
@@ -2892,9 +2984,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     public String getImpUrgPrioValueAsString() {
-
 //        return getImpUrgPrioValue() != 0 ? getImportanceN().getDescription().substring(0, 1) + "/" + getUrgencyN().getDescription().substring(0, 1) : getPriority() != 0 ? getPriority() + "" : " ";
-        return getImpUrgPrioValue() != 0 ? getImportanceN().getDescription().substring(0, 1) + "/" + getUrgencyN().getDescription().substring(0, 1) : "";
+//        return getImpUrgPrioValue() != 0 ? getImportanceN().getDescription().substring(0, 1) + "/" + getUrgencyN().getDescription().substring(0, 1) : "";
+        String impStr = getImportanceN() != null ? getImportanceN().getDescription().substring(0, 1) : "";
+        String urgStr = getUrgencyN() != null ? getUrgencyN().getDescription().substring(0, 1) : "";
+        if (impStr.length() > 0 || urgStr.length() > 0) {
+            return (impStr.length() > 0 ? impStr : "-") + "/" + (urgStr.length() > 0 ? urgStr : "-");
+        } else {
+            return "";
+        }
     }
 
     public double getEarnedValue() {
@@ -2994,38 +3092,48 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public void setExpiresOnDateInParse(Date expiresOnDate) {
-        if (isProject()) {
-            Date oldDate = getDate(PARSE_EXPIRES_ON_DATE);
-            for (Item subtask : (List<Item>) getList()) {
-                Date subtaskDate = subtask.getExpiresOnDateD();
-//<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
-//                if (oldDate == null) {
-//                    if (subtaskDate == null) {
-//                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                    } else {
-//                        //do nothing: subtask already had a date set before project got one
-//                    }
-//                } else { //oldDate!=null - a previous project date was set
-//                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
-//                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-//                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
-//                        //do nothing (subtask had a defined date already and it was different from old project date)
-//                    }
+//        if (isProject()) {
+//            Date oldDate = getDate(PARSE_EXPIRES_ON_DATE);
+//            for (Item subtask : (List<Item>) getList()) {
+//                Date subtaskDate = subtask.getExpiresOnDateD();
+////<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
+////                if (oldDate == null) {
+////                    if (subtaskDate == null) {
+////                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                    } else {
+////                        //do nothing: subtask already had a date set before project got one
+////                    }
+////                } else { //oldDate!=null - a previous project date was set
+////                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
+////                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
+////                        //do nothing (subtask had a defined date already and it was different from old project date)
+////                    }
+////                }
+////                if (oldDate == null && subtaskDate == null) {
+////                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
+//////oldDate!=null - a previous project date was set
+////                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                }
+////</editor-fold>
+//                //above expressions are equivalent to this reduced/simplified version:
+//                if ((oldDate == null && subtaskDate == null) || (subtaskDate == null || subtaskDate.equals(oldDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
+//                    subtask.setExpiresOnDate(expiresOnDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
 //                }
-//                if (oldDate == null && subtaskDate == null) {
-//                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
-////oldDate!=null - a previous project date was set
-//                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-//                }
-//</editor-fold>
-                //above expressions are equivalent to this reduced/simplified version:
-                if ((oldDate == null && subtaskDate == null) || (subtaskDate == null || subtaskDate.equals(oldDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
-                    subtask.setExpiresOnDate(expiresOnDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+//            }
+//        }
+        Date oldVal = getExpiresOnDateD();
+        if (neql(expiresOnDate, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getExpiresOnDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setExpiresOnDate(expiresOnDate);
+                    return true;
                 }
-            }
+                return false;
+            });
         }
-
         if (expiresOnDate != null && expiresOnDate.getTime() != 0) {
             put(PARSE_EXPIRES_ON_DATE, expiresOnDate);
         } else {
@@ -3533,7 +3641,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         RepeatRuleParseObject oldRepeatRule = getRepeatRule();
         if (repeatRule != null) {
             if (oldRepeatRule == null) {
-                DAO.getInstance().save(repeatRule); //save the (possibly new or changed) repeatRule
+                DAO.getInstance().saveInBackground(repeatRule); //save the (possibly new or changed) repeatRule
                 put(PARSE_REPEAT_RULE, repeatRule);
             } else { //update the existing rule with the changes (avoid to create a new repeatRule at each edit)
                 oldRepeatRule.update(repeatRule);
@@ -4168,7 +4276,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        update();
     }
 
-    private static void updateDependentFields(Item item, ItemStatus previousStatus, ItemStatus newStatus, Date now) {
+    private static void updateFieldsDependingOnStatus(Item item, ItemStatus previousStatus, ItemStatus newStatus, Date now) {
         //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (false) {
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -4293,7 +4401,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    setStatusInParse(newStatus);
 //                }
 //            }
-//            updateDependentFields(previousStatus, newStatus, new Date()); //new Date() =>> use exact time for all date updates
+//            updateFieldsDependingOnStatus(previousStatus, newStatus, new Date()); //new Date() =>> use exact time for all date updates
 //        }
 //    }
 //</editor-fold>
@@ -4476,7 +4584,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         setStatusInParse(newStatus); //must set *before* updating supertasks
 
         if (updateDependentFields) {
-            updateDependentFields(this, oldStatus, newStatus, now);
+            updateFieldsDependingOnStatus(this, oldStatus, newStatus, now);
         }
 
         if (updateSupertasks) {
@@ -4726,9 +4834,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
     /**
     if this Item is a Project, then refresh all derived values (values depending on its subtasks' values) stored in Parse.
-    called by subtasks owner.updateDerivedValues() whenever
+    called by subtasks owner.updateDerivedValues() whenever a field that affects the owner is modified (e.g. 
      */
-    private void updateValuesDerivedFromSubtasks() {
+    private void updateValuesDerivedFromSubtasksWhenSubtaskListChange() {
         //**Impacting** data (derived/depending on/calculated based on from subtasks):
         //PARSE_STATUS
         //PARSE_REMAINING_EFFORT, PARSE_ACTUAL_EFFORT -> 
@@ -4793,6 +4901,66 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+    private void updateValuesInheritedFromOwner() {
+        //***Inherited from owner***
+        //PARSE_DUE_DATE -> subtasks can inherit due date from parent? TODO
+        //PARSE_EXPIRES_ON_DATE -> all subtasks are impacted if their project experies, BUT is it enough to act at the project-level? Yes, setting a Proje t CANCELLED will/should also cancel subtasks!! (
+        //PARSE_HIDE_UNTIL_DATE -> also hide all subtasks!!
+        //PARSE_WAITING_TILL_DATE -> if a project is waiting, all its subtasks are waiting
+        //PARSE_DATE_WHEN_SET_WAITING -> hmm, yes
+        //PARSE_PRIORITY ->
+        //PARSE_START_BY_DATE -> if a project should start on a certain date, it is most likely the case for all its subtasks
+        //PARSE_TEMPLATE ->
+        //PARSE_FILTER_SORT_DEF -> filtering, you expect to see the same view for subprojects as for project. You could override but too complex to manage?!
+        Item owner = getOwnerItem();
+
+        //NB!! we need to distinguish when an owner has changed value (so need before/after value!) => the subtasks must be updated
+        if (owner != null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean()) {
+
+            if (MyPrefs.itemInheritOwnerProjectDueDate.getBoolean() && getDueDateD().getTime() == 0) {
+                setDueDate(owner.getDueDateD());
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectExpiresOnDate.getBoolean() && getExpiresOnDateD().getTime() == 0) {
+                setExpiresOnDate(owner.getExpiresOnDateD());
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && getWaitingTillDateD().getTime() == 0) {
+                setWaitingTillDate(owner.getWaitingTillDateD());
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean() && getHideUntilDateD().getTime() == 0) {
+                setHideUntilDate(owner.getHideUntilDateD());
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaiting.getBoolean() && getDateWhenSetWaitingD().getTime() == 0) {
+                setDateWhenSetWaiting(owner.getDateWhenSetWaitingD());
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectPriority.getBoolean() && getPriority() == 0) {
+                setPriority(owner.getPriority());
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectUrgency.getBoolean() && getUrgencyN() == null) {
+                setUrgency(owner.getUrgencyN());
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectImportance.getBoolean() && getImportanceN() == null) {
+                setImportance(owner.getImportanceN());
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean() && getStartByDateD().getTime() == 0) {
+                setStartByDate(owner.getStartByDateD());
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectTemplate.getBoolean()) {
+                setTemplate(owner.isTemplate());
+            }
+        }
+
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="comment">
     /**
     If this Item is a subtask, then update its values inherited from is Project (owner)
      */
@@ -4807,72 +4975,74 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
     /**
-    must be called before the owner updates 
+    must be called before the owner updates
      */
 //    private void updateMyValuesInheritedFromOwnerXXX() {
-    private void updateValuesInheritedFromOwnerXXX() {
-        //***Inherited from owner***
-        //PARSE_DUE_DATE -> subtasks can inherit due date from parent? TODO
-        //PARSE_EXPIRES_ON_DATE -> all subtasks are impacted if their project experies, BUT is it enough to act at the project-level? Yes, setting a Proje t CANCELLED will/should also cancel subtasks!! (
-        //PARSE_HIDE_UNTIL_DATE -> also hide all subtasks!!
-        //PARSE_WAITING_TILL_DATE -> if a project is waiting, all its subtasks are waiting
-        //PARSE_DATE_WHEN_SET_WAITING -> hmm, yes
-        //PARSE_PRIORITY -> 
-        //PARSE_START_BY_DATE -> if a project should start on a certain date, it is most likely the case for all its subtasks
-        //PARSE_TEMPLATE -> 
-        //PARSE_FILTER_SORT_DEF -> filtering, you expect to see the same view for subprojects as for project. You could override but too complex to manage?!
-        Item owner = getOwnerItem();
-        if (MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && owner != null) {
-
-            if (MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()) {
-                if (getDueDateD().getTime() == 0) {
-                    setDueDate(owner.getDueDateD());
-                }
-            }
-
-            if (MyPrefs.itemInheritOwnerProjectExpiresOnDate.getBoolean()) {
-                if (getExpiresOnDateD().getTime() == 0) {
-                    setExpiresOnDate(owner.getExpiresOnDateD());
-                }
-            }
-
-            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()) {// && owner.getWaitingTillDateD().getTime() != getWaitingTillDateD().getTime()) {
-                if (getWaitingTillDateD().getTime() == 0) {
-                    setWaitingTillDate(owner.getWaitingTillDateD());
-                }
-            }
-
-            if (MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean()) {
-                setHideUntilDate(owner.getHideUntilDateD());
-            }
-
-            if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaiting.getBoolean()) {
-                setDateWhenSetWaiting(owner.getDateWhenSetWaitingD());
-            }
-
-            if (MyPrefs.itemInheritOwnerProjectPriority.getBoolean()) {
-                setPriority(owner.getPriority());
-            }
-
-            if (MyPrefs.itemInheritOwnerProjectUrgency.getBoolean()) {
-                setUrgency(owner.getUrgencyN());
-            }
-
-            if (MyPrefs.itemInheritOwnerProjectImportance.getBoolean()) {
-                setImportance(owner.getImportanceN());
-            }
-
-            if (MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()) {
-                setStartByDate(owner.getStartByDateD());
-            }
-
-            if (MyPrefs.itemInheritOwnerProjectTemplate.getBoolean()) {
-                setTemplate(owner.isTemplate());
-            }
-        }
-
-    }
-
+//    private void updateValuesInheritedFromOwnerXXX() {
+//        //***Inherited from owner***
+//        //PARSE_DUE_DATE -> subtasks can inherit due date from parent? TODO
+//        //PARSE_EXPIRES_ON_DATE -> all subtasks are impacted if their project experies, BUT is it enough to act at the project-level? Yes, setting a Proje t CANCELLED will/should also cancel subtasks!! (
+//        //PARSE_HIDE_UNTIL_DATE -> also hide all subtasks!!
+//        //PARSE_WAITING_TILL_DATE -> if a project is waiting, all its subtasks are waiting
+//        //PARSE_DATE_WHEN_SET_WAITING -> hmm, yes
+//        //PARSE_PRIORITY ->
+//        //PARSE_START_BY_DATE -> if a project should start on a certain date, it is most likely the case for all its subtasks
+//        //PARSE_TEMPLATE ->
+//        //PARSE_FILTER_SORT_DEF -> filtering, you expect to see the same view for subprojects as for project. You could override but too complex to manage?!
+//        Item owner = getOwnerItem();
+//
+//        //NB!! we need to distinguish when an owner has changed value (so need before/after value!) => the subtasks must be updated
+//        if (owner != null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean()) {
+//
+//            if (MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()) {
+//                if (getDueDateD().getTime() == 0) {
+//                    setDueDate(owner.getDueDateD());
+//                }
+//            }
+//
+//            if (MyPrefs.itemInheritOwnerProjectExpiresOnDate.getBoolean()) {
+//                if (getExpiresOnDateD().getTime() == 0) {
+//                    setExpiresOnDate(owner.getExpiresOnDateD());
+//                }
+//            }
+//
+//            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()) {// && owner.getWaitingTillDateD().getTime() != getWaitingTillDateD().getTime()) {
+//                if (getWaitingTillDateD().getTime() == 0) {
+//                    setWaitingTillDate(owner.getWaitingTillDateD());
+//                }
+//            }
+//
+//            if (MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean()) {
+//                setHideUntilDate(owner.getHideUntilDateD());
+//            }
+//
+//            if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaiting.getBoolean()) {
+//                setDateWhenSetWaiting(owner.getDateWhenSetWaitingD());
+//            }
+//
+//            if (MyPrefs.itemInheritOwnerProjectPriority.getBoolean()) {
+//                setPriority(owner.getPriority());
+//            }
+//
+//            if (MyPrefs.itemInheritOwnerProjectUrgency.getBoolean()) {
+//                setUrgency(owner.getUrgencyN());
+//            }
+//
+//            if (MyPrefs.itemInheritOwnerProjectImportance.getBoolean()) {
+//                setImportance(owner.getImportanceN());
+//            }
+//
+//            if (MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()) {
+//                setStartByDate(owner.getStartByDateD());
+//            }
+//
+//            if (MyPrefs.itemInheritOwnerProjectTemplate.getBoolean()) {
+//                setTemplate(owner.isTemplate());
+//            }
+//        }
+//
+//    }
+//</editor-fold>
     public long getDueDate() {
 //        return dueDate;
 //        Date date = getDate(PARSE_DUE_DATE);
@@ -4900,11 +5070,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
         Date date = getDueDateDFromParse();
-        if (date.getTime() == 0 && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()) {
-            if (getOwnerItem() != null) {
-                return getOwnerItem().getDueDateD();
-            }
-        }
+//        if (date.getTime() == 0 && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()) {
+//            if (getOwnerItem() != null) {
+//                return getOwnerItem().getDueDateD();
+//            }
+//        }
 //        return (date == null) ? new Date(0) : date;
         return date;
     }
@@ -4914,45 +5084,59 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public boolean isDueDateInherited() {
-        Date date = getDate(PARSE_DUE_DATE);
+//        Date date = getDate(PARSE_DUE_DATE);
+        Date date = getDueDateD();
 //        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()
 //                && getOwnerItem() != null && getOwnerItem().getDueDateD().getTime() != 0;
         return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()
                 && getOwnerItem() != null && getOwnerItem().getDueDateD().equals(date); //
     }
-
 //    private void setDueDateInParse(Date dueDate) {
+
     public void setDueDate(Date dueDate) {
-        if (isProject()) {
-            Date oldDate = getDate(PARSE_DUE_DATE);
-            for (Item subtask : (List<Item>) getList()) {
-                Date subtaskDate = subtask.getDueDateD();
-//<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
-//                if (oldDate == null) {
-//                    if (subtaskDate == null) {
-//                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                    } else {
-//                        //do nothing: subtask already had a date set before project got one
-//                    }
-//                } else { //oldDate!=null - a previous project date was set
-//                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
-//                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-//                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
-//                        //do nothing (subtask had a defined date already and it was different from old project date)
-//                    }
-//                }
-//                if (oldDate == null && subtaskDate == null) {
-//                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
-////oldDate!=null - a previous project date was set
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (isProject()) {
+//            Date oldDate = getDate(PARSE_DUE_DATE);
+//            for (Item subtask : (List<Item>) getList()) {
+//                Date subtaskDate = subtask.getDueDateD();
+////<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
+////                if (oldDate == null) {
+////                    if (subtaskDate == null) {
+////                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                    } else {
+////                        //do nothing: subtask already had a date set before project got one
+////                    }
+////                } else { //oldDate!=null - a previous project date was set
+////                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
+////                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
+////                        //do nothing (subtask had a defined date already and it was different from old project date)
+////                    }
+////                }
+////                if (oldDate == null && subtaskDate == null) {
+////                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
+//////oldDate!=null - a previous project date was set
+////                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                }
+////</editor-fold>
+//                //above expressions are equivalent to this reduced/simplified version:
+//                if ((oldDate == null && subtaskDate == null) || (subtaskDate == null || subtaskDate.equals(oldDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
 //                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
 //                }
+//            }
+//        }
 //</editor-fold>
-                //above expressions are equivalent to this reduced/simplified version:
-                if ((oldDate == null && subtaskDate == null) || (subtaskDate == null || subtaskDate.equals(oldDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
-                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+        Date oldVal = getDueDateD();
+        if (neql(dueDate, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getDueDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setDueDate(dueDate);
+                    return true;
                 }
-            }
+                return false;
+            });
         }
         if (dueDate != null && dueDate.getTime() != 0) {
             put(PARSE_DUE_DATE, dueDate);
@@ -4962,8 +5146,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        update();
     }
 
-//    public void setDueDateXXX(Date dueDate) {
 ////<editor-fold defaultstate="collapsed" desc="comment">
+//    public void setDueDateXXX(Date dueDate) {
 ////        this.dueDate = val;
 ////        if (this.dueDate != val) {
 ////            this.dueDate = val;
@@ -4972,7 +5156,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////            put(PARSE_DUE_DATE, dueDate);
 ////        }
 ////        if (dueDate != null && dueDate.getTime() != 0) {
-////</editor-fold>
 ////        if (dueDate != null && dueDate.getTime() != 0
 ////                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean())
 ////                || getOwnerItem() == null || getOwnerItem().getDueDateD().getTime() != dueDate.getTime())) {
@@ -4983,8 +5166,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        updateMyValuesInheritedFromOwner();
 //        setDueDateInParse(dueDate);
 //    }
-    private void setDueDateXXX(long dueDate) {
-//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void setDueDateXXX(long dueDate) {
 //        this.dueDate = val;
 //        if (this.dueDate != val) {
 //            this.dueDate = val;
@@ -4992,10 +5174,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (has(PARSE_DUE_DATE) || dueDate != 0) {
 //            put(PARSE_DUE_DATE, new Date(dueDate));
 //        }
+//        setDueDate(new Date(dueDate));
+//    }
+//
 //</editor-fold>
-        setDueDate(new Date(dueDate));
-    }
-
     public Date getHideUntilDateD() {
         Date date = getDate(PARSE_HIDE_UNTIL_DATE);
         return (date == null) ? new Date(0) : date;
@@ -5009,6 +5191,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (has(PARSE_HIDE_UNTIL_DATE) || hideUntil.getTime() != 0) {
 //            put(PARSE_HIDE_UNTIL_DATE, hideUntil);
 //        }
+        Date oldVal = getHideUntilDateD();
+        if (neql(hideUntil, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getHideUntilDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setHideUntilDate(hideUntil);
+                    return true;
+                }
+                return false;
+            });
+        }
         if (hideUntil != null && hideUntil.getTime() != 0) {
             put(PARSE_HIDE_UNTIL_DATE, hideUntil);
         } else {
@@ -5023,17 +5216,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getStartByDateD().getTime();
 //    }
     public Date getStartByDateD() {
-        return getStartByDateD(true);
-    }
-
-    public Date getStartByDateD(boolean useInheritedValue) {
+//        return getStartByDateD(true);
+//    }
+//
+//    public Date getStartByDateD(boolean useInheritedValue) {
 //        return new Date(getStartByDate());
         Date date = getDate(PARSE_START_BY_DATE);
-        if (date == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()) {
-            if (getOwnerItem() != null) {
-                return getOwnerItem().getStartByDateD();
-            }
-        }
+//        if (date == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()) {
+//            if (getOwnerItem() != null) {
+//                return getOwnerItem().getStartByDateD();
+//            }
+//        }
         return (date == null) ? new Date(0) : date;
     }
 
@@ -5042,9 +5235,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public boolean isStartByDateInherited() {
-        Date date = getDate(PARSE_START_BY_DATE);
-        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getStartByDateD().getTime() != 0;
+//        Date date = getDate(PARSE_START_BY_DATE);
+        Date date = getStartByDateD();
+//        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getStartByDateD().getTime() != 0;
+        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()
+                && getOwnerItem() != null && getOwnerItem().getStartByDateD().equals(date);
     }
 
     public void setStartByDate(long startByDate) {
@@ -5060,9 +5256,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public void setStartByDate(Date startByDate) {
 //        setStartByDate(startByDate.getTime());
-        if (startByDate != null && startByDate.getTime() != 0
-                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean())
-                || getOwnerItem() == null || getOwnerItem().getStartByDateD().getTime() != startByDate.getTime())) {
+//        if (startByDate != null && startByDate.getTime() != 0
+//                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean())
+//                || getOwnerItem() == null || getOwnerItem().getStartByDateD().getTime() != startByDate.getTime())) {
+        Date oldVal = getStartByDateD();
+        if (neql(startByDate, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getStartByDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setStartByDate(startByDate);
+                    return true;
+                }
+                return false;
+            });
+        }
+        if (startByDate != null) {
             put(PARSE_START_BY_DATE, startByDate);
         } else {
             remove(PARSE_START_BY_DATE);
@@ -5088,11 +5296,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public Date getWaitingTillDateD(boolean useInheritedValue) {
         Date date = getDate(PARSE_WAITING_TILL_DATE);
-        if (date == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()) {
-            if (getOwnerItem() != null) {
-                return getOwnerItem().getWaitingTillDateD();
-            }
-        }
+//        if (date == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()) {
+//            if (getOwnerItem() != null) {
+//                return getOwnerItem().getWaitingTillDateD();
+//            }
+//        }
         return (date == null) ? new Date(0) : date;
     }
 
@@ -5101,11 +5309,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public boolean isWaitingTillInherited() {
-        Date date = getDate(PARSE_WAITING_TILL_DATE);
-        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().getTime() != 0;
+//        Date date = getDate(PARSE_WAITING_TILL_DATE);
+        Date date = getWaitingTillDateD();
+//        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().getTime() != 0;
+        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
+                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().equals(date);
     }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getWaitingTillDate() {
 ////        return waitingTillDate;
@@ -5114,6 +5324,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getWaitingAlarmDateD().getTime();
 //    }
 //</editor-fold>
+
     public void setWaitingTillDate(long waitingTillDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        this.dueDate = val;
@@ -5132,38 +5343,50 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public void setWaitingTillDateInParse(Date waitingTillDate) {
-        if (isProject()) {
-            Date oldDate = getDate(PARSE_WAITING_TILL_DATE);
-            for (Item subtask : (List<Item>) getList()) {
-                Date subtaskDate = subtask.getWaitingTillDateD();
-//<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
-//                if (oldDate == null) {
-//                    if (subtaskDate == null) {
-//                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                    } else {
-//                        //do nothing: subtask already had a date set before project got one
-//                    }
-//                } else { //oldDate!=null - a previous project date was set
-//                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
-//                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-//                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
-//                        //do nothing (subtask had a defined date already and it was different from old project date)
-//                    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (isProject()) {
+//            Date oldDate = getDate(PARSE_WAITING_TILL_DATE);
+//            for (Item subtask : (List<Item>) getList()) {
+//                Date subtaskDate = subtask.getWaitingTillDateD();
+////<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
+////                if (oldDate == null) {
+////                    if (subtaskDate == null) {
+////                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                    } else {
+////                        //do nothing: subtask already had a date set before project got one
+////                    }
+////                } else { //oldDate!=null - a previous project date was set
+////                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
+////                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
+////                        //do nothing (subtask had a defined date already and it was different from old project date)
+////                    }
+////                }
+////                if (oldDate == null && subtaskDate == null) {
+////                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
+//////oldDate!=null - a previous project date was set
+////                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                }
+////</editor-fold>
+//                //above expressions are equivalent to this reduced/simplified version:
+//                if ((oldDate == null && subtaskDate == null) || (subtaskDate == null || subtaskDate.equals(oldDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
+//                    subtask.setWaitingTillDate(waitingTillDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
 //                }
-//                if (oldDate == null && subtaskDate == null) {
-//                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
-////oldDate!=null - a previous project date was set
-//                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-//                }
+//            }
+//        }
 //</editor-fold>
-                //above expressions are equivalent to this reduced/simplified version:
-                if ((oldDate == null && subtaskDate == null) || (subtaskDate == null || subtaskDate.equals(oldDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
-                    subtask.setWaitingTillDate(waitingTillDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+        Date oldVal = getWaitingTillDateD();
+        if (neql(waitingTillDate, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getWaitingTillDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setWaitingTillDate(waitingTillDate);
+                    return true;
                 }
-            }
+                return false;
+            });
         }
-
         if (waitingTillDate.getTime() != 0) {
             put(PARSE_WAITING_TILL_DATE, waitingTillDate);
         } else {
@@ -5217,6 +5440,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            this.waitingLastActivatedDate = val;
 //        }
 //TODO!!! check that date is set when status is set Waiting
+        Date oldVal = getDateWhenSetWaitingD();
+        if (neql(waitingLastActivatedDate, oldVal)) {
+            ops.add((subtask) -> {
+//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (eql(subtask.getDateWhenSetWaitingD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                    subtask.setDateWhenSetWaiting(waitingLastActivatedDate);
+                    return true;
+                }
+                return false;
+            });
+        }
         if (waitingLastActivatedDate != null && waitingLastActivatedDate.getTime() != 0) {
             put(PARSE_DATE_WHEN_SET_WAITING, waitingLastActivatedDate);
         } else {
@@ -5723,7 +5957,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return 0;
 //        }
 //        return getRemainingEffortFromParse();
-        return getRemainingEffort(true,true);
+        return getRemainingEffort(true, true);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getRemainingEffortNoDefault() {
@@ -5745,7 +5979,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     ////////////// ACTUAL ///////////////
     private void setActualEffortProjectTaskItselfInParse(long actualEffortProjectTaskItselfMillis) {
 //        long rounded = ((actualEffortProjectTaskItselfMillis + 500) / 1000) * 1000; //https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
-        long rounded = actualEffortProjectTaskItselfMillis ; //https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
+        long rounded = actualEffortProjectTaskItselfMillis; //https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
         if (rounded != 0) {
             put(PARSE_ACTUAL_EFFORT_PROJECT_TASK_ITSELF, rounded);
         } else {
@@ -5759,7 +5993,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
     private void setActualEffortTotalInParseImpl(long actualEffortTotalMillis) {
 //        long rounded = ((actualEffortTotalMillis + 500) / 1000) * 1000; //https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
-        long rounded = actualEffortTotalMillis ; //no need to round, picker now handles millis - https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
+        long rounded = actualEffortTotalMillis; //no need to round, picker now handles millis - https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
         if (rounded > 0) {
             put(PARSE_ACTUAL_EFFORT, rounded);
         } else {
@@ -5857,7 +6091,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         setActualEffortProjectTaskItselfInParse(actualEffortMillis);
     }
 
-    public void setActualEffort(long actualEffortProjectTaskItselfMillis) {
+    public void setActualEffort(long actualEffortProjectTaskItselfMillis, boolean autoUpdateStatusAndStartedOnDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        setActualEffort(actualEffortMillis, false, false);
 //        if (isProject()) {
@@ -5874,7 +6108,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         setActualEffortProjectTaskItselfInParse(actualEffortProjectTaskItselfMillis);
     }
 
-    protected void updateActualEffortOnSubtaskChange(long oldTotalActual, long newTotalActual) {
+    private void updateActualEffortOnSubtaskChange(long oldTotalActual, long newTotalActual) {
         setActualEffortTotalInParse(getActualEffort() - oldTotalActual + newTotalActual, true);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -7131,6 +7365,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public void save() throws ParseException {
+        //update any subtasks that may be affected by project changes to inherited fields:
+        if (ops != null && ops.size() > 0) {
+            for (Item subtask : (List<Item>) getList()) {
+                boolean subtaskUpdated = false;
+                if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
+                    for (UpdateItem f : ops) {
+                        subtaskUpdated = f.update(subtask) || subtaskUpdated;
+                    }
+                }
+                if (subtaskUpdated) {
+                    DAO.getInstance().saveInBackground(subtask); //optimization: batch up all subtasks in saveInBackground
+                }
+            }
+            ops = null; //reset after all subtasks have updated
+            ops = new ArrayList<>(); //reset after all subtasks have updated
+        }
+
         if (isDirty()) {
             listeners.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
         }
@@ -7686,7 +7937,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (toCSV) {
                     list.add((MyDate.formatTimeDuration(getActualEffortProjectTaskItself())));
                 } else {
-                    setActualEffort((Long) val); //UI: import of project estimates
+                    setActualEffort((Long) val, false); //UI: import of project estimates
                 }
                 break;
             case PARSE_CATEGORIES:
@@ -8429,7 +8680,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 newItem.setEffortEstimate(itemBefore.getEffortEstimate()); //UI: same prio as item just before
                 break;
             case Item.PARSE_ACTUAL_EFFORT:
-                newItem.setActualEffort(itemBefore.getActualEffort()); //UI: same prio as item just before
+                newItem.setActualEffort(itemBefore.getActualEffort(), false); //UI: same prio as item just before
                 break;
             case Item.PARSE_REMAINING_EFFORT:
                 newItem.setRemainingEffort(itemBefore.getRemainingEffort(), false); //UI: same prio as item just before

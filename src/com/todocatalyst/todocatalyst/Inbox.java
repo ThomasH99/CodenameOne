@@ -39,7 +39,7 @@ public class Inbox extends ItemList {
     static public ItemList getInstance() {
         if (INSTANCE == null) {
 //            INSTANCE = DAO.getInstance().getSpecialNamedItemListFromParse(INBOX_RESERVED_NAME);
-            INSTANCE = DAO.getInstance().getInbox(INBOX_RESERVED_NAME);
+            INSTANCE = DAO.getInstance().getInbox(INBOX_RESERVED_NAME, "Inbox");
 //            INSTANCE.inboxItemList = DAO.getInstance().getInbox();
         }
         return INSTANCE;

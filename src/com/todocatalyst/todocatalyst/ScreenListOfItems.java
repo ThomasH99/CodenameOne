@@ -453,7 +453,7 @@ public class ScreenListOfItems extends MyForm {
 
 //        getContentPane().add(CENTER, buildContentPaneForItemList(this.itemListFilteredSorted));
         parseIdMapReset();
-        Container scrollableContainer = buildContentPaneForItemList(this.itemListOrg);
+        Container scrollableContainer = buildContentPaneForItemList(itemListOrg);
         scrollableContainer.addPullToRefresh(() -> {
             Log.p("Pull to refresh...");
             DAO.getInstance().removeFromCache(itemListOrg);

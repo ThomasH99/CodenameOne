@@ -464,7 +464,7 @@ public class TimerInstance extends ParseObject {
 //                timedItem.setActualEffort(timerInstance.isTimerShowActualTotal() //update actual
 //                        ? timerInstance.getElapsedTime()
 //                        : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
-            timedItem.setActualEffort(timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
+            timedItem.setActualEffort(timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself(),false);
             DAO.getInstance().saveInBackground(timedItem);
             timerInstance.setElapsedTime(0); //reset elapsed time since it's now been added to Item's actual & saved
         }
@@ -541,24 +541,26 @@ public class TimerInstance extends ParseObject {
 //        }
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
-     * returns true if the minimum Timer threshold for when to update status and
-     * save time is passed
-     *
-     * @return
-     */
-    private boolean isMinimumThresholdPassed(long elapsedTime) {
-//        return status.getStatus() != ItemStatus.CREATED //if status already other than created we store any time -NO, since this will also later create a timer Start/Stop recording
-//                && timerStack.currEntry.getTimerDurationInMillis() >= MyPrefs.getInt(MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActuals) * MyDate.SECOND_IN_MILLISECONDS;
-//        return timerStack.currEntry.getTimerDurationInMillis() >= MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS;
-        return elapsedTime >= MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS;
-    }
-
-    private void addTimerElapsedTimeToItemActualEffort(Item item, long actualEffort) {
-        if (isMinimumThresholdPassed(actualEffort)) {
-            item.setActualEffort(item.getActualEffortProjectTaskItself() + actualEffort);
-        }
-    }
+    * returns true if the minimum Timer threshold for when to update status and
+    * save time is passed
+    *
+    * @return
+    */
+//    private boolean isMinimumThresholdPassed(long elapsedTime) {
+////        return status.getStatus() != ItemStatus.CREATED //if status already other than created we store any time -NO, since this will also later create a timer Start/Stop recording
+////                && timerStack.currEntry.getTimerDurationInMillis() >= MyPrefs.getInt(MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActuals) * MyDate.SECOND_IN_MILLISECONDS;
+////        return timerStack.currEntry.getTimerDurationInMillis() >= MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS;
+//        return elapsedTime >= MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS;
+//    }
+//
+//    private void addTimerElapsedTimeToItemActualEffort(Item item, long actualEffort) {
+//        if (isMinimumThresholdPassed(actualEffort)) {
+//            item.setActualEffort(item.getActualEffortProjectTaskItself() + actualEffort);
+//        }
+//    }
+//</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void refreshTimerUIWithNewItem() {

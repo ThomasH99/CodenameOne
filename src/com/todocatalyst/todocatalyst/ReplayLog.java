@@ -58,6 +58,18 @@ public class ReplayLog {
         return INSTANCE;
     }
 
+    @Override
+    public String toString() {
+        String s = "ReplayStack = [";
+        String sep = "";
+        for (int i = 0, size = replayStack.size(); i < size; i++) {
+            String r = replayStack.get(i);
+            s += sep + i + ": " + r;
+            sep = "; ";
+        }
+        return s+"]";
+    }
+
     /**
      * reset (delete MyReplayCommands from previous MyForm) when a new MyForm is
      * being created. Called in MyForm constructor.
@@ -99,7 +111,7 @@ public class ReplayLog {
 //        if (nextIndex == -1 || nextIndex < logList.size()) { //do not store command if it is the command being replayed
         if (!replayingInProgress) { //do not store command if it is the command being replayed
             boolean doubleDecl = replayStack.contains(replayCommand.getCmdUniqueID());
-            ASSERT.that(!doubleDecl, ()->"Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list: " + replayStack);
+            ASSERT.that(!doubleDecl, () -> "Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list: " + replayStack);
             if (doubleDecl) {
                 //remove a previous command (and all commands after it) which is stuck by mistake (due to crash??)
                 String cmdStr;
@@ -111,7 +123,7 @@ public class ReplayLog {
             }
             replayStack.add(replayCommand.getCmdUniqueID());
             Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack);
-            Log.p("+ ReplayCommand: " + replayCommand.getCmdUniqueID());
+            Log.p("+++ ReplayCommand: " + replayCommand.getCmdUniqueID());
         }
     }
 
@@ -122,7 +134,7 @@ public class ReplayLog {
 //        if (true) { //deactivate while testing
         if (replayStack.size() > 0) { //while debugging //TODO!!!!! remove DEBUG once ReplayCommands have been added everywhere
             if (Config.TEST) {
-                Log.p("- ReplayCommand: " + replayStack.get(replayStack.size() - 1));
+                Log.p("--- ReplayCommand: " + replayStack.get(replayStack.size() - 1));
             }
             replayStack.remove(replayStack.size() - 1); //TODO!!! add check that logList.size>=1 (not during testing to provoke stacktrace
         }
@@ -157,7 +169,7 @@ public class ReplayLog {
                 } else {
 //                        +Display.getInstance().getCurrent() instanceof MyForm?((MyForm)Display.getInstance().getCurrent()).SCREEN_TITLE:"<not a MyForm>"Display.getInstance().getCurrent().getTitle());
 //                    in screen" + Display.getInstance().getCurrent().getTitle()
-                    Log.p("!! ReplayCommand: " + cmdUIID + "not defined" + (screenName != null ? (" in screen " + screenName) : ""));
+                    Log.p("!! ReplayCommand: " + cmdUIID + " not defined" + (screenName != null ? (" in screen " + screenName) : "")+ " ScreenCmds="+screenCommands+" "+this);
                 }
             }
         } else {
@@ -265,7 +277,7 @@ public class ReplayLog {
 //                while (logList.size() >= currentIndex - 1) { //if force breaking the replay, remove all non-replayed commands including the broken one at nextIndex-1 (so log is correct as other actions are added)
                 while (replayStack.size() - 1 > currentIndex - 1) { //if force breaking the replay, remove all non-replayed commands including the broken one at nextIndex-1 (so log is correct as other actions are added)
                     //eg log={cmd1, cmd2, cmd3}, cmd1 replayes well, cmd2 breaks (nextIndex is then moved ahead to 2) => remove all commands until size==1 (size:2 >= nextIndex-1)
-                    Log.p("!!!! Replay Command not found and removed from ReplayLog: " + replayStack.get(replayStack.size() - 1));
+                    Log.p("!!!! Replay Command not found and removed from ReplayLog: " + replayStack.get(replayStack.size() - 1)+" "+this);
                     replayStack.remove(replayStack.size() - 1);
                 }
                 Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack); //ensure reduced log is stored 

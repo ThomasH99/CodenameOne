@@ -878,7 +878,7 @@ class TimerStack {
                     boolean timerWasRunning = timerInstance.isInterruptedWhileRunning();
                     if (true || timerWasRunning) {
                         //update item with elapsed time 
-                        item.setActualEffort(item.getActualEffortProjectTaskItself() + timerInstance.getElapsedTime());
+                        item.setActualEffort(item.getActualEffortProjectTaskItself() + timerInstance.getElapsedTime(),false);
                     }
 //                item.setActualEffort(timerInstance.isTimerShowActualTotal() ? timerInstance.getElapsedTime()
 //                        : item.getActualEffortProjectTaskItself() + timerInstance.getElapsedTime());
@@ -1715,7 +1715,7 @@ class TimerStack {
                         if (itemActualReduction > 0) {
                             long itemOldActual = timedItem.getActualEffortProjectTaskItself();
                             long itemNewActual = itemOldActual - itemActualReduction;
-                            timedItem.setActualEffort(itemNewActual);
+                            timedItem.setActualEffort(itemNewActual,false);
                         }
                     } else { //enough to just adjust the elapsed time
                         long editedElapsedTime = hiddenElapsedTimePicker.getDuration();

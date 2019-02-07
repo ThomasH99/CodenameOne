@@ -340,7 +340,7 @@ public class ScreenItem2 extends MyForm {
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
 //            showPreviousScreenOrDefault(previousForm, true);
-            showPreviousScreenOrDefault( true);
+            showPreviousScreenOrDefault(true);
         });
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1022,7 +1022,7 @@ public class ScreenItem2 extends MyForm {
 
 //        Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
 //</editor-fold>
-        Command categoryEditCmd = new Command(getCategoriesAsCommaSeparatedString((List<Category> )previousValues.get(Item.PARSE_CATEGORIES,item.getCategories()))) { //"<click to set categories>"
+        Command categoryEditCmd = new Command(getCategoriesAsCommaSeparatedString((List<Category>) previousValues.get(Item.PARSE_CATEGORIES, item.getCategories()))) { //"<click to set categories>"
             @Override
             public void actionPerformed(ActionEvent evt) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1249,7 +1249,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 -> RR: modified RR (*only* defined if the RR has been edited!)
 -> "DELETED": the RR has been deleted
          */
-        parseIdMap2.put(Item.PARSE_REPEAT_RULE, () -> {
+//        parseIdMap2.put(Item.PARSE_REPEAT_RULE, () -> {
+        parseIdMap2.put(REPEAT_RULE_KEY, () -> {
 //            if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
 //                    previousValues.remove(Item.PARSE_REPEAT_RULE);
 //                    repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
@@ -1473,7 +1474,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //</editor-fold>
         initField(Item.PARSE_ACTUAL_EFFORT, actualEffort,
                 () -> item.getActualEffortProjectTaskItself(),
-                (l3) -> item.setActualEffort((long) l3),
+                (l3) -> item.setActualEffort((long) l3, false),
                 () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 
         timeCont.add(layoutN(actualTxt, actualEffort, actualHelpTxt));
@@ -1630,10 +1631,16 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), true);
 //        initField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportanceN(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
         initField(Item.PARSE_IMPORTANCE, importance,
-                () -> item.getImportanceN(),
-                (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
-                () -> importance.getSelectedString(),
-                (i) -> importance.select(i != null ? (String) i.toString() : null));
+                () -> item.getImportanceN() != null ? item.getImportanceN().toString() : null,
+                //                (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
+                (enumStr) -> item.setImportance(enumStr != null ? (Item.HighMediumLow.valueOf((String) enumStr)) : null),
+                //                () -> importance.getSelectedString(),
+                () -> importance.getSelectedString() != null ? Item.HighMediumLow.getValue(importance.getSelectedString()).toString() : null,
+                //                (i) -> importance.select(i != null ? (String) i.toString() : null));
+                //                (i) -> importance.select(i != null ? Item.HighMediumLow.getValue( (String)i).getDescription(): null));
+                //                (enumStr) -> importance.select(enumStr != null ? Item.HighMediumLow.valueOf((String)enumStr).getDescription(): null));
+                (enumStr) -> importance.select(enumStr != null ? Item.HighMediumLow.valueOf((String) enumStr).getDescription() : null));
+//                (i) -> importance.select(i != null ?  i.toString() : null));
 
 //        prioCont.add(Item.IMPORTANCE).add(FlowLayout.encloseCenterMiddle(importance));
 //        prioCont.add(layout(Item.IMPORTANCE, FlowLayout.encloseCenterMiddle(importance), "**"));
@@ -1648,8 +1655,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(Item.URGENCY).add(FlowLayout.encloseMiddle(urgency));
 //        prioCont.add(layout(Item.URGENCY, FlowLayout.encloseMiddle(urgency), "**"));
 //        prioCont.add(layout(Item.URGENCY, urgency, Item.URGENCY_HELP, true, false, true));
-        initField(Item.PARSE_URGENCY, urgency, () -> item.getUrgencyN(), (t) -> item.setUrgency((Item.HighMediumLow.getValue((String) t))),
-                () -> urgency.getSelectedString(), (i) -> urgency.select(i != null ? (String) i.toString() : null));
+        initField(Item.PARSE_URGENCY, urgency,
+                () -> item.getUrgencyN() != null ? item.getUrgencyN().toString() : null,
+                (enumStr) -> item.setUrgency(enumStr != null ? (Item.HighMediumLow.valueOf((String) enumStr)) : null),
+                //                () -> urgency.getSelectedString(), (i) -> urgency.select(i != null ? (String) i.toString() : null));
+                () -> urgency.getSelectedString() != null ? Item.HighMediumLow.getValue(urgency.getSelectedString()).toString() : null,
+                (enumStr) -> urgency.select(enumStr != null
+                        ? Item.HighMediumLow.valueOf((String) enumStr).getDescription() : null));
         prioCont.add(layoutN(Item.URGENCY, urgency, Item.URGENCY_HELP));//, null, false, false, true, true));
 
 //        MyComponentGroup challenge = new MyComponentGroup(Item.Challenge.getDescriptionList(), parseIdMap2,
@@ -1668,8 +1680,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //</editor-fold>
         MyComponentGroup challenge = challenge1.getPreferredW() < Display.getInstance().getDisplayWidth() ? challenge1
                 : new MyComponentGroup(Item.Challenge.getDescriptionList(true), true);
-        initField(Item.PARSE_CHALLENGE, challenge, () -> item.getChallengeN(), (t) -> item.setChallenge((Item.Challenge.getValue((String) t))),
-                () -> challenge.getSelectedString(), (s) -> challenge.select(s != null ? (String) s.toString() : null));
+        initField(Item.PARSE_CHALLENGE, challenge,
+                () -> item.getChallengeN() != null ? item.getChallengeN().toString() : null,
+                (enumStr) -> item.setChallenge(enumStr != null ? (Item.Challenge.valueOf((String) enumStr)) : null),
+                //                () -> challenge.getSelectedString(), (s) -> challenge.select(s != null ? (String) s.toString() : null));
+                () -> challenge.getSelectedString() != null ? Item.Challenge.getValue(challenge.getSelectedString()).toString() : null,
+                (enumStr) -> challenge.select(enumStr != null ? Item.Challenge.valueOf((String) enumStr).getDescription() : null));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        prioCont.add(new Label(Item.CHALLENGE)).add(FlowLayout.encloseCenterMiddle(challenge));
 //        prioCont.add(new Label("TEST")).add(FlowLayout.encloseCenterMiddle(new Label("11111"),new Label("22222"),new Label("33333"),new Label("44444"),new Label("55555")));
@@ -1687,8 +1703,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, true, false, true));
 //</editor-fold>
         MyComponentGroup dreadFun = new MyComponentGroup(Item.DreadFunValue.getDescriptionList(), true);
-        initField(Item.PARSE_DREAD_FUN_VALUE, dreadFun, () -> item.getDreadFunValueN(), (t) -> item.setDreadFunValue((Item.DreadFunValue.getValue((String) t))),
-                () -> dreadFun.getSelectedString(), (s) -> dreadFun.select(s != null ? (String) s.toString() : null));
+        initField(Item.PARSE_DREAD_FUN_VALUE, dreadFun,
+                () -> item.getDreadFunValueN() != null ? item.getDreadFunValueN().toString() : null,
+                (enumStr) -> item.setDreadFunValue(enumStr != null ? (Item.DreadFunValue.valueOf((String) enumStr)) : null),
+                //                () -> dreadFun.getSelectedString(), (s) -> dreadFun.select(s != null ? (String) s.toString() : null));
+                () -> dreadFun.getSelectedString() != null ? Item.DreadFunValue.getValue(dreadFun.getSelectedString()).toString() : null,
+                (enumStr) -> dreadFun.select(enumStr != null ? Item.DreadFunValue.valueOf((String) enumStr).getDescription() : null));
         prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP));//, null, false, false, true, true));
 
 //        MyNumericTextField earnedValue = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValue(), (d) -> item.setEarnedValue(d));
@@ -1952,8 +1972,11 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             public void actionPerformed(ActionEvent evt) {
                 //if status is set Ongoing and startedOnDate is not set and has not been set explicitly 
                 //if status is changed
-                //TODO!!! move this logic into Item as static method (or ensure consistent with changes made there)
+                //TODO!!! move this logic into Item as static method (or ensure consistent with changes made there), OR, at least check it is consistent with logic elsewhere (eg. if a project is set complete when last subtasks is completed, or in screenItemList)
                 ItemStatus newStatus = status.getStatus();
+                if (newStatus == ItemStatus.CREATED && item.getActualEffort() > 0) {
+                    newStatus = ItemStatus.ONGOING;
+                }
                 Date now = new Date();
                 Date zero = new Date(0);
                 if (newStatus != item.getStatus()) {
@@ -1963,27 +1986,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                             startedOnDate.setDate(now);
                             startedOnDate.repaint();
                         }
-                    } else if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
-//                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                        if (startedOnDate.getDate().getTime() == 0) {
-                            startedOnDate.setDate(now);
-                            startedOnDate.repaint();
-                        }
-//                        if (completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) {
-                        if (completedDate.getDate().getTime() == 0) { //UI: will not change if already set
-                            completedDate.setDate(now);
+                        if (completedDate.getDate().getTime() != 0) {
+                            completedDate.setDate(zero);
                             completedDate.repaint();
-                        }
-                    } else if (newStatus == ItemStatus.WAITING) {
-//                        if (dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getDateWhenSetWaiting()) {
-                        dateSetWaitingDate.setDate(now);
-                        dateSetWaitingDate.repaint();
-//                        }
-                        //UI: set startedOnDate when setting Waiting (even if no effort registered)?
-//                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                        if (startedOnDate.getDate().getTime() == 0) {
-                            startedOnDate.setDate(now);
-                            startedOnDate.repaint();
                         }
                     } else if (newStatus == ItemStatus.CREATED) {
                         //if set back to Created, force startedOnDate and completedDate and WaitingDate and ?? back
@@ -2006,6 +2011,28 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
 //                            completedDate.setDate(new Date(0));
 //                        }
+                    } else if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
+//                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+                        if (startedOnDate.getDate().getTime() == 0) {
+                            startedOnDate.setDate(now);
+                            startedOnDate.repaint();
+                        }
+//                        if (completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) {
+                        if (true || completedDate.getDate().getTime() == 0) { //UI: will not change if already set ->NO, will always use latest date when set Done, e.g. if marking done by mistake
+                            completedDate.setDate(now);
+                            completedDate.repaint();
+                        }
+                    } else if (newStatus == ItemStatus.WAITING) {
+//                        if (dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getDateWhenSetWaiting()) {
+                        dateSetWaitingDate.setDate(now);
+                        dateSetWaitingDate.repaint();
+//                        }
+                        //UI: set startedOnDate when setting Waiting (even if no effort registered)?
+//                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+                        if (startedOnDate.getDate().getTime() == 0) {
+                            startedOnDate.setDate(now);
+                            startedOnDate.repaint();
+                        }
                     }
                     if (newStatus != ItemStatus.WAITING && dateSetWaitingDate.getDate().getTime() != 0) {
                         dateSetWaitingDate.setDate(zero);
@@ -2023,16 +2050,20 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 //if startedOnDate is set, then if status has not been set explicitly and it is Created (not Waiting), the set it 
 //                if (startedOnDate.getDate().getTime() != 0 && item.getStartedOnDate() == 0 && status.getStatus() == item.getStatus() && status.getStatus() == ItemStatus.CREATED) {
                 if (startedOnDate.getDate().getTime() == 0) {
+                    //TODO!! should it be allowed to remove a startdate if there is actual effort? YES, because you want to be able to edit freely the different fields of an Item! (not too much intelligence)
 //                    if (actualEffort.getTime() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
                     if (actualEffort.getDuration() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
                         status.setStatus(ItemStatus.CREATED);
                         status.repaint();
                     }
-                } else //{// (startedOnDate.getDate().getTime() != 0) {
-                if (status.getStatus() == ItemStatus.CREATED) { //DON't set to ONGOING if current state is WAITING/CANCELLED/ONGOING
-                    status.setStatus(ItemStatus.ONGOING);
-                    status.repaint();
+                } else { //startedOnDate.getDate().getTime() == 0 => startDate was set OR CHANGED(!)
+                    if (status.getStatus() == ItemStatus.CREATED) { //UI: DON't set to ONGOING if current state is WAITING/CANCELLED/ONGOING
+//{// (startedOnDate.getDate().getTime() != 0) {
+                        status.setStatus(ItemStatus.ONGOING);
+                        status.repaint();
+                    }
                 }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                    else {
 //                        if (actualEffort.getTime() > 0) {
 //                            status.setStatus(ItemStatus.ONGOING); //UI: if deleting setWaitingDate, then reset status to whatever it was before
@@ -2043,6 +2074,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                        }
 //                    }
 //                }
+//</editor-fold>
             }
         };
         startedOnDate.addActionListener(startedOnDateListener);
@@ -2068,7 +2100,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 //UI: if startedOnDate is not changed explicitly in UI, the set it to (-Now-) completedDate-actual
                 if (startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
 //                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
-                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getDuration())));
+//                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getDuration()))); //TODO!! define setting to use actualEffort when auto-setting startedOn date?? Probably too smart
+                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() )); //UI: if setting a completeDate, then if no startedOn date was set, it will also be set to same time
                     startedOnDate.repaint();
                 }
             }

@@ -307,6 +307,9 @@ public class MyPrefs {
     static PrefEntry itemInheritOwnerProjectTemplate //doesn't make sense to inherit this, each template subtask should have this set directly?! 
             = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.TEMPLATE), "itemInheritOwnerProjectTemplate", true,
                     INHERITS + Item.TEMPLATE);
+    static PrefEntry itemInheritEvenDoneSubtasksInheritOwnerValues 
+            = new PrefEntry(Format.f("Even completed subtasks inherit valhes from their project", Item.TEMPLATE), "itemInheritEvenDoneSubtasksInheritOwnerValues", false,
+                    INHERITS + Item.TEMPLATE);
 
     // ************** END inherit values from owning Project *************
     static PrefEntry itemEffortEstimateExtractFromStringInTaskText

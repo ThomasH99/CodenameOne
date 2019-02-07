@@ -165,37 +165,34 @@ public class MyCheckBox extends Button {
         this.activateFullMenuOnSingleClick = activateFullMenuOnSingleClick;
         this.statusChangeHandler = statusChangeHandler;
 
-        addActionListener(new ActionListener() { //Handle single-click
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                if (MyCheckBox.this.activateFullMenuOnSingleClick) {
-                    selectNewStatus();
-                } else {
-                    //TODO!! move below logic into static method in Item to avoid duplication
+//Handle single-click
+        addActionListener((evt) -> {
+            if (MyCheckBox.this.activateFullMenuOnSingleClick) {
+                selectNewStatus();
+            } else {
+                //TODO!! move below logic into static method in Item to avoid duplication
 //                ItemStatus itemStatus = itemStatus.getStatus();
 //                    switch (MyCheckBox.this.itemStatus) { //OLD STATUS
-                    switch (itemStatus) { //OLD STATUS
-                        case CREATED:
-                        case WAITING:
-                        case ONGOING:
-                            setStatus(ItemStatus.DONE);
-                            break;
-                        case DONE:
-                        case CANCELLED:
+                switch (itemStatus) { //OLD STATUS
+                    case CREATED:
+                    case WAITING:
+                    case ONGOING:
+                        setStatus(ItemStatus.DONE);
+                        break;
+                    case DONE:
+                    case CANCELLED:
 //                            if (MyCheckBox.this.itemOngoing.isOngoing()) { //NO LONGER necessary to check if item is ongoing, it will be handled in setStatus (setting to Ongoing)
 //                                setStatus(ItemStatus.ONGOING);
 //                            } else {
 //                                setStatus(ItemStatus.CREATED);
 //                            }
-                            setStatus(ItemStatus.CREATED);
-                            break;
-                        default:
-                            assert false : "unknown ItemStatus=" + itemStatus;
-                    }
+                        setStatus(ItemStatus.CREATED);
+                        break;
+                    default:
+                        assert false : "unknown ItemStatus=" + itemStatus;
                 }
             }
-        }
-        );
+        });
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -281,6 +278,7 @@ public class MyCheckBox extends Button {
 
     private void selectNewStatus() {
         //TODO move this logic to Item.xxx
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        d = new Dialog("Select");
 //        d.setLayout(BoxLayout.y());
 //        d.setAutoDispose(true);
@@ -297,7 +295,7 @@ public class MyCheckBox extends Button {
 //                if (!s.equals(singleIconStyle)) {
 //                    this.singleIconStyle = s;
 //                }
-
+//</editor-fold>
         MyPopupMenu d = new MyPopupMenu(groupStyleUIID, create("Cancel", null, (e) -> {
         }),
                 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -413,6 +411,7 @@ public class MyCheckBox extends Button {
 //        };
 //</editor-fold>
         selectNewStatus();
+        fireActionEvent( x,  y); //ensure that longPress to select any new status will trigger updates
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        d = new Dialog("Select");
 //        d.setLayout(BoxLayout.y());

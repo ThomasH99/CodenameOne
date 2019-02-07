@@ -634,7 +634,7 @@ public class MyForm extends Form {
 
         //TODO!!!! if marking a project, with undone subtasks, Done, then also show sum of subtask actuals to know how much time was spend on them
         MyDurationPicker actualPicker = new MyDurationPicker(item.getActualEffortProjectTaskItself());
-        actualPicker.addActionListener((e) -> item.setActualEffort(actualPicker.getDuration()));
+        actualPicker.addActionListener((e) -> item.setActualEffort(actualPicker.getDuration(), true));
 //        }, (l) -> {
 ////            item.setActualEffort(d*MyDate.MINUTE_IN_MILLISECONDS);
 //            item.setActualEffort(l);
@@ -1262,12 +1262,12 @@ public class MyForm extends Form {
         Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
         ASSERT.that(parseIdMap2 != null);
         if (parseIdMap2 != null) {
-//            UpdateField repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
-            UpdateField repeatRule = parseIdMap2.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
-            if (repeatRule != null) {
-                DAO.getInstance().saveInBackground((ParseObject)repeatRule); //MUST save before saving Item, since item will reference a new repeatRule
+            UpdateField repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+//            UpdateField repeatRule = parseIdMap2.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
+            if (false && repeatRule != null) {
+                DAO.getInstance().saveInBackground((ParseObject) repeatRule); //MUST save before saving Item, since item will reference a new repeatRule
             }
-            
+
             for (Object parseId : parseIdMap2.keySet()) {
 //            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
                 parseIdMap2.get(parseId).update();
@@ -1425,7 +1425,6 @@ public class MyForm extends Form {
 //        }
 //        previousForm.showBack();
 //    }
-
     void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
         if (previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
             previousValues.deleteFile();
@@ -1598,8 +1597,7 @@ public class MyForm extends Form {
 //    private static void addNewTaskSetTemplateAddToListAndSave(Item item, int pos, ItemList itemListOrg) {
     static void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
 //        item.setTemplate(itemListOrg.isTemplate()); //template or not
-        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null
-                && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
         if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
             itemListOrg.addToList(pos, item); //UI: add to top of list
         }
