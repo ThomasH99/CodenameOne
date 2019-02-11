@@ -258,6 +258,17 @@ Comment {
     font-size: 80%;
 }
 
+/*************** objectSelector / setOwner **************/
+
+ObjectSelectorRadioButton{
+   cn1-derive: Button;
+    color: blue;
+}
+/*ObjectSelectorRadioButton.selected {
+    cn1-derive: Button;
+    color: blue;
+}*/
+
 /*************** list of items **************/
 
 ListOfItemsTextCont { /*style for task container (WrapButton) in lists*/

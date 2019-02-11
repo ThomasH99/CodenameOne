@@ -1329,7 +1329,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                        str += sepStr + getItemAt(i).toString(ToStringFormat.TOSTRING_DEFAULT);
 //                        str += sepStr + getItemAt(i).toString();
                     str += sepStr + elt.toString();
-                    sepStr = ", ";
+                    sepStr = " | ";
 //                    }
                 }
                 return str;
@@ -1733,8 +1733,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            List<E> editedList = getListFull();
 //            List listCopy = new ArrayList(editedList);
 //            editedList.add(index, item);
-                List listCopy = new ArrayList(list);
-                listCopy.add(index, item);
+//                List listCopy = new ArrayList(list);
+//                listCopy.add(index, item);
 //            list.add(index, item);
                 list.add(index, item);
 //            assert list.indexOf(item) != -1 : "item NOT in list thouygh just added (" + item + " already in list [" + this + "] at pos=" +list.indexOf(item); //if (getItemIndex(item) == -1) {

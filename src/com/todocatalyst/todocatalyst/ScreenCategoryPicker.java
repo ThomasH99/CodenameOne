@@ -89,7 +89,7 @@ public class ScreenCategoryPicker extends MyForm {
 //        addSearchToTitle();
 //        setToolbar(new Toolbar());
         addCommandsToToolbar(getToolbar());
-        getToolbar().addSearchCommand((e) -> {
+        if (false) getToolbar().addSearchCommand((e) -> {
             String text = (String) e.getSource();
             Container compList = getContentPane();
             boolean showAll = text == null || text.length() == 0;
@@ -101,6 +101,7 @@ public class ScreenCategoryPicker extends MyForm {
             }
             compList.animateLayout(150);
         });
+        getToolbar().addSearchCommand(makeSearchFunctionSimple(listOfAllCategories,()->getContentPane()));
 //        buildContentPane(getContentPane(), listOfAllCategories); //, this.selectedCategories);
         refreshAfterEdit();
     }

@@ -6,7 +6,8 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.io.Log;
-import com.codename1.ui.Command;
+//import com.codename1.ui.CommandTracked;
+import com.codename1.ui.Display;
 import com.codename1.ui.Image;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
@@ -17,8 +18,8 @@ import com.codename1.ui.events.ActionListener;
  *
  * @author thomashjelm
  */
-public class MyReplayCommand extends Command {
-    
+public class MyReplayCommand extends CommandTracked {
+
     private String cmdUniqueID;
 
 //    public MyReplayCommand(String command, Image icon) {
@@ -37,57 +38,64 @@ public class MyReplayCommand extends Command {
         }
         ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
     }
-    
+
     private MyReplayCommand(String cmdUniqueID, String commandName) {
 //        super(command);
 //        setCmdUniqueID(cmdUniqueID);
 //        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
         this(cmdUniqueID, commandName, null);
     }
-    
+
     private MyReplayCommand(String commandName) {
 //        super(command);
 //        setCmdUniqueID(command); //use command string as unique ID (should be OK when
 //        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
         this(commandName, commandName, null);
     }
-    
+
     @Override
     public String toString() {
         return cmdUniqueID;
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent evt) {
-        ReplayLog.getInstance().pushCmd(this);
+//        ReplayLog.getInstance().pushCmd(this);
         super.actionPerformed(evt);
     }
-    
+
     void setCmdUniqueID(String cmdUniqueID) {
         this.cmdUniqueID = cmdUniqueID;
     }
-    
+
     String getCmdUniqueID() {
         return cmdUniqueID;
     }
-    
-    public static MyReplayCommand create(String cmdUniqueID, String name, Image icon, final ActionListener ev) {
+
+    public static MyReplayCommand create(String cmdUniqueID, String name, Image icon, final ActionListener ev, String analyticsActionId) {
         MyReplayCommand cmd = new MyReplayCommand(cmdUniqueID, name, icon) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                ReplayLog.getInstance().pushCmd(this);
+                ReplayLog.getInstance().pushCmd(this); //DON'T call here, is called in MyReplayCommand.actionPerformed which is called below!
 //                ev.actionPerformed(evt);
                 if (ev != null) {
+//                    MyAnalyticsService.event(Display.getInstance().getCurrent(), cmdUniqueID);
                     ev.actionPerformed(evt);
                 } else {
                     ASSERT.that("NOT REALLY SURE THIS WORKS!!!");
-                    super.actionPerformed(evt);
+//                    super.actionPerformed(evt);
                 }
+                super.actionPerformed(evt);
             }
         };
+        cmd.setActionId(analyticsActionId);
         return cmd;
     }
-    
+
+    public static MyReplayCommand create(String cmdUniqueID, String name, Image icon, final ActionListener ev) {
+        return create(cmdUniqueID, name, icon, ev, null);
+    }
+
     public static MyReplayCommand create(String name) {
         ASSERT.that("NOT REALLY SURE THIS WORKS!!!");
         return create(name, name, null, null);
@@ -100,9 +108,16 @@ public class MyReplayCommand extends Command {
      * @param ev
      * @return
      */
-//    public static Command create(String name, Image icon, final ActionListener ev) {
+//    public static CommandTracked create(String name, Image icon, final ActionListener ev) {
+    public static MyReplayCommand create(String name, Image icon, final ActionListener ev, String analyticsActionId) {
+//        MyReplayCommand c = create(name, name, icon, ev);
+//        c.setActionId(analyticsActionId);
+//        return c;
+        return create(name, name, icon, ev, analyticsActionId);
+    }
+
     public static MyReplayCommand create(String name, Image icon, final ActionListener ev) {
-        return create(name, name, icon, ev);
+        return create(name, icon, ev, null);
     }
 
 //    @Override

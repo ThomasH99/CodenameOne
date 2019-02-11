@@ -90,6 +90,8 @@ public class ScreenListOfItems extends MyForm {
     //DONE don't refreshTimersFromParseServer the entire list after editing one item, make sure the list stays in same place, and only the edited item's container is updated
     final static String SCREEN_ID = "ScreenListOfItems";
     final static String DISPLAYED_ELEMENT = "element";
+    protected static String FORM_UNIQUE_ID = "ScreenListOfItems"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+
 //    final static String INSERT_NEW_TASK_AS_SUBTASK_KEY = "SubtaskLevel";
 //    final static String EXISTING_NEW_TASK_CONTAINER = "NewTaskContainer"; //stores the current newSubtask container to allow to automatically close one if a new one is created elsewhere
 //    private static String screenTitle = "Tasks";
@@ -319,79 +321,83 @@ public class ScreenListOfItems extends MyForm {
 //            setKeepPos(null); //remove any scroll position since pull to removeFromCache means we're at top of list
 //            refreshAfterEdit();
 //        });
-        getToolbar().addSearchCommand((e) -> {
-            String text = (String) e.getSource();
-            Container compList = null;
-            compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-            if (compList != null) {
+        if (false) {
+            getToolbar().addSearchCommand((e) -> {
+                String text = (String) e.getSource();
+                Container compList = null;
+                compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+                if (compList != null) {
 //            boolean showAll = text == null || text.length() == 0;
-                int labelCount = 0;
-                int nonLabelCount = 0;
+                    int labelCount = 0;
+                    int nonLabelCount = 0;
 //                int prevLabelPos = 0;
-                boolean searchOnLowerCaseOnly;
+                    boolean searchOnLowerCaseOnly;
 //                Label lastLabel = null;
-                Component lastLabel = null;
-                boolean hide;
+                    Component lastLabel = null;
+                    boolean hide;
 //                for (int i = 0, size = this.itemListFilteredSorted.size(); i < size; i++) {
-                for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
-                    //TODO!!! compare same case (upper/lower)
-                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                    searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
+                    for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
+                        //TODO!!! compare same case (upper/lower)
+                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
+                        searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //UI: if search string is all lower case, then search on lower case only, otherwise search on 
 
-                    Component comp = compList.getComponentAt(i);
-                    if (comp instanceof Label || comp instanceof StickyHeader) {
-                        if (lastLabel != null) {
+                        Component comp = compList.getComponentAt(i);
+                        if (comp instanceof Label || comp instanceof StickyHeader) {
+                            if (lastLabel != null) {
 //                            if (nonLabelCount == 0) {
 //                                lastLabel.setHidden(true); //hide previous label if nothing is shown after it
 //                            } else {
 //                                lastLabel.setHidden(false); //hide previous label if nothing is shown after it
 //                            }
-                            lastLabel.setHidden(nonLabelCount == 0); //hide previous label if nothing is shown after it
-                        }
+                                lastLabel.setHidden(nonLabelCount == 0); //hide previous label if nothing is shown after it
+                            }
 //                        lastLabel.setHidden(nonLabelCount == 0 && lastLabel != null); //hide previous label if nothing is shown after it
-                        nonLabelCount = 0; //reset count on every Label
-                        labelCount++; //hack: StickyHeaders are Labels, so count them and add to count
+                            nonLabelCount = 0; //reset count on every Label
+                            labelCount++; //hack: StickyHeaders are Labels, so count them and add to count
 //                        prevLabelPos=i;
 //                        lastLabel = (Label) comp;
-                        lastLabel = comp;
-                    } else {
+                            lastLabel = comp;
+                        } else {
 //                        nonLabelCount++;
-                        if (searchOnLowerCaseOnly) {
+                            if (searchOnLowerCaseOnly) {
 //                            compList.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
 //                            comp.setHidden(((Item) itemListFilteredSorted.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0);
 //                            hide = ((Item) itemListFilteredSorted.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0;
-                            hide = ((Item) itemListOrg.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0;
-                        } else {
+                                hide = ((Item) itemListOrg.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0;
+                            } else {
 //                            compList.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
 //                            comp.setHidden(((Item) itemListFilteredSorted.get(i - labelCount)).getText().indexOf(text) < 0);
 //                            hide = ((Item) itemListFilteredSorted.get(i - labelCount)).getText().indexOf(text) < 0;
-                            hide = ((Item) itemListOrg.get(i - labelCount)).getText().indexOf(text) < 0;
-                        }
-                        comp.setHidden(hide);
-                        if (!hide) {
-                            nonLabelCount++;
+                                hide = ((Item) itemListOrg.get(i - labelCount)).getText().indexOf(text) < 0;
+                            }
+                            comp.setHidden(hide);
+                            if (!hide) {
+                                nonLabelCount++;
+                            }
                         }
                     }
-                }
-                if (nonLabelCount == 0 && lastLabel != null) {
-                    lastLabel.setHidden(true); //hide previous label if nothing is shown after it
-                }
-            } else {
+                    if (nonLabelCount == 0 && lastLabel != null) {
+                        lastLabel.setHidden(true); //hide previous label if nothing is shown after it
+                    }
+                } else {
 //                compList = getContentPane();
-                for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
-                    //TODO!!! compare same case (upper/lower)
-                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
+                    for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
+                        //TODO!!! compare same case (upper/lower)
+                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
 //                compList.getComponentAt(i).setHidden(((Item) itemListFilteredSorted.get(i)).getText().toLowerCase().indexOf(text) < 0);
-                    Component comp = compList.getComponentAt(i);
+                        Component comp = compList.getComponentAt(i);
 //                    Object sourceObj = comp.getClientProperty(SOURCE_OBJECT);
-                    Object sourceObj = comp.getClientProperty(KEY_OBJECT);
-                    comp.setHidden(sourceObj != null && sourceObj instanceof Item && ((Item) sourceObj).getText().toLowerCase().indexOf(text) < 0);
+                        Object sourceObj = comp.getClientProperty(KEY_OBJECT);
+                        comp.setHidden(sourceObj != null && sourceObj instanceof Item && ((Item) sourceObj).getText().toLowerCase().indexOf(text) < 0);
+                    }
                 }
-            }
-            if (compList != null) {
-                compList.animateLayout(150);
-            }
-        });
+                if (compList != null) {
+                    compList.animateLayout(150);
+                }
+            });
+        }
+
+        getToolbar().addSearchCommand(makeSearchFunctionUpperLowerStickyHeaders(itemListOrg));
 //        if (itemList instanceof ParseObject && itemList.getObjectId() != null) {
 //            filterSortDef = DAO.getInstance().getFilterSortDef(SCREEN_ID, itemList.getObjectId());
 //        }
@@ -454,17 +460,19 @@ public class ScreenListOfItems extends MyForm {
 //        getContentPane().add(CENTER, buildContentPaneForItemList(this.itemListFilteredSorted));
         parseIdMapReset();
         Container scrollableContainer = buildContentPaneForItemList(itemListOrg);
-        scrollableContainer.addPullToRefresh(() -> {
-            Log.p("Pull to refresh...");
-            DAO.getInstance().removeFromCache(itemListOrg);
-            //refresh worktime
-            itemListOrg.resetWorkTimeDefinition();
-            //TODO!!!! load any changed data from server
-            //TODO optionally, remove done tasks??
-            setKeepPos(null); //remove any scroll position since pull to removeFromCache means we're at top of list
-            refreshAfterEdit();
-            Log.p("Pull to refresh...DONE");
-        });
+        if (false) { //TODO!!! re-activate (currently clashes with drag&drop: when trying to drag an element at the top of the list, it also activates pullToRefresh)
+            scrollableContainer.addPullToRefresh(() -> {
+                Log.p("Pull to refresh... DEACTIVATED");
+                DAO.getInstance().removeFromCache(itemListOrg);
+                //refresh worktime
+                itemListOrg.resetWorkTimeDefinition();
+                //TODO!!!! load any changed data from server
+                //TODO optionally, remove done tasks??
+                setKeepPos(null); //remove any scroll position since pull to removeFromCache means we're at top of list
+                refreshAfterEdit();
+                Log.p("Pull to refresh...DONE");
+            });
+        }
         getContentPane().add(CENTER, scrollableContainer);
 //        setTitleAnimation(scrollableContainer);
 
@@ -684,7 +692,7 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //SHOW DETAILS
-        toolbar.addCommandToOverflowMenu(new Command("Task detailsXXX", Icons.iconCmdShowTaskDetails) {
+        toolbar.addCommandToOverflowMenu(new CommandTracked("Task detailsXXX", Icons.iconCmdShowTaskDetails, "ShowAllTaskDetails") {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                showDetailsForAllTasks = !showDetailsForAllTasks;
@@ -731,9 +739,11 @@ public class ScreenListOfItems extends MyForm {
             ));
 
 //            toolbar.addCommandToOverflowMenu(sortOnOff = new Command("Sort ON/OFF", Icons.iconCmdSortOnOff) { //this title never shown
-            toolbar.addCommandToOverflowMenu(new Command("Sort XXX", Icons.iconCmdSortOnOff) { //this title never shown
+            Command sortOnOff = new CommandTracked("Sort XXX", Icons.iconCmdSortOnOff, "SortOnOff") {
                 @Override
-                public void actionPerformed(ActionEvent evt) {
+                public void actionPerformed(ActionEvent e) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            },(e)->{
 //                    if (filterSortDef == null) {
 //                        filterSortDef = FilterSortDef.fetchFilterSortDef(SCREEN_ID, itemListOrg, new FilterSortDef(SCREEN_ID, itemListOrg));
 //                    }
@@ -743,14 +753,19 @@ public class ScreenListOfItems extends MyForm {
 //                            filterSortDef = new FilterSortDef();
 //                        }
 //                    }
+//</editor-fold>
                     filterSortDef = itemListOrg.getFilterSortDef();
                     filterSortDef.setSortOn(!filterSortDef.isSortOn());
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    sortOnOff.setCommandName("Sort " + ((itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "ON" : "OFF"));
 //                itemList = filterSortDef.filterAndSortItemList(itemListOrg); //refresh list
 //                    refreshItemListFilterSort();
 //                    setupList(); //TODO optimize the application of a filter?
-                    refreshAfterEdit(); //TODO optimize the application of a filter?
 //                sortOnOff.setCommandName(filterSortDef.isSortOn() ? "Manual sort" : "Sort tasks");
 //                sortOnOff.setCommandName("Sort"+(filterSortDef.isSortOn() ? " OFF" : " ON"));
+                    refreshAfterEdit(); //TODO optimize the application of a filter?
+//</editor-fold>
+                    super.actionPerformed(e);
                 }
 
                 @Override
@@ -758,8 +773,8 @@ public class ScreenListOfItems extends MyForm {
 //                    return "Sort " + ((filterSortDef == null || !filterSortDef.isSortOn()) ? "ON" : "OFF");
                     return "Sort " + ((itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "ON" : "OFF");
                 }
-                //TODO always get right command name by overriding getName
-            });
+            };
+            toolbar.addCommandToOverflowMenu(sortOnOff);
         }
 
         //SELECTION MODE
@@ -2438,19 +2453,19 @@ refreshAfterEdit();
         }
 
         //UPDATE DUE DATE
-        if (!item.isTemplate() && !isDone) {
+        if (!item.isTemplate() && !isDone && myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE)) { //UI: only show in Today view
             setDueDateToToday.addActionListener((e) -> {
 //                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //NB keeping the position of item doesn't make sense since this command can make it disappear (e.g. in Overdue screen)
 //                myForm.setKeepPos(new KeepInSameScreenPosition(swipCont)); //ASSERT since swipCont not ScrollableY
                 myForm.setKeepPos(new KeepInSameScreenPosition()); //try to keep same scroll position as before 
-                Date tomorrow = new Date(new Date().getTime() + MyDate.DAY_IN_MILLISECONDS);
+//                Date tomorrow = new Date(new Date().getTime() + MyDate.DAY_IN_MILLISECONDS);
                 if (MyDate.isToday(item.getDueDateD())) {
 //                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
-                    item.setDueDate((new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
+                    item.setDueDate((new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow same time as it was today
                 } else if (MyDate.isToday(item.getWaitingTillDateD())) {
                     item.setWaitingTillDate((new Date(item.getWaitingTillDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if WaitingTillDate is today, then set to tomorrow
                 } else if (MyDate.isToday(item.getStartByDateD())) {
-                    item.setStartByDate((new Date(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
+                    item.setStartByDate((new Date(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if startBy is today, then set due day to tomorrow
                 } else {
 //                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date())); //UI: if due is NOT already today, then set due day to today
                     item.setDueDate(MyDate.setDateToTodayKeepTime(item.getDueDateD())); //UI: if due is NOT already today, then set due day to today

@@ -29,7 +29,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
     private final static String ENTER_TASK = "New task, ->for subtask)"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
     private final static String ENTER_TASK_NO_SWIPE_RIGHT = "New task"; //"Task (swipe right: subtask)"
 
-    private boolean insertAsSubtask; //true if the user has selected to insert new task as a subtask of the preceding task
+    private boolean insertAsSubtask=false; //true if the user has selected to insert new task as a subtask of the preceding task, set by Swipe action!
     private MyTextField2 textEntryField2;
     private ItemAndListCommonInterface element;
     private Category category2;
@@ -131,14 +131,16 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
                 (ev) -> { //When pressing ENTER, insert new task
                     if (!ev.isConsumed() && !swipC.isOpen()) {
                         Item newItem = createNewTask(); //store new task for use when recreating next insert container
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        if (continueAddingNewItems) {
 //                            lastCreatedItem = newItem; //store new task for use when recreating next insert container
 //                        } else {
 //                            lastCreatedItem = null; //store new task for use when recreating next insert container
 //                        }
+//</editor-fold>
                         if (newItem != null) {
                             lastCreatedItem = continueAddingNewItems ? newItem : null; //store new task for use when recreating next insert container
-                            insertNewTaskAndSaveChanges(newItem);
+                            insertNewTaskAndSaveChanges(newItem); ASSERT.that(newItem.getOwner()!=null);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        if (lastCreatedItem != null) {
 //                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
@@ -147,6 +149,7 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
 //                        }
 //</editor-fold>
                             myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : element, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        closeInsertNewTaskContainer();
 //                            getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
 //                            Container parent = getParent();
@@ -157,19 +160,22 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
 ////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
 //                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
 //                            parent.animateHierarchy(300);
-                            closeInsertNewItemContainer();
 //                            if (continueAddingNewItems) {
 //                                lastCreatedItem = newItem; //ensures that MyTree2 will create a new insertContainer after newTask
 //                            }
 //                            myForm.animateMyForm();
+//</editor-fold>
+                            closeInsertNewItemContainer();
                             myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
                         } else { //if no new item created, remove the container like with Close (x)
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                            Container parent = getParent();
 //                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
 ////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
 ////                            parent.replace(InlineInsertNewItemContainer2.this, new Label(), null);
 //                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
 //                            parent.animateHierarchy(300);
+//</editor-fold>
                             closeInsertNewItemContainer();
                             myForm.setInlineInsertContainer(null); //remove this as inlineContainer
 //                            parent.animateLayout(300); //not necesssary with replace?
@@ -367,8 +373,8 @@ public class InlineInsertNewItemContainer2 extends Container implements InsertNe
                     itemOrItemListForNewElements.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
                 }
             }
-            if (false) {
-                DAO.getInstance().saveInBackground((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements);
+            if (true) {
+                DAO.getInstance().saveInBackground((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
             } else {
                 DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewElements);
             }

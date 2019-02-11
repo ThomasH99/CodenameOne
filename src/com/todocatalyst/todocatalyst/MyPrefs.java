@@ -45,7 +45,7 @@ public class MyPrefs {
     //INSERTION OF NEW ITEMS
 //    static PrefEntry insertNewItemsInStartOfCategory = new PrefEntry("insertNewItemsInStartOfCategory", true, "Always insert new tasks at the beginning of lists (instead of at the end)");
     static PrefEntry insertNewItemsInStartOfLists
-            = new PrefEntry("Insert created at top of list", "insertNewItemsInStartOfLists", true, "Always insert new tasks at the beginning of lists (instead of at the end)");
+            = new PrefEntry("Insert created/moved at top of list", "insertNewItemsInStartOfLists", true, "Always insert new or moved tasks at the beginning of lists (instead of at the end)");
     static PrefEntry insertNewSubtasksInScreenItemInStartOfLists
             = new PrefEntry("**Insert new subtasks created at top of list", "insertNewSubtasksInScreenItemInStartOfLists", false, "**Always insert new subtasks at the beginning of lists (instead of at the end)");
     //"Insert created at top of list", "Insert new tasks at beginning of list"

@@ -2909,10 +2909,16 @@ public class RepeatRuleParseObject
 //                    dos.writeUTF(((WorkSlot) p).getObjectIdP());
 //                }
 //</editor-fold>
-                if (Config.DEBUG_LOGGING) {
-                    ASSERT.that(p.getObjectIdP() != null, "RepeatRule: " + this + " references elt:" + p + " with getObjectIdP()==null");
+                if (p == null) {
+                    if (Config.DEBUG_LOGGING) {
+                        ASSERT.that(true, "RepeatRule: " + this + " references null elt!! "); //TODO!! remove such elements if detected (both from local cache and Parse Server)
+                    }
+                } else {
+                    if (Config.DEBUG_LOGGING) {
+                        ASSERT.that(p.getObjectIdP() != null, "RepeatRule: " + this + " references elt:" + p + " with getObjectIdP()==null");
+                    }
+                    dos.writeUTF(p.getObjectIdP());
                 }
-                dos.writeUTF(p.getObjectIdP());
             }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">

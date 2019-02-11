@@ -49,6 +49,8 @@ public class ScreenListOfAlarms extends MyForm {
     private long now; //represent 'now' wrt latest update of the screen <8eg to ensure that an alarm that expires just after the screen is updated may be cancelled w/o being shown/seen
 //    private KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
     private List<ExpiredAlarm> expiredAlarms;
+     protected static String FORM_UNIQUE_ID = "ScreenListOfAlarms"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+
 
     private static ScreenListOfAlarms INSTANCE;
 
@@ -115,7 +117,7 @@ public class ScreenListOfAlarms extends MyForm {
         if (expiredAlarms.size() > 0) { //keep snooze all even if only a single item
             Container cancelAllButtonsCont = new Container(new BorderLayout());
             //add Cancel All and Snooze All buttons
-            cancelAllButtonsCont.add(BorderLayout.WEST, new Button(Command.create("Cancel All", Icons.iconAlarmOffLabelStyle, (evt) -> {
+            cancelAllButtonsCont.add(BorderLayout.WEST, new Button(CommandTracked.create("Cancel All", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                while (!notificationList.isEmpty()) { //exit screen if all alarms are dealt with
 //                for (int i = 0, size = expiredAlarms.size(); i < size; i++) { //exit screen if all alarms are dealt with
@@ -135,11 +137,11 @@ public class ScreenListOfAlarms extends MyForm {
                 AlarmHandler.getInstance().cancelAllExpiredAlarms();
                 showPreviousScreenOrDefault(true); //false);
 
-            })));
+            },"CancelAllAlarms")));
 
             MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt()*MyDate.MINUTE_IN_MILLISECONDS);
 
-            cancelAllButtonsCont.add(BorderLayout.EAST, Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(Command.create("Snooze All", Icons.iconAlarmOffLabelStyle, (evt) -> {
+            cancelAllButtonsCont.add(BorderLayout.EAST, Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(CommandTracked.create("Snooze All", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //                Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                while (!notificationList.isEmpty()) { //exit screen if all alarms are dealt with
@@ -166,7 +168,7 @@ public class ScreenListOfAlarms extends MyForm {
                 AlarmHandler.getInstance().snoozeAllExpiredAlarms(
                         MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + ((long) snoozeTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS)));
                 showPreviousScreenOrDefault(true); //false);
-            }))));
+            },"SnoozeAllAlarms"))));
 
             getContentPane().add(BorderLayout.SOUTH, cancelAllButtonsCont);
 //            alarmCont.animateHierarchy(300); //works??
@@ -251,7 +253,7 @@ public class ScreenListOfAlarms extends MyForm {
 
         alarmCont.add(BorderLayout.SOUTH, TableLayout.encloseIn(2,
                 //        alarmCont.add(BorderLayout.west(new Button(Command.create("Cancel", Icons.iconAlarmOffLabelStyle, (evt) -> {
-                new Button(Command.create("Cancel", Icons.iconAlarmOffLabelStyle, (evt) -> {
+                new Button(CommandTracked.create("Cancel", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //            expiredAlarms.removeAlarmAndRepeatAlarm(notif.notificationId); //update
                     AlarmHandler.getInstance().removeExpiredAlarm(expiredAlarm);
 
@@ -262,7 +264,7 @@ public class ScreenListOfAlarms extends MyForm {
                         refreshOnItemEdits.launchAction();
                     }
 //        }))).add(BorderLayout.EAST, Container.encloseIn(BoxLayout.x(), new Button(Command.create("Snooze", Icons.iconSnoozeLabelStyle, (evt) -> {
-                })), Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(Command.create("Snooze", Icons.iconSnoozeLabelStyle, (evt) -> {
+                },"CancelAlarm")), Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(CommandTracked.create("Snooze", Icons.iconSnoozeLabelStyle, (evt) -> {
 //            Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
                     Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + snoozeTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -283,7 +285,7 @@ public class ScreenListOfAlarms extends MyForm {
                     } else {
                         refreshOnItemEdits.launchAction();
                     };
-                })))));
+                },"SnoozeAlarm")))));
 
         return alarmCont;
     }

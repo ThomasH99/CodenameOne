@@ -31,6 +31,7 @@ public class ScreenRepeatRule extends MyForm {
     //TODO 
     //TODO add help text to repeatFromCompleted to explain that cancel/delete also counts as 'Completed'
     //TODO selectors like monthlyRepeatTypeSelectionBox should NOT allow to deselect all choices (should work as radiobuttons: exactly one is selected at all times(
+ protected static String FORM_UNIQUE_ID = "ScreenEditRepeatRule"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     /**
      * set to true if repeatrule is the simplified version used for workslots

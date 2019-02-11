@@ -49,7 +49,7 @@ class KeepInSameScreenPosition {
      */
 //    KeepInSameScreenPosition(int scrollY) {
     KeepInSameScreenPosition(Container scrollableContainer) {
-        ASSERT.that(scrollableContainer.isScrollableY(), ()->"KeepInSameScreenPosition called with non-scrollableY container=" + scrollableContainer);
+        ASSERT.that(scrollableContainer.isScrollableY(), () -> "KeepInSameScreenPosition called with non-scrollableY container=" + scrollableContainer);
 //        form = (MyForm) scrollableContainer.getComponentForm();
         this.scrollY = scrollableContainer.getScrollY();
     }
@@ -308,7 +308,7 @@ class KeepInSameScreenPosition {
 //            }
         if (newComponent != null) { //if we found the new component
             return MyForm.findScrollableChild(newComponent.getComponentForm().getContentPane());
-        } else if (someComponent != null&&someComponent.getComponentForm()!=null) { //else lets use some other component from the form
+        } else if (someComponent != null && someComponent.getComponentForm() != null) { //else lets use some other component from the form
             return MyForm.findScrollableChild(someComponent.getComponentForm().getContentPane());
         } else { //otherwise we'll simply get the form
 //                return findScrollableChild(Display.getInstance().getCurrent().getContentPane());
@@ -379,7 +379,6 @@ class KeepInSameScreenPosition {
 //        }
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private static Container findScrollableContainerStatic() {
 //        if (Test.DEBUG) {
@@ -401,7 +400,6 @@ class KeepInSameScreenPosition {
 //        return scrollCont;
 //    }
 //</editor-fold>
-
     /**
      * call after the new Container has been laid out/revalidate()
      *
@@ -427,7 +425,7 @@ class KeepInSameScreenPosition {
 //</editor-fold>
                 Component scrollCont = findScrollableContainerN();
 //                if (scrollCont != null) {
-                if (scrollCont != null&& scrollCont instanceof ContainerScrollY) {
+                if (scrollCont != null && scrollCont instanceof ContainerScrollY) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    scrollCont.setScrollY(scrollY - relScroll);
 //                    if (scrollCont instanceof ContainerScrollY) {
@@ -437,7 +435,7 @@ class KeepInSameScreenPosition {
 //                    }
 //</editor-fold>
                     ASSERT.that(scrollCont instanceof ContainerScrollY,
-                            ()->"Scrollable container not found, must improve findScrollableContainer(), scrollCont not ContainerScrollY: " + scrollCont);
+                            () -> "Scrollable container not found, must improve findScrollableContainer(), scrollCont not ContainerScrollY: " + scrollCont);
                     ((ContainerScrollY) scrollCont).setScrollYPublic(scrollY);
                 }
             } //else //UI: do nothing, no scroll
@@ -448,6 +446,7 @@ class KeepInSameScreenPosition {
 //            newComponent=getParentInScrollableContainer(newComponent,scrollableContainer);
                 Component scrollableComp = getParentInScrollableContainer(newComponent, scrollableContainer);
                 if (scrollableComp != null) {
+                    boolean prevSmoothScrolling = scrollableContainer.isSmoothScrolling();
                     scrollableContainer.setSmoothScrolling(false);
                     if (relScroll != 0) {
 //            scrollableContainer.setScrollY(Math.max(0, newComponent.getY() - relScroll)); //Math.max since scroll position cannot be maintainer if earlier components shrink
@@ -458,7 +457,8 @@ class KeepInSameScreenPosition {
                     }
 //                scrollableContainer.animateHierarchy(300);
                     scrollableContainer.repaint();
-                    scrollableContainer.setSmoothScrolling(true);
+//                    scrollableContainer.setSmoothScrolling(true);
+                    scrollableContainer.setSmoothScrolling(prevSmoothScrolling);
                 }
             }
             newComponent = null;

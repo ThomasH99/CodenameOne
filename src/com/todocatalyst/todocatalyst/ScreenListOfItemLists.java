@@ -62,8 +62,9 @@ public class ScreenListOfItemLists extends MyForm {
     private static String screenTitle = "Lists";
     private ItemList itemListList;
     private boolean draggableMode = false;
-    Command sortOnOff = null;
-    Command draggableOnOff = null;
+    private Command sortOnOff = null;
+    private Command draggableOnOff = null;
+ protected static String FORM_UNIQUE_ID = "ScreenListOfItemLists"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     /**
      * edit a list of categories
@@ -94,7 +95,7 @@ public class ScreenListOfItemLists extends MyForm {
 //        expandedObjects = new HashSet();
         expandedObjects = new ExpandedObjects("ScreenListOfLists", itemListList);
         addCommandsToToolbar(getToolbar());
-        getToolbar().addSearchCommand((e) -> {
+        if (false) getToolbar().addSearchCommand((e) -> {
             String text = (String) e.getSource();
             Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
             boolean showAll = text == null || text.length() == 0;
@@ -105,6 +106,7 @@ public class ScreenListOfItemLists extends MyForm {
             }
             compList.animateLayout(150);
         });
+        getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListList));
 
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.itemListList));
         refreshAfterEdit();
@@ -443,7 +445,7 @@ public class ScreenListOfItemLists extends MyForm {
             assert !statisticsMode || numberItems > 0; // the list should only exist in statistics mode if it is not empty
             if (numberItems > 0) {
 //                Button subTasksButton = new Button();
-                Command expandSubTasks = new Command("[" + numberItems + "]");// {
+                Command expandSubTasks = new CommandTracked("[" + numberItems + "]","ExpandSubtasks");// {
                 subTasksButton.setCommand(expandSubTasks);
 //            subTasksButton.setIcon(Icons.get().iconShowMoreLabelStyle);
                 subTasksButton.setUIID("Label");
@@ -612,7 +614,7 @@ public class ScreenListOfItemLists extends MyForm {
         numberItems = itemList.getNumberOfItems(false, true);
         if (numberItems > 0) {
             Button subTasksButton = new Button();
-            Command expandSubTasks = new Command("[" + numberItems + "]");// {
+            Command expandSubTasks = new CommandTracked("[" + numberItems + "]","ExpandSubtasks");// {
             subTasksButton.setCommand(expandSubTasks);
             subTasksButton.setUIID("Label");
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);

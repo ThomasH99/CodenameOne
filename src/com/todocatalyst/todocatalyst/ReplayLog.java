@@ -7,14 +7,9 @@ package com.todocatalyst.todocatalyst;
 
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
-import com.codename1.ui.Command;
-import com.codename1.ui.Display;
-import com.codename1.ui.Image;
 import com.codename1.ui.events.ActionEvent;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 /**

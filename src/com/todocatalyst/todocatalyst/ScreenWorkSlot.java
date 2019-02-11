@@ -35,6 +35,7 @@ public class ScreenWorkSlot extends MyForm {
     private String FILE_LOCAL_EDITED_WORKSLOT = "ScreenWorkSlot-EditedItem";
     private RepeatRuleParseObject locallyEditedRepeatRule;
     private RepeatRuleParseObject repeatRuleCopyBeforeEdit;
+ protected static String FORM_UNIQUE_ID = "ScreenEditWorkSlot"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private UpdateField updateActionOnDone;
 
 //    ScreenWorkSlot(WorkSlot workSlot, MyForm previousForm) { //throws ParseException, IOException {

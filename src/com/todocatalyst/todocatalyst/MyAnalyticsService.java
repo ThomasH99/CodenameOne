@@ -27,6 +27,7 @@ import com.codename1.io.Log;
 import com.codename1.io.NetworkManager;
 import com.codename1.io.Util;
 import com.codename1.ui.Display;
+import com.codename1.ui.Form;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -134,6 +135,10 @@ public class MyAnalyticsService {
         instance = i;
     }
 
+    private String clean(String s) {
+        return MyUtil.cleanToSingleLineNoSpacesString(s);
+    }
+
     /**
      * Sends an asynchronous notice to the server regarding a page in the application being viewed, notice that
      * you don't need to append the URL prefix to the page string.
@@ -158,8 +163,14 @@ public class MyAnalyticsService {
             req.addArgument("an", Display.getInstance().getProperty("AppName", "Codename One App"));
             String version = Display.getInstance().getProperty("AppVersion", "1.0");
             req.addArgument("av", version);
-            String cleanedPage = MyUtil.cleanToSingleLineNoSpacesString(page); //TODO!!!! remove spaces etc
-            req.addArgument("cd", cleanedPage);
+//            String cleanedPage = clean(page); //remove spaces etc
+            String cleanPage = clean(page);
+            req.addArgument("cd", cleanPage);
+            String cleanReferer = clean(page);
+            req.addArgument("cd", cleanReferer);
+
+//            Log.p("Analytics VISIT: " + req.getRequestBody());
+            Log.p("Analytics VISIT: " + "Page=" + cleanPage+" Ref="+cleanReferer);
 
             NetworkManager.getInstance().addToQueue(req);
         } else {
@@ -185,7 +196,14 @@ public class MyAnalyticsService {
         }
     }
 
-    protected void event(String eventCategory, String eventAction, String eventLabel, int evenValue) {
+    /**
+    
+    @param eventCategory can be null
+    @param eventAction can be null
+    @param eventLabel can be null
+    @param eventValue only send if >=0
+     */
+    protected void eventHit(String eventCategory, String eventAction, String eventLabel, int eventValue) {
 //        if(appsMode) {
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#apptracking
         ConnectionRequest req = GetGARequest();
@@ -199,12 +217,43 @@ public class MyAnalyticsService {
 //&ea=play         // Event Action. Required.
 //&el=holiday      // Event label.
 //&ev=300          // Event value.
-        req.addArgument("ec", eventCategory);
-        req.addArgument("ea", eventAction);
-        req.addArgument("el", eventLabel);
-        req.addArgument("ev", eventLabel);
+//        if (eventCategory!=null&&eventCategory.length()>0) 
+        String ecCleaned = eventCategory != null ? clean(eventCategory) : null;
+        if (ecCleaned != null) { //            req.addArgument("ec", clean(eventCategory));
+            req.addArgument("ec", ecCleaned);
+        }
+        String eaCleaned = eventAction != null ? clean(eventAction) : null;
+        if (eaCleaned != null) {
+            req.addArgument("ea", eaCleaned);
+        }
+        String elCleaned = eventLabel != null ? clean(eventLabel) : null;
+        if (elCleaned != null) {
+            req.addArgument("el", elCleaned);
+        }
+        if (eventValue >= 0) {
+            req.addArgument("ev", Integer.toString(eventValue));
+        }
 
+//        Log.p("Analytics EVENT: " + req.getRequestBody()); //return null
+        Log.p("Analytics EVENT: " + "Cat=" + ecCleaned + " Act=" + eaCleaned + " Lab=" + elCleaned + " Val=" + eventValue);
         NetworkManager.getInstance().addToQueue(req);
+    }
+
+    static void event(String eventCategory, String eventAction, String eventLabel, int eventValue) {
+        instance.eventHit(eventCategory, eventAction, eventLabel, eventValue);
+    }
+
+    static void event(MyForm sourceForm, String eventAction, String eventLabel, int evenValue) {
+//        instance.eventHit(sourceForm != null ? sourceForm.getTitle() : "<NoForm>", eventAction, eventLabel, evenValue);
+        instance.eventHit(sourceForm != null ? ((MyForm) sourceForm).getFormUniqueId() : "<NoForm>", eventAction, eventLabel, evenValue);
+    }
+
+    static void event(MyForm sourceForm, String eventAction) {
+        event(sourceForm, eventAction, null, -1);
+    }
+
+    static void event(String eventAction) {
+        event((MyForm) Display.getInstance().getCurrent(), eventAction == null || eventAction.length() == 0 ? "<none?!>" : eventAction, null, -1);
     }
 
     /**
@@ -217,13 +266,17 @@ public class MyAnalyticsService {
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#exception
         ConnectionRequest req = GetGARequest();
         req.addArgument("t", "exception");
-        System.out.println(message);
-        req.addArgument("exd", message.substring(0, Math.min(message.length(), 150) - 1));
+//        System.out.println(message);
+        String messageCleaned = message.substring(0, Math.min(message.length(), 150) - 1);
+        req.addArgument("exd", messageCleaned);
         if (fatal) {
             req.addArgument("exf", "1");
         } else {
             req.addArgument("exf", "0");
         }
+
+//        Log.p("Analytics CRASH: " + req.getRequestBody());
+        Log.p("Analytics CRASH: " + "Throwable="+t+" Msg="+messageCleaned+" Fatal="+(fatal?"YES":"no"));
 
         NetworkManager.getInstance().addToQueue(req);
     }

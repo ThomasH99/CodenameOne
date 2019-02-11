@@ -49,6 +49,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //    private KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
 //    private FetchWorkSlotList refreshWorkSlotList;
     private boolean showOwner; //true if show owner of workslots inline in list of workslots
+    protected static String FORM_UNIQUE_ID = "ScreenListOfWorkSlots"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     /**
      * edit a list of categories

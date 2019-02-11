@@ -203,18 +203,18 @@ public class InlineInsertNewWorkSlotContainer extends Container {
         //close insert container
         contForTextEntry.add(BorderLayout.WEST, westCont);
         if (itemOrItemListForNewTasks != null && itemOrItemListForNewTasks.size() > 0) { //only add close button if in a non-empty list
-            westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
+            westCont.add(new Button(CommandTracked.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
                 myForm.lastInsertNewElementContainer = null;
 //                closeInsertNewCategoryContainer(myForm); //close without inserting new task
                 getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
                 myForm.animateLayout(300);
-            })));
+            },"EditItemFromInsertNewContainer")));
         }
 
         //Enter full screen edit of the new Category:
         contForTextEntry.add(BorderLayout.EAST,
-                new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
+                new Button(CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
                     if ((newItemList = createNewItemList()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                         myForm.setKeepPos(new KeepInSameScreenPosition(newItemList, this, -1)); //if editing the new task in separate screen, 
                         new ScreenItemListProperties(newItemList, (MyForm) getComponentForm(), () -> {
@@ -224,7 +224,7 @@ public class InlineInsertNewWorkSlotContainer extends Container {
                     } else {
                         ASSERT.that(false, "Something went wrong here, what to do? ...");
                     }
-                })));
+                },"EditItemListProperties")));
     }
 
     public MyTextField2 getTextField() {

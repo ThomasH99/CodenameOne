@@ -26,6 +26,7 @@ public class ScreenStatistics extends MyForm {
     //TODO 
 
     private static final String screenTitle = "Lists";
+ protected static String FORM_UNIQUE_ID = "ScreenStatistics"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private ItemList itemListList;
 //    private boolean draggableMode = false;
 //    Command sortOnOff = null;
@@ -77,6 +78,7 @@ public class ScreenStatistics extends MyForm {
                 compList.animateLayout(150);
             });
         }
+            getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats));
         reloadData();
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.itemListList));
         refreshAfterEdit();

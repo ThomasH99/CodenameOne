@@ -52,17 +52,17 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      */
     public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO);
 //    public WorkSlotList getWorkSlotListN();
+
     /**
     get list of current & future workslots (exclude all that have expired ie endTime is in the past)
     @return 
-    */
+     */
     default public WorkSlotList getWorkSlotListN() {
 //        return getWorkSlotListN(true);
         return getWorkSlotListN(false);
     }
 
-    
-        public void setWorkSlotList(WorkSlotList workSlotList);
+    public void setWorkSlotList(WorkSlotList workSlotList);
 
     public int getNumberOfUndoneItems(boolean includeSubTasks);
 
@@ -285,10 +285,13 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      * remove this from its owner and set this.owner=null;
      */
     default public void removeFromOwner() {
-        List ownerList = getOwner().getList();
+        ItemAndListCommonInterface owner = getOwner();
+        if (owner != null) {
+            List ownerList = getOwner().getList();
 //        getOwnerList().removeItem(this);
-        ownerList.remove(this);
-        getOwner().setList(ownerList);
+            ownerList.remove(this);
+            getOwner().setList(ownerList);
+        }
         setOwner(null);
     }
 

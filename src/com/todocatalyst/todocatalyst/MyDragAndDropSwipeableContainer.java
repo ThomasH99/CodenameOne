@@ -75,11 +75,17 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     InsertPositionType insertPosition = null;
     InsertPositionType insertAs = null; //how to insert on the next dropAction
 
-    private InsertPositionType insertType(int x, Component dropTarget) {
-        return insertType(x, dropTarget.getWidth());
+    private InsertPositionType insertPosition(int x, Component dropTarget) {
+        return insertPosition(x, dropTarget.getWidth());
     }
 
-    private InsertPositionType insertType(int x, int dropWidth) {
+    /**
+    based on drop position (middle of screen, or extreme left or right) will determine whether to insert a task normally, or as a subtask or a 'super'task.
+    @param x
+    @param dropWidth
+    @return 
+     */
+    private InsertPositionType insertPosition(int x, int dropWidth) {
 //        int borderDropZoneWidthInPercent = 15;
         int borderDropZoneWidthInPercent = MyPrefs.dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask.getInt();
 //        return x > this.getWidth() / 3 * 2;
@@ -527,7 +533,10 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
     private static ContainerScrollY getScrollYContainerWithSubtasks(MyDragAndDropSwipeableContainer cont, MyDragAndDropSwipeableContainer dragged) {
         Layout layout;
-        Component center; if(cont==null) return null;
+        Component center;
+        if (cont == null) {
+            return null;
+        }
         Container contParent = cont.getParent();
 
         if (contParent != null && (layout = contParent.getLayout()) instanceof BorderLayout
@@ -1314,7 +1323,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //    }
 //</editor-fold>
     private InsertPositionType insertTypeXXX(int x) {
-        return insertType(x, Display.getInstance().getCurrent());
+        return insertPosition(x, Display.getInstance().getCurrent());
     }
 
     /**
@@ -1367,7 +1376,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            }
 //</editor-fold>
             //update drop position (NORMAL, SUBTASK, SUPERTASK):
-            InsertPositionType newInsertPosition = insertType(x, Display.getInstance().getCurrent().getWidth());
+            InsertPositionType newInsertPosition = insertPosition(x, Display.getInstance().getCurrent().getWidth());
             if (insertPosition != newInsertPosition) {
 //                refreshDropPlaceholderContainer(insertPosition, newInsertAsType);
                 refreshDropPlaceholderContainer(newInsertPosition);
@@ -1376,7 +1385,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 insertPosition = newInsertPosition;
                 Form form = Display.getInstance().getCurrent();
                 if (form != null) {
-                    form.revalidate();
+                    form.revalidateWithAnimationSafety();
                 }
                 return; //changed the dropContainer, no need to do anything more
             }
@@ -1822,7 +1831,7 @@ T3
             insertDropPlaceholder = null; //reset
             insertDropPlaceholderForSupertask = null; //reset
             insertDropPlaceholderForSubtask = null; //reset
-            if (draggedElement instanceof Category) { //dragging a Category
+            if (draggedElement instanceof Category) { ////********** dragging a *Category* **********
 //<editor-fold defaultstate="collapsed" desc="Category dragged">
 //                        if (afterCont != null && (afterCont.getDragAndDropObject() instanceof Category || afterCont.getDragAndDropObject() == null)) { //can always drop a Category before another Category
 //                if ((beforeMyDDCont != null && beforeMyDDCont.getDragAndDropObject() instanceof Category)) { //can always drop a Category before another Category
@@ -1887,7 +1896,7 @@ T3
 //                        }
 //</editor-fold>
 //            } else if (getDragAndDropObject() instanceof ItemList) {
-            } else if (draggedElement instanceof ItemList) {
+            } else if (draggedElement instanceof ItemList) { //********** dragging an *ItemList* **********
 //<editor-fold defaultstate="collapsed" desc="ItemList dragged">
                 //NB dropping as sub or superelement does not make sense for ItemLists (currently - TODO!! this will change once meta-lists are introduced)
 //                    if (afterCont != null && afterCont.getDragAndDropObject() instanceof ItemList) { //drop *before* an ItemList
@@ -1938,7 +1947,7 @@ T3
                 }
 //</editor-fold>
 //            } else if (getDragAndDropObject() instanceof Item) {
-            } else if (draggedElement instanceof Item) {
+            } else if (draggedElement instanceof Item) { //********** dragging an *Item* **********
                 if (beforeElement instanceof Category || beforeElement instanceof ItemList) {
 ///<editor-fold defaultstate="collapsed" desc="dropping item right after a Category/ItemList => move to that category/itemList">
                     Log.p("-INSERT Item \"" + draggedElement.getText() + "\" in Cat \"" + beforeElement
@@ -2032,9 +2041,9 @@ T3
                     }
 //</editor-fold>
                 } else if (beforeElement == null && afterElement instanceof Item) {
+//<editor-fold defaultstate="collapsed" desc="dropping *before* the first item">
 //                } else if ((beforeElement == null || !(beforeElement instanceof Item)) && afterElement instanceof Item) {
 //dragging an Item that does NOT belong to a category, only dropping as subtasks (not under categories since the logic is really unintutive!) 
-//<editor-fold defaultstate="collapsed" desc="dropping *before* the first item">
                     //TODO!!! consider adding this again after all
                     //dropping *before* the first item (eg at the very top of a list). beforeElt is either null or not an Item
 //                    if (beforeMyDDCont == null && afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Item) {
@@ -2042,6 +2051,7 @@ T3
                     dropActionCall = () -> {
 //                            ItemAndListCommonInterface newOwnerPrj = ((Item) afterMyDDCont.getDragAndDropObject()).getOwner();
                         ItemAndListCommonInterface newOwnerPrj = afterElement.getOwner();
+                        ASSERT.that(newOwnerPrj != null);
                         int insertIndex = 0; //when dropping as subtask on an time, always insert at top of list (otherwise insert idrectly in expanded subtask list
 //                            moveItemOrItemListAndSave(((Item) getDragAndDropObject()).getOwner(), newOwnerPrj, (Item) getDragAndDropObject(), insertIndex);
                         moveItemOrItemListAndSave(newOwnerPrj, draggedElement, insertIndex);
@@ -2130,7 +2140,7 @@ T3
                     } else if (afterElement instanceof Item && afterElement.getOwner() == beforeElement.getOwner()) {
 //<editor-fold defaultstate="collapsed" desc="insert between two siblings">
                         //insert between two siblings at same level
-                        Log.p("-INSERT \"" + draggedElement.getText() + "\" between two siblings with same owner \"" + beforeElement.getText() + "\" and \"" + afterElement.getText() + "\"", Log.DEBUG);
+                        Log.p("-INSERT \"" + draggedElement.getText() + "\" between two siblings with same owner(" + afterElement.getOwner() + ") \"" + beforeElement.getText() + "\" and \"" + afterElement.getText() + "\"", Log.DEBUG);
 
                         dropActionCall = () -> {
                             int insertIndex = beforeElement.getOwner().getItemIndex(beforeElement) + 1; //+1: insert after 'before'
@@ -2255,12 +2265,11 @@ T3
                 Log.p("4. !!!!!after an Item, but no suitable if statement");
             }
 
-            if ((dropActionCall != null && insertDropPlaceholder != null)
-                    || (dropAsSubtaskActionCall != null && insertDropPlaceholderForSubtask != null)
-                    || (dropAsSuperTaskActionCall != null && insertDropPlaceholderForSupertask != null)) {
+            if ((dropActionCall != null && insertDropPlaceholder != null) || (dropAsSubtaskActionCall != null && insertDropPlaceholderForSubtask != null) || (dropAsSuperTaskActionCall != null && insertDropPlaceholderForSupertask != null)) {
                 //Create new dropPlaceholder
-//                Label newDropPlaceholder = new Label();
                 newDropPlaceholder = new Label() {
+                    //<editor-fold defaultstate="collapsed" desc="** create Label used as dropPlaceHolder - implements the drop() action **">
+//                Label newDropPlaceholder = new Label();
                     Component dropTarget1 = dropTarget;
 
                     @Override
@@ -2275,7 +2284,7 @@ T3
 
                     @Override
                     public Dimension getPreferredSize() {
-                        return new Dimension(draggedMyDDCont.draggedWidth, draggedMyDDCont.draggedHeight);
+                        return new Dimension(draggedMyDDCont.draggedWidth, draggedMyDDCont.draggedHeight); //ensure placeholder has exactly the same size as the dragged element
                     }
 
                     @Override
@@ -2288,30 +2297,35 @@ T3
 //                            dropActionCall.insertDropCont();
 //                        }
 //</editor-fold>
-                        if (insertPosition == InsertPositionType.NORMAL && dropActionCall != null && insertDropPlaceholder != null) {
-                            Log.p("**********Comp.drop , NORMAL dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
-                            dropActionCall.insertDropCont();
-                        } else if (insertPosition == InsertPositionType.SUBTASK && dropAsSubtaskActionCall != null && insertDropPlaceholderForSubtask != null) {
+                        if (insertPosition == InsertPositionType.SUBTASK && dropAsSubtaskActionCall != null && insertDropPlaceholderForSubtask != null) {
                             dropAsSubtaskActionCall.insertDropCont();
                             Log.p("**********Comp.drop , SUBTASK dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
                         } else if (insertPosition == InsertPositionType.SUPERTASK && dropAsSuperTaskActionCall != null && insertDropPlaceholderForSupertask != null) {
                             dropAsSuperTaskActionCall.insertDropCont();
                             Log.p("**********Comp.drop , SUPER dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
+//                        } else if (insertPosition == InsertPositionType.NORMAL && dropActionCall != null && insertDropPlaceholder != null) {
+                        } else if (dropActionCall != null && insertDropPlaceholder != null) {
+                            Log.p("**********Comp.drop , NORMAL dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
+                            dropActionCall.insertDropCont();
                         } else {
                             Log.p("**********Comp.drop , NO ACTION!!! dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
                         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                                dragged.dropSucceeded = true;
 //                                getComponentForm().animateHierarchy(300);
+//</editor-fold>
                         draggedMyDDCont.setDraggable(false); //set draggable false once the drop (activated by longPress) is completed
                         draggedMyDDCont.setFocusable(false); //set focusable false once the drop (activated by longPress) is completed
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition(getParentScrollYContainer(beforeMyDDCont))); //simply keep same position of *previous* container (unless null!)
 //                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //simply keep same position as whereto the list was scrolled during the drag, then inserted element should 'stay in place'
-                        if (newDropPlaceholder != null) {
-                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition(draggedElement, newDropPlaceholder)); //whenever possible keep the dropped in same position**
-                        } else {
-                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
-                        }
+//                        if (newDropPlaceholder != null) {
+//                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition(draggedElement, newDropPlaceholder)); //whenever possible keep the dropped in same position**
+//                        } else {
+//                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
+//                        }
+//</editor-fold>
+                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
                         super.drop(draggedMyDDCont, x, y); //Container.drop implements the first quick move of the container itself
                         ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
                     }
@@ -2329,12 +2343,11 @@ T3
 //                        }
 //                        return dragImage;
 //                    }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
 //                    @Override
 //                    protected int getDragRegionStatus(int x, int y) {
 //                        return DRAG_REGION_LIKELY_DRAG_XY;
 //                    }
+//</editor-fold>
 //</editor-fold>
                 };
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2407,7 +2420,9 @@ T3
 //</editor-fold>
                 newDropPlaceholder.setUIID("DropTargetPlaceholder");
                 newDropPlaceholder.setDropTarget(true);
-                if (false)newDropPlaceholder.setText("DropPlaceholder for (" + dropTarget.getName() + ")");
+                if (false) {
+                    newDropPlaceholder.setText("DropPlaceholder for (" + dropTarget.getName() + ")");
+                }
                 if (false && Config.TEST) {
                     newDropPlaceholder.setName("DropPlaceholder for " + dropTarget.getName() + ", w=" + newDropPlaceholder.getWidth() + ", h=" + newDropPlaceholder.getHeight());
                 }
@@ -2429,7 +2444,7 @@ T3
                 Log.p("dropActionCall        " + (dropActionCall != null ? "NORMAL " : "") + (dropAsSubtaskActionCall != null ? "SUBTASK " : "") + (dropAsSuperTaskActionCall != null ? "SUPER" : ""));
                 Log.p("insertDropPlaceholder " + (insertDropPlaceholder != null ? "NORMAL " : "") + (insertDropPlaceholderForSubtask != null ? "SUBTASK " : "") + (insertDropPlaceholderForSupertask != null ? "SUPER" : ""));
 
-                ASSERT.that(newDropPlaceholder == null || (draggedMyDDCont.dropPlaceholder != null && draggedMyDDCont.dropPlaceholder.getParent() != null), ()->"dragged.dropPlaceholder NOT correctly inserted");
+                ASSERT.that(newDropPlaceholder == null || (draggedMyDDCont.dropPlaceholder != null && draggedMyDDCont.dropPlaceholder.getParent() != null), () -> "dragged.dropPlaceholder NOT correctly inserted");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (index <= oldDropPlaceholderIndex) {
 //                        treeList.addComponent(index, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
@@ -2447,31 +2462,38 @@ T3
 //                        newDropPlaceholder.getComponentForm().animateHierarchy(300); //CANNOT use dropTarget.getComponentForm() since when dropTarget==dragged, it is removed from its form
 //</editor-fold>
                 formNeedRefresh = newDropPlaceholder != null;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (false) {
 //                    newDropPlaceholder.getComponentForm().revalidate(); //CANNOT use dropTarget.getComponentForm() since when dropTarget==dragged, it is removed from its form
 //                }//                        Log.p("addDragOverListener: new dropPlaceholder=" + newDropPlaceholder.getName() + ", inserted position=" + index + ", for dropTarget=" + dropTarget.getName());
+//</editor-fold>
             } else {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (false && formNeedRefresh) {
 //                    getComponentAt(x, y).getComponentForm().revalidate();
 ////                    dragged.getComponentForm().revalidate(); //CANNOT use dropTarget.getComponentForm() since when dropTarget==dragged, it is removed from its form
 //                    formNeedRefresh = false;
 //                }
+//</editor-fold>
                 Log.p("no drop action for dropTarget=" + dropTarget.getName());
                 Log.p("dropActionCall        " + (dropActionCall != null ? "NORMAL " : "") + (dropAsSubtaskActionCall != null ? "SUBTASK " : "") + (dropAsSuperTaskActionCall != null ? "SUPER" : ""));
                 Log.p("insertDropPlaceholder " + (insertDropPlaceholder != null ? "NORMAL " : "") + (insertDropPlaceholderForSubtask != null ? "SUBTASK " : "") + (insertDropPlaceholderForSupertask != null ? "SUPER" : ""));
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        ASSERT.that(treeList instanceof MyTree2, "treeList not instanceof MyTree2, treelist="
 //                                + (treeList != null ? treeList.getName() : "nullx") + ", for dropTarget=" + dropTarget.getName());
 //                        Log.p("addDragOverListener: treeList==null for dropTarget=" + dropTarget.getName());
+//</editor-fold>
             }
-            if (formNeedRefresh) {
+            if ( formNeedRefresh) {
                 Form form = Display.getInstance().getCurrent();
                 if (form != null) {
-                    form.revalidate();
+                    form.revalidateWithAnimationSafety();
                 }
                 formNeedRefresh = false;
+                e.consume();
             }
-//            }
             //<editor-fold defaultstate="collapsed" desc="comment">
+//            }
             //                } else {
             //                    Log.p("addDragOverListener: treeList: dropParent == null!! for dropTarget=" + dropTarget.getName());
             //                }
@@ -2485,24 +2507,10 @@ T3
             //                }
             //            }
             //</editor-fold>
-
             Log.p(
                     "---------------- END MyDragAndDropSwipeableContainer() ------------------------------------", Log.DEBUG);
-//            }
-//                }
-//            }
         }
         ); //end of dragOverListener
-    }
-
-    private int getContainerIndexInTreeListXXX(MyDragAndDropSwipeableContainer dropTarget) {
-        Container treeList = dropTarget.getParent(); //treeList = the list in which to insert the dropPlaceholder
-        Component dropParent = dropTarget;
-        while (!(treeList instanceof MyTree2) && treeList != null) {
-            dropParent = treeList;
-            treeList = treeList.getParent();
-        }
-        return treeList != null ? treeList.getComponentIndex(dropParent) : -1;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2548,6 +2556,17 @@ T3
         }
         return null;
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
+
+    private int getContainerIndexInTreeListXXX(MyDragAndDropSwipeableContainer dropTarget) {
+        Container treeList = dropTarget.getParent(); //treeList = the list in which to insert the dropPlaceholder
+        Component dropParent = dropTarget;
+        while (!(treeList instanceof MyTree2) && treeList != null) {
+            dropParent = treeList;
+            treeList = treeList.getParent();
+        }
+        return treeList != null ? treeList.getComponentIndex(dropParent) : -1;
+    }
 
 //    @Override
     public void pointerReleasedxxx(int x, int y) {
@@ -2578,14 +2597,17 @@ T3
         if (beforeCategory == null) {
 
         } else if (afterCategory == null) {
-            //Cat1
-            // T1
-            //  t11
-            //    t111
-            //    t112
-            //  t12
-            //T2
-            //T3        
+//<editor-fold defaultstate="collapsed" desc="comment">
+//Cat1
+// T1
+//  t11
+//    t111
+//    t112
+//  t12
+//T2
+//T3
+//</editor-fold>
+
         }
         return true;
     }
@@ -2614,7 +2636,7 @@ T3
         }
         return true;
     }
-
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private boolean dropBetweenItemsXXX(Item before, Item after, Item dragged, boolean insertBelow) {
 //
@@ -2648,6 +2670,7 @@ T3
 //        return true;
 //    }
 //</editor-fold>
+
     @Override
     public void drop(Component dragged, int x, int y) {
         //do nothing if dropped on this container
@@ -3188,7 +3211,7 @@ T3
     @Override
     protected Image getDragImage() {
         if (!isHidden()) {
-            ASSERT.that(!isHidden(), ()->"***Calling getDragImage() on " + getName() + " while it's hidden"
+            ASSERT.that(!isHidden(), () -> "***Calling getDragImage() on " + getName() + " while it's hidden"
                     + ", w=" + getWidth() + ", h=" + getHeight());
         } else {
             Log.p("Calling getDragImage() on " + getName() + " (not hidden)"
@@ -3646,7 +3669,7 @@ T3
         setHidden(false); //unhide (set hidden in dragEnter/dragListener) //done in Component.dragFinishedImpl(int x, int y)
         Form f2 = Display.getInstance().getCurrent();
         if (f2 != null) {
-            f2.revalidate();
+            f2.revalidateWithAnimationSafety();
         };
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && animate) {

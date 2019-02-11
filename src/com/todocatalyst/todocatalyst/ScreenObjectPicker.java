@@ -230,7 +230,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             toolbar.addCommandToOverflowMenu(
                     "Cancel", null, (e) -> {
 //                        showPreviousScreenOrDefault(previousForm, false); //restore originally selected categories
-                        showPreviousScreenOrDefault( false); //restore originally selected categories
+                        showPreviousScreenOrDefault(false); //restore originally selected categories
                     }
             );
         }
@@ -298,36 +298,52 @@ public class ScreenObjectPicker<E> extends MyForm {
         boolean listOfLists = true;
         if (listOfLists) {
 //            Button cmdLists = null;
-            RadioButton cmdLists = null;
+            RadioButton buttonLists = (listOfAllLists != null && listOfAllLists.size() > 0) ? new RadioButton("Lists", null) : null;
 //            Button cmdProjects = null;
-            RadioButton cmdProjects = null;
+            RadioButton buttonProjects = (listOfAllTopLevelProjects != null && listOfAllTopLevelProjects.size() > 0) ? new RadioButton("Projects", null) : null;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            Button cmdTasks = null;
 //            List<Button> cmds = new ArrayList();
 
-            if (listOfAllLists != null && listOfAllLists.size() > 0) {
-//                cmdLists = new Button(Command.create("Lists", null, (e) -> {
-                cmdLists = new RadioButton("Lists", null);
-//                , (e) -> {
-//                    buildList(listOfAllLists, cont);
-////                    cmdLists.setToggle(listOfLists);
-//                    animateMyForm();
-//                }));
-//                cmds.add(cmdLists);
-            }
-            cmdLists.addActionListener((e) -> {
-                buildList(listOfAllLists, cont);
+//            if (listOfAllLists != null && listOfAllLists.size() > 0) {
+////                cmdLists = new Button(Command.create("Lists", null, (e) -> {
+//                buttonLists = new RadioButton("Lists", null);
+////                , (e) -> {
+////                    buildList(listOfAllLists, cont);
+//////                    cmdLists.setToggle(listOfLists);
+////                    animateMyForm();
+////                }));
+////                cmds.add(cmdLists);
+//            }
+//</editor-fold>
+            if (buttonLists != null) {
+                buttonLists.setUIID("ObjectSelectorRadioButton");
+                buttonLists.addActionListener((e) -> {
+                    buildList(listOfAllLists, cont);
 //                    cmdLists.setToggle(listOfLists);
-                animateMyForm();
-            });
-            if (listOfAllTopLevelProjects != null && listOfAllTopLevelProjects.size() > 0) {
-                cmdProjects = new RadioButton("Projects", null);
-//                cmdProjects = new Button(Command.create("Projects", null, (e) -> {
+                    animateMyForm();
+                });
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (listOfAllTopLevelProjects != null && listOfAllTopLevelProjects.size() > 0) {
+//                buttonProjects = new RadioButton("Projects", null);
+////                cmdProjects = new Button(Command.create("Projects", null, (e) -> {
+////                    buildList(listOfAllTopLevelProjects, cont);
+////                    animateMyForm();
+////                }));
+////                cmds.add(cmdProjects);
+//                buttonProjects.addActionListener((e2) -> {
 //                    buildList(listOfAllTopLevelProjects, cont);
+//                    buttonLists.setSelected(false);
 //                    animateMyForm();
-//                }));
-//                cmds.add(cmdProjects);
-                cmdProjects.addActionListener((e2) -> {
+//                });
+//            }
+//</editor-fold>
+            if (buttonProjects != null) {
+                buttonProjects.setUIID("ObjectSelectorRadioButton");
+                buttonProjects.addActionListener((e2) -> {
                     buildList(listOfAllTopLevelProjects, cont);
+                    buttonLists.setSelected(false);
                     animateMyForm();
                 });
             }
@@ -339,20 +355,20 @@ public class ScreenObjectPicker<E> extends MyForm {
 //                }));
 //                cmds.add(cmdTasks);
 //            }
-//</editor-fold>
 //            assert cmds.size() > 0 : "must have at least one list";
 //            if (cmds.size() == 1) {
 ////                cmds.get(0).getCommand().actionPerformed(null); //run command to show the 
 //            } else {
-            if (cmdLists != null && cmdProjects != null) {
-                ButtonGroup buttonGroup = new ButtonGroup(cmdLists, cmdProjects);
+//</editor-fold>
+            if (buttonLists != null && buttonProjects != null) {
+                ButtonGroup buttonGroup = new ButtonGroup(buttonLists, buttonProjects); //NB, buttonGroup ensure selection mutuality btw the buttons
 //                Container butCont = new Container(new GridLayout(cmds.size()));
                 Container butCont = new Container(new GridLayout(2));
 //                for (Button b : cmds) {
 //                    butCont.add(b);
 //                }
-                butCont.add(cmdLists);
-                butCont.add(cmdProjects);
+                butCont.add(buttonLists);
+                butCont.add(buttonProjects);
                 add(BorderLayout.SOUTH, butCont);
             }
             ItemAndListCommonInterface firstSelectedObj;
@@ -361,10 +377,12 @@ public class ScreenObjectPicker<E> extends MyForm {
                 if (firstSelectedObj instanceof ItemList) {
 //                    cmdLists.getCommand().actionPerformed(null);
                     buildList(listOfAllLists, cont);
+                    buttonLists.setSelected(true);
                 } else if (firstSelectedObj instanceof Item) {
                     if (((Item) firstSelectedObj).isProject()) { //selected element a project
 //                        cmdProjects.getCommand().actionPerformed(null);
                         buildList(listOfAllTopLevelProjects, cont);
+                    buttonProjects.setSelected(true);
                     }
                 } else { //UI: if no selected elements, always show list of Lists first
                     buildList(listOfAllLists, cont);
@@ -378,7 +396,7 @@ public class ScreenObjectPicker<E> extends MyForm {
                 buildList(listOfAllLists, cont);
             }
 
-        } else {
+        } else { //not currently activated!
             parseIdMapReset();
             cont.removeAll();
             checkBoxes = new CheckBox[listOfAllLists.size()];

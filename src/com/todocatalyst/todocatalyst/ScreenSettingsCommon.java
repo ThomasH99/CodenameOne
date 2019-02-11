@@ -27,6 +27,7 @@ public class ScreenSettingsCommon extends MyForm {
     TableLayout.Constraint maxDescriptionSize;
     final static int MAX_SETTING_DESCRIPTION_WIDTH_PERCENT = 80; //don't let the setting description label take up more than this percent of the screen width
     protected boolean tableLayout = false;
+ protected static String FORM_UNIQUE_ID = "ScreenSettingsCommon"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 //    MyForm mainScreen;
     ScreenSettingsCommon(MyForm previousScreen, UpdateField doneAction) {
@@ -78,7 +79,7 @@ public class ScreenSettingsCommon extends MyForm {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
 
-        toolbar.addCommandToOverflowMenu(new Command("Reset to default**")); //reset to default values
+        toolbar.addCommandToOverflowMenu(new CommandTracked("Reset to default**")); //reset to default values
     }
 
     protected void addSettingBoolean(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry) {

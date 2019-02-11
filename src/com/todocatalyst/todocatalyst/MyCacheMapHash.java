@@ -99,7 +99,7 @@ public class MyCacheMapHash {
     }
 
     /*private*/ static final Object LOCK = new Object();
-    
+
     /**
      * Puts the given key/value pair in the cache
      *
@@ -107,6 +107,7 @@ public class MyCacheMapHash {
      * @param value the value
      */
     public void put(Object key, Object value) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (cacheSize <= memoryCache.size()) {
 //            // we need to find the oldest entry
 //            Enumeration e = memoryCache.keys();
@@ -133,48 +134,15 @@ public class MyCacheMapHash {
 //            placeInStorageCache(key, lastAccess, value);
 //        }
 //        if (get(key) == null) {
- synchronized (LOCK) {
-        Object val = memoryCache.get(key);
-        if (val == null || !val.equals(value)) {
-            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value);
-        }
-        memoryCache.put(key, value);
-    }
-    }
-
-    /**
-     * Deletes a cached entry
-     *
-     * @param key entry to remove from the cache
-     */
-    public void delete(Object key) {
-//        memoryCache.remove(key);
-//        weakCache.remove(key);
-//        Hashtable storageCacheContent = getStorageCacheContent();
-//        int s = storageCacheContent.size();
-//        for (int iter = 0; iter < s; iter++) {
-//            Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
-//            if (obj[1].equals(key)) {
-//                Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + key.toString());
-//                obj[0] = new Long(Long.MIN_VALUE);
-//                obj[1] = obj[0]; //THJ: obj[1] = obj[0] seems like a dirty way of deleting the index entry, is Vector.remove(index) so expensive??
-////                storageCacheContent.remove(iter);
-//                Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
-//                return;
+//</editor-fold>
+        synchronized (LOCK) {
+//            Object val = memoryCache.get(key);
+//            if (val == null || !val.equals(value)) {
+//                Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value);
 //            }
-//        }
-//        if (storageCacheContent.remove(key) != null) {
-//            Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + key.toString());
-//            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
-//        }
-//        if (memoryCache.remove(key) != null) {
-//            Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString());
-////            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
-//        }
-synchronized (LOCK) {
-        memoryCache.remove(key);
-        Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString()); //always remove, even if not in memoryCache
-    }
+            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save 
+            memoryCache.put(key, value);
+        }
     }
 
     /**
@@ -184,18 +152,20 @@ synchronized (LOCK) {
      * @return value from a previous put or null
      */
     public Object get(Object key) {
-        Object val=null;
-synchronized (LOCK) {        
-     val = memoryCache.get(key);
-        if (val == null) {
-            val = Storage.getInstance().readObject(CACHE_ID + cachePrefix + key.toString());
-            if (val != null) {
-                put(key, val);
+        Object val = null;
+        synchronized (LOCK) {
+            val = memoryCache.get(key);
+            if (val == null) {
+                val = Storage.getInstance().readObject(CACHE_ID + cachePrefix + key.toString());
+                if (val != null) {
+//                    put(key, val); //don't put, since it writes back to storage again, for no purpose
+                    memoryCache.put(key, val);
+                }
             }
         }
-        }
         return val;
-////                 
+//<editor-fold defaultstate="collapsed" desc="comment">
+////
 //        Object[] o = (Object[]) memoryCache.get(key);
 //        if (o != null) {
 //            return o[1];
@@ -236,6 +206,44 @@ synchronized (LOCK) {
 //            }
 //        }
 //        return null;
+//</editor-fold>
+    }
+
+    /**
+     * Deletes a cached entry
+     *
+     * @param key entry to remove from the cache
+     */
+    public void delete(Object key) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        memoryCache.remove(key);
+//        weakCache.remove(key);
+//        Hashtable storageCacheContent = getStorageCacheContent();
+//        int s = storageCacheContent.size();
+//        for (int iter = 0; iter < s; iter++) {
+//            Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
+//            if (obj[1].equals(key)) {
+//                Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + key.toString());
+//                obj[0] = new Long(Long.MIN_VALUE);
+//                obj[1] = obj[0]; //THJ: obj[1] = obj[0] seems like a dirty way of deleting the index entry, is Vector.remove(index) so expensive??
+////                storageCacheContent.remove(iter);
+//                Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+//                return;
+//            }
+//        }
+//        if (storageCacheContent.remove(key) != null) {
+//            Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + key.toString());
+//            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+//        }
+//        if (memoryCache.remove(key) != null) {
+//            Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString());
+////            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
+//        }
+//</editor-fold>
+        synchronized (LOCK) {
+            memoryCache.remove(key);
+            Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString()); //always remove, even if not in memoryCache
+        }
     }
 
     /**

@@ -98,6 +98,7 @@ public class ScreenTimer6 extends MyForm {
 
     private TimerInstance timerInstance;//= new TimerStack();
     private Command backCommand = null;
+ protected static String FORM_UNIQUE_ID = "ScreenTimer"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private Container timerContentainer = new Container(BoxLayout.y());
 //    private TimerStackEntry entry;
 

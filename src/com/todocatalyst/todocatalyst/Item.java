@@ -2219,7 +2219,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         List subtasks = getList();
         boolean status = true;
         subtasks.add(index, subtask);
-        assert subtask.getOwner() == null : "subItemOrList owner not null when adding to list, subtask=" + subtask + ", owner=" + subtask.getOwner() + ", list=" + this;
+        ASSERT.that( subtask.getOwner() == null, "subItemOrList owner not null when adding to list, subtask=" + subtask + ", owner=" + subtask.getOwner() + ", list=" + this);
         subtask.setOwner(this);
         ((Item) subtask).updateValuesInheritedFromOwner();
         setList(subtasks);
@@ -2233,7 +2233,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        setList(subtasks);
 //        return status;
 //        return addToList(MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : getList().size(), subItemOrList); //TODO!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
-        return addToList(getList().size(), subItemOrList); //DONE!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
+        return addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean()?0:getList().size(), subItemOrList); //DONE!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
     }
 
     @Override
@@ -3314,7 +3314,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public AlarmRecord getFirstFutureAlarmRecord() {
         List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
-        return list.isEmpty() ? null : getAllFutureAlarmRecordsSorted().get(0);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     /**
@@ -3326,7 +3326,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public Date getFirstFutureAlarm() {
 //        return getAllAlarmRecords(new Date(), true).get(0).alarmTime;
         List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
-        return list.isEmpty() ? null : getAllFutureAlarmRecordsSorted().get(0).alarmTime;
+        return list.isEmpty() ? null : list.get(0).alarmTime;
     }
 
     public void updateFirstAlarm() {

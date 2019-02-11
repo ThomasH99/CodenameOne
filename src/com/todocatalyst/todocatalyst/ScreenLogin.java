@@ -285,6 +285,7 @@ public class ScreenLogin extends MyForm {
             forgottenPassword.setHidden(true);
             backToSignupSignIn.setHidden(false);
             animateHierarchy(300);
+            email.startEditingAsync();
         }));
 
         login.setCommand(Command.create("Log in", Icons.iconPerson, (ev) -> { //Start/login**
@@ -299,6 +300,7 @@ public class ScreenLogin extends MyForm {
             forgottenPassword.setHidden(false);
             backToSignupSignIn.setHidden(false);
             animateHierarchy(300);
+            email.startEditingAsync();
 //            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
 

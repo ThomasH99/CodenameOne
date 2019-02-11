@@ -17,6 +17,7 @@ import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.table.TableLayout;
@@ -109,6 +110,8 @@ public class ScreenItem2 extends MyForm {
     private boolean effortEstimateSetManually = false; //true when effortEstimate has been edited to a different value than the original one from item
     private boolean effortEstimateSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private String LAST_TAB_SELECTED = "$$LastTabSelected";
+       protected static String FORM_UNIQUE_ID = "ScreenEditItem"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+
 
     private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
 
@@ -131,6 +134,7 @@ public class ScreenItem2 extends MyForm {
 //        super("Task", previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
         super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
+        setFormUniqueId("ScreenItem2");
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
         if (false) {
             ASSERT.that(item.isDataAvailable(), () -> "Item \"" + item + "\" data not available");
@@ -148,7 +152,7 @@ public class ScreenItem2 extends MyForm {
         this.item = item;
         initLocalSaveOfEditedValues("ScreenItem-" + item.getObjectIdP());
 //        expandedObjects = new HashSet();
-//        expandedObjects = new ExpandedObjects(formUniqueId,this.item);
+//        expandedObjects = new ExpandedObjects(FORM_UNIQUE_ID,this.item);
         expandedObjects = new ExpandedObjects("ScreenItem", this.item);
         try {
             //        DAO.getInstance().deleteCategoryFromAllItems(cat);
@@ -188,7 +192,8 @@ public class ScreenItem2 extends MyForm {
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
     }
-
+    
+    
     @Override
     public void refreshAfterEdit() {
         super.refreshAfterEdit();
@@ -247,16 +252,16 @@ public class ScreenItem2 extends MyForm {
 
         //EDIT WORKSLOTS
 //        if (!optionTemplateEditMode && !optionNoWorkTime) {
-        toolbar.addCommandToOverflowMenu(new Command("Work time", Icons.iconSettingsApplicationLabelStyle) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        toolbar.addCommandToOverflowMenu( MyReplayCommand.create("EditWorkTime","Work time", Icons.iconSettingsApplicationLabelStyle,(e)-> {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
 //                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotListN(), item, ScreenItem2.this, null, //(iList) -> {
                 new ScreenListOfWorkSlots(item, ScreenItem2.this, null, //(iList) -> {
                         //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
                         //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
                         false).show();
-            }
-        });
+//            }
+        }));
 //        }
 
         //TEMPLATE
@@ -939,7 +944,7 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
 
 //        mainCont.add(initField(Item.DUE_DATE, Item.DUE_DATE_HELP, dueDate, Item.PARSE_DUE_DATE, () -> item.getDueDateD(), (t) -> item.setDueDate((Date) t),
-        initField(Item.PARSE_DUE_DATE, dueDate, () -> item.getDueDateD(), (t) -> item.setDueDate((Date) t),
+        initField(Item.PARSE_DUE_DATE, dueDate, () -> item.getDueDateD(), (d) -> item.setDueDate((Date) d),
                 () -> dueDate.getDate(), (d) -> dueDate.setDate((Date) d));
         mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
 
@@ -950,7 +955,7 @@ public class ScreenItem2 extends MyForm {
 //            WorkTimeSlices workTime = item.getAllocatedWorkTimeN();
             Date finishTime = item.getFinishTimeD();
             if (finishTime.getTime() != MyDate.MAX_DATE || Config.WORKTIME_TEST) {
-                Button showWorkTimeDetails = new Button(Command.create(MyDate.formatDateTimeNew(finishTime), null, (e) -> {
+                Button showWorkTimeDetails = new Button(MyReplayCommand.create("ShowWorkTimeDetails", MyDate.formatDateTimeNew(finishTime), null, (e) -> {
 //                    new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTimeN(), ScreenItem.this).show();
                     new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTimeN(), ScreenItem2.this).show();
                 }));
@@ -959,7 +964,8 @@ public class ScreenItem2 extends MyForm {
 //                mainCont.add(initField(Item.FINISH_WORK_TIME, Item.FINISH_WORK_TIME_HELP, showWorkTimeDetails, "finishTime", () -> item.getFinishTime(), null,
                 initField("finishTime", showWorkTimeDetails,
                         () -> item.getFinishTimeD(), null,
-                        () -> dueDate.getDate(), (d) -> dueDate.setDate((Date) d));
+//                        () -> dueDate.getDate(), (d) -> dueDate.setDate((Date) d)); //WTF??
+                        null, null);
             }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2101,7 +2107,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 if (startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
 //                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
 //                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getDuration()))); //TODO!! define setting to use actualEffort when auto-setting startedOn date?? Probably too smart
-                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() )); //UI: if setting a completeDate, then if no startedOn date was set, it will also be set to same time
+                    startedOnDate.setDate(new Date(completedDate.getDate().getTime())); //UI: if setting a completeDate, then if no startedOn date was set, it will also be set to same time
                     startedOnDate.repaint();
                 }
             }
@@ -2175,23 +2181,33 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            previousValues.put(Item.PARSE_OWNER_ITEM, item.getOwner().getObjectIdP());
 //        }
 //        ItemAndListCommonInterface prevOwner = DAO.getInstance().fetchItemOwner((String) previousValues.get(Item.PARSE_OWNER_ITEM));
-        WrapButton editOwnerButton = new WrapButton((previousValues != null
-                && previousValues.get(Item.PARSE_OWNER_ITEM) != null
-                && ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0)
-                ? DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)).getText()
-                : (item.getOwner() != null ? item.getOwner().getText() : ""));
+//        WrapButton editOwnerButton = new WrapButton((previousValues != null
+//                && previousValues.get(Item.PARSE_OWNER_ITEM) != null
+//                && ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0)
+//                ? DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)).getText()
+//                : (item.getOwner() != null ? item.getOwner().getText() : ""));
+        WrapButton editOwnerButton = new WrapButton();
+
+        ActionListener setOwnerButton = (e) -> {
+            String ownerStr
+                    = (previousValues != null && previousValues.get(Item.PARSE_OWNER_ITEM) != null && ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0)
+                    ? DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)).getText()
+                    : (item.getOwner() != null ? item.getOwner().getText() : "");
+            editOwnerButton.setText(ownerStr);
+        };
 
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
 //        Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
-        Command editOwnerCmd = Command.create(item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
+//        Command editOwnerCmd = Command.create(item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
+        Command editOwnerCmd = MyReplayCommand.create("EditOwner",null, null, (e) -> {
             List projects = DAO.getInstance().getAllProjects(false);
             projects.remove(item); //Must not be possible to select the item itself as its own owner
 
             //cconvert list of ObjectId to list of actual owners (well, 0 or 1 owner)
             List<ItemAndListCommonInterface> locallyEditedOwner
-                    = previousValues.get(Item.PARSE_OWNER_ITEM) != null && ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0
-                    ? new ArrayList(Arrays.asList(DAO.getInstance().fetchItem(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)))) //fetch the actual owner 
+                    = previousValues != null && previousValues.get(Item.PARSE_OWNER_ITEM) != null && ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0
+                    ? new ArrayList(Arrays.asList(DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)))) //fetch the actual owner 
                     : new ArrayList();
             //<editor-fold defaultstate="collapsed" desc="comment">
             //                        = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(), DAO.getInstance().getItemListList(), locallyEditedOwner, ScreenItem.this);
@@ -2243,13 +2259,26 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         }
         );
         editOwnerButton.setCommand(editOwnerCmd);
+        setOwnerButton.actionPerformed(null); //set button text *after* setting command
         parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
             if (previousValues.get(Item.PARSE_OWNER_ITEM) != null) {
                 if (((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0) {
 //                    item.setOwner(DAO.getInstance().fetchItem(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)));
-                    item.setOwner(DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)));
+//                    ItemAndListCommonInterface oldOwner = item.getOwner();
+//                    if (oldOwner != null) {
+//                        oldOwner.removeFromList(item);
+//                    }
+                    item.removeFromOwner();
+                    ItemAndListCommonInterface newOwner = DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0));
+                    newOwner.addToList(item);
+//                    item.setOwner();
                 } else {
-                    item.setOwner(null);
+//                    ItemAndListCommonInterface oldOwner = item.getOwner();
+//                    if (oldOwner != null) {
+//                        oldOwner.removeFromList(item);
+//                    }
+                    item.removeFromOwner();
+//                    item.setOwner(null);
                 }
             }
         });

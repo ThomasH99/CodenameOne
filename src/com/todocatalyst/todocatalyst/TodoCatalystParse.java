@@ -47,150 +47,10 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
     private int count = 0;
     final static String APP_NAME = "TodoCatalyst";
     public static Resources theme = null;
-    private Form current=null;
+    private Form current = null;
 
     //TODO add startup picture (also shown as automatically generated CN1 image)
     public TodoCatalystParse() {
-        if (false) {
-            Log.install(new Log() {
-                @Override
-                protected void print(String text, int i) {
-//                super.print(text, level); //To change body of generated methods, choose Tools | Templates.
-                    System.out.print(text + " " + i);
-                }
-            }
-            );
-        }
-
-//        ParseRegistry.registerSubclass(ParseObjectTask.class, ParseObjectTask.CLASS_NAME);
-        ParseRegistry.registerSubclass(Item.class, Item.CLASS_NAME);
-//        ParseRegistry.registerParseFactory(ParseObjectTask.CLASS_NAME, new Parse.IParseObjectFactory() {
-        ParseRegistry.registerParseFactory(Item.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (Item.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new Item();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-
-        ParseRegistry.registerSubclass(ItemList.class, ItemList.CLASS_NAME);
-//        ParseRegistry.registerParseFactory(ParseObjectTask.CLASS_NAME, new Parse.IParseObjectFactory() {
-        ParseRegistry.registerParseFactory(ItemList.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (ItemList.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new ItemList();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-        ParseRegistry.registerSubclass(Category.class, Category.CLASS_NAME);
-//        ParseRegistry.registerParseFactory(ParseObjectTask.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-        ParseRegistry.registerParseFactory(Category.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (Category.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new Category();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-
-        ParseRegistry.registerParseFactory(WorkSlot.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (WorkSlot.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new WorkSlot();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-
-        ParseRegistry.registerParseFactory(CategoryList.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (CategoryList.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new CategoryList();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-
-        ParseRegistry.registerParseFactory(ItemListList.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (ItemListList.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new ItemListList();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-
-        ParseRegistry.registerParseFactory(TemplateList.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (TemplateList.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new TemplateList();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-
-        ParseRegistry.registerParseFactory(FilterSortDef.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (FilterSortDef.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new FilterSortDef();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-
-        ParseRegistry.registerParseFactory(RepeatRuleParseObject.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (RepeatRuleParseObject.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new RepeatRuleParseObject();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-
-        ParseRegistry.registerParseFactory(TimerInstance.CLASS_NAME, new Parse.IParseObjectFactory() {
-
-            @Override
-            public <T extends ParseObject> T create(String className) {
-                if (TimerInstance.CLASS_NAME.equals(className)) {
-//                    return (T) new ParseObjectTask();
-                    return (T) new TimerInstance();
-                }
-                throw new IllegalArgumentException("Unsupported class name: " + className);
-            }
-        });
-
-        MyAnalyticsService.init("UA-133276111-1", "todocatalyst.com");
-        MyAnalyticsService.setAppsMode(true);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -469,13 +329,158 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        Resources theme = UIManager.initFirstTheme("/theme");
 //        Resources theme = null;
 //</editor-fold>
+        Log.p("init() starting...");
+
+        if (false) {
+            Log.install(new Log() {
+                @Override
+                protected void print(String text, int i) {
+//                super.print(text, level); //To change body of generated methods, choose Tools | Templates.
+                    System.out.print(text + " " + i);
+                }
+            }
+            );
+        }
+
+//<editor-fold defaultstate="collapsed" desc="register subclasses for CN1">
+//        ParseRegistry.registerSubclass(ParseObjectTask.class, ParseObjectTask.CLASS_NAME);
+        ParseRegistry.registerSubclass(Item.class, Item.CLASS_NAME);
+//        ParseRegistry.registerParseFactory(ParseObjectTask.CLASS_NAME, new Parse.IParseObjectFactory() {
+        ParseRegistry.registerParseFactory(Item.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (Item.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new Item();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+
+        ParseRegistry.registerSubclass(ItemList.class, ItemList.CLASS_NAME);
+//        ParseRegistry.registerParseFactory(ParseObjectTask.CLASS_NAME, new Parse.IParseObjectFactory() {
+        ParseRegistry.registerParseFactory(ItemList.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (ItemList.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new ItemList();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+        ParseRegistry.registerSubclass(Category.class, Category.CLASS_NAME);
+//        ParseRegistry.registerParseFactory(ParseObjectTask.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+        ParseRegistry.registerParseFactory(Category.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (Category.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new Category();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+
+        ParseRegistry.registerParseFactory(WorkSlot.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (WorkSlot.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new WorkSlot();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+
+        ParseRegistry.registerParseFactory(CategoryList.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (CategoryList.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new CategoryList();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+
+        ParseRegistry.registerParseFactory(ItemListList.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (ItemListList.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new ItemListList();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+
+        ParseRegistry.registerParseFactory(TemplateList.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (TemplateList.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new TemplateList();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+
+        ParseRegistry.registerParseFactory(FilterSortDef.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (FilterSortDef.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new FilterSortDef();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+
+        ParseRegistry.registerParseFactory(RepeatRuleParseObject.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (RepeatRuleParseObject.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new RepeatRuleParseObject();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+
+        ParseRegistry.registerParseFactory(TimerInstance.CLASS_NAME, new Parse.IParseObjectFactory() {
+
+            @Override
+            public <T extends ParseObject> T create(String className) {
+                if (TimerInstance.CLASS_NAME.equals(className)) {
+//                    return (T) new ParseObjectTask();
+                    return (T) new TimerInstance();
+                }
+                throw new IllegalArgumentException("Unsupported class name: " + className);
+            }
+        });
+//</editor-fold>
+
+        MyAnalyticsService.init("UA-133276111-1", "todocatalyst.com");
+        MyAnalyticsService.setAppsMode(true);
+
         //THEME
         if (MyPrefs.themeNameWithoutBackslash.getString().length() > 0) {
             theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
-
         }
-        theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
+//            theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
 
+        //LOCALIZATION
         Resources localizationTheme = null;
         try {
             localizationTheme = Resources.openLayered("/theme-localization");
@@ -484,7 +489,6 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             Log.p(TodoCatalystParse.class.getName());
         }
 
-        //LOCALIZATION
         String locale = "";
         if (MyPrefs.localeUserSelected.getString().length() == 0) {
             locale = L10NManager.getInstance().getLanguage();
@@ -496,7 +500,8 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 
         Toolbar.setGlobalToolbar(true); //needed, otherwise toolbar null in other screens
 
-        Log.getInstance();
+//        Log.getInstance();
+//<editor-fold defaultstate="collapsed" desc="** bindCrashProtection **">
         if (false) {
             Log.bindCrashProtection(false); //TODO: should probaly be true in production version (to consume errors so end-user doesn't see them)
         } else {
@@ -574,14 +579,17 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                 }
             });
         }
+//</editor-fold>
+
         Log.getInstance().setFileWriteEnabled(true);
         Log.setLevel(Log.DEBUG);
         Log.setReportingLevel(Log.REPORTING_DEBUG);
+        //PARSE logging:
+        Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
+
 
 //        NativeLogs.initNativeLogs();
         Log.p("LOCALE = " + locale);
-
-        Log.p("init()");
 
         if (Config.PARSE_OFFLINE) {
             Parse.initialize(
@@ -596,33 +604,33 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
                     "SqFUD7hbLleCOPtDm0RYJWsqI3syHN31NuOiCrRv");
             Log.p("using server https://parseapi.back4app.com (ONLINE)");
         }
-
-        if (false) {
-            Display.getInstance().addEdtErrorHandler(new ActionListener() {
-                //TODO!!!! check if keep this error handling for out of memory in production version
-                //https://www.codenameone.com/blog/handling-the-exception.html
-                //https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/memleaks002.html
-                public void actionPerformed(ActionEvent evt) {
-//                evt.consume();
-//                if (evt.getEventType()==ActionEvent.Type.Exception)
-                    if (((Throwable) evt.getSource()) instanceof OutOfMemoryError) {
-                        System.gc();
-                        System.gc();
-                        Log.p(APP_NAME + " ran out of memory. This can be due your device running out of free memory or due to an internal error. If you have just made changes, they may be lost. ");
-                    }
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                Log.p("Exception in version " + Display.getInstance().getProperty("AppVersion", "Unknown"));
-//                Log.p("OS " + Display.getInstance().getPlatformName());
-//                Log.p("Error " + evt.getSource());
-//                Log.p("Current Form " + Display.getInstance().getCurrent().getName());
-//                Log.e((Throwable) evt.getSource());
-//                Log.sendLog();
+//        if (false) {
+//            Display.getInstance().addEdtErrorHandler(new ActionListener() {
+//                //TODO!!!! check if keep this error handling for out of memory in production version
+//                //https://www.codenameone.com/blog/handling-the-exception.html
+//                //https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/memleaks002.html
+//                public void actionPerformed(ActionEvent evt) {
+////                evt.consume();
+////                if (evt.getEventType()==ActionEvent.Type.Exception)
+//                    if (((Throwable) evt.getSource()) instanceof OutOfMemoryError) {
+//                        System.gc();
+//                        System.gc();
+//                        Log.p(APP_NAME + " ran out of memory. This can be due your device running out of free memory or due to an internal error. If you have just made changes, they may be lost. ");
+//                    }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                Log.p("Exception in version " + Display.getInstance().getProperty("AppVersion", "Unknown"));
+////                Log.p("OS " + Display.getInstance().getPlatformName());
+////                Log.p("Error " + evt.getSource());
+////                Log.p("Current Form " + Display.getInstance().getCurrent().getName());
+////                Log.e((Throwable) evt.getSource());
+////                Log.sendLog();
+////</editor-fold>
+//                }
+//            });
+//        }
 //</editor-fold>
-                }
-            });
-        }
 
-        Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Log.setReportingLevel(Log.REPORTING_DEBUG); //
@@ -650,6 +658,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         }
 //</editor-fold>
 
+//<editor-fold defaultstate="collapsed" desc="** com.codename1.io.Util.register externalizable classes **">
 //        MyUtil.register(PreviouslyRunningTimerEntry.CLASS_NAME_PREVIOUSLY_RUNNING_TIMERS, PreviouslyRunningTimerEntry.class); //register Externalizable class
         com.codename1.io.Util.register(TimerStackEntry.CLASS_NAME_TIMER_STACK_ENTRY, TimerStackEntry.class); //register Externalizable class
 //        MyUtil.register(AlarmData.CLASS_NAME_ALARM_DATA, AlarmData.class); //register Externalizable class
@@ -669,6 +678,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         com.codename1.io.Util.register(RepeatRuleParseObject.CLASS_NAME, RepeatRuleParseObject.class); //register Externalizable class
         com.codename1.io.Util.register(FilterSortDef.CLASS_NAME, FilterSortDef.class); //register Externalizable class
         com.codename1.io.Util.register(WorkSlot.CLASS_NAME, WorkSlot.class); //register Externalizable class
+//</editor-fold>
 
         Display.getInstance().setLongPointerPressInterval(400); //UI: 600 too long, 700 is maybe a bit long, 650 a bit too long. set delay for activating LongPress (default 800 is too fast??)
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -791,50 +801,55 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        }
 //</editor-fold>
         //LOGIN
-        if (false) { //moved to ScreenLogin
-//            if (MyPrefs.loginFirstTimeLogin.getBoolean()) { //very first login
-//                MyPrefs.setBoolean(MyPrefs.loginFirstTimeLogin, false);
-//                new ScreenLogin(theme).show();
+//<editor-fold defaultstate="collapsed" desc="old login code">
+//        if (false) { //moved to ScreenLogin
+////            if (MyPrefs.loginFirstTimeLogin.getBoolean()) { //very first login
+////                MyPrefs.setBoolean(MyPrefs.loginFirstTimeLogin, false);
+////                new ScreenLogin(theme).show();
+////            } else {
+//            ParseUser parseUser = ScreenLogin.getLastUserSessionFromStorage();
+//            Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
+//            if (parseUser == null) {
+////                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//                new ScreenLogin().show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
 //            } else {
-            ParseUser parseUser = ScreenLogin.getLastUserSessionFromStorage();
-            Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
-            if (parseUser == null) {
-//                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
-                new ScreenLogin().show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
-            } else {
-                ScreenLogin.setDefaultACL(parseUser); //TODO needed??
-                try {
-                    count = query.count();
-                } catch (ParseException ex) {
-                    Log.e(ex);
-                }
-
-                Log.p("Count of Item in Parse = " + count, Log.DEBUG);
-
-//            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
-                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
-
-                //ALARMS - initialize
-                AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
-
-                //TIMER - was running when app was moved to background?
-//                if (!ScreenTimer.getInstance().isTimerActive()) {
-//                    new ScreenMain().show(); //go directly to main screen if user already has a session
-//                } else {
-//                    if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
-//                        new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
-//                    }
+//                ScreenLogin.setDefaultACL(parseUser); //TODO needed??
+//                try {
+//                    count = query.count();
+//                } catch (ParseException ex) {
+//                    Log.e(ex);
 //                }
-            }
-        } else {
+//
+//                Log.p("Count of Item in Parse = " + count, Log.DEBUG);
+//
+////            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
+//                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//
+//                //ALARMS - initialize
+//                AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
+//
+//                //TIMER - was running when app was moved to background?
+////                if (!ScreenTimer.getInstance().isTimerActive()) {
+////                    new ScreenMain().show(); //go directly to main screen if user already has a session
+////                } else {
+////                    if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
+////                        new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+////                    }
+////                }
+//            }
+//        } else {
 //            new ScreenLogin(theme).go();
-            new ScreenLogin().go();
-        }
+//</editor-fold>
 
         Display.getInstance().setProperty("iosHideToolbar", "true"); //prevent ttoolbar over keyboard to show (Done/Next button): https://stackoverflow.com/questions/48727116/codename-one-done-button-of-ios-virtual-keyboard
+        
         if (Display.getInstance().canForceOrientation()) {
             Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
         }
+        
+                Log.p("init() - DONE - go to login screen...");
+
+            new ScreenLogin().go();
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
 

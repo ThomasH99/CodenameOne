@@ -31,6 +31,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
     //DONE skip login screen when already logged in
 
     public final static String SCREEN_TITLE = "Settings";
+ protected static String FORM_UNIQUE_ID = "ScreenSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 //    MyForm mainScreen;
     ScreenSettings(MyForm mainScreen) { // throws ParseException, IOException {

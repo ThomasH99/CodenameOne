@@ -47,6 +47,8 @@ public class ScreenListOfCategories extends MyForm {
     public final static String SCREEN_TITLE = "Categories";
     private CategoryList categoryList;
     private MyTree2 dt;
+    protected static String FORM_UNIQUE_ID = "ScreenListOfCategories"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+
 
     /**
      * edit a list of categories
@@ -87,7 +89,7 @@ public class ScreenListOfCategories extends MyForm {
         }
         expandedObjects = new ExpandedObjects("ScreenCategories", categoryList);
         addCommandsToToolbar(getToolbar());
-        getToolbar().addSearchCommand((e) -> {
+        if (false)getToolbar().addSearchCommand((e) -> {
             String text = (String) e.getSource();
             Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
             boolean showAll = text == null || text.length() == 0;
@@ -100,6 +102,7 @@ public class ScreenListOfCategories extends MyForm {
 //            compList.animateLayout(150);
             animateMyForm();
         });
+        getToolbar().addSearchCommand(makeSearchFunctionSimple(categoryList));
 
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.categoryList));
         refreshAfterEdit();

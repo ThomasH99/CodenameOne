@@ -1,30 +1,14 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
-import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
-import com.codename1.l10n.L10NManager;
-import com.codename1.ui.Command;
-import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
-import com.codename1.ui.FontImage;
-import com.codename1.ui.Form;
-import com.codename1.ui.Image;
 import com.codename1.ui.Label;
-import com.codename1.ui.TextArea;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BoxLayout;
-import com.codename1.ui.util.Resources;
-import com.parse4cn1.ParseException;
-import java.io.IOException;
-import java.util.Map;
-//import com.codename1.ui.*;
-import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import java.util.Date;
-import java.util.HashMap;
 
 //import com.codename1.ui.*;
 //import com.codename1.ui.events.ActionEvent;
@@ -49,6 +33,7 @@ public class ScreenItemListProperties extends MyForm {
 //    MyForm previousForm;
     ItemList itemList;
     private static String screenTitle = "List";
+ protected static String FORM_UNIQUE_ID = "ScreenItemListProperties"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //     private UpdateField updateActionOnDone;
 
     ScreenItemListProperties(ItemList itemList, MyForm previousForm) { //throws ParseException, IOException {
