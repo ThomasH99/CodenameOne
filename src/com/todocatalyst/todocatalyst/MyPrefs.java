@@ -357,6 +357,8 @@ public class MyPrefs {
             = new PrefEntry("**", "enableCancelInAllScreens", false, "temporarily used to disable Cancel everywhere due to problems eg with too complex to Cancel when inserting Templates with subtasks");
     static PrefEntry dateShowDatesInUSFormat
             = new PrefEntry("**", "dateShowDatesInUSFormat", false, "**");
+    static PrefEntry disableGoogleAnalytics
+            = new PrefEntry("**", "disableGoogleAnalytics", false, "diable sending anonymous usage pattern information to Google Analytics (used to help improve TDC");
 
     //REPEATRULE
     static PrefEntry repeatMaxInterval = new PrefEntry("**", "repeatMaxInterval", 365, "maximun value for repeat interval**");

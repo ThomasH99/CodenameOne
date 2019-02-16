@@ -127,7 +127,7 @@ class TimerStack {
 //    TimerStackEntry currEntry;
 
 //    private static List<TimerInstance> INSTANCE;
-    private static TimerStack INSTANCE;
+    private static TimerStack INSTANCE=null;
     final static String TIMER_REPLAY = "StartTimer-";
 
     final static Object TIMER_LOCK = new Object(); //lock operations on Timer such as updating/saving instances or refreshing Timers from Server
@@ -2180,7 +2180,7 @@ class TimerStack {
                 DAO.getInstance().saveInBackground(timedItem);
             });
         }
-        editItemButton = new Button(MyReplayCommand.create("EditItemFromTimer-" + timedItem.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle,
+        editItemButton = new Button(MyReplayCommand.create("EditItemFromTimer-" , timedItem.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle,
                 (e) -> {
 //                MyForm.putEditedValues2(parseIdMap2, timedItem); //first update Item with any values changed in Timer
 //                ScreenItem2 screenItem = new ScreenItem2(timedItem, (MyForm) contentPane.getComponentForm(), () -> {

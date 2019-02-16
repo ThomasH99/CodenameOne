@@ -914,7 +914,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
 //    void setItemList(ItemList itemList) {
     @Override
-    public void setList(List itemList) {
+    public void setList(List<? extends ItemAndListCommonInterface> itemList) {
 //        itemList.copyMeInto(this);
 //        if (sourceItem != null) {
 //            sourceItem.setItemList(itemList);
@@ -991,15 +991,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            if (false && !isDataAvailable()) {
 //                DAO.getInstance().fetchIfNeededReturnCachedIfAvail(this); //WON'T WORK since new impl of fetchIfNeeded(this) may return a previously existing instance instead of simply fetching the data for 'this'
 //            }
-        if (cachedList != null) {
-            return cachedList;
-        }
+//        if (false&&cachedList != null) {
+//            return cachedList;
+//        }
+        List<E> cachedList = getList(PARSE_ITEMLIST);
 //            List<E> list = getList(PARSE_ITEMLIST);
-        cachedList = getList(PARSE_ITEMLIST);
 //            if (list != null) {
         if (cachedList != null) {
 //                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList);
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList); //optimization?? heavy operation, any way (OTHER than caching which does work
 //            return list;
         } else {
 //            return null; //returning null would mean every user must check for null and create a list. And returning a new empty ArrayList and saving it doesn't have any side-effect since a new empty list isn't actually saved
@@ -1024,12 +1024,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public boolean addToList(ItemAndListCommonInterface positionItem, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
         int index = indexOf(positionItem);
-        addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
-        if (Config.TEST) {
-            ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this), 
-                    () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
-        }//        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
-        subItemOrList.setOwner(this);
+        addToList(index + (addAfterItem ? 1 : 0), subItemOrList);
+//        addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
+//        if (Config.TEST) {
+//            ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this), 
+//                    () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+//        }//        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
+//        subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
         return true;
     }
@@ -1257,15 +1258,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     /**
      * @inherit
      */
+    @Override
     public ItemList cloneMe() {
         ItemList newCopy = new ItemList();
 //        copyMeInto(newCopy);
 //        super.copyMeInto(newCopy);
         // optimization: select the most efficient way of copying vectors (always using the head of lists?)
-        for (int i = 0, size = getSize(); i < size; i++) {
-//            itemList.addItem(((BaseItem) getItemAt(i)).clone());
-            newCopy.addItem(getItemAt(i).cloneMe());
-        }
+//        for (int i = 0, size = getSize(); i < size; i++) {
+////            itemList.addItem(((BaseItem) getItemAt(i)).clone());
+//            newCopy.addItem(getItemAt(i).cloneMe());
+//        }
+        copyMeInto(newCopy);
         return newCopy;
     }
 
@@ -1282,15 +1285,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public void copyMeInto(ItemAndListCommonInterface destiny) {
         //public void copyMeInto(ItemList destiny) {
         ItemList destinyItemList = (ItemList) destiny;
+        ASSERT.that(false,"not sure why ItemList should be cloned?? List="+getText());
 //        super.copyMeInto(destinyItemList);
         // optimization: select the most efficient way of copying vectors (always using the head of lists?)
 //        System.arraycopy(...); //TODO!!!: use arraycopy for faster copy of vector
         for (int i = 0, size = getSize(); i < size; i++) {
 //            itemList.addItem(((BaseItem) getItemAt(i)).clone());
 //            itemList.addItem(((BaseItem) getItemAt(i)));
-            destinyItemList.addItem((/*
-                     * (BaseItem)
-                     */getItemAt(i))); //- no need to case to BaseItem, since we only copy references to the contained objects
+//            destinyItemList.addItem((getItemAt(i))); //- no need to case to BaseItem, since we only copy references to the contained objects
+            destinyItemList.addItem((getItemAt(i).cloneMe())); //- no need to case to BaseItem, since we only copy references to the contained objects
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        destinyItemList.setText(getText()); //-done in super.copyMeInto(destinyItemList) above
@@ -1464,8 +1467,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //</editor-fold>
         ParseObject ownerList = getParseObject(PARSE_OWNER);
-        ownerList = DAO.getInstance().fetchIfNeededReturnCachedIfAvail(ownerList);
         if (ownerList != null) {
+//            ownerList = DAO.getInstance().fetchIfNeededReturnCachedIfAvail(ownerList);
+            ownerList = DAO.getInstance().fetchIfNeededReturnCachedIfAvail(ownerList);
             return (ItemAndListCommonInterface) ownerList;
         } else {
             return null;
@@ -2269,11 +2273,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             nextIndex = prevIndex + 1;
         }
         if (nextIndex >= 0 && nextIndex < list.size()) { //if nextIndex is a valid index
-            return (Item)list.get(nextIndex);
+            return (Item) list.get(nextIndex);
         }
         return null;
     }
-    
+
     public E getNextItemAfter(Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
         List<E> list = getList(); //get filtered list
@@ -2294,12 +2298,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
         return null;
     }
-    
+
 //    public E getNextItemAfter(Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
 ////     return getNextItemAfter((List<E>)getList(), previousItem, returnFirstItemIfPreviousNotFound);
 //     return getNextItemAfter(getList(), previousItem, returnFirstItemIfPreviousNotFound);
 //    }
-
     /**
      * set all items which are not already in state done to or itemlists in this
      * list Done
@@ -3373,7 +3376,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return workSlotListBuffer;
 //    }
-
     /**
      * returns the future workSlots for this list
      *
@@ -3385,7 +3387,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        return getWorkSlotListN(true);
 //        return getWorkSlotListN(false);
 //    }
-
 //    public void setWorkSlotList(List<WorkSlot> workSlotList) {
 //    public void setWorkSlotList(WorkSlotList workSlotList) {
 //        //TODO currently not stored in ItemList but get from DAO
@@ -3393,8 +3394,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        workSlotListBuffer = workSlotList;
 //        workTimeAllocator = null;
 //    }
-    
-    
     @Override
     public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
 //        if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
@@ -3409,11 +3408,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             return null; //new WorkSlotList();
         }
     }
-    
-     public WorkSlotList getWorkSlotListCurrent(boolean refreshWorkSlotListFromDAO) {
-         WorkSlotList workSlots = getWorkSlotListN(refreshWorkSlotListFromDAO);
-         return null;
-     }
+
+    public WorkSlotList getWorkSlotListCurrent(boolean refreshWorkSlotListFromDAO) {
+        WorkSlotList workSlots = getWorkSlotListN(refreshWorkSlotListFromDAO);
+        return null;
+    }
 
 //    @Override
 //    public WorkSlotList getWorkSlotListN() {
@@ -3436,6 +3435,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
         resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
     }
+
     /**
      * use this to check if a WorkTimeDefinition exists *before* calling
  getWorkTimeAllocatorN() since otherwise it will create a new

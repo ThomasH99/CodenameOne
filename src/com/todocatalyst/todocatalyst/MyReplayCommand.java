@@ -55,6 +55,7 @@ public class MyReplayCommand extends CommandTracked {
 
     @Override
     public String toString() {
+//        return getCommandName()+"/"+getCmdUniqueID();
         return cmdUniqueID;
     }
 
@@ -72,8 +73,9 @@ public class MyReplayCommand extends CommandTracked {
         return cmdUniqueID;
     }
 
-    public static MyReplayCommand create(String cmdUniqueID, String name, Image icon, final ActionListener ev, String analyticsActionId) {
-        MyReplayCommand cmd = new MyReplayCommand(cmdUniqueID, name, icon) {
+    public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev) {
+        String cmdUniqueId = cmdUniquePrefix + cmdUniquePostfix;
+        MyReplayCommand cmd = new MyReplayCommand(cmdUniqueId, commandName, icon) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 ReplayLog.getInstance().pushCmd(this); //DON'T call here, is called in MyReplayCommand.actionPerformed which is called below!
@@ -88,17 +90,19 @@ public class MyReplayCommand extends CommandTracked {
                 super.actionPerformed(evt);
             }
         };
-        cmd.setActionId(analyticsActionId);
+        cmd.setAnalyticsActionId(cmdUniquePrefix);
+//        if (Config.TEST) cmd.setName("ReplayCmd-" + cmdUniqueId);
+
         return cmd;
     }
 
-    public static MyReplayCommand create(String cmdUniqueID, String name, Image icon, final ActionListener ev) {
-        return create(cmdUniqueID, name, icon, ev, null);
+    public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev) {
+        return create(cmdUniqueID, "", commandName, icon, ev);
     }
 
     public static MyReplayCommand create(String name) {
         ASSERT.that("NOT REALLY SURE THIS WORKS!!!");
-        return create(name, name, null, null);
+        return create(name, "", name, null, null);
     }
 
     /**
@@ -109,19 +113,14 @@ public class MyReplayCommand extends CommandTracked {
      * @return
      */
 //    public static CommandTracked create(String name, Image icon, final ActionListener ev) {
-    public static MyReplayCommand create(String name, Image icon, final ActionListener ev, String analyticsActionId) {
-//        MyReplayCommand c = create(name, name, icon, ev);
-//        c.setActionId(analyticsActionId);
-//        return c;
-        return create(name, name, icon, ev, analyticsActionId);
-    }
-
-    public static MyReplayCommand create(String name, Image icon, final ActionListener ev) {
-        return create(name, icon, ev, null);
-    }
-
-//    @Override
-//    public String toString() {
-//        return getCommandName()+"/"+getCmdUniqueID();
+//    public static MyReplayCommand create(String name, String analyticsActionId, Image icon, final ActionListener ev) {
+////        MyReplayCommand c = create(name, name, icon, ev);
+////        c.setAnalyticsActionId(analyticsActionId);
+////        return c;
+//        return create(name, name, analyticsActionId, icon, ev);
 //    }
+    public static MyReplayCommand create(String name, Image icon, final ActionListener ev) {
+        return create(name, "", name, icon, ev);
+    }
+
 }

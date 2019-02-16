@@ -27,48 +27,65 @@ public class TemplateList extends ItemList {
     final static String PARSE_ITEMLIST_LIST = "templateList";
     private static TemplateList INSTANCE = null;
 
-    public  TemplateList() {
+    public TemplateList() {
         super(CLASS_NAME);
     }
 
-    static public TemplateList getInstance() {
+    static synchronized public TemplateList getInstance() {
         if (INSTANCE == null) {
             INSTANCE = DAO.getInstance().getTemplateList();
         }
         return INSTANCE;
     }
 
-    public List<ItemList> getList() {
-//        return (ItemList) getParseObject(PARSE_ITEMLIST_LIST);
-        List<ItemList> list = getList(PARSE_ITEMLIST_LIST);
+//    @Override
+//    public List<Item> getList() {
+////        return (ItemList) getParseObject(PARSE_ITEMLIST_LIST);
+//        List<Item> list = getList(PARSE_ITEMLIST_LIST);
+//        if (list != null) {
+//           DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);            
+//            return list;
+//        } else {
+//            return new ArrayList();
+//        }
+//    }
+    public List<Item> getListFull() {
+//        return getList();
+        List<Item> list = getList(PARSE_ITEMLIST_LIST);
         if (list != null) {
-           DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);            
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
             return list;
         } else {
             return new ArrayList();
         }
     }
-    public List<ItemList> getListFull() {
-        return getList();
+
+    public List<Item> getList() {
+        return super.getList();
     }
 
-    public void setList(List itemListList) {
+    public void setList(List templatesList) {
 //        if (has(PARSE_ITEMLIST_LIST) || itemListList != null) {
 //            put(PARSE_ITEMLIST_LIST, itemListList);
 //        }
-        if (itemListList != null && !itemListList.isEmpty()) {
-            put(PARSE_ITEMLIST_LIST, itemListList);
+        if (templatesList != null && !templatesList.isEmpty()) {
+            put(PARSE_ITEMLIST_LIST, templatesList);
         } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
             remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
         }
     }
-    
-    public TemplateList resetInstance() {
-        TemplateList t= INSTANCE;
-        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
-        return t;
+
+    public synchronized void reloadFromParse() {
+//        TemplateList t= INSTANCE;
+//        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
+//        return t;
+        TemplateList temp = DAO.getInstance().getTemplateList();
+        INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+        for (ItemAndListCommonInterface elt : temp.getList()) {
+            INSTANCE.addItem(elt);
+        }
     }
-    
+
     @Override
     public int getVersion() {
         return 0;
@@ -78,6 +95,5 @@ public class TemplateList extends ItemList {
     public String getObjectId() {
         return CLASS_NAME;
     }
-
 
 }

@@ -60,11 +60,11 @@ public class ScreenListOfItemLists extends MyForm {
     //DONEerror: exception when saving a new list
 
     private static String screenTitle = "Lists";
-    private ItemList itemListList;
+    private ItemListList itemListList;
     private boolean draggableMode = false;
     private Command sortOnOff = null;
     private Command draggableOnOff = null;
- protected static String FORM_UNIQUE_ID = "ScreenListOfItemLists"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    protected static String FORM_UNIQUE_ID = "ScreenListOfItemLists"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     /**
      * edit a list of categories
@@ -81,11 +81,11 @@ public class ScreenListOfItemLists extends MyForm {
 //                            DAO.getInstance().save(cat);
 //                        });
 //    }
-    ScreenListOfItemLists(ItemList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) {
+    ScreenListOfItemLists(ItemListList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) {
         this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
     }
 
-    ScreenListOfItemLists(String title, ItemList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(title, previousForm, () -> updateItemListOnDone.update(itemListList));
         this.itemListList = itemListList;
         setScrollable(false);
@@ -93,20 +93,20 @@ public class ScreenListOfItemLists extends MyForm {
             setLayout(new BorderLayout());
         }
 //        expandedObjects = new HashSet();
-        expandedObjects = new ExpandedObjects("ScreenListOfLists", itemListList);
+        expandedObjects = new ExpandedObjects("ScreenListOfLists", this.itemListList);
         addCommandsToToolbar(getToolbar());
         if (false) getToolbar().addSearchCommand((e) -> {
-            String text = (String) e.getSource();
-            Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-            boolean showAll = text == null || text.length() == 0;
-            for (int i = 0, size = this.itemListList.size(); i < size; i++) {
-                //TODO!!! compare same case (upper/lower)
-                //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                compList.getComponentAt(i).setHidden(((ItemList) this.itemListList.get(i)).getText().toLowerCase().indexOf(text) < 0);
-            }
-            compList.animateLayout(150);
-        });
-        getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListList));
+                String text = (String) e.getSource();
+                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+                boolean showAll = text == null || text.length() == 0;
+                for (int i = 0, size = this.itemListList.size(); i < size; i++) {
+                    //TODO!!! compare same case (upper/lower)
+                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
+                    compList.getComponentAt(i).setHidden(((ItemList) this.itemListList.get(i)).getText().toLowerCase().indexOf(text) < 0);
+                }
+                compList.animateLayout(150);
+            });
+        getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList));
 
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.itemListList));
         refreshAfterEdit();
@@ -379,7 +379,7 @@ public class ScreenListOfItemLists extends MyForm {
             editItemListPropertiesButton = new Button();
             //SHOW/EDIT SUBTASKS OF LIST
 //        editItemPropertiesButton.setIcon(iconEdit);
-            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-" + itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
+            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-", itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
                 MyForm f = ((MyForm) mainCont.getComponentForm());
                 f.setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllElementsInSublist((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
@@ -445,7 +445,7 @@ public class ScreenListOfItemLists extends MyForm {
             assert !statisticsMode || numberItems > 0; // the list should only exist in statistics mode if it is not empty
             if (numberItems > 0) {
 //                Button subTasksButton = new Button();
-                Command expandSubTasks = new CommandTracked("[" + numberItems + "]","ExpandSubtasks");// {
+                Command expandSubTasks = new CommandTracked("[" + numberItems + "]", "ExpandSubtasks");// {
                 subTasksButton.setCommand(expandSubTasks);
 //            subTasksButton.setIcon(Icons.get().iconShowMoreLabelStyle);
                 subTasksButton.setUIID("Label");
@@ -545,7 +545,7 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY , null, Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconNewItemFromTemplate, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    Item newTemplateInstantiation = new Item();
 //                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
@@ -595,6 +595,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                DAO.getInstance().save(itemList);
 //            }
         }; //use filtered/sorted ItemList for Timer
+        if (Config.TEST) swipCont.setName(itemList.getText());
 
         if (keepPos != null) {
             keepPos.testItemToKeepInSameScreenPosition(itemList, swipCont);
@@ -614,9 +615,10 @@ public class ScreenListOfItemLists extends MyForm {
         numberItems = itemList.getNumberOfItems(false, true);
         if (numberItems > 0) {
             Button subTasksButton = new Button();
-            Command expandSubTasks = new CommandTracked("[" + numberItems + "]","ExpandSubtasks");// {
+            Command expandSubTasks = new CommandTracked("[" + numberItems + "]", "ExpandSubtasks");// {
             subTasksButton.setCommand(expandSubTasks);
             subTasksButton.setUIID("Label");
+            if (Config.TEST) subTasksButton.setName("subTasksButton-"+itemList.getText());
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
             east.addComponent(subTasksButton);
         }
@@ -662,7 +664,7 @@ public class ScreenListOfItemLists extends MyForm {
         mainCont.addComponent(BorderLayout.EAST, east);
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY , null, Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconNewItemFromTemplate, (e) -> {
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
                 TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
             }
@@ -740,9 +742,11 @@ public class ScreenListOfItemLists extends MyForm {
 //                            false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??
 //                            null, null, keepPos, expandedObjects, () -> animateMyForm(), false, false); //TODO!!! store expanded itemLists
                     cmp = buildItemContainer(ScreenListOfItemLists.this, (Item) node, null, null);
+                    if (Config.TEST) cmp.setName(((Item) node).getText());
                 } else if (node instanceof ItemList) {
 //                      cmp = buildCategoryContainer((Category) node, categoryList, keepPos, ()->refreshAfterEdit());
                     cmp = buildItemListContainer((ItemList) node, keepPos);
+                    if (Config.TEST) cmp.setName(((ItemList) node).getText());
                 } else {
                     assert false : "should only be Item or ItemList";
                 }

@@ -49,7 +49,6 @@ public class ScreenListOfCategories extends MyForm {
     private MyTree2 dt;
     protected static String FORM_UNIQUE_ID = "ScreenListOfCategories"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
-
     /**
      * edit a list of categories
      *
@@ -89,19 +88,19 @@ public class ScreenListOfCategories extends MyForm {
         }
         expandedObjects = new ExpandedObjects("ScreenCategories", categoryList);
         addCommandsToToolbar(getToolbar());
-        if (false)getToolbar().addSearchCommand((e) -> {
-            String text = (String) e.getSource();
-            Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-            boolean showAll = text == null || text.length() == 0;
-            for (int i = 0, size = this.categoryList.size(); i < size; i++) {
-                //TODO!!! compare same case (upper/lower)
-                //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                compList.getComponentAt(i).setHidden(((Category) categoryList.get(i)).getText().toLowerCase().indexOf(text) < 0);
-            }
+        if (false) getToolbar().addSearchCommand((e) -> {
+                String text = (String) e.getSource();
+                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+                boolean showAll = text == null || text.length() == 0;
+                for (int i = 0, size = this.categoryList.size(); i < size; i++) {
+                    //TODO!!! compare same case (upper/lower)
+                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
+                    compList.getComponentAt(i).setHidden(((Category) categoryList.get(i)).getText().toLowerCase().indexOf(text) < 0);
+                }
 //            getContentPane().animateLayout(150);
 //            compList.animateLayout(150);
-            animateMyForm();
-        });
+                animateMyForm();
+            });
         getToolbar().addSearchCommand(makeSearchFunctionSimple(categoryList));
 
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.categoryList));
@@ -204,8 +203,11 @@ public class ScreenListOfCategories extends MyForm {
 
         Container mainCont = new Container(new BorderLayout());
         mainCont.setUIID("CategoryContainer");
+        if (Config.TEST) mainCont.setName("CatCont-"+category.getText());
 
         Container swipCont = new MyDragAndDropSwipeableContainer(null, null, mainCont) {
+        
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
 //                return draggedObject.getDragAndDropObject() instanceof Category
@@ -222,15 +224,18 @@ public class ScreenListOfCategories extends MyForm {
 ////                return null; //should never be used whend dropping onto a Category
 //                return category; //should never be used whend dropping onto a Category
 //            }
+//</editor-fold>
             @Override
             public ItemAndListCommonInterface getDragAndDropObject() {
                 return category;
             }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            public void saveDragged() {
 //                DAO.getInstance().save(categoryList);
 //            }
+//</editor-fold>
+
             public Category getDragAndDropCategory() {
                 return null;
             }
@@ -252,11 +257,8 @@ public class ScreenListOfCategories extends MyForm {
 //            }
 //</editor-fold>
         };
+        if (Config.TEST) swipCont.setName("CatSwip-"+category.getText());
 //        swipCont.putClientProperty(ScreenListOfItems.DISPLAYED_ELEMENT, category);
-
-        if (Config.TEST) {
-            swipCont.setName(category.getText());
-        }
 
         if (keepPos != null) {
             keepPos.testItemToKeepInSameScreenPosition(category, swipCont);
@@ -358,10 +360,11 @@ public class ScreenListOfCategories extends MyForm {
             }
             return enabled;
         }); //D&D
+        if (Config.TEST) expandCategorySubTasksButton.setName("CatExpand-"+category.getText());
         mainCont.addComponent(BorderLayout.CENTER, categoryLabel);
 
         Button editItemPropertiesButton = new Button();
-        editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCatProps" + category.getObjectIdP(), "", Icons.iconEditPropertiesToolbarStyle, (e) -> {
+        editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCategory-", category.getObjectIdP(), "", Icons.iconEditPropertiesToolbarStyle, (e) -> {
 //                new ScreenCategory(category, ScreenListOfCategories.this, 
 //                ()-> {}
 //                ).show();
@@ -381,6 +384,8 @@ public class ScreenListOfCategories extends MyForm {
             }, 0).show();
         }
         ));
+                if (Config.TEST) editItemPropertiesButton.setName("CatEditItem-"+category.getText());
+
 
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //        Container east = new Container(BoxLayout.x());

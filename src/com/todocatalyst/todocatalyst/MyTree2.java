@@ -165,7 +165,7 @@ public class MyTree2 extends ContainerScrollY {
         this.stickyHeaderGen = stickyHeaderGen;
 
         FilterSortDef itemListFilteredSorted;
-        if (this.stickyHeaderGen == null && model instanceof ItemList && (itemListFilteredSorted = ((ItemList) model).getFilterSortDef()) != null && itemListFilteredSorted.isSortOn()) {
+        if (this.stickyHeaderGen == null && this.model instanceof ItemList && (itemListFilteredSorted = ((ItemList) this.model).getFilterSortDef()) != null && itemListFilteredSorted.isSortOn()) {
 //            FilterSortDef itemListFilteredSorted = ((ItemList) model).getFilterSortDef();
 //        if (this.itemListFilteredSorted != null && this.itemListFilteredSorted.isSortOn()) {
 //            if (itemListFilteredSorted != null && itemListFilteredSorted.isSortOn()) {
@@ -221,7 +221,6 @@ public class MyTree2 extends ContainerScrollY {
 //        return expandedObjects;
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * Toggles a mode where rows in the tree can be broken since span buttons
@@ -386,7 +385,6 @@ public class MyTree2 extends ContainerScrollY {
                 parent.revalidateWithAnimationSafety();
             }
         }
-
         return cont;
     }
 
@@ -650,14 +648,22 @@ public class MyTree2 extends ContainerScrollY {
             } else {
                 nodeComponent = createNode(current, depth);
             }
+            if (Config.TEST && current instanceof ItemAndListCommonInterface)
+                nodeComponent.setName("TreeNode-" + ((ItemAndListCommonInterface) current).getText());
 //            if (model.isLeaf(current)) {
 //                destination.addComponent(nodeComponent); //in CN1 impl, leafs are not encapsulated in 'expandable' BorderLayouts, but here we do it since tree nodes may change from leafs to trees
 ////                bindNodeListener(new Handler(current), nodeComponent);
 //            } else {
             Container componentArea = new Container(new BorderLayout());
             componentArea.setUIID("ContainerListElement"); //wraps a possibly expanded task
+
             componentArea.addComponent(BorderLayout.NORTH, nodeComponent);
+            if (Config.TEST)
+                componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 
             destination.addComponent(componentArea);
+
+            if (Config.TEST)
+                destination.setName("TreeTop-" + componentArea.getName()); //reuse name 
             bindNodeListener(expandCollapseListener, nodeComponent);
             nodeComponent.putClientProperty(KEY_OBJECT, current);
             nodeComponent.putClientProperty(KEY_PARENT, parent);
@@ -685,10 +691,12 @@ public class MyTree2 extends ContainerScrollY {
                 MyForm myForm = (MyForm) getComponentForm();
                 InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
                 if (insertNewElement != null) {
-                    InsertNewElementFunc newInsertContainer = insertNewElement.make((Item) current, parent != null 
+                    InsertNewElementFunc newInsertContainer = insertNewElement.make((Item) current, parent != null
                             ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
                     if (newInsertContainer != null) {
 //                    destination.add(insertNewElement);
+                        if (Config.TEST && current instanceof Item)
+                            ((Component) newInsertContainer).setName("TreeInsertContainer-" + ((Item) current).getText());
                         destination.add((Component) newInsertContainer);
                         myForm.setInlineInsertContainer(newInsertContainer);
 //                    getComponentForm().setEditOnShow(insertNewTask.getTextField()); //ComponentForm should never be undefined here since MyTree should already be in a form
@@ -949,10 +957,17 @@ public class MyTree2 extends ContainerScrollY {
         return cont instanceof MyTree2 ? (MyTree2) cont : null;
     }
 
+    protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+//        assert false;
+//        return createNode(node, depth, category);
+//        return null;
+        return createNode(node, depth); //NB! The 'circular' calls between the different createNode is because one will be overridden when instantiating the Tree
+    }
+
     protected Component createNode(Object node, int depth, Category category) {
 //        assert false;
 //        return null;
-        return createNode(node, depth, null, null);
+        return createNode(node, depth, null, null); //NB! The 'circular' calls between the different createNode is because one will be overridden when instantiating the Tree
     }
 
     protected Component createNode(Object node, int depth) {
@@ -977,14 +992,7 @@ public class MyTree2 extends ContainerScrollY {
 //        return cmp;
 //        return null;
 //</editor-fold>
-        return createNode(node, depth, null);
-    }
-
-    protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
-//        assert false;
-//        return createNode(node, depth, category);
-//        return null;
-        return createNode(node, depth);
+        return createNode(node, depth, null); //NB! The 'circular' calls between the different createNode is because one will be overridden when instantiating the Tree
     }
 
     protected void bindNodeListener(ActionListener l, Component node) {

@@ -958,7 +958,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_URGENCY = "urgency";
     final static String PARSE_OWNER_LIST = "ownerList";
     final static String PARSE_OWNER_ITEM = "ownerItem";
-    final static String PARSE_OWNER_TEMPLATE_LIST = "templateList";
+    final static String PARSE_OWNER_TEMPLATE_LIST = "templateList"; //TODO!!!!! change to ownerTemplate (before production version)
     final static String PARSE_OWNER_CATEGORY = "ownerCategory";
     final static String PARSE_TIMER_STARTED = "timerStart";
     final static String PARSE_TIMER_PAUSED = "timerPaused";
@@ -4544,11 +4544,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         //if setting Waiting, ask if set 
-        if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
+        if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
             MyForm.dialogSetWaitingDateAndAlarm(this); //only call if we're changing TO Waiting status
         }
         //if setting Done, ask if set actual
-        if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
+        if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //don't activate here, activate in UI part
             MyForm.dialogUpdateActualTime(this); //only call if we're changing TO Waiting status
         }
 

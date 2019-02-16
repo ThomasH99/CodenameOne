@@ -18,7 +18,7 @@ import com.codename1.ui.layouts.BorderLayout;
  *
  * @author Thomas
  */
-public class QuickAddItemContainer extends Container {
+public class QuickAddItemContainerXXX extends Container {
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void createItem() {
@@ -37,13 +37,13 @@ public class QuickAddItemContainer extends Container {
 //            }).show();
 //        }
 //    }
-//    //    public QuickAddItemContainer(String hintText, boolean projectEditMode, ItemList itemListOrg, MyForm myForm, boolean optionTemplateEditMode) {
-//    public QuickAddItemContainer(String hintText, ItemList itemListOrg, MyForm myForm, boolean optionTemplateEditMode) {
+//    //    public QuickAddItemContainerXXX(String hintText, boolean projectEditMode, ItemList itemListOrg, MyForm myForm, boolean optionTemplateEditMode) {
+//    public QuickAddItemContainerXXX(String hintText, ItemList itemListOrg, MyForm myForm, boolean optionTemplateEditMode) {
 //</editor-fold>
-//    public QuickAddItemContainer(String hintText, ItemAndListCommonInterface itemListOrg, boolean optionTemplateEditMode) {
+//    public QuickAddItemContainerXXX(String hintText, ItemAndListCommonInterface itemListOrg, boolean optionTemplateEditMode) {
 //        this(hintText, itemListOrg, optionTemplateEditMode, null);
 //    }
-    public QuickAddItemContainer(String hintText, ItemAndListCommonInterface itemListOrg, boolean optionTemplateEditMode,
+    public QuickAddItemContainerXXX(String hintText, ItemAndListCommonInterface itemListOrg, boolean optionTemplateEditMode,
             MyForm.Action onNewTaskAction, MyForm myForm) {
         super();
 

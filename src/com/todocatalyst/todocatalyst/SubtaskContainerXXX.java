@@ -28,7 +28,7 @@ import java.util.HashSet;
  *
  * @author Thomas
  */
-public class SubtaskContainer extends Container {
+public class SubtaskContainerXXX extends Container {
     //TODO add button to filter subtasks (eg hide/show Done tasks)
 
 //    HashSet<ItemAndListCommonInterface> expandedObjects = new HashSet();
@@ -88,11 +88,11 @@ public class SubtaskContainer extends Container {
     }
 
 //        private Container createSubtaskContainer(Item item, MyForm screen, ItemList itemListOrg, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
-//    SubtaskContainer(Item item, ItemAndListCommonInterface itemListOrg, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
+//    SubtaskContainerXXX(Item item, ItemAndListCommonInterface itemListOrg, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
 //        this(item, (MyForm)getComponentForm(), itemListOrg, templateEditMode);
 //    }
-//    SubtaskContainer(Item item, MyForm myForm, ItemAndListCommonInterface itemListOrg, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
-//    SubtaskContainer(Item item, MyForm myForm, ItemAndListCommonInterface itemListOrg, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
+//    SubtaskContainerXXX(Item item, MyForm myForm, ItemAndListCommonInterface itemListOrg, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
+//    SubtaskContainerXXX(Item item, MyForm myForm, ItemAndListCommonInterface itemListOrg, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
     /**
      * creates a Container showing the subtasks. creates a Container that
      * contains a header for the subtasks (showing #subtasks and time), the
@@ -103,7 +103,7 @@ public class SubtaskContainer extends Container {
      * @param myForm
      * @param templateEditMode
      */
-    SubtaskContainer(Item item, MyForm myForm, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
+    SubtaskContainerXXX(Item item, MyForm myForm, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
 //        MyForm myForm = (MyForm) getComponentForm();
 //SUBTASKS
         ItemList<Item> subtasksItemList = item.getItemList();
@@ -117,8 +117,8 @@ public class SubtaskContainer extends Container {
 //        subtaskContainer.setPreferredSize(d);
 
         //ADD NEW SUBTASK - SOUTH
-//        Container quickAddTaskField = new QuickAddItemContainer("Add subtask", item, templateEditMode, () -> revalidate()); //TODO!!!! must removeFromCache Screen when adding first tasks!
-        Container quickAddTaskField = new QuickAddItemContainer("Add subtask", item, templateEditMode, () -> {
+//        Container quickAddTaskField = new QuickAddItemContainerXXX("Add subtask", item, templateEditMode, () -> revalidate()); //TODO!!!! must removeFromCache Screen when adding first tasks!
+        Container quickAddTaskField = new QuickAddItemContainerXXX("Add subtask", item, templateEditMode, () -> {
             myForm.refreshAfterEdit();
             myForm.scrollListToTopOrBottom(!MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //scroll to where new item was inserted
         }, myForm); //TODO!!!! must removeFromCache Screen when adding first tasks!

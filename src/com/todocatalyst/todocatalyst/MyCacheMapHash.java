@@ -140,7 +140,7 @@ public class MyCacheMapHash {
 //            if (val == null || !val.equals(value)) {
 //                Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value);
 //            }
-            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save 
+            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save to persist changes on device between app activations
             memoryCache.put(key, value);
         }
     }

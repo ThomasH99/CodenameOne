@@ -128,7 +128,7 @@ public class ScreenMain extends MyForm {
 //            makeAndAddButtons(listOfAlarms, toolbar, cont);
 //        }
 //</editor-fold>
-        Command overdue = MyReplayCommand.create(SCREEN_OVERDUE_TITLE, SCREEN_OVERDUE_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
+        Command overdue = MyReplayCommand.create(SCREEN_OVERDUE_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true); //FilterSortDef.FILTER_SHOW_DONE_TASKS
                     new ScreenListOfItems(SCREEN_OVERDUE_TITLE, () -> new ItemList(SCREEN_OVERDUE_TITLE, DAO.getInstance().getOverdue(), filterSort, true), ScreenMain.this, (i) -> {
                     },
@@ -139,7 +139,7 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(overdue, toolbar, cont, "Overdue tasks, you probably want to deal with these before moving on to other tasks");
 
-        Command today = MyReplayCommand.create(SCREEN_TODAY_TITLE, SCREEN_TODAY_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
+        Command today = MyReplayCommand.create(SCREEN_TODAY_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     //TODO!!!!! FilterSort currently works on Items, but today view also show workslots                    
                     FilterSortDef filterSort = null; //new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
                     new ScreenListOfItems(SCREEN_TODAY_TITLE,
@@ -289,8 +289,8 @@ public class ScreenMain extends MyForm {
 
         Command touched24h = MyReplayCommand.create(SCREEN_TOUCHED_24H/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     FilterSortDef filterSort = new FilterSortDef(Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true); //true => show most recent first
-                    new ScreenListOfItems(SCREEN_TOUCHED_24H, () -> new ItemList(SCREEN_TOUCHED_24H, 
-                            DAO.getInstance().getTouched24hLog(), filterSort, true), ScreenMain.this, (i) -> {
+                    new ScreenListOfItems(SCREEN_TOUCHED_24H, () -> new ItemList(SCREEN_TOUCHED_24H,
+                    DAO.getInstance().getTouched24hLog(), filterSort, true), ScreenMain.this, (i) -> {
                     },
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                             | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
@@ -305,10 +305,10 @@ public class ScreenMain extends MyForm {
                 }
         );
         Command allTasksWithoutOwner = MyReplayCommand.create("Tasks without owner**"/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
-                    new ScreenListOfItems("Tasks without owner**", 
-                            () -> new ItemList("Tasks without owner", DAO.getInstance().getAllItems(false,false,true), true), 
+                    new ScreenListOfItems("Tasks without owner**",
+                            () -> new ItemList("Tasks without owner", DAO.getInstance().getAllItems(false, false, true), true),
                             ScreenMain.this, (i) -> {
-                    }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                            }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                 }
         );
         makeAndAddButtons(allTasksWithoutOwner, toolbar, cont, "**");
@@ -385,8 +385,7 @@ public class ScreenMain extends MyForm {
                 }
         );
 
-        makeAndAddButtons(homePage, toolbar, cont,
-                "**");
+        makeAndAddButtons(homePage, toolbar, cont, "**");
 
     }
 

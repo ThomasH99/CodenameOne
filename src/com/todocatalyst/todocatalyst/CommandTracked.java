@@ -21,7 +21,7 @@ public class CommandTracked extends com.codename1.ui.Command {
         return actionId;
     }
 
-    public void setActionId(String actionId) {
+    public void setAnalyticsActionId(String actionId) {
         this.actionId = actionId;
     }
 
@@ -31,7 +31,7 @@ public class CommandTracked extends com.codename1.ui.Command {
 
     CommandTracked(String command, String analyticsActionId) {
         super(command);
-        setActionId(analyticsActionId);
+        setAnalyticsActionId(analyticsActionId);
     }
 
     CommandTracked(String command, Image icon) {
@@ -41,7 +41,7 @@ public class CommandTracked extends com.codename1.ui.Command {
 
     CommandTracked(String command, Image icon, String analyticsActionId) {
         super(command, icon);
-        setActionId(analyticsActionId);
+        setAnalyticsActionId(analyticsActionId);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class CommandTracked extends com.codename1.ui.Command {
                 ev.actionPerformed(evt);
             }
         };
-        cmd.setActionId(analyticsActionId);
+        cmd.setAnalyticsActionId(analyticsActionId);
         return cmd;
     }
 ////      @Override

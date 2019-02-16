@@ -36,7 +36,7 @@ public class CategoryList extends ItemList {
         super(CLASS_NAME);
     }
 
-    static public CategoryList getInstance() {
+    static synchronized public CategoryList getInstance() {
         if (INSTANCE == null) {
             INSTANCE = DAO.getInstance().getCategoryList();
 //            if (INSTANCE == null) {
@@ -46,9 +46,24 @@ public class CategoryList extends ItemList {
         return INSTANCE;
     }
 
-    @Override
+//    @Override
+//    public List<Category> getList() {
+////        return (Category) getParseObject(PARSE_CATEGORY_LIST);
+//        List<Category> list = getList(PARSE_CATEGORY_LIST);
+//        if (list != null) {
+//            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list); //optimization: cache the list (BUT: how to keep sync'ed with parse server?!)
+//            return list;
+//        } else {
+//            return new ArrayList();
+//        }
+//    }
     public List<Category> getList() {
-//        return (Category) getParseObject(PARSE_CATEGORY_LIST);
+        return super.getList();
+    }
+
+    @Override
+    public List<Category> getListFull() {
+//        return getList();
         List<Category> list = getList(PARSE_CATEGORY_LIST);
         if (list != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list); //optimization: cache the list (BUT: how to keep sync'ed with parse server?!)
@@ -59,10 +74,6 @@ public class CategoryList extends ItemList {
     }
 
     @Override
-    public List<Category> getListFull() {
-        return getList();
-    }
-
     public void setList(List categoryList) {
 //        if (has(PARSE_CATEGORY_LIST) || categoryList != null) {
 //            put(PARSE_CATEGORY_LIST, categoryList);
@@ -92,10 +103,17 @@ public class CategoryList extends ItemList {
         return null;
     }
 
-    public CategoryList resetInstance() {
-        CategoryList t = INSTANCE;
-        INSTANCE = null; //next call to getInstance() will re-initiate/refresh the instance
-        return t;
+    public synchronized void reloadFromParse() {
+//        CategoryList t = INSTANCE;
+//        INSTANCE = null; //next call to getInstance() will re-initiate/refresh the instance
+//        return t;
+//        INSTANCE.add(temp);
+//        INSTANCE.setList(temp.getList()); //NO good because shortcircuts the addItem logic (bags etc)
+        CategoryList temp = DAO.getInstance().getCategoryList();
+        INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+        for (ItemAndListCommonInterface elt : temp.getList()) {
+            INSTANCE.addItem(elt);
+        }
     }
 
     @Override

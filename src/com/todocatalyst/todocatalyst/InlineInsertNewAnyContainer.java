@@ -15,56 +15,37 @@ import com.codename1.ui.TextField;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
+import java.util.List;
 
 /**
  *
  * @author Thomas
  */
-public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
+public class InlineInsertNewAnyContainer extends InlineInsertNewContainer {
 
     private MyTextField2 textEntryField;
-    private ItemList refItemList;
-    private ItemListList itemOrItemListForNewItemLists;
+    private ItemAndListCommonInterface refItemList;
+    private ItemAndListCommonInterface itemOrItemListForNewItemLists;
     private ItemList newItemList;
     private boolean insertBeforeRefElement;
 //    private Container cont=new Container(new BorderLayout());
 
-    private final static String ENTER_ITEMLIST = "New "+ItemList.ITEM_LIST; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_ITEMLIST = "New list"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
 
-    /**
-     *
-     * When swiping left, create a new container below with a textEntry field
-     * (and a status?), and a (x) to close it w/o creating a task.
-     *
-     * When pressing Enter, add a new task (using keepPos) and create a new
-     * container below to add another task.
-     *
-     * When swiping this container right, create a subtasks to the preceding
-     * task.
-     *
-     * When swiping this container left, if the container corresponds to a
-     * subtask, change it to a top task.
-     *
-     * @param item2 if null, new items will be inserted into
-     * itemOrItemListForNewTasks2 and swipe right to insert as subtask will not
-     * be enabled
-     * @param itemOrItemListForNewTasks2 if null
-     * @param myForm
-     */
     /**
      * create a new Container and a new Item
      *
      * @param myForm
-     * @param refItemList
+     * @param refElement
      */
-    public InlineInsertNewItemListContainer(MyForm myForm, ItemList refItemList, boolean insertBeforeRefElement) {
+    public InlineInsertNewAnyContainer(MyForm myForm, ItemAndListCommonInterface refElement, boolean insertBeforeRefElement) {
 //        this(myForm, ItemListList.getInstance(), refItemList, insertBeforeRefElement);
 //    }
 //
 //    public InlineInsertNewItemListContainer(MyForm myForm, ItemList itemList2, ItemList refItemList, boolean insertBeforeRefElement) {
-        this.refItemList = refItemList;
-        ASSERT.that(refItemList != null, ()->"why itemOrItemListForNewTasks2==null here?");
-        this.itemOrItemListForNewItemLists = (ItemListList)refItemList.getOwner();
+        this.refItemList = refElement;
+        ASSERT.that(refElement != null, ()->"why itemOrItemListForNewTasks2==null here?");
+        this.itemOrItemListForNewItemLists = (ItemListList)refElement.getOwner();
         this.insertBeforeRefElement = insertBeforeRefElement;
 
         Container contForTextEntry = new Container(new BorderLayout());
@@ -78,13 +59,13 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
 //        taskTextEntryField2.addActionListener((ev) -> {
         textEntryField.setDoneListener((ev) -> { //When pressing ENTER, insert new task
             if (!ev.isConsumed()) {
-                newItemList = createNewItemList(); //store new category for use when recreating next insert container
+                newItemList = createNewElement(); //store new category for use when recreating next insert container
                 if (newItemList != null) {
 //                    myForm.setKeepPos(new KeepInSameScreenPosition(newItemList, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
-                    myForm.setKeepPos(new KeepInSameScreenPosition(refItemList, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+                    myForm.setKeepPos(new KeepInSameScreenPosition(refElement, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
 //                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : element, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                 }
-                closeInsertNewItemListContainer();
+                closeInsertNewContainer();
                 insertNewItemListAndSaveChanges(newItemList);
                 myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
@@ -98,14 +79,14 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
             westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
                 myForm.lastInsertNewElementContainer = null;
-                closeInsertNewItemListContainer();
+                closeInsertNewContainer();
             })));
         }
 
         //Enter full screen edit of the new Category:
         contForTextEntry.add(BorderLayout.EAST,
                 new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
-                    if ((newItemList = createNewItemList()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
+                    if ((newItemList = createNewElement()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                         myForm.setKeepPos(new KeepInSameScreenPosition(newItemList, this, -1)); //if editing the new task in separate screen, 
                         new ScreenItemListProperties(newItemList, (MyForm) getComponentForm(), () -> {
                             insertNewItemListAndSaveChanges(newItemList);
@@ -118,23 +99,15 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
         add(contForTextEntry);
     }
 
-    public MyTextField2 getTextField() {
-        return textEntryField; //UI: start editing this field, only if empty (to avoid keyboard popping up)
-    }
-
 //    public void insertNewTask(ItemAndListCommonInterface itemOrItemList, ScreenListOfItems myForm) {
     /**
      *
      * @return true if a task was created
      */
-    private ItemList createNewItemList() {
-        return createNewItemList(false);
-    }
-
-    private ItemList createNewItemList(boolean createEvenIfNoTextInField) {
+    private ItemList createNewElement() {
         String text = textEntryField.getText();
         ItemList newItemList;
-        if (createEvenIfNoTextInField || (text != null && text.length() > 0)) {
+        if ( (text != null && text.length() > 0)) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             newItemList = new ItemList(text,false); //true: interpret textual values
             return newItemList;
@@ -160,26 +133,11 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
         DAO.getInstance().saveInBackground(newItemList, (ParseObject) itemOrItemListForNewItemLists);
     }
 
-    private void closeInsertNewItemListContainer() {
+    private void closeInsertNewContainer() {
         //UI: close the text field
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(this);
         if (parent != null) {
             parent.animateLayout(300);
         }
     }
-    /**
-     * if the textEntry field is in Form f, then it is set to editOnShow
-     *
-     * @param f
-     */
-    public void setTextFieldEditableOnShow(Form f) {
-        if (textEntryField != null) {
-            if (false) {
-                textEntryField.requestFocus();
-            } else {
-                textEntryField.startEditingAsync();
-            }
-        }
-    }
-
 }

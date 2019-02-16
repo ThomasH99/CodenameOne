@@ -169,7 +169,7 @@ public class ScreenListOfItems extends MyForm {
      * stores the overall tree for this list
      */
 //    private static MyTree2 myTree; //static to be able to animate within 
-    private MyTree2 myTree; //static to be able to animate within 
+//    private MyTree2 myTree; //static to be able to animate within 
 
 //    InsertNewTaskContainer lastInsertNewTaskContainer; //stores the last container, until closed by user
 //    int indexOfSwipContParentParent = -1;
@@ -313,6 +313,7 @@ public class ScreenListOfItems extends MyForm {
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        addPullToRefresh(() -> {
 //            //refresh worktime
 //            itemListOrg.resetWorkTimeDefinition();
@@ -321,6 +322,8 @@ public class ScreenListOfItems extends MyForm {
 //            setKeepPos(null); //remove any scroll position since pull to removeFromCache means we're at top of list
 //            refreshAfterEdit();
 //        });
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
         if (false) {
             getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
@@ -339,7 +342,7 @@ public class ScreenListOfItems extends MyForm {
                     for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
                         //TODO!!! compare same case (upper/lower)
                         //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                        searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //UI: if search string is all lower case, then search on lower case only, otherwise search on 
+                        searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //UI: if search string is all lower case, then search on lower case only, otherwise search on
 
                         Component comp = compList.getComponentAt(i);
                         if (comp instanceof Label || comp instanceof StickyHeader) {
@@ -396,8 +399,10 @@ public class ScreenListOfItems extends MyForm {
                 }
             });
         }
+//</editor-fold>
 
         getToolbar().addSearchCommand(makeSearchFunctionUpperLowerStickyHeaders(itemListOrg));
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (itemList instanceof ParseObject && itemList.getObjectId() != null) {
 //            filterSortDef = DAO.getInstance().getFilterSortDef(SCREEN_ID, itemList.getObjectId());
 //        }
@@ -408,6 +413,7 @@ public class ScreenListOfItems extends MyForm {
 //        dragAndDropContainer = buildContentPaneForItemList(this.itemList);
 //        getContentPane().add(CENTER, dragAndDropContainer);
 //        setupList();
+//</editor-fold>
         refreshAfterEdit();
     }
 
@@ -931,9 +937,9 @@ public class ScreenListOfItems extends MyForm {
                             //TODO!!!! use Toolbar.removeOverflowCommand(Command) once added (see http://stackoverflow.com/questions/39200432/how-to-remove-commands-added-to-overflow-menu)
 //                    ToolbarSideMenu  menuBar = (ToolbarSideMenu )getToolbar().getMenuBar();
 //                    menuBar.removeOverflowCommand(cmdSetAnything);
-                            if (false) {
-                                getToolbar().removeComponent(myTree); //TODO!!!! WHY was this code here??
-                            }//                    ScreenListOfItems.this.removeCommand(cmdSetAnything);
+//                            if (false) {
+//                                getToolbar().removeComponent(myTree); //TODO!!!! WHY was this code here??
+//                            }//                    ScreenListOfItems.this.removeCommand(cmdSetAnything);
 //                    ScreenListOfItems.this.removeCommand(cmdMoveSelectedToTopOfList);
 //                    ScreenListOfItems.this.removeCommand(cmdSelectAll);
 //                    ScreenListOfItems.this.removeCommand(cmdUnselectAll);
@@ -1605,6 +1611,7 @@ public class ScreenListOfItems extends MyForm {
                 + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isTemplate()  ? "%" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
                 + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
@@ -1729,9 +1736,16 @@ public class ScreenListOfItems extends MyForm {
                     boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(item); //call this here to avoid triggering if status is changed from within the Timer
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 
-                    //Ask to update 
-                    if (!wasTimerRunningForTheTask && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
+                    //if setting Done, ask if set actual
+                    if (((newStatus == ItemStatus.DONE || newStatus == ItemStatus.WAITING)
+                            && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.WAITING))
+                            && !wasTimerRunningForTheTask && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
                         dialogUpdateActualTime(item);
+                    }
+
+                    //if setting Waiting, ask if set waiting date and/or waiting alarm
+                    if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
+                        dialogSetWaitingDateAndAlarm(item); //only call if we're changing TO Waiting status
                     }
 
                     myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
@@ -1879,7 +1893,7 @@ public class ScreenListOfItems extends MyForm {
 
         final Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
 
-        Command editItemCmd = MyReplayCommand.create("EditItem-" + item.getObjectIdP(), "", editItemIcon, (e) -> {
+        Command editItemCmd = MyReplayCommand.create("EditItem-" , item.getObjectIdP(), "", editItemIcon, (e) -> {
             //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
 //                Item item = (Item) mainCont.getClientProperty("item"); //TODO!!!! is this needed, why notjust access 'item'??
 //                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
@@ -2652,7 +2666,7 @@ refreshAfterEdit();
 
         final Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
 
-        Command editItemCmd = MyReplayCommand.create("EditWorkSlot-" + workSlot.getObjectIdP(), "", editItemIcon, (e) -> {
+        Command editItemCmd = MyReplayCommand.create("EditWorkSlot-" , workSlot.getObjectIdP(), "", editItemIcon, (e) -> {
             //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
             myForm.setKeepPos(new KeepInSameScreenPosition(workSlot, swipCont));
             new ScreenWorkSlot(workSlot, (MyForm) swipCont.getComponentForm(), () -> {

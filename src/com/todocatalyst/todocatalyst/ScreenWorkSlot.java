@@ -35,7 +35,7 @@ public class ScreenWorkSlot extends MyForm {
     private String FILE_LOCAL_EDITED_WORKSLOT = "ScreenWorkSlot-EditedItem";
     private RepeatRuleParseObject locallyEditedRepeatRule;
     private RepeatRuleParseObject repeatRuleCopyBeforeEdit;
- protected static String FORM_UNIQUE_ID = "ScreenEditWorkSlot"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    protected static String FORM_UNIQUE_ID = "ScreenEditWorkSlot"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private UpdateField updateActionOnDone;
 
 //    ScreenWorkSlot(WorkSlot workSlot, MyForm previousForm) { //throws ParseException, IOException {
@@ -210,7 +210,17 @@ public class ScreenWorkSlot extends MyForm {
 
 //        MyTextField workSlotName = new MyTextField("Description", parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s));
         MyTextField workSlotName = new MyTextField(WorkSlot.DESCRIPTION_HINT, 20, 100, 0, parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s), TextField.RIGHT);
-        workSlotName.addActionListener((e) -> setTitle(workSlotName.getText())); //update the form title when text is changed
+        workSlotName.addActionListener((e) -> {
+            String text = workSlotName.getText();
+            Item.EstimateResult estim = Item.getEffortEstimateFromTaskText(text);
+            if (estim != null) {
+                text = estim.cleaned;
+                workSlotName.setText(text);
+                duration.setDuration(estim.minutes * MyDate.MINUTE_IN_MILLISECONDS);
+            }
+            setTitle(text);
+        }
+        ); //update the form title when text is changed
 //        content.add(new Label("Description")).add(workSlotName);
         content.add(layoutN(WorkSlot.DESCRIPTION, workSlotName, WorkSlot.DESCRIPTION_HELP, true, false, false));
 //        setEditOnShow(workSlotName); //UI: start editing this field, NO

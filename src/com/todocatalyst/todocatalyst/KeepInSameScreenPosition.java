@@ -34,7 +34,7 @@ import static com.todocatalyst.todocatalyst.Config.TEST;
 class KeepInSameScreenPosition {
 
     private int relScroll; //store the 'relative scroll' (magic number) to 
-    private int scrollY = Integer.MIN_VALUE; //store the total scrollY in case we cannot find the new component corresponding to the old one
+    private int scrollY = 0; //Integer.MIN_VALUE; //store the total scrollY in case we cannot find the new component corresponding to the old one
     private Object itemOrg = null; //keep the item we want to keep in the same scroll position
     private Component newComponent = null; //the component we want to place in same scroll position
     private Component someComponent = null; //keep some (random) component from the container to be able to find the ScrollableContainer
@@ -141,7 +141,6 @@ class KeepInSameScreenPosition {
         itemOrg = item;
         Container scrollableCont = getScrollableContainer(oldItemComponent);
         if (scrollableCont == null) { //this may happen in ScreenListOfItems if the list is empty, eg. only showing QuickEntry container
-
             return;
         }
 
@@ -408,7 +407,7 @@ class KeepInSameScreenPosition {
     void setNewScrollYPosition() {
         if (newComponent == null) {
 //            if (scrollY != 0) {
-            if (scrollY != Integer.MIN_VALUE) {
+            if (scrollY != 0) {//Integer.MIN_VALUE) {
                 //original object has disappeared from the list (eg filtered after set Done) so simply scroll to same Y position
                 //try to find the scrollable container (from the top of the hierarchy):
 //<editor-fold defaultstate="collapsed" desc="comment">

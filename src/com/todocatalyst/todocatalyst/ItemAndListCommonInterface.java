@@ -316,7 +316,7 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      *
      * @param listOfSubObjects
      */
-    public void setList(List listOfSubObjects);
+    public void setList(List<? extends ItemAndListCommonInterface> listOfSubObjects);
 
     /**
      * returns true if this list or Item should NOT be saved to parse, e.g.

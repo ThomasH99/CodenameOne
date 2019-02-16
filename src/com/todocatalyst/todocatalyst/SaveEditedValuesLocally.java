@@ -127,7 +127,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         if (scrollY != null) {
             return scrollY;
         } else {
-            return 0;
+            return -1;
         }
     }
 

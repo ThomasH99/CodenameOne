@@ -268,7 +268,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                }).show();
 //            }
 //        });
-        editWorkSlotButton.setCommand(MyReplayCommand.create("Edit WorkSLot:" + workSlot.getObjectIdP(), null, Icons.iconEditSymbolLabelStyle, (e) -> {
+        editWorkSlotButton.setCommand(MyReplayCommand.create("EditWorkSLot-" , workSlot.getObjectIdP(), null, Icons.iconEditSymbolLabelStyle, (e) -> {
 //                keepPos.setKeepPos(new KeepInSameScreenPosition());
 //            ((MyForm) cont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(workSlot, cont));
             myForm.setKeepPos(new KeepInSameScreenPosition(workSlot, cont));

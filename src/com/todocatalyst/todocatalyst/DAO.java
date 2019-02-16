@@ -2303,7 +2303,7 @@ public class DAO {
     }
 
     void saveInBackground(ParseObject... parseObjects) {
-        DAO.this.saveInBackground(Arrays.asList(parseObjects));
+        saveInBackground(Arrays.asList(parseObjects));
     }
 
     /**
@@ -2426,7 +2426,7 @@ public class DAO {
             Log.e(ex);
         }
         if (saveToCache) {
-            cachePut(anyParseObject);
+            cachePut(anyParseObject); //must save first to get the objectId before saving to local cache/storage
         }
     }
 
@@ -4481,14 +4481,18 @@ public class DAO {
         //construct hashmpas to effectively search for elements that point to a filter
         Map<FilterSortDef, Category> catsWithFilter = new HashMap();
 
-        for (Category cat : CategoryList.getInstance().getList()) {
+//        for (Category cat : CategoryList.getInstance().getList()) {
+        for (Object o : CategoryList.getInstance().getList()) {
+            Category cat = (Category)o;
             if (cat.getFilterSortDef() != null) {
                 catsWithFilter.put(cat.getFilterSortDef(), cat);
             }
         }
         Map<FilterSortDef, ItemList> itemListsWithFilter = new HashMap<>();
 
-        for (ItemList itemList : ItemListList.getInstance().getList()) {
+//        for (ItemList itemList : ItemListList.getInstance().getList()) {
+            for (Object o : ItemListList.getInstance().getList()) {
+                ItemList itemList = (ItemList)o;
             if (itemList.getFilterSortDef() != null) {
                 itemListsWithFilter.put(itemList.getFilterSortDef(), itemList);
             }
@@ -5634,13 +5638,16 @@ public class DAO {
             List<RepeatRuleParseObject> repeatRules = getAllRepeatRulesFromParse(lastCacheRefreshDate, now);
             Log.p("Caching CategoryList");
 //            CategoryList categoryList = getCategoryList(true); //will cache the list of Categories
-            cacheDelete(CategoryList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+//            cacheDelete(CategoryList.getInstance().reloadFromParse()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+            CategoryList.getInstance().reloadFromParse(); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
             Log.p("Caching ItemListList");
 //            ItemListList itemListList = getItemListList(true); //will cache the list of ItemLists
-            cacheDelete(ItemListList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+//            cacheDelete(ItemListList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+            ItemListList.getInstance().reloadFromParse(); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
             Log.p("Caching TemplateList");
 //            TemplateList templateList = getTemplateList(true); //will cache the list of Templates
-            cacheDelete(TemplateList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+//            cacheDelete(TemplateList.getInstance().reloadFromParse()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+            TemplateList.getInstance().reloadFromParse(); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
 //            Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
 
             Display.getInstance().callSerially(() -> {
@@ -5729,14 +5736,25 @@ public class DAO {
 //        getItemListList(); //will cache the list of ItemLists
 //        getTemplateList(); //will cache the list of Templates
 
+if (true){
         Log.p("Caching CategoryList");
-        somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
+//        somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
+//        CategoryList.getInstance().reloadFromParse();
+//        CategoryList.getInstance();
+        CategoryList.getInstance().reloadFromParse();
+        cachePut(CategoryList.getInstance());
+        
 
         Log.p("Caching ItemListList");
-        somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
+//        somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
+        ItemListList.getInstance().reloadFromParse();
+        cachePut(ItemListList.getInstance());
 
         Log.p("Caching TemplateList");
-        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
+//        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
+        TemplateList.getInstance().reloadFromParse();
+        cachePut(TemplateList.getInstance());
+}
 //        cacheUpdateAllCategoryItemReferences(categoryList);
 //        cacheUpdateAllItemListItemReferences(itemListLists);
 //        cacheUpdateAllItemReferences();

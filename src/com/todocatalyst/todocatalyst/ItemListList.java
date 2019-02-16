@@ -4,7 +4,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import static com.todocatalyst.todocatalyst.CategoryList.PARSE_CATEGORY_LIST;
+//import static com.todocatalyst.todocatalyst.CategoryList.PARSE_CATEGORY_LIST;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,17 +32,28 @@ public class ItemListList extends ItemList {
         super(CLASS_NAME);
     }
 
-    static public ItemListList getInstance() {
+    static synchronized public ItemListList getInstance() { //syncrhonized to avoid clashing with reload below
         if (INSTANCE == null) {
             INSTANCE = DAO.getInstance().getItemListList();
         }
         return INSTANCE;
     }
 
+//    @Override
+//    public List<Category> getList() {
+////        return (Category) getParseObject(PARSE_CATEGORY_LIST);
+//        List<Category> list = getList(PARSE_ITEMLIST_LIST);
+//        if (list != null) {
+//            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+//            return list;
+//        } else {
+//            return new ArrayList();
+//        }
+//    }
     @Override
-    public List<Category> getList() {
-//        return (Category) getParseObject(PARSE_CATEGORY_LIST);
-        List<Category> list = getList(PARSE_ITEMLIST_LIST);
+    public List<ItemList> getListFull() {
+//        return getList();
+        List<ItemList> list = getList(PARSE_ITEMLIST_LIST);
         if (list != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
             return list;
@@ -50,12 +61,12 @@ public class ItemListList extends ItemList {
             return new ArrayList();
         }
     }
-
-    @Override
-    public List<Category> getListFull() {
-        return getList();
+    
+        public List<ItemList> getList() {
+        return super.getList();
     }
 
+    @Override
     public void setList(List list) {
 //        if (has(PARSE_CATEGORY_LIST) || categoryList != null) {
 //            put(PARSE_CATEGORY_LIST, categoryList);
@@ -67,12 +78,21 @@ public class ItemListList extends ItemList {
         }
     }
 
-    public ItemListList resetInstance() {
-        ItemListList t= INSTANCE;
-        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
-        return t;
+    public synchronized void reloadFromParse() {
+//        ItemListList t= INSTANCE;
+//        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
+//        return t;
+//        ItemListList temp = DAO.getInstance().getItemListList();
+//        INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+////        for(ItemList l: temp)
+//        INSTANCE.setList(temp.getList());
+           ItemListList temp = DAO.getInstance().getItemListList();
+        INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+        for (ItemAndListCommonInterface elt : temp.getList()) {
+            INSTANCE.addItem(elt);
+        }
     }
- 
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public List<ItemList> getList() {
 //    @Override

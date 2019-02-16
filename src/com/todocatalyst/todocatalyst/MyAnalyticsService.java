@@ -155,7 +155,8 @@ public class MyAnalyticsService {
      * @param page the page visited
      * @param referer the page from which the user came
      */
-    protected void visitPage(String page, String referer) {
+    private void visitPage(String page, String referer) {
+        if (MyPrefs.disableGoogleAnalytics.getBoolean()) return;
         if (appsMode) {
             // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#apptracking
             ConnectionRequest req = GetGARequest();
@@ -203,7 +204,8 @@ public class MyAnalyticsService {
     @param eventLabel can be null
     @param eventValue only send if >=0
      */
-    protected void eventHit(String eventCategory, String eventAction, String eventLabel, int eventValue) {
+    private void eventHit(String eventCategory, String eventAction, String eventLabel, int eventValue) {
+        if (MyPrefs.disableGoogleAnalytics.getBoolean()) return;
 //        if(appsMode) {
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#apptracking
         ConnectionRequest req = GetGARequest();
@@ -263,6 +265,8 @@ public class MyAnalyticsService {
      * @param fatal is the exception fatal
      */
     public static void sendCrashReport(Throwable t, String message, boolean fatal) {
+                if (MyPrefs.disableGoogleAnalytics.getBoolean()) return;
+
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#exception
         ConnectionRequest req = GetGARequest();
         req.addArgument("t", "exception");

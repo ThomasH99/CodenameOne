@@ -20,18 +20,18 @@ import com.parse4cn1.ParseObject;
  *
  * @author Thomas
  */
-public class InlineInsertNewCategoryContainer extends Container {
+public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer {
 
 //    private Container oldNewTaskCont=null;
     private MyTextField2 textEntryField;
     private Category category;
 //    private MyForm myForm;
-    private ItemAndListCommonInterface itemOrItemListForNewTasks;
+    private ItemAndListCommonInterface categoryList;
     private Category newCategory;
     private boolean insertBeforeElement;
 //    private Container cont=new Container(new BorderLayout());
 
-    private final static String ENTER_CATEGORY = "New category"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_CATEGORY = "New "+Category.CATEGORY; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
 
     /**
      *
@@ -61,18 +61,18 @@ public class InlineInsertNewCategoryContainer extends Container {
      */
 //    public InlineInsertNewCategoryContainer(MyForm myForm, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeElement) {
     public InlineInsertNewCategoryContainer(MyForm myForm, Category category, boolean insertBeforeElement) {
-        this(myForm, category, category.getOwner(), insertBeforeElement);
+        this(myForm, category, (CategoryList)category.getOwner(), insertBeforeElement);
     }
 
-    private InlineInsertNewCategoryContainer(MyForm myForm, Category category2, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeElement) {
+    private InlineInsertNewCategoryContainer(MyForm myForm, Category category2, CategoryList categoryList, boolean insertBeforeElement) {
         this.category = category2;
-        ASSERT.that(itemOrItemListForNewTasks2 != null, "why itemOrItemListForNewTasks2==null here?");
-        this.itemOrItemListForNewTasks = itemOrItemListForNewTasks2;
+        ASSERT.that(categoryList != null, "why itemOrItemListForNewTasks2==null here?");
+        this.categoryList = categoryList;
         this.insertBeforeElement = insertBeforeElement;
         Container contForTextEntry = new Container(new BorderLayout());
 
-        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
-        add(swipC);
+//        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
+//        add(swipC);
 
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField.setHint(ENTER_CATEGORY);
@@ -89,7 +89,8 @@ public class InlineInsertNewCategoryContainer extends Container {
                     myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                 }
                 closeInsertNewCategoryContainer();
-
+//                this.categoryList.addToList(newCategory);
+                insertNewCategoryAndSaveChanges(newCategory);
                 myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });
@@ -98,7 +99,7 @@ public class InlineInsertNewCategoryContainer extends Container {
 
         //close insert container
         contForTextEntry.add(BorderLayout.WEST, westCont);
-        if (itemOrItemListForNewTasks != null && itemOrItemListForNewTasks.size() > 0) { //only add close button if in a non-empty list
+        if (categoryList != null && categoryList.size() > 0) { //only add close button if in a non-empty list
             westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer. NO, too detailed...
                 myForm.lastInsertNewElementContainer = null;
@@ -120,6 +121,7 @@ public class InlineInsertNewCategoryContainer extends Container {
                         ASSERT.that(false, "Something went wrong here, what to do? ...");
                     }
                 })));
+        add(contForTextEntry);
     }
 
     public MyTextField2 getTextField() {
@@ -155,13 +157,13 @@ public class InlineInsertNewCategoryContainer extends Container {
      */
     private void insertNewCategoryAndSaveChanges(Category newCategory) {
         //TODO!!!! if list is sorted used sortOn value and value in previous (rather the next!) item to detect the values of newItem to keep it in (roughly) the same place
-        int index = itemOrItemListForNewTasks.getItemIndex(category);
+        int index = categoryList.getItemIndex(category);
         if (index > -1) {
-            itemOrItemListForNewTasks.addToList(index + (insertBeforeElement ? 0 : 1), newCategory); //add after item
+            categoryList.addToList(index + (insertBeforeElement ? 0 : 1), newCategory); //add after item
         } else {
-            itemOrItemListForNewTasks.addToList(newCategory); //if item is null or not in orgList, insert at beginning of (potentially empty) list
+            categoryList.addToList(newCategory); //if item is null or not in orgList, insert at beginning of (potentially empty) list
         }
-        DAO.getInstance().saveInBackground(newCategory, (ParseObject) itemOrItemListForNewTasks);
+        DAO.getInstance().saveInBackground(newCategory, (ParseObject) categoryList);
     }
 
     private void closeInsertNewCategoryContainer() {

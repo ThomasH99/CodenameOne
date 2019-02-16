@@ -17,8 +17,9 @@ import java.util.Map;
  */
 class MyDurationPicker extends Picker implements SwipeClear {
 
-    private final static String DEFAULT_ZERO_VALUE_PATTERN = "";
-    private String zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN;
+    private final static String DEFAULT_ZERO_VALUE_PATTERN = "0s00";
+//    private String zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN;
+    private String zeroValuePattern = null;
 //    private int defaultValueInMinutes = 0;
     private Long preserveMillis = null;
 //        String title;
@@ -91,7 +92,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
         setFormatter(new SimpleDateFormat() {
             public String format(Object value) {
                 long val = ((Long) value).longValue();
-                if (val == 0) {
+                if (val == 0&&zeroValuePattern!=null) {
                     return zeroValuePattern;
                 }
                 long seconds = val % MyDate.SECOND_IN_MILLISECONDS;
@@ -106,6 +107,9 @@ class MyDurationPicker extends Picker implements SwipeClear {
     }
     MyDurationPicker(long durationInMillis){
         this(durationInMillis, null);
+    }
+    MyDurationPicker(long durationInMillis, boolean useDefaultZeroPattern){
+        this(durationInMillis, DEFAULT_ZERO_VALUE_PATTERN);
     }
     MyDurationPicker(){
         this(0, null);
