@@ -25,7 +25,7 @@ public interface InsertNewElementFunc {
      * @param targetList list into which a new element will be inserted
      * @return
      */
-    InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList);
+    InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category);
 
     /**
      * close and remove the insertContainer

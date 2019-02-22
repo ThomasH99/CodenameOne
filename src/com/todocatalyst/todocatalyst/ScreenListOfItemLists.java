@@ -93,7 +93,7 @@ public class ScreenListOfItemLists extends MyForm {
             setLayout(new BorderLayout());
         }
 //        expandedObjects = new HashSet();
-        expandedObjects = new ExpandedObjects("ScreenListOfLists", this.itemListList);
+        expandedObjects = new ExpandedObjects(getUniqueFormId());
         addCommandsToToolbar(getToolbar());
         if (false) getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
@@ -108,7 +108,7 @@ public class ScreenListOfItemLists extends MyForm {
             });
         getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList));
 
-//        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.itemListList));
+//        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.itemListList));
         refreshAfterEdit();
     }
 
@@ -120,7 +120,12 @@ public class ScreenListOfItemLists extends MyForm {
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
-        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(itemListList));
+        Container cont =buildContentPaneForItemList(itemListList);
+        getContentPane().add(BorderLayout.CENTER, cont);
+                if (cont instanceof MyTree2) {
+            setStartEditingAsync(((MyTree2)cont).getAsyncEditField());
+        }
+
 //        revalidate();
         revalidateWithAnimationSafety();
 //        if (this.keepPos != null) {
@@ -748,7 +753,7 @@ public class ScreenListOfItemLists extends MyForm {
                     cmp = buildItemListContainer((ItemList) node, keepPos);
                     if (Config.TEST) cmp.setName(((ItemList) node).getText());
                 } else {
-                    assert false : "should only be Item or ItemList";
+                    assert false : "should only be Item or ItemList: node="+node;
                 }
                 setIndent(cmp, depth);
                 return cmp;

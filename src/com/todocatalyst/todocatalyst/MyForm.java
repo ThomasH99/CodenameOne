@@ -97,9 +97,21 @@ public class MyForm extends Form {
     private InsertNewElementFunc inlineInsertContainer;
     private BooleanFunction testIfEdit;
     protected static String FORM_UNIQUE_ID = null; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    private TextArea startEditingAsync=null;
+    
+       protected void setStartEditingAsync(TextArea startEditTextArea) {
+        this.startEditingAsync = startEditTextArea;
+    }
 
-    public String getFormUniqueId() {
-        return FORM_UNIQUE_ID == null ? getTitle() : FORM_UNIQUE_ID;
+    public TextArea getStartEditingAsync() {
+        return startEditingAsync;
+    }
+
+    public String getUniqueFormId() {
+        return FORM_UNIQUE_ID != null ? FORM_UNIQUE_ID:getTitle() ;
+    }
+    public String getUniqueFormId(String extensionStr) {
+        return getUniqueFormId()+extensionStr;
     }
 
     public void setFormUniqueId(String formUniqueId) {
@@ -1306,6 +1318,10 @@ public class MyForm extends Form {
         TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
         if (Config.TEST) {
             Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
+        }
+        
+        if (startEditingAsync!=null) {
+            startEditingAsync.startEditingAsync();
         }
     }
 
@@ -2852,7 +2868,7 @@ public class MyForm extends Form {
         if (!ReplayLog.getInstance().replayCmd(new ActionEvent(this))) { //only show screen is there was no command to replay
             Form prevForm = Display.getInstance().getCurrent();
 //            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
-            MyAnalyticsService.visit(getFormUniqueId(), prevForm != null ? ((MyForm) prevForm).getFormUniqueId() : "noPrevForm");
+            MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
             super.show();
         }
     }
@@ -2888,7 +2904,7 @@ public class MyForm extends Form {
 //    private Component prevComponentAbove;
 //    private Component prevComponentBelow;
 //    private Item pinchItem;
-    private boolean pinchInsertEnabled = true; //TODO!! only true for testing
+    private boolean pinchInsertEnabled = false; //TODO!! only true for testing
     private boolean pinchInsertInitiated = false; //tracks whenever a pinch was initiated (to ensure we only finish when it makes sense)
     private int pinchInitialYDistance = Integer.MIN_VALUE;
     private int pinchDistance = Integer.MAX_VALUE;
@@ -2907,38 +2923,54 @@ public class MyForm extends Form {
         return pinchYDistance > minH; //true if over 2/3 of the required size has been pinched out
     }
 
-    private Container createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface list, boolean insertBeforeRefElement) {
-        return createInsertContainer(refElement, list, insertBeforeRefElement, null);
-    }
-
-    private Container createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface list, boolean insertBeforeRefElement, Action closeAction) {
+    /**
+    either list or category
+    @param refElement
+    @param ownerList
+    @param category
+    @param insertBeforeRefElement
+    @return 
+     */
+    private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface ownerList, Category category, boolean insertBeforeRefElement) {
+//        return createInsertContainer(refElement, list, insertBeforeRefElement, null);
+//    }
+//
+//    private Container createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface list, boolean insertBeforeRefElement, Action closeAction) {
 //        ASSERT.that(!insertBeforeRefElement, "not implemented yet");
+        Container insertContainer = null;
         if (refElement instanceof Item) {
-            if (list instanceof Category) {
-//            Item newItem = new Item();
-//            newItem.addCategoryToItem((Category)list, false); //add category in InlineInsertNewItemContainer2
-                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, null, (Category) list, insertBeforeRefElement)); //don't insert into any list, just add to Category
-            } else if (list instanceof ItemList) {
-                if (((ItemList) list).isNoSave()) {
-                    return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement));
-                } else {
-                    return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement)); //null=> don't insert into any list, only 'inbox'
-                }
-            } else if (list instanceof Item) { //NB! inserting refElement into a Project (as a subtask)!
-                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement));
-            } else {
-                ASSERT.that(false, () -> "error1 in createInsertContainer: refElt=" + (refElement == null ? "<null>" : refElement) + "; list=" + (list == null ? "<null>" : list) + "; insertBefore=" + (insertBeforeRefElement));
-            }
+//            if (ownerList instanceof Category) {
+////            Item newItem = new Item();
+////            newItem.addCategoryToItem((Category)list, false); //add category in InlineInsertNewItemContainer2
+//                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, null, (Category) ownerList, insertBeforeRefElement)); //don't insert into any list, just add to Category
+//            } else if (ownerList instanceof ItemList) {
+//                if (((ItemList) ownerList).isNoSave()) {
+//                    return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement));
+//                } else {
+//                    return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement)); //null=> don't insert into any list, only 'inbox'
+//                }
+//            } else if (ownerList instanceof Item) { //NB! inserting refElement into a Project (as a subtask)!
+//                return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, insertBeforeRefElement));
+//            } else {
+//                ASSERT.that(false, () -> "error1 in createInsertContainer: refElt=" + (refElement == null ? "<null>" : refElement) + "; list=" + (ownerList == null ? "<null>" : ownerList) + "; insertBefore=" + (insertBeforeRefElement));
+//            }
+//            return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement));
+            insertContainer = new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement);
+
         } else if (refElement instanceof Category) {
-            return wrapInPinchableContainer(new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, insertBeforeRefElement));
+//            return wrapInPinchableContainer(new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, insertBeforeRefElement));
+            insertContainer = new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, insertBeforeRefElement);
         } else if (refElement instanceof ItemList) {
-            return wrapInPinchableContainer(new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement));
+//            return wrapInPinchableContainer(new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement));
+            insertContainer = new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement);
         } else if (refElement instanceof WorkSlot) {
-            return wrapInPinchableContainer(new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, insertBeforeRefElement)); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
+            WorkSlotList workSlotList = ((WorkSlot) refElement).getWorkSlotListN();
+            insertContainer = new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, workSlotList, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
         } else {
-            ASSERT.that(false, () -> "error2 in createInsertContainer: refElt=" + refElement + "; list=" + list + "; insertBefore=" + insertBeforeRefElement);
+            ASSERT.that(false, () -> "error2 in createInsertContainer: refElt=" + refElement + "; list=" + ownerList + "; insertBefore=" + insertBeforeRefElement);
         }
-        return null;
+//        return null;
+        return (InsertNewElementFunc) insertContainer;
     }
 
     /**returns true if x is an insertNewContainer or is inside one
@@ -3015,7 +3047,8 @@ public class MyForm extends Form {
             dropComponentBelow = MyDragAndDropSwipeableContainer.findNextDDCont(dropComponentAbove);
         } else if (compBelow != null) { //if dropComponentAbove==null, then use the container , can happen eg if inserting above top-most item in list (above finger is on toolbar)
             dropComponentBelow = findDropContainerStartingFrom(compBelow);
-            dropComponentAbove = MyDragAndDropSwipeableContainer.findPrecedingDDCont(dropComponentBelow, null);
+            if (dropComponentBelow != null)
+                dropComponentAbove = MyDragAndDropSwipeableContainer.findPrecedingDDCont(dropComponentBelow, null);
         }
 
 //            MyDragAndDropSwipeableContainer test = MyDragAndDropSwipeableContainer.findNextDDCont(dropComponentAbove);
@@ -3060,11 +3093,24 @@ public class MyForm extends Form {
             }
         }
 
-        if (Config.TEST && itemEltAbove != null) Log.p("PinchAbove=" + itemEltAbove.getText());
-        if (Config.TEST && itemEltBelow != null) Log.p("PinchBelow=" + itemEltBelow.getText());
+        if (Config.TEST_PINCH && itemEltAbove != null) Log.p("PinchAbove=" + itemEltAbove.getText());
+        if (Config.TEST_PINCH && itemEltBelow != null) Log.p("PinchBelow=" + itemEltBelow.getText());
 //        List objBelowOwnerList = null;
-        Container insertContainer = null;
+        InsertNewElementFunc insertContainer = null;
 
+        //get any category
+        Category category = null;
+        if (dropComponentAbove != null)
+            category = dropComponentAbove.getDragAndDropCategory();
+        if (category == null && dropComponentBelow != null)
+            category = dropComponentBelow.getDragAndDropCategory();
+
+//        ItemAndListCommonInterface ownerList = null;
+//        if (category == null)
+//            if (itemEltAbove != null)
+//                ownerList = itemEltAbove.getOwner();
+//            else if (itemEltBelow != null)
+//                ownerList = itemEltBelow.getOwner();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (dropComponentAbove != null) {
 //            objAbove = (ItemAndListCommonInterface) dropComponentAbove.getDragAndDropObject();
@@ -3076,41 +3122,64 @@ public class MyForm extends Form {
 //            objBelowOwnerList = objBelow.getOwner().getList();
 //        }
 //</editor-fold>
+        Container wrappedInsertContainer = null;
         if (dropComponentAbove == null && dropComponentBelow != null) { //pull down on top-most item, insert before the first element (can be Item/Category/ItemList)
-            insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-            MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, insertContainer, 0); //insert insertContainer at position of dropComponentBelow
+            insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+//            insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+            MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at position of dropComponentBelow
         } else if (dropComponentBelow == null && dropComponentAbove != null) { //pull down on bottom-most item, insert at the end of the list (can be Item/Category/ItemList)
-            insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //create insertContainer
-            MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer *after* dropComponentAbove
+            insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //create insertContainer
+            setInlineInsertContainer(insertContainer);
+            wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
+//            insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //create insertContainer
+            MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer *after* dropComponentAbove
 
         } else if (itemEltAbove instanceof Item) { //inserting *after* an Item
             if (itemEltBelow instanceof Category || itemEltBelow instanceof ItemList) {
                 //insert after itemEltAbove
-                insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                setInlineInsertContainer(insertContainer);
+                wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
+//                insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer at start of subtask lise (before itemEltBelow)
 
             } else if (itemEltBelow instanceof Item) {
                 //belong to same owner, insert after 
                 if (itemEltAbove.getOwner() == itemEltBelow.getOwner()) {
-                    insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer at beginning of list that the other pinch finger touches
+                    insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    setInlineInsertContainer(insertContainer);
+                    wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
+//                    insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer at beginning of list that the other pinch finger touches
                 } else if (((Item) itemEltAbove).hasAsSubtask((Item) itemEltBelow)) { //
-                    insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, insertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                    insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    setInlineInsertContainer(insertContainer);
+                    wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
+//                    insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
                 } else { //simply insert before elementAbove (e.g. eltAbove=subask of previous item A, eltBelow a sibling to A
-                    insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                    insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    setInlineInsertContainer(insertContainer);
+                    wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
+//                    insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer at start of subtask lise (before itemEltBelow)
                 }
             }
 
         } else if (itemEltAbove instanceof Category || itemEltAbove instanceof ItemList) { //inserting *after* a Category or ItemList
             if (itemEltBelow instanceof Item) { //insert before itemEltBelow
-                insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, insertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                setInlineInsertContainer(insertContainer);
+                wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
+//                insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
             } else {
                 ASSERT.that(itemEltBelow instanceof Category || itemEltBelow instanceof ItemList, "if itemEltBelow is not an Item, it can only a Cateogyr or ItemList");
-                insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), false); //create insertContainer
-                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, insertContainer, 1); //insert insertContainer *after* dropComponentAbove
+                insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //create insertContainer
+                setInlineInsertContainer(insertContainer);
+                wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
+//                insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //create insertContainer
+                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer *after* dropComponentAbove
             }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3139,11 +3208,12 @@ public class MyForm extends Form {
 //            parentContainerAbove.addComponent(insertIndex, insertContainer); //insert new Item at the beginning of the item list (just below the 'header' category)
 //        }
 //</editor-fold>
-        if (false && insertContainer != null && insertContainer.getParent() != null) { //false: doesn't make sense to animate when insertContainer size is varied by pinch
-            insertContainer.getParent().animateLayout(300);
+        if (false && insertContainer != null && ((Container) insertContainer).getParent() != null) { //false: doesn't make sense to animate when insertContainer size is varied by pinch
+            ((Container) insertContainer).getParent().animateLayout(300);
         }
 //        insertContainer.setName("pinchWrapContainer");
-        return insertContainer;
+//        return insertContainer;
+        return wrappedInsertContainer;
     }
 
     protected static MyDragAndDropSwipeableContainer findDropContainerIn(Component comp) {
@@ -3247,14 +3317,14 @@ public class MyForm extends Form {
         return null;
     }
 
-    private Container wrapInPinchableContainer(final Component pinchComponent) {
+    private Container wrapInPinchableContainer(final InsertNewElementFunc pinchComponent) {
         //TODO!! make more fancy animation for container (eg fold like Clear)
 //        Container pinchCont;
         if (pinchComponent != null) { //pinchOut makes sense here, a new pinchInsert container with the right type of element is created and inserted
             Container pinchCont = new Container(BorderLayout.center()) {
 //                public Dimension calcPreferredSize() {
                 public Dimension getPreferredSize() {
-                    Dimension orgPrefSize = pinchComponent.getPreferredSize();
+                    Dimension orgPrefSize = ((Component) pinchComponent).getPreferredSize();
                     //TODO!! do like Clear app: if pinching further out than the size show some 'elastic' empty space around the container 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    MyForm myForm = (MyForm) pinchContainer.getComponentForm();
@@ -3276,9 +3346,9 @@ public class MyForm extends Form {
 //                    return null;
                 }
             };
-            pinchCont.add(BorderLayout.CENTER, pinchComponent);
+            pinchCont.add(BorderLayout.CENTER, (Component) pinchComponent);
 
-            pinchCont.setName("wrapPinchContainer");
+            if (Config.TEST_PINCH) pinchCont.setName("wrapPinchContainer");
             return pinchCont;
         }
         return null;
@@ -3288,8 +3358,8 @@ public class MyForm extends Form {
     called either when two fingers (pointer) are released (pointerReleasea9, or if one finger is released (changing from pinch to drag)
      */
     private void pinchInsertFinished() {
-        Log.p("pinchInsertFinished called");
-        if (true || pinchInsertEnabled) { //checked before calling pinchInsertFinished()
+        if (Config.TEST_PINCH) Log.p("pinchInsertFinished called");
+        if (true || isPinchInsertEnabled()) { //checked before calling pinchInsertFinished()
             Container parentToAnimate = null;
             if (pinchContainer == null) { //no new pinch created 
                 if (pinchContainerPrevious != null) { //if pinched in previous container
@@ -3304,7 +3374,7 @@ public class MyForm extends Form {
                 if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
 //                    Container pinchContainerParent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(pinchContainer);
                     if (pinchContainerPrevious != null && !MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(pinchContainerPrevious)) {
-                        Log.p("!! pinchContainerPrevious not removed correctly");
+                        if (Config.TEST_PINCH) Log.p("!! pinchContainerPrevious not removed correctly");
                     } //remove previous in one exists
                     pinchContainerPrevious = pinchContainer; //save just inserted container
                     parentToAnimate = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
@@ -3442,13 +3512,15 @@ public class MyForm extends Form {
 //        return null;
 //    }
 //</editor-fold>
+    private final static int TEST_PINCH_WIDTH = 10; //% of right-hand side of screen where a touch is programatically converted to a pinch
+
     @Override
     public void pointerDragged(int[] x, int[] y) {
-        boolean testingPinchOnSimulator = Display.getInstance().isSimulator();
+        boolean testingPinchOnSimulator = Config.TEST_PINCH && Display.getInstance().isSimulator();
         if (testingPinchOnSimulator) {
             int displayHeight = Display.getInstance().getDisplayHeight();
             if (Display.getInstance().isSimulator() && y.length == 1 && x.length == 1
-                    && x[0] >= Display.getInstance().getDisplayWidth() / 10 * 8
+                    && x[0] >= Display.getInstance().getDisplayWidth() / 100 * (100 - TEST_PINCH_WIDTH)
                     && y[0] < displayHeight / 2) {
                 //simulate a pinch by mirroring the y values when dragging on the very right (10%) of the screen
                 int[] y2 = new int[2];
@@ -3459,13 +3531,13 @@ public class MyForm extends Form {
                 x2[1] = x[0]; //set simulated x for other finger to same value as first finger
                 y2[1] = Math.min(displayHeight, (displayHeight / 2 - y[0]) + displayHeight / 2); //set simulated y to y mirrored around the middle of the screen
 //                Log.p("simulating pinch x[0]=" + x[0] + " y[0]=" + y[0] + " simulated x[1]=" + x[1] + " y[1]=" + y[1]);
-                if (true) Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
+                if (Config.TEST_PINCH) Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
                 x = x2; //replace org values with simulatd pair
                 y = y2;
             }
         }
 
-        if (!pinchInsertEnabled || x.length <= 1) { //if pinch not enabled, do nothing (other than call super.pointerDragged())
+        if (!isPinchInsertEnabled() || x.length <= 1) { //if pinch not enabled, do nothing (other than call super.pointerDragged())
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            super.pointerDragged(x, y);
 //        } else { //while pinching, pinch will consume the pointer dragged (to avoid that the list moves at the same time as if it was dragged)
@@ -3501,8 +3573,9 @@ public class MyForm extends Form {
             pinchInsertInitiated = true;
             if (pointerReleasedListener == null) {
                 pointerReleasedListener = (e) -> {
-                    Log.p("pointerReleased called!!!!");
-                    if (pinchInsertEnabled && pinchInsertInitiated) {
+                    if (Config.TEST_PINCH) Log.p("pointerReleased called!!!!");
+//                    if (pinchInsertEnabled && pinchInsertInitiated) {
+                    if ( pinchInsertInitiated) {
 //            if (pinchContainer != null) {
                         pinchInsertFinished();
                         e.consume(); //to avoid that finishing the pinch triggers other actions
@@ -3538,7 +3611,7 @@ public class MyForm extends Form {
 //                });
 //</editor-fold>
                 pinchContainer = createAndInsertPinchContainer(x, y);
-                Log.p("inserted pinchContainer");
+                if (Config.TEST_PINCH) Log.p("inserted pinchContainer");
                 Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
 //                    MyForm.this.animateLayout(300);//.revalidate(); //refresh
                 if (parent != null) {
@@ -3667,7 +3740,7 @@ public class MyForm extends Form {
 //</editor-fold>
     @Override
     public void animateHierarchy(final int duration) {
-        Log.p("*******animateHierarchy(" + duration + ") - expensive call");
+        if (Config.TEST_PINCH) Log.p("*******animateHierarchy(" + duration + ") - expensive call");
         super.animateHierarchy(duration);
     }
 

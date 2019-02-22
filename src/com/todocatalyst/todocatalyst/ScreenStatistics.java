@@ -63,7 +63,7 @@ public class ScreenStatistics extends MyForm {
             setLayout(new BorderLayout());
         }
 //        expandedObjects = new HashSet();
-        expandedObjects = new ExpandedObjects("ScreenStatistics"); //,null);
+        expandedObjects = new ExpandedObjects(getUniqueFormId()); //,null);
         addCommandsToToolbar(getToolbar());
         if (false) {
             getToolbar().addSearchCommand((e) -> {
@@ -80,7 +80,7 @@ public class ScreenStatistics extends MyForm {
         }
             getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats));
         reloadData();
-//        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.itemListList));
+//        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.itemListList));
         refreshAfterEdit();
     }
 

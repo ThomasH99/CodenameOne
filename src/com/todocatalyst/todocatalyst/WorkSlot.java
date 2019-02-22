@@ -1702,6 +1702,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     
     @Override
     public List<ItemAndListCommonInterface> getList() {
+        return getListFull(); //(List<ItemAndListCommonInterface>) itemsWithSlicesOfThisWorkSlot;
+    }
+    
+    @Override
+    public List<ItemAndListCommonInterface> getListFull() {
         return (List<ItemAndListCommonInterface>) itemsWithSlicesOfThisWorkSlot;
     }
     
@@ -1768,7 +1773,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
     
     @Override
-    public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses) {
+    public int getCountOfSubtasksWithStatus(boolean recurse, List statuses) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     

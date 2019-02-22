@@ -64,13 +64,14 @@ public class CategoryList extends ItemList {
     @Override
     public List<Category> getListFull() {
 //        return getList();
-        List<Category> list = getList(PARSE_CATEGORY_LIST);
-        if (list != null) {
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list); //optimization: cache the list (BUT: how to keep sync'ed with parse server?!)
-            return list;
-        } else {
-            return new ArrayList();
-        }
+//        List<Category> list = getList(PARSE_CATEGORY_LIST);
+//        if (list != null) {
+//            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list); //optimization: cache the list (BUT: how to keep sync'ed with parse server?!)
+//            return list;
+//        } else {
+//            return new ArrayList();
+//        }
+        return super.getListFull();
     }
 
     @Override
@@ -78,11 +79,12 @@ public class CategoryList extends ItemList {
 //        if (has(PARSE_CATEGORY_LIST) || categoryList != null) {
 //            put(PARSE_CATEGORY_LIST, categoryList);
 //        }
-        if (categoryList != null && !categoryList.isEmpty()) {
-            put(PARSE_CATEGORY_LIST, categoryList);
-        } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
-            remove(PARSE_CATEGORY_LIST); //if setting a list to null or setting an empty list, then simply delete the field
-        }
+//        if (categoryList != null && !categoryList.isEmpty()) {
+//            put(PARSE_CATEGORY_LIST, categoryList);
+//        } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
+//            remove(PARSE_CATEGORY_LIST); //if setting a list to null or setting an empty list, then simply delete the field
+//        }
+        super.setList(categoryList);
     }
 
     /**

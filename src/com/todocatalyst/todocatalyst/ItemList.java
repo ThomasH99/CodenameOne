@@ -33,6 +33,7 @@ import java.util.ListIterator;
  * @param <E>
  */
 //public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
+//public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         implements /*ItemListModel,*/
         MyTreeModel, /*Collection,*/ List, SumField, ItemAndListCommonInterface, Iterable { //, DataChangedListener {
@@ -62,7 +63,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     private boolean noSave = false; //set to true for temporary lists, e.g. wrapping a parse search results
 //    private List<E> filteredSortedList = null;
 //    private List<? extends ItemAndListCommonInterface> cachedList = null;
-    private List<E> cachedList = null;
+//    private List<E> cachedList = null;
 //    private List<? extends ItemAndListCommonInterface> filteredSortedList = null;
     private List<E> filteredSortedList = null;
     private int selectedIndex;// = 0;
@@ -914,7 +915,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
 //    void setItemList(ItemList itemList) {
     @Override
-    public void setList(List<? extends ItemAndListCommonInterface> itemList) {
+    public void setList(List itemList) {
+//    public void setList(List<? extends ItemAndListCommonInterface> itemList) {
 //        itemList.copyMeInto(this);
 //        if (sourceItem != null) {
 //            sourceItem.setItemList(itemList);
@@ -926,7 +928,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
             remove(PARSE_ITEMLIST); //if setting a list to null or setting an empty list, then simply delete the field
         }
-        cachedList = null; //reset
+//        cachedList = null; //reset
         filteredSortedList = null; //reset
     }
 
@@ -935,9 +937,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
 //    @Override
     @Override
-//    public List<E> getList() {
-//    public List<? extends ItemAndListCommonInterface> getList() {
     public List<E> getList() {
+//    public List getList() {
+//    public List<? extends ItemAndListCommonInterface> getList() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////        List<E> list = getList(PARSE_ITEMLIST);
 //
@@ -968,12 +970,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
 //</editor-fold>
-//        List<? extends ItemAndListCommonInterface> list = getListFull();
         List<E> list = getListFull();
+//        List<? extends ItemAndListCommonInterface> list = getListFull();
 //        FilterSortDef filterSortDef = getFilterSortDef();
         FilterSortDef filterSortDef;
 //        if (filterSortDef != null && filteredSortedList == null) { //buffer the sorted list
         if (filteredSortedList == null && ((filterSortDef = getFilterSortDef()) != null)) { //buffer the sorted list
+//            filteredSortedList = (List<? extends ItemAndListCommonInterface>) filterSortDef.filterAndSortItemList(list);
             filteredSortedList = (List<E>) filterSortDef.filterAndSortItemList(list);
         }
         if (filteredSortedList != null) { //reuse
@@ -986,8 +989,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     returns the full (manually sorted) list, with no sorting or filtering
     @return never null
      */
-//    public List<? extends ItemAndListCommonInterface> getListFull() {
     public List<E> getListFull() {
+//    public List<? extends ItemAndListCommonInterface> getListFull() {
 //            if (false && !isDataAvailable()) {
 //                DAO.getInstance().fetchIfNeededReturnCachedIfAvail(this); //WON'T WORK since new impl of fetchIfNeeded(this) may return a previously existing instance instead of simply fetching the data for 'this'
 //            }
@@ -2174,7 +2177,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return nbCountChangeStatus;
     }
 
-    public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses) {
+//    public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses) {
+    public int getCountOfSubtasksWithStatus(boolean recurse, List statuses) {
         return getCountOfSubtasksWithStatus(getListFull(), recurse, statuses);
     }
 

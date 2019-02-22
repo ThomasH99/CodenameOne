@@ -772,7 +772,7 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        content.add(new Button(MyReplayCommand.create("Test ScreenEdit2", "Test ScreenEdit2", null, (e) -> {
+        content.add(new Button(Command.create( "Test ScreenEdit2", null, (e) -> {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
             new ScreenItem2(new Item(), ScreenRepair.this, () -> {
@@ -870,9 +870,9 @@ public class ScreenRepair extends MyForm {
                         List<Item> updated = new ArrayList();
                         for (int i = 0, size = itemsWithAlarms.size(); i < size; i++) {
                             Item expItem = itemsWithAlarms.get(i);
-                            Date oldFirstAlarm = expItem.getFirstAlarmDateD();
-                            expItem.updateFirstAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
-                            Date newFirstAlarm = expItem.getFirstAlarmDateD(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+                            Date oldFirstAlarm = expItem.getNextcomingAlarmDateD();
+                            expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
+                            Date newFirstAlarm = expItem.getNextcomingAlarmDateD(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
                             if ((oldFirstAlarm == null && newFirstAlarm != null) //newFirst now defined
                                     || (newFirstAlarm == null && oldFirstAlarm != null) //oldFirst now invalid
                                     || (newFirstAlarm != null && oldFirstAlarm != null && oldFirstAlarm.getTime() != newFirstAlarm.getTime()) //First has changed

@@ -64,7 +64,7 @@ public class MyPrefs {
 
     static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
             = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
-                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 10, "**");
+                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 20, "**");
 
     static PrefEntry insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList
             = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", "insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList", false, "**");
@@ -243,6 +243,9 @@ public class MyPrefs {
     static PrefEntry askToEnterActualIfMarkingTaskDoneOutsideTimer
             = new PrefEntry("Show popup to enter Actual effort on Done", "askToEnterActualIfMarkingTaskDoneOutsideTimer",
                     true, "When marking a task Done outside the timer, show popup to enter Actual effort");
+    static PrefEntry askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem //TODO!!! No, only ask if overwriting an alreadyd defined value!
+            = new PrefEntry("Confirm before inserting a template into an existing task", "askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem",
+                    false, "**");
 
     // ************** inherit values from owning Project *************
     final static String INHERITS = "Subtasks inherit ";

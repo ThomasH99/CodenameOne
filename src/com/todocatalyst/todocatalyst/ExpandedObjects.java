@@ -39,11 +39,13 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     @param parseObject may be null in screens which are 'singletons' (exist only once and are not used with different items)
      */
     ExpandedObjects(String screenId, ParseObject parseObject) {
-        this(screenId,(parseObject == null || parseObject.getObjectIdP()==null ||parseObject.getObjectIdP().isEmpty()? "NoParseObject" : parseObject.getObjectIdP()));
+        this(screenId, (parseObject == null || parseObject.getObjectIdP() == null || parseObject.getObjectIdP().isEmpty() ? "NoParseObject" : parseObject.getObjectIdP()));
     }
+
     ExpandedObjects(String uniqueIdForFilename) {
-        this(uniqueIdForFilename,"_");
+        this(uniqueIdForFilename, "_");
     }
+
     ExpandedObjects(String screenId, String uniqueIdForFilename) {
         assert screenId != null;
         assert uniqueIdForFilename != null && !uniqueIdForFilename.isEmpty();
@@ -67,20 +69,27 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     }
 
 //        @Override
+    /**
+    only add a single instance of each element
+    @param element
+    @return 
+     */
     public boolean add(Object element) {
 //            boolean result = super.add(((ItemAndListCommonInterface) element).getObjectIdP());
+//        boolean result = false;
+//        if (!expandedObjects.contains(element)) { //don't add if already there (to avoid having to 
         boolean result = expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP());
-        save();
+        if (result) save(); //only save if modified
+//        }
         return result;
     }
 
-    public boolean addAll(Collection<String> elements) {
-//            boolean result = super.add(((ItemAndListCommonInterface) element).getObjectIdP());
-        boolean result = expandedObjects.addAll(elements);
-        save();
-        return result;
-    }
-
+//    public boolean addAll(Collection<String> elements) {
+////            boolean result = super.add(((ItemAndListCommonInterface) element).getObjectIdP());
+//        boolean result = expandedObjects.addAll(elements);
+//        save();
+//        return result;
+//    }
     public void deleteFile() {
         Storage.getInstance().deleteStorageFile(filename);
     }

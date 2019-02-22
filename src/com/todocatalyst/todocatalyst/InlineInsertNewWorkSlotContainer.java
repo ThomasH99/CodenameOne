@@ -65,9 +65,9 @@ public class InlineInsertNewWorkSlotContainer extends Container {
 //    }
 
 //    public InlineInsertNewWorkSlotContainer(MyForm myForm, ItemList itemList2, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeRefElement) {
-    public InlineInsertNewWorkSlotContainer(MyForm myForm, WorkSlotList workSlotList, WorkSlot refWorkSlot2, boolean insertBeforeRefElement) {
+    public InlineInsertNewWorkSlotContainer(MyForm myForm, WorkSlot refWorkSlot2, WorkSlotList workSlotList2, boolean insertBeforeRefElement) {
         this.myForm = myForm;
-        this.workSlotList = workSlotList;
+        this.workSlotList = workSlotList2;
         ASSERT.that(refWorkSlot != null, "why itemOrItemListForNewTasks2==null here?");
         this.refWorkSlot = refWorkSlot2;
         this.insertBeforeRefElement = insertBeforeRefElement;

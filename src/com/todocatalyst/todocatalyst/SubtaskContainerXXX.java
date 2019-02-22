@@ -18,6 +18,7 @@ import com.codename1.ui.layouts.BoxLayout;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
 import static com.todocatalyst.todocatalyst.ScreenListOfItems.buildItemContainer;
 import java.util.HashSet;
+import java.util.List;
 //import static com.todocatalyst.todocatalyst.MyForm.putEditedValues2;
 
 /**
@@ -106,7 +107,9 @@ public class SubtaskContainerXXX extends Container {
     SubtaskContainerXXX(Item item, MyForm myForm, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
 //        MyForm myForm = (MyForm) getComponentForm();
 //SUBTASKS
-        ItemList<Item> subtasksItemList = item.getItemList();
+//        ItemList<Item> subtasksItemList = item.getItemList();
+//        ItemList<Item> subtasksItemList = item.getItemList();
+        List<Item> subtasksItemList = item.getListFull();
         boolean hasSubtasks = subtasksItemList.size() != 0;
         boolean hideSubtasks;
 //        boolean showSubtasksExpanded = MyPrefs.alwaysShowSubtasksExpandedInScreenItem.getBoolean() && hasSubtasks;
@@ -246,10 +249,13 @@ public class SubtaskContainerXXX extends Container {
                 editSubtasksFullScreen.setCommand(MyReplayCommand.create("EditSubtasks", "", Icons.iconEditPropertiesToolbarStyle, (e) -> {
 //                    Button editSubtasksFullScreenOLD = new Button();
 //                    editSubtasksFullScreenOLD.setCommand(Command.create(null, Icons.iconEditPropertiesLabelStyle, (e) -> {
-                    ItemList subtaskList = item.getItemList();
+//                    ItemList subtaskList = item.getItemList();
+                    List<Item> subtaskList = item.getListFull();
 //                        new ScreenListOfItems("Subtasks of " + item.getText(), subtaskList, myForm, (iList) -> {
-                    new ScreenListOfItems("Subtasks of " + item.getText(), () -> item.getItemList(), myForm, (iList) -> {
-                        item.setItemList(subtaskList);
+//                    new ScreenListOfItems("Subtasks of " + item.getText(), () -> item.getItemList(), myForm, (iList) -> {
+                    new ScreenListOfItems("Subtasks of " + item.getText(), () -> new ItemList(item.getListFull()), myForm, (iList) -> {
+//                        item.setItemList(subtaskList);
+                        item.setList(subtaskList);
                         DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
                         myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
                     }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
@@ -258,9 +264,11 @@ public class SubtaskContainerXXX extends Container {
                 ));
 
                 //HEADER - count + expand button
+                ItemList temp = new ItemList(subtasksItemList);
                 subtaskHeader.add(BorderLayout.EAST, BoxLayout.encloseXNoGrow(
                         //                    new Label(subtasksItemList.size() + ""),
-                        new Label(MyDate.formatTimeDuration(subtasksItemList.getRemainingEffort())),
+//                        new Label(MyDate.formatTimeDuration(subtasksItemList.getRemainingEffort())),
+                        new Label(MyDate.formatTimeDuration(temp.getRemainingEffort())),
                         showSubtasks, editSubtasksFullScreen));
 
                 subtaskContainer.add(BorderLayout.NORTH, subtaskHeader);

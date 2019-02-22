@@ -22,7 +22,7 @@ public class ItemListList extends ItemList {
 //    public static String CLASS_NAME = "ItemItemList"; //DONE!!!!! change to "ItemListList" before production
 
 //    final static String PARSE_ITEMLIST_LIST = "itemListList";
-    final static String PARSE_ITEMLIST_LIST = ItemList.PARSE_ITEMLIST; //reuse column name from ItemList to ensure any non-overwritten calls (notably getListFull()) works, was: "categoryList";
+//    final static String PARSE_ITEMLIST_LIST = ItemList.PARSE_ITEMLIST; //reuse column name from ItemList to ensure any non-overwritten calls (notably getListFull()) works, was: "categoryList";
     ;
 //    final static String PARSE_ITEMLIST_LIST = "itemList";
 
@@ -53,13 +53,14 @@ public class ItemListList extends ItemList {
     @Override
     public List<ItemList> getListFull() {
 //        return getList();
-        List<ItemList> list = getList(PARSE_ITEMLIST_LIST);
-        if (list != null) {
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
-            return list;
-        } else {
-            return new ArrayList();
-        }
+//        List<ItemList> list = getList(PARSE_ITEMLIST_LIST);
+//        if (list != null) {
+//            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+//            return list;
+//        } else {
+//            return new ArrayList();
+//        }
+        return super.getListFull();
     }
     
         public List<ItemList> getList() {
@@ -71,11 +72,12 @@ public class ItemListList extends ItemList {
 //        if (has(PARSE_CATEGORY_LIST) || categoryList != null) {
 //            put(PARSE_CATEGORY_LIST, categoryList);
 //        }
-        if (list != null && !list.isEmpty()) {
-            put(PARSE_ITEMLIST_LIST, list);
-        } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
-            remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
-        }
+//        if (list != null && !list.isEmpty()) {
+//            put(PARSE_ITEMLIST_LIST, list);
+//        } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
+//            remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
+//        }
+        super.setList(list);
     }
 
     public synchronized void reloadFromParse() {

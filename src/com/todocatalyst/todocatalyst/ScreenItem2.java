@@ -110,8 +110,7 @@ public class ScreenItem2 extends MyForm {
     private boolean effortEstimateSetManually = false; //true when effortEstimate has been edited to a different value than the original one from item
     private boolean effortEstimateSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private String LAST_TAB_SELECTED = "$$LastTabSelected";
-       protected static String FORM_UNIQUE_ID = "ScreenEditItem"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-
+    protected static String FORM_UNIQUE_ID = "ScreenEditItem"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
 
@@ -143,17 +142,17 @@ public class ScreenItem2 extends MyForm {
         if (previousValues != null) {
             this.previousValues = previousValues;
         } else {
-            this.previousValues = new SaveEditedValuesLocally(getTitle() + "-" + item.getObjectIdP());
+            this.previousValues = new SaveEditedValuesLocally(FORM_UNIQUE_ID + "-" + item.getObjectIdP());
         }
 
         this.templateEditMode = item.isTemplate() || templateEditMode; //
         getTitleComponent().setEndsWith3Points(true);
 //        ScreenItemP.item = item;
         this.item = item;
-        initLocalSaveOfEditedValues("ScreenItem-" + item.getObjectIdP());
+        initLocalSaveOfEditedValues(getUniqueFormId(item.getObjectIdP()) );
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(FORM_UNIQUE_ID,this.item);
-        expandedObjects = new ExpandedObjects("ScreenItem", this.item);
+        expandedObjects = new ExpandedObjects(getUniqueFormId(this.item.getObjectIdP()) );
         try {
             //        DAO.getInstance().deleteCategoryFromAllItems(cat);
             if (this.item != null) {
@@ -192,8 +191,7 @@ public class ScreenItem2 extends MyForm {
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
     }
-    
-    
+
     @Override
     public void refreshAfterEdit() {
         super.refreshAfterEdit();
@@ -252,14 +250,14 @@ public class ScreenItem2 extends MyForm {
 
         //EDIT WORKSLOTS
 //        if (!optionTemplateEditMode && !optionNoWorkTime) {
-        toolbar.addCommandToOverflowMenu( MyReplayCommand.create("EditWorkTime","Work time", Icons.iconSettingsApplicationLabelStyle,(e)-> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.create("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
 //                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotListN(), item, ScreenItem2.this, null, //(iList) -> {
-                new ScreenListOfWorkSlots(item, ScreenItem2.this, null, //(iList) -> {
-                        //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
-                        //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
-                        false).show();
+            new ScreenListOfWorkSlots(item, ScreenItem2.this, null, //(iList) -> {
+                    //                    itemList.setWorkSLotList(iList); //NOT necessary since each slot will be saved individually
+                    //                    refreshAfterEdit(); //TODO CURRENTLY not needed since workTime is not shown (but could become necessary if we show subtasks and their finish time 
+                    false).show();
 //            }
         }));
 //        }
@@ -298,7 +296,8 @@ public class ScreenItem2 extends MyForm {
         if (true || !templateEditMode) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
             toolbar.addCommandToOverflowMenu("Insert template", null, (e) -> {
                 //TODO!! Add "don't show again + setting to all these info popups
-                if (Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
+                if (!MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem.getBoolean()
+                        ||Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
                     //TODO enable user to select which fields to exclude
                     putEditedValues2(parseIdMap2, item); //save any already edited values before inserting the template
 //                    Item template = pickTemplateOLD(); //TODO!!!! make this a full Screen picker like CategorySelector
@@ -313,10 +312,11 @@ public class ScreenItem2 extends MyForm {
                     new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), selectedTemplates, ScreenItem2.this, () -> {
                         if (selectedTemplates.size() >= 1) {
                             Item template = (Item) selectedTemplates.get(0);
-                            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
+//                            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
                             template.copyMeInto(item, Item.CopyMode.COPY_FROM_TEMPLATE);
+                            DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
 //                            locallyEditedCategories = null; //HACK needed to force update of locallyEditedCategories (which shouldn't be refreshed when eg editing subtasks to avoid losing the edited categories) 
-                            ip.dispose();
+//                            ip.dispose();
                             refreshAfterEdit();
                         }
 //                        else {
@@ -964,7 +964,7 @@ public class ScreenItem2 extends MyForm {
 //                mainCont.add(initField(Item.FINISH_WORK_TIME, Item.FINISH_WORK_TIME_HELP, showWorkTimeDetails, "finishTime", () -> item.getFinishTime(), null,
                 initField("finishTime", showWorkTimeDetails,
                         () -> item.getFinishTimeD(), null,
-//                        () -> dueDate.getDate(), (d) -> dueDate.setDate((Date) d)); //WTF??
+                        //                        () -> dueDate.getDate(), (d) -> dueDate.setDate((Date) d)); //WTF??
                         null, null);
             }
         }
@@ -1028,7 +1028,11 @@ public class ScreenItem2 extends MyForm {
 
 //        Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
 //</editor-fold>
-        Command categoryEditCmd = new Command(getCategoriesAsCommaSeparatedString((List<Category>) previousValues.get(Item.PARSE_CATEGORIES, item.getCategories()))) { //"<click to set categories>"
+        String commaSeparatedCategories = getCategoriesAsCommaSeparatedString(previousValues.get(Item.PARSE_CATEGORIES) != null
+                ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
+                : item.getCategories());
+//        Command categoryEditCmd = new Command(getCategoriesAsCommaSeparatedString((List<String>) previousValues.get(Item.PARSE_CATEGORIES, item.getCategories()))) { //"<click to set categories>"
+        Command categoryEditCmd = new Command(commaSeparatedCategories) { //"<click to set categories>"
             @Override
             public void actionPerformed(ActionEvent evt) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2200,7 +2204,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
 //        Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = Command.create(item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
-        Command editOwnerCmd = MyReplayCommand.create("EditOwner",null, null, (e) -> {
+        Command editOwnerCmd = MyReplayCommand.create("EditOwner", null, null, (e) -> {
             List projects = DAO.getInstance().getAllProjects(false);
             projects.remove(item); //Must not be possible to select the item itself as its own owner
 
@@ -2380,9 +2384,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 //        cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
-//        cont = buildContentPaneForItemList(item, itemList);
-//        Container subTaskCont = buildContentPaneForItemList(item.getItemList());
-//        Container subTaskCont = buildContentPaneForItemList(item.getList());
+//        cont = buildContentPaneForListOfItems(item, itemList);
+//        Container subTaskCont = buildContentPaneForListOfItems(item.getItemList());
+//        Container subTaskCont = buildContentPaneForListOfItems(item.getList());
 //    public MyTree(MyTreeModel model, MyTree parentTree, int depth, boolean expandThisTree, boolean expandAllLevels, boolean onlySubTree) {
 //        Container subTaskCont = new MyTree(item, null, 0, true, false, true);
 //        Container subTaskCont = new MyTree2(item) {
@@ -2399,7 +2403,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        Command addNewSubTask = new Command("Test");
 //        Command addNewSubTask = makeCreateNewItemCommand("", FontImage.createMaterial(FontImage.MATERIAL_ADD, getToolbar().getStyle()), ITEM_TYPE_ITEM, item.getItemList());
 //        Command addNewSubTask = makeCreateNewItemCommand("", item.getItemList());
-//        tabs.addTab("Subtasks", null, buildContentPaneForItemList(item.getItemList()));
+//        tabs.addTab("Subtasks", null, buildContentPaneForListOfItems(item.getItemList()));
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -2465,9 +2469,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                        itemList.add(itemList.size(), newItem); //UI: add new tasks to end of list (the natural order)
 //                        item.setItemList(itemList); //item will be saved later
 ////                    DAO.getInstance().save(item); //Don't save here, do it later when the mother-item is saved anyway. TODO: the new subitem will be left dangling if mother-list is not saved!!
-////                    subTaskCont = buildContentPaneForItemList(item.getItemList());
-////                    Container newSubTaskCont = buildContentPaneForItemList(item.getItemList());
-////                    Container newSubTaskCont = buildContentPaneForItemList(item.getList());
+////                    subTaskCont = buildContentPaneForListOfItems(item.getItemList());
+////                    Container newSubTaskCont = buildContentPaneForListOfItems(item.getItemList());
+////                    Container newSubTaskCont = buildContentPaneForListOfItems(item.getList());
 //                        //    public MyTree(MyTreeModel model, MyTree parentTree, int depth, boolean expandThisTree, boolean expandAllLevels, boolean onlySubTree) {
 ////                    Container newSubTaskCont = new MyTree(item, null, 0, true, false, true);
 ////                    Container newSubTaskCont = new MyTree2(item);

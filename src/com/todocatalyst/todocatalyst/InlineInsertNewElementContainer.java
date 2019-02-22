@@ -30,6 +30,7 @@ public class InlineInsertNewElementContainer extends Container {
     private final static String ENTER_TASK = "New task, ->for subtask)"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
     private final static String ENTER_TASK_NO_SWIPE_RIGHT = "New task"; //"Task (swipe right: subtask)"
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * will create a new element to insert (Item, ItemList, Category, ...)
      */
@@ -45,7 +46,6 @@ public class InlineInsertNewElementContainer extends Container {
 //        Component make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList);
 //    }
 
-//<editor-fold defaultstate="collapsed" desc="comment">
 //    final static String LAST_INSERTED_NEW_TASK_CONTAINER = "lastInsertTask"; //"Task (swipe right: subtask)"
 //     buildAddNewTaskContainer(Item item, ItemList orgList, SwipeableContainer swipCont, MyForm.Action refreshOnItemEdits) {
 //    public InsertNewTaskContainer(Item item, ItemList orgList, SwipeableContainer swipCont, MyForm.Action refreshOnItemEdits) {

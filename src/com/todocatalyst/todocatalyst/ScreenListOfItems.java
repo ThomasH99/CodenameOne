@@ -165,12 +165,12 @@ public class ScreenListOfItems extends MyForm {
 //        this.optionMultipleSelectMode = (options & OPTION_MULTIPLE_SELECT_MODE) != 0;
 
     }
+
     /**
      * stores the overall tree for this list
      */
 //    private static MyTree2 myTree; //static to be able to animate within 
 //    private MyTree2 myTree; //static to be able to animate within 
-
 //    InsertNewTaskContainer lastInsertNewTaskContainer; //stores the last container, until closed by user
 //    int indexOfSwipContParentParent = -1;
 //    Item lastInsertSwiptCreatedItem;
@@ -308,7 +308,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
-        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP());
+        expandedObjects = new ExpandedObjects(getUniqueFormId( itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         this.stickyHeaderGen = stickyHeaderGen;
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
@@ -410,11 +410,16 @@ public class ScreenListOfItems extends MyForm {
 //            filterSortDef = new FilterSortDef(SCREEN_ID, itemList.getObjectId());
 //            DAO.getInstance().save(filterSortDef);
 //        }
-//        dragAndDropContainer = buildContentPaneForItemList(this.itemList);
+//        dragAndDropContainer = buildContentPaneForListOfItems(this.itemList);
 //        getContentPane().add(CENTER, dragAndDropContainer);
 //        setupList();
 //</editor-fold>
         refreshAfterEdit();
+    }
+
+    @Override
+    public boolean isPinchInsertEnabled() {
+        return !itemListOrg.isNoSave() && !isSortOn(); //not saved lists like Today etc should not allow pinch insert, sorted lists should not allow (//TODO!!!! find the clever way to insert and keep place in sorted list, e.g. workslots where new starts after previous ends)
     }
 
     @Override
@@ -463,9 +468,9 @@ public class ScreenListOfItems extends MyForm {
 //        wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
 //        itemListOrg.refreshWorkTimeDefinition();
 
-//        getContentPane().add(CENTER, buildContentPaneForItemList(this.itemListFilteredSorted));
+//        getContentPane().add(CENTER, buildContentPaneForListOfItems(this.itemListFilteredSorted));
         parseIdMapReset();
-        Container scrollableContainer = buildContentPaneForItemList(itemListOrg);
+        Container scrollableContainer = buildContentPaneForListOfItems(itemListOrg);
         if (false) { //TODO!!! re-activate (currently clashes with drag&drop: when trying to drag an element at the top of the list, it also activates pullToRefresh)
             scrollableContainer.addPullToRefresh(() -> {
                 Log.p("Pull to refresh... DEACTIVATED");
@@ -480,6 +485,9 @@ public class ScreenListOfItems extends MyForm {
             });
         }
         getContentPane().add(CENTER, scrollableContainer);
+        if (scrollableContainer instanceof MyTree2) {
+            setStartEditingAsync(((MyTree2)scrollableContainer).getAsyncEditField());
+        }
 //        setTitleAnimation(scrollableContainer);
 
 //        revalidate(); //TODO: needed? YES
@@ -1339,7 +1347,7 @@ public class ScreenListOfItems extends MyForm {
     }
 //    public static Button makeSubtaskButton(Item item, Container swipCont) {
 
-    public static Button makeSubtaskButtonXXX(Item item, SubtaskButtonFct longPressFunction) {
+    private static Button makeSubtaskButtonXXX(Item item, SubtaskButtonFct longPressFunction) {
         int numberUndoneSubtasks = item.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
         int totalNumberSubtasks = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 //        int totalNumberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks; //true: get subtasks, always necessary for a project
@@ -1611,7 +1619,7 @@ public class ScreenListOfItems extends MyForm {
                 + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
-                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isTemplate()  ? "%" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isTemplate() ? "%" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
                 + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
@@ -1787,7 +1795,7 @@ public class ScreenListOfItems extends MyForm {
         final Button starButton = new Button(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
         final Button starredSwipeableButton = new Button(null, item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
 
-        final Button setDueDateToToday = new Button(null, Icons.iconSetDueDateToToday());
+        final Button setDueDateToToday;// = new Button(null, Icons.iconSetDueDateToToday());
 
         starButton.setHidden(!item.isStarred() || isDone); //UI: hide star if task is done
         starButton.addActionListener((e) -> {
@@ -1893,7 +1901,7 @@ public class ScreenListOfItems extends MyForm {
 
         final Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
 
-        Command editItemCmd = MyReplayCommand.create("EditItem-" , item.getObjectIdP(), "", editItemIcon, (e) -> {
+        Command editItemCmd = MyReplayCommand.create("EditItem-", item.getObjectIdP(), "", editItemIcon, (e) -> {
             //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
 //                Item item = (Item) mainCont.getClientProperty("item"); //TODO!!!! is this needed, why notjust access 'item'??
 //                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
@@ -2237,170 +2245,172 @@ refreshAfterEdit();
 //</editor-fold>
         //SWIPEABLE INSERT TASK/SUBTASK
 //        if (myForm instanceof ScreenItem || myForm instanceof ScreenListOfItems) { //TODO!!!! only activate in manually sorted (and persisted) lists
-        boolean insertSwipeNewTaskCont = (myForm instanceof ScreenListOfItems && !((ScreenListOfItems) myForm).isSortOn())
-                || (myForm instanceof ScreenItem2); //TODO!!!! only activate in manually sorted (and persisted) lists
-        if (false && insertSwipeNewTaskCont) { //TODO!!!! only activate in manually sorted (and persisted) lists
-//            buttonSwipeContainer.add(new Label("  "));
-            swipeActionContainer.add(new Label("  "));
-            //TODO!!!! can projectEditMode only be used/launched on a top-level project or also on a sub-project?? (if sub-project, must find another way to test if trying to move the top-level)
-            swipCont.addSwipeOpenListener((e) -> {
-                if (swipCont.isOpenedToRight()) { //Insert newTask container
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (newTaskContainer != null ) { //if there is a previous newTask container remove it
-//                        if (newTaskContainer.getParent()!=null)newTaskContainer.getParent().removeComponent(newTaskContainer); //should be animated away at same time as adding new one below
-//                        newTaskContainer = null;
-//                    }
-//                    Object oldNewTaskCont = swipCont.getComponentForm().getClientProperty(EXISTING_NEW_TASK_CONTAINER);
-//                    if (oldNewTaskCont != null && oldNewTaskCont instanceof Container) { //if there is a previous newTask container remove it
-//                        Container oldNewTaskContC = (Container) oldNewTaskCont;
-//                        if (oldNewTaskContC.getParent() != null) {
-//                            oldNewTaskContC.getParent().removeComponent(oldNewTaskContC); //should be animated away at same time as adding new one below
-//                        }
-//                        swipCont.getComponentForm().putClientProperty(EXISTING_NEW_TASK_CONTAINER, null); //delete when closing the insertTask container
-//                        swipCont.getComponentForm().putClientProperty(INSERT_NEW_TASK_AS_SUBTASK_KEY, null); //delete when closing the insertTask container
-//                    }
-//                    Log.p("Swipe left");
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
+// //<editor-fold defaultstate="collapsed" desc="comment">
+//boolean insertSwipeNewTaskCont = (myForm instanceof ScreenListOfItems && !((ScreenListOfItems) myForm).isSortOn())
+//                || (myForm instanceof ScreenItem2); //TODO!!!! only activate in manually sorted (and persisted) lists
+//        if (false && insertSwipeNewTaskCont) { //TODO!!!! only activate in manually sorted (and persisted) lists
+////            buttonSwipeContainer.add(new Label("  "));
+//            swipeActionContainer.add(new Label("  "));
+//            //TODO!!!! can projectEditMode only be used/launched on a top-level project or also on a sub-project?? (if sub-project, must find another way to test if trying to move the top-level)
+//            swipCont.addSwipeOpenListener((e) -> {
+//                if (swipCont.isOpenedToRight()) { //Insert newTask container
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    if (newTaskContainer != null ) { //if there is a previous newTask container remove it
+////                        if (newTaskContainer.getParent()!=null)newTaskContainer.getParent().removeComponent(newTaskContainer); //should be animated away at same time as adding new one below
+////                        newTaskContainer = null;
+////                    }
+////                    Object oldNewTaskCont = swipCont.getComponentForm().getClientProperty(EXISTING_NEW_TASK_CONTAINER);
+////                    if (oldNewTaskCont != null && oldNewTaskCont instanceof Container) { //if there is a previous newTask container remove it
+////                        Container oldNewTaskContC = (Container) oldNewTaskCont;
+////                        if (oldNewTaskContC.getParent() != null) {
+////                            oldNewTaskContC.getParent().removeComponent(oldNewTaskContC); //should be animated away at same time as adding new one below
+////                        }
+////                        swipCont.getComponentForm().putClientProperty(EXISTING_NEW_TASK_CONTAINER, null); //delete when closing the insertTask container
+////                        swipCont.getComponentForm().putClientProperty(INSERT_NEW_TASK_AS_SUBTASK_KEY, null); //delete when closing the insertTask container
+////                    }
+////                    Log.p("Swipe left");
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    if (false) {
+////                        //When swiping left, create a new container below with a textEntry field (and a status?), and a (x) to close it w/o creating a task.
+////                        //When pressing Enter, add a new task (using keepPos) and create a new container below to add another task
+////                        //When swiping this container right, create a subtasks to the preceding task
+////                        //When swiping this container left, if the container corresponds to a subtask, change it to a top task
+////                        Container cont = new Container(new BorderLayout());
+////
+////                        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Super task"), cont);
+////                        newTaskContainer = swipC;
+////
+////                        swipC.addSwipeOpenListener((ev) -> {
+////                            if (swipC.isOpenedToLeft()) {
+////                                swipC.putClientProperty(SUBTASK_LEVEL_KEY, true);
+////                            } else if (swipC.isOpenedToRight()) {
+//////                            swipC.putClientProperty(SUBTASK_LEVEL_KEY, false);
+////                                swipC.putClientProperty(SUBTASK_LEVEL_KEY, null);
+////                            }
+////                        });
+////
+////                        //Text
+////                        MyTextField2 taskTextEntryField2 = new MyTextField2();
+////                        taskTextEntryField2.setHint("New task");
+////                        taskTextEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE);
+////                        taskTextEntryField2.addActionListener((ev) -> {
+////                            //When pressing ENTER
+////                            String taskText = taskTextEntryField2.getText();
+////                            taskTextEntryField2.setText(""); //clear text
+////                            if (taskText != null && taskText.length() > 0) {
+////                                Item newItem = new Item(taskText);
+////                                refreshOnItemEdits.launchAction();
+////                                DAO.getInstance().save(newItem);
+////                                if (((Boolean) swipC.getClientProperty(SUBTASK_LEVEL_KEY)) == true) { //add task after previous
+////                                    //make a sistertask (insert in same list as item, after item)
+////                                    if (orgList != null && orgList.indexOf(item) != -1) {
+////                                        int index = orgList.indexOf(item);
+////                                        orgList.addItemAtIndex(newItem, index + 1);
+////                                        swipCont.close(); //close swipe container after swipe action
+////                                        refreshOnItemEdits.launchAction();
+////                                    }
+////                                } else { //add as subtask to previous task, and keep the subtask level
+////                                    //make a subtask
+////                                    item.addToList(0, newItem);
+////                                    swipCont.close(); //close swipe container after swipe action
+////                                    refreshOnItemEdits.launchAction();
+////                                    swipC.putClientProperty(SUBTASK_LEVEL_KEY, null); //remove the subtask property so next task does not become a subtask to the subtask
+////                                }
+////                            }
+////                        });
+////
+////                        cont.add(WEST, new Label(Icons.iconCheckboxCreated));
+////                        cont.add(CENTER, taskTextEntryField2);
+////                        cont.add(EAST, new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
+////                            //close the container
+////                            swipC.getParent().removeComponent(swipC);
+////                            newTaskContainer = null;
+////                            swipC.getComponentForm().animateHierarchy(300);
+////                        })));
+////                    }
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    //find place to insert container
+////                    Container swipContParent = swipCont.getParent();
+//////                    Container swipContParentParent = swipContParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
+////                    Container contForInsertTask = swipContParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
+//////                    Container contForInsertTask = swipContParentParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
+////                    ASSERT.that(contForInsertTask instanceof MyTree2, "ERROR - not right place to insert insertTaskContainer, cont=" + contForInsertTask);
+////                    ((ScreenListOfItems) myForm).indexOfSwipContParentParent = contForInsertTask.getComponentIndex(swipContParent);
+////                    Container contWithAddNewTaskCont = new Container(new BorderLayout()); //container to hold the AddNewTask container after the item
+////                    contWithAddNewTaskCont.add(CENTER, mainCont);
+//
+////                    SwipeableContainer swipC = buildAddNewTaskContainer(item, orgList, swipCont, refreshOnItemEdits);
+////                     myForm.lastInsertSwiptCreatedItem = new Item();
+////                    if (myForm.getClientProperty(EXISTING_NEW_TASK_CONTAINER) != null) {
+////                        ((Container) swipCont.getComponentForm().getClientProperty(EXISTING_NEW_TASK_CONTAINER)).getParent().removeComponent((Container) swipCont.getComponentForm().getClientProperty(EXISTING_NEW_TASK_CONTAINER));
+////                    int previousIndex = 0;
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    if (((ScreenListOfItems) myForm).lastInsertNewTaskContainer != null) {
+//////                        myFormScreenListOfItems.lastInsertNewTaskContainer.getParent().removeComponent(myFormScreenListOfItems.lastInsertNewTaskContainer); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
+////                        //NB! remove old container before calculating index, otherwise it may be one off if old container was before new one!!
+//////                        previousIndex = ((ScreenListOfItems) myForm).indexOfSwipContParentParent;
+//////                        ((ScreenListOfItems) myForm).lastInsertNewTaskContainer.getParent().removeComponent(((ScreenListOfItems) myForm).lastInsertNewTaskContainer); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
+////                        ((ScreenListOfItems) myForm).lastInsertNewTaskContainer.closeInsertNewTaskContainer();
+////                    }
+////                    InsertNewTaskContainer insertNewTaskContainer = new InsertNewTaskContainer(item, orgItemOrItemList, myForm);
+////</editor-fold>
+////                    InlineInsertNewElementContainer insertNewTaskContainer = new InlineInsertNewElementContainer(myForm, item, ownerItemOrItemList);
+//                    InsertNewElementFunc insertNewTaskContainer = new InlineInsertNewItemContainer2(myForm, item, ownerItemOrItemList);
+////                    ((ScreenListOfItems) myForm).lastInsertNewTaskContainer = insertNewTaskContainer;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////find place to insert container
+////                    Container swipContParent = swipCont.getParent();
+//////                    Container swipContParentParent = swipContParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
+////                    Container contForInsertTask = swipContParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
+//////                    Container contForInsertTask = swipContParentParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
+////                    ASSERT.that(contForInsertTask instanceof MyTree2, "ERROR - not right place to insert insertTaskContainer, cont=" + contForInsertTask);
+////                    Container contForInsertTask = MyTree2.getListContainer(swipCont);
+////</editor-fold>
+//                    ListAndIndex listAndIndex = MyTree2.getListContainer(swipCont);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    int indexOfSwipContParentParent = contForInsertTask.getComponentIndex(swipContParent);
+////                    myForm.putClientProperty(EXISTING_NEW_TASK_CONTAINER, swipC);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    Container parent = swipCont.getParent();
+////                    int indexOfSwipContParentParent = parent.getComponentIndex(swipCont);
+////                    parent.addComponent(index+1, swipC);
+////                    contWithAddNewTaskCont.add(SOUTH, swipC);
+////                    int adjustPos = ((ScreenListOfItems) myForm).lastInsertNewTaskContainer != null
+////                            ((ScreenListOfItems) myForm).lastInsertNewTaskContainer.contForInsertTask.addComponent(((ScreenListOfItems) myForm).indexOfSwipContParentParent + 1, newTaskContainer);
+////                    contForInsertTask.addComponent(indexOfSwipContParentParent + 1, newTaskContainer);
+////</editor-fold>
+////                    ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+////                    ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+////</editor-fold>
+//                    myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+//                    listAndIndex.list.addComponent(listAndIndex.index + 1, (Component) insertNewTaskContainer);
+////                    myForm.setEditOnShow(insertNewTaskContainer.getTextField());
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    ((ScreenListOfItems) myForm).indexOfSwipContParentParent = newTaskContainer;
+////                    contWithAddNewTaskCont.getComponentForm().animateHierarchy(300);
+////                    contWithAddNewTaskCont.getParent().animateHierarchy(300);
+////                    contForInsertTask.animateHierarchy(300);
+////                    contForInsertTask.animateHierarchy(300);
+////                    res.list.animateHierarchy(300);
+////</editor-fold>
+////                    myForm.animateHierarchy(300);
 //                    if (false) {
-//                        //When swiping left, create a new container below with a textEntry field (and a status?), and a (x) to close it w/o creating a task.
-//                        //When pressing Enter, add a new task (using keepPos) and create a new container below to add another task
-//                        //When swiping this container right, create a subtasks to the preceding task
-//                        //When swiping this container left, if the container corresponds to a subtask, change it to a top task
-//                        Container cont = new Container(new BorderLayout());
-//
-//                        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Super task"), cont);
-//                        newTaskContainer = swipC;
-//
-//                        swipC.addSwipeOpenListener((ev) -> {
-//                            if (swipC.isOpenedToLeft()) {
-//                                swipC.putClientProperty(SUBTASK_LEVEL_KEY, true);
-//                            } else if (swipC.isOpenedToRight()) {
-////                            swipC.putClientProperty(SUBTASK_LEVEL_KEY, false);
-//                                swipC.putClientProperty(SUBTASK_LEVEL_KEY, null);
-//                            }
-//                        });
-//
-//                        //Text
-//                        MyTextField2 taskTextEntryField2 = new MyTextField2();
-//                        taskTextEntryField2.setHint("New task");
-//                        taskTextEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE);
-//                        taskTextEntryField2.addActionListener((ev) -> {
-//                            //When pressing ENTER
-//                            String taskText = taskTextEntryField2.getText();
-//                            taskTextEntryField2.setText(""); //clear text
-//                            if (taskText != null && taskText.length() > 0) {
-//                                Item newItem = new Item(taskText);
-//                                refreshOnItemEdits.launchAction();
-//                                DAO.getInstance().save(newItem);
-//                                if (((Boolean) swipC.getClientProperty(SUBTASK_LEVEL_KEY)) == true) { //add task after previous
-//                                    //make a sistertask (insert in same list as item, after item)
-//                                    if (orgList != null && orgList.indexOf(item) != -1) {
-//                                        int index = orgList.indexOf(item);
-//                                        orgList.addItemAtIndex(newItem, index + 1);
-//                                        swipCont.close(); //close swipe container after swipe action
-//                                        refreshOnItemEdits.launchAction();
-//                                    }
-//                                } else { //add as subtask to previous task, and keep the subtask level
-//                                    //make a subtask
-//                                    item.addToList(0, newItem);
-//                                    swipCont.close(); //close swipe container after swipe action
-//                                    refreshOnItemEdits.launchAction();
-//                                    swipC.putClientProperty(SUBTASK_LEVEL_KEY, null); //remove the subtask property so next task does not become a subtask to the subtask
-//                                }
-//                            }
-//                        });
-//
-//                        cont.add(WEST, new Label(Icons.iconCheckboxCreated));
-//                        cont.add(CENTER, taskTextEntryField2);
-//                        cont.add(EAST, new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
-//                            //close the container
-//                            swipC.getParent().removeComponent(swipC);
-//                            newTaskContainer = null;
-//                            swipC.getComponentForm().animateHierarchy(300);
-//                        })));
+//                        myForm.animateMyForm(); //DOES this redraw the entire screen?
 //                    }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    //find place to insert container
-//                    Container swipContParent = swipCont.getParent();
-////                    Container swipContParentParent = swipContParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
-//                    Container contForInsertTask = swipContParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
-////                    Container contForInsertTask = swipContParentParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
-//                    ASSERT.that(contForInsertTask instanceof MyTree2, "ERROR - not right place to insert insertTaskContainer, cont=" + contForInsertTask);
-//                    ((ScreenListOfItems) myForm).indexOfSwipContParentParent = contForInsertTask.getComponentIndex(swipContParent);
-//                    Container contWithAddNewTaskCont = new Container(new BorderLayout()); //container to hold the AddNewTask container after the item
-//                    contWithAddNewTaskCont.add(CENTER, mainCont);
-
-//                    SwipeableContainer swipC = buildAddNewTaskContainer(item, orgList, swipCont, refreshOnItemEdits);
-//                     myForm.lastInsertSwiptCreatedItem = new Item();
-//                    if (myForm.getClientProperty(EXISTING_NEW_TASK_CONTAINER) != null) {
-//                        ((Container) swipCont.getComponentForm().getClientProperty(EXISTING_NEW_TASK_CONTAINER)).getParent().removeComponent((Container) swipCont.getComponentForm().getClientProperty(EXISTING_NEW_TASK_CONTAINER));
-//                    int previousIndex = 0;
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (((ScreenListOfItems) myForm).lastInsertNewTaskContainer != null) {
-////                        myFormScreenListOfItems.lastInsertNewTaskContainer.getParent().removeComponent(myFormScreenListOfItems.lastInsertNewTaskContainer); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-//                        //NB! remove old container before calculating index, otherwise it may be one off if old container was before new one!!
-////                        previousIndex = ((ScreenListOfItems) myForm).indexOfSwipContParentParent;
-////                        ((ScreenListOfItems) myForm).lastInsertNewTaskContainer.getParent().removeComponent(((ScreenListOfItems) myForm).lastInsertNewTaskContainer); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-//                        ((ScreenListOfItems) myForm).lastInsertNewTaskContainer.closeInsertNewTaskContainer();
-//                    }
-//                    InsertNewTaskContainer insertNewTaskContainer = new InsertNewTaskContainer(item, orgItemOrItemList, myForm);
-//</editor-fold>
-//                    InlineInsertNewElementContainer insertNewTaskContainer = new InlineInsertNewElementContainer(myForm, item, ownerItemOrItemList);
-                    InsertNewElementFunc insertNewTaskContainer = new InlineInsertNewItemContainer2(myForm, item, ownerItemOrItemList);
-//                    ((ScreenListOfItems) myForm).lastInsertNewTaskContainer = insertNewTaskContainer;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//find place to insert container
-//                    Container swipContParent = swipCont.getParent();
-////                    Container swipContParentParent = swipContParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
-//                    Container contForInsertTask = swipContParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
-////                    Container contForInsertTask = swipContParentParent.getParent(); //swipCont is inserted into a Container in a Container in the Tree list
-//                    ASSERT.that(contForInsertTask instanceof MyTree2, "ERROR - not right place to insert insertTaskContainer, cont=" + contForInsertTask);
-//                    Container contForInsertTask = MyTree2.getListContainer(swipCont);
-//</editor-fold>
-                    ListAndIndex listAndIndex = MyTree2.getListContainer(swipCont);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    int indexOfSwipContParentParent = contForInsertTask.getComponentIndex(swipContParent);
-//                    myForm.putClientProperty(EXISTING_NEW_TASK_CONTAINER, swipC);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    Container parent = swipCont.getParent();
-//                    int indexOfSwipContParentParent = parent.getComponentIndex(swipCont);
-//                    parent.addComponent(index+1, swipC);
-//                    contWithAddNewTaskCont.add(SOUTH, swipC);
-//                    int adjustPos = ((ScreenListOfItems) myForm).lastInsertNewTaskContainer != null
-//                            ((ScreenListOfItems) myForm).lastInsertNewTaskContainer.contForInsertTask.addComponent(((ScreenListOfItems) myForm).indexOfSwipContParentParent + 1, newTaskContainer);
-//                    contForInsertTask.addComponent(indexOfSwipContParentParent + 1, newTaskContainer);
-//</editor-fold>
-//                    ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-//                    ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-//</editor-fold>
-                    myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                    listAndIndex.list.addComponent(listAndIndex.index + 1, (Component) insertNewTaskContainer);
-//                    myForm.setEditOnShow(insertNewTaskContainer.getTextField());
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    ((ScreenListOfItems) myForm).indexOfSwipContParentParent = newTaskContainer;
-//                    contWithAddNewTaskCont.getComponentForm().animateHierarchy(300);
-//                    contWithAddNewTaskCont.getParent().animateHierarchy(300);
-//                    contForInsertTask.animateHierarchy(300);
-//                    contForInsertTask.animateHierarchy(300);
-//                    res.list.animateHierarchy(300);
-//</editor-fold>
-//                    myForm.animateHierarchy(300);
-                    if (false) {
-                        myForm.animateMyForm(); //DOES this redraw the entire screen?
-                    }
-//                    insertNewTaskContainer.setTextFieldEditableOnShow(myForm);
-                    myForm.restoreKeepPos(); //THIS IS NEEDED to keep the position
-//                    myForm.scrollComponentToVisible(insertNewTaskContainer); //necessary in the (rare) case that an expanded project w many subtasks is swiped so insertTask is added after the subtasks, outside the visible screen
-//                    myForm.show(); //TODO: need to 
-                }
-//                else if (swipCont.isOpenedToRight()) {
-//                    Log.p("Swipe right");
+////                    insertNewTaskContainer.setTextFieldEditableOnShow(myForm);
+//                    myForm.restoreKeepPos(); //THIS IS NEEDED to keep the position
+////                    myForm.scrollComponentToVisible(insertNewTaskContainer); //necessary in the (rare) case that an expanded project w many subtasks is swiped so insertTask is added after the subtasks, outside the visible screen
+////                    myForm.show(); //TODO: need to
 //                }
-            });
-        }
+////                else if (swipCont.isOpenedToRight()) {
+////                    Log.p("Swipe right");
+////                }
+//            });
+//        }
+//</editor-fold>
 //        } //else {
         //TIMER
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2411,14 +2421,17 @@ refreshAfterEdit();
         if (true || myFormScreenListOfItems == null || !myFormScreenListOfItems.projectEditMode) {
 //                    buttonSwipeContainer.add(new Button(new Command(null, Icons.iconTimerSymbolToolbarStyle) {
 //            Button startTimer = new Button(MyReplayCommand.create("StartTimer-" + item.getObjectIdP(), null, Icons.iconTimerSymbolToolbarStyle, (ev) -> {
-            Button startTimer = new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
+//            Button startTimer = new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
+            //NO replay on starting timer (started timers will be saved and restarted automatically without relying on replay commands)
+            Button startTimer = new Button(Command.create(null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
 //                        @Override
 //                        public void actionPerformed(ActionEvent evt) {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
 //                ScreenTimer2.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
-                TimerStack.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm());//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+//                TimerStack.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm());//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+                TimerStack.getInstance().startTimerOnItem(item, myForm);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
 //                        }
                 swipCont.close(); //close before save 
 
@@ -2468,6 +2481,7 @@ refreshAfterEdit();
 
         //UPDATE DUE DATE
         if (!item.isTemplate() && !isDone && myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE)) { //UI: only show in Today view
+            setDueDateToToday = new Button(null, Icons.iconSetDueDateToToday());
             setDueDateToToday.addActionListener((e) -> {
 //                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //NB keeping the position of item doesn't make sense since this command can make it disappear (e.g. in Overdue screen)
 //                myForm.setKeepPos(new KeepInSameScreenPosition(swipCont)); //ASSERT since swipCont not ScrollableY
@@ -2666,7 +2680,7 @@ refreshAfterEdit();
 
         final Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
 
-        Command editItemCmd = MyReplayCommand.create("EditWorkSlot-" , workSlot.getObjectIdP(), "", editItemIcon, (e) -> {
+        Command editItemCmd = MyReplayCommand.create("EditWorkSlot-", workSlot.getObjectIdP(), "", editItemIcon, (e) -> {
             //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
             myForm.setKeepPos(new KeepInSameScreenPosition(workSlot, swipCont));
             new ScreenWorkSlot(workSlot, (MyForm) swipCont.getComponentForm(), () -> {
@@ -3498,13 +3512,18 @@ refreshAfterEdit();
 //                addNewTask(newItem, (MyPrefs.insertNewItemsInStartOfLists.getBoolean()) && (!projectEditMode) ? 0 : itemListOrg.getSize()); //in projectEditMode, always insert at end of list
 //
 //    }
-//    protected Container buildContentPaneForItemList(ItemList listOfItems) {
-//    protected Container buildContentPaneForItemList(ItemAndListCommonInterface listOfItems) {
-//        return buildContentPaneForItemList(listOfItems, expandedObjects, itemListOrg, ScreenListOfItems.this,  keepPos);
+//    protected Container buildContentPaneForListOfItems(ItemList listOfItems) {
+//    protected Container buildContentPaneForListOfItems(ItemAndListCommonInterface listOfItems) {
+//        return buildContentPaneForListOfItems(listOfItems, expandedObjects, itemListOrg, ScreenListOfItems.this,  keepPos);
 //    }
 //    protected static
 //</editor-fold>
-    Container buildContentPaneForItemList(ItemAndListCommonInterface listOfItems //, HashSet expandedObjects, ItemAndListCommonInterface itemListOrg, MyForm myForm, KeepInSameScreenPosition keepPos
+    /**
+    
+    @param listOfItems can be ItemList, Item, or Category
+    @return 
+     */
+    Container buildContentPaneForListOfItems(ItemAndListCommonInterface listOfItems //, HashSet expandedObjects, ItemAndListCommonInterface itemListOrg, MyForm myForm, KeepInSameScreenPosition keepPos
 
     ) {
 //        parseIdMapReset();
@@ -3667,7 +3686,10 @@ refreshAfterEdit();
         } else {
 //            return new InsertNewTaskContainer(null, listOfItems, ScreenListOfItems.this);
 //            return new InlineInsertNewElementContainer(this, null, listOfItems);
-            return new InlineInsertNewItemContainer2(this, null, listOfItems);
+            if (listOfItems instanceof Category)
+                return new InlineInsertNewItemContainer2(this, null, null, (Category) listOfItems, false); //UI: in an empty list you can insert a new task via the inlineInsert container
+            else
+                return new InlineInsertNewItemContainer2(this, null, listOfItems, null, false); //UI: in an empty list you can insert a new task via the inlineInsert container
         }
 
     }

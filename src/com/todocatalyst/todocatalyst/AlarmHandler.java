@@ -135,7 +135,7 @@ public class AlarmHandler {
         Item item;
         while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
             item = newAlarmsList.remove(0);
-            notificationList.addAlarmAndRepeat(item, item.getFirstFutureAlarmRecord());
+            notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecord());
         }
         refreshInAppTimerAndSaveNotificationList();
     }

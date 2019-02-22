@@ -65,6 +65,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    private final static String ALARM_UPDATE = "UpdateAlarm";
     private boolean mustUpdateAlarms = false;
     private boolean noSave = false;
+    private FilterSortDef hardcodedFilter = null;
 
     /**
      * Copied from CN1 OnOffSwitch.java
@@ -74,7 +75,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private EventDispatcher listeners = new EventDispatcher();
 
 //    private List<WorkSlot> workSlotListBuffer;
-    private WorkSlotList workSlotListBuffer;
+//    private WorkSlotList workSlotListBuffer;
 //    private static WorkTimeDefinition wtd; //calculated when needed
     private WorkTimeAllocator workTimeAllocator; //calculated when needed
 //    private WorkTimeSlices workTime;// = new ItemList(); //lazy
@@ -969,7 +970,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_CREATED_AT = "createdAt"; //cannot be edited (PARSE set field)
     final static String PARSE_IMPORTANCE_URGENCY = "impUrgValue"; //cannot be edited (PARSE set field)
     final static String PARSE_ORIGINAL_SOURCE = "source"; //for an interrupt task: which task was interrupted (taken from Timer)
-    final static String PARSE_FIRST_ALARM = "firstAlarm"; //first-coming/next-coming alarm (to allow easy search in Parse)
+    final static String PARSE_NEXTCOMING_ALARM = "nextAlarm"; //first-coming/next-coming alarm (to allow easy search in Parse)
     final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
     final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the 
     final static String PARSE_FILTER_SORT_DEF = "filterSort";
@@ -1725,7 +1726,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                //if copying *from* a template into an item, *add* the template's categories (if any) instead of overwriting, to ensure already set categories are not lost
 //                destination.getCategories().addAll(getCategories()); //just add the same categories
 //            }
-            if (destination.getObjectIdP() == null) {
+            if (false && destination.getObjectIdP() == null) { //now done in ScreenItem2
                 DAO.getInstance().save(destination); //need to save destination before we can save copies of subtasks with it as owner or add it to categories
             }
 
@@ -2190,7 +2191,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    @Override
     @Override
 //    public List<Item> getList() {
-    public List getList() {
+    public List getListFull() {
         List<Item> list = getList(PARSE_SUBTASKS);
         if (list != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
@@ -2198,6 +2199,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             return new ArrayList();
         }
+    }
+
+    @Override
+//    public List<Item> getList() {
+    public List getList() {
+        return getListFull(); //TODO!!!! implement filter/sort
     }
 
     /**
@@ -2219,7 +2226,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         List subtasks = getList();
         boolean status = true;
         subtasks.add(index, subtask);
-        ASSERT.that( subtask.getOwner() == null, "subItemOrList owner not null when adding to list, subtask=" + subtask + ", owner=" + subtask.getOwner() + ", list=" + this);
+        ASSERT.that(subtask.getOwner() == null, "subItemOrList owner not null when adding to list, subtask=" + subtask + ", owner=" + subtask.getOwner() + ", list=" + this);
         subtask.setOwner(this);
         ((Item) subtask).updateValuesInheritedFromOwner();
         setList(subtasks);
@@ -2233,7 +2240,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        setList(subtasks);
 //        return status;
 //        return addToList(MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : getList().size(), subItemOrList); //TODO!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
-        return addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean()?0:getList().size(), subItemOrList); //DONE!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
+        return addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : getList().size(), subItemOrList); //DONE!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
     }
 
     @Override
@@ -2266,6 +2273,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return status;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public ItemList getItemList() {
     /**
      * returns a list with the current subtasks, or an empty list if none are
@@ -2273,38 +2281,38 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return always a list
      */
-    public ItemList getItemList() {
-//        List subitemslist = getList(PARSE_SUBTASKS);
-        List subitemslist = getList();
-        return subitemslist == null ? new ItemList() : new ItemList(subitemslist);
-//        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
-//        Item.
-//        query.include(PARSE_SUBTASKS);
-//        query.include(PARSE_SUBTASKS+"."+Item.CLASS_NAME);
-//        query.include(Item.PARSE_SUBTASKS + "." + Item.PARSE_TEXT);
-//        List subitemslist = null;
-//        try {
-//            subitemslist = query.find();
-//        } catch (ParseException ex) {
-////            switch (ex.)
-//            Log.e(ex);
-//        }
-//        if (subitemslist == null) {
-////            new LinkedList<Item>();
-//            subitems = new ItemList();
-//        } else {
-//            subitems = new ItemList(subitemslist);
-//        }
-////        if (subitems == null) {
-////            subitems = new ItemList(BaseItemTypes.ITEM, this, false, isEnsureItemCategoryAutoConsistency(), true, true); //ItemListSaveInline(this); //addMultipleInstances=false(even though it gives an expensive test on each insertion it is safer so no insertLink can make a subtask appear several times)
+//    public ItemList getItemList() {
+////        List subitemslist = getList(PARSE_SUBTASKS);
+//        List subitemslist = getList();
+//        return subitemslist == null ? new ItemList() : new ItemList(subitemslist);
+////        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+////        Item.
+////        query.include(PARSE_SUBTASKS);
+////        query.include(PARSE_SUBTASKS+"."+Item.CLASS_NAME);
+////        query.include(Item.PARSE_SUBTASKS + "." + Item.PARSE_TEXT);
+////        List subitemslist = null;
+////        try {
+////            subitemslist = query.find();
+////        } catch (ParseException ex) {
+//////            switch (ex.)
+////            Log.e(ex);
 ////        }
-//        return subitems;
-    }
-
-    public void setItemList(ItemList itemList) {
-        setList(itemList.getList());
-    }
-
+////        if (subitemslist == null) {
+//////            new LinkedList<Item>();
+////            subitems = new ItemList();
+////        } else {
+////            subitems = new ItemList(subitemslist);
+////        }
+//////        if (subitems == null) {
+//////            subitems = new ItemList(BaseItemTypes.ITEM, this, false, isEnsureItemCategoryAutoConsistency(), true, true); //ItemListSaveInline(this); //addMultipleInstances=false(even though it gives an expensive test on each insertion it is safer so no insertLink can make a subtask appear several times)
+//////        }
+////        return subitems;
+//    }
+//
+//    public void setItemList(ItemList itemList) {
+//        setList(itemList.getList());
+//    }
+//</editor-fold>
     /**
      * returns the index of the subitem/subtask in the list of subtasks
      *
@@ -3288,7 +3296,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     private List<AlarmRecord> getAllAlarmRecords(Date onOrAfterDate, boolean sorted) {
-        //TODO //optimization: keep track of whether alarms have been changed to avoid recalculating this at every  call of getFirstFutureAlarm() //NO, probably very little to be gained
+        //TODO //optimization: keep track of whether alarms have been changed to avoid recalculating this at every  call of getNextcomingAlarm() //NO, probably very little to be gained
         List<AlarmRecord> list = new ArrayList();
         Date date;
         if ((date = getSnoozeDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
@@ -3312,7 +3320,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return getAllAlarmRecords(new Date(), true);
     }
 
-    public AlarmRecord getFirstFutureAlarmRecord() {
+    public AlarmRecord getNextcomingAlarmRecord() {
         List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
         return list.isEmpty() ? null : list.get(0);
     }
@@ -3323,54 +3331,55 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    public Date getFirstFutureAlarm() {
+    public Date getNextcomingAlarm() {
 //        return getAllAlarmRecords(new Date(), true).get(0).alarmTime;
         List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
         return list.isEmpty() ? null : list.get(0).alarmTime;
     }
 
-    public void updateFirstAlarm() {
-        Date date = getFirstFutureAlarm(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
+    public void updateNextcomingAlarm() {
+        Date date = getNextcomingAlarm(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
         if (date == null) { //list.isEmpty()) {
-            remove(PARSE_FIRST_ALARM);
+            remove(PARSE_NEXTCOMING_ALARM);
         } else {
-            put(PARSE_FIRST_ALARM, date); //list.get(0).alarmTime);
+            put(PARSE_NEXTCOMING_ALARM, date); //list.get(0).alarmTime);
         }
     }
-
-    private void updateFirstAlarmOLD() {
-        Date alarm = getDate(PARSE_ALARM_DATE);
-        Date waiting = getDate(PARSE_WAITING_ALARM_DATE);
-        if (alarm != null) {
-            if (waiting != null) {
-                if (alarm.getTime() < waiting.getTime()) {
-                    put(PARSE_FIRST_ALARM, alarm);
-                } else {
-                    put(PARSE_FIRST_ALARM, waiting);
-                }
-            } else {
-                put(PARSE_FIRST_ALARM, alarm);
-            }
-        } else if (waiting != null) { //alarm==null
-            put(PARSE_FIRST_ALARM, waiting);
-        } else { // alarm==null && waiting==null
-            remove(PARSE_FIRST_ALARM);
-        }
-    }
+///<editor-fold defaultstate="collapsed" desc="comment">
+//    private void updateFirstAlarmOLD() {
+//        Date alarm = getDate(PARSE_ALARM_DATE);
+//        Date waiting = getDate(PARSE_WAITING_ALARM_DATE);
+//        if (alarm != null) {
+//            if (waiting != null) {
+//                if (alarm.getTime() < waiting.getTime()) {
+//                    put(PARSE_NEXTCOMING_ALARM, alarm);
+//                } else {
+//                    put(PARSE_NEXTCOMING_ALARM, waiting);
+//                }
+//            } else {
+//                put(PARSE_NEXTCOMING_ALARM, alarm);
+//            }
+//        } else if (waiting != null) { //alarm==null
+//            put(PARSE_NEXTCOMING_ALARM, waiting);
+//        } else { // alarm==null && waiting==null
+//            remove(PARSE_NEXTCOMING_ALARM);
+//        }
+//    }
+//</editor-fold>
 
     /**
      * returns null if no date is defined
      */
-    public Date getFirstAlarmDateD() {
-        Date date = getDate(PARSE_FIRST_ALARM);
+    public Date getNextcomingAlarmDateD() {
+        Date date = getDate(PARSE_NEXTCOMING_ALARM);
         return date; //(date == null) ? new Date(0) : date;
     }
 
-    public void setFirstAlarmDate(Date firstAlarmDate) {
+    public void setNextcomingAlarmDate(Date firstAlarmDate) {
         if (firstAlarmDate != null && firstAlarmDate.getTime() != 0) {
-            put(PARSE_FIRST_ALARM, firstAlarmDate);
+            put(PARSE_NEXTCOMING_ALARM, firstAlarmDate);
         } else {
-            remove(PARSE_FIRST_ALARM);
+            remove(PARSE_NEXTCOMING_ALARM);
         }
     }
 
@@ -3388,7 +3397,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_ALARM_DATE);
         }
         if (false) {
-            updateFirstAlarm(); //done in save() now
+            updateNextcomingAlarm(); //done in save() now
         }//        if (!isTemplate() && oldAlarmDate != null && alarmDate.getTime() != 0) {
         if (!isTemplate() && !oldAlarmDate.equals(alarmDate)) {
 //            afterSaveActions.put(AFTER_SAVE_ALARM_UPDATE, () -> AlarmHandler.getInstance().updateReminderAlarm(this, oldAlarmDate, alarmDate));
@@ -3431,7 +3440,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return //
      */
 //    private Date getFirstAlarmGreaterThanOrEqualUSING_FIRSTALARM(Date time) {
-//        Date firstAlarm = getFirstAlarmDateD();
+//        Date firstAlarm = getNextcomingAlarmDateD();
 //        if (firstAlarm.getTime() >= time.getTime()) {
 //            return firstAlarm;
 //        } else {
@@ -3594,7 +3603,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_WAITING_ALARM_DATE);
         }
         if (false) {
-            updateFirstAlarm(); //done in save() now
+            updateNextcomingAlarm(); //done in save() now
         }
         if (!isTemplate() && !oldAlarmDate.equals(waitingAlarmDate)) {
 //            afterSaveActions.put("WaitingAlarmDate", () -> AlarmHandler.getInstance().updateWaitingAlarm(this, oldAlarmDate, waitingAlarmDate));
@@ -4201,7 +4210,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     @Override
-    public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses) {
+    public int getCountOfSubtasksWithStatus(boolean recurse, List statuses) {
         List list = getList();
         if (list == null || list.size() == 0) {
             return statuses.indexOf(getStatus()) >= 0 ? 1 : 0;
@@ -7385,8 +7394,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (isDirty()) {
             listeners.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
         }
-        updateFirstAlarm();
-        super.save();
+
+        updateNextcomingAlarm();
+
+        if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+            Inbox.getInstance().addToList(this);
+            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
+            DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());
+        } else {
+            super.save();
+        }
 //        if (afterSaveActions.containsKey(AFTER_SAVE_ALARM_UPDATE)) {
 //            afterSaveActions.remove(AFTER_SAVE_TEXT_UPDATE); //if we're updating alarms due to time change, we can ignore any changed to the text
 //        }
@@ -7613,7 +7630,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 || getActualEffort() != 0
                 || getRemainingEffort() != 0
                 || getCategories().size() != 0
-                || getItemList().size() != 0;
+                || getListFull().size() != 0;
     }
 
     /**
@@ -8706,9 +8723,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param filterSortDef
      */
     public void setFilterSortDef(FilterSortDef filterSortDef) {
-        if (filterSortDef != null) {
+        if (filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) { //only save filter for subtasks if modified!
             if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved
-                DAO.getInstance().save(filterSortDef); //
+                DAO.getInstance().saveInBackground(filterSortDef); //
             }
             put(PARSE_FILTER_SORT_DEF, filterSortDef);
         } else {
@@ -8716,15 +8733,27 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+    private FilterSortDef getDefaultFilterSortDef() {
+//            new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true)
+        FilterSortDef hardcodedFilter = new FilterSortDef(null, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //no sorting, 
+        return hardcodedFilter;
+    }
+
     public FilterSortDef getFilterSortDef() {
-        FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
-        filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null) {
 //            return filterSortDef;
 //        } else {
 //            return null;
 //        }
-        return filterSortDef;
+//</editor-fold>
+        FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
+        if (filterSortDef != null) {
+            filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
+            return filterSortDef;
+        } else {
+            return getDefaultFilterSortDef();
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

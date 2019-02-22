@@ -201,13 +201,16 @@ public class DAO {
         if (parseObject instanceof WorkSlot) {
             cacheWorkSlots.delete(parseObject.getObjectIdP());
 //        } else if (parseObject instanceof ParseObject) {
-        } else  {
-            ItemAndListCommonInterface elt = (ItemAndListCommonInterface) parseObject;
-            for (ItemAndListCommonInterface subelt : elt.getList()) {
-                removeFromCache((ParseObject) subelt);
+        } else {
+            if (parseObject != null) {
+                ItemAndListCommonInterface elt = (ItemAndListCommonInterface) parseObject;
+//            for (ItemAndListCommonInterface subelt : elt.getList()) {
+                for (Object subelt : elt.getListFull()) {
+                    removeFromCache((ParseObject) subelt);
+                }
             }
             cache.delete(parseObject.getObjectIdP());
-        } 
+        }
 //        else {
 //            ASSERT.that("trying to delete non-ParseObject =" + parseObject);
 //        }
@@ -420,9 +423,10 @@ public class DAO {
                 if (Config.TEST) {
                     int i2 = i;
                     int size2 = size;
-                    ASSERT.that((val != null), () -> "entry nb=" + i2 + " is null! In list  with size=" + size2 + ", name="
-                            + (list instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) list).getText() : "<none>") + ", parseId="
-                            + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "<none>")
+                    ASSERT.that((val != null), ()
+                            -> "entry nb=" + i2 + " is null! In list  with size=" + size2
+                            + ", name=" + (list instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) list).getText() : "<none>")
+                            + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "<none>")
                             + ", toString=" + list.toString());
                     ASSERT.that((val != JSONObject.NULL), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name="
                             + (list instanceof ItemList ? ((ItemList) list).getText() : "")
@@ -2329,6 +2333,31 @@ public class DAO {
         saveInBackground(Arrays.asList(anyParseObject));
     }
 
+//    private List<Item> saveTemplateCopyWithSubtasksInBackgroundImpl(List<Item> tasksInSaveOrder, Item projectOrItem) {
+    private List saveTemplateCopyWithSubtasksInBackgroundImpl(List tasksInSaveOrder, Item projectOrItem) {
+        if (!projectOrItem.isProject()) {
+            tasksInSaveOrder.add(projectOrItem);
+            return tasksInSaveOrder;
+        } else {
+            //first add all subtasks (so they are saved and given an ObjectId before their project is saved)
+            for (Object obj : projectOrItem.getListFull()) {
+                Item item = (Item) obj;
+                tasksInSaveOrder.addAll(saveTemplateCopyWithSubtasksInBackgroundImpl(tasksInSaveOrder, item));
+            }
+            tasksInSaveOrder.add(projectOrItem);
+        }
+        return tasksInSaveOrder;
+    }
+
+    /**
+    save eg a template copy in the right order (all leaf subtasks before their owner project, so all are given objectiIds before saving references to them)
+    @param projectOrItem 
+    */
+    public void saveTemplateCopyWithSubtasksInBackground(Item projectOrItem) {
+//        saveInBackground((List<ParseObject>)saveTemplateCopyWithSubtasksInBackgroundImpl(new ArrayList<Item>(), projectOrItem));
+        saveInBackground(saveTemplateCopyWithSubtasksInBackgroundImpl(new ArrayList(), projectOrItem));
+    }
+
     private EasyThread backgroundSaveQueueThread = EasyThread.start("DAO.backgroundQueueSave"); //thread with background task
     private List<ParseObject> backgroundSaveQueue = new ArrayList<>();
     private Object backgroundSaveQueueLock = new Object();
@@ -3145,7 +3174,7 @@ public class DAO {
 
         if (false) {
             query
-                    .whereLessThan(Item.PARSE_FIRST_ALARM,
+                    .whereLessThan(Item.PARSE_NEXTCOMING_ALARM,
                             new Date(System
                                     .currentTimeMillis() + MyPrefs.alarmDaysAheadToFetchFutureAlarms
                                             .getInt() * MyDate.DAY_IN_MILLISECONDS
@@ -3153,13 +3182,13 @@ public class DAO {
 
         } else {
             query
-                    .whereExists(Item.PARSE_FIRST_ALARM
+                    .whereExists(Item.PARSE_NEXTCOMING_ALARM
                     );
 
         }
         if (false) {
             query
-                    .addAscendingOrder(Item.PARSE_FIRST_ALARM
+                    .addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM
                     ); //sort on the alarm field
 
         }
@@ -3205,7 +3234,7 @@ public class DAO {
             numberOfItemsRetrieved
                     = results
                             .size();
-            //remove all items where getFirstAlarmDateD is no longer valid (time has passed and getFirstFutureAlarm() returns another later value or null - meaning no more alarms)
+            //remove all items where getNextcomingAlarmDateD is no longer valid (time has passed and getNextcomingAlarm() returns another later value or null - meaning no more alarms)
             List<Item> expired
                     = new ArrayList();
             //Solution from http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection :
@@ -3225,7 +3254,7 @@ public class DAO {
                                 .next();
                 firstDate
                         = item
-                                .getFirstAlarmDateD();
+                                .getNextcomingAlarmDateD();
 
                 if (firstDate
                         != null && firstDate
@@ -3237,7 +3266,7 @@ public class DAO {
                 }
                 Date futureDate
                         = item
-                                .getFirstFutureAlarm();
+                                .getNextcomingAlarm();
 
                 if (futureDate
                         == null || futureDate
@@ -3253,7 +3282,7 @@ public class DAO {
             }
 
             //if any of the items with expired alarms have a new alarm that is within the range of the other items, then keep it (add it back in the list)
-//            Date lastAlarmDate = results.get(results.size() - 1).getFirstAlarmDateD();
+//            Date lastAlarmDate = results.get(results.size() - 1).getNextcomingAlarmDateD();
             List<ParseObject> updated
                     = new ArrayList();
 
@@ -3268,13 +3297,13 @@ public class DAO {
                         = expired
                                 .get(i
                                 );
-//            Date firstFutureAlarm = expItem.getFirstFutureAlarm(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
-//            expItem.updateFirstAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
+//            Date firstFutureAlarm = expItem.getNextcomingAlarm(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+//            expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
                 expItem
-                        .updateFirstAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
+                        .updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
                 Date newFirstAlarm
                         = expItem
-                                .getFirstAlarmDateD(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+                                .getNextcomingAlarmDateD(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
                 updated
                         .add(expItem
                         ); //save for a ParseServer update whether now null or with new value
@@ -3316,18 +3345,18 @@ public class DAO {
                     .sort(results,
                             (object1,
                                     object2) -> {
-                                if (((Item) object1).getFirstAlarmDateD() == null) {
+                                if (((Item) object1).getNextcomingAlarmDateD() == null) {
                                     return -1;
 
                                 }
-                                if (((Item) object2).getFirstAlarmDateD() == null) {
+                                if (((Item) object2).getNextcomingAlarmDateD() == null) {
                                     return 1;
 
                                 }
                                 return FilterSortDef
                                         .compareDate(object1
-                                                .getFirstAlarmDateD(), object2
-                                                        .getFirstAlarmDateD());
+                                                .getNextcomingAlarmDateD(), object2
+                                                        .getNextcomingAlarmDateD());
 
                             });
 
@@ -3572,9 +3601,9 @@ public class DAO {
 //    public Item getNextItemWithAlarmNOGOOD(Date timeAfterWhichToFindNextItem) {
 //        ParseQuery<Item> queryAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
 //        setupItemQueryNotTemplateNotDeletedLimit10000(queryAlarm);
-////        setupAlarmQuery(queryAlarm, Item.PARSE_FIRST_ALARM, timeAfterWhichToFindNextItem, new Date(0), 1);
-//        queryAlarm.whereGreaterThan(Item.PARSE_FIRST_ALARM, timeAfterWhichToFindNextItem);
-////        queryAlarm.addAscendingOrder(Item.PARSE_FIRST_ALARM); //sort on the alarm field - NOT necessary since get max 1
+////        setupAlarmQuery(queryAlarm, Item.PARSE_NEXTCOMING_ALARM, timeAfterWhichToFindNextItem, new Date(0), 1);
+//        queryAlarm.whereGreaterThan(Item.PARSE_NEXTCOMING_ALARM, timeAfterWhichToFindNextItem);
+////        queryAlarm.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on the alarm field - NOT necessary since get max 1
 //        queryAlarm.setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
 ////        queryAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //item that are NOT DONE or CANCELLED
 ////        queryAlarm.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.CANCELLED.toString()); //item that are NOT DONE or CANCELLED
@@ -4483,7 +4512,7 @@ public class DAO {
 
 //        for (Category cat : CategoryList.getInstance().getList()) {
         for (Object o : CategoryList.getInstance().getList()) {
-            Category cat = (Category)o;
+            Category cat = (Category) o;
             if (cat.getFilterSortDef() != null) {
                 catsWithFilter.put(cat.getFilterSortDef(), cat);
             }
@@ -4491,8 +4520,8 @@ public class DAO {
         Map<FilterSortDef, ItemList> itemListsWithFilter = new HashMap<>();
 
 //        for (ItemList itemList : ItemListList.getInstance().getList()) {
-            for (Object o : ItemListList.getInstance().getList()) {
-                ItemList itemList = (ItemList)o;
+        for (Object o : ItemListList.getInstance().getList()) {
+            ItemList itemList = (ItemList) o;
             if (itemList.getFilterSortDef() != null) {
                 itemListsWithFilter.put(itemList.getFilterSortDef(), itemList);
             }
@@ -5736,25 +5765,24 @@ public class DAO {
 //        getItemListList(); //will cache the list of ItemLists
 //        getTemplateList(); //will cache the list of Templates
 
-if (true){
-        Log.p("Caching CategoryList");
+        if (true) {
+            Log.p("Caching CategoryList");
 //        somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
 //        CategoryList.getInstance().reloadFromParse();
 //        CategoryList.getInstance();
-        CategoryList.getInstance().reloadFromParse();
-        cachePut(CategoryList.getInstance());
-        
+            CategoryList.getInstance().reloadFromParse();
+            cachePut(CategoryList.getInstance());
 
-        Log.p("Caching ItemListList");
+            Log.p("Caching ItemListList");
 //        somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
-        ItemListList.getInstance().reloadFromParse();
-        cachePut(ItemListList.getInstance());
+            ItemListList.getInstance().reloadFromParse();
+            cachePut(ItemListList.getInstance());
 
-        Log.p("Caching TemplateList");
+            Log.p("Caching TemplateList");
 //        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
-        TemplateList.getInstance().reloadFromParse();
-        cachePut(TemplateList.getInstance());
-}
+            TemplateList.getInstance().reloadFromParse();
+            cachePut(TemplateList.getInstance());
+        }
 //        cacheUpdateAllCategoryItemReferences(categoryList);
 //        cacheUpdateAllItemListItemReferences(itemListLists);
 //        cacheUpdateAllItemReferences();

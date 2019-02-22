@@ -247,7 +247,7 @@ public class MyAnalyticsService {
 
     static void event(MyForm sourceForm, String eventAction, String eventLabel, int evenValue) {
 //        instance.eventHit(sourceForm != null ? sourceForm.getTitle() : "<NoForm>", eventAction, eventLabel, evenValue);
-        instance.eventHit(sourceForm != null ? ((MyForm) sourceForm).getFormUniqueId() : "<NoForm>", eventAction, eventLabel, evenValue);
+        instance.eventHit(sourceForm != null ? ((MyForm) sourceForm).getUniqueFormId() : "<NoForm>", eventAction, eventLabel, evenValue);
     }
 
     static void event(MyForm sourceForm, String eventAction) {

@@ -48,9 +48,14 @@ public class ScreenMain extends MyForm {
 //        setToolbar(toolbar);
 //        toolbar.setScrollOffUponContentPane(true);
 //        setLayout(new BorderLayout());
-        setLayout(BoxLayout.y());
+//        setLayout(BoxLayout.y());
+        setLayout(new BorderLayout());
         getContentPane().setScrollableY(true);
-        addCommandsToToolbar(getToolbar(), getContentPane());//, theme);
+        Container contentContainer = new Container(BoxLayout.y());
+        contentContainer.setScrollableY(true);
+        add(BorderLayout.CENTER,contentContainer);
+//        addCommandsToToolbar(getToolbar(), getContentPane());//, theme);
+        addCommandsToToolbar(getToolbar(), contentContainer);//, theme);
 //        addCommandsToToolbar(new Toolbar(), getContentPane());//, theme); //new Toolbar() hack to hide the toolbar
         if (false) {
             getToolbar().setUIID("Container");

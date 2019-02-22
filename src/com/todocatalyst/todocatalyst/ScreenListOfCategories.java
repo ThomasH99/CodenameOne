@@ -86,7 +86,7 @@ public class ScreenListOfCategories extends MyForm {
         if (!(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
-        expandedObjects = new ExpandedObjects("ScreenCategories", categoryList);
+        expandedObjects = new ExpandedObjects(getUniqueFormId());
         addCommandsToToolbar(getToolbar());
         if (false) getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
@@ -103,7 +103,7 @@ public class ScreenListOfCategories extends MyForm {
             });
         getToolbar().addSearchCommand(makeSearchFunctionSimple(categoryList));
 
-//        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(this.categoryList));
+//        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.categoryList));
         refreshAfterEdit();
     }
 
@@ -116,7 +116,11 @@ public class ScreenListOfCategories extends MyForm {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         categoryList.resetWorkTimeDefinition();
-        getContentPane().add(BorderLayout.CENTER, buildContentPaneForItemList(categoryList));
+        Container cont= buildContentPaneForItemList(categoryList);
+        getContentPane().add(BorderLayout.CENTER, cont);
+           if (cont instanceof MyTree2) {
+            setStartEditingAsync(((MyTree2)cont).getAsyncEditField());
+        }
         revalidate();
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
@@ -518,7 +522,7 @@ public class ScreenListOfCategories extends MyForm {
 //            }
 //</editor-fold>
             @Override
-            protected Component createNode(Object node, int depth, Category category) {
+            protected Component createNode(Object node, int depth, Category cat) {
                 Container cmp = null;
                 if (node instanceof Item) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -533,7 +537,7 @@ public class ScreenListOfCategories extends MyForm {
 ////                            category, keepPos, expandedObjects, ()->animateMyForm(), false); //hack: get access to the latest category (the one above the items in the Tree list)
 //                            category, keepPos, expandedObjects, ()->animateMyForm(), false, false); //hack: get access to the latest category (the one above the items in the Tree list)
 //</editor-fold>
-                    cmp = ScreenListOfItems.buildItemContainer(ScreenListOfCategories.this, (Item) node, null, category); //hack: get access to the latest category (the one above the items in the Tree list)
+                    cmp = ScreenListOfItems.buildItemContainer(ScreenListOfCategories.this, (Item) node, null, cat); //hack: get access to the latest category (the one above the items in the Tree list)
                 } else if (node instanceof Category) {
                     cmp = buildCategoryContainer((Category) node, categoryList, keepPos, () -> refreshAfterEdit()); //, (ItemList) treeParent);
                     category = (Category) node; //huge hack: store the category of the latest category container for use when constructing the following

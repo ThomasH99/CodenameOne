@@ -31,6 +31,7 @@ import com.codename1.ui.Display;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.StickyHeader;
+import com.codename1.ui.TextArea;
 //import com.codename1.ui.StickyHeader;
 import com.codename1.ui.animations.CommonTransitions;
 import com.codename1.ui.animations.Transition;
@@ -99,6 +100,15 @@ public class MyTree2 extends ContainerScrollY {
     private ExpandedObjects expandedObjects; // = new HashSet();
 //    private FilterSortDef itemListFilteredSorted;
     private InsertNewElementFunc insertNewElementFunc = null;
+    private TextArea startEditTextArea = null;
+
+    private void setAsyncEditField(TextArea startEditTextArea) {
+        this.startEditTextArea = startEditTextArea;
+    }
+
+    public TextArea getAsyncEditField() {
+        return startEditTextArea;
+    }
 
     StickyHeaderGenerator stickyHeaderGen;
 
@@ -636,73 +646,85 @@ public class MyTree2 extends ContainerScrollY {
                 }
             }
 
+            Category category = null;
             Component nodeComponent;
             //Hack to 
             if (parent instanceof Category) {
                 nodeComponent = createNode(current, depth, (Category) parent);
+                category = (Category) parent;
             } else if (parent == null && model instanceof Category) {
                 nodeComponent = createNode(current, depth, (Category) model); //hack when buildBranch is called with parent==null 
+                category = (Category) model;
+            } else if (parent == null && current instanceof Category) {
+                nodeComponent = createNode(current, depth, (Category) current); //hack when buildBranch is called with parent==null 
+                category = (Category) current;
             } else if (parent instanceof ItemAndListCommonInterface) {
 //                nodeComponent = createNode(current, depth);
                 nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent, null);
             } else {
                 nodeComponent = createNode(current, depth);
             }
-            if (Config.TEST && current instanceof ItemAndListCommonInterface)
-                nodeComponent.setName("TreeNode-" + ((ItemAndListCommonInterface) current).getText());
+            if (Config.TEST && current instanceof ItemAndListCommonInterface) nodeComponent.setName("TreeNode-" + ((ItemAndListCommonInterface) current).getText());
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (model.isLeaf(current)) {
 //                destination.addComponent(nodeComponent); //in CN1 impl, leafs are not encapsulated in 'expandable' BorderLayouts, but here we do it since tree nodes may change from leafs to trees
 ////                bindNodeListener(new Handler(current), nodeComponent);
 //            } else {
+//</editor-fold>
             Container componentArea = new Container(new BorderLayout());
             componentArea.setUIID("ContainerListElement"); //wraps a possibly expanded task
 
             componentArea.addComponent(BorderLayout.NORTH, nodeComponent);
-            if (Config.TEST)
-                componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 
+            if (Config.TEST) componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 
             destination.addComponent(componentArea);
 
-            if (Config.TEST)
-                destination.setName("TreeTop-" + componentArea.getName()); //reuse name 
+            if (Config.TEST) destination.setName("TreeTop-" + componentArea.getName()); //reuse name 
             bindNodeListener(expandCollapseListener, nodeComponent);
             nodeComponent.putClientProperty(KEY_OBJECT, current);
             nodeComponent.putClientProperty(KEY_PARENT, parent);
             //store the list of this item for use in drag and drop
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (parent == null) {
 //                nodeComponent.putClientProperty(KEY_LIST, model);
 //            } else {
 //                nodeComponent.putClientProperty(KEY_LIST, parent);
 //            }
+//</editor-fold>
             nodeComponent.putClientProperty(KEY_DEPTH, depthVal);
             if (expandedObjects != null && expandedObjects.contains(current) || expandAllLevels) {
                 expandedObjects.add(current);
                 expandNode(true, nodeComponent, expandAllLevels);
 //                    nodeComponent.putClientProperty(KEY_EXPANDED, "true"); //done in expandNode()
             }
-
             //check if a new insertNewTask container should be created for current and if so insert it:
 //            if (insertNewTask != null && current instanceof Item && model instanceof ItemAndListCommonInterface) {
             if (insertNewElementFunc != null && current instanceof Item //instanceof false if current==null!
                     && (parent instanceof ItemAndListCommonInterface
                     || (parent == null && model instanceof ItemAndListCommonInterface))) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                Component insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) model);
 //                InsertNewTaskContainer insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) parent);
 //                InlineInsertNewElementContainer insertNewTask = insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
-                MyForm myForm = (MyForm) getComponentForm();
-                InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
-                if (insertNewElement != null) {
-                    InsertNewElementFunc newInsertContainer = insertNewElement.make((Item) current, parent != null
-                            ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
-                    if (newInsertContainer != null) {
+//                MyForm myForm = (MyForm) getComponentForm();
+//                InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
+//                if (insertNewElement != null) {
+//</editor-fold>
+                InsertNewElementFunc newInsertContainer = insertNewElementFunc.make((Item) current,
+                        parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model,
+                        category);
+                if (newInsertContainer != null) {
 //                    destination.add(insertNewElement);
-                        if (Config.TEST && current instanceof Item)
-                            ((Component) newInsertContainer).setName("TreeInsertContainer-" + ((Item) current).getText());
-                        destination.add((Component) newInsertContainer);
-                        myForm.setInlineInsertContainer(newInsertContainer);
+                    if (Config.TEST && current instanceof Item)
+                        ((Component) newInsertContainer).setName("TreeInsertContainer-" + ((Item) current).getText());
+                    destination.add((Component) newInsertContainer);
+//                        myForm.setInlineInsertContainer(newInsertContainer);
+                    setAsyncEditField(newInsertContainer.getTextArea());
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                    getComponentForm().setEditOnShow(insertNewTask.getTextField()); //ComponentForm should never be undefined here since MyTree should already be in a form
 //                    destination.getComponentForm().setEditOnShow(insertNewTask.getTextField()); //UI: set for edit
-                    }
+//</editor-fold>
                 }
+//                }
             }
         }
     }

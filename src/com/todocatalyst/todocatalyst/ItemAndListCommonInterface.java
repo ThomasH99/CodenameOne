@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author THJ
  */
-public interface ItemAndListCommonInterface extends MyTreeModel {
+public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface> extends MyTreeModel {
 
     public boolean isDone();
 //    boolean isTemplate();
@@ -309,14 +309,22 @@ public interface ItemAndListCommonInterface extends MyTreeModel {
      *
      * @return never null
      */
-    public List<? extends ItemAndListCommonInterface> getList();
+//    public List<? extends ItemAndListCommonInterface> getList();
+    public List<E> getList();
+    /**
+    return the full, unsorted and unfiltered list of 
+    @return 
+    */
+//    public List<? extends ItemAndListCommonInterface> getListFull();
+    public List<E> getListFull();
 
     /**
      * sets the list of items owned
      *
      * @param listOfSubObjects
      */
-    public void setList(List<? extends ItemAndListCommonInterface> listOfSubObjects);
+//    public void setList(List<? extends ItemAndListCommonInterface> listOfSubObjects);
+    public void setList(List<E> listOfSubObjects);
 
     /**
      * returns true if this list or Item should NOT be saved to parse, e.g.

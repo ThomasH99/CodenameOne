@@ -15,16 +15,18 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * stores the (manually sorted) list of categories defined by the user. Updated
- * whenever a Category is created or deleted or if the order of categories is
- * changed by the user.
+ * stores the (manually sorted) list of categories defined by the user.Updated
+ whenever a Category is created or deleted or if the order of categories is
+ changed by the user.
  *
  * @author Thomas
+ * @param <E>
  */
-public class TemplateList extends ItemList {
+//public class TemplateList<E extends ItemAndListCommonInterface> extends ItemList {
+public class TemplateList<T> extends ItemList {
 
     public static String CLASS_NAME = "TemplateList";
-    final static String PARSE_ITEMLIST_LIST = "templateList";
+//    final static String PARSE_ITEMLIST_LIST = PARSE_ITEMLIST; //"templateList";
     private static TemplateList INSTANCE = null;
 
     public TemplateList() {
@@ -49,31 +51,35 @@ public class TemplateList extends ItemList {
 //            return new ArrayList();
 //        }
 //    }
-    public List<Item> getListFull() {
-//        return getList();
-        List<Item> list = getList(PARSE_ITEMLIST_LIST);
-        if (list != null) {
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
-            return list;
-        } else {
-            return new ArrayList();
-        }
-    }
+//    @Override
+//    public List<Item> getListFull() {
+////        return getList();
+////        List<Item> list = getList(PARSE_ITEMLIST_LIST);
+////        if (list != null) {
+////            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+////            return list;
+////        } else {
+////            return new ArrayList();
+////        }
+//        super.getListFull();
+//    }
 
-    public List<Item> getList() {
-        return super.getList();
-    }
+//    @Override
+//    public List<Item> getList() {
+//        return super.getList();
+//    }
 
-    public void setList(List templatesList) {
-//        if (has(PARSE_ITEMLIST_LIST) || itemListList != null) {
-//            put(PARSE_ITEMLIST_LIST, itemListList);
+//    @Override
+//    public void setList(List templatesList) {
+////        if (has(PARSE_ITEMLIST_LIST) || itemListList != null) {
+////            put(PARSE_ITEMLIST_LIST, itemListList);
+////        }
+//        if (templatesList != null && !templatesList.isEmpty()) {
+//            put(PARSE_ITEMLIST_LIST, templatesList);
+//        } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
+//            remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
 //        }
-        if (templatesList != null && !templatesList.isEmpty()) {
-            put(PARSE_ITEMLIST_LIST, templatesList);
-        } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
-            remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
-        }
-    }
+//    }
 
     public synchronized void reloadFromParse() {
 //        TemplateList t= INSTANCE;
@@ -81,8 +87,8 @@ public class TemplateList extends ItemList {
 //        return t;
         TemplateList temp = DAO.getInstance().getTemplateList();
         INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
-        for (ItemAndListCommonInterface elt : temp.getList()) {
-            INSTANCE.addItem(elt);
+        for (Object elt : temp.getList()) {
+            INSTANCE.addItem((ItemAndListCommonInterface)elt);
         }
     }
 

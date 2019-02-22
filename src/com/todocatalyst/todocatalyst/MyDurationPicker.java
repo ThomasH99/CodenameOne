@@ -22,6 +22,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
     private String zeroValuePattern = null;
 //    private int defaultValueInMinutes = 0;
     private Long preserveMillis = null;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        String title;
 //        String parseId;
 //    @Override
@@ -42,6 +43,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //            super.updateValue(); //To change body of generated methods, choose Tools | Templates.
 //        }
 //    }
+//</editor-fold>
 
     @Override
     protected void updateValue() {
@@ -54,14 +56,14 @@ class MyDurationPicker extends Picker implements SwipeClear {
             super.updateValue(); //To change body of generated methods, choose Tools | Templates.
         }
     }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    MyDurationPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
 //        this(null, parseIdMap, getDurationInMinutes, setDurationInMinutes);
 //    }
 //    MyDurationPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetLong getDurationInMillis, MyForm.PutLong setDurationInMillis) {
 //        this(null, parseIdMap, getDurationInMillis, setDurationInMillis);
 //    }
-
+    
 //    MyDurationPicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
 //        this(zeroValuePatternVal, 0, parseIdMap, getDurationInMinutes, setDurationInMinutes);
 //    }
@@ -71,6 +73,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //    private MyDurationPicker(String zeroValuePatternVal, MyForm.GetLong getDurationInMillis, MyForm.PutLong setDurationInMillis) {
 //        this(zeroValuePatternVal, 0, null, getDurationInMillis, setDurationInMillis);
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    MyDurationPicker(int defaultValueInMinutes) {
 //        this("", defaultValueInMinutes, null, null, null);
@@ -114,10 +117,10 @@ class MyDurationPicker extends Picker implements SwipeClear {
     MyDurationPicker(){
         this(0, null);
     }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap,
 //            MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
-//    private MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, 
+//    private MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes,
 //            MyForm.GetLong getDurationInMillis) {
 //        this(zeroValuePatternVal, defaultValueInMinutes, null, getDurationInMillis, null);
 //    }
@@ -141,10 +144,10 @@ class MyDurationPicker extends Picker implements SwipeClear {
 ////            parseIdMap.put(this, () -> setDurationInMillis.accept(this.getDuration()));
 ////        }
 //    }
-
-    public void setDurationMinutesXXX(int minutes) {
-        this.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
-    }
+//    public void setDurationMinutesXXX(int minutes) {
+//        this.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
+//    }
+//</editor-fold>
 
     @Override
     public void setDuration(long timeInMillis) {
