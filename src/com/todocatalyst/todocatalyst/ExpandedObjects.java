@@ -27,14 +27,47 @@ import java.util.HashSet;
 class ExpandedObjects {//implements Externalizable {//extends HashSet {
 
     public static String CLASS_NAME = "ExpandedObjects_";
-    private static String ExpandedObjectsFilePrefix = "ExpandedObjects";
+    private static String EXPANDED_OBJECTS_FILENAME_PREFIX = "ExpandedObjects";
 
     private String filename;
     private HashSet<String> expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
 
+    /**
+    if filename is null or "", then no persistence will be done (e.g. when editing subtask lists)
+    @param uniqueIdForFilename 
+    */
+    ExpandedObjects(String uniqueIdForFilename) {
+//        assert uniqueIdForFilename != null && !uniqueIdForFilename.isEmpty();
+////        filename = ExpandedObjectsFilePrefix + screenId + "_" + (parseObject == null ? "NoParseObject" : parseObject.getObjectIdP());
+//        filename = ExpandedObjectsFilePrefix + screenId + "_" + uniqueIdForFilename;
+        expandedObjects = new HashSet();
+        if (isValidFilename(uniqueIdForFilename)) {
+            filename = EXPANDED_OBJECTS_FILENAME_PREFIX + "_" + uniqueIdForFilename;
+            if (Storage.getInstance().exists(filename)) {
+//            expandedObjects = ((ArrayList<String>) Storage.getInstance().readObject(filename)).;
+                Object res = Storage.getInstance().readObject(filename);
+                if (res instanceof HashSet) { //necessary since when res is read from cache, CN1 returns it as a hashset, but when read from storage, returns it as ArrayList
+                    expandedObjects = ((HashSet<String>) res);
+                } else if (res instanceof ArrayList) {
+                    expandedObjects.addAll((ArrayList<String>) res);
+                }
+//            expandedObjects= ((HashSet<String>) Storage.getInstance().readObject(filename));
+            }
+        }
+    }
+
 //        ExpandedObjects(String screenId, String objectId) {
     /**
-    
+    just a helper to construct all composed filenames in a simpler fashion and with consistent format
+    @param screenId
+    @param uniqueExtensionId 
+     */
+    ExpandedObjects(String screenId, String uniqueExtensionId) {
+        this(screenId + uniqueExtensionId);
+        assert screenId != null;
+    }
+
+    /**
     @param screenId
     @param parseObject may be null in screens which are 'singletons' (exist only once and are not used with different items)
      */
@@ -42,30 +75,13 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
         this(screenId, (parseObject == null || parseObject.getObjectIdP() == null || parseObject.getObjectIdP().isEmpty() ? "NoParseObject" : parseObject.getObjectIdP()));
     }
 
-    ExpandedObjects(String uniqueIdForFilename) {
-        this(uniqueIdForFilename, "_");
-    }
-
-    ExpandedObjects(String screenId, String uniqueIdForFilename) {
-        assert screenId != null;
-        assert uniqueIdForFilename != null && !uniqueIdForFilename.isEmpty();
-////        filename = ExpandedObjectsFilePrefix + screenId + "_" + (parseObject == null ? "NoParseObject" : parseObject.getObjectIdP());
-        filename = ExpandedObjectsFilePrefix + screenId + "_" + uniqueIdForFilename;
-        expandedObjects = new HashSet();
-        if (Storage.getInstance().exists(filename)) {
-//            expandedObjects = ((ArrayList<String>) Storage.getInstance().readObject(filename)).;
-            Object res = Storage.getInstance().readObject(filename);
-            if (res instanceof HashSet) { //necessary since when res is read from cache, CN1 returns it as a hashset, but when read from storage, returns it as ArrayList
-                expandedObjects = ((HashSet<String>) res);
-            } else if (res instanceof ArrayList) {
-                expandedObjects.addAll((ArrayList<String>) res);
-            }
-//            expandedObjects= ((HashSet<String>) Storage.getInstance().readObject(filename));
-        }
+    private boolean isValidFilename(String filename) {
+        return filename != null && !filename.isEmpty();
     }
 
     private void save() {
-        Storage.getInstance().writeObject(filename, expandedObjects);
+        if (isValidFilename(filename))
+            Storage.getInstance().writeObject(filename, expandedObjects);
     }
 
 //        @Override
@@ -84,12 +100,14 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
         return result;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public boolean addAll(Collection<String> elements) {
 ////            boolean result = super.add(((ItemAndListCommonInterface) element).getObjectIdP());
 //        boolean result = expandedObjects.addAll(elements);
 //        save();
 //        return result;
 //    }
+//</editor-fold>
     public void deleteFile() {
         Storage.getInstance().deleteStorageFile(filename);
     }
@@ -107,6 +125,7 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 //            return super.contains(((ItemAndListCommonInterface) element).getObjectIdP());
         return expandedObjects.contains(((ItemAndListCommonInterface) element).getObjectIdP());
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //
 //    @Override
 //    public int getVersion() {
@@ -127,4 +146,5 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 //    public String getObjectId() {
 //        return CLASS_NAME;
 //    }
+//</editor-fold>
 }

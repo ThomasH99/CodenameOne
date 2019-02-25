@@ -98,7 +98,7 @@ public class ScreenTimer6 extends MyForm {
 
     private TimerInstance timerInstance;//= new TimerStack();
     private Command backCommand = null;
- protected static String FORM_UNIQUE_ID = "ScreenTimer"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    protected static String FORM_UNIQUE_ID = "ScreenTimer"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private Container timerContentainer = new Container(BoxLayout.y());
 //    private TimerStackEntry entry;
 
@@ -134,8 +134,8 @@ public class ScreenTimer6 extends MyForm {
 //        initLocalSaveOfEditedValues();
         addCommandsToToolbar(getToolbar()); //no commands depend on the task or itemList
         //updateActionOnDone cannot be used in Timer due to interrupt tasks and since they cannot be pushed onto the stack
-        this.updateActionOnDone = () -> {
-        };
+//        this.updateActionOnDone = () -> {        };
+//        setUpdateActionOnDone(() -> {        }); //not necessary, already done in call to super() above!
         refreshAfterEdit();
     }
 
@@ -194,8 +194,7 @@ public class ScreenTimer6 extends MyForm {
 ////        super.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
 //        MyForm.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
 //    }
-    
-     void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
+    void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
         if (Display.getInstance().isScreenSaverDisableSupported() && MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer)) {
             Display.getInstance().setScreenSaverEnabled(true); //true enable normal screensaver, false keeps screen on all the time
         }

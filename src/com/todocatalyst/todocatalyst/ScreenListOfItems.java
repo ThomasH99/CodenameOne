@@ -116,6 +116,7 @@ public class ScreenListOfItems extends MyForm {
 //    private static WorkTimeDefinition wtd;
     boolean projectEditMode = false; //indicates if projectEditMode is on (eg new tasks automatically added to end of list)
     private MyTree2.StickyHeaderGenerator stickyHeaderGen;
+    private Container contentContainer = null; //holds Container with actual content, typically MyTree2
 
     /**
      * set to true if a fixed filter is passed to the screen, if true user is
@@ -123,33 +124,50 @@ public class ScreenListOfItems extends MyForm {
      */
     final static int OPTION_TEMPLATE_EDIT = 1;
     private boolean optionTemplateEditMode;
+
     final static int OPTION_NO_TIMER = OPTION_TEMPLATE_EDIT * 2;
     private boolean optionNoTimer;
+
     final static int OPTION_NO_INTERRUPT = OPTION_NO_TIMER * 2;
     private boolean optionNoInterrupt;
+
     final static int OPTION_NO_NEW_BUTTON = OPTION_NO_INTERRUPT * 2;
     private boolean optionNoNewButton;
+
     final static int OPTION_NO_WORK_TIME = OPTION_NO_NEW_BUTTON * 2;
     private boolean optionNoWorkTime;
+
     final static int OPTION_NO_EDIT_LIST_PROPERTIES = OPTION_NO_WORK_TIME * 2;
     private boolean optionNoEditListProperties;
+
     final static int OPTION_NO_MODIFIABLE_FILTER = OPTION_NO_EDIT_LIST_PROPERTIES * 2;
     private boolean optionUnmodifiableFilter;
+
     final static int OPTION_NO_SELECTION_MODE = OPTION_NO_MODIFIABLE_FILTER * 2;
     private boolean optionNoMultipleSelectionMode;
+
     final static int OPTION_DISABLE_DRAG_AND_DROP = OPTION_NO_SELECTION_MODE * 2;
     private boolean optionDisableDragAndDrop;
+
     final static int OPTION_SINGLE_SELECT_MODE = OPTION_DISABLE_DRAG_AND_DROP * 2;
     private boolean optionSingleSelectMode;
+
     final static int OPTION_NO_NEW_FROM_TEMPLATE = OPTION_SINGLE_SELECT_MODE * 2;
     private boolean optionNoNewFromTemplate;
+
     final static int OPTION_NO_TASK_DETAILS = OPTION_NO_NEW_FROM_TEMPLATE * 2;
     private boolean optionNoTaskDetails;
+
+    final static int OPTION_NO_INLINEINSERT_EMPTYLIST = OPTION_NO_TASK_DETAILS * 2;
+    private boolean optionNoInlineInsertContInEmptyList;
+
+    final static int OPTION_LAST_TO_CHECK_IF_ALL_BITS_ARE_USED = OPTION_NO_INLINEINSERT_EMPTYLIST * 2;
 //    boolean optionSingleSelectMode;
 //    final static int OPTION_MULTIPLE_SELECT_MODE = OPTION_SINGLE_SELECT_MODE * 2;
 //    private boolean optionMultipleSelectMode;
 
     private void setOptions(int options) {
+        assert OPTION_LAST_TO_CHECK_IF_ALL_BITS_ARE_USED * 2 / 2 == OPTION_LAST_TO_CHECK_IF_ALL_BITS_ARE_USED; //will fail if 
         this.optionTemplateEditMode = (options & OPTION_TEMPLATE_EDIT) != 0;
         this.optionNoTimer = (options & OPTION_NO_TIMER) != 0;
         this.optionNoInterrupt = (options & OPTION_NO_INTERRUPT) != 0;
@@ -162,6 +180,7 @@ public class ScreenListOfItems extends MyForm {
         this.optionSingleSelectMode = (options & OPTION_SINGLE_SELECT_MODE) != 0;
         this.optionNoNewFromTemplate = (options & OPTION_SINGLE_SELECT_MODE) != 0;
         this.optionNoTaskDetails = (options & OPTION_SINGLE_SELECT_MODE) != 0;
+        this.optionNoInlineInsertContInEmptyList = (options & OPTION_NO_INLINEINSERT_EMPTYLIST) != 0;
 //        this.optionMultipleSelectMode = (options & OPTION_MULTIPLE_SELECT_MODE) != 0;
 
     }
@@ -267,20 +286,23 @@ public class ScreenListOfItems extends MyForm {
 
     ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
             int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
-        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
+//        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
+//        super(title, previousForm, () -> updateItemListOnDone.update(itemListOrg));
+        super(title, previousForm, null);
         setScrollVisible(true); //UI: show scrollbar(?)
 //        super(title, previousForm, null);
         setOptions(options);
         getComponentForm().getLayeredPane().setLayout(new BorderLayout()); //needed for StickyHeaderMod
 //        MyDragAndDropSwipeableContainer.dragEnabled = false; //always disable before setting up a new screen
 //        this.itemListOrg = itemList;
-        this.getItemListFct = itemListFct;
-        this.itemListOrg = itemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!!
-        this.updateActionOnDone = () -> {
-            this.itemListOrg = itemListFct.getUpdatedItemList();
-            updateItemListOnDone.update(this.itemListOrg);
+        getItemListFct = itemListFct;
+        itemListOrg = itemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!!
+//        this.updateActionOnDone = () -> {
+        setUpdateActionOnDone(() -> {
+//            this.itemListOrg = itemListFct.getUpdatedItemList(); //NO - WHY? Must set with edited subtask list
+            updateItemListOnDone.update(itemListOrg);
             refreshAfterEdit();
-        };
+        });
 //        workSlotList = itemListOrg.getWorkSlotListN(); //expensive operation, only do once for the screen, or after editing WorkSlots
 
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
@@ -308,7 +330,8 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
-        expandedObjects = new ExpandedObjects(getUniqueFormId( itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
+        String expandedObjectsFileName = itemListOrg.isNoSave()?"":(getUniqueFormId(itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
+        expandedObjects = new ExpandedObjects(expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         this.stickyHeaderGen = stickyHeaderGen;
 //        refreshItemListFilterSort();
         addCommandsToToolbar(getToolbar());
@@ -446,18 +469,23 @@ public class ScreenListOfItems extends MyForm {
             setKeepPos(new KeepInSameScreenPosition());
         }
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (contentContainer instanceof MyTree2) {
+//            InsertNewElementFunc insertNewElementFunc = ((MyTree2) contentContainer).getInlineInsertField();
+//            if (insertNewElementFunc != null) {
+//                setInlineInsertContainer(insertNewElementFunc);
+//            }
+//        }
+//</editor-fold>
+        setInlineInsertContainerIfMyTree2(contentContainer);
         getContentPane().removeAll();
 
-//        if (false) {
-//            getContentPane().add(SOUTH, makeQuickAddBox(projectEditMode));
-//            getContentPane().add(SOUTH, new QuickAddItemContainer(projectEditMode));
-//        }
         this.itemListOrg = getItemListFct.getUpdatedItemList();
         itemListOrg.resetWorkTimeDefinition(); //TODO!!!!! find a way to automatically reset wtd each time a list or its elements have been modified -> itemList.save(), or items call update/refresh on owner (and categories!)
 //        getContentPane().scrollComponentToVisible(this);
 //        refreshItemListFilterSort();
         filterSortDef = itemListOrg.getFilterSortDef();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null && !filterSortDef.isNeutral()) {
 //            this.itemListFilteredSorted = filterSortDef.filterAndSortItemList(itemListOrg);
 ////            setupList();  //refresh
@@ -469,10 +497,11 @@ public class ScreenListOfItems extends MyForm {
 //        itemListOrg.refreshWorkTimeDefinition();
 
 //        getContentPane().add(CENTER, buildContentPaneForListOfItems(this.itemListFilteredSorted));
+//</editor-fold>
         parseIdMapReset();
-        Container scrollableContainer = buildContentPaneForListOfItems(itemListOrg);
+        contentContainer = buildContentPaneForListOfItems(itemListOrg);
         if (false) { //TODO!!! re-activate (currently clashes with drag&drop: when trying to drag an element at the top of the list, it also activates pullToRefresh)
-            scrollableContainer.addPullToRefresh(() -> {
+            contentContainer.addPullToRefresh(() -> {
                 Log.p("Pull to refresh... DEACTIVATED");
                 DAO.getInstance().removeFromCache(itemListOrg);
                 //refresh worktime
@@ -484,12 +513,19 @@ public class ScreenListOfItems extends MyForm {
                 Log.p("Pull to refresh...DONE");
             });
         }
-        getContentPane().add(CENTER, scrollableContainer);
-        if (scrollableContainer instanceof MyTree2) {
-            setStartEditingAsync(((MyTree2)scrollableContainer).getAsyncEditField());
-        }
-//        setTitleAnimation(scrollableContainer);
+        getContentPane().add(CENTER, contentContainer);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (contentContainer instanceof MyTree2) {
+//            InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
+//            if (insertNewElementFunc != null) {
+//                setStartEditingAsync(insertNewElementFunc.getTextArea());
+//                setInlineInsertContainer(insertNewElementFunc);
+//            }
+//        }
+//</editor-fold>
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        setTitleAnimation(scrollableContainer);
 //        revalidate(); //TODO: needed? YES
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
@@ -498,10 +534,13 @@ public class ScreenListOfItems extends MyForm {
 //        InlineInsertNewElementContainer.setTextFieldEditableOnShowStatic(this); //if there is a InlineInsertNewTaskContainer then focus the input field
 //        revalidate(); //TODO: needed? YES
 //        animateHierarchy(300); not good since it visibly refreshes the screen
-        setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
+//</editor-fold>
+        setTitleAnimation(contentContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
         super.refreshAfterEdit();
-        revalidateWithAnimationSafety(); //TODO: needed? YES
+//        revalidateWithAnimationSafety(); //TODO: needed? YES. Does revalidateWithAnimationSafety() take too long to revalidate, meaning the restoreKeepPos gets triggered before new components have been laid out?!
+        revalidate(); //TODO: needed? YES. Does revalidateWithAnimationSafety() take too long to revalidate, meaning the restoreKeepPos gets triggered before new components have been laid out?!
         restoreKeepPos();
+        setStartEditingAsyncIfDefined(contentContainer);
 //        setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
     }
 
@@ -943,6 +982,7 @@ public class ScreenListOfItems extends MyForm {
                             setSelectionMode(false);
                             setCommandName("Selection mode ON");
                             //TODO!!!! use Toolbar.removeOverflowCommand(Command) once added (see http://stackoverflow.com/questions/39200432/how-to-remove-commands-added-to-overflow-menu)
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                    ToolbarSideMenu  menuBar = (ToolbarSideMenu )getToolbar().getMenuBar();
 //                    menuBar.removeOverflowCommand(cmdSetAnything);
 //                            if (false) {
@@ -953,6 +993,7 @@ public class ScreenListOfItems extends MyForm {
 //                    ScreenListOfItems.this.removeCommand(cmdUnselectAll);
 //                    ScreenListOfItems.this.removeCommand(cmdInvertSelection);
 //                    ScreenListOfItems.this.removeCommand(cmdDeleteSelected);
+//</editor-fold>
                             Toolbar toolbar = getToolbar();
                             toolbar.removeOverflowCommand(cmdSetAnything);
                             toolbar.removeOverflowCommand(cmdMoveSelectedToTopOfList);
@@ -3523,11 +3564,9 @@ refreshAfterEdit();
     @param listOfItems can be ItemList, Item, or Category
     @return 
      */
-    Container buildContentPaneForListOfItems(ItemAndListCommonInterface listOfItems //, HashSet expandedObjects, ItemAndListCommonInterface itemListOrg, MyForm myForm, KeepInSameScreenPosition keepPos
-
-    ) {
-//        parseIdMapReset();
+    Container buildContentPaneForListOfItems(ItemAndListCommonInterface listOfItems) { //, HashSet expandedObjects, ItemAndListCommonInterface itemListOrg, MyForm myForm, KeepInSameScreenPosition keepPos
 //<editor-fold defaultstate="collapsed" desc="comment">
+//        parseIdMapReset();
 //        MyTree dt = new MyTree(itemListList) {
 //        Tree dt = new Tree(listOfItemLists) {
 //            private int myDepthIndent = 15;
@@ -3588,28 +3627,29 @@ refreshAfterEdit();
 //        return cont;
 //</editor-fold>
         if (listOfItems != null && listOfItems.size() > 0) {
+            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        myTree = new MyTree2(listOfItems, expandedObjects, filterSortDef) {
-//            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, itemListOrg.getFilterSortDef(), (item, itemOrItemList) -> InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) //<editor-fold defaultstate="collapsed" desc="comment">
-//            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, (item, itemOrItemList) -> InlineInsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) //<editor-fold defaultstate="collapsed" desc="comment">
-            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) //                    lastInsertNewElementContainer != null ? 
-            //            (getInlineInsertContainer() != null ? 
-            ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)
-            ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.make(item, itemOrItemList)
-            //                            (item, itemOrItemList) -> getInlineInsertContainer().make(item, itemOrItemList)
-            //                            : null)) //<editor-fold defaultstate="collapsed" desc="comment">
-            //
-            ////                if (lastInsertNewTaskContainer == null) {
-            ////                InsertNewTaskContainer lastInsertNewTaskContainer = (InsertNewTaskContainer) getClientProperty(InsertNewTaskContainer.LAST_INSERTED_NEW_TASK_CONTAINER);
-            ////                if (lastInsertNewTaskContainer == null) { //TODO Optimization: called for every container, replace by local variable?
-            ////                    return null;
-            ////                } else {
-            ////                    return lastInsertNewTaskContainer.make(item, itemOrItemList, ScreenListOfItems.this);
-            ////                }
-            ////                return InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList, this);
-            //                return InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList);
-            //            })
-            //</editor-fold>
-            {
+//            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, itemListOrg.getFilterSortDef(), (item, itemOrItemList) -> InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) 
+//            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, (item, itemOrItemList) -> InlineInsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) 
+                //            (getInlineInsertContainer() != null ? 
+                ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)
+                ////                            (item, itemOrItemList) -> lastInsertNewElementContainer.make(item, itemOrItemList)
+                //                            (item, itemOrItemList) -> getInlineInsertContainer().make(item, itemOrItemList)
+                //                            : null)) 
+                //
+                ////                if (lastInsertNewTaskContainer == null) {
+                ////                InsertNewTaskContainer lastInsertNewTaskContainer = (InsertNewTaskContainer) getClientProperty(InsertNewTaskContainer.LAST_INSERTED_NEW_TASK_CONTAINER);
+                ////                if (lastInsertNewTaskContainer == null) { //TODO Optimization: called for every container, replace by local variable?
+                ////                    return null;
+                ////                } else {
+                ////                    return lastInsertNewTaskContainer.make(item, itemOrItemList, ScreenListOfItems.this);
+                ////                }
+                ////                return InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList, this);
+                //                return InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList);
+                //            })
+//            {
+                //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            protected Component createNode(Object node, int depth) {
@@ -3684,12 +3724,17 @@ refreshAfterEdit();
             };
             return myTree;
         } else {
+            if (getShowIfEmptyList() != null) {
+                return Container.encloseIn(BoxLayout.y(), new Label(getShowIfEmptyList()));
 //            return new InsertNewTaskContainer(null, listOfItems, ScreenListOfItems.this);
 //            return new InlineInsertNewElementContainer(this, null, listOfItems);
-            if (listOfItems instanceof Category)
-                return new InlineInsertNewItemContainer2(this, null, null, (Category) listOfItems, false); //UI: in an empty list you can insert a new task via the inlineInsert container
-            else
-                return new InlineInsertNewItemContainer2(this, null, listOfItems, null, false); //UI: in an empty list you can insert a new task via the inlineInsert container
+            } else if (listOfItems instanceof Category) {
+                setInlineInsertContainer(new InlineInsertNewItemContainer2(this, null, null, (Category) listOfItems, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
+                return (Container) getInlineInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
+            } else {
+                setInlineInsertContainer(new InlineInsertNewItemContainer2(this, null, listOfItems, null, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
+                return (Container) getInlineInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
+            }
         }
 
     }

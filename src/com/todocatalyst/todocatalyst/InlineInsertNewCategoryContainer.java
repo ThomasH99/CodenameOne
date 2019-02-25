@@ -11,6 +11,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
+import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
@@ -20,7 +21,7 @@ import com.parse4cn1.ParseObject;
  *
  * @author Thomas
  */
-public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer {
+public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  implements InsertNewElementFunc {
 
 //    private Container oldNewTaskCont=null;
     private MyTextField2 textEntryField;
@@ -103,7 +104,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer {
         if (categoryList != null && categoryList.size() > 0) { //only add close button if in a non-empty list
             westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer. NO, too detailed...
-                myForm.lastInsertNewElementContainer = null;
+//                myForm.lastInsertNewElementContainer = null;
                 //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
                 closeInsertNewCategoryContainer();
             })));
@@ -186,6 +187,16 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer {
                 textEntryField.startEditingAsync();
             }
         }
+    }
+
+    @Override
+    public InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
+        return null;
+    }
+
+    @Override
+    public TextArea getTextArea() {
+        return textEntryField;
     }
 
 }

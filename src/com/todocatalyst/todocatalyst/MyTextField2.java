@@ -16,8 +16,8 @@ import com.codename1.ui.util.UITimer;
  */
 public class MyTextField2 extends TextField {
     
-    public MyTextField2() {
-        super();
+    public MyTextField2(int columns) {
+        super(columns);
     }
     
        private UITimer timer;

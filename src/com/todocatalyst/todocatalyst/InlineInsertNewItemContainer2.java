@@ -39,6 +39,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
     private ItemAndListCommonInterface lastCreatedItem;
     private boolean insertBeforeElement = false;
     private Action closeAction = null;
+
     /**
      * if true, a new insertContainer will be added each time a new item is
      * added. This is done in MyTree which will compare each displayed item with
@@ -93,6 +94,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         this.itemOrItemListForNewElements = itemOrItemListForNewTasks;
         this.insertBeforeElement = insertBeforeElement;
         this.closeAction = closeAction;
+        continueAddingNewItems = MyPrefs.itemContinueAddingInlineItems.getBoolean();
+
         if (Config.TEST) {
             setName("InlineInsertNewItemContainer2"); //for debugging
         }
@@ -101,7 +104,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
         add(swipC);
 
-        textEntryField2 = new MyTextField2(); //TODO!!!! need field to enter edit mode
+        textEntryField2 = new MyTextField2(100); //TODO!!!! need field to enter edit mode //UI: 100 width of text field (to avoid showing a small one on eg tablet
         textEntryField2.setHint(refItem == null || !(refItem instanceof Item) ? ENTER_TASK_NO_SWIPE_RIGHT : ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK); //if no item, then don't show hint about swipe right for subtask
         textEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
 //        myForm.setEditOnShowOrRefresh(textEntryField2); //ensure fields enters edit mode after show() or removeFromCache
@@ -111,7 +114,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 
                 insertAsSubtask = swipC.isOpenedToRight();
                 textEntryField2.setHint(insertAsSubtask ? ENTER_SUBTASK : ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK); //item!=null to avoid 
-                InlineInsertNewItemContainer2.this.setUIID(insertAsSubtask ? "InlineInsertItemAsSubtask" : "InlineInsertItemAsTask"); //TODO!!!
+//                InlineInsertNewItemContainer2.this.setUIID(insertAsSubtask ? "InlineInsertItemAsSubtask" : "InlineInsertItemAsTask"); //TODO!!!
+                setUIID(insertAsSubtask ? "InlineInsertItemAsSubtask" : "InlineInsertItemAsTask"); //TODO!!!
                 ev.consume();
                 swipC.revalidateWithAnimationSafety();//update with new hint
                 swipC.close();
@@ -208,9 +212,9 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //                MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this); //TODO!!! add smooth transformation like in ??
 //                parent.animateLayout(300);
 //</editor-fold>
+                MyForm myForm = (MyForm) getComponentForm();
                 closeInsertNewItemContainer();
 //                if (myForm.getInlineInsertContainer() == this) {
-                MyForm myForm = (MyForm) getComponentForm();
                 myForm.setInlineInsertContainer(null);
 //                myForm.revalidate(); //necessary?!
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -240,14 +244,17 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                         //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
 //                            DAO.getInstance().save(newTask);
                         insertNewTaskAndSaveChanges(newItem);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        if (false && myForm.getEditFieldOnShowOrRefresh() == textEntryField2) {
 //                            myForm.setEditOnShowOrRefresh(null); //reset the previous editField
 //                        }
 //                        myForm.setKeepPos(new KeepInSameScreenPosition(newItem));
+//</editor-fold>
                         lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        Container parent = getParent();
 //                        parent.removeComponent(InlineInsertNewItemContainer2.this);
-                        //replace the insert container with the created item, NOT GOOD approach since refrehsAfterEdit will rebuild, and not needed??!!
+//replace the insert container with the created item, NOT GOOD approach since refrehsAfterEdit will rebuild, and not needed??!!
 //                        if (false) {
 ////                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
 //                            Container parent = getParent();
@@ -255,6 +262,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //                                    //                                ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
 //                                    ScreenListOfItems.buildItemContainer(myFormXXX, newItem, itemOrItemListForNewTasks, null), null, null, 300); //
 //                        }
+//</editor-fold>
                         myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this, -1)); //if editing the new task in separate screen, 
                         myForm.refreshAfterEdit();  //OK? NOT good, refreshAfterEdit will remove the new 
                     }).show();

@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
 import com.codename1.ui.Display;
 import com.codename1.ui.spinner.Picker;
@@ -15,43 +16,11 @@ import java.util.Map;
  *
  * @author Thomas
  */
-public class MyDateAndTimePicker extends Picker implements SwipeClear{
+public class MyDateAndTimePicker extends Picker implements SwipeClear {
 
+//    private String DEFAULT_ZERO_VALUE_PATTERN = "0";
     private String zeroValuePattern;
     private Button clearButton = null;
-
-//        String title;
-//        String parseId;
-//        MyDateAndTimePicker(String title, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
-    MyDateAndTimePicker(Date date, String zeroValuePatternVal) {
-        super();
-//        setUIID("Button");
-//        setUIID("Label");
-        setUIID("LabelValue");
-//            this.title = title;
-//            this.parseId = parseId;
-        zeroValuePattern = zeroValuePatternVal;
-        if (zeroValuePattern == null) {
-            this.zeroValuePattern = "";// "<set>";
-        }
-        setType(Display.PICKER_TYPE_DATE_AND_TIME);
-        setShowMeridiem(false);
-        setMinuteStep(MyPrefs.dateTimePickerMinuteStep.getInt());
-//            this.addActionListener(
-//                    (e) -> {
-//                        if (getDate().getTime() == 0) {
-//                            setDate(new Date());
-//                        }
-//
-//                    }); //set date to Now if empty when button is clicked
-//            this.setDate(parseObject.getDate(parseId)); //!doesn't work for null value
-//        Date d = get.get();
-        if (date != null && date.getTime() != 0) {
-            this.setDate(date);
-        } else {
-            setDate(new Date(0)); //UI: default date is undefined
-        }
-    }
 
     MyDateAndTimePicker() {
         super();
@@ -60,12 +29,34 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear{
         setType(Display.PICKER_TYPE_DATE_AND_TIME);
         setShowMeridiem(false); //TODO!!!! depend on locale!!
         setMinuteStep(MyPrefs.dateTimePickerMinuteStep.getInt());
+        setFormatter(new SimpleDateFormat() {
+            public String format(Object value) {
+                Date date = ((Date) value);
+                if (date.getTime() == 0 && zeroValuePattern != null) {
+                    return zeroValuePattern;
+                }
+                return MyDate.formatDateTimeNew(date); //
+            }
+        });
     }
 
-    MyDateAndTimePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
-        this(null, parseIdMap, get, set);
+    MyDateAndTimePicker(Date date, String zeroValuePatternVal) {
+        this();
+        if (zeroValuePatternVal != null) zeroValuePattern = zeroValuePatternVal;
+        if (date != null && date.getTime() != 0) {
+            this.setDate(date);
+        } else {
+            setDate(new Date(0)); //UI: default date is undefined
+        }
     }
 
+    MyDateAndTimePicker(Date date) {
+        this(date, "");
+    }
+
+//    MyDateAndTimePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
+//        this(null, parseIdMap, get, set);
+//    }
     MyDateAndTimePicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
 //            this.setFormatter(new MySimpleDateFormat(this.getFormatter().toPattern(), zeroValuePattern)); //reuse default formatter pattern, only override for 0 value
         this(get.get(), zeroValuePatternVal);
@@ -74,10 +65,22 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear{
                 () -> set.accept(this.getDate()));
     }
 
-    public void swipeClear() {
-        setDate(new Date(0));
+    /**
+    set date and notify listeners like if the picker had been used manually
+    @param date 
+     */
+    public void setDateAndNotify(Date date) {
+        setDate(date);
+//        notifyMyActionListeners();
+//        fireClicked();
+        fireActionEvent(-99, -99); //-99 used in CN1 Picker to ignore built-in action listener
     }
 
+    public void swipeClear() {
+        setDateAndNotify(new Date(0));
+    }
+
+    @Override
     public void clearFieldValue() {
         swipeClear();
     }
@@ -94,7 +97,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear{
     }
 
 //    @Override
-    protected void updateValue() {
+    protected void updateValueXXX() {
         Date date = getDate();
         if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
             setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
@@ -153,5 +156,4 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear{
 //        return FlowLayout.encloseRightMiddle(this, clearButton);
 //    }
 //</editor-fold>
-
 }

@@ -130,8 +130,9 @@ public class ScreenLogin extends MyForm {
     public void go(boolean forceLaunchForTest) {
         //Check if already logged in, if so, removeFromCache cache
         //if not logged in, show window to create account or log in
-        ParseUser parseUser = getLastUserSessionFromStorage();
-        Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
+//        ParseUser parseUser = getLastUserSessionFromStorage();
+//        Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
+        ParseUser parseUser = ParseUser.getCurrent();
 
         if (!forceLaunchForTest && parseUser != null) { //already logged in
             setDefaultACL(parseUser); //TODO needed??

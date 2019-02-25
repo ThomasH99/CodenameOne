@@ -116,6 +116,56 @@ class KeepInSameScreenPosition {
 //        boolean t=true; //breakpoint
 //    }
     //// ^ TEST ^///
+//    private String pad(String s, String longest) {
+    private String pad(String s, int longest) {
+        String spaces = "                                                            ";
+        int padding = longest - s.length();
+        return s + spaces.substring(0, padding);
+    }
+
+    private String la(Integer i) {
+        return (i < 10 ? "   " : (i < 100 ? "  " : (i < 1000 ? " " : ""))) + i;
+    }
+
+    private void printCoordinateValues(Component comp) {
+//    private void setTestValues(Component comp, Component parentInScrollableCont, Component scrollableContainer) {
+        int l = "getParentInScrollableContainer(comp, scrollableCont): ".length();
+
+        int y = comp.getY();
+        int yAbsolute = comp.getAbsoluteY();
+        int yScroll = comp.getScrollY();
+        System.out.println(pad("comp: ", l) + "y=" + la(y) + " absY=" + la(yAbsolute) + " scrollY=" + la(yScroll));
+
+        Component parent = comp.getParent();
+        int parentY = parent.getY();
+        int parentAbsoluteY = parent.getAbsoluteY();
+        int parentScrollY = parent.getScrollY();
+//        System.out.println("comp = "+"y="+y+" absY="+yAbsolute+" scrollY="+yScroll);
+//        System.out.println("comp = "+"y="+y+" YAbs="+yAbsolute+" yScroll="+yScroll);
+        System.out.println(pad("comp.getParent(): ", l) + "y=" + la(parentY) + " absY=" + la(parentAbsoluteY) + " scrollY=" + la(parentScrollY));
+
+        Container scrollableCont = getScrollableContainer(comp);
+        int scrollableContY = scrollableCont.getY();
+        int scrollableContAbsY = scrollableCont.getAbsoluteY();
+        int scrollableContScrollY = scrollableCont.getScrollY();
+//        System.out.println("yScrollableCont="+scrollableContY+" YParentAbs="+parentAbsoluteY+" yParentScroll="+scrollableContScrollY);
+        System.out.println(pad("getScrollableContainer(comp): ", l) + "y=" + la(scrollableContY) + " absY=" + la(scrollableContAbsY) + " scrollY=" + la(scrollableContScrollY));
+
+        Component parentInScrollableCont = getParentInScrollableContainer(comp, scrollableCont);
+        int parentInScrollableY = parentInScrollableCont.getY();
+        int parentInScrollableAbsY = parentInScrollableCont.getAbsoluteY();
+        int parentInScrollableScrollY = parentInScrollableCont.getScrollY();
+//        System.out.println("yParent="+parentY+" YParentAbs="+parentInScrollableAbsY+" yParentScroll="+parentInScrollableScrollY);
+        System.out.println("getParentInScrollableContainer(comp, scrollableCont): " + "y=" + la(parentInScrollableY)
+                + " absY=" + la(parentInScrollableAbsY) + " scrollY=" + la(parentInScrollableScrollY));
+        boolean t = true;
+//        int yScrollableCont = scrollableContainer.getY();
+//        int yScrollableContAbsolute = scrollableContainer.getAbsoluteY();
+//        int yScrollableContScroll = scrollableContainer.getScrollY();
+//        System.out.println("yScrollableCont="+yScrollableCont+" YScrollableContAbs="+yScrollableContAbsolute+" yScrollableContScroll="+yScrollableContScroll);
+//        boolean t=true; //breakpoint 
+    }
+
 //</editor-fold>
     /**
      * keep the item (in oldItemComponent) at the same position once the list is
@@ -298,6 +348,7 @@ class KeepInSameScreenPosition {
         if (Config.TEST) {
 //            Form currentForm = Display.getInstance().getCurrent();
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (true) {
 //            Form currentForm = Display.getInstance().getCurrent();
 //            if (currentForm != null) {
@@ -305,6 +356,7 @@ class KeepInSameScreenPosition {
 //                    return findScrollableChild(currentForm.getContentPane());
 //                }
 //            }
+//</editor-fold>
         if (newComponent != null) { //if we found the new component
             return MyForm.findScrollableChild(newComponent.getComponentForm().getContentPane());
         } else if (someComponent != null && someComponent.getComponentForm() != null) { //else lets use some other component from the form
@@ -319,11 +371,11 @@ class KeepInSameScreenPosition {
             }
         }
 
+////<editor-fold defaultstate="collapsed" desc="comment">
 //        } else {
 //            if (newComponent != null) {
 //                return getScrollableContainer(newComponent);
 //            } else { //we didn't find newComponent so must find the scrollable container in some other way
-////<editor-fold defaultstate="collapsed" desc="comment">
 ////            Container scrollableCont = Display.getInstance().getCurrent().getContentPane(); //if simple scrollable BoxLayout.y
 ////            if (Test.DEBUG) {
 ////                Container parent = scrollableCont.getParent();
@@ -342,11 +394,11 @@ class KeepInSameScreenPosition {
 ////                }
 ////            }
 ////            return null;
-////</editor-fold>
 //                return getScrollableContainer(someComponent);
 //            }
 //        }
 //        return null;
+////</editor-fold>
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -450,6 +502,7 @@ class KeepInSameScreenPosition {
                     if (relScroll != 0) {
 //            scrollableContainer.setScrollY(Math.max(0, newComponent.getY() - relScroll)); //Math.max since scroll position cannot be maintainer if earlier components shrink
 //                    scrollableContainer.setScrollY(Math.max(0, scrollableComp.getY() - relScroll)); //Math.max since scroll position cannot be maintained if earlier components shrink
+                        if (Config.TEST_SCROLL_Y) printCoordinateValues(newComponent);
                         ((ContainerScrollY) scrollableContainer).setScrollYPublic(Math.max(0, scrollableComp.getY() - relScroll)); //Math.max since scroll position cannot be maintained if earlier components shrink
                     } else {
                         scrollableContainer.scrollComponentToVisible(newComponent); //scroll to show the container of an item when no position was known - //TODO not tested

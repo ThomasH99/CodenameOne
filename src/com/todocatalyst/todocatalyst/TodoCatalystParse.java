@@ -30,6 +30,8 @@ import com.parse4cn1.ParseUser;
 import com.parse4cn1.Permissions;
 import com.parse4cn1.util.Logger;
 import com.parse4cn1.util.ParseRegistry;
+import static com.todocatalyst.todocatalyst.ScreenLogin.getLastUserSessionFromStorage;
+import static com.todocatalyst.todocatalyst.ScreenLogin.setDefaultACL;
 import java.io.IOException;
 import java.util.Date;
 //import net.informaticalibera.cn1.nativelogreader.NativeLogs;
@@ -587,7 +589,6 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         //PARSE logging:
         Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
 
-
 //        NativeLogs.initNativeLogs();
         Log.p("LOCALE = " + locale);
 
@@ -630,7 +631,6 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //            });
 //        }
 //</editor-fold>
-
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Log.setReportingLevel(Log.REPORTING_DEBUG); //
@@ -840,16 +840,21 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        } else {
 //            new ScreenLogin(theme).go();
 //</editor-fold>
-
         Display.getInstance().setProperty("iosHideToolbar", "true"); //prevent ttoolbar over keyboard to show (Done/Next button): https://stackoverflow.com/questions/48727116/codename-one-done-button-of-ios-virtual-keyboard
-        
+
         if (Display.getInstance().canForceOrientation()) {
             Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
         }
-        
-                Log.p("init() - DONE - go to login screen...");
 
-            new ScreenLogin().go();
+        //Check if already logged in, if so, removeFromCache cache
+        //if not logged in, show window to create account or log in. NB! Must init user before starting the login process since the init of first screen may read the TimerStack which becomes empty if user is not logged in
+        ParseUser parseUser = getLastUserSessionFromStorage();
+        Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
+        if (parseUser != null) setDefaultACL(parseUser);
+
+        Log.p("init() - DONE - go to login screen...");
+
+        new ScreenLogin().go();
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
 

@@ -14,6 +14,7 @@ public abstract class Config {
      * set to true during testing. Setting false will remove test code from the app. 
      */
     public static final boolean TEST_CACHE = false; //false;
+    public static final boolean TEST_SCROLL_Y = true; //false;
     public static final boolean TEST = true; //false;
     public static final boolean TEST_DRAG_AND_DROP = true; //false;
     public static final boolean TEST_PINCH = true; //false;

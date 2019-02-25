@@ -799,7 +799,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String TASK_HELP = "TASK_HELP";// "Describe your task here";
     final static String DESCRIPTION = "DESCRIPTION"; //"Description"; // "Task text"
     final static String DESCRIPTION_HELP = "DESCRIPTION_HELP"; //"Description"; // "Task text"
-    final static String DESCRIPTION_HINT = "Enter new task"; //DESCRIPTION_HINT"; //Enter New task"; // "Task text"
+    final static String DESCRIPTION_HINT = "New task"; //DESCRIPTION_HINT"; //Enter New task"; // "Task text"
     //        final static String FIELD_DONE = "Done", Expr.VALUE_FIELD_TYPE_STRING),
     final static String DONE = "DONE"; //"Done";
     final static String DUE_DATE = "Due"; //"DUE_DATE"; //"Due";
@@ -861,7 +861,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     //"Earned value (in currency or points)"
     final static String ALARM_DATE = "Reminder"; // "Alarm date", "Alarm"
     final static String ALARM_DATE_HELP = "Set a Reminder for this task. Shown as a local notification on your phone or device when the app is not running, or as a reminder ** when you are using the app."; // "Alarm date", "Alarm"
-    final static String WAIT_UNTIL_DATE = "Waiting until"; // "Wait until date" "Wait until"
+    final static String WAIT_UNTIL_DATE = "Wait until"; // "Wait until date" "Wait until" "Waiting until"
     final static String WAIT_UNTIL_DATE_HELP = "**Waiting until"; // "Wait until date" "Wait until"
     final static String DATE_WHEN_SET_WAITING = "Waiting since"; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting"
 //    final static String DATE_WHEN_SET_WAITING_HELP = "The time when this task was set "+ItemStatus.WAITING+". Is automatically set. "; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting"
@@ -4569,7 +4569,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            int nbUndone = getNumberOfUndoneItems(true);
             int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
             if (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
-                    || Dialog.show("INFO", "Changing status for " + nbChgStatus + " subtasks", "OK", "No")) {
+                    || Dialog.show("INFO", "Changing status to "+newStatus+" for " + nbChgStatus + " subtasks", "OK", "Cancel")) {
                 List subtasksToSave = new ArrayList();
 //                    List<Item> subtasks = getList();
 //                    for (int i = 0, size = subtasks.size(); i < size; i++) {
@@ -4586,7 +4586,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
 //                DAO.getInstance().saveInBackgroundSequential(subtasksToSave);
                 DAO.getInstance().saveInBackground(subtasksToSave);
-            }
+            } else 
+                return; //UI: do nothing it user does not want to change all subtasks!
 //            }
         }
 
@@ -7673,12 +7674,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         int minutes = 0;
         int hours = 0;
         String txt = t;
-//        if (MyPrefs.itemEffortEstimateExtractFromStringInTaskText.getBoolean()) {
+//        if (MyPrefs.itemExtractRemainingEstimateFromStringInTaskText.getBoolean()) {
         RE minutes_hours_RE = new RE("\\b([0-9]+)(?:h|\\:)([0-5][0-9]|[0-9])(?:m(in)?)?\\b"); //HHhMM. OK: 0h17, 10h00 2h17m, 199h. NOK: 1h65, Not allowed to start with '0' 
         if (minutes_hours_RE.match(txt)) {
             hours = getIntFromTextString(txt, minutes_hours_RE.getParenStart(1), minutes_hours_RE.getParenLength(1));
             minutes = getIntFromTextString(txt, minutes_hours_RE.getParenStart(2), minutes_hours_RE.getParenLength(2)) + 60 * hours;
-            if (!keepOrgTextUnchanged && !MyPrefs.itemEffortEstimateKeepStringInTaskText.getBoolean()) {
+            if (!keepOrgTextUnchanged && !MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
                 txt = deleteSubstring(txt, minutes_hours_RE.getParenStart(0), minutes_hours_RE.getParenLength(0));
             }
 //                System.out.println("ValStr=\"" + valStr + "\" val=" + val + "\tcleaned=\"" + txt + "\"\n");
@@ -7686,14 +7687,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             RE minutes_RE = new RE("\\s*\\b(([1-9][0-9]+)|([1-9]))m(?:in)?\\b"); //MINUTES not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
             if (minutes_RE.match(txt)) {
                 minutes = getIntFromTextString(txt, minutes_RE.getParenStart(1), minutes_RE.getParenLength(1));
-                if (!keepOrgTextUnchanged && !MyPrefs.itemEffortEstimateKeepStringInTaskText.getBoolean()) {
+                if (!keepOrgTextUnchanged && !MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
                     txt = deleteSubstring(txt, minutes_RE.getParenStart(0), minutes_RE.getParenLength(0));
                 }
             } else {
                 RE hours_RE = new RE("\\b(([1-9][0-9]+)|([1-9]))h(our(s)?)?\\b"); //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
                 if (hours_RE.match(txt)) {
                     minutes = getIntFromTextString(txt, hours_RE.getParenStart(1), hours_RE.getParenLength(1));
-                    if (!keepOrgTextUnchanged && !MyPrefs.itemEffortEstimateKeepStringInTaskText.getBoolean()) {
+                    if (!keepOrgTextUnchanged && !MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
                         txt = deleteSubstring(txt, hours_RE.getParenStart(0), hours_RE.getParenLength(0));
                     }
                 }
@@ -7704,41 +7705,62 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return new Item.EstimateResult(minutes, txt);
     }
 
+    //make them static to only initialize once for the whole app
+    private static RE priority = new RE("[p|P][19]"); //eg "p1", "P9" but not "P0"
+    private static     RE urgImp = new RE("[HH|HM|HL|MH|MM|ML|LH|LM|LL]"); //eg "HM"
+    private static     RE value = new RE("v|V[19]+[09]*"); //eg "v10" or "V10,50" ***
+    private static     RE challengeXXX = new RE("v|V[19]+[09]*"); //eg "v10" or "V10,50" ***
+    private static     RE funXXX = new RE("v|V[19]+[09]*"); //eg "ffun" "ddread" or "/fun" - but slower to type on iPhone since "/" is other keybaord and requires going back to letters afterwards
+    private static     RE notesXXX = new RE("//text"); //eg "task1 //these are notes"
+
+        //DATES
+    private static     RE dueXXX = new RE("//text"); //eg "tomorrow"
+
+        //RELATIVE DATES (+/- wrt Due date)
+    private static     RE alarmXXX = new RE("//text"); //eg "a-5h" "a-5d"
+    private static     RE waitUntilXXX = new RE("//text"); //eg "w-5h" "w-5d"
+    private static     RE startByXXX = new RE("//text"); //eg "s-5h" "s-5d2h" or "s:tomorrow", s:12/6", "s:7jun" "s:7jun17" "s:7jun2018"
+
+        //CATEGORIES
+    private static     RE categoryXXX = new RE("//text"); //eg "/cat1"
+    
     public static String parseTaskTextForProperties(Item item, String txt) {
         //TODO!!! remove whitespace before (include preceding whitespace in RE)
         //TODO!!! also remove whitespace after if end of text (eg "xxx 10m  ") - but not if other text afterwards (eg "xxx 10m yyy")
         //TODO!!! add regexps for understanding Siri words like "estimate five/5 minutes"
 //                String minutes = "\\b(([1-9][0-9]+)|([1-9]))m(in)?\\b"; //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
 //        String hours = "\\b(([1-9][0-9]+)|([1-9]))h(our(s)?)?\\b"; //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
-
-        RE priority = new RE("[p|P][19]"); //eg "p1", "P9" but not "P0"
-        RE urgImp = new RE("[HH|HM|HL|MH|MM|ML|LH|LM|LL]"); //eg "HM"
-        RE value = new RE("v|V[19]+[09]*"); //eg "v10" or "V10,50" ***
-        RE challengeXXX = new RE("v|V[19]+[09]*"); //eg "v10" or "V10,50" ***
-        RE funXXX = new RE("v|V[19]+[09]*"); //eg "ffun" "ddread" or "/fun" - but slower to type on iPhone since "/" is other keybaord and requires going back to letters afterwards
-        RE notesXXX = new RE("//text"); //eg "task1 //these are notes"
-
-        //DATES
-        RE dueXXX = new RE("//text"); //eg "tomorrow"
-
-        //RELATIVE DATES (+/- wrt Due date)
-        RE alarmXXX = new RE("//text"); //eg "a-5h" "a-5d"
-        RE waitUntilXXX = new RE("//text"); //eg "w-5h" "w-5d"
-        RE startByXXX = new RE("//text"); //eg "s-5h" "s-5d2h" or "s:tomorrow", s:12/6", "s:7jun" "s:7jun17" "s:7jun2018"
-
-        //CATEGORIES
-        RE categoryXXX = new RE("//text"); //eg "/cat1"
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//if (false){
+//        RE priority = new RE("[p|P][19]"); //eg "p1", "P9" but not "P0"
+//        RE urgImp = new RE("[HH|HM|HL|MH|MM|ML|LH|LM|LL]"); //eg "HM"
+//        RE value = new RE("v|V[19]+[09]*"); //eg "v10" or "V10,50" ***
+//        RE challengeXXX = new RE("v|V[19]+[09]*"); //eg "v10" or "V10,50" ***
+//        RE funXXX = new RE("v|V[19]+[09]*"); //eg "ffun" "ddread" or "/fun" - but slower to type on iPhone since "/" is other keybaord and requires going back to letters afterwards
+//        RE notesXXX = new RE("//text"); //eg "task1 //these are notes"
+//
+//        //DATES
+//        RE dueXXX = new RE("//text"); //eg "tomorrow"
+//
+//        //RELATIVE DATES (+/- wrt Due date)
+//        RE alarmXXX = new RE("//text"); //eg "a-5h" "a-5d"
+//        RE waitUntilXXX = new RE("//text"); //eg "w-5h" "w-5d"
+//        RE startByXXX = new RE("//text"); //eg "s-5h" "s-5d2h" or "s:tomorrow", s:12/6", "s:7jun" "s:7jun17" "s:7jun2018"
+//
+//        //CATEGORIES
+//        RE categoryXXX = new RE("//text"); //eg "/cat1"
+//}
+//</editor-fold>
         //ESTIMATE
 //        int minutes = 0;
 //        int hours = 0;
-        if (MyPrefs.itemEffortEstimateExtractFromStringInTaskText.getBoolean()) {
+        if (MyPrefs.itemExtractRemainingEstimateFromStringInTaskText.getBoolean()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            RE minutes_hours_RE = new RE("\\s*\\b([0-9]+)(?h|:)([0-5][0-9]))(?m(in)?)?\\b"); //HHhMM. OK: 0h17, 10h00 2h17m, 199h. NOK: 1h65, Not allowed to start with '0'
 //            if (minutes_hours_RE.match(txt)) {
 //                hours = getIntFromTextString(txt, minutes_hours_RE.getParenStart(1), minutes_hours_RE.getParenLength(1));
 //                minutes = getIntFromTextString(txt, minutes_hours_RE.getParenStart(2), minutes_hours_RE.getParenLength(2)) + 60 * hours;
-//                if (!MyPrefs.itemEffortEstimateKeepStringInTaskText.getBoolean()) {
+//                if (!MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
 //                    txt = deleteSubstring(txt, minutes_hours_RE.getParenStart(0), minutes_hours_RE.getParenLength(0));
 //                }
 ////                System.out.println("ValStr=\"" + valStr + "\" val=" + val + "\tcleaned=\"" + txt + "\"\n");
@@ -7746,14 +7768,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                RE minutes_RE = new RE("\\s*\\b(([1-9][0-9]+)|([1-9]))m(?in)?\\b"); //MINUTES not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
 //                if (minutes_RE.match(txt)) {
 //                    minutes = getIntFromTextString(txt, minutes_RE.getParenStart(1), minutes_RE.getParenLength(1));
-//                    if (!MyPrefs.itemEffortEstimateKeepStringInTaskText.getBoolean()) {
+//                    if (!MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
 //                        txt = deleteSubstring(txt, minutes_RE.getParenStart(0), minutes_RE.getParenLength(0));
 //                    }
 //                } else {
 //                    RE hours_RE = new RE("\\b(([1-9][0-9]+)|([1-9]))h(our(s)?)?\\b"); //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
 //                    if (hours_RE.match(txt)) {
 //                        minutes = getIntFromTextString(txt, hours_RE.getParenStart(1), hours_RE.getParenLength(1));
-//                        if (!MyPrefs.itemEffortEstimateKeepStringInTaskText.getBoolean()) {
+//                        if (!MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
 //                            txt = deleteSubstring(txt, hours_RE.getParenStart(0), hours_RE.getParenLength(0));
 //                        }
 //                    }
@@ -7761,8 +7783,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //</editor-fold>
             EstimateResult res = getEffortEstimateFromTaskText(txt);
-            txt = res.cleaned;
-            item.setEffortEstimate(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS); //update remaining, set for project-level
+            String cleanedTxt = res.cleaned;
+            //TODO!!! if EffortEstimate is also set in text, then DON'T autoupdate it based on Remaining
+            boolean effortEstimateNotDefinedInTextInput = true;
+//            item.setEffortEstimate(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, true); //update remaining, set for project-level
+            item.setRemainingEffort(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, effortEstimateNotDefinedInTextInput); //update remaining, set for project-level
+        return cleanedTxt;
         }
         return txt;
     }

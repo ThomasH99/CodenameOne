@@ -116,10 +116,15 @@ public class ScreenListOfCategories extends MyForm {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         categoryList.resetWorkTimeDefinition();
-        Container cont= buildContentPaneForItemList(categoryList);
+        Container cont = buildContentPaneForItemList(categoryList);
         getContentPane().add(BorderLayout.CENTER, cont);
-           if (cont instanceof MyTree2) {
-            setStartEditingAsync(((MyTree2)cont).getAsyncEditField());
+        if (cont instanceof MyTree2) {
+//            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
+            InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
+            if (insertNewElementFunc != null) {
+                setStartEditingAsync(insertNewElementFunc.getTextArea());
+                setInlineInsertContainer(insertNewElementFunc);
+            }
         }
         revalidate();
 //        if (this.keepPos != null) {
@@ -207,17 +212,16 @@ public class ScreenListOfCategories extends MyForm {
 
         Container mainCont = new Container(new BorderLayout());
         mainCont.setUIID("CategoryContainer");
-        if (Config.TEST) mainCont.setName("CatCont-"+category.getText());
+        if (Config.TEST) mainCont.setName("CatCont-" + category.getText());
 
         Container swipCont = new MyDragAndDropSwipeableContainer(null, null, mainCont) {
-        
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
 //                return draggedObject.getDragAndDropObject() instanceof Category
 //                        || draggedObject.getDragAndDropObject() instanceof Item;
 //            }
-
 //            @Override
 //            public ItemAndListCommonInterface getDragAndDropList() {
 //                return categoryList;
@@ -261,7 +265,7 @@ public class ScreenListOfCategories extends MyForm {
 //            }
 //</editor-fold>
         };
-        if (Config.TEST) swipCont.setName("CatSwip-"+category.getText());
+        if (Config.TEST) swipCont.setName("CatSwip-" + category.getText());
 //        swipCont.putClientProperty(ScreenListOfItems.DISPLAYED_ELEMENT, category);
 
         if (keepPos != null) {
@@ -364,7 +368,7 @@ public class ScreenListOfCategories extends MyForm {
             }
             return enabled;
         }); //D&D
-        if (Config.TEST) expandCategorySubTasksButton.setName("CatExpand-"+category.getText());
+        if (Config.TEST) expandCategorySubTasksButton.setName("CatExpand-" + category.getText());
         mainCont.addComponent(BorderLayout.CENTER, categoryLabel);
 
         Button editItemPropertiesButton = new Button();
@@ -388,8 +392,7 @@ public class ScreenListOfCategories extends MyForm {
             }, 0).show();
         }
         ));
-                if (Config.TEST) editItemPropertiesButton.setName("CatEditItem-"+category.getText());
-
+        if (Config.TEST) editItemPropertiesButton.setName("CatEditItem-" + category.getText());
 
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //        Container east = new Container(BoxLayout.x());

@@ -109,6 +109,7 @@ public class ScreenItem2 extends MyForm {
     private boolean remainingEffortSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private boolean effortEstimateSetManually = false; //true when effortEstimate has been edited to a different value than the original one from item
     private boolean effortEstimateSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
+    private boolean noAutoUpdateOnStatusChange = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private String LAST_TAB_SELECTED = "$$LastTabSelected";
     protected static String FORM_UNIQUE_ID = "ScreenEditItem"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
@@ -149,10 +150,10 @@ public class ScreenItem2 extends MyForm {
         getTitleComponent().setEndsWith3Points(true);
 //        ScreenItemP.item = item;
         this.item = item;
-        initLocalSaveOfEditedValues(getUniqueFormId(item.getObjectIdP()) );
+        initLocalSaveOfEditedValues(getUniqueFormId(item.getObjectIdP()));
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(FORM_UNIQUE_ID,this.item);
-        expandedObjects = new ExpandedObjects(getUniqueFormId(this.item.getObjectIdP()) );
+        expandedObjects = new ExpandedObjects(getUniqueFormId(this.item.getObjectIdP()));
         try {
             //        DAO.getInstance().deleteCategoryFromAllItems(cat);
             if (this.item != null) {
@@ -297,7 +298,7 @@ public class ScreenItem2 extends MyForm {
             toolbar.addCommandToOverflowMenu("Insert template", null, (e) -> {
                 //TODO!! Add "don't show again + setting to all these info popups
                 if (!MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem.getBoolean()
-                        ||Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
+                        || Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
                     //TODO enable user to select which fields to exclude
                     putEditedValues2(parseIdMap2, item); //save any already edited values before inserting the template
 //                    Item template = pickTemplateOLD(); //TODO!!!! make this a full Screen picker like CategorySelector
@@ -718,7 +719,7 @@ public class ScreenItem2 extends MyForm {
         tabs.setSwipeActivated(false);
         tabs.addSelectionListener((oldSel, i) -> {
 //            int i = tabs.getSelectedIndex();
-            if (i == 0 || i == -1) {
+            if (i == 0 || i == -1 || i == oldSel) {
                 previousValues.remove(LAST_TAB_SELECTED);
             } else {
                 previousValues.put(LAST_TAB_SELECTED, i);
@@ -817,19 +818,26 @@ public class ScreenItem2 extends MyForm {
             setTitle(getScreenTitle(item.isTemplate(), description.getText()));
         }); //update the form title when text is changed
 
-        MyCheckBox status = new MyCheckBox(itemLS.getStatus(), (oldStatus, newStatus) -> {
-        }); //, null);
+        //STATUS
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        MyCheckBox status = new MyCheckBox(itemLS.getStatus(), (oldStatus, newStatus) -> {        }); //, null);
 //        initField(Item.STATUS, Item.STATUS_HELP, status, Item.PARSE_STATUS, () -> item.getStatus(), (t) -> item.setStatus((ItemStatus) t),
 //                () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t), null);
-        initField(Item.PARSE_STATUS, status, () -> item.getStatus(), (t) -> item.setStatus((ItemStatus) t, false),
-                () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t));
-
+//</editor-fold>
+        MyCheckBox status = new MyCheckBox(itemLS.getStatus()); //, null);
+        initField(Item.PARSE_STATUS, status,
+                () -> item.getStatus().toString(),
+                (enumStr) -> item.setStatus((ItemStatus.valueOf((String) enumStr)), false), //item.setStatus((ItemStatus) t, false),
+                () -> status.getStatus().toString(), //status.getStatus(), 
+                (enumStr) -> status.setStatus(ItemStatus.valueOf((String) enumStr)));
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        parseIdMap2.put(status, () -> {
 //            if (!item.getStatus().equals(status.getStatus())) {
 //                item.setStatus(status.getStatus());
 //            }
 //        });
 //        Container taskCont = new Container(new BoxLayout(BoxLayout.X_AXIS));
+//</editor-fold>
         Container taskCont = new Container(new BorderLayout());
 
         //STARRED
@@ -854,12 +862,10 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
 //        Component starredComp = initField(Item.STARRED, Item.STARRED_HELP, starred, Item.PARSE_STARRED, () -> item.isStarred(), (b) -> item.setStarred((boolean) b),
         initField(Item.PARSE_STARRED, starred, () -> item.isStarred(), (b) -> item.setStarred((boolean) b),
-                () -> {
-                    return starred.getIcon().equals(Icons.iconStarSelectedLabelStyle);
-                }, (b) -> {
-                    starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
-//                    starred.repaint();
-                }); //add taskCont just to avoid creating an unnecessary field container
+                () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
+                (b) -> starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle)
+        //                    starred.repaint();
+        ); //add taskCont just to avoid creating an unnecessary field container
 
 //        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
         taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
@@ -985,7 +991,8 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
 //        mainCont.add(layout(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)), true));
         initField(Item.PARSE_ALARM_DATE, alarmDate, () -> item.getAlarmDateD(), (d) -> item.setAlarmDate((Date) d), () -> alarmDate.getDate(), (d) -> alarmDate.setDate((Date) d));
-        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)))); //, true, false, false));
+//        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)))); //, true, false, false));
+        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP)); //, true, false, false));
 //        int remainingIndex = mainCont.getComponentCount() - 1; //store the index at which to insert remainingEffort
 
         Label l = new Label("", "Spacer");
@@ -1135,7 +1142,7 @@ public class ScreenItem2 extends MyForm {
 //                    locallyEditedCategories = new ArrayList(item.getCategories()); //create a copy of the categories that we can edit locally in this screen; only initialize once to keep value between calling categoryPicker
 //                }
 //                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem.this);
-//                screenCatPicker.setDoneUpdater(() -> {
+//                screenCatPicker.setUpdateActionOnDone(() -> {
 //                    repeatRuleButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "<click to set categories>"));
 //                    parseIdMap2.put("EditedCategories", () -> {
 //                        item.updateCategories(locallyEditedCategories);
@@ -1295,7 +1302,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
 //            repeatRuleButton.setText("");
 //        }));
-        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, null));
+//        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, null));
+        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP));
         //TODO deleting should not delete in item but delete editcopy and when saving via parseIdMap
         //<editor-fold defaultstate="collapsed" desc="comment">
         //        if (false) {
@@ -1461,9 +1469,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         }
 
         //if single task, show picker with text for single task, if project show picker w text for ProjectTaskItself
-        MyDurationPicker actualEffort;
         String actualTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF : Item.EFFORT_ACTUAL;
         String actualHelpTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF_HELP : Item.EFFORT_ACTUAL_HELP;
+        MyDurationPicker actualEffort;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS,
 //                (i) -> item.setActualEffort(((long) i) * MyDate.MINUTE_IN_MILLISECONDS));
@@ -1482,6 +1490,11 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                (min) -> item.setActualEffort(((long) min) * MyDate.MINUTE_IN_MILLISECONDS),
 //                () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 //</editor-fold>
+        actualEffort.addActionListener((evt) -> {
+            status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
+            status.repaint();
+        });
+
         initField(Item.PARSE_ACTUAL_EFFORT, actualEffort,
                 () -> item.getActualEffortProjectTaskItself(),
                 (l3) -> item.setActualEffort((long) l3, false),
@@ -1500,34 +1513,23 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         timeCont.add(layoutN(estimateTxt, effortEstimate, estimateHelpTxt));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        ActionEvent ae = new ActionEvent
-        actualEffort.addActionListener(new MyActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-//                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getTime(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
-                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
-//                status.animate();
-                status.repaint();
-            }
-        });
-
-        if (false) {
-            actualEffort.addActionListener((e) -> {
-//            if (actualEffort.getTime() > 0) {
-//                if (item.getStatus() != ItemStatus.ONGOING && status.getStatus() == item.getStatus()/*status not manually changed*/) {
-//                    status.setStatus(ItemStatus.ONGOING);
-//                }
-//            } else if (item.getStatus() == ItemStatus.ONGOING && status.getStatus() == item.getStatus()) {
-//                status.setStatus(ItemStatus.CREATED);
-//            }
-//            ItemStatus oldStatus = status.getStatus();
-//                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getTime(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
-                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
-//                status.animate();
-                status.repaint();
-            });
-        }
-
+//        if (false) {
+//            actualEffort.addActionListener((e) -> {
+////            if (actualEffort.getTime() > 0) {
+////                if (item.getStatus() != ItemStatus.ONGOING && status.getStatus() == item.getStatus()/*status not manually changed*/) {
+////                    status.setStatus(ItemStatus.ONGOING);
+////                }
+////            } else if (item.getStatus() == ItemStatus.ONGOING && status.getStatus() == item.getStatus()) {
+////                status.setStatus(ItemStatus.CREATED);
+////            }
+////            ItemStatus oldStatus = status.getStatus();
+////                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getTime(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
+//                status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
+////                status.animate();
+//                status.repaint();
+//            });
+//        }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            actualEffort.addActionListener((e) -> {
@@ -1558,12 +1560,11 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        }
 //</editor-fold>
         //if actual is manually set to 0, and user clicks the status checkbox, then the status should be set to CREATED (otherwise it is set to ONGOING)
-        status.setIsItemOngoing(() -> {
-//            return (item.getActualEffort() > 0 && actualEffort.getTime()>0); //not ongoing if either item.actuaEeffort==0 OR actualEffort has been set to 0 by user// || actualEffort.getTime() > 0; //actualEffort.getTime() SHOULD not be needed since first setting actualEff manually and then clicking on a Done/Cancelled checkbox should be an edge case(??)
-//            return (actualEffort.getTime() > 0); //whatever value is currently set in UI is used (no need to check item.getActualEffort())
-            return (actualEffort.getDuration() > 0); //whatever value is currently set in UI is used (no need to check item.getActualEffort())
-        });
-
+//        status.setIsItemOngoing(() -> {
+////            return (item.getActualEffort() > 0 && actualEffort.getTime()>0); //not ongoing if either item.actuaEeffort==0 OR actualEffort has been set to 0 by user// || actualEffort.getTime() > 0; //actualEffort.getTime() SHOULD not be needed since first setting actualEff manually and then clicking on a Done/Cancelled checkbox should be an edge case(??)
+////            return (actualEffort.getTime() > 0); //whatever value is currently set in UI is used (no need to check item.getActualEffort())
+//            return (actualEffort.getDuration() > 0); //whatever value is currently set in UI is used (no need to check item.getActualEffort())
+//        });
 //        MyDatePicker waitingTill = new MyDatePicker(parseIdMap2, () -> itemLS.getWaitingTillDateD(), (d) -> item.setWaitingTillDate(d)); //"<wait until this date>",
         MyDatePicker waitingTill = new MyDatePicker(); //"<wait until this date>",
 //        timeCont.add(new Label(Item.WAIT_DATE)).add(addDatePickerWithClearButton(waitingTill));
@@ -1765,9 +1766,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                                             //                                            ((long) remainingEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
                                             //                                            ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
                                             //                                            ((long) effortEstimate.getTime()) * MyDate.MINUTE_IN_MILLISECONDS),
-                                            ((long) remainingEffort.getTime()),
-                                            ((long) actualEffort.getTime()),
-                                            ((long) effortEstimate.getTime())),
+                                            ((long) remainingEffort.getDuration()),
+                                            ((long) actualEffort.getDuration()),
+                                            ((long) effortEstimate.getDuration())),
                                     Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())), 2));
 //                    earnedValuePerHour.animate(); //TODO: needed?
                     earnedValuePerHour.repaint(); //TODO: needed?
@@ -1778,35 +1779,34 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         remainingEffort.addActionListener(earnedValuePerHourUpdater);
         actualEffort.addActionListener(earnedValuePerHourUpdater);
         earnedValue.addActionListener(earnedValuePerHourUpdater);
-
-        //Automatically update Estimate and Remaining when one of them is set (and no value is defined manually). NB. This will only work for the first one being set. 
-        MyActionListener remainingEffortChangeListener = new MyActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
-//                remainingEffortSetManually = item.getRemainingEffortNoDefault() != remainingEffort.getTime(); //true;
-//                if (remainingEffortSetAutomatically) {
-//                    return; //do nothing if remainingEffort is set automatically
-//                } else {
-                //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
-                if (!remainingEffortSetAutomatically) {
-                    remainingEffortSetManually = true;
-                    if (!effortEstimateSetManually && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
-                            //                            && !effortEstimateSetManually&& effortEstimate.getTime()==0&& effortEstimate.getTime()==itemLS.getEffortEstimate()) ) {//&& item.getEffortEstimate() == 0 xxonly set if picker zero and org value zero (not changed picker back to zero
-                            && itemLS.getEffortEstimate() == 0) {//&& item.getEffortEstimate() == 0 xxonly set if picker zero and org value zero (not changed picker back to zero
-//                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
-//                    if ((remainingEffort.getTime() != 0 && item.getEffortEstimate() == 0 && (effortEstimate.getTime() == 0 || forceSameValues))
-//                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: 
-                        effortEstimateSetAutomatically = true;
-//                        effortEstimate.setTime(remainingEffort.getTime() + actualEffort.getTime()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
-                        effortEstimate.setDuration(remainingEffort.getDuration() + actualEffort.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
-                        effortEstimateSetAutomatically = false;
-                        effortEstimate.repaint();
-                    }
-                } //else do nothing if remainingEffort is set automatically
-            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        MyActionListener remainingEffortChangeListener = new MyActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
+////                remainingEffortSetManually = item.getRemainingEffortNoDefault() != remainingEffort.getTime(); //true;
+////                if (remainingEffortSetAutomatically) {
+////                    return; //do nothing if remainingEffort is set automatically
+////                } else {
+//                //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
+//                if (!remainingEffortSetAutomatically) {
+//                    remainingEffortSetManually = true;
+//                    if (!effortEstimateSetManually && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
+//                            //                            && !effortEstimateSetManually&& effortEstimate.getTime()==0&& effortEstimate.getTime()==itemLS.getEffortEstimate()) ) {//&& item.getEffortEstimate() == 0 xxonly set if picker zero and org value zero (not changed picker back to zero
+//                            && itemLS.getEffortEstimate() == 0) {//&& item.getEffortEstimate() == 0 xxonly set if picker zero and org value zero (not changed picker back to zero
+////                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
+////                    if ((remainingEffort.getTime() != 0 && item.getEffortEstimate() == 0 && (effortEstimate.getTime() == 0 || forceSameValues))
+////                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI:
+//                        effortEstimateSetAutomatically = true;
+////                        effortEstimate.setTime(remainingEffort.getTime() + actualEffort.getTime()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated)
+//                        effortEstimate.setDuration(remainingEffort.getDuration() + actualEffort.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated)
+//                        effortEstimateSetAutomatically = false;
+//                        effortEstimate.repaint();
+//                    }
+//                } //else do nothing if remainingEffort is set automatically
 //            }
-        };
+////            }
+//        };
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyActionListener remainingEffortChangeListenerOLD = new MyActionListener() {
 //            @Override
@@ -1824,39 +1824,89 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            }
 //        };
 //</editor-fold>
-        remainingEffort.addActionListener(remainingEffortChangeListener);
+//        remainingEffort.addActionListener(remainingEffortChangeListener);
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        remainingEffort.addActionListener((e) -> {
+//            //Automatically update Estimate and Remaining when one of them is set (and no value is defined manually). NB. This will only work for the first one being set.
+//            //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
+////                remainingEffortSetManually = item.getRemainingEffortNoDefault() != remainingEffort.getTime(); //true;
+////                if (remainingEffortSetAutomatically) {
+////                    return; //do nothing if remainingEffort is set automatically
+////                } else {
+//            //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
+//            if (!remainingEffortSetAutomatically) {
+//                remainingEffortSetManually = true;
+//                if (!effortEstimateSetManually && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
+//                        //                            && !effortEstimateSetManually&& effortEstimate.getTime()==0&& effortEstimate.getTime()==itemLS.getEffortEstimate()) ) {//&& item.getEffortEstimate() == 0 xxonly set if picker zero and org value zero (not changed picker back to zero
+//                        && itemLS.getEffortEstimate() == 0) {//&& item.getEffortEstimate() == 0 xxonly set if picker zero and org value zero (not changed picker back to zero
+////                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
+////                    if ((remainingEffort.getTime() != 0 && item.getEffortEstimate() == 0 && (effortEstimate.getTime() == 0 || forceSameValues))
+////                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI:
+//                    effortEstimateSetAutomatically = true;
+////                        effortEstimate.setTime(remainingEffort.getTime() + actualEffort.getTime()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated)
+//                    effortEstimate.setDurationAndNotify(remainingEffort.getDuration() + actualEffort.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated)
+////                    effortEstimate.fireClicked(); //simulate click to trigger local saving of the value
+//                    effortEstimateSetAutomatically = false;
+//                    effortEstimate.repaint();
+//                }
+//            } //else do nothing if remainingEffort is set automatically
+////            }
+////            }
+//        });
+//</editor-fold>
+        remainingEffort.addActionListener((e) -> {
+            //Automatically update Estimate and Remaining when one of them is set (and no value is defined manually). NB. This will only work for the first one being set. 
+            //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
+            //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
+            if (!remainingEffortSetManually && !remainingEffortSetAutomatically)
+                remainingEffortSetManually = true; //set on first manual set and keep it (=> no more automatic setting in this round)
 
-        MyActionListener effortEstimateChangeListener = new MyActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+            if (remainingEffortSetManually && !effortEstimateSetManually
+                    && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
+                    && itemLS.getEffortEstimate() == 0) { //UI: only allow manual setting if no value was set before
+                effortEstimateSetAutomatically = true;
+                effortEstimate.setDurationAndNotify(remainingEffort.getDuration() + actualEffort.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
+                effortEstimateSetAutomatically = false;
+                effortEstimate.repaint();
+            }
+        });
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        MyActionListener effortEstimateChangeListener = new MyActionListener() {
+//        ActionListener effortEstimateChangeListener = new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//        ActionListener effortEstimateChangeListener = (e)-> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                effortEstimateSetManually = item.getEffortEstimate() != effortEstimate.getTime(); //UI: only set to true if actually changed (avoid that entering and leaving without changing blocks auto-updates
 //                if (effortEstimateSetAutomatically) {
 //                    return;
 //                } else {
-                if (!effortEstimateSetAutomatically) {
-                    effortEstimateSetManually = true;
-                    //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
-                    //only automatically update effort estimate if never defined and not changed in the current editing 
-                    if (MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
-                            && !remainingEffortSetManually && itemLS.getRemainingEffortProjectTaskItself() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
-//                    if ((effortEstimate.getTime() != 0 && item.getRemainingEffortNoDefault() == 0 && (remainingEffort.getTime() == 0 || forceSameValues))
-//                            || remainingEffort.getTime()==effortEstimate.getTime()) { //UI: when to auto-update estimates
-//                    if ((item.getRemainingEffortNoDefault() == 0 && effortEstimate.getTime() != 0 && (remainingEffort.getTime() == 0 || forceSameValues))
-//                            || item.getRemainingEffortNoDefault() == 0
-//                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: when to auto-update estimates
-//</editor-fold>
-                        remainingEffortSetAutomatically = true;
-//                        remainingEffort.setTime(effortEstimate.getTime() - actualEffort.getTime()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
-                        remainingEffort.setDuration(effortEstimate.getDuration() - actualEffort.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
-                        remainingEffortSetAutomatically = false;
-//                        remainingEffortSetManually = false; //must reset since the actionlistener on remainingEffort does not distinguish between setting via manual user input and auto-setting based on changed effortEstimate
-                        remainingEffort.repaint();
-                    }
-                }
-            }
-        };
+////</editor-fold>
+//                if (!effortEstimateSetAutomatically) {
+//                    effortEstimateSetManually = true;
+//                    //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
+//                    //only automatically update effort estimate if never defined and not changed in the current editing
+//                    if (MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
+//                            && !remainingEffortSetManually && itemLS.getRemainingEffortProjectTaskItself() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
+////                    if ((effortEstimate.getTime() != 0 && item.getRemainingEffortNoDefault() == 0 && (remainingEffort.getTime() == 0 || forceSameValues))
+////                            || remainingEffort.getTime()==effortEstimate.getTime()) { //UI: when to auto-update estimates
+////                    if ((item.getRemainingEffortNoDefault() == 0 && effortEstimate.getTime() != 0 && (remainingEffort.getTime() == 0 || forceSameValues))
+////                            || item.getRemainingEffortNoDefault() == 0
+////                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: when to auto-update estimates
+////</editor-fold>
+//                        remainingEffortSetAutomatically = true;
+////                        remainingEffort.setTime(effortEstimate.getTime() - actualEffort.getTime()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
+//                        remainingEffort.setDuration(effortEstimate.getDuration() - actualEffort.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
+//                        remainingEffortSetAutomatically = false;
+////                        remainingEffortSetManually = false; //must reset since the actionlistener on remainingEffort does not distinguish between setting via manual user input and auto-setting based on changed effortEstimate
+//                        remainingEffort.repaint();
+//                    }
+//                }
+////            }
+//        };
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyActionListener effortEstimateChangeListenerOLD = new MyActionListener() {
 //            @Override
@@ -1877,14 +1927,60 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            }
 //        };
 //</editor-fold>
-        effortEstimate.addActionListener(effortEstimateChangeListener);
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        effortEstimate.addActionListener((e) -> {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                effortEstimateSetManually = item.getEffortEstimate() != effortEstimate.getTime(); //UI: only set to true if actually changed (avoid that entering and leaving without changing blocks auto-updates
+////                if (effortEstimateSetAutomatically) {
+////                    return;
+////                } else {
+////</editor-fold>
+//            if (!effortEstimateSetAutomatically) {
+//                effortEstimateSetManually = true;
+//                //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
+//                //only automatically update effort estimate if never defined and not changed in the current editing
+//                if (MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
+//                        && !remainingEffortSetManually && itemLS.getRemainingEffortProjectTaskItself() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    boolean forceSameValues = (MyPrefs.getBoolean(MyPrefs.alwaysForceSameInitialValuesForRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItemXXX));
+////                    if ((effortEstimate.getTime() != 0 && item.getRemainingEffortNoDefault() == 0 && (remainingEffort.getTime() == 0 || forceSameValues))
+////                            || remainingEffort.getTime()==effortEstimate.getTime()) { //UI: when to auto-update estimates
+////                    if ((item.getRemainingEffortNoDefault() == 0 && effortEstimate.getTime() != 0 && (remainingEffort.getTime() == 0 || forceSameValues))
+////                            || item.getRemainingEffortNoDefault() == 0
+////                            || remainingEffort.getTime() == effortEstimate.getTime()) { //UI: when to auto-update estimates
+////</editor-fold>
+//                    remainingEffortSetAutomatically = true;
+////                        remainingEffort.setTime(effortEstimate.getTime() - actualEffort.getTime()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
+//                    remainingEffort.setDurationAndNotify(effortEstimate.getDuration() - actualEffort.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
+//                    remainingEffortSetAutomatically = false;
+////                        remainingEffortSetManually = false; //must reset since the actionlistener on remainingEffort does not distinguish between setting via manual user input and auto-setting based on changed effortEstimate
+//                    remainingEffort.repaint();
+//                }
+//            }
+////            }
+//        });
+//</editor-fold>
+        effortEstimate.addActionListener((e) -> {
+            //only automatically update effort estimate if never defined and not changed in the current editing 
+            if (!effortEstimateSetManually && !effortEstimateSetAutomatically)
+                effortEstimateSetManually = true; //set on first manual set and keep it (=> no more automatic setting in this round)
+
+            if (effortEstimateSetManually && !remainingEffortSetManually
+                    && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
+                    && itemLS.getRemainingEffortProjectTaskItself() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+                remainingEffortSetAutomatically = true;
+                remainingEffort.setDurationAndNotify(effortEstimate.getDuration() - actualEffort.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
+                remainingEffortSetAutomatically = false;
+                remainingEffort.repaint();
+            }
+        });
 
         //TAB STATUS FIELDS
         Container statusCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 
         statusCont.setScrollableY(true);
         tabs.addTab("Status", null, statusCont);
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Label createdDate = new Label(item.getCreatedDate() == 0 ? "<date set when saved>" : L10NManager.getInstance().formatDateShortStyle(new Date(item.getCreatedDate())));
 //        Label createdDate = new Label(item.getCreatedDate() == 0 ? "<date set when saved>" : L10NManager.getInstance().formatDateTimeShort(new Date(item.getCreatedDate())));
@@ -1899,9 +1995,11 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (item.isProject()) {
             long lastModifiedSubtasks = item.getLastModifiedDateProjectOrSubtasks().getTime();
             Label lastModifiedDateSubtasks = new Label(lastModifiedSubtasks == 0 ? "" : MyDate.formatDateTimeNew(lastModifiedSubtasks));
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //            statusCont.add(layout(Item.UPDATED_DATE_SUBTASKS, lastModifiedDateSubtasks, "**", true, true, true));
 //            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, true, true));
+//</editor-fold>
             statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true));
         } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1958,165 +2056,280 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> dateSetWaitingDate.getDate(), (s) -> dateSetWaitingDate.setDate((Date) s));
 
         statusCont.add(layoutN(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate, Item.DATE_WHEN_SET_WAITING_HELP));
-        dateSetWaitingDate.addActionListener((e) -> {
-            if (dateSetWaitingDate.getDate().getTime() != 0) {
-                if (status.getStatus() != ItemStatus.WAITING) {
-                    status.setStatus(ItemStatus.WAITING);
-                    status.repaint();
+
+        if (false) { //not meaningful to change status when changing this date
+            dateSetWaitingDate.addActionListener((e) -> {
+                noAutoUpdateOnStatusChange = true;
+                if (dateSetWaitingDate.getDate().getTime() != 0) {
+                    if (status.getStatus() == ItemStatus.CREATED || status.getStatus() == ItemStatus.ONGOING) { //only update if created or ongoing (not cancelled, Done)
+                        status.setStatus(ItemStatus.WAITING);
+//                    status.repaint();
+                    }
+                } else { //clearing the waiting date => replace the Waiting status by whatever is appropriate
+                    if (status.getStatus() == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
+                        status.setStatus(actualEffort.getDuration() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+//                    status.repaint();
+                    }
                 }
-            } else {
-//                if (actualEffort.getTime() != 0) {
-                if (actualEffort.getDuration() != 0) {
-                    status.setStatus(ItemStatus.ONGOING); //UI: if deleting setWaitingDate, then reset status to whatever it was before
-                    status.repaint();
-//                    status.setStatus(ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
-                } else {
-                    status.setStatus(item.getStatus()); //UI: if deleting setWaitingDate, then reset status to whatever it was before
-                    status.repaint();
+                noAutoUpdateOnStatusChange = false;
+            });
+        }
+
+        waitingTill.addActionListener((e) -> {
+            noAutoUpdateOnStatusChange = true;
+//            status.setStatus(ItemStatus.WAITING);
+            if (waitingTill.getDate().getTime() != 0) {
+                if (status.getStatus() == ItemStatus.CREATED || status.getStatus() == ItemStatus.ONGOING) { //only update if created or ongoing (not cancelled, Done)
+                    status.setStatus(ItemStatus.WAITING);
+                    dateSetWaitingDate.setDate(new Date());
+                }
+            } else { //clearing the waiting date => replace the Waiting status by whatever is appropriate
+                if (status.getStatus() == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
+                    status.setStatus(actualEffort.getDuration() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
                 }
             }
+            noAutoUpdateOnStatusChange = false;
         });
 
-        MyActionListener statusListener = new MyActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                //if status is set Ongoing and startedOnDate is not set and has not been set explicitly 
-                //if status is changed
-                //TODO!!! move this logic into Item as static method (or ensure consistent with changes made there), OR, at least check it is consistent with logic elsewhere (eg. if a project is set complete when last subtasks is completed, or in screenItemList)
-                ItemStatus newStatus = status.getStatus();
-                if (newStatus == ItemStatus.CREATED && item.getActualEffort() > 0) {
-                    newStatus = ItemStatus.ONGOING;
-                }
-                Date now = new Date();
-                Date zero = new Date(0);
-                if (newStatus != item.getStatus()) {
-                    if (newStatus == ItemStatus.ONGOING) {
+        status.setStatusChangeHandler((oldStatus, newStatus) -> {
+            //if status is set Ongoing and startedOnDate is not set and has not been set explicitly 
+            //if status is changed
+            //TODO!!! move this logic into Item as static method (or ensure consistent with changes made there), OR, at least check it is consistent with logic elsewhere (eg. if a project is set complete when last subtasks is completed, or in screenItemList)
+//            ItemStatus newStatus = status.getStatus();
+            if (newStatus == oldStatus || noAutoUpdateOnStatusChange) return;
+
+            if (newStatus == ItemStatus.CREATED && item.getActualEffort() > 0) {
+                newStatus = ItemStatus.ONGOING;
+            }
+            Date now = new Date();
+            Date zero = new Date(0);
+//            if (newStatus != item.getStatus()) {
+            if (newStatus == ItemStatus.ONGOING) {
 //                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                        if (startedOnDate.getDate().getTime() == 0) {
-                            startedOnDate.setDate(now);
-                            startedOnDate.repaint();
-                        }
-                        if (completedDate.getDate().getTime() != 0) {
-                            completedDate.setDate(zero);
-                            completedDate.repaint();
-                        }
-                    } else if (newStatus == ItemStatus.CREATED) {
-                        //if set back to Created, force startedOnDate and completedDate and WaitingDate and ?? back
-                        //TODO!!!!
-                        //set back to 0 or if the date was only changed in the UI (item.getStartedOnDate()==0)
+                if (startedOnDate.getDate().getTime() == 0) {
+                    startedOnDate.setDateAndNotify(now);
+                    startedOnDate.repaint();
+                }
+                if (completedDate.getDate().getTime() != 0) {
+                    completedDate.setDateAndNotify(zero);
+                    completedDate.repaint();
+                }
+            } else if (newStatus == ItemStatus.CREATED) {
+                //if set back to Created, force startedOnDate and completedDate and WaitingDate and ?? back
+                //TODO!!!!
+                //set back to 0 or if the date was only changed in the UI (item.getStartedOnDate()==0)
 //                        if ((startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) || item.getStartedOnDate() == 0) {
-                        if (startedOnDate.getDate().getTime() != 0) {
-                            startedOnDate.setDate(zero);
-                            startedOnDate.repaint();
-                        }
-                        //TODO!!!!!! check the logic for setting dates back to 0!! 
-                        //TODO In general, need to have methods in Item *without* any side-effects on other fields to ensure that the fields are set to the values seen in the UI
-                        //TODO extract the logic for which changed fields impact others? Add new Item.setters embedding th needed logic for updating other fields and use those in the places where the automatic updates are needed
+                if (startedOnDate.getDate().getTime() != 0) {
+                    startedOnDate.setDateAndNotify(zero);
+                    startedOnDate.repaint();
+                }
+                //TODO!!!!!! check the logic for setting dates back to 0!! 
+                //TODO In general, need to have methods in Item *without* any side-effects on other fields to ensure that the fields are set to the values seen in the UI
+                //TODO extract the logic for which changed fields impact others? Add new Item.setters embedding th needed logic for updating other fields and use those in the places where the automatic updates are needed
 //                        if ((completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
-                        if (completedDate.getDate().getTime() != 0) {
-                            completedDate.setDate(zero);
-                            completedDate.repaint();
-                        }
+                if (completedDate.getDate().getTime() != 0) {
+                    completedDate.setDateAndNotify(zero);
+                    completedDate.repaint();
+                }
 //                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
 //                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
 //                            completedDate.setDate(new Date(0));
 //                        }
-                    } else if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
+            } else if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
 //                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                        if (startedOnDate.getDate().getTime() == 0) {
-                            startedOnDate.setDate(now);
-                            startedOnDate.repaint();
-                        }
-//                        if (completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) {
-                        if (true || completedDate.getDate().getTime() == 0) { //UI: will not change if already set ->NO, will always use latest date when set Done, e.g. if marking done by mistake
-                            completedDate.setDate(now);
-                            completedDate.repaint();
-                        }
-                    } else if (newStatus == ItemStatus.WAITING) {
-//                        if (dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getDateWhenSetWaiting()) {
-                        dateSetWaitingDate.setDate(now);
-                        dateSetWaitingDate.repaint();
-//                        }
-                        //UI: set startedOnDate when setting Waiting (even if no effort registered)?
-//                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                        if (startedOnDate.getDate().getTime() == 0) {
-                            startedOnDate.setDate(now);
-                            startedOnDate.repaint();
-                        }
-                    }
-                    if (newStatus != ItemStatus.WAITING && dateSetWaitingDate.getDate().getTime() != 0) {
-                        dateSetWaitingDate.setDate(zero);
-                        dateSetWaitingDate.repaint();
-                    }
-
-                }
-            }
-        };
-        status.addActionListener(statusListener);
-
-        MyActionListener startedOnDateListener = new MyActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                //if startedOnDate is set, then if status has not been set explicitly and it is Created (not Waiting), the set it 
-//                if (startedOnDate.getDate().getTime() != 0 && item.getStartedOnDate() == 0 && status.getStatus() == item.getStatus() && status.getStatus() == ItemStatus.CREATED) {
                 if (startedOnDate.getDate().getTime() == 0) {
-                    //TODO!! should it be allowed to remove a startdate if there is actual effort? YES, because you want to be able to edit freely the different fields of an Item! (not too much intelligence)
-//                    if (actualEffort.getTime() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
-                    if (actualEffort.getDuration() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
-                        status.setStatus(ItemStatus.CREATED);
-                        status.repaint();
-                    }
-                } else { //startedOnDate.getDate().getTime() == 0 => startDate was set OR CHANGED(!)
-                    if (status.getStatus() == ItemStatus.CREATED) { //UI: DON't set to ONGOING if current state is WAITING/CANCELLED/ONGOING
-//{// (startedOnDate.getDate().getTime() != 0) {
-                        status.setStatus(ItemStatus.ONGOING);
-                        status.repaint();
-                    }
+                    startedOnDate.setDateAndNotify(now);
+                    startedOnDate.repaint();
                 }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    else {
-//                        if (actualEffort.getTime() > 0) {
-//                            status.setStatus(ItemStatus.ONGOING); //UI: if deleting setWaitingDate, then reset status to whatever it was before
-////                    } else if (completedDate.getDate().getTime()!=0){
-////                        status.setStatus(ItemStatus.DONE); //UI: if there is a completedDate set, then set status to Done
-//                        } else {
-//                            status.setStatus(item.getStatus()); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+//                        if (completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) {
+                if (true || completedDate.getDate().getTime() == 0) { //UI: will not change if already set ->NO, will always use latest date when set Done, e.g. if marking done by mistake
+                    completedDate.setDateAndNotify(now);
+                    completedDate.repaint();
+                }
+            } else if (newStatus == ItemStatus.WAITING) {
+//                        if (dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getDateWhenSetWaiting()) {
+                dateSetWaitingDate.setDateAndNotify(now);
+                dateSetWaitingDate.repaint();
 //                        }
-//                    }
-//                }
-//</editor-fold>
-            }
-        };
-        startedOnDate.addActionListener(startedOnDateListener);
-
-        MyActionListener completedOnDateListener = new MyActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-//                boolean completedDateSet = false;
-                //if completeDate is set, then if status has not been set explicitly and it is Created/Ongoing/Waiting), the set it Completed
-//                if (completedDate.getDate().getTime() != 0 && item.getCompletedDate() == 0 && status.getStatus() == item.getStatus()
-//                        && (status.getStatus() == ItemStatus.CREATED || status.getStatus() == ItemStatus.ONGOING || status.getStatus() == ItemStatus.WAITING)) {
-                if (completedDate.getDate().getTime() != 0) {
-                    status.setStatus(ItemStatus.DONE);
-                } else {
-//                    if (actualEffort.getTime() == 0) {
-                    if (actualEffort.getDuration() == 0) {
-                        status.setStatus(ItemStatus.CREATED);
-                    } else {
-                        status.setStatus(ItemStatus.ONGOING);
-                    }
-                }
-                status.repaint();
-                //UI: if startedOnDate is not changed explicitly in UI, the set it to (-Now-) completedDate-actual
-                if (startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-//                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
-//                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getDuration()))); //TODO!! define setting to use actualEffort when auto-setting startedOn date?? Probably too smart
-                    startedOnDate.setDate(new Date(completedDate.getDate().getTime())); //UI: if setting a completeDate, then if no startedOn date was set, it will also be set to same time
+                //UI: set startedOnDate when setting Waiting (even if no effort registered)?
+//                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+                if (startedOnDate.getDate().getTime() == 0) {
+                    startedOnDate.setDate(now);
                     startedOnDate.repaint();
                 }
             }
-        };
+            if (newStatus != ItemStatus.WAITING && dateSetWaitingDate.getDate().getTime() != 0) {
+                dateSetWaitingDate.setDateAndNotify(zero);
+                dateSetWaitingDate.repaint();
+            }
+        });
 //<editor-fold defaultstate="collapsed" desc="comment">
+//              status.addActionListener(statusListener);
+//        status.addActionListener((evt) -> {
+//            //if status is set Ongoing and startedOnDate is not set and has not been set explicitly
+//            //if status is changed
+//            //TODO!!! move this logic into Item as static method (or ensure consistent with changes made there), OR, at least check it is consistent with logic elsewhere (eg. if a project is set complete when last subtasks is completed, or in screenItemList)
+//            ItemStatus newStatus = status.getStatus();
+//            if (newStatus == ItemStatus.CREATED && item.getActualEffort() > 0) {
+//                newStatus = ItemStatus.ONGOING;
+//            }
+//            Date now = new Date();
+//            Date zero = new Date(0);
+//            if (newStatus != item.getStatus()) {
+//                if (newStatus == ItemStatus.ONGOING) {
+////                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+//                    if (startedOnDate.getDate().getTime() == 0) {
+//                        startedOnDate.setDateAndNotify(now);
+//                        startedOnDate.repaint();
+//                    }
+//                    if (completedDate.getDate().getTime() != 0) {
+//                        completedDate.setDateAndNotify(zero);
+//                        completedDate.repaint();
+//                    }
+//                } else if (newStatus == ItemStatus.CREATED) {
+//                    //if set back to Created, force startedOnDate and completedDate and WaitingDate and ?? back
+//                    //TODO!!!!
+//                    //set back to 0 or if the date was only changed in the UI (item.getStartedOnDate()==0)
+////                        if ((startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) || item.getStartedOnDate() == 0) {
+//                    if (startedOnDate.getDate().getTime() != 0) {
+//                        startedOnDate.setDateAndNotify(zero);
+//                        startedOnDate.repaint();
+//                    }
+//                    //TODO!!!!!! check the logic for setting dates back to 0!!
+//                    //TODO In general, need to have methods in Item *without* any side-effects on other fields to ensure that the fields are set to the values seen in the UI
+//                    //TODO extract the logic for which changed fields impact others? Add new Item.setters embedding th needed logic for updating other fields and use those in the places where the automatic updates are needed
+////                        if ((completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
+//                    if (completedDate.getDate().getTime() != 0) {
+//                        completedDate.setDateAndNotify(zero);
+//                        completedDate.repaint();
+//                    }
+////                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
+////                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
+////                            completedDate.setDate(new Date(0));
+////                        }
+//                } else if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
+////                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+//                    if (startedOnDate.getDate().getTime() == 0) {
+//                        startedOnDate.setDateAndNotify(now);
+//                        startedOnDate.repaint();
+//                    }
+////                        if (completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) {
+//                    if (true || completedDate.getDate().getTime() == 0) { //UI: will not change if already set ->NO, will always use latest date when set Done, e.g. if marking done by mistake
+//                        completedDate.setDateAndNotify(now);
+//                        completedDate.repaint();
+//                    }
+//                } else if (newStatus == ItemStatus.WAITING) {
+////                        if (dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getDateWhenSetWaiting()) {
+//                    dateSetWaitingDate.setDateAndNotify(now);
+//                    dateSetWaitingDate.repaint();
+////                        }
+//                    //UI: set startedOnDate when setting Waiting (even if no effort registered)?
+////                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+//                    if (startedOnDate.getDate().getTime() == 0) {
+//                        startedOnDate.setDate(now);
+//                        startedOnDate.repaint();
+//                    }
+//                }
+//                if (newStatus != ItemStatus.WAITING && dateSetWaitingDate.getDate().getTime() != 0) {
+//                    dateSetWaitingDate.setDateAndNotify(zero);
+//                    dateSetWaitingDate.repaint();
+//                }
+//
+//            }
+//        });
+//</editor-fold>
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        MyActionListener startedOnDateListener = new MyActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                //if startedOnDate is set, then if status has not been set explicitly and it is Created (not Waiting), the set it
+////                if (startedOnDate.getDate().getTime() != 0 && item.getStartedOnDate() == 0 && status.getStatus() == item.getStatus() && status.getStatus() == ItemStatus.CREATED) {
+//                if (startedOnDate.getDate().getTime() == 0) {
+//                    //TODO!! should it be allowed to remove a startdate if there is actual effort? YES, because you want to be able to edit freely the different fields of an Item! (not too much intelligence)
+////                    if (actualEffort.getTime() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter
+//                    if (actualEffort.getDuration() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter
+//                        status.setStatus(ItemStatus.CREATED);
+//                        status.repaint();
+//                    }
+//                } else { //startedOnDate.getDate().getTime() == 0 => startDate was set OR CHANGED(!)
+//                    if (status.getStatus() == ItemStatus.CREATED) { //UI: DON't set to ONGOING if current state is WAITING/CANCELLED/ONGOING
+////{// (startedOnDate.getDate().getTime() != 0) {
+//                        status.setStatus(ItemStatus.ONGOING);
+//                        status.repaint();
+//                    }
+//                }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    else {
+////                        if (actualEffort.getTime() > 0) {
+////                            status.setStatus(ItemStatus.ONGOING); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+//////                    } else if (completedDate.getDate().getTime()!=0){
+//////                        status.setStatus(ItemStatus.DONE); //UI: if there is a completedDate set, then set status to Done
+////                        } else {
+////                            status.setStatus(item.getStatus()); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+////                        }
+////                    }
+////                }
+////</editor-fold>
+//            }
+//        };
+//</editor-fold>
+        startedOnDate.addActionListener((evt) -> {
+            //if startedOnDate is set, then if status has not been set explicitly and it is Created (not Waiting), the set it 
+//                if (startedOnDate.getDate().getTime() != 0 && item.getStartedOnDate() == 0 && status.getStatus() == item.getStatus() && status.getStatus() == ItemStatus.CREATED) {
+            noAutoUpdateOnStatusChange = true;
+            if (startedOnDate.getDate().getTime() == 0) {
+                //TODO!! should it be allowed to remove a startdate if there is actual effort? YES, because you want to be able to edit freely the different fields of an Item! (not too much intelligence)
+//                    if (actualEffort.getTime() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
+                if (status.getStatus() == ItemStatus.DONE || status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
+                    status.setStatus(actualEffort.getDuration() == 0 ? ItemStatus.CREATED : ItemStatus.ONGOING);
+                }
+                if (completedDate.getDate().getTime() != 0)
+                    completedDate.setDate(new Date(0));
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                else
+//                if (actualEffort.getDuration() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter
+//                    status.setStatus(ItemStatus.CREATED);
+////                    status.repaint();
+//                }
+//</editor-fold>
+            } else { //startedOnDate.getDate().getTime() == 0 => startDate was set OR CHANGED(!)
+                if (status.getStatus() == ItemStatus.CREATED) { //UI: DON't set to ONGOING if current state is WAITING/CANCELLED/ONGOING
+                    status.setStatus(ItemStatus.ONGOING);
+//                    status.repaint();
+                }
+            }
+            noAutoUpdateOnStatusChange = false;
+        });
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        MyActionListener completedOnDateListener = new MyActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+////                boolean completedDateSet = false;
+//                //if completeDate is set, then if status has not been set explicitly and it is Created/Ongoing/Waiting), the set it Completed
+////                if (completedDate.getDate().getTime() != 0 && item.getCompletedDate() == 0 && status.getStatus() == item.getStatus()
+////                        && (status.getStatus() == ItemStatus.CREATED || status.getStatus() == ItemStatus.ONGOING || status.getStatus() == ItemStatus.WAITING)) {
+//                if (completedDate.getDate().getTime() != 0) {
+//                    status.setStatus(ItemStatus.DONE);
+//                } else {
+////                    if (actualEffort.getTime() == 0) {
+//                    if (actualEffort.getDuration() == 0) {
+//                        status.setStatus(ItemStatus.CREATED);
+//                    } else {
+//                        status.setStatus(ItemStatus.ONGOING);
+//                    }
+//                }
+//                status.repaint();
+//                //UI: if startedOnDate is not changed explicitly in UI, the set it to (-Now-) completedDate-actual
+//                if (startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+////                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS));
+////                    startedOnDate.setDate(new Date(completedDate.getDate().getTime() - ((long) actualEffort.getDuration()))); //TODO!! define setting to use actualEffort when auto-setting startedOn date?? Probably too smart
+//                    startedOnDate.setDateAndNotify(new Date(completedDate.getDate().getTime())); //UI: if setting a completeDate, then if no startedOn date was set, it will also be set to same time
+//                    startedOnDate.repaint();
+//                }
+//            }
+//        };
 //            public void actionPerformed(ActionEvent evt) {
 ////                boolean completedDateSet = false;
 //                //if completeDate is set, then if status has not been set explicitly and it is Created/Ongoing/Waiting), the set it Completed
@@ -2145,7 +2358,30 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            }
 //        };
 //</editor-fold>
-        completedDate.addActionListener(completedOnDateListener);
+        completedDate.addActionListener((evt) -> {
+            //if completeDate is set, then if status has not been set explicitly and it is Created/Ongoing/Waiting), the set it Completed
+            //UI: if startedOnDate is not changed explicitly in UI, the set it to (-Now-). Or later: completedDate-actual (see below TODO)
+            //NB. update startedOnDate *before* updating status, to ensure that completedDate wins (sets to DONE)
+            noAutoUpdateOnStatusChange = true;
+            if (startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+                //TODO!! define setting to use actualEffort when auto-setting startedOn date?? Probably too smart
+                startedOnDate.setDateAndNotify(new Date(completedDate.getDate().getTime())); //UI: if setting a completeDate, then if no startedOn date was set, it will also be set to same time
+                startedOnDate.repaint();
+            }
+
+            if (completedDate.getDate().getTime() != 0) {
+                status.setStatus(ItemStatus.DONE);
+            } else { //deleting completedDate, so reset status
+//                    if (actualEffort.getTime() == 0) {
+                if (actualEffort.getDuration() != 0 || startedOnDate.getDate().getTime() != 0) {
+                    status.setStatus(ItemStatus.ONGOING);
+                } else {
+                    status.setStatus(ItemStatus.CREATED);
+                }
+            }
+            status.repaint();
+            noAutoUpdateOnStatusChange = false;
+        });
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -2175,7 +2411,6 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                }
 //            }
 //        ItemAndListCommonInterface locallyEditedOwner = item.getOwner(); //null;
-//</editor-fold>
 //        if (locallyEditedOwner == null) {
 //            locallyEditedOwner = new ArrayList(); //Arrays.asList(item.getOwner())
 //            locallyEditedOwner.add(itemLS.getOwner());
@@ -2190,6 +2425,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                && ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0)
 //                ? DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)).getText()
 //                : (item.getOwner() != null ? item.getOwner().getText() : ""));
+//</editor-fold>
         WrapButton editOwnerButton = new WrapButton();
 
         ActionListener setOwnerButton = (e) -> {
@@ -2199,11 +2435,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                     : (item.getOwner() != null ? item.getOwner().getText() : "");
             editOwnerButton.setText(ownerStr);
         };
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
 //        Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = Command.create(item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
+//</editor-fold>
         Command editOwnerCmd = MyReplayCommand.create("EditOwner", null, null, (e) -> {
             List projects = DAO.getInstance().getAllProjects(false);
             projects.remove(item); //Must not be possible to select the item itself as its own owner
@@ -2215,7 +2452,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                     : new ArrayList();
             //<editor-fold defaultstate="collapsed" desc="comment">
             //                        = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(), DAO.getInstance().getItemListList(), locallyEditedOwner, ScreenItem.this);
-            //                ownerPicker.setDoneUpdater(() -> {
+            //                ownerPicker.setUpdateActionOnDone(() -> {
             //                    editOwnerButton.setText(locallyEditedOwner != null ? locallyEditedOwner.getText() : "<no owner>");
             //                    parseIdMap2.put("ItemScreen.ScreenObjectPicker", () -> item.setOwner(locallyEditedOwner));
             //                });
@@ -2380,8 +2617,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             statusCont.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
-        //TAB SUBTASKS
 //<editor-fold defaultstate="collapsed" desc="comment">
+        //TAB SUBTASKS
 //        cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 //        cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 //        cont = buildContentPaneForListOfItems(item, itemList);

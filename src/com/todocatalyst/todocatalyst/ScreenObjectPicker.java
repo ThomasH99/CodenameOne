@@ -442,7 +442,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 //    public static Button getButton() {
 //        Command command = Command.create(SCREEN_TITLE, null, (e) -> {
 //                        ScreenObjectPicker objectPicker = new ScreenObjectPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem.this);
-//                objectPicker.setDoneUpdater(() -> {
+//                objectPicker.setUpdateActionOnDone(() -> {
 //                    button.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
 //                    parseIdMap2.put("EditedCategories", () -> {
 //                        item.updateCategories(locallyEditedCategories); //TODO this won't work with Cancel - need to store the update in parsemap and only update the button text

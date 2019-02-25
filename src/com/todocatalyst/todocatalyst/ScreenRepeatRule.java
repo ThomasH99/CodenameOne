@@ -202,7 +202,8 @@ public class ScreenRepeatRule extends MyForm {
                     restoreEditedFieldsToRepeatRule(myRepeatRuleEdited);
                     DAO.getInstance().save((ParseObject) repeatRuleOwner); //if a new Item, must save before creating repeatInstances in putEditedValues2:
                     putEditedValues2(parseIdMap2);
-                    updateActionOnDone.update();
+//                    updateActionOnDone.update();
+                    getUpdateActionOnDone().update();
 //                    showPreviousScreenOrDefault(previousForm, true); //false);
                     showPreviousScreenOrDefault(true); //false);
                 } else {

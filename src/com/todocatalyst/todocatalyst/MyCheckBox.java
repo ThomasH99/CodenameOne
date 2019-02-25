@@ -35,13 +35,12 @@ public class MyCheckBox extends Button {
         void processNewStatusValue(ItemStatus oldStatus, ItemStatus newStatus);
     }
 
-    interface IsItemOngoing {
-
-        boolean isOngoing();
-    }
-
+//    interface IsItemOngoing {
+//
+//        boolean isOngoing();
+//    }
     private ProcessItemStatusChange statusChangeHandler;
-    private IsItemOngoing itemOngoing;
+//    private IsItemOngoing itemOngoing;
     private ItemStatus itemStatus = null;
     private static String singleIconStyleUIID; //style for the single status icon shown for example in items in lists
     private static String popupIconStyleUIID; //style for icons in popup menu (to select any status)
@@ -88,8 +87,7 @@ public class MyCheckBox extends Button {
 //        } else {
 //            this.popupIconStyleName = "ItemStatusPopupIcon";
 //        }
-        this.itemOngoing = itemOngoing;
-
+//        this.itemOngoing = itemOngoing;
         this.popupIconStyleUIID = singleIconStyleUIID;
         if (this.popupIconStyleUIID == null) {
             this.popupIconStyleUIID = "ItemStatusPopupIcon";
@@ -194,6 +192,10 @@ public class MyCheckBox extends Button {
             }
         });
     }
+    
+    public String toString() {
+        return itemStatus+" "+super.toString();
+    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public MyCheckBox(ItemStatus itemStatus, boolean updateAndSaveItemImmediately) {
@@ -212,10 +214,9 @@ public class MyCheckBox extends Button {
 //        };
 //    }
 //</editor-fold>
-    void setIsItemOngoing(IsItemOngoing itemOngoing) {
-        this.itemOngoing = itemOngoing;
-    }
-
+//    void setIsItemOngoing(IsItemOngoing itemOngoing) {
+//        this.itemOngoing = itemOngoing;
+//    }
     public void setStatusChangeHandler(ProcessItemStatusChange statusChangeHandler) {
         this.statusChangeHandler = statusChangeHandler;
     }
@@ -368,8 +369,7 @@ public class MyCheckBox extends Button {
 //    }
 //</editor-fold>
     @Override
-    public void longPointerPress(int x, int y
-    ) {
+    public void longPointerPress(int x, int y) {
         super.longPointerPress(x, y);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        ItemStatus status = item.getStatus();
@@ -411,7 +411,7 @@ public class MyCheckBox extends Button {
 //        };
 //</editor-fold>
         selectNewStatus();
-        fireActionEvent( x,  y); //ensure that longPress to select any new status will trigger updates
+//        fireActionEvent(x, y); //ensure that longPress to select any new status will trigger updates //NECESSARY? Or will the pointerReleased trigger a normal actionEvent?
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        d = new Dialog("Select");
 //        d.setLayout(BoxLayout.y());

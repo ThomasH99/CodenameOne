@@ -183,10 +183,15 @@ public class ScreenWorkSlot extends MyForm {
             content.setLayout(tl);
         }
         long now = System.currentTimeMillis();
-        MyDateAndTimePicker startByDate = new MyDateAndTimePicker("<start work on this date>", parseIdMap2,
-                () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()
-                ? new Date(now) : workSlot.getStartTimeD(),
-                (d) -> workSlot.setStartTime(d));
+//        MyDateAndTimePicker startByDate = new MyDateAndTimePicker("<start work on this date>", parseIdMap2,
+//                () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()
+//                ? new Date(now) : workSlot.getStartTimeD(),
+//                (d) -> workSlot.setStartTime(d));
+        MyDateAndTimePicker startByDate = new MyDateAndTimePicker();
+        initField(WorkSlot.PARSE_START_TIME, startByDate,
+                () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()                ? new Date(now) : workSlot.getStartTimeD(),
+                (d) -> workSlot.setStartTime((Date)d),
+                () -> startByDate.getDate(), (d) -> startByDate.setDate((Date) d));
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
         content.add(layoutN(WorkSlot.START_TIME, startByDate, WorkSlot.START_TIME_HELP));
@@ -216,7 +221,7 @@ public class ScreenWorkSlot extends MyForm {
             if (estim != null) {
                 text = estim.cleaned;
                 workSlotName.setText(text);
-                duration.setDuration(estim.minutes * MyDate.MINUTE_IN_MILLISECONDS);
+                duration.setDurationAndNotify(estim.minutes * MyDate.MINUTE_IN_MILLISECONDS); //notify to save local values!
             }
             setTitle(text);
         }
@@ -322,7 +327,7 @@ public class ScreenWorkSlot extends MyForm {
 //        repeatRuleButton.setUIID("TextField");
         content.add(layoutN(WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, true, false, true));//, true, false, false));
         checkDataIsCompleteBeforeExit = () -> {
-            if (startByDate.getDate().getTime() == 0 ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
+            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration()== 0) { // ^ XOR - if one and only one is true
 //            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
                 return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
             }

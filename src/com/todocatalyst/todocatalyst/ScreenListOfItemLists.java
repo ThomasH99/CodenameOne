@@ -120,10 +120,15 @@ public class ScreenListOfItemLists extends MyForm {
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
-        Container cont =buildContentPaneForItemList(itemListList);
+        Container cont = buildContentPaneForItemList(itemListList);
         getContentPane().add(BorderLayout.CENTER, cont);
-                if (cont instanceof MyTree2) {
-            setStartEditingAsync(((MyTree2)cont).getAsyncEditField());
+        if (cont instanceof MyTree2) {
+//            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
+            InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
+            if (insertNewElementFunc != null) {
+                setStartEditingAsync(insertNewElementFunc.getTextArea());
+                setInlineInsertContainer(insertNewElementFunc);
+            }
         }
 
 //        revalidate();
@@ -623,7 +628,7 @@ public class ScreenListOfItemLists extends MyForm {
             Command expandSubTasks = new CommandTracked("[" + numberItems + "]", "ExpandSubtasks");// {
             subTasksButton.setCommand(expandSubTasks);
             subTasksButton.setUIID("Label");
-            if (Config.TEST) subTasksButton.setName("subTasksButton-"+itemList.getText());
+            if (Config.TEST) subTasksButton.setName("subTasksButton-" + itemList.getText());
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
             east.addComponent(subTasksButton);
         }
@@ -753,7 +758,7 @@ public class ScreenListOfItemLists extends MyForm {
                     cmp = buildItemListContainer((ItemList) node, keepPos);
                     if (Config.TEST) cmp.setName(((ItemList) node).getText());
                 } else {
-                    assert false : "should only be Item or ItemList: node="+node;
+                    assert false : "should only be Item or ItemList: node=" + node;
                 }
                 setIndent(cmp, depth);
                 return cmp;

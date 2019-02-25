@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author Thomas
  */
-public class InlineInsertNewAnyContainer extends InlineInsertNewContainer {
+public class InlineInsertNewAnyContainerXXX extends InlineInsertNewContainer {
 
     private MyTextField2 textEntryField;
     private ItemAndListCommonInterface refItemList;
@@ -38,7 +38,7 @@ public class InlineInsertNewAnyContainer extends InlineInsertNewContainer {
      * @param myForm
      * @param refElement
      */
-    public InlineInsertNewAnyContainer(MyForm myForm, ItemAndListCommonInterface refElement, boolean insertBeforeRefElement) {
+    public InlineInsertNewAnyContainerXXX(MyForm myForm, ItemAndListCommonInterface refElement, boolean insertBeforeRefElement) {
 //        this(myForm, ItemListList.getInstance(), refItemList, insertBeforeRefElement);
 //    }
 //
@@ -78,7 +78,7 @@ public class InlineInsertNewAnyContainer extends InlineInsertNewContainer {
         if (itemOrItemListForNewItemLists != null && itemOrItemListForNewItemLists.size() > 0) { //only add close button if in a non-empty list
             westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
-                myForm.lastInsertNewElementContainer = null;
+//                myForm.lastInsertNewElementContainer = null;
                 closeInsertNewContainer();
             })));
         }

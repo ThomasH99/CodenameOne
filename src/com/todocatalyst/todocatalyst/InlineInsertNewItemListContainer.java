@@ -11,6 +11,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
+import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
@@ -20,7 +21,7 @@ import com.parse4cn1.ParseObject;
  *
  * @author Thomas
  */
-public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
+public class InlineInsertNewItemListContainer extends InlineInsertNewContainer implements InsertNewElementFunc {
 
     private MyTextField2 textEntryField;
     private ItemList refItemList;
@@ -29,7 +30,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
     private boolean insertBeforeRefElement;
 //    private Container cont=new Container(new BorderLayout());
 
-    private final static String ENTER_ITEMLIST = "New "+ItemList.ITEM_LIST; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_ITEMLIST = "New " + ItemList.ITEM_LIST; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
 
     /**
      *
@@ -63,8 +64,8 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
 //
 //    public InlineInsertNewItemListContainer(MyForm myForm, ItemList itemList2, ItemList refItemList, boolean insertBeforeRefElement) {
         this.refItemList = refItemList;
-        ASSERT.that(refItemList != null, ()->"why itemOrItemListForNewTasks2==null here?");
-        this.itemOrItemListForNewItemLists = (ItemListList)refItemList.getOwner();
+        ASSERT.that(refItemList != null, () -> "why itemOrItemListForNewTasks2==null here?");
+        this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
         this.insertBeforeRefElement = insertBeforeRefElement;
 
         Container contForTextEntry = new Container(new BorderLayout());
@@ -97,7 +98,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
         if (itemOrItemListForNewItemLists != null && itemOrItemListForNewItemLists.size() > 0) { //only add close button if in a non-empty list
             westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
-                myForm.lastInsertNewElementContainer = null;
+//                myForm.lastInsertNewElementContainer = null;
                 closeInsertNewItemListContainer();
             })));
         }
@@ -136,7 +137,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
         ItemList newItemList;
         if (createEvenIfNoTextInField || (text != null && text.length() > 0)) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
-            newItemList = new ItemList(text,false); //true: interpret textual values
+            newItemList = new ItemList(text, false); //true: interpret textual values
             return newItemList;
         }
         return null;
@@ -167,6 +168,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
             parent.animateLayout(300);
         }
     }
+
     /**
      * if the textEntry field is in Form f, then it is set to editOnShow
      *
@@ -180,6 +182,17 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer {
                 textEntryField.startEditingAsync();
             }
         }
+    }
+
+    @Override
+    public InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
+        //no big need to create multiple categories in a row
+        return null;
+    }
+
+    @Override
+    public TextArea getTextArea() {
+        return textEntryField;
     }
 
 }

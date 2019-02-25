@@ -94,6 +94,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * for worktomedefinition
      */
 //    private ItemList sourceItemList;
+    public ItemList(String listName, boolean temporaryNoSaveList, boolean saveImmediatelyToParse) {
+        super(CLASS_NAME);
+        setText(listName);
+        setNoSave(temporaryNoSaveList);
+        if (!temporaryNoSaveList && saveImmediatelyToParse) {
+            DAO.getInstance().save(this);
+        }
+    }
+
     protected ItemList(String PARSE_CLASS_NAME) {
         super(PARSE_CLASS_NAME);
     }
@@ -106,37 +115,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         this(listName, false, saveImmediatelyToParse);
     }
 
-    public ItemList(String listName, boolean temporaryNoSaveList, boolean saveImmediatelyToParse) {
-        super(CLASS_NAME);
-        setText(listName);
-        setNoSave(temporaryNoSaveList);
-        if (!temporaryNoSaveList && saveImmediatelyToParse) {
-            DAO.getInstance().save(this);
-        }
-    }
-
     public ItemList() {
         this("", false);
-    }
-
-    @Override
-    public ItemAndListCommonInterface cloneMe(Item.CopyMode copyFieldDefintion) {
-        return cloneMe();
-    }
-
-    @Override
-    public ItemAndListCommonInterface cloneMe(Item.CopyMode copyFieldDefintion, int copyExclusions) {
-        return cloneMe();
-    }
-
-    @Override
-    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    interface MySaveFunction {
-
-        public boolean save();
     }
 
 //    public ItemList(List<E> list, MySaveFunction mySaveFunction) {
@@ -161,28 +141,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        setList(list);
         this(list, false);
     }
-
-    /**
-     * returns true if this list should NOT be saved to parse, e.g. because it
-     * is a temporary lists, e.g. wrapping a parse search results
-     *
-     * @return
-     */
-    @Override
-    public boolean isNoSave() {
-        return noSave;
-    }
-
-    /**
-     * marks this list as a temporary list that must not be dave do Parse
-     *
-     * @param temporaryNoSaveList
-     */
-    public void setNoSave(boolean temporaryNoSaveList) {
-        noSave = temporaryNoSaveList;
-    }
-
-    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
+    
+        public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
         this();
         setText(listName);
         setList(list);
@@ -204,6 +164,48 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public ItemList(ItemAndListCommonInterface source) {
         this();
         source.copyMeInto(this);
+    }
+
+    @Override
+    public ItemAndListCommonInterface cloneMe(Item.CopyMode copyFieldDefintion) {
+        return cloneMe();
+    }
+
+    @Override
+    public ItemAndListCommonInterface cloneMe(Item.CopyMode copyFieldDefintion, int copyExclusions) {
+        return cloneMe();
+    }
+
+    @Override
+    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    interface MySaveFunction {
+
+        public boolean save();
+    }
+
+
+
+    /**
+     * returns true if this list should NOT be saved to parse, e.g. because it
+     * is a temporary lists, e.g. wrapping a parse search results
+     *
+     * @return
+     */
+    @Override
+    public boolean isNoSave() {
+        return noSave;
+    }
+
+    /**
+     * marks this list as a temporary list that must not be dave do Parse
+     *
+     * @param temporaryNoSaveList
+     */
+    public void setNoSave(boolean temporaryNoSaveList) {
+        noSave = temporaryNoSaveList;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

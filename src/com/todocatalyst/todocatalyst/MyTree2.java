@@ -100,15 +100,23 @@ public class MyTree2 extends ContainerScrollY {
     private ExpandedObjects expandedObjects; // = new HashSet();
 //    private FilterSortDef itemListFilteredSorted;
     private InsertNewElementFunc insertNewElementFunc = null;
-    private TextArea startEditTextArea = null;
+    private InsertNewElementFunc newInsertContainer = null;
+//    private TextArea startEditTextArea = null;
 
-    private void setAsyncEditField(TextArea startEditTextArea) {
-        this.startEditTextArea = startEditTextArea;
+    private void setInsertField(InsertNewElementFunc newInsertContainer) {
+        this.newInsertContainer = newInsertContainer;
     }
 
-    public TextArea getAsyncEditField() {
-        return startEditTextArea;
+    public InsertNewElementFunc getInlineInsertField() {
+        return newInsertContainer;
     }
+//    private void setAsyncEditField(TextArea startEditTextArea) {
+//        this.startEditTextArea = startEditTextArea;
+//    }
+//
+//    public TextArea getAsyncEditField() {
+//        return startEditTextArea;
+//    }
 
     StickyHeaderGenerator stickyHeaderGen;
 
@@ -709,7 +717,7 @@ public class MyTree2 extends ContainerScrollY {
 //                InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
 //                if (insertNewElement != null) {
 //</editor-fold>
-                InsertNewElementFunc newInsertContainer = insertNewElementFunc.make((Item) current,
+                 InsertNewElementFunc newInsertContainer = insertNewElementFunc.make((Item) current,
                         parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model,
                         category);
                 if (newInsertContainer != null) {
@@ -718,7 +726,8 @@ public class MyTree2 extends ContainerScrollY {
                         ((Component) newInsertContainer).setName("TreeInsertContainer-" + ((Item) current).getText());
                     destination.add((Component) newInsertContainer);
 //                        myForm.setInlineInsertContainer(newInsertContainer);
-                    setAsyncEditField(newInsertContainer.getTextArea());
+//                    setAsyncEditField(newInsertContainer.getTextArea());
+                    setInsertField(newInsertContainer);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    getComponentForm().setEditOnShow(insertNewTask.getTextField()); //ComponentForm should never be undefined here since MyTree should already be in a form
 //                    destination.getComponentForm().setEditOnShow(insertNewTask.getTextField()); //UI: set for edit

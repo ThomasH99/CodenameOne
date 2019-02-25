@@ -17,7 +17,7 @@ import java.util.Map;
  */
 class MyDurationPicker extends Picker implements SwipeClear {
 
-    private final static String DEFAULT_ZERO_VALUE_PATTERN = "0s00";
+    private final static String DEFAULT_ZERO_VALUE_PATTERN = "";
 //    private String zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN;
     private String zeroValuePattern = null;
 //    private int defaultValueInMinutes = 0;
@@ -45,8 +45,8 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //    }
 //</editor-fold>
 
-    @Override
-    protected void updateValue() {
+//    @Override
+    protected void updateValueXXX() {
 //        if (getType()==Display.PICKER_TYPE_TIME && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
 //        if (getType()==Display.PICKER_TYPE_TIME && getTime() != 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
 //        if (getType() == Display.PICKER_TYPE_DURATION && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
@@ -63,7 +63,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //    MyDurationPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetLong getDurationInMillis, MyForm.PutLong setDurationInMillis) {
 //        this(null, parseIdMap, getDurationInMillis, setDurationInMillis);
 //    }
-    
+
 //    MyDurationPicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
 //        this(zeroValuePatternVal, 0, parseIdMap, getDurationInMinutes, setDurationInMinutes);
 //    }
@@ -82,11 +82,10 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //        this("", defaultValueInMillis, null, null, null);
 //    }
 //</editor-fold>
-
-    MyDurationPicker(long durationInMillis,String zeroValuePatternVal) {
+    MyDurationPicker(long durationInMillis, String zeroValuePatternVal) {
         super();
         this.setType(Display.PICKER_TYPE_DURATION);
-         if (zeroValuePatternVal != null) {
+        if (zeroValuePatternVal != null) {
             this.zeroValuePattern = zeroValuePatternVal;
         }
         setDuration(durationInMillis);
@@ -95,7 +94,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
         setFormatter(new SimpleDateFormat() {
             public String format(Object value) {
                 long val = ((Long) value).longValue();
-                if (val == 0&&zeroValuePattern!=null) {
+                if (val == 0 && zeroValuePattern != null) {
                     return zeroValuePattern;
                 }
                 long seconds = val % MyDate.SECOND_IN_MILLISECONDS;
@@ -108,14 +107,17 @@ class MyDurationPicker extends Picker implements SwipeClear {
         });
         setMinuteStep(MyPrefs.durationPickerMinuteStep.getInt()); //TODO!! setting to select interval of 1/5 minutes
     }
-    MyDurationPicker(long durationInMillis){
-        this(durationInMillis, null);
-    }
-    MyDurationPicker(long durationInMillis, boolean useDefaultZeroPattern){
+
+    MyDurationPicker(long durationInMillis) {
         this(durationInMillis, DEFAULT_ZERO_VALUE_PATTERN);
     }
-    MyDurationPicker(){
-        this(0, null);
+
+    MyDurationPicker(long durationInMillis, boolean useDefaultZeroPattern) {
+        this(durationInMillis, DEFAULT_ZERO_VALUE_PATTERN);
+    }
+
+    MyDurationPicker() {
+        this(0, DEFAULT_ZERO_VALUE_PATTERN);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap,
@@ -124,7 +126,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //            MyForm.GetLong getDurationInMillis) {
 //        this(zeroValuePatternVal, defaultValueInMinutes, null, getDurationInMillis, null);
 //    }
-    
+
 //    private MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap,
 //            MyForm.GetLong getDurationInMillis, MyForm.PutLong setDurationInMillis) {
 //    private MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes) {
@@ -148,23 +150,65 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //        this.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
 //    }
 //</editor-fold>
+    private void notifyMyActionListenersXXX() {
+        for (Object al : getListeners()) {
+            if (al instanceof MyActionListener) {
+                ((MyActionListener) al).actionPerformed(null);
+            }
+        }
+    }
 
+    /**
+    set the duration
+    @param timeInMillis 
+     */
     @Override
     public void setDuration(long timeInMillis) {
+//        if (clearButton != null) {
+////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
+//            clearButton.setVisible(timeInMillis != 0); //hide clear button when field is cleared, show if value is set
+//        }
         long millis = timeInMillis % 1000;
         if (millis != 0) {
             preserveMillis = millis;
         }
 //        super.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
         super.setDuration(timeInMillis);
+//        notifyMyActionListeners();
+    }
+
+    /**
+    set duration and notify listeners like if the picker had been used manually
+    @param timeInMillis 
+     */
+    public void setDurationAndNotify(long timeInMillis) {
+        setDuration(timeInMillis);
+//        notifyMyActionListeners();
+//        fireClicked();
+        fireActionEvent(-99, -99); //-99 used in CN1 Picker to ignore built-in action listener
+    }
+
+    public void setDurationXXX(long timeInMinutes) {
+//        if (clearButton != null) {
+////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
+//            clearButton.setVisible(timeInMinutes != 0); //hide clear button when field is cleared
+//        }
+//        super.setTime(timeInMinutes);
+        super.setDuration(((long) timeInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+        //inform my own MyActionListeners when the field is changed directly via setTime()
+        for (Object al : getListeners()) {
+            if (al instanceof MyActionListener) {
+                ((MyActionListener) al).actionPerformed(null);
+            }
+        }
     }
 
     @Override
     public long getDuration() {
         long editedMillis = super.getDuration();
         long millis = editedMillis % 1000;
-        if (millis != 0 && preserveMillis != null) { //if milliseconds were removed during editing, and were preserved before editing, then add back again
-            editedMillis += preserveMillis;
+        if (millis == 0 && preserveMillis != null) { //if milliseconds were removed during editing, and were preserved before editing, then add back again
+            editedMillis += preserveMillis; //add the missing millis back again
             preserveMillis = null;
         }
         return editedMillis;
@@ -178,9 +222,9 @@ class MyDurationPicker extends Picker implements SwipeClear {
     pattern show when zero value, in most screens where there is an edit button, "" is the best pattern, but for example in Timer, "0:00" (or similar localized version) shows that there is an editable/clickable
     @param zeroValuePattern 
      */
-    public void setZeroValuePattern(String zeroValuePattern) {
-        this.zeroValuePattern = zeroValuePattern;
-    }
+//    public void setZeroValuePattern(String zeroValuePattern) {
+//        this.zeroValuePattern = zeroValuePattern;
+//    }
 
     public void setShowZeroValueAsZeroDuration(boolean showZeroValuePattern) {
         MyDate d;
@@ -191,22 +235,20 @@ class MyDurationPicker extends Picker implements SwipeClear {
         }
     }
 
-    private Button clearButton = null;
-
+//    private Button clearButton = null;
 //    public void setClearButton(Button clearButton) {
 //        this.clearButton = clearButton;
 //    }
-    @Override
-    public int getTime() { //return time in Minutes
-        return (int) (getDuration() / MyDate.MINUTE_IN_MILLISECONDS);
-    }
-
-    @Override
-    public void setTime(int timeInMinutes) {
-        if (clearButton != null) {
-//            clearButton.setHidden(time == 0); //hide clear button when field is cleared
-            clearButton.setVisible(timeInMinutes != 0); //hide clear button when field is cleared
-        }
+//    @Override
+//    public int getTime() { //return time in Minutes
+//        return (int) (getDuration() / MyDate.MINUTE_IN_MILLISECONDS);
+//    }
+//    @Override
+    public void setTimeXXX(int timeInMinutes) {
+//        if (clearButton != null) {
+////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
+//            clearButton.setVisible(timeInMinutes != 0); //hide clear button when field is cleared
+//        }
 //        super.setTime(timeInMinutes);
         super.setDuration(((long) timeInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
         //inform my own MyActionListeners when the field is changed directly via setTime()
@@ -218,7 +260,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
     }
 
     void swipeClear() {
-        setTime(0);
+        setDurationAndNotify(0L); //will notify myActionListeners
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -316,4 +358,8 @@ class MyDurationPicker extends Picker implements SwipeClear {
     public void clearFieldValue() {
         swipeClear();
     }
+
+//    public void fireClicked() { //needed to give access to 'click' the button programmatically
+//        super.fireClicked();
+//    }
 };

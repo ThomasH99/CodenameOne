@@ -141,11 +141,11 @@ public class MyDate extends Date {
 //        }
 //    }
     /**
-    * create a new Date.
-    *
-    * @param useDefaultTimeOfDay initialize date to current time. If false, use
-    * default settings for hour/minute of day getDefaultHourOfDay().
-    */
+     * create a new Date.
+     *
+     * @param useDefaultTimeOfDay initialize date to current time. If false, use
+     * default settings for hour/minute of day getDefaultHourOfDay().
+     */
 //    public MyDate(boolean useDefaultTimeOfDay) {
 ////        this(false, useDefaultTimeOfDay);
 //        this();
@@ -270,10 +270,10 @@ public class MyDate extends Date {
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
-    * adds value to time, AND sets time bit and or date bit. Used to easily
-    * update time and set appropriate bits. Does NOT reset the bits to zero if
-    * setTimeBit or setDateBit are false!
-    */
+     * adds value to time, AND sets time bit and or date bit. Used to easily
+     * update time and set appropriate bits. Does NOT reset the bits to zero if
+     * setTimeBit or setDateBit are false!
+     */
 //    private void addToTimeSetFlags(long value, boolean setTimeBit, boolean setDateBit) {
 //        addToTimeKeepFlags(value);
 //        timeWithFlags = timeWithFlags | (setTimeBit ? timeSetBit : 0) | (setDateBit ? dateSetBit : 0);
@@ -295,17 +295,17 @@ public class MyDate extends Date {
 //        }
 //    }
     /**
-    * sets both time and date bits - as a convinient shortcut
-    */
+     * sets both time and date bits - as a convinient shortcut
+     */
 //    void setTimeAndDateBit(boolean timeSet, boolean dateSet) {
 //        setTimeBit(timeSet);
 //        setDateBit(dateSet);
 //    }
     /**
-    * time is set either if the timebit is set, OR time is defined (!=0), and
-    * both time bit and date bit are zero (meaning that time was set without
-    * using the time/date bits)
-    */
+     * time is set either if the timebit is set, OR time is defined (!=0), and
+     * both time bit and date bit are zero (meaning that time was set without
+     * using the time/date bits)
+     */
 //    public boolean isTimeSet() {
 ////        long time = getTime();
 ////        return ((time & timeSetBit) != 0) || (time != 0 && (time & timeSetBit) == 0 && (time & dateSetBit) == 0);
@@ -448,9 +448,9 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }
     /**
-    * resets both date and time to 0 (and resets date and time set flags as
-    * well)
-    */
+     * resets both date and time to 0 (and resets date and time set flags as
+     * well)
+     */
 //    public void resetDateAndTime() {
 ////        setTime(0);
 //        timeWithFlags = 0;
@@ -568,8 +568,8 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }// </editor-fold>
     /**
-    * returns day in month, 1..31
-    */
+     * returns day in month, 1..31
+     */
 //    public static int getDay(Date date) {
 //        Calendar cal = Calendar.getInstance();
 //        cal.setTime(new Date(date.getTime()));
@@ -660,17 +660,17 @@ public class MyDate extends Date {
 //        return cal.get(Calendar.AM_PM);
 //    }
     /**
-    * returns the week number within the year (according to ISO definition).
-    * See definition overview:
-    * http://en.wikipedia.org/wiki/Week_number#Week_numbering
-    * http://en.wikipedia.org/wiki/Talk:ISO_week_date#Algorithms: Determine its
-    * Day of Week, D Use that to move to the nearest Thursday (-3..+3 days)
-    * Note the year of that date, Y Obtain January 1 of that year Get the
-    * Ordinal Date of that Thursday, DDD of YYYY-DDD Then W is 1 + (DDD-1) div
-    * 7
-    *
-    * @return
-    */
+     * returns the week number within the year (according to ISO definition).
+     * See definition overview:
+     * http://en.wikipedia.org/wiki/Week_number#Week_numbering
+     * http://en.wikipedia.org/wiki/Talk:ISO_week_date#Algorithms: Determine its
+     * Day of Week, D Use that to move to the nearest Thursday (-3..+3 days)
+     * Note the year of that date, Y Obtain January 1 of that year Get the
+     * Ordinal Date of that Thursday, DDD of YYYY-DDD Then W is 1 + (DDD-1) div
+     * 7
+     *
+     * @return
+     */
 //    public static int getWeekOfYear(Date date) {
 //        if (Settings.getInstance().useISOWeekNumbering()) {
 //            Calendar cal = Calendar.getInstance();
@@ -865,9 +865,9 @@ public class MyDate extends Date {
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
-    * moves date one month back. If setToFirstInMonth then also sets day of
-    * that month to the 1st day of the month
-    */
+     * moves date one month back. If setToFirstInMonth then also sets day of
+     * that month to the 1st day of the month
+     */
 //    public void retreatMonth(Date date, boolean setToFirstInMonth) {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.setTime(new Date(getTime()));
@@ -890,9 +890,9 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }
     /**
-    * moves date one month forward. If setToFirstInMonth then also sets day of
-    * that month to the 1st day of the month
-    */
+     * moves date one month forward. If setToFirstInMonth then also sets day of
+     * that month to the 1st day of the month
+     */
 //    public void advanceMonth(Date date, boolean setToFirstInMonth) {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.setTime(new Date(getTime()));
@@ -939,9 +939,9 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }
     /**
-    * returns list of display text strings indicating week in month (FIRST,
-    * THIRD, LAST, ...)
-    */
+     * returns list of display text strings indicating week in month (FIRST,
+     * THIRD, LAST, ...)
+     */
 //    static String[] getMonthNames() {
 //        return MONTH_NAMES;
 //    }
@@ -1045,8 +1045,8 @@ public class MyDate extends Date {
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
-    * returns week day
-    */
+     * returns week day
+     */
 //    int getWeekday(Date date) {
 //        return getWeekday(this.getDay(date), this.getMonth(date), this.getYear(date));
 //    }
@@ -1058,11 +1058,11 @@ public class MyDate extends Date {
 //        return dateString;
 //    }
     /**
-    * returns true if other is the same date (day, month, year)
-    *
-    * @param other
-    * @return
-    */
+     * returns true if other is the same date (day, month, year)
+     *
+     * @param other
+     * @return
+     */
 //    public boolean equalsDate(Date date, MyDate other) {
 //        return (getDay(date) == getDay(other) && getMonth(date) == getMonth(other) && getYear(date) == getYear(other));
 ////        if (this.getDay() == other.getDay() && this.getMonth() == other.getMonth() && this.getYear() == other.getYear()) {
@@ -1071,11 +1071,11 @@ public class MyDate extends Date {
 ////        return false;
 //    }
     /**
-    * returns true if other is the same time (hour, minutes)
-    *
-    * @param other
-    * @return
-    */
+     * returns true if other is the same time (hour, minutes)
+     *
+     * @param other
+     * @return
+     */
 //    public boolean equalsHourMinutes(MyDate other) {
 //        return (getHour24() == other.getHour24() && getMinute() == other.getMinute());
 //    }
@@ -1642,7 +1642,7 @@ public class MyDate extends Date {
     }
 
     private static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes) {
-        return formatTimeDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, showHBtwHoursAndMinutes, true);
+        return formatTimeDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, showHBtwHoursAndMinutes, true, true);
     }
 
     /**
@@ -1656,7 +1656,7 @@ public class MyDate extends Date {
      * @param dontShowZeroHours
      * @return
      */
-    private static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes, boolean dontShowZeroHours) {//, boolean roundLessThan1MinuteUp) {
+    private static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes, boolean dontShowZeroHours, boolean showSecondsIfNoMinutesOrHours) {//, boolean roundLessThan1MinuteUp) {
 //        boolean SHOW_SECONDS = false;
 //        boolean SHOW_LEADING_ZERO_FOR_HOUR = true;
         String s; // = "";
@@ -1664,6 +1664,7 @@ public class MyDate extends Date {
         long restAfterHours = (int) hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS;
 //        if (hours > 0) {
         int minutes = (int) restAfterHours / MyDate.MINUTE_IN_MILLISECONDS; //60000;
+        boolean onlySecondsToShow = (minutes == 0 && hours == 0); //if only seconds, always show them, e.g. 0:01
 //        boolean showLeadingZeroForMinutes = minutes < 10 && !(hours == 0 && dontShowZeroHours) ; // hours != 0 || !dontShowZeroHours
 //            return "" + hours + "h" + (minutes < 10 ? "0" + minutes : "" + minutes);
 //            s = hours + ":" + (minutes != 0 ? ((minutes < 10 ? "0" + minutes : "" + minutes)) : "");
@@ -1673,14 +1674,15 @@ public class MyDate extends Date {
                 + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes
                         + (dontShowZeroHours && !showSeconds ? "m" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
         int seconds = (int) (restAfterHours % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS; //1000;
-        if (roundUpMinutes && !showSeconds&& seconds >= 30) {
+        if (roundUpMinutes && !showSeconds && seconds >= 30) {
             minutes++;
         }
 //        if (roundLessThan1MinuteUp && minutes==0 && seconds>0) {
 //            minutes=1; 
 //        }
-        if (showSeconds||(minutes==0&&hours==0)) { //avoid to show actual duration of say 17s as 0, round up to 1min //TODO!!!!
-            s += "s" + (seconds < 10 ? "0" + seconds : "" + seconds);
+        if (showSeconds || (onlySecondsToShow && showSecondsIfNoMinutesOrHours)) { //avoid to show actual duration of say 17s as 0, round up to 1min //TODO!!!!
+//            s += "s" + (seconds < 10 ? "0" + seconds : "" + seconds);
+            s += ":" + (seconds < 10 ? "0" + seconds : "" + seconds);
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        } else {

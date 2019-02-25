@@ -46,8 +46,12 @@ public class MyPrefs {
 //    static PrefEntry insertNewItemsInStartOfCategory = new PrefEntry("insertNewItemsInStartOfCategory", true, "Always insert new tasks at the beginning of lists (instead of at the end)");
     static PrefEntry insertNewItemsInStartOfLists
             = new PrefEntry("Insert created/moved at top of list", "insertNewItemsInStartOfLists", true, "Always insert new or moved tasks at the beginning of lists (instead of at the end)");
+    
     static PrefEntry insertNewSubtasksInScreenItemInStartOfLists
             = new PrefEntry("**Insert new subtasks created at top of list", "insertNewSubtasksInScreenItemInStartOfLists", false, "**Always insert new subtasks at the beginning of lists (instead of at the end)");
+   
+    static PrefEntry itemContinueAddingInlineItems //see text for workSlotContinueAddingInlineWorkslots
+            = new PrefEntry("**", "itemContinueAddingInlineItems", true, "**");
     //"Insert created at top of list", "Insert new tasks at beginning of list"
 
     static PrefEntry insertNewCategoriesForItemsInStartOfIList
@@ -243,6 +247,9 @@ public class MyPrefs {
     static PrefEntry askToEnterActualIfMarkingTaskDoneOutsideTimer
             = new PrefEntry("Show popup to enter Actual effort on Done", "askToEnterActualIfMarkingTaskDoneOutsideTimer",
                     true, "When marking a task Done outside the timer, show popup to enter Actual effort");
+    static PrefEntry askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero
+            = new PrefEntry("Enter Actual effort when none was set", "askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero",
+                    true, "When marking a task Done outside the timer, show popup to enter Actual effort");
     static PrefEntry askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem //TODO!!! No, only ask if overwriting an alreadyd defined value!
             = new PrefEntry("Confirm before inserting a template into an existing task", "askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem",
                     false, "**");
@@ -310,16 +317,16 @@ public class MyPrefs {
     static PrefEntry itemInheritOwnerProjectTemplate //doesn't make sense to inherit this, each template subtask should have this set directly?! 
             = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.TEMPLATE), "itemInheritOwnerProjectTemplate", true,
                     INHERITS + Item.TEMPLATE);
-    static PrefEntry itemInheritEvenDoneSubtasksInheritOwnerValues 
+    static PrefEntry itemInheritEvenDoneSubtasksInheritOwnerValues
             = new PrefEntry(Format.f("Even completed subtasks inherit valhes from their project", Item.TEMPLATE), "itemInheritEvenDoneSubtasksInheritOwnerValues", false,
                     INHERITS + Item.TEMPLATE);
 
     // ************** END inherit values from owning Project *************
-    static PrefEntry itemEffortEstimateExtractFromStringInTaskText
-            = new PrefEntry("Extract task estimates from text", "itemEffortEstimateExtractFromStringInTaskText", true, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+    static PrefEntry itemExtractRemainingEstimateFromStringInTaskText
+            = new PrefEntry("Extract remaining time from task text", "itemExtractRemainingEstimateFromStringInTaskText", true, "**");
 
-    static PrefEntry itemEffortEstimateKeepStringInTaskText
-            = new PrefEntry("Keep task estimates text after extraction", "itemEffortEstimateKeepStringInTaskText", false, "Subtasks inherit properties due date**, priorities etc** from the project they belong to");
+    static PrefEntry itemKeepRemainingEstimateStringInTaskText
+            = new PrefEntry("Keep remaining time in task text", "itemKeepRemainingEstimateStringInTaskText", false, "**");
 
     static PrefEntry itemProjectPropertiesDerivedFromSubtasks
             = new PrefEntry("Project properties like [STARTED_ON] shows values from subtasks", "itemProjectPropertiesDerivedFromSubtasks", true, "**");
@@ -416,9 +423,11 @@ public class MyPrefs {
     static PrefEntry loginFirstTimeLogin = new PrefEntry("Is this the first time someone opens TodoCtatalyst on this device (NOT an end-user setting)", "loginFirstTimeLogin", true, "**");
 
     //WORKSLOT
-    static PrefEntry workSlotDefaultDurationInMinutes = new PrefEntry("Default work slot duration (min)", 
+    static PrefEntry workSlotDefaultDurationInMinutes = new PrefEntry("Default work slot duration (min)",
             "workSlotDefaultDurationInMinutes", 60, "**");
     static PrefEntry workSlotDefaultStartDateIsNow = new PrefEntry("Use current time as Default work slot start time", "workSlotDefaultStartDateIsNow", true, "**");
+    static PrefEntry workSlotContinueAddingInlineWorkslots = new PrefEntry("Continue adding a new workslot below one inserted with pinch",
+            "workSlotContinueAddingInlineWorkslots", true, "**");
 
     MyPrefs() {
 //         int x=7:

@@ -166,7 +166,7 @@ public class ScreenListOfAlarms extends MyForm {
 //                    AlarmHandler.getInstance().snoozeAlarm(expired, snoozeExpireTimeInMillis);
 //                }
                 AlarmHandler.getInstance().snoozeAllExpiredAlarms(
-                        MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + ((long) snoozeTimePicker.getTime()) * MyDate.MINUTE_IN_MILLISECONDS)));
+                        MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + ((long) snoozeTimePicker.getDuration()) * MyDate.MINUTE_IN_MILLISECONDS)));
                 showPreviousScreenOrDefault(true); //false);
             },"SnoozeAllAlarms"))));
 
@@ -266,7 +266,7 @@ public class ScreenListOfAlarms extends MyForm {
 //        }))).add(BorderLayout.EAST, Container.encloseIn(BoxLayout.x(), new Button(Command.create("Snooze", Icons.iconSnoozeLabelStyle, (evt) -> {
                 },"CancelAlarm")), Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(CommandTracked.create("Snooze", Icons.iconSnoozeLabelStyle, (evt) -> {
 //            Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
-                    Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + snoozeTimePicker.getTime() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
+                    Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + snoozeTimePicker.getDuration()* MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (expiredAlarm.type == AlarmType.notification) {
 //                expiredAlarms.snoozeAlarm(expiredAlarm.notificationId, snoozeExpireTimeInMillis, item.makeNotificationTitleText(AlarmType.notification), item.makeNotificationBodyText(AlarmType.notification));

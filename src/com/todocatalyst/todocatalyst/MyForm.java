@@ -79,7 +79,7 @@ public class MyForm extends Form {
 //    protected static Form form;
 //    Resources theme;
 //    UpdateItemListAfterEditing updateItemListOnDone;
-    protected UpdateField updateActionOnDone;
+    private UpdateField updateActionOnDone;
     protected CheckDataIsComplete checkDataIsCompleteBeforeExit; //used to check if a Screen has defined all needed data and returns error message String if not
 //    HashSet<ItemAndListCommonInterface> expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
     ExpandedObjects expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
@@ -92,14 +92,28 @@ public class MyForm extends Form {
 //    private static HashSet tasksWithDetailsShown;
     protected HashSet showDetails = new HashSet(); //set of Items etc expanded to show task details
 //    protected InlineInsertNewElementContainer lastInsertNewElementContainer;
-    protected InsertNewElementFunc lastInsertNewElementContainer;
+//    protected InsertNewElementFunc lastInsertNewElementContainer;
 //    private TextArea editFieldOnShowOrRefresh;
     private InsertNewElementFunc inlineInsertContainer;
-    private BooleanFunction testIfEdit;
+//    private BooleanFunction testIfEdit;
     protected static String FORM_UNIQUE_ID = null; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-    private TextArea startEditingAsync=null;
-    
-       protected void setStartEditingAsync(TextArea startEditTextArea) {
+    private TextArea startEditingAsync = null;
+
+    private String showIfEmptyList = null; //holds Container with actual content, typically MyTree2
+
+    public String getShowIfEmptyList() {
+        return showIfEmptyList;
+    }
+
+    /**
+    text to show in label shown in empty list. E.g. "Looks like you have no tasks today. Enjoy!" in an empty Today screen. 
+    @param showIfEmptyList 
+     */
+    public void setShowIfEmptyList(String showIfEmptyList) {
+        this.showIfEmptyList = showIfEmptyList;
+    }
+
+    protected void setStartEditingAsync(TextArea startEditTextArea) {
         this.startEditingAsync = startEditTextArea;
     }
 
@@ -108,10 +122,11 @@ public class MyForm extends Form {
     }
 
     public String getUniqueFormId() {
-        return FORM_UNIQUE_ID != null ? FORM_UNIQUE_ID:getTitle() ;
+        return FORM_UNIQUE_ID != null ? FORM_UNIQUE_ID : getTitle();
     }
+
     public String getUniqueFormId(String extensionStr) {
-        return getUniqueFormId()+extensionStr;
+        return getUniqueFormId() + extensionStr;
     }
 
     public void setFormUniqueId(String formUniqueId) {
@@ -149,6 +164,24 @@ public class MyForm extends Form {
             setEditOnShow(inlineInsertContainer.getTextArea());
         }
         this.inlineInsertContainer = inlineInsertContainer;
+    }
+
+    public void setInlineInsertContainerIfMyTree2(Container contentContainer) {
+        if (contentContainer instanceof MyTree2) {
+            InsertNewElementFunc insertNewElementFunc = ((MyTree2) contentContainer).getInlineInsertField();
+            if (insertNewElementFunc != null) {
+                setInlineInsertContainer(insertNewElementFunc);
+            }
+        }
+    }
+
+    public void setStartEditingAsyncIfDefined(Container contentContainer) {
+        if (contentContainer instanceof MyTree2) {
+            InsertNewElementFunc insertNewElementFunc = ((MyTree2) contentContainer).getInlineInsertField();
+            if (insertNewElementFunc != null) {
+                setStartEditingAsync(insertNewElementFunc.getTextArea());
+            }
+        }
     }
 
 //    public void setEditOnShowOrRefresh(TextArea editFieldOnShowOrRefresh) { //, BooleanFunction testIfEdit) {
@@ -306,7 +339,7 @@ public class MyForm extends Form {
 //        this.previousForm = previousForm;
 //        this.previousForm = getComponentForm();
         this.updateActionOnDone = updateActionOnDone;
-        ASSERT.that(updateActionOnDone != null, () -> "doneAction should always be defined, Form=" + this);
+//        ASSERT.that(updateActionOnDone != null, () -> "doneAction should always be defined, Form=" + this); //NOT necessary, we may set it with setUpdateActionOnDone()
         parseIdMapReset();
 
 //        form = new Form();
@@ -606,23 +639,27 @@ public class MyForm extends Form {
 
 //        Picker p = new Picker();
 //        MyDateAndTimePicker waitingDatePicker = new MyDateAndTimePicker("<set date>", parseIdMap2, () -> {
-        MyDatePicker waitingDatePicker = new MyDatePicker("<set date>", parseIdMap2, () -> {
-//            return new Date(item.getWaitingTillDate());
-            return item.getWaitingTillDateD();
-        }, (d) -> {
-//            item.setWaitingTillDate(d.getTime());
-            item.setWaitingTillDate(d);
-        });
+//        MyDatePicker waitingDatePicker = new MyDatePicker("<set date>", parseIdMap2, () -> {
+////            return new Date(item.getWaitingTillDate());
+//            return item.getWaitingTillDateD();
+//        }, (d) -> {
+////            item.setWaitingTillDate(d.getTime());
+//            item.setWaitingTillDate(d);
+//        });
+        MyDatePicker waitingDatePicker = new MyDatePicker(item.getWaitingTillDateD());
+        waitingDatePicker.addActionListener((e) -> item.setWaitingTillDate(waitingDatePicker.getDate()));
 //        cont.add(new Label("Wait until")).add(waitingDatePicker).add("When you set a date, waiting tasks can automatically be hidden until that date.");
         cont.add(new Label(Item.WAIT_UNTIL_DATE)).add(waitingDatePicker).add(new SpanLabel("Waiting tasks are automatically hidden until the set date."));
 
-        MyDateAndTimePicker waitingAlarmPicker = new MyDateAndTimePicker("<set date>", parseIdMap2, () -> {
-//            return new Date(item.getWaitingAlarmDate());
-            return item.getWaitingAlarmDateD();
-        }, (d) -> {
-//            item.setWaitingAlarmDate(d.getTime());
-            item.setWaitingAlarmDate(d); //NB. only called if date is edited to sth different than 0
-        });
+//        MyDateAndTimePicker waitingAlarmPicker = new MyDateAndTimePicker("<set date>", parseIdMap2, () -> {
+////            return new Date(item.getWaitingAlarmDate());
+//            return item.getWaitingAlarmDateD();
+//        }, (d) -> {
+////            item.setWaitingAlarmDate(d.getTime());
+//            item.setWaitingAlarmDate(d); //NB. only called if date is edited to sth different than 0
+//        });
+        MyDateAndTimePicker waitingAlarmPicker = new MyDateAndTimePicker(item.getWaitingAlarmDateD());
+        waitingAlarmPicker.addActionListener((e) -> item.setWaitingAlarmDate(waitingAlarmPicker.getDate()));
 //        cont.add(new Label("Waiting alarm")).add(waitingAlarmPicker).add("Set a special alarm for waiting tasks.");
         cont.add(new Label(Item.WAITING_ALARM_DATE)).add(waitingAlarmPicker).add(new SpanLabel("Set a reminder to follow up on a waiting task."));
 
@@ -635,8 +672,10 @@ public class MyForm extends Form {
     }
 
     static void dialogUpdateActualTime(Item item) {
-        if (!MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
-            return; //do nothing if both waiting dates are already set
+        if (item.isDone()
+                || !(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()
+                || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero.getBoolean() && item.getActualEffort() == 0))) {
+            return; //do nothing if item is done, or settings/conditions not fulfilled
         }
         Map<Object, UpdateField> parseIdMap2 = new HashMap<Object, UpdateField>();
         Dialog dia = new Dialog();
@@ -649,14 +688,15 @@ public class MyForm extends Form {
         dia.add(cont);
 
         //TODO!!!! if marking a project, with undone subtasks, Done, then also show sum of subtask actuals to know how much time was spend on them
-        MyDurationPicker actualPicker = new MyDurationPicker(item.getActualEffortProjectTaskItself(), true);
+        MyDurationPicker actualPicker = new MyDurationPicker(item.getActualEffortProjectTaskItself(), "0:00");
         actualPicker.addActionListener((e) -> item.setActualEffort(actualPicker.getDuration(), true));
 //        }, (l) -> {
 ////            item.setActualEffort(d*MyDate.MINUTE_IN_MILLISECONDS);
 //            item.setActualEffort(l);
 //        });
         cont.add(new Label(Item.EFFORT_ACTUAL)).add(actualPicker)
-                .add(new SpanLabel("How much time was spend on this task?"));
+                //                .add(new SpanLabel("How much time was spend on this task?"));
+                .add(new SpanLabel("Click to set how much time was spend on this task"));
 
         cont.addComponent(new Button(Command.create("OK", null, (e) -> {
             putEditedValues2(parseIdMap2);
@@ -1298,8 +1338,12 @@ public class MyForm extends Form {
         putEditedValues2(parseIdMap2);
     }
 
-    void setDoneUpdater(UpdateField updateActionOnDone) {
+    void setUpdateActionOnDone(UpdateField updateActionOnDone) {
         this.updateActionOnDone = updateActionOnDone;
+    }
+
+    UpdateField getUpdateActionOnDone() {
+        return updateActionOnDone;
     }
 
     /**
@@ -1319,8 +1363,8 @@ public class MyForm extends Form {
         if (Config.TEST) {
             Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
         }
-        
-        if (startEditingAsync!=null) {
+
+        if (startEditingAsync != null) {
             startEditingAsync.startEditingAsync();
         }
     }
@@ -1579,7 +1623,8 @@ public class MyForm extends Form {
                 String errorMsg;
                 if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
                     putEditedValues2(parseIdMap2);
-                    updateActionOnDone.update();
+//                    updateActionOnDone.update();
+                    getUpdateActionOnDone().update();
 //                previousForm.refreshAfterEdit();
 //                previousForm.showBack();
 //                    showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
@@ -1605,7 +1650,8 @@ public class MyForm extends Form {
                     String errorMsg;
                     if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
                         putEditedValues2(parseIdMap2);
-                        updateActionOnDone.update();
+//                        updateActionOnDone.update();
+                        getUpdateActionOnDone().update();
 //                previousForm.refreshAfterEdit();
 //                previousForm.showBack();
 //                        showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
@@ -2640,7 +2686,8 @@ public class MyForm extends Form {
 
     void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
-        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
+//        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
+        initField(identifier, field, getVal, putVal, getField, putField, null, previousValues, parseIdMap2);
     }
 //    private void initField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
 //         initField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null);
@@ -2648,14 +2695,14 @@ public class MyForm extends Form {
 
 //    private void initField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
 //            GetBool isInherited, ActionListener actionListener) {
-    void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
-            GetBool isInherited, ActionListener actionListener) {
-        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, isInherited, actionListener, previousValues, parseIdMap2);
-    }
-
+//    void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+//            GetBool isInherited, ActionListener actionListener) {
+//        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, isInherited, actionListener, previousValues, parseIdMap2);
+//    }
     static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
             SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
-        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
+//        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
+        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, previousValues, parseIdMap2);
     }
 
     /**
@@ -2671,8 +2718,10 @@ public class MyForm extends Form {
     @param previousValues
     @param parseIdMap2 
      */
+//    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+//            GetBool isInherited, ActionListener actionListener, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
     static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
-            GetBool isInherited, ActionListener actionListener, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
+            GetBool isInherited, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //         initField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
 //    }
@@ -2714,10 +2763,10 @@ public class MyForm extends Form {
         }
 
         if (getField != null && getOrg != null) {
-            ActionListener al = (e) -> {
-                if (actionListener != null) {
-                    actionListener.actionPerformed(e);
-                }
+            MyActionListener al = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
+//                if (actionListener != null) {
+//                    actionListener.actionPerformed(e);
+//                }
 //            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
                 if (false) { //OK now that values can be null
                     ASSERT.that(getField.getVal() != null, "getField.getVal()==null, for field=" + fieldIdentifier);
@@ -2932,13 +2981,16 @@ public class MyForm extends Form {
     @return 
      */
     private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface ownerList, Category category, boolean insertBeforeRefElement) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        return createInsertContainer(refElement, list, insertBeforeRefElement, null);
 //    }
 //
 //    private Container createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface list, boolean insertBeforeRefElement, Action closeAction) {
 //        ASSERT.that(!insertBeforeRefElement, "not implemented yet");
-        Container insertContainer = null;
+//</editor-fold>
+        InsertNewElementFunc insertContainer = null;
         if (refElement instanceof Item) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (ownerList instanceof Category) {
 ////            Item newItem = new Item();
 ////            newItem.addCategoryToItem((Category)list, false); //add category in InlineInsertNewItemContainer2
@@ -2955,6 +3007,7 @@ public class MyForm extends Form {
 //                ASSERT.that(false, () -> "error1 in createInsertContainer: refElt=" + (refElement == null ? "<null>" : refElement) + "; list=" + (ownerList == null ? "<null>" : ownerList) + "; insertBefore=" + (insertBeforeRefElement));
 //            }
 //            return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement));
+//</editor-fold>
             insertContainer = new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement);
 
         } else if (refElement instanceof Category) {
@@ -3125,6 +3178,7 @@ public class MyForm extends Form {
         Container wrappedInsertContainer = null;
         if (dropComponentAbove == null && dropComponentBelow != null) { //pull down on top-most item, insert before the first element (can be Item/Category/ItemList)
             insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+            setInlineInsertContainer(insertContainer);
 //            insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
             MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at position of dropComponentBelow
         } else if (dropComponentBelow == null && dropComponentAbove != null) { //pull down on bottom-most item, insert at the end of the list (can be Item/Category/ItemList)
@@ -3575,7 +3629,7 @@ public class MyForm extends Form {
                 pointerReleasedListener = (e) -> {
                     if (Config.TEST_PINCH) Log.p("pointerReleased called!!!!");
 //                    if (pinchInsertEnabled && pinchInsertInitiated) {
-                    if ( pinchInsertInitiated) {
+                    if (pinchInsertInitiated) {
 //            if (pinchContainer != null) {
                         pinchInsertFinished();
                         e.consume(); //to avoid that finishing the pinch triggers other actions

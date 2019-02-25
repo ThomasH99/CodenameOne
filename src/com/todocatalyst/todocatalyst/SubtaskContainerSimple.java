@@ -29,10 +29,10 @@ public class SubtaskContainerSimple extends Container {
      * quickEntry container to add more subtasks
      *
      * @param item
-     * @param myForm
+     * @param previousForm
      * @param templateEditMode
      */
-    SubtaskContainerSimple(Item item, MyForm myForm, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
+    SubtaskContainerSimple(Item item, MyForm previousForm, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
 //        ItemList<Item> subtasksItemList = item.getItemList();
         setLayout(new BorderLayout()); //main container
 
@@ -50,12 +50,12 @@ public class SubtaskContainerSimple extends Container {
         editSubtasksFullScreen.setCommand(MyReplayCommand.create("EditSubtasks", subtaskStr, Icons.iconEditPropertiesToolbarStyle, (e) -> {
 //            ItemList subtaskList = item.getItemList();
 //            List<Item> subtaskList = item.getListFull();
-            new ScreenListOfItems("Subtasks of " + item.getText(), () -> new ItemList(item.getListFull()), myForm, (iList) -> {
+            new ScreenListOfItems("Subtasks of " + item.getText(), () -> new ItemList(item.getListFull(),true), previousForm, (iList) -> {
 //                item.setItemList(subtaskList);
 //                item.setList(subtaskList);
                 item.setList(iList.getListFull());
                 DAO.getInstance().saveInBackground(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
+                previousForm.refreshAfterEdit(); //necessary to update sum of subtask effort
             }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
             ).show();
         }

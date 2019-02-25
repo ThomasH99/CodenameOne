@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Display;
 import com.codename1.ui.spinner.Picker;
 import java.util.Date;
@@ -16,7 +17,7 @@ import java.util.Map;
  */
 class MyDatePicker extends Picker implements SwipeClear {
 
-    @Override
+//    @Override
     protected void updateValue() {
         Date date = getDate();
         if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
@@ -36,69 +37,83 @@ class MyDatePicker extends Picker implements SwipeClear {
         super.pressed();
     }
 
-    String zeroValuePattern;
+    String zeroValuePattern = "";
 
-    MyDatePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
-        this(null, parseIdMap, get, set);
-    }
-
-    MyDatePicker(String zeroValuePattern, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
-        this(zeroValuePattern, parseIdMap, get, set, false);
-    }
-
+//    MyDatePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
+//        this(null, parseIdMap, get, set);
+//    }
+//    MyDatePicker(String zeroValuePattern, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
+//        this(zeroValuePattern, parseIdMap, get, set, false);
+//    }
     MyDatePicker() {
         super();
         setUIID("LabelValue");
-        this.zeroValuePattern = ""; //"<set>";
+//        this.zeroValuePattern = ""; //"<set>";
         this.setType(Display.PICKER_TYPE_DATE);
-
-    }
-
-    MyDatePicker(Date date, String zeroValuePattern, boolean setEndOfSelectedDay) {
-        super();
-//        setUIID("Button");
-        setUIID("LabelValue");
-//            this.title = title;
-//            this.parseId = parseId;
-        this.zeroValuePattern = zeroValuePattern;
-        if (zeroValuePattern == null) {
-            this.zeroValuePattern = ""; //"<set>";
-        }
-        this.setType(Display.PICKER_TYPE_DATE);
-//            this.setDate(parseObject.getDate(parseId));
-//        Date d = get.get();
-        if (date != null && date.getTime() != 0) {
-            this.setDate(date);
-        } else {
-            this.setDate(new Date(0)); //UI: default date is undefined
-        }
-
-    }
-
-    MyDatePicker(String zeroValuePattern, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set, boolean setEndOfSelectedDay) {
-        this(get.get(), zeroValuePattern, setEndOfSelectedDay);
-        //set the time and minuts and seconds to 0
-        parseIdMap.put(this, () -> {
-            Date editedDate = this.getDate();
-            if (editedDate.getTime() != 0) {
-//                Calendar cal = Calendar.getInstance();
-//                cal.setTime(editedDate);
-//                cal.set(Calendar.HOUR_OF_DAY, 1); //set hour to 1 to avoid pbs with daylight saving changes
-//                cal.set(Calendar.MINUTE, 0);
-//                cal.set(Calendar.SECOND, 0);
-//                cal.set(Calendar.MILLISECOND, 1); //ensure it's after midnight //TODO!!!! is 0 the right value??
-//                set.accept(cal.getTime());
-                if (setEndOfSelectedDay) {
-                    set.accept(MyDate.setDateToMidnight(editedDate));
-                } else {
-                    set.accept(MyDate.setDateToMidnight(editedDate));
+        setFormatter(new SimpleDateFormat() {
+            public String format(Object value) {
+                Date date = ((Date) value);
+                if (date.getTime() == 0 && zeroValuePattern != null) {
+                    return zeroValuePattern;
                 }
-            } else {
-                set.accept(editedDate);
+                return MyDate.formatDateNew(date); //
             }
         });
     }
 
+    MyDatePicker(Date date) {
+        this();
+         if (date != null && date.getTime() != 0) {
+            this.setDate(date);
+        } else {
+            this.setDate(new Date(0)); //UI: default date is undefined
+        }
+    }
+    MyDatePicker(Date date, String zeroValuePattern, boolean setEndOfSelectedDay) {
+        this(date);
+        if (zeroValuePattern != null) this.zeroValuePattern = zeroValuePattern;
+       
+    }
+
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    MyDatePicker(String zeroValuePattern, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set, boolean setEndOfSelectedDay) {
+//        this(get.get(), zeroValuePattern, setEndOfSelectedDay);
+//        //set the time and minuts and seconds to 0
+//        parseIdMap.put(this, () -> {
+//            Date editedDate = this.getDate();
+//            if (editedDate.getTime() != 0) {
+////                Calendar cal = Calendar.getInstance();
+////                cal.setTime(editedDate);
+////                cal.set(Calendar.HOUR_OF_DAY, 1); //set hour to 1 to avoid pbs with daylight saving changes
+////                cal.set(Calendar.MINUTE, 0);
+////                cal.set(Calendar.SECOND, 0);
+////                cal.set(Calendar.MILLISECOND, 1); //ensure it's after midnight //TODO!!!! is 0 the right value??
+////                set.accept(cal.getTime());
+//                if (setEndOfSelectedDay) {
+//                    set.accept(MyDate.setDateToMidnight(editedDate));
+//                } else {
+//                    set.accept(MyDate.setDateToMidnight(editedDate));
+//                }
+//            } else {
+//                set.accept(editedDate);
+//            }
+//        });
+//    }
+//</editor-fold>
+
+    /**
+    set date and notify listeners like if the picker had been used manually
+    @param date 
+     */
+    public void setDateAndNotify(Date date) {
+        setDate(date);
+//        notifyMyActionListeners();
+//        fireClicked();
+        fireActionEvent(-99, -99); //-99 used in CN1 Picker to ignore built-in action listener
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private Button clearButtonXXX = null;
 //    @Override
 //    public void setDate(Date date) {
@@ -114,10 +129,11 @@ class MyDatePicker extends Picker implements SwipeClear {
 //            }
 //        }
 //    }
+//</editor-fold>
     void swipeClear() {
-        setDate(new Date(0));
+        setDateAndNotify(new Date(0));
     }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    Component makeContainerWithClearButtonXXX() {
 //        clearButtonXXX = new Button(Command.create(null, Icons.iconCloseCircleLabelStyle, (e) -> {
 //            setDate(new Date(0)); //will hide the button
@@ -136,6 +152,7 @@ class MyDatePicker extends Picker implements SwipeClear {
 ////        return LayeredLayout.encloseIn(this, FlowLayout.encloseRightMiddle(clearButton));
 //        return FlowLayout.encloseRightMiddle(this, clearButtonXXX);
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDatePicker(String title, String zeroValuePattern, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
 //            super();
