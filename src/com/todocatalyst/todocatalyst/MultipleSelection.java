@@ -61,7 +61,8 @@ public class MultipleSelection {
         };
     }
 
-    static ItemOperation moveToTopOfList(ItemList newItemList) {
+//    static ItemOperation moveToTopOfList(ItemList newItemList) {
+    static ItemOperation moveToTopOfList(ItemAndListCommonInterface newItemList) {
         return (item) -> {
 //            item.removeFromOwner();
             List list = newItemList.getList();
@@ -109,14 +110,14 @@ public class MultipleSelection {
                 }
                 item.setCategories(prevCategories);
             }
-            if (itm.getEffortEstimate() != 0) {
-                item.setEffortEstimate(itm.getEffortEstimate());
+            if (itm.getEstimate() != 0) {
+                item.setEstimate(itm.getEstimate());
             }
-            if (itm.getRemainingEffort() != 0) {
-                item.setRemainingEffort(itm.getRemainingEffort());
+            if (itm.getRemaining() != 0) {
+                item.setRemaining(itm.getRemaining());
             }
-            if (itm.getActualEffort() != 0) {
-                item.setActualEffort(itm.getActualEffort(),false);
+            if (itm.getActual() != 0) {
+                item.setActual(itm.getActual(),false);
             }
             if (itm.getHideUntilDateD().getTime() != 0) {
                 item.setHideUntilDate(itm.getHideUntilDateD());

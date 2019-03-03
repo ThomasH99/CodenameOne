@@ -64,7 +64,7 @@ public class ScreenListOfItemLists extends MyForm {
     private boolean draggableMode = false;
     private Command sortOnOff = null;
     private Command draggableOnOff = null;
-    protected static String FORM_UNIQUE_ID = "ScreenListOfItemLists"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+//    protected static String FORM_UNIQUE_ID = "ScreenListOfItemLists"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     /**
      * edit a list of categories
@@ -87,11 +87,13 @@ public class ScreenListOfItemLists extends MyForm {
 
     ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(title, previousForm, () -> updateItemListOnDone.update(itemListList));
+        setUniqueFormId("ScreenListOfItemLists");
         this.itemListList = itemListList;
         setScrollable(false);
         if (!(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
+        setPinchInsertEnabled(true);
 //        expandedObjects = new HashSet();
         expandedObjects = new ExpandedObjects(getUniqueFormId());
         addCommandsToToolbar(getToolbar());
@@ -145,7 +147,7 @@ public class ScreenListOfItemLists extends MyForm {
         toolbar.addCommandToLeftBar(newItemSaveToInboxCmd());
 
         //NEW ITEMLIST
-        toolbar.addCommandToRightBar(MyReplayCommand.create("EditListProperties", "", Icons.iconNewToolbarStyle(), (e) -> {
+        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("EditListProperties", "", Icons.iconNewToolbarStyle(), (e) -> {
             ItemList itemList = new ItemList();
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
@@ -477,7 +479,7 @@ public class ScreenListOfItemLists extends MyForm {
         }
 
         if (!statisticsMode) {
-            long remainingEffort = itemList.getRemainingEffort();
+            long remainingEffort = itemList.getRemaining();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long workTime = itemList.getWorkSlotListN().getWorkTimeSum();
 //        if (remainingEffort != 0) {
@@ -491,7 +493,7 @@ public class ScreenListOfItemLists extends MyForm {
                     + (workTimeSumMillis != 0 ? ((remainingEffort != 0 ? "/" : "") + MyDate.formatTimeDuration(workTimeSumMillis)) : ""))); //format: "remaining/workTime"
             east.addComponent(editItemListPropertiesButton);
         } else { //statisticsMode
-            long actualEffort = itemList.getActualEffort();
+            long actualEffort = itemList.getActual();
 //            long estimatedEffort = itemList.getEffortEstimate();
             east.addComponent(new Label("Act:" + MyDate.formatTimeDuration(actualEffort)));
 //                    + "/E" + MyDate.formatTimeDuration(estimatedEffort)
@@ -511,7 +513,7 @@ public class ScreenListOfItemLists extends MyForm {
                         Container southDetailsContainer = new Container(new FlowLayout());
                         southDetailsContainer.setUIID("ItemDetails");
 //                        long remainingEffort = itemList.getRemainingEffort();
-                        long estimatedEffort = itemList.getEffortEstimate();
+                        long estimatedEffort = itemList.getEstimate();
                         southDetailsContainer.addComponent(new Label("Estimate:" + MyDate.formatTimeDuration(estimatedEffort)
                                 + " Work time" + MyDate.formatTimeDuration(workTimeSumMillis)));
 //                        southDetailsContainer.setHidden(!showDetails); //hide details by default
@@ -642,7 +644,7 @@ public class ScreenListOfItemLists extends MyForm {
                     //lazy create of details container
                     Container southDetailsContainer = new Container(new FlowLayout());
                     southDetailsContainer.setUIID("ItemDetails");
-                    long estimatedEffort = itemList.getEffortEstimate();
+                    long estimatedEffort = itemList.getEstimate();
                     southDetailsContainer.addComponent(new Label("Estimate:" + MyDate.formatTimeDuration(estimatedEffort)
                             + " Work time" + MyDate.formatTimeDuration(workTimeSumMillis)));
                     mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);

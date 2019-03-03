@@ -43,8 +43,14 @@ public class ScreenWorkSlot extends MyForm {
 //    }
     ScreenWorkSlot(WorkSlot workSlot, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
         super(SCREEN_TITLE, previousForm, doneAction);
+        setUniqueFormId("ScreenEditWorkSlot");
 //        ScreenItemP.item = item;
         this.workSlot = workSlot;
+//        if (previousValues != null) {
+//            this.previousValues = previousValues;
+//        } else {
+        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId("-" + this.workSlot.getObjectIdP()));
+//        }
         setLayout(BoxLayout.y());
         getContentPane().setScrollableY(true);
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -106,14 +112,15 @@ public class ScreenWorkSlot extends MyForm {
 //</editor-fold>
         toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
 
-        if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??
-        //            Log.p("Clicked");
-        ////            item.revert(); //forgetChanges***/refresh
-        ////            previousForm.showBack(); //drop any changes
-        //            previousForm.revalidate();
-        //            previousForm.show(); //drop any changes
-        //        });
-        {
+        if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            Log.p("Clicked");
+////            item.revert(); //forgetChanges***/refresh
+////            previousForm.showBack(); //drop any changes
+//            previousForm.revalidate();
+//            previousForm.show(); //drop any changes
+//        });
+//</editor-fold>
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
 
@@ -183,33 +190,53 @@ public class ScreenWorkSlot extends MyForm {
             content.setLayout(tl);
         }
         long now = System.currentTimeMillis();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDateAndTimePicker startByDate = new MyDateAndTimePicker("<start work on this date>", parseIdMap2,
 //                () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()
 //                ? new Date(now) : workSlot.getStartTimeD(),
 //                (d) -> workSlot.setStartTime(d));
+//</editor-fold>
+        Date defaultDate = (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? new Date(now) : new Date(0));
         MyDateAndTimePicker startByDate = new MyDateAndTimePicker();
         initField(WorkSlot.PARSE_START_TIME, startByDate,
-                () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()                ? new Date(now) : workSlot.getStartTimeD(),
-                (d) -> workSlot.setStartTime((Date)d),
-                () -> startByDate.getDate(), (d) -> startByDate.setDate((Date) d));
+                //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ? 
+                //                        new Date(now) 
+                //                        : workSlot.getStartTimeD()),
+                () -> workSlot.getStartTimeD(),
+                (d) -> workSlot.setStartTime((Date) d),
+                () -> startByDate.getDate(),
+                (d) -> startByDate.setDate((Date) d),
+                new Date(0),
+                defaultDate);
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
         content.add(layoutN(WorkSlot.START_TIME, startByDate, WorkSlot.START_TIME_HELP));
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDurationPicker duration = new MyDurationPicker(parseIdMap2,
 //                () -> (workSlot.getDurationInMinutes() == 0 && MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0)
 //                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
 //                (i) -> workSlot.setDurationInMinutes((int) i));
+//</editor-fold>
         MyDurationPicker duration = new MyDurationPicker();
-//           initField(Item.PARSE_REMAINING_EFFORT, remainingEffort, 
-//                () -> item.getRemainingEffort(false), (l) -> item.setRemainingEffort((long) l, false),
-//                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l));
+        duration.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt()*MyDate.MINUTE_IN_MILLISECONDS);
+        Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0 ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS : 0));
+//<editor-fold defaultstate="collapsed" desc="comment">
+//           initField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
+//                () -> item.getRemainingEffort(false), (l) -> item.setRemaining((long) l, false),
+//                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDurationInMillis((long) l));
+//</editor-fold>
         initField(WorkSlot.PARSE_DURATION, duration,
-                () -> (workSlot.getDurationInMinutes() == 0 && MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0)
-                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS
-                : workSlot.getDurationInMillis(),
-                (l) -> workSlot.setDuration((long) l),
-                () -> duration.getDuration(), (l) -> duration.setDuration((long) l));
+                //                () -> ((workSlot.getDurationInMinutes() == 0
+                //                && MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0)
+                //                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS
+                //                : workSlot.getDurationInMillis()),
+                () -> workSlot.getDurationInMillis(),
+                (l) -> workSlot.setDurationInMillis((long) l),
+                () -> duration.getDuration(),
+                (l) -> duration.setDuration((long) l),
+                new Long(0),
+                defaultDuration);
 
         content.add(layoutN(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
 
@@ -221,7 +248,7 @@ public class ScreenWorkSlot extends MyForm {
             if (estim != null) {
                 text = estim.cleaned;
                 workSlotName.setText(text);
-                duration.setDurationAndNotify(estim.minutes * MyDate.MINUTE_IN_MILLISECONDS); //notify to save local values!
+                if (estim.minutes != 0) duration.setDurationAndNotify(estim.minutes * MyDate.MINUTE_IN_MILLISECONDS); //notify to save local values!
             }
             setTitle(text);
         }
@@ -327,7 +354,7 @@ public class ScreenWorkSlot extends MyForm {
 //        repeatRuleButton.setUIID("TextField");
         content.add(layoutN(WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, true, false, true));//, true, false, false));
         checkDataIsCompleteBeforeExit = () -> {
-            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration()== 0) { // ^ XOR - if one and only one is true
+            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
 //            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
                 return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
             }

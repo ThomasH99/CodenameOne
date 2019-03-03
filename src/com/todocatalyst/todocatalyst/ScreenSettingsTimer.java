@@ -21,12 +21,13 @@ import com.codename1.ui.Container;
  */
 public class ScreenSettingsTimer extends ScreenSettingsCommon {
     
-     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+//     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 
     ScreenSettingsTimer(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
           super(mainScreen, doneAction);
+          setUniqueFormId("ScreenTimerSettings");
   }
 
     /**

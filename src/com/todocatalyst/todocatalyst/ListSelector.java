@@ -6,6 +6,8 @@
 package com.todocatalyst.todocatalyst;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -24,10 +26,44 @@ public class ListSelector<E> {
     private boolean allowNoSelection; //allow user to unselect all elements (have zero selected elements)
     private List<E> selectedObjects;// = new ArrayList();
     private SelectionUpdate selectionUpdate;
+    private Collection referenceSet;
 
     interface SelectionUpdate {
 
         void update(Object obj, boolean selected);
+    }
+
+    /**
+     *
+     * @param selectedObjects
+     * @param createCopyOfSelectedObjects
+     * @param maxNbSelectedObjects
+     * @param removeFirstAddedObjectIfMoreThanMaxAreAdded
+     * @param selectionUpdate
+     * @param allowNoSelection
+     */
+    ListSelector(List<E> selectedObjects, boolean createCopyOfSelectedObjects, int maxNbSelectedObjects, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded,
+            SelectionUpdate selectionUpdate, boolean allowNoSelection, Collection selectableObjects) {
+        if (createCopyOfSelectedObjects) {
+            this.selectedObjects = new ArrayList(selectedObjects);
+        } else {
+            this.selectedObjects = selectedObjects;
+        }
+        this.maxNbSelectedObjects = maxNbSelectedObjects;
+        this.removeFirstAddedObjectIfMoreThanMaxAreAdded = removeFirstAddedObjectIfMoreThanMaxAreAdded;
+        this.selectionUpdate = selectionUpdate;
+        if (this.selectionUpdate == null) {
+            this.selectionUpdate = (a, b) -> {
+            };
+        }
+        this.allowNoSelection = allowNoSelection;
+        if (selectableObjects != null)
+            this.referenceSet = new HashSet(selectableObjects);
+    }
+
+    ListSelector(List<E> selectedObjects, boolean createCopyOfSelectedObjects, int maxNbSelectedObjects, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded,
+            SelectionUpdate selectionUpdate, boolean allowNoSelection) {
+        this(selectedObjects, createCopyOfSelectedObjects, maxNbSelectedObjects, removeFirstAddedObjectIfMoreThanMaxAreAdded, selectionUpdate, allowNoSelection, null);
     }
 
     /**
@@ -58,32 +94,6 @@ public class ListSelector<E> {
     }
 
     /**
-     *
-     * @param selectedObjects
-     * @param createCopyOfSelectedObjects
-     * @param maxNbSelectedObjects
-     * @param removeFirstAddedObjectIfMoreThanMaxAreAdded
-     * @param selectionUpdate
-     * @param allowNoSelection
-     */
-    ListSelector(List<E> selectedObjects, boolean createCopyOfSelectedObjects, int maxNbSelectedObjects, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded,
-            SelectionUpdate selectionUpdate, boolean allowNoSelection) {
-        if (createCopyOfSelectedObjects) {
-            this.selectedObjects = new ArrayList(selectedObjects);
-        } else {
-            this.selectedObjects = selectedObjects;
-        }
-        this.maxNbSelectedObjects = maxNbSelectedObjects;
-        this.removeFirstAddedObjectIfMoreThanMaxAreAdded = removeFirstAddedObjectIfMoreThanMaxAreAdded;
-        this.selectionUpdate = selectionUpdate;
-        if (this.selectionUpdate == null) {
-            this.selectionUpdate = (a, b) -> {
-            };
-        }
-        this.allowNoSelection = allowNoSelection;
-    }
-
-    /**
      * inverse the selection of obj
      *
      * @param obj
@@ -91,6 +101,8 @@ public class ListSelector<E> {
      * selected)
      */
     boolean flipSelection(E obj) {
+        if (referenceSet != null && !referenceSet.contains(obj)) return false; //only allow to flip for objects in the referenceSet
+        
         if (!selectedObjects.contains(obj)) { //obj NOT selected
             //SELECT
             if (selectedObjects.size() >= maxNbSelectedObjects) { //too many already selected
@@ -179,7 +191,7 @@ public class ListSelector<E> {
         return selectedObjects.size() >= maxNbSelectedObjects;
     }
 
-    boolean invertSelection(List<E> fullSetOfObjects) {
+    boolean invertSelection(Collection<E> fullSetOfObjects) {
         boolean sucessfullyAddedAllPreviouslyUnselectedObjects = true;
         List oldSelectedObjects = selectedObjects;
         selectedObjects = new ArrayList<E>();
@@ -195,6 +207,16 @@ public class ListSelector<E> {
         return sucessfullyAddedAllPreviouslyUnselectedObjects;
     }
 
+    /**
+    invert the selection wrt to a preset reference set of items
+    @return 
+     */
+    boolean invertSelection() {
+        if (referenceSet != null)
+            return invertSelection(referenceSet);
+        else return false;
+    }
+
     public void unselectAll() {
         for (E obj : selectedObjects) { //unselect all objects
             selectionUpdate.update(obj, false);
@@ -202,7 +224,7 @@ public class ListSelector<E> {
         selectedObjects.clear();
     }
 
-    public boolean selectAll(List<E> fullSetOfObjects) {
+    public boolean selectAll(Collection<E> fullSetOfObjects) {
         boolean sucessfullyAddedAllObjects = true;
         for (E obj : fullSetOfObjects) {
             if (!select(obj)) {
@@ -212,6 +234,12 @@ public class ListSelector<E> {
             }
         }
         return sucessfullyAddedAllObjects;
+    }
+
+    public boolean selectAll() {
+        if (referenceSet != null)
+            return selectAll(referenceSet);
+        else return false;
     }
 
     public E getFirstSelected() {

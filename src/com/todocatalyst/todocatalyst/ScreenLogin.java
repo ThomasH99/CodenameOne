@@ -99,7 +99,7 @@ public class ScreenLogin extends MyForm {
                     if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain)) { // && !(f instanceof ScreenItem)) {
                         //TODO!!! show "Running" symbyl after like 2 seconds
 //                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
-                        ((MyForm) f).refreshAfterEdit();
+                        ((MyForm) f).refreshAfterEdit(); //to show any new data which may have been loaded
                         Log.p("Screen " + getComponentForm().getTitle() + " refreshed after loading new data from network");
                     }
 //                    thread.kill();

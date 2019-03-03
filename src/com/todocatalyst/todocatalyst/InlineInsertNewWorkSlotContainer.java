@@ -26,7 +26,8 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
 
 //    private Container oldNewTaskCont=null;
     private MyTextField2 textEntryField;
-    private WorkSlotList workSlotList;
+//    private WorkSlotList workSlotList;
+    private ItemAndListCommonInterface workSlotListOwner;
     private MyForm myForm;
     private WorkSlot refWorkSlot;
     private WorkSlot newWorkSlot;
@@ -67,13 +68,15 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
 //        this(myForm, new ItemList(), refWorkSlot2, insertBeforeRefElement);
 //    }
 //    public InlineInsertNewWorkSlotContainer(MyForm myForm, ItemList itemList2, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeRefElement) {
-    public InlineInsertNewWorkSlotContainer(MyForm myForm, WorkSlot refWorkSlot2, WorkSlotList workSlotList2, boolean insertBeforeRefElement) {
+    public InlineInsertNewWorkSlotContainer(MyForm myForm, WorkSlot refWorkSlot2, boolean insertBeforeRefElement) {
         this.myForm = myForm;
-        this.workSlotList = workSlotList2;
-        ASSERT.that(refWorkSlot != null, "why itemOrItemListForNewTasks2==null here?");
+//        this.workSlotList = workSlotList2;
+        this.workSlotListOwner = refWorkSlot2.getOwner();
+//        WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
         this.refWorkSlot = refWorkSlot2;
+        ASSERT.that(refWorkSlot != null, "why itemOrItemListForNewTasks2==null here?");
         this.insertBeforeRefElement = insertBeforeRefElement;
-        continueAddingNewWorkSlots=MyPrefs.workSlotContinueAddingInlineWorkslots.getBoolean();
+        continueAddingNewWorkSlots = MyPrefs.workSlotContinueAddingInlineWorkslots.getBoolean();
 
         Container contForTextEntry = new Container(new BorderLayout());
 
@@ -104,7 +107,8 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
 
         //close insert container
         contForTextEntry.add(BorderLayout.WEST, westCont);
-        if (refWorkSlot != null && refWorkSlot.size() > 0) { //only add close button if in a non-empty list
+//        if (refWorkSlot != null && refWorkSlot.size() > 0) { //only add close button if in a non-empty list
+        if (refWorkSlot != null) { //only add close button if in a non-empty list, which is the case if there is a refWorkSlot
             westCont.add(new Button(CommandTracked.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
 //                myForm.lastInsertNewElementContainer = null;
@@ -157,7 +161,8 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
                     newWorkSlot.setStartTime(new Date(refWorkSlot.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis())); //UI: set pinchInserted workslot to start at the end of the previous
                 else
                     newWorkSlot.setStartTime(refWorkSlot.getEndTimeD()); //UI: set pinchInserted workslot to start at the end of the previous
-            }
+            } else
+                newWorkSlot.setStartTime(new Date()); //UI: set pinchInserted workslot to start now
             return newWorkSlot;
         }
         return null;
@@ -180,8 +185,10 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
 //            workSlotList.addToList(newWorkSlot); //if item is null or not in orgList, insert at beginning of (potentially empty) list
 //        }
 //</editor-fold>
-        workSlotList.add(newWorkSlot); //no need to insert sorted, workSlotLists are sorted by workSlot.startDate
-        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) refWorkSlot);
+//        workSlotList.add(newWorkSlot); //no need to insert sorted, workSlotLists are sorted by workSlot.startDate
+        workSlotListOwner.addWorkSlot(newWorkSlot); //no need to insert sorted, workSlotLists are sorted by workSlot.startDate
+//        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) refWorkSlot);
+        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) workSlotListOwner);
     }
 
     private void closeInsertNewWorkSlotContainer() {

@@ -10,7 +10,9 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Label;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import com.todocatalyst.todocatalyst.MyForm.UpdateField;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Shows and edits the subtasks in an Item (Project). Can expand and collapse
@@ -21,6 +23,8 @@ import java.util.List;
  * @author Thomas
  */
 public class SubtaskContainerSimple extends Container {
+    
+    private String SUBTASK_CONT_ID = "SubtaskContainerSimple";
 
     /**
      * creates a Container showing the subtasks. creates a Container that
@@ -32,7 +36,7 @@ public class SubtaskContainerSimple extends Container {
      * @param previousForm
      * @param templateEditMode
      */
-    SubtaskContainerSimple(Item item, MyForm previousForm, boolean templateEditMode) { //    HashSet<ItemAndListCommonInterface> expandedObjects
+    SubtaskContainerSimple(Item item, MyForm previousForm, boolean templateEditMode,  Map<Object, UpdateField> parseIdMap2) { //    HashSet<ItemAndListCommonInterface> expandedObjects
 //        ItemList<Item> subtasksItemList = item.getItemList();
         setLayout(new BorderLayout()); //main container
 
@@ -50,11 +54,15 @@ public class SubtaskContainerSimple extends Container {
         editSubtasksFullScreen.setCommand(MyReplayCommand.create("EditSubtasks", subtaskStr, Icons.iconEditPropertiesToolbarStyle, (e) -> {
 //            ItemList subtaskList = item.getItemList();
 //            List<Item> subtaskList = item.getListFull();
-            new ScreenListOfItems("Subtasks of " + item.getText(), () -> new ItemList(item.getListFull(),true), previousForm, (iList) -> {
+//            new ScreenListOfItems("Subtasks of " + item.getText(), () -> new ItemList(item.getListFull(),true), previousForm, (iList) -> {
+            new ScreenListOfItems("Subtasks of " + item.getText(), () -> item, previousForm, (iList) -> {
 //                item.setItemList(subtaskList);
 //                item.setList(subtaskList);
-                item.setList(iList.getListFull());
-                DAO.getInstance().saveInBackground(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                item.setList(iList.getListFull());
+//                if (false) 
+//                    item.setList((iList); //probably not necessary since all operations on the list (insert, D&D, ...) should update the list on each change
+//                DAO.getInstance().saveInBackground(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                parseIdMap2.put(SUBTASK_CONT_ID, ()->DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item));
                 previousForm.refreshAfterEdit(); //necessary to update sum of subtask effort
             }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
             ).show();

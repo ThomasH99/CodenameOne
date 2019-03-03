@@ -9,6 +9,7 @@ import com.codename1.io.Log;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.List;
  *
  * @author THJ
  */
-public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface> extends MyTreeModel {
+public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface> extends MyTreeModel, Iterable {
 
     public boolean isDone();
 //    boolean isTemplate();
@@ -36,11 +37,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      *
      * @return
      */
-    public long getRemainingEffort();
+    public long getRemaining();
 
-    public long getEffortEstimate();
+    public long getEstimate();
 
-    public long getActualEffort();
+    public long getActual();
 //    public long getWorkTimeSum();
 
 //    public Date getRemainingEffortD(); //TODO use getRemainingEffortD everywhere instead of getRemainingEffort
@@ -63,6 +64,19 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     public void setWorkSlotList(WorkSlotList workSlotList);
+
+    /**
+    add a new workslot to the list
+    @param workSlot 
+     */
+    default public void addWorkSlot(WorkSlot workSlot) {
+        WorkSlotList workSlotList = getWorkSlotListN();
+        if (workSlotList == null) {
+            workSlotList = new WorkSlotList();
+        }
+        workSlotList.add(workSlot);
+        setWorkSlotList(workSlotList);
+    }
 
     public int getNumberOfUndoneItems(boolean includeSubTasks);
 
@@ -141,9 +155,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return getOwner().getList();
     }
 
-    ;
 //    public ParseObject getOwner();
-
     /**
      * returns a printable string that uniquely identifies this item
      *
@@ -311,10 +323,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
 //    public List<? extends ItemAndListCommonInterface> getList();
     public List<E> getList();
+
     /**
     return the full, unsorted and unfiltered list of 
     @return 
-    */
+     */
 //    public List<? extends ItemAndListCommonInterface> getListFull();
     public List<E> getListFull();
 
@@ -691,7 +704,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //</editor-fold>
         }
         if (false && Config.WORKTIME_TEST) {
-            long remainingEffort = getRemainingEffort();
+            long remainingEffort = getRemaining();
             long allocated = workTime.getAllocatedDuration();
             assert workTime == null || !(allocated > remainingEffort) : "allocated too much time";
         }
@@ -712,7 +725,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
 //        ASSERT.that(wt.getAllocatedDuration() == getRemainingEffort() || wt.getAllocatedDuration() < getRemainingEffort(), "allocated too much time");
 //        if (wt != null) {
-            long remainingEffort = getRemainingEffort();
+            long remainingEffort = getRemaining();
             long allocatedDuration = wt.getAllocatedDuration();
             if (Config.WORKTIME_TEST) {
                 ASSERT.that(wt == null || !(allocatedDuration > remainingEffort), "allocated too much time");
@@ -739,7 +752,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
 //        ASSERT.that(wt.getAllocatedDuration() == getRemainingEffort() || wt.getAllocatedDuration() < getRemainingEffort(), "allocated too much time");
         if (wt != null) {
-            long remainingEffort = getRemainingEffort();
+            long remainingEffort = getRemaining();
             long allocatedDuration = wt.getAllocatedDuration();
             if (Config.WORKTIME_TEST) {
                 assert wt == null || !(allocatedDuration > remainingEffort) : "allocated too much time";
@@ -802,6 +815,44 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
             }
         }
     }
+
+    /**
+    return a defined filter, null if none defined, for Items, returns a filter for the subtasks
+    @return 
+     */
+    public FilterSortDef getFilterSortDef();
+
+    public void setFilterSortDef(FilterSortDef filterSortDef);
+
+    default public Iterator iterator() {
+        return new Iterator() {
+//            public class MyIterator <T> implements Iterator<T> {
+            int index = 0;
+
+            public boolean hasNext() {
+                //implement...
+                return index < size();
+            }
+
+            public ItemAndListCommonInterface next() {
+                //implement...;
+                return (ItemAndListCommonInterface) getListFull().get(index++);
+            }
+
+            public void remove() {
+                //implement... if supported.
+                throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        };
+//        throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+    for Items: return subtask
+    @param index
+    @return 
+     */
+    public Object get(int index);
 
 //    default public long getWorkTimeRequiredFromOwner() {
 ////        return getRemainingEffort(); //for lists and categories, we use the standard remaining, for Items it's a special impl

@@ -21,6 +21,7 @@ import com.codename1.ui.events.ActionListener;
 public class MyReplayCommand extends CommandTracked {
 
     private String cmdUniqueID;
+    private boolean keep; //indicates a replaycommand that should NOT be deleted when rebuilding the list of replaycommands for a screen (on refreshAfterEdit)
 
 //    public MyReplayCommand(String command, Image icon) {
 //        super(command, icon);
@@ -73,7 +74,15 @@ public class MyReplayCommand extends CommandTracked {
         return cmdUniqueID;
     }
 
-    public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev) {
+    void setKeep(boolean keep) {
+        this.keep = keep;
+    }
+
+    boolean isKeep() {
+        return keep;
+    }
+
+    public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep) {
         String cmdUniqueId = cmdUniquePrefix + cmdUniquePostfix;
         MyReplayCommand cmd = new MyReplayCommand(cmdUniqueId, commandName, icon) {
             @Override
@@ -91,18 +100,26 @@ public class MyReplayCommand extends CommandTracked {
             }
         };
         cmd.setAnalyticsActionId(cmdUniquePrefix);
+        cmd.setKeep(keep);
 //        if (Config.TEST) cmd.setName("ReplayCmd-" + cmdUniqueId);
 
         return cmd;
     }
 
-    public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev) {
-        return create(cmdUniqueID, "", commandName, icon, ev);
+    public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev) {
+        return create(cmdUniquePrefix, cmdUniquePostfix, commandName, icon, ev, false);
+    }
+
+        public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev) {
+        return create(cmdUniqueID, "", commandName, icon, ev, false);
+    }
+    public static MyReplayCommand createKeep(String cmdUniqueID, String commandName, Image icon, final ActionListener ev) {
+        return create(cmdUniqueID, "", commandName, icon, ev, true);
     }
 
     public static MyReplayCommand create(String name) {
         ASSERT.that("NOT REALLY SURE THIS WORKS!!!");
-        return create(name, "", name, null, null);
+        return create(name, "", name, null, null, false);
     }
 
     /**
@@ -120,7 +137,7 @@ public class MyReplayCommand extends CommandTracked {
 //        return create(name, name, analyticsActionId, icon, ev);
 //    }
     public static MyReplayCommand create(String name, Image icon, final ActionListener ev) {
-        return create(name, "", name, icon, ev);
+        return create(name, "", name, icon, ev,false);
     }
 
 }

@@ -37,7 +37,7 @@ public class ScreenCategory extends MyForm {
     private static String screenTitle = "Category";
     private Button backButton;
     private Command backCommand;
- protected static String FORM_UNIQUE_ID = "ScreenEditCategory"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+// protected static String FORM_UNIQUE_ID = "ScreenEditCategory"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //     private UpdateField updateActionOnDone;
 
 //    ScreenCategory(Category category, MyForm previousForm) { //throws ParseException, IOException {
@@ -46,6 +46,7 @@ public class ScreenCategory extends MyForm {
 //    }
     ScreenCategory(Category category, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
         super(category.getText(), previousForm, doneAction);
+        setUniqueFormId("ScreenEditCategory");
 //        ScreenItemP.item = item;
         this.category = category;
 //        ScreenItemP.previousForm = previousForm;

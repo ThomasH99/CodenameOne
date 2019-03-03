@@ -32,7 +32,7 @@ public class ScreenListOfWorkTime extends MyForm {
     //TODO!! make the workSlots editable directly inline in the list (more natural to edit in an overview of all workslots
 
     static String SCREEN_TITLE = "Work time details: ";
- protected static String FORM_UNIQUE_ID = "ScreenListOfWorkSlTime"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+// protected static String FORM_UNIQUE_ID = "ScreenListOfWorkSlTime"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     private ItemAndListCommonInterface owner;
 
     ScreenListOfWorkTime(String nameOfOwner, WorkTimeSlices workTime, MyForm previousForm) {
@@ -40,6 +40,7 @@ public class ScreenListOfWorkTime extends MyForm {
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm, () -> updateItemListOnDone.update(workTime));
         super(SCREEN_TITLE + nameOfOwner, previousForm, () -> {
         });
+        setUniqueFormId("ScreenListOfWorkTime");
 //        setUpdateItemListOnDone(updateItemListOnDone);
 //        this.workSlotList = workSLotList;
         this.owner = owner;

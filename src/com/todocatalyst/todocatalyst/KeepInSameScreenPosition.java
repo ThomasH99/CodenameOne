@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
@@ -127,8 +128,9 @@ class KeepInSameScreenPosition {
         return (i < 10 ? "   " : (i < 100 ? "  " : (i < 1000 ? " " : ""))) + i;
     }
 
-    private void printCoordinateValues(Component comp) {
+    private void printCoordinateValues(String text, Component comp) {
 //    private void setTestValues(Component comp, Component parentInScrollableCont, Component scrollableContainer) {
+        Log.p("********** " + text + "*****************");
         int l = "getParentInScrollableContainer(comp, scrollableCont): ".length();
 
         int y = comp.getY();
@@ -152,12 +154,14 @@ class KeepInSameScreenPosition {
         System.out.println(pad("getScrollableContainer(comp): ", l) + "y=" + la(scrollableContY) + " absY=" + la(scrollableContAbsY) + " scrollY=" + la(scrollableContScrollY));
 
         Component parentInScrollableCont = getParentInScrollableContainer(comp, scrollableCont);
-        int parentInScrollableY = parentInScrollableCont.getY();
-        int parentInScrollableAbsY = parentInScrollableCont.getAbsoluteY();
-        int parentInScrollableScrollY = parentInScrollableCont.getScrollY();
+        if (parentInScrollableCont != null) {
+            int parentInScrollableY = parentInScrollableCont.getY();
+            int parentInScrollableAbsY = parentInScrollableCont.getAbsoluteY();
+            int parentInScrollableScrollY = parentInScrollableCont.getScrollY();
 //        System.out.println("yParent="+parentY+" YParentAbs="+parentInScrollableAbsY+" yParentScroll="+parentInScrollableScrollY);
-        System.out.println("getParentInScrollableContainer(comp, scrollableCont): " + "y=" + la(parentInScrollableY)
-                + " absY=" + la(parentInScrollableAbsY) + " scrollY=" + la(parentInScrollableScrollY));
+            System.out.println("getParentInScrollableContainer(comp, scrollableCont): " + "y=" + la(parentInScrollableY)
+                    + " absY=" + la(parentInScrollableAbsY) + " scrollY=" + la(parentInScrollableScrollY));
+        }
         boolean t = true;
 //        int yScrollableCont = scrollableContainer.getY();
 //        int yScrollableContAbsolute = scrollableContainer.getAbsoluteY();
@@ -171,13 +175,15 @@ class KeepInSameScreenPosition {
      * keep the item (in oldItemComponent) at the same position once the list is
      * regenerated
      *
-     * @param item
-     * @param oldItemComponent used to get scrollably Y position
+     * @param item the item for which you want to keep the position on next refresh
+     * @param oldItemComponent the component currently in the position where you want to see item on next refresh (used to get scrollably Y position)
      * @param indexOfCompToKeepFixedRelativeToOldItemComp relative position of
      * element to keep in same position, eg to keep insertNewTaskCont in same
      * position on screen even as more new items are inserted above it, point to
      * position of the following (+1) item. This will place the new item with
-     * additional scroll (sorry, unclear description!)
+     * additional scroll (sorry, unclear description!). If -1 one, then the new component for item will 
+    be placed where component *above* is placed. This will cause e.g. the insertcontainer
+    to stay in place and new added tasks scroll up.
      */
     KeepInSameScreenPosition(Object item, Component oldItemComponent, int indexOfCompToKeepFixedRelativeToOldItemComp) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -248,7 +254,7 @@ class KeepInSameScreenPosition {
         if (comp == null) {
             return null;
         }
-        Component scrollable = comp.getScrollable();
+        Component scrollable = comp.getScrollable(); //CN1 method to find scrollable
         if (scrollable instanceof Container) {
             return (Container) scrollable;
         } else {
@@ -291,12 +297,12 @@ class KeepInSameScreenPosition {
      * @return
      */
     private Component getParentInScrollableContainer(Component comp, Container scrollableCont) {
-        Component parentBelongingToScrollableContiner = comp; //
-        while (parentBelongingToScrollableContiner != null && parentBelongingToScrollableContiner.getParent() != scrollableCont) { //iterate until the parent==scrollableCont (meaning it belongs to scrollablCont)
-            parentBelongingToScrollableContiner = parentBelongingToScrollableContiner.getParent();
+        Component parentInScrollableCont = comp; //
+        while (parentInScrollableCont != null && parentInScrollableCont.getParent() != scrollableCont) { //iterate until the parent==scrollableCont (meaning it belongs to scrollablCont)
+            parentInScrollableCont = parentInScrollableCont.getParent();
         }
 //        return comp; //comp==null or comp.getParent() == scrollableCont
-        return parentBelongingToScrollableContiner; //comp==null or comp.getParent() == scrollableCont
+        return parentInScrollableCont; //comp==null or comp.getParent() == scrollableCont
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -458,6 +464,7 @@ class KeepInSameScreenPosition {
      */
     void setNewScrollYPosition() {
         if (newComponent == null) {
+            if (true) return;
 //            if (scrollY != 0) {
             if (scrollY != 0) {//Integer.MIN_VALUE) {
                 //original object has disappeared from the list (eg filtered after set Done) so simply scroll to same Y position
@@ -499,21 +506,31 @@ class KeepInSameScreenPosition {
                 if (scrollableComp != null) {
                     boolean prevSmoothScrolling = scrollableContainer.isSmoothScrolling();
                     scrollableContainer.setSmoothScrolling(false);
-                    if (relScroll != 0) {
+                    if (true || relScroll != 0) { //relScroll just indicates how much so even if zero, scroll should be set
 //            scrollableContainer.setScrollY(Math.max(0, newComponent.getY() - relScroll)); //Math.max since scroll position cannot be maintainer if earlier components shrink
 //                    scrollableContainer.setScrollY(Math.max(0, scrollableComp.getY() - relScroll)); //Math.max since scroll position cannot be maintained if earlier components shrink
-                        if (Config.TEST_SCROLL_Y) printCoordinateValues(newComponent);
-                        ((ContainerScrollY) scrollableContainer).setScrollYPublic(Math.max(0, scrollableComp.getY() - relScroll)); //Math.max since scroll position cannot be maintained if earlier components shrink
+//                        if (Config.TEST_SCROLL_Y) printCoordinateValues("scrollableContainer", scrollableContainer);
+                        if (Config.TEST_SCROLL_Y) printCoordinateValues("scrollableComp", newComponent);
+//                        if (Config.TEST_SCROLL_Y)                         {
+                        int scrollableCompY = scrollableComp.getY();
+                        int scrollableCompAbsY = scrollableComp.getAbsoluteY();
+                        int relScroll2 = relScroll;
+                        int scrollVal = scrollableCompY - relScroll;
+//                        }
+                        int scrollYAbs = Math.max(0, scrollableCompAbsY - relScroll);
+                        int scrollY = Math.max(0, scrollableCompY - relScroll);
+                        if (Config.TEST_SCROLL_Y) Log.p("relScroll="+relScroll+", scrollableCompY="+scrollableCompY+", scrollY="+scrollY);
+                        ((ContainerScrollY) scrollableContainer).setScrollYPublic(scrollY); //Math.max since scroll position cannot be maintained if earlier components shrink
                     } else {
                         scrollableContainer.scrollComponentToVisible(newComponent); //scroll to show the container of an item when no position was known - //TODO not tested
                     }
 //                scrollableContainer.animateHierarchy(300);
-                    scrollableContainer.repaint();
+                    if (false) scrollableContainer.repaint();
 //                    scrollableContainer.setSmoothScrolling(true);
                     scrollableContainer.setSmoothScrolling(prevSmoothScrolling);
                 }
             }
-            newComponent = null;
+            if (false) newComponent = null; //indicate the the scroll has been effectuated. NB. Doesn't work if called several times for the same screen!
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (newScrollYContainer.isScrollableY()) {

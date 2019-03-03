@@ -49,7 +49,7 @@ public class ScreenListOfAlarms extends MyForm {
     private long now; //represent 'now' wrt latest update of the screen <8eg to ensure that an alarm that expires just after the screen is updated may be cancelled w/o being shown/seen
 //    private KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
     private List<ExpiredAlarm> expiredAlarms;
-     protected static String FORM_UNIQUE_ID = "ScreenListOfAlarms"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+//     protected static String FORM_UNIQUE_ID = "ScreenListOfAlarms"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 
     private static ScreenListOfAlarms INSTANCE;
@@ -66,6 +66,7 @@ public class ScreenListOfAlarms extends MyForm {
     private ScreenListOfAlarms() { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(screenTitle, null, () -> {
         });
+        setUniqueFormId("ScreenListOfAlarms");
 
 //        this.notificationList=notificationList;
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
@@ -182,7 +183,7 @@ public class ScreenListOfAlarms extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
-        toolbar.addCommandToRightBar(MyReplayCommand.create("AlarmSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
+        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("AlarmSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
             boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
             int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
 

@@ -36,6 +36,7 @@ public class ScreenSettingsCommon extends MyForm {
 
     ScreenSettingsCommon(String title, MyForm previousScreen, UpdateField doneAction) { // throws ParseException, IOException {
         super(title, previousScreen, doneAction); // ScreenTimer.SCREEN_TITLE + " settings"
+        setUniqueFormId("ScreenSettingsCommon");
 //        this.previousForm = previousScreen;
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
 

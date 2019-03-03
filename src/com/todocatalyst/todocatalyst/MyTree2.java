@@ -672,7 +672,7 @@ public class MyTree2 extends ContainerScrollY {
             } else {
                 nodeComponent = createNode(current, depth);
             }
-            if (Config.TEST && current instanceof ItemAndListCommonInterface) nodeComponent.setName("TreeNode-" + ((ItemAndListCommonInterface) current).getText());
+//            if (Config.TEST && current instanceof ItemAndListCommonInterface) nodeComponent.setName("TreeNode-" + ((ItemAndListCommonInterface) current).getText()); //NO, each create sets the name itself
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (model.isLeaf(current)) {
 //                destination.addComponent(nodeComponent); //in CN1 impl, leafs are not encapsulated in 'expandable' BorderLayouts, but here we do it since tree nodes may change from leafs to trees
@@ -686,7 +686,7 @@ public class MyTree2 extends ContainerScrollY {
             if (Config.TEST) componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 
             destination.addComponent(componentArea);
 
-            if (Config.TEST) destination.setName("TreeTop-" + componentArea.getName()); //reuse name 
+//            if (Config.TEST) destination.setName("TreeTop-" + componentArea.getName()); //reuse name 
             bindNodeListener(expandCollapseListener, nodeComponent);
             nodeComponent.putClientProperty(KEY_OBJECT, current);
             nodeComponent.putClientProperty(KEY_PARENT, parent);
@@ -717,13 +717,13 @@ public class MyTree2 extends ContainerScrollY {
 //                InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
 //                if (insertNewElement != null) {
 //</editor-fold>
-                 InsertNewElementFunc newInsertContainer = insertNewElementFunc.make((Item) current,
+                InsertNewElementFunc newInsertContainer = insertNewElementFunc.make((Item) current,
                         parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model,
                         category);
                 if (newInsertContainer != null) {
 //                    destination.add(insertNewElement);
-                    if (Config.TEST && current instanceof Item)
-                        ((Component) newInsertContainer).setName("TreeInsertContainer-" + ((Item) current).getText());
+                    if (Config.TEST && current instanceof ItemAndListCommonInterface)
+                        ((Component) newInsertContainer).setName("TreeInsertContainer-" + ((ItemAndListCommonInterface) current).getText());
                     destination.add((Component) newInsertContainer);
 //                        myForm.setInlineInsertContainer(newInsertContainer);
 //                    setAsyncEditField(newInsertContainer.getTextArea());
@@ -1072,7 +1072,7 @@ public class MyTree2 extends ContainerScrollY {
         return stickyHeaderGen;
     }
 
-    private String newTimeString(long timeInMillis) {
+    static String newTimeString(long timeInMillis) {
         String str;
         if (timeInMillis == 0) {
             str = "0m";
@@ -1103,7 +1103,7 @@ public class MyTree2 extends ContainerScrollY {
      * @param newStr
      * @return
      */
-    private String getDiffStr(String oldStr, String newStr) {
+    static String getDiffStr(String oldStr, String newStr) {
         if (oldStr == null || (newStr != null && !newStr.equals(oldStr))) {
             return newStr;
         } else {
@@ -1114,54 +1114,70 @@ public class MyTree2 extends ContainerScrollY {
     String newStickyStr = null;
     private int todayViewState = 0;
 
+    interface StringGet {
+
+        String get();
+    }
+
+    interface StringPut {
+
+        void put(String str);
+    }
+
     /**
      * will calculate if a (new) StickyHeader is needed and if so, return it for
      * insertion into the Container. otherwise returns null.
      */
     private StickyHeaderGenerator makeStickyHeaderGen(String parseId) {
+        return makeStickyHeaderGen(parseId, () -> newStickyStr, (s) -> newStickyStr = s);
+    }
+
+    static StickyHeaderGenerator makeStickyHeaderGen(String parseId, StringGet stringGen, StringPut stringPut) {
+        //TODO support grouping dates by eg week or month: simply replace formatDateNew with a call that returns a string indicating week or month
         return (current) -> {
+            final String previousStickyStr = stringGen.get();
+            String newStr = null;
             if (current instanceof Item) {
                 Item item = (Item) current;
-                String newStr = null;
 
                 switch (parseId) {
                     case Item.PARSE_PRIORITY:
 //                        newStr = getDiffStr(newStickyStr, "Priority " + item.getPriority());
-                        newStr = getDiffStr(newStickyStr, Item.PRIORITY + " " + item.getPriority());
+                        newStr = getDiffStr(previousStickyStr, Item.PRIORITY + " " + item.getPriority());
                         break;
                     case Item.PARSE_STATUS:
 //                        newStr = getDiffStr(newStickyStr, "Status " + item.getStatus().getName());
-                        newStr = getDiffStr(newStickyStr, Item.STATUS + " " + item.getStatus().getName());
+                        newStr = getDiffStr(previousStickyStr, Item.STATUS + " " + item.getStatus().getName());
                         break;
                     case Item.PARSE_REMAINING_EFFORT:
-                        newStr = getDiffStr(newStickyStr, Item.EFFORT_REMAINING + " " + newTimeString(item.getRemainingEffort()));
+                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_REMAINING + " " + newTimeString(item.getRemaining()));
                         break;
                     case Item.PARSE_ACTUAL_EFFORT:
-                        newStr = getDiffStr(newStickyStr, Item.EFFORT_ACTUAL + " " + newTimeString(item.getActualEffort()));
+                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_ACTUAL + " " + newTimeString(item.getActual()));
                         break;
                     case Item.PARSE_EFFORT_ESTIMATE:
-                        newStr = getDiffStr(newStickyStr, Item.EFFORT_ESTIMATE + " " + newTimeString(item.getEffortEstimate()));
+                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_ESTIMATE + " " + newTimeString(item.getEstimate()));
                         break;
                     case Item.PARSE_UPDATED_AT:
-                        newStr = getDiffStr(newStickyStr, Item.UPDATED_DATE + " " + MyDate.formatDateNew(item.getUpdatedAt()));
+                        newStr = getDiffStr(previousStickyStr, Item.UPDATED_DATE + " " + MyDate.formatDateNew(item.getUpdatedAt()));
                         break;
                     case Item.PARSE_COMPLETED_DATE:
-                        newStr = getDiffStr(newStickyStr, Item.COMPLETED_DATE + " " + MyDate.formatDateNew(item.getCompletedDate()));
+                        newStr = getDiffStr(previousStickyStr, Item.COMPLETED_DATE + " " + MyDate.formatDateNew(item.getCompletedDateD()));
                         break;
                     case Item.PARSE_CREATED_AT:
-                        newStr = getDiffStr(newStickyStr, Item.CREATED_DATE + " " + MyDate.formatDateNew(item.getCreatedAt()));
+                        newStr = getDiffStr(previousStickyStr, Item.CREATED_DATE + " " + MyDate.formatDateNew(item.getCreatedAt()));
                         break;
                     case Item.PARSE_DUE_DATE:
-                        newStr = getDiffStr(newStickyStr, Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDate()));
+                        newStr = getDiffStr(previousStickyStr, Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDateD()));
                         break;
                     case Item.PARSE_WAITING_TILL_DATE:
-                        newStr = getDiffStr(newStickyStr, Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDateD().getTime()));
+                        newStr = getDiffStr(previousStickyStr, Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDateD()));
                         break;
                     case Item.PARSE_IMPORTANCE_URGENCY:
-                        newStr = getDiffStr(newStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
+                        newStr = getDiffStr(previousStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
                         break;
                     case Item.PARSE_CHALLENGE:
-                        newStr = getDiffStr(newStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
+                        newStr = getDiffStr(previousStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
                         break;
                     case Item.PARSE_TEXT: //no header for text, could do a letter 'A' but not valuable
 //                        newStr = getDiffStr(newStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
@@ -1207,30 +1223,26 @@ public class MyTree2 extends ContainerScrollY {
                     default:
                         assert false : "Unhandled parseId in StickyHeader = " + parseId;
                 }
-                if (newStr != null && !newStr.equals(newStickyStr)) {
-                    newStickyStr = newStr;
+                if (newStr != null && !newStr.equals(previousStickyStr)) {
+//                    newStickyStr = newStr;
+                    stringPut.put(newStr); //store to compare next time
 //                     Label headerLbl = new Label(newStickyStr, "ToggleButton"); //TODO!! define separate style for stickyheaders
 //                    Label headerLbl = new Label(newStickyStr, "ListOfItemsSectionHeader"); //TODO!! define separate style for stickyheaders
 //                    StickyHeaderDiamond headerLbl = new StickyHeaderDiamond("ToggleButton"); //TODO!! define separate style for stickyheaders //overwrites titlebar
 //                    StickyHeaderMod headerLbl = new StickyHeaderMod("ToggleButton"); //TODO!! define separate style for stickyheaders
 //                    StickyHeader headerLbl = new StickyHeader("ToggleButton"); //TODO!! define separate style for stickyheaders
                     StickyHeader headerLbl = new StickyHeader("StickyHeader"); //TODO!! define separate style for stickyheaders
-                    headerLbl.add(newStickyStr);
+//                    headerLbl.add(newStickyStr);
+                    headerLbl.add(newStr);
 //                    if (false) headerLbl.putClientProperty("STICKY_HEADER", true);
-//                    headerLbl.getAllStyles().setAlignment(Component.CENTER);
-//                    headerLbl.getAllStyles().setBgColor(0x187796); //from http://www.colorpicker.com/
-//                    headerLbl.setTextPosition(Label.CENTER);
-                    if (false) {
-//                        StickyHeader stickyHeader = new StickyHeader();
-////                    StickyHeaderMod stickyHeader = new StickyHeaderMod();
-//                        stickyHeader.setLayout(new BoxLayout(BoxLayout.Y_AXIS));
-////                    stickyHeader.setUIID("Header");
-////                    stickyHeader.getAllStyles().setBgColor(0x187796); //from http://www.colorpicker.com/
-//                        stickyHeader.add(headerLbl);
-//                        return stickyHeader;
-                    }
-//            headerLbl.getAllStyles().setAlignment(Component.CENTER);
                     return headerLbl;
+                }
+            } else if (current instanceof WorkSlot) {
+                WorkSlot workSlot = (WorkSlot) current;
+                switch (parseId) {
+                    case WorkSlot.PARSE_START_TIME:
+                        newStr = getDiffStr(previousStickyStr, WorkSlot.START_TIME + " " + MyDate.formatDateNew(workSlot.getStartAdjusted())); //use adjusted, so a workslot stretching over midnight will get the right date after midnignt
+                        break;
                 }
             }
             return null;

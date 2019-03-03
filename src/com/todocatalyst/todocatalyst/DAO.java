@@ -2252,18 +2252,9 @@ public class DAO {
         save(anyParseObject, true);
     }
 
-    private EasyThread backgroundSaveThread = null; //thread with background task
-
-//    public void save(ItemAndListCommonInterface anyParseObject) {
-//        save((ParseObject)anyParseObject, true);
-//    }
-    private UITimer saveTimer; // = new UITimer(r);
-
     public void saveInBackgroundOnTimeoutXXX(ParseObject anyParseObject) { //TODO!!!! Implemented timed save (delay save by eg 200ms to catch all updates before sending saves on their way
         DAO.this.saveInBackground(anyParseObject);
     }
-
-    private static Object backgroundSaveLOCK = new Object();
 
     /**
     let background task save to Parse after the objects have been saved to cache
@@ -2277,6 +2268,10 @@ public class DAO {
         }
     }
 
+    private EasyThread backgroundSaveThread = null; //thread with background task
+    private final Object LOCK = new Object();
+    private Vector backgroundSavePendingList = new Vector(); //Vector is thread safe
+
     /**
      * saves the list of ParseObjects in the background but in sequential order
      * so it is guaranteed that eg new ParseObjects are saved before the lists
@@ -2286,25 +2281,70 @@ public class DAO {
      */
     public void saveInBackground(List<ParseObject> parseObjects) {
 //        saveImpl(anyParseObject);
-        if (parseObjects.size() == 0) {
+        if (parseObjects == null || parseObjects.size() == 0) {
             return;
         }
         if (backgroundSaveThread == null) {
             backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
         }
-//        cacheList(parseObjects); //first cache all objects
+        Vector vector = new Vector(); //make copy
+        for(ParseObject p:parseObjects)
+            vector.add(p);
+//        v.addAll(parseObjects);
+//        for (ParseObject parseObject : parseObjects) {
+////            backgroundSavePendingList.add(parseObject);
+//        }
         backgroundSaveThread.run(() -> {
-//            synchronized (backgroundSaveLOCK) {
-            for (ParseObject parseObject : parseObjects) {
-//                if (parseObject.getObjectIdP()==null) { //if not previously saved, save firs to get the ObjectId used by cache
-                saveImpl(parseObject, true);
-//                cachePut(parseObject); //first cache all objects
-//                } else 
-//                saveToParseOnlyNoCaching(parseObject);
+            ParseObject parseObject;
+            while (!vector.isEmpty()) {
+                parseObject = (ParseObject) vector.remove(0);
+                Log.p("BACKGROUND saving: "+parseObject);
+                saveImpl((ParseObject) parseObject, true);
             }
-//            }
         });
     }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void saveInBackgroundXXX(List<ParseObject> parseObjects) {
+////        saveImpl(anyParseObject);
+//        if (parseObjects == null || parseObjects.size() == 0) {
+//            return;
+//        }
+//        if (backgroundSaveThread == null) {
+//            backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
+//            backgroundSaveThread.run(() -> {
+////            synchronized (backgroundSaveLOCK) {
+//                ParseObject parseObject;
+//                synchronized (LOCK) {
+//                    while (true) {
+//                        com.codename1.io.Util.wait(LOCK);
+//                        while (!backgroundSavePendingList.isEmpty()) {
+//                            parseObject = (ParseObject) backgroundSavePendingList.remove(0);
+//                            saveImpl(parseObject, true);
+//                        }
+//                    }
+//                }
+//                //<editor-fold defaultstate="collapsed" desc="comment">
+////            for (ParseObject parseObject : parseObjects) {
+//////                if (parseObject.getObjectIdP()==null) { //if not previously saved, save firs to get the ObjectId used by cache
+////                saveImpl(parseObject, true);
+//////                cachePut(parseObject); //first cache all objects
+//////                } else
+//////                saveToParseOnlyNoCaching(parseObject);
+////            }
+////            }
+////</editor-fold>
+//            });
+//        }
+//
+//        synchronized (LOCK) {
+//            for (ParseObject parseObject : parseObjects) {
+//                backgroundSavePendingList.add(parseObject);
+//            }
+//            LOCK.notify();
+//        }
+//    }
+//</editor-fold>
 
     void saveInBackground(ParseObject... parseObjects) {
         saveInBackground(Arrays.asList(parseObjects));
@@ -2335,7 +2375,7 @@ public class DAO {
 
 //    private List<Item> saveTemplateCopyWithSubtasksInBackgroundImpl(List<Item> tasksInSaveOrder, Item projectOrItem) {
     private List saveTemplateCopyWithSubtasksInBackgroundImpl(List tasksInSaveOrder, Item projectOrItem) {
-        if (!projectOrItem.isProject()) {
+        if (!projectOrItem.isProject() && (projectOrItem.getObjectIdP()==null ||projectOrItem.isDirty())) {
             tasksInSaveOrder.add(projectOrItem);
             return tasksInSaveOrder;
         } else {
@@ -2352,76 +2392,76 @@ public class DAO {
     /**
     save eg a template copy in the right order (all leaf subtasks before their owner project, so all are given objectiIds before saving references to them)
     @param projectOrItem 
-    */
+     */
     public void saveTemplateCopyWithSubtasksInBackground(Item projectOrItem) {
 //        saveInBackground((List<ParseObject>)saveTemplateCopyWithSubtasksInBackgroundImpl(new ArrayList<Item>(), projectOrItem));
         saveInBackground(saveTemplateCopyWithSubtasksInBackgroundImpl(new ArrayList(), projectOrItem));
     }
-
-    private EasyThread backgroundSaveQueueThread = EasyThread.start("DAO.backgroundQueueSave"); //thread with background task
-    private List<ParseObject> backgroundSaveQueue = new ArrayList<>();
-    private Object backgroundSaveQueueLock = new Object();
-
-    /**
-    not sure how often this will be useful, mainly when saving multiple generated repeat instances at once, rest of the time, a user will only
-    create a single new object at a time (so background save is the most important, followed by sequential background save. NO, will also be useful
-    when 
-    @param parseObjects 
-     */
-    public void saveInBackgroundSequentialBatchXXX(List<ParseObject> parseObjects) {
-        if (parseObjects.size() == 0) {
-            return;
-        }
-        synchronized (backgroundSaveQueueLock) {
-            backgroundSaveQueue.addAll(parseObjects);
-        }
-        if (backgroundSaveThread == null) {
-            backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
-        }
-        cacheList(parseObjects); //first cache all objects
-        backgroundSaveThread.run(() -> {
-            String className = null;
-            List batchQueue = new ArrayList();
-            EBatchOpType batchOpType = null;
-            for (ParseObject parseObject : backgroundSaveQueue) {
-                String thisClassName = parseObject.getClassName();
-                if (className == null) {
-                    className = thisClassName;
-                }
-                if (batchOpType == null) {
-                    batchOpType = parseObject.getObjectIdP() == null ? ParseBatch.EBatchOpType.CREATE : ParseBatch.EBatchOpType.UPDATE;
-                }
-
-                EBatchOpType thisBatchOpType = parseObject.getObjectIdP() == null ? ParseBatch.EBatchOpType.CREATE : ParseBatch.EBatchOpType.UPDATE;
-
-                if (className.equals(thisClassName) && batchOpType.equals(thisBatchOpType)) {
-                    batchQueue.add(parseObject); //add all ParseObjects with same class and same need (CREATE/UPDATE) to batchQueue
-                } else {
-                    try {
-                        ParseBatch parseBatch = ParseBatch.create();
-                        parseBatch.addObjects(batchQueue, batchOpType);
-                        parseBatch.execute();
-                        className = null;
-                        batchOpType = null;
-                        batchQueue = new ArrayList();
-                    } catch (ParseException ex) {
-                        Log.e(ex);
-                    }
-                }
-            }
-            //if anything left in queue, save it:
-            if (batchQueue != null && !(batchQueue.isEmpty())) {
-                try {
-                    ParseBatch parseBatch = ParseBatch.create();
-                    parseBatch.addObjects(batchQueue, batchOpType);
-                    parseBatch.execute();
-                } catch (ParseException ex) {
-                    Log.e(ex);
-                }
-            }
-        });
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private EasyThread backgroundSaveQueueThread = EasyThread.start("DAO.backgroundQueueSave"); //thread with background task
+//    private List<ParseObject> backgroundSaveQueue = new ArrayList<>();
+//    private Object backgroundSaveQueueLock = new Object();
+//
+//    /**
+//    not sure how often this will be useful, mainly when saving multiple generated repeat instances at once, rest of the time, a user will only
+//    create a single new object at a time (so background save is the most important, followed by sequential background save. NO, will also be useful
+//    when
+//    @param parseObjects
+//     */
+//    public void saveInBackgroundSequentialBatchXXX(List<ParseObject> parseObjects) {
+//        if (parseObjects.size() == 0) {
+//            return;
+//        }
+//        synchronized (backgroundSaveQueueLock) {
+//            backgroundSaveQueue.addAll(parseObjects);
+//        }
+//        if (backgroundSaveThread == null) {
+//            backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
+//        }
+//        cacheList(parseObjects); //first cache all objects
+//        backgroundSaveThread.run(() -> {
+//            String className = null;
+//            List batchQueue = new ArrayList();
+//            EBatchOpType batchOpType = null;
+//            for (ParseObject parseObject : backgroundSaveQueue) {
+//                String thisClassName = parseObject.getClassName();
+//                if (className == null) {
+//                    className = thisClassName;
+//                }
+//                if (batchOpType == null) {
+//                    batchOpType = parseObject.getObjectIdP() == null ? ParseBatch.EBatchOpType.CREATE : ParseBatch.EBatchOpType.UPDATE;
+//                }
+//
+//                EBatchOpType thisBatchOpType = parseObject.getObjectIdP() == null ? ParseBatch.EBatchOpType.CREATE : ParseBatch.EBatchOpType.UPDATE;
+//
+//                if (className.equals(thisClassName) && batchOpType.equals(thisBatchOpType)) {
+//                    batchQueue.add(parseObject); //add all ParseObjects with same class and same need (CREATE/UPDATE) to batchQueue
+//                } else {
+//                    try {
+//                        ParseBatch parseBatch = ParseBatch.create();
+//                        parseBatch.addObjects(batchQueue, batchOpType);
+//                        parseBatch.execute();
+//                        className = null;
+//                        batchOpType = null;
+//                        batchQueue = new ArrayList();
+//                    } catch (ParseException ex) {
+//                        Log.e(ex);
+//                    }
+//                }
+//            }
+//            //if anything left in queue, save it:
+//            if (batchQueue != null && !(batchQueue.isEmpty())) {
+//                try {
+//                    ParseBatch parseBatch = ParseBatch.create();
+//                    parseBatch.addObjects(batchQueue, batchOpType);
+//                    parseBatch.execute();
+//                } catch (ParseException ex) {
+//                    Log.e(ex);
+//                }
+//            }
+//        });
+//    }
+//</editor-fold>
     /**
      * save any type of ParseObject. Encapsulates the exception handling. Can be
      * called with null objects.
@@ -2448,7 +2488,7 @@ public class DAO {
 //    private void saveImpl(ParseObject anyParseObject) {
 //        saveImpl(anyParseObject, true);
 //    }
-    private void saveImpl(ParseObject anyParseObject, boolean saveToCache) {
+    private synchronized void saveImpl(ParseObject anyParseObject, boolean saveToCache) {
         try {
             anyParseObject.save();
         } catch (ParseException ex) {
@@ -4622,7 +4662,7 @@ public class DAO {
         Map<RepeatRuleParseObject, WorkSlot> workSlotsWithFilter
                 = new HashMap<>();
 
-        for (WorkSlot workSlot : getAllWorkSlotsFromParse().getWorkSlotList()) {
+        for (WorkSlot workSlot : getAllWorkSlotsFromParse().getWorkSlotListFull()) {
             if (workSlot.getRepeatRule() != null) {
                 workSlotsWithFilter.put(workSlot.getRepeatRule(), workSlot);
             }

@@ -1672,7 +1672,7 @@ public class MyDate extends Date {
                 //                + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes + (dontShowZeroHours ? "'" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
                 //https://english.stackexchange.com/questions/114205/english-notation-for-hour-minutes-and-seconds says: minutes *can* be 3', but 3m is more common
                 + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes
-                        + (dontShowZeroHours && !showSeconds ? "m" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
+                        + (dontShowZeroHours && !showSeconds ? ":" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
         int seconds = (int) (restAfterHours % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS; //1000;
         if (roundUpMinutes && !showSeconds && seconds >= 30) {
             minutes++;

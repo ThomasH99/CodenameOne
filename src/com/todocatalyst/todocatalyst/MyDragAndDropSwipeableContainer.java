@@ -965,25 +965,25 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
     static MyDragAndDropSwipeableContainer findNextDDCont(MyDragAndDropSwipeableContainer comp) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//first check if there are expanded subtasks then return the first one
 //        int index;
 //        int indexOfHiddenDraggedCont;
 //</editor-fold>
+        //first check if there are expanded subtasks then return the first one
         ContainerScrollY scrollYContainerWithSubtask = getScrollYContainerWithSubtasks(comp);
         if (scrollYContainerWithSubtask != null) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//if there is a subtask container
 //            int indexOfHiddenDraggedCont = getPositionInContainerScrollY(scrollYContainerWithSubtask, dragged); //this==dragged
 //            int countOfDragged = indexOfHiddenDraggedCont >= 0 ? 1 : 0;
 //must container at least 2 elements if the hidden is one of them:
 //            if (scrollYContainerWithSubtask.getComponentCount() >= (1 + countOfDragged)) {
 //</editor-fold>
+            //if there is a subtask container
             if (scrollYContainerWithSubtask.getComponentCount() >= 1) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//if it has expanded subtasks, return the first (unless it is the hidden one)
 //                int adjIndex = indexOfHiddenDraggedCont == 0 ? 1 : 0; //if hidden is first element, take the one after
 //                Container c = (Container) scrollYContainerWithSubtask.getComponentAt(0 + adjIndex); //get first element in the list
 //</editor-fold>
+            //if it has expanded subtasks, return the first (unless it is the hidden one)
                 Container c = (Container) scrollYContainerWithSubtask.getComponentAt(0); //get first element in the list
                 return getTaskContainer(c);
             }
@@ -1027,6 +1027,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 // T2
 // next(S22)==S3, next(S3)==T2
 //</editor-fold>
+//            //if there are no appropriate expanded subtasks, then if there is a following sibling, return it
         MyDragAndDropSwipeableContainer parentComp = comp;
         ContainerScrollY parentScrollYCont = getParentScrollYContainer(parentComp);
 //            ContainerScrollY contY=getParentScrollYContainer(comp);

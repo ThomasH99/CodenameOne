@@ -71,7 +71,9 @@ public class MyPrefs {
                     "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 20, "**");
 
     static PrefEntry insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList
-            = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", "insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList", false, "**");
+//            = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", 
+            = new PrefEntry("Add subtasks at end of subtask list", 
+                    "insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList", true, "**");
 
     //TIMER
     static PrefEntry timerAutomaticallyStartTimer
@@ -262,7 +264,7 @@ public class MyPrefs {
 
     static PrefEntry itemInheritOwnerProjectChallenge
             //            = new PrefEntry("Subtasks inherit "+Item.CHALLENGE+" from their project", "itemInheritOwnerProjectChallenge", true, "**");
-            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.CHALLENGE), "itemInheritOwnerProjectChallenge", true,
+            = new PrefEntry(Format.f("Subtasks inherit %1 from their project", Item.CHALLENGE), "itemInheritOwnerProjectChallenge", false,
                     INHERITS + Item.CHALLENGE);
 
     static PrefEntry itemInheritOwnerStarredProperties
@@ -424,10 +426,13 @@ public class MyPrefs {
 
     //WORKSLOT
     static PrefEntry workSlotDefaultDurationInMinutes = new PrefEntry("Default work slot duration (min)",
-            "workSlotDefaultDurationInMinutes", 60, "**");
-    static PrefEntry workSlotDefaultStartDateIsNow = new PrefEntry("Use current time as Default work slot start time", "workSlotDefaultStartDateIsNow", true, "**");
+                    "workSlotDefaultDurationInMinutes", 60, "**");
+    static PrefEntry workSlotDefaultStartDateIsNow = new PrefEntry("Use current time as Default work slot start time", 
+                    "workSlotDefaultStartDateIsNow", true, "**");
+    static PrefEntry workSlotDurationStepIntervalInMinutes = new PrefEntry("Step in WorkSlot duration (min)",
+                    "workSlotDurationStepIntervalInMinutes", 5, "**");
     static PrefEntry workSlotContinueAddingInlineWorkslots = new PrefEntry("Continue adding a new workslot below one inserted with pinch",
-            "workSlotContinueAddingInlineWorkslots", true, "**");
+                    "workSlotContinueAddingInlineWorkslots", true, "**");
 
     MyPrefs() {
 //         int x=7:

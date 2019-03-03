@@ -36,7 +36,7 @@ import java.util.ListIterator;
 //public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         implements /*ItemListModel,*/
-        MyTreeModel, /*Collection,*/ List, SumField, ItemAndListCommonInterface, Iterable { //, DataChangedListener {
+        MyTreeModel, /*Collection,*/ List, SumField, ItemAndListCommonInterface{ //, Iterable { //, DataChangedListener {
 //        MyTreeModel, /*Collection,*/ List, SumField, Iterable { //, DataChangedListener {
     //TODO implement deep fetchFromCacheOnly to get all tasks and sub-tasks at any depth
     //TODO: implement caching of worksum of sub-tasks (callback from subtasks to all affected owners and categories??)
@@ -475,8 +475,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public int size() {
 //        return getSize();
-        return (getListFull() == null) ? 0 : getListFull().size();
-
+//        return (getListFull() == null) ? 0 : getListFull().size();
+return getSize();
     }
 
     @Override
@@ -1671,6 +1671,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public int getSize() {
 //        return (itemList == null) ? 0 : itemList.size();
+//return (getListFull() == null) ? 0 : getListFull().size();
         List l = getListFull();
         return (l == null) ? 0 : l.size();
     }
@@ -3188,36 +3189,36 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return new Date(getRemainingEffort());
 //    }
     @Override
-    public long getRemainingEffort() {
+    public long getRemaining() {
         long sum = 0;
         for (int i = 0, size = getSize(); i < size; i++) {
             Object o = getItemAt(i);
             if (o instanceof ItemAndListCommonInterface) {
-                sum += ((ItemAndListCommonInterface) o).getRemainingEffort();
+                sum += ((ItemAndListCommonInterface) o).getRemaining();
             }
         }
         return sum;
     }
 
     @Override
-    public long getEffortEstimate() {
+    public long getEstimate() {
         long sum = 0;
         for (int i = 0, size = getSize(); i < size; i++) {
             Object o = getItemAt(i);
             if (o instanceof ItemAndListCommonInterface) {
-                sum += ((ItemAndListCommonInterface) o).getEffortEstimate();
+                sum += ((ItemAndListCommonInterface) o).getEstimate();
             }
         }
         return sum;
     }
 
     @Override
-    public long getActualEffort() {
+    public long getActual() {
         long sum = 0;
         for (int i = 0, size = getSize(); i < size; i++) {
             Object o = getItemAt(i);
             if (o instanceof ItemAndListCommonInterface) {
-                sum += ((ItemAndListCommonInterface) o).getActualEffort();
+                sum += ((ItemAndListCommonInterface) o).getActual();
             }
         }
         return sum;
@@ -3241,9 +3242,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             Object o = getItemAt(i);
             if (o instanceof ItemAndListCommonInterface) {
                 if (o instanceof Item && !((Item) o).isDone()) { //replace Item  with general type
-                    sum += ((Item) o).getRemainingEffort(); //only count not done Items
+                    sum += ((Item) o).getRemaining(); //only count not done Items
                 } else {
-                    sum += ((ItemAndListCommonInterface) o).getRemainingEffort();
+                    sum += ((ItemAndListCommonInterface) o).getRemaining();
                 }
             }
         }
@@ -3434,8 +3435,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        workSlotListBuffer = null;
 //        workSlotListBuffer = workSlotList;
 //        workTimeAllocator = null;
-        if (workSlotList != null && workSlotList.size() > 0) {
-            put(PARSE_WORKSLOTS, workSlotList.getWorkSlotList());
+        if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
+//            put(PARSE_WORKSLOTS, workSlotList.getWorkSlots());
+            put(PARSE_WORKSLOTS, workSlotList.getWorkSlotListFull());
         } else {
             remove(PARSE_WORKSLOTS);
         }

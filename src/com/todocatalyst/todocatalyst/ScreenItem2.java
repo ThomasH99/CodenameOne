@@ -111,7 +111,7 @@ public class ScreenItem2 extends MyForm {
     private boolean effortEstimateSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private boolean noAutoUpdateOnStatusChange = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private String LAST_TAB_SELECTED = "$$LastTabSelected";
-    protected static String FORM_UNIQUE_ID = "ScreenEditItem"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+//    protected static String FORM_UNIQUE_ID = "ScreenEditItem"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
 
@@ -134,7 +134,7 @@ public class ScreenItem2 extends MyForm {
 //        super("Task", previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
         super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
-        setFormUniqueId("ScreenItem2");
+        setUniqueFormId("ScreenEditItem");
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
         if (false) {
             ASSERT.that(item.isDataAvailable(), () -> "Item \"" + item + "\" data not available");
@@ -143,7 +143,8 @@ public class ScreenItem2 extends MyForm {
         if (previousValues != null) {
             this.previousValues = previousValues;
         } else {
-            this.previousValues = new SaveEditedValuesLocally(FORM_UNIQUE_ID + "-" + item.getObjectIdP());
+//            this.previousValues = new SaveEditedValuesLocally(FORM_UNIQUE_ID + "-" + item.getObjectIdP());
+            this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + item.getObjectIdP());
         }
 
         this.templateEditMode = item.isTemplate() || templateEditMode; //
@@ -188,19 +189,22 @@ public class ScreenItem2 extends MyForm {
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         setScrollable(false);
 //        setToolbar(new Toolbar());
-        addCommandsToToolbar(getToolbar());//, theme);
+//        addCommandsToToolbar(getToolbar());//, theme);
 //        buildContentPane(getContentPane());
+        addCommandsToToolbar(getToolbar());
         refreshAfterEdit();
     }
 
     @Override
     public void refreshAfterEdit() {
-        super.refreshAfterEdit();
         //NOT needed to removeFromCache everything when a subtask has been added
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+
         getContentPane().removeAll(); //clear old content pane
         buildContentPane(getContentPane()); //rebuild and removeFromCache
+        super.refreshAfterEdit();
         revalidate(); //refresh form
+        restoreKeepPos();
         //TODO!!!! restore scroll position in expanded list of subtasks 
 //       super();
     }
@@ -251,7 +255,7 @@ public class ScreenItem2 extends MyForm {
 
         //EDIT WORKSLOTS
 //        if (!optionTemplateEditMode && !optionNoWorkTime) {
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.create("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
 //                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotListN(), item, ScreenItem2.this, null, //(iList) -> {
@@ -315,6 +319,7 @@ public class ScreenItem2 extends MyForm {
                             Item template = (Item) selectedTemplates.get(0);
 //                            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
                             template.copyMeInto(item, Item.CopyMode.COPY_FROM_TEMPLATE);
+//                            DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
                             DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
 //                            locallyEditedCategories = null; //HACK needed to force update of locallyEditedCategories (which shouldn't be refreshed when eg editing subtasks to avoid losing the edited categories) 
 //                            ip.dispose();
@@ -788,19 +793,24 @@ public class ScreenItem2 extends MyForm {
 
         //need to declare already here to use in actionListener below
         effortEstimate = new MyDurationPicker();
-//        initField(Item.EFFORT_ESTIMATE, Item.EFFORT_ESTIMATE_HELP, effortEstimate, Item.PARSE_EFFORT_ESTIMATE, () -> item.getEffortEstimate(), (l) -> item.setEffortEstimate((long) l),
+//        initField(Item.EFFORT_ESTIMATE, Item.EFFORT_ESTIMATE_HELP, effortEstimate, Item.PARSE_EFFORT_ESTIMATE, () -> item.getEffortEstimate(), (l) -> item.setEstimate((long) l),
 //                () -> effortEstimate.getDuration(), (l) -> effortEstimate.setDuration((long) l), null);
         initField(Item.PARSE_EFFORT_ESTIMATE, effortEstimate,
-                () -> item.getEffortEstimate(), (l) -> item.setEffortEstimate((long) l, false),
-                () -> effortEstimate.getDuration(), (l) -> effortEstimate.setDuration((long) l));
+                () -> item.getEstimateForProjectTaskItself(),
+                (l) -> item.setEstimate((long) l, false),
+                () -> effortEstimate.getDuration(),
+                (l) -> effortEstimate.setDuration((long) l));
 
 //get the effort for the project task itself:
         remainingEffort = new MyDurationPicker();
-//        initField(Item.EFFORT_REMAINING, Item.EFFORT_REMAINING_HELP, effortEstimate, Item.PARSE_REMAINING_EFFORT, () -> item.getRemainingEffort(), (l) -> item.setRemainingEffort((long) l),
+//        initField(Item.EFFORT_REMAINING, Item.EFFORT_REMAINING_HELP, effortEstimate, Item.PARSE_REMAINING_EFFORT, () -> item.getRemainingEffort(), (l) -> item.setRemaining((long) l),
 //                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), null);
         initField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
-                () -> item.getRemainingEffort(false), (l) -> item.setRemainingEffort((long) l, false),
-                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l));
+                //                () -> item.getRemaining(false), 
+                () -> item.getRemainingForProjectTaskItself(),
+                (l) -> item.setRemaining((long) l, false),
+                () -> remainingEffort.getDuration(),
+                (l) -> remainingEffort.setDuration((long) l));
 
         description.addActionListener((e) -> {
 //            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
@@ -861,7 +871,9 @@ public class ScreenItem2 extends MyForm {
 //        }
 //</editor-fold>
 //        Component starredComp = initField(Item.STARRED, Item.STARRED_HELP, starred, Item.PARSE_STARRED, () -> item.isStarred(), (b) -> item.setStarred((boolean) b),
-        initField(Item.PARSE_STARRED, starred, () -> item.isStarred(), (b) -> item.setStarred((boolean) b),
+        initField(Item.PARSE_STARRED, starred, 
+                () -> item.isStarred(), 
+                (b) -> item.setStarred((boolean) b),
                 () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
                 (b) -> starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle)
         //                    starred.repaint();
@@ -950,8 +962,11 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
 
 //        mainCont.add(initField(Item.DUE_DATE, Item.DUE_DATE_HELP, dueDate, Item.PARSE_DUE_DATE, () -> item.getDueDateD(), (t) -> item.setDueDate((Date) t),
-        initField(Item.PARSE_DUE_DATE, dueDate, () -> item.getDueDateD(), (d) -> item.setDueDate((Date) d),
-                () -> dueDate.getDate(), (d) -> dueDate.setDate((Date) d));
+        initField(Item.PARSE_DUE_DATE, dueDate,
+                () -> item.getDueDateD(),
+                (d) -> item.setDueDate((Date) d),
+                () -> dueDate.getDate(),
+                (d) -> dueDate.setDate((Date) d));
         mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
 
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
@@ -1368,10 +1383,10 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
 //SUBTASKS
         //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, ScreenItem.this, item, templateEditMode));
-        if (false) {
-            mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode));
-        }
-        mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode));
+//        if (false) {
+//            mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2));
+//        }
+        mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2));
         //TODO!!!!! editing of subtasks should be local (and saved locally on app exit)
 //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, item, templateEditMode));
 
@@ -1453,7 +1468,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //REMAINING************
         if (isProject) {
 //            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
-            timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffortFromSubtasks()), "LabelFixed"),
+            timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingForSubtasks()), "LabelFixed"),
                     Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false)); //hack to insert after alarmDate field
         }
 //TODO: makes no sense to show remaining for project itself, just confusing??
@@ -1464,7 +1479,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //ACTUAL************
         //if project, show actual for subtasks
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
-            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualEffortFromSubtasks()), "LabelFixed"),
+            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualForSubtasks()), "LabelFixed"),
                     Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false));
         }
 
@@ -1491,13 +1506,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 //</editor-fold>
         actualEffort.addActionListener((evt) -> {
-            status.setStatus(Item.updateStatusOnActualChange(item.getActualEffort(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
+            status.setStatus(Item.updateStatusOnActualChange(item.getActual(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
             status.repaint();
         });
 
         initField(Item.PARSE_ACTUAL_EFFORT, actualEffort,
-                () -> item.getActualEffortProjectTaskItself(),
-                (l3) -> item.setActualEffort((long) l3, false),
+                () -> item.getActualForProjectTaskItself(),
+                (l3) -> item.setActual((long) l3, false),
                 () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 
         timeCont.add(layoutN(actualTxt, actualEffort, actualHelpTxt));
@@ -1505,7 +1520,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
 //            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
-            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks()), "LabelFixed"),
+            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEstimateForSubtasks()), "LabelFixed"),
                     Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
         }
         String estimateTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT : Item.EFFORT_ESTIMATE;
@@ -1864,7 +1879,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
             if (remainingEffortSetManually && !effortEstimateSetManually
                     && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
-                    && itemLS.getEffortEstimate() == 0) { //UI: only allow manual setting if no value was set before
+                    && itemLS.getEstimate() == 0) { //UI: only allow manual setting if no value was set before
                 effortEstimateSetAutomatically = true;
                 effortEstimate.setDurationAndNotify(remainingEffort.getDuration() + actualEffort.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
                 effortEstimateSetAutomatically = false;
@@ -1968,7 +1983,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
             if (effortEstimateSetManually && !remainingEffortSetManually
                     && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
-                    && itemLS.getRemainingEffortProjectTaskItself() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+                    && itemLS.getRemainingForProjectTaskItself() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
                 remainingEffortSetAutomatically = true;
                 remainingEffort.setDurationAndNotify(effortEstimate.getDuration() - actualEffort.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
                 remainingEffortSetAutomatically = false;
@@ -2098,7 +2113,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            ItemStatus newStatus = status.getStatus();
             if (newStatus == oldStatus || noAutoUpdateOnStatusChange) return;
 
-            if (newStatus == ItemStatus.CREATED && item.getActualEffort() > 0) {
+            if (newStatus == ItemStatus.CREATED && item.getActual() > 0) {
                 newStatus = ItemStatus.ONGOING;
             }
             Date now = new Date();

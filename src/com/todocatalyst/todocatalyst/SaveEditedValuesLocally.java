@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * if initiated with an empty filename, e.g. for a new Item with ObjectId==null, also store values so not lost on app restart. 
  * @author thomashjelm
  */
 public class SaveEditedValuesLocally {//extends HashMap {
@@ -32,6 +32,9 @@ public class SaveEditedValuesLocally {//extends HashMap {
     private String previousValuesFilename;
 
     SaveEditedValuesLocally(String filename) {
+//        if (filename != null && filename.length() > 0) {
+        if (filename == null || filename.length() == 0)
+            filename = "-NewItem";
         ASSERT.that(filename != null && !filename.isEmpty());
         previousValuesFilename = PREFIX + filename;
         previousValues = new HashMap<Object, Object>(); //implicit
@@ -70,31 +73,37 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //</editor-fold>
     public void saveFile() {
 //            Storage.getInstance().writeObject("ScreenItem-" + item.getObjectIdP(), this); //save 
-        Storage.getInstance().writeObject(previousValuesFilename, previousValues); //save 
+        if (previousValues != null)
+            Storage.getInstance().writeObject(previousValuesFilename, previousValues); //save 
     }
 
     public Object put(Object key, Object value) {
+        if (previousValues == null) return null;
         Object previousValue = previousValues.put(key, value);
         saveFile();
         return previousValue;
     }
 
     public Object get(Object key) {
+        if (previousValues == null) return null;
         return previousValues.get(key);
     }
 
     public Object get(Object key, Object defaultValue) {
+        if (previousValues == null) return null;
         Object val = previousValues.get(key);
         return val != null ? val : defaultValue;
     }
 
     public Object remove(Object key) {
+        if (previousValues == null) return null;
         Object previousValue = previousValues.remove(key);
         saveFile();
         return previousValue;
     }
 
     public boolean containsKey(Object key) {
+        if (previousValues == null) return false;
         return previousValues.containsKey(key);
     }
 
@@ -104,6 +113,8 @@ public class SaveEditedValuesLocally {//extends HashMap {
     private ScrollListener scrollListener = null;
 
     void setSaveScrollPosition(Container scrollableCont) {
+        if (previousValues == null) return;
+
         this.scrollableCont = scrollableCont;
         scrollListener = (newX, newY, oldX, oldY) -> {
             if (saveScrollYTimer == null) { //create new UITimer
@@ -132,6 +143,8 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     public void deleteFile() {
+        if (previousValues == null) return;
+
 //            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
 //        if (previousValuesFilename != null && !previousValuesFilename.isEmpty()) {
         if (scrollableCont != null && scrollListener != null) { //first remove ScrollListener
@@ -148,6 +161,8 @@ public class SaveEditedValuesLocally {//extends HashMap {
     clear data (use e.g. if previousValues are passed from Timer to ScreenItem which then applies and saves the item after which the old saved values are meaningless and should be deleted. 
      */
     public void clear() {
+        if (previousValues == null) return;
+
 //            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
 //        if (previousValuesFilename != null && !previousValuesFilename.isEmpty()) {
         if (scrollableCont != null && scrollListener != null) { //first remove ScrollListener

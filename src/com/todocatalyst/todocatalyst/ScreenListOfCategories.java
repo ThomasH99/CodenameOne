@@ -47,7 +47,7 @@ public class ScreenListOfCategories extends MyForm {
     public final static String SCREEN_TITLE = "Categories";
     private CategoryList categoryList;
     private MyTree2 dt;
-    protected static String FORM_UNIQUE_ID = "ScreenListOfCategories"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+//    protected static String FORM_UNIQUE_ID = "ScreenListOfCategories"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     /**
      * edit a list of categories
@@ -67,6 +67,7 @@ public class ScreenListOfCategories extends MyForm {
     ScreenListOfCategories(CategoryList categoryList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super(title == null ? SCREEN_TITLE : title, previousForm, () -> updateItemListOnDone.update(categoryList));
         super(SCREEN_TITLE, previousForm, () -> updateItemListOnDone.update(categoryList));
+        setUniqueFormId("ScreenListOfCategories");
 //        setUpdateItemListOnDone(updateItemListOnDone);
         this.categoryList = categoryList;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -86,6 +87,7 @@ public class ScreenListOfCategories extends MyForm {
         if (!(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
+        setPinchInsertEnabled(true);
         expandedObjects = new ExpandedObjects(getUniqueFormId());
         addCommandsToToolbar(getToolbar());
         if (false) getToolbar().addSearchCommand((e) -> {
@@ -410,7 +412,7 @@ public class ScreenListOfCategories extends MyForm {
 //            cont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandCategorySubTasksButton);
         }
-        east.addComponent(new Label(MyDate.formatTimeDuration(category.getRemainingEffort()))); //TODO reactivate this once caching of sum of effort in category is implemented
+        east.addComponent(new Label(MyDate.formatTimeDuration(category.getRemaining()))); //TODO reactivate this once caching of sum of effort in category is implemented
 
         east.addComponent(editItemPropertiesButton);
 

@@ -762,12 +762,12 @@ public class FilterSortDef extends ParseObject {
                         : (i1, i2) -> compareLong(i1.getDueDate(), i2.getDueDate());
             case Item.PARSE_REMAINING_EFFORT:
                 return sortDescending
-                        ? (i1, i2) -> compareLong(i1.getRemainingEffort(), i2.getRemainingEffort()) //show lowest at top
-                        : (i1, i2) -> compareLong(i2.getRemainingEffort(), i1.getRemainingEffort());
+                        ? (i1, i2) -> compareLong(i1.getRemaining(), i2.getRemaining()) //show lowest at top
+                        : (i1, i2) -> compareLong(i2.getRemaining(), i1.getRemaining());
             case Item.PARSE_EFFORT_ESTIMATE:
                 return sortDescending
-                        ? (i1, i2) -> compareLong(i1.getEffortEstimate(), i2.getEffortEstimate()) //show lowest at top
-                        : (i1, i2) -> compareLong(i2.getEffortEstimate(), i1.getEffortEstimate());
+                        ? (i1, i2) -> compareLong(i1.getEstimate(), i2.getEstimate()) //show lowest at top
+                        : (i1, i2) -> compareLong(i2.getEstimate(), i1.getEstimate());
             case Item.PARSE_CHALLENGE:
                 return sortDescending
                         //                        ? (i1, i2) -> i1.getChallengeN().compareTo(i2.getChallengeN())

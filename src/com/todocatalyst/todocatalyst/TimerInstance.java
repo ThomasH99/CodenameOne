@@ -289,7 +289,7 @@ public class TimerInstance extends ParseObject {
     }
 
     public long getElapsedTotalTime() {
-        return getElapsedTime() + (getTimedItem() != null ? getTimedItem().getActualEffortProjectTaskItself() : 0); //optimization!!! getTimedItem() will load item from cache!
+        return getElapsedTime() + (getTimedItem() != null ? getTimedItem().getActualForProjectTaskItself() : 0); //optimization!!! getTimedItem() will load item from cache!
     }
 
     /**
@@ -464,7 +464,7 @@ public class TimerInstance extends ParseObject {
 //                timedItem.setActualEffort(timerInstance.isTimerShowActualTotal() //update actual
 //                        ? timerInstance.getElapsedTime()
 //                        : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
-            timedItem.setActualEffort(timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself(),false);
+            timedItem.setActual(timerInstance.getElapsedTime() + timedItem.getActualForProjectTaskItself(),false);
             DAO.getInstance().saveInBackground(timedItem);
             timerInstance.setElapsedTime(0); //reset elapsed time since it's now been added to Item's actual & saved
         }

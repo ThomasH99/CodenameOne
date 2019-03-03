@@ -30,6 +30,7 @@ import com.codename1.ui.StickyHeader;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
+import com.codename1.ui.Toolbar;
 import com.codename1.ui.animations.ComponentAnimation;
 //import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
@@ -96,7 +97,7 @@ public class MyForm extends Form {
 //    private TextArea editFieldOnShowOrRefresh;
     private InsertNewElementFunc inlineInsertContainer;
 //    private BooleanFunction testIfEdit;
-    protected static String FORM_UNIQUE_ID = null; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    private String uniqueFormId = null; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     private TextArea startEditingAsync = null;
 
     private String showIfEmptyList = null; //holds Container with actual content, typically MyTree2
@@ -122,15 +123,15 @@ public class MyForm extends Form {
     }
 
     public String getUniqueFormId() {
-        return FORM_UNIQUE_ID != null ? FORM_UNIQUE_ID : getTitle();
+        return uniqueFormId != null ? uniqueFormId : (getTitle() != null && getTitle().length() > 0 ? getTitle() : "NoScreenId");
     }
 
     public String getUniqueFormId(String extensionStr) {
         return getUniqueFormId() + extensionStr;
     }
 
-    public void setFormUniqueId(String formUniqueId) {
-        this.FORM_UNIQUE_ID = formUniqueId;
+    public void setUniqueFormId(String formUniqueId) {
+        this.uniqueFormId = formUniqueId;
     }
 
 //    public TextArea getEditFieldOnShowOrRefresh() {
@@ -178,8 +179,9 @@ public class MyForm extends Form {
     public void setStartEditingAsyncIfDefined(Container contentContainer) {
         if (contentContainer instanceof MyTree2) {
             InsertNewElementFunc insertNewElementFunc = ((MyTree2) contentContainer).getInlineInsertField();
-            if (insertNewElementFunc != null) {
-                setStartEditingAsync(insertNewElementFunc.getTextArea());
+            if (insertNewElementFunc != null&&insertNewElementFunc.getTextArea()!=null) {
+//                setStartEditingAsync(insertNewElementFunc.getTextArea());
+                insertNewElementFunc.getTextArea().startEditingAsync();
             }
         }
     }
@@ -282,7 +284,7 @@ public class MyForm extends Form {
         this.previousForm = previousForm;
         setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
 
-        ReplayLog.getInstance().deleteAllReplayCommandsFromPreviousScreen(title);
+//        ReplayLog.getInstance().deleteAllReplayCommandsFromPreviousScreen(title);
         SCREEN_TITLE = title;
         getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
         setTitle(title); //do again since super(title)
@@ -487,7 +489,8 @@ public class MyForm extends Form {
         
         @param itemList 
          */
-        void update(ItemList itemList);
+//        void update(ItemList itemList);
+        void update(ItemAndListCommonInterface itemList);
     }
 
 //    interface GetWorkSlotList {
@@ -600,7 +603,8 @@ public class MyForm extends Form {
 
     interface GetItemListFct {
 
-        ItemList getUpdatedItemList();
+//        ItemList getUpdatedItemList();
+        ItemAndListCommonInterface getUpdatedItemList();
     }
 
     /**
@@ -672,9 +676,9 @@ public class MyForm extends Form {
     }
 
     static void dialogUpdateActualTime(Item item) {
-        if (item.isDone()
+       if (item.isDone()
                 || !(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()
-                || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero.getBoolean() && item.getActualEffort() == 0))) {
+                || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero.getBoolean() && item.getActual() == 0))) {
             return; //do nothing if item is done, or settings/conditions not fulfilled
         }
         Map<Object, UpdateField> parseIdMap2 = new HashMap<Object, UpdateField>();
@@ -688,8 +692,8 @@ public class MyForm extends Form {
         dia.add(cont);
 
         //TODO!!!! if marking a project, with undone subtasks, Done, then also show sum of subtask actuals to know how much time was spend on them
-        MyDurationPicker actualPicker = new MyDurationPicker(item.getActualEffortProjectTaskItself(), "0:00");
-        actualPicker.addActionListener((e) -> item.setActualEffort(actualPicker.getDuration(), true));
+        MyDurationPicker actualPicker = new MyDurationPicker(item.getActualForProjectTaskItself(), "0:00");
+        actualPicker.addActionListener((e) -> item.setActual(actualPicker.getDuration(), true));
 //        }, (l) -> {
 ////            item.setActualEffort(d*MyDate.MINUTE_IN_MILLISECONDS);
 //            item.setActualEffort(l);
@@ -1347,6 +1351,13 @@ public class MyForm extends Form {
     }
 
     /**
+     *
+     * @param toolbar
+     */
+    public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
+    }
+
+    /**
      * used to refresh the screen after (major) edits. E.g. either revalidate if
      * only format has been changed or rebuild content pane if the data has been
      * changed beyond what updating a single container can help (e.g. if a
@@ -1355,17 +1366,21 @@ public class MyForm extends Form {
      */
     public void refreshAfterEdit() {
 //        if (editFieldOnShowOrRefresh != null) { // && (testIfEdit == null || testIfEdit.test())) {
-        if (inlineInsertContainer != null && inlineInsertContainer.getTextArea() != null) { // && (testIfEdit == null || testIfEdit.test())) {
+        if (false && inlineInsertContainer != null && inlineInsertContainer.getTextArea() != null) { // && (testIfEdit == null || testIfEdit.test())) {
 //            editFieldOnShowOrRefresh.startEditingAsync();
             inlineInsertContainer.getTextArea().startEditingAsync();
         }
         TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
+
+        if (false && startEditingAsync != null) {
+            startEditingAsync.startEditingAsync();
+        }
+        if (false) {
+            revalidate();
+            restoreKeepPos();
+        }
         if (Config.TEST) {
             Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
-        }
-
-        if (startEditingAsync != null) {
-            startEditingAsync.startEditingAsync();
         }
     }
 
@@ -1522,7 +1537,8 @@ public class MyForm extends Form {
         Container get();
     }
 
-    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemList itemListOrg, ComponentListForSearch getCompList) {
+//    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemList itemListOrg, ComponentListForSearch getCompList) {
+    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemAndListCommonInterface itemListOrg, ComponentListForSearch getCompList) {
         return (e) -> {
             String text = (String) e.getSource();
 //            Container compList = null;
@@ -1574,7 +1590,8 @@ public class MyForm extends Form {
         };
     }
 
-    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemList itemListOrg) {
+//    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemList itemListOrg) {
+    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemAndListCommonInterface itemListOrg) {
         return makeSearchFunctionUpperLowerStickyHeaders(itemListOrg, () -> (Container) ((BorderLayout) getContentPane().getLayout()).getCenter());
     }
 
@@ -2684,25 +2701,39 @@ public class MyForm extends Form {
         boolean getVal();
     }
 
+    /* the one used by most field in ScreenItem: */
     void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
-        initField(identifier, field, getVal, putVal, getField, putField, null, previousValues, parseIdMap2);
+        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, previousValues, parseIdMap2);
     }
+
+    void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, Object undefinedValue, Object defaultValue) {
+//        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
+//        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
+        initField(identifier, field, getVal, putVal, getField, putField, undefinedValue, defaultValue, null, previousValues, parseIdMap2);
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
+////        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
+////        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
+//        initField(identifier, field, getVal, putVal, getField, putField, null, previousValues, parseIdMap2);
+//    }
 //    private void initField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
 //         initField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null);
 //    }
-
 //    private void initField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
 //            GetBool isInherited, ActionListener actionListener) {
 //    void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
 //            GetBool isInherited, ActionListener actionListener) {
 //        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, isInherited, actionListener, previousValues, parseIdMap2);
 //    }
+//</editor-fold>
     static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
             SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
 //        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
-        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, previousValues, parseIdMap2);
+        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, null, previousValues, parseIdMap2);
     }
 
     /**
@@ -2720,7 +2751,17 @@ public class MyForm extends Form {
      */
 //    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
 //            GetBool isInherited, ActionListener actionListener, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
-    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+//    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+//            GetBool isInherited, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
+//        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, isInherited, previousValues, parseIdMap2);
+//    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+//            GetBool isInherited, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
+//        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, isInherited, previousValues, parseIdMap2);
+//    }
+//</editor-fold>
+    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField, Object undefinedValue, Object defaultValue,
             GetBool isInherited, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //         initField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
@@ -2730,64 +2771,53 @@ public class MyForm extends Form {
 //            GetBool isInherited, ActionListener actionListener, Container componentCont) {
 //                if (previousValues.get(Item.PARSE_EFFORT_ESTIMATE) != null) {
 //</editor-fold>
-
-        //check if a previous value exists, and if yes, use that to initialize the editable field with, 
-        if (putField != null && getOrg != null) { //if putField==null => not an editable field
+        //check if a previous or default value exists, and if yes, use that to initialize the editable field with (//UI: don't autosave default value, it may also (need to) be updated if replayed later)
+//            if (putField != null && getOrg != null) { //if putField==null => not an editable field
+        if (putField != null) { //if putField==null => not an editable field
             if (previousValues != null && previousValues.get(fieldIdentifier) != null) {
-//            effortEstimate.setDuration((long) previousValues.get(Item.PARSE_EFFORT_ESTIMATE)); //use a previously edited value
+//            effortEstimate.setDurationInMillis((long) previousValues.get(Item.PARSE_EFFORT_ESTIMATE)); //use a previously edited value
                 putField.setVal(previousValues.get(fieldIdentifier)); //use a previously edited value
+//            } else if (isInherited != null && isInherited.getVal()) {
+                //handle inheritance when appropriate
+            } else if (MyUtil.eql(getOrg.getVal(), undefinedValue)) { //if org value==undefinedValue, then set field with default value
+                putField.setVal(defaultValue); //set editable field (will be stored in previousValues *if* it is modified later on
             } else {
-//            if (item.isChallengeInherited()) {
-                if (isInherited != null && isInherited.getVal()) {
-                    //handle inheritance when appropriate
-                } else {
-//                effortEstimate.setDuration(item.getEffortEstimate());
-                    putField.setVal(getOrg.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
-                }
+//                effortEstimate.setDurationInMillis(item.getEffortEstimate());
+                putField.setVal(getOrg.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
             }
         }
 
         //set actionListener on edited field, to store edited values (only if different from the original one)
-        if (putOrg != null && getField != null) {//get edited value on exit
-            //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
-            parseIdMap2.put(fieldIdentifier, () -> {
-//        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-                ASSERT.that(true || getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
-//                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
-//                if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
-                if (!(getField.getVal() == null ? getOrg.getVal() == null : getField.getVal().equals(getOrg.getVal()))) {
-//            item.setEffortEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
-                    putOrg.setVal(getField.getVal()); //if value has been changed, update item
-                }
-            });
-        }
-
         if (getField != null && getOrg != null) {
             MyActionListener al = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (actionListener != null) {
 //                    actionListener.actionPerformed(e);
 //                }
 //            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-                if (false) { //OK now that values can be null
-                    ASSERT.that(getField.getVal() != null, "getField.getVal()==null, for field=" + fieldIdentifier);
-                    ASSERT.that(getOrg.getVal() != null, "getOrg.getVal()==null, for field=" + fieldIdentifier);
-                }
+//                if (false) { //OK now that values can be null
+//                    ASSERT.that(getField.getVal() != null, "getField.getVal()==null, for field=" + fieldIdentifier);
+//                    ASSERT.that(getOrg.getVal() != null, "getOrg.getVal()==null, for field=" + fieldIdentifier);
+//                }
+//</editor-fold>
                 if (previousValues != null) {
 //                    if (!getField.getVal().equals(getOrg.getVal())) {
                     //(a == null) ? (a == b) : a.equals(b) <=> (a == null) ? b == null : a.equals(b)  -->> https://stackoverflow.com/questions/1402030/compare-two-objects-with-a-check-for-null
-                    if (getField.getVal() == null ? getOrg.getVal() == null : getField.getVal().equals(getOrg.getVal())) { //values are the same
+//                    if (getField.getVal() == null ? getOrg.getVal() == null : getField.getVal().equals(getOrg.getVal())) { //values are the same
+                    if (MyUtil.eql(getField.getVal(), getOrg.getVal())) { //values are the same
                         previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
                     } else { //value's been edited
                         previousValues.put(fieldIdentifier, getField.getVal());
                     }
                 }
             };
-            //listen to changes an update+save if edited to different value than item.orgValue
+
+            //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
             if (field instanceof Picker) {
                 ((Picker) field).addActionListener(al);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (field instanceof MyDurationPicker) {
 //                ((MyDurationPicker) field).addActionListener(al);
-//<editor-fold defaultstate="collapsed" desc="comment">
 //            ((MyDurationPicker) field).addActionListener((e) -> {
 ////            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
 //                if (!getField.getVal().equals(getVal.getVal())) {
@@ -2797,8 +2827,8 @@ public class MyForm extends Form {
 //                    previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
 //                }
 //            });
-//</editor-fold>
 //            } else if (field instanceof MyTextArea) {
+//</editor-fold>
             } else if (field instanceof TextArea) {
                 ((TextArea) field).addActionListener(al);
             } else if (field instanceof Button) {
@@ -2823,11 +2853,41 @@ public class MyForm extends Form {
             } else {
                 assert false;
             }
+
         }
+
+        //set edited value on exit 
+        if (putOrg != null && getField != null) {
+            //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
+            parseIdMap2.put(fieldIdentifier, () -> {
+//        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
+                ASSERT.that(true || getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
+//                if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
+//https://stackoverflow.com/questions/11271554/compare-two-objects-in-java-with-possible-null-values/11271611: (str1 == null ? str2 == null : str1.equals(str2)) <=>
+//!(str1 == null ? str2 == null : str1.equals(str2)) <=> (
+//                if (!(getField.getVal() == null
+//                        ? getOrg.getVal() == null
+//                        : getField.getVal().equals(getOrg.getVal()))) {
+////            item.setEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
+//                    putOrg.setVal(getField.getVal()); //if value has been changed, update item
+//                }
+//                if (!(getField.getVal() == null && (getOrg.getVal() == null || getField.getVal().equals(getOrg.getVal())))) {
+//</editor-fold>
+                if (MyUtil.neql(getField.getVal(), getOrg.getVal())) {
+//            item.setEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
+                    putOrg.setVal(getField.getVal()); //if value has been changed, update item
+                }
+            });
+        }
+//else assert false:"should never happen";
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (componentCont == null) { //if a container is already defined use that, e.g. for comment field
 //            return componentCont;
 //        }
 //        return layoutN(fieldLabel, (Component) field, fieldHelp);
+//</editor-fold>
     }
 
     protected void animateMyForm() {
@@ -2868,8 +2928,8 @@ public class MyForm extends Form {
         return selectedObjects != null;
     }
 
-    void setSelectionMode(boolean selectionModeActivated) {
-        if (selectionModeActivated) {
+    void setSelectionMode(boolean activateSelectionMode) {
+        if (activateSelectionMode) {
 //            selectedObjects = new HashSet();
             selectedObjects = oldSelectedObjects;
             if (selectedObjects == null) {
@@ -3017,8 +3077,9 @@ public class MyForm extends Form {
 //            return wrapInPinchableContainer(new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement));
             insertContainer = new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement);
         } else if (refElement instanceof WorkSlot) {
-            WorkSlotList workSlotList = ((WorkSlot) refElement).getWorkSlotListN();
-            insertContainer = new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, workSlotList, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
+//            WorkSlotList workSlotList = ((WorkSlot) refElement).getWorkSlotListN();
+//            insertContainer = new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, workSlotList, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
+            insertContainer = new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
         } else {
             ASSERT.that(false, () -> "error2 in createInsertContainer: refElt=" + refElement + "; list=" + ownerList + "; insertBefore=" + insertBeforeRefElement);
         }
@@ -3092,7 +3153,6 @@ public class MyForm extends Form {
 //</editor-fold>
         //find the drop containers
         MyDragAndDropSwipeableContainer dropComponentAbove = findDropContainerStartingFrom(compAbove);
-        if (false);
 
         MyDragAndDropSwipeableContainer dropComponentBelow = null;
         if (dropComponentAbove != null) { //UI: be default we ignore the lowest placed finger and always create insertCont below the highest placed finger
@@ -3146,8 +3206,8 @@ public class MyForm extends Form {
             }
         }
 
-        if (Config.TEST_PINCH && itemEltAbove != null) Log.p("PinchAbove=" + itemEltAbove.getText());
-        if (Config.TEST_PINCH && itemEltBelow != null) Log.p("PinchBelow=" + itemEltBelow.getText());
+        if (Config.TEST_PINCH && itemEltAbove != null) Log.p("PinchAbove=" + itemEltAbove);//.getText());
+        if (Config.TEST_PINCH && itemEltBelow != null) Log.p("PinchBelow=" + itemEltBelow);//.getText());
 //        List objBelowOwnerList = null;
         InsertNewElementFunc insertContainer = null;
 
@@ -3234,6 +3294,21 @@ public class MyForm extends Form {
                 wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //                insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //create insertContainer
                 MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer *after* dropComponentAbove
+            }
+        } else if (itemEltAbove instanceof WorkSlot || itemEltAbove instanceof WorkSlot) {
+            if (itemEltAbove instanceof WorkSlot) { //insert before itemEltBelow
+                insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //create insertContainer
+                setInlineInsertContainer(insertContainer);
+                wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
+//                insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //create insertContainer
+                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer *after* dropComponentAbove
+            } else {
+//                ASSERT.that(itemEltBelow instanceof Category || itemEltBelow instanceof ItemList, "if itemEltBelow is not an Item, it can only a Cateogyr or ItemList");
+                insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                setInlineInsertContainer(insertContainer);
+                wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
+//                insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
             }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">

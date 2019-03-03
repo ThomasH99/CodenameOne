@@ -62,26 +62,43 @@ public class ReplayLog {
             s += sep + i + ": " + r;
             sep = "; ";
         }
-        return s+"]";
+        return s + "]";
     }
 
     /**
      * reset (delete MyReplayCommands from previous MyForm) when a new MyForm is
      * being created. Called in MyForm constructor.
      */
-    void deleteAllReplayCommandsFromPreviousScreen() {
-        deleteAllReplayCommandsFromPreviousScreen(null);
-    }
+//    void deleteAllReplayCommandsFromPreviousScreen() {
+//        deleteAllReplayCommandsFromPreviousScreen(null);
+//    }
 
-    void deleteAllReplayCommandsFromPreviousScreen(String screenName) {
+//    void deleteAllReplayCommandsFromPreviousScreen(String screenName) {
+     void clearSetOfScreenCommands() {
 //        if (storeAllCommandsForScreen) {
-        this.screenName = screenName;
-        screenCommands = new HashMap<>();
-//        } else {
-//            replayCommandToReplay = null;
-//
-//        }
+//        this.screenName = screenName;
+        Map<String, MyReplayCommand> newCmds = new HashMap<>();
+        for (String key : screenCommands.keySet()) {
+            MyReplayCommand cmd = screenCommands.get(key);
+            if (cmd.isKeep())
+                newCmds.put(key, cmd);
+        }
+        screenCommands = newCmds;
     }
+    
+        /**
+     * ********************************************************
+     */
+    /**
+     * clear the set of Commands for the current screen. Called in each screens
+     * constructor.
+     */
+//    void clearSetOfScreenCommands() {
+////        screenCommands.clear();
+//        deleteAllReplayCommandsFromPreviousScreen();
+//    }
+
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void init() {
 ////        if (logList == null && Storage.getInstance().exists(REPLAY_LOG_FILE_NAME)) {
@@ -164,7 +181,7 @@ public class ReplayLog {
                 } else {
 //                        +Display.getInstance().getCurrent() instanceof MyForm?((MyForm)Display.getInstance().getCurrent()).SCREEN_TITLE:"<not a MyForm>"Display.getInstance().getCurrent().getTitle());
 //                    in screen" + Display.getInstance().getCurrent().getTitle()
-                    Log.p("!! ReplayCommand: " + cmdUIID + " not defined" + (screenName != null ? (" in screen " + screenName) : "")+ " ScreenCmds="+screenCommands+" "+this);
+                    ASSERT.that(false, "!! ReplayCommand: " + cmdUIID + " not defined" + (screenName != null ? (" in screen " + screenName) : "") + " ScreenCmds=" + screenCommands + " " + this);
                 }
             }
         } else {
@@ -272,24 +289,13 @@ public class ReplayLog {
 //                while (logList.size() >= currentIndex - 1) { //if force breaking the replay, remove all non-replayed commands including the broken one at nextIndex-1 (so log is correct as other actions are added)
                 while (replayStack.size() - 1 > currentIndex - 1) { //if force breaking the replay, remove all non-replayed commands including the broken one at nextIndex-1 (so log is correct as other actions are added)
                     //eg log={cmd1, cmd2, cmd3}, cmd1 replayes well, cmd2 breaks (nextIndex is then moved ahead to 2) => remove all commands until size==1 (size:2 >= nextIndex-1)
-                    Log.p("!!!! Replay Command not found and removed from ReplayLog: " + replayStack.get(replayStack.size() - 1)+" "+this);
+                    Log.p("!!!! Replay Command not found and removed from ReplayLog: " + replayStack.get(replayStack.size() - 1) + " " + this);
                     replayStack.remove(replayStack.size() - 1);
                 }
                 Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack); //ensure reduced log is stored 
             }
         }
         return false;
-    }
-
-    /**
-     * ********************************************************
-     */
-    /**
-     * clear the set of Commands for the current screen. Called in each screens
-     * constructor.
-     */
-    void clearSetOfScreenCommands() {
-        screenCommands.clear();
     }
 
     /**

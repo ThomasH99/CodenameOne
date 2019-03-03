@@ -20,7 +20,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 
 //    private String DEFAULT_ZERO_VALUE_PATTERN = "0";
     private String zeroValuePattern;
-    private Button clearButton = null;
+//    private Button clearButton = null;
 
     MyDateAndTimePicker() {
         super();
@@ -53,16 +53,53 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
     MyDateAndTimePicker(Date date) {
         this(date, "");
     }
+    
+        @Override
+    protected void updateValue() {
+        Date date = getDate();
+        if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
+            setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
+        } else {
+            super.updateValue(); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void setClearButton(Button clearButton) {
+//        this.clearButton = clearButton;
+//    }
+//    @Override
+//    public void setDateXX(Date date) {
+//        if (clearButton != null) {
+////            clearButton.setHidden(date.getTime() == 0);
+//            clearButton.setVisible(date.getTime() != 0);
+//        }
+//        super.setDate(date);
+//        for (Object al : getListeners()) {
+//            if (al instanceof MyActionListener) {
+//                ((MyActionListener) al).actionPerformed(null);
+//            }
+//        }
+//    }
 
 //    MyDateAndTimePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
 //        this(null, parseIdMap, get, set);
 //    }
-    MyDateAndTimePicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
-//            this.setFormatter(new MySimpleDateFormat(this.getFormatter().toPattern(), zeroValuePattern)); //reuse default formatter pattern, only override for 0 value
-        this(get.get(), zeroValuePatternVal);
-//            parseIdMap.put(parseId,() -> parseObject.put(parseId, this.getDate()));
-        parseIdMap.put(this,
-                () -> set.accept(this.getDate()));
+//    MyDateAndTimePicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
+////            this.setFormatter(new MySimpleDateFormat(this.getFormatter().toPattern(), zeroValuePattern)); //reuse default formatter pattern, only override for 0 value
+//        this(get.get(), zeroValuePatternVal);
+////            parseIdMap.put(parseId,() -> parseObject.put(parseId, this.getDate()));
+//        parseIdMap.put(this,
+//                () -> set.accept(this.getDate()));
+//    }
+//</editor-fold>
+    @Override
+    public void pressed() {
+        //set date to Now if empty when button is clicked
+        if (getDate().getTime() == 0) {
+//                setDate(new Date());
+            getDate().setTime(new Date().getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+        }
+        super.pressed();
     }
 
     /**
@@ -83,44 +120,6 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
     @Override
     public void clearFieldValue() {
         swipeClear();
-    }
-
-    @Override
-    public void pressed() {
-        //set date to Now if empty when button is clicked
-        if (getDate().getTime() == 0) {
-//                setDate(new Date());
-//TODO!! enable setting the default value in the constructor, e.g. tomorrow+5 days
-            getDate().setTime(new Date().getTime()); //use this instead of setDate to set date to avoid updating label before showing ticker
-        }
-        super.pressed();
-    }
-
-//    @Override
-    protected void updateValueXXX() {
-        Date date = getDate();
-        if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
-            setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
-        } else {
-            super.updateValue(); //To change body of generated methods, choose Tools | Templates.
-        }
-    }
-
-//    public void setClearButton(Button clearButton) {
-//        this.clearButton = clearButton;
-//    }
-//    @Override
-    public void setDateXX(Date date) {
-        if (clearButton != null) {
-//            clearButton.setHidden(date.getTime() == 0);
-            clearButton.setVisible(date.getTime() != 0);
-        }
-        super.setDate(date);
-        for (Object al : getListeners()) {
-            if (al instanceof MyActionListener) {
-                ((MyActionListener) al).actionPerformed(null);
-            }
-        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

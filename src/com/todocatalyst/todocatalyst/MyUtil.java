@@ -10,19 +10,19 @@ package com.todocatalyst.todocatalyst;
  * @author Thomas
  */
 public class MyUtil {
-    
+
     /**
     clean up text for tasks, itemlists or workslots to avoid starting or ending with newlines or spaces (would
     make it easier to have duplicate names without realizing)
     @param inputStr
     @return 
-    */
+     */
     public static String removeTrailingPrecedingSpacesNewLinesEtc(String inputStr) {
         //remove spaces in start of string:
         if (inputStr == null || inputStr.length() == 0) {
             return inputStr;
         }
-         StringBuilder s = new StringBuilder(inputStr);
+        StringBuilder s = new StringBuilder(inputStr);
         int idx;
         while ((idx = s.toString().indexOf('\n')) != -1) {
 //            inputStr = inputStr.substring(0, idx) + inputStr.substring(idx + 1, inputStr.length());
@@ -35,18 +35,18 @@ public class MyUtil {
 //        while (inputStr.charAt(inputStr.length()-1)==' ' || inputStr.charAt(inputStr.length()-1)=='\n')
         while (s.toString().charAt(inputStr.length() - 1) == ' ') {
 //            inputStr = inputStr.substring(0, inputStr.length() - 2);
-            s.deleteCharAt(s.length()-1);
+            s.deleteCharAt(s.length() - 1);
         }
 //        inputStr = inputStr.replace("\n",""); //remove 
 //        inputStr = inputStr.replace('\n',""); //remove 
         return s.toString();
     }
-    
+
     /**
   /Users/thomashjelm/NetBeansProjects/todocatalyst/src/com/todocatalyst/todocatalyst/TodoCatalystParse.java:538: error: cannot find symbol
     @param inputStr
     @return string roughly limited to 150chars (Google Analytics max length)
-    */
+     */
     public static String keepMethodCallInStackTrace(String inputStr) {
         return inputStr;
 //         StringBuilder s = new StringBuilder(inputStr);
@@ -84,8 +84,7 @@ public class MyUtil {
 ////        inputStr = inputStr.replace('\n',""); //remove 
 //        return s.toString();
     }
-    
-    
+
     public static String removeTrailingPrecedingSpacesNewLinesEtcXXX(String inputStr) {
         //remove spaces in start of string:
         if (inputStr == null || inputStr.length() == 0) {
@@ -106,15 +105,15 @@ public class MyUtil {
 //        inputStr = inputStr.replace('\n',""); //remove 
         return inputStr;
     }
-    
+
     /**
     clean a string so it can for example be used with Google Analytics
     @param inputStr
     @return 
-    */
+     */
     public static String cleanToSingleLineNoSpacesString(String inputStr) {
         //remove spaces in start of string:
-        
+
         if (inputStr == null || inputStr.length() == 0) {
             return inputStr;
         }
@@ -125,12 +124,12 @@ public class MyUtil {
             s.deleteCharAt(idx);
         }
         //delete inline spaces
-        while ((idx=s.toString().indexOf(' ')) != -1) {
+        while ((idx = s.toString().indexOf(' ')) != -1) {
             s.deleteCharAt(idx);
         }
         return s.toString();
     }
-    
+
     public static String cleanEmail(String inputStr) {
         return removeTrailingPrecedingSpacesNewLinesEtc(inputStr);
     }
@@ -149,5 +148,13 @@ public class MyUtil {
         }
         return data;
     }
-    
+
+    public static boolean eql(Object a, Object b) {
+        return a == null ? b == null : a.equals(b);
+    }
+
+    public static boolean neql(Object a, Object b) {
+        return !eql(a, b); //optimize
+    }
+
 }

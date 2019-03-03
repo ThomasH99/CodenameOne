@@ -1642,7 +1642,7 @@ public class RepeatRuleParseObject
         while (oldUndoneRepeatInstanceList.size() > 0) {
             RepeatRuleObjectInterface obsoleteInstance = oldUndoneRepeatInstanceList.remove(0);
             if (obsoleteInstance instanceof ParseObject) {
-                if (obsoleteInstance instanceof Item && ((Item) obsoleteInstance).getActualEffort() != 0) { //for Items, not WorkSlots
+                if (obsoleteInstance instanceof Item && ((Item) obsoleteInstance).getActual() != 0) { //for Items, not WorkSlots
                     ((Item) obsoleteInstance).setStatus(ItemStatus.CANCELLED);   //Cancel instead of delete if time has been registered (to avoid losing it)
                     DAO.getInstance().save((Item) obsoleteInstance); //must save it
                 } else {

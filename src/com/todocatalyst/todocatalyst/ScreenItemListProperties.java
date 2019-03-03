@@ -33,7 +33,7 @@ public class ScreenItemListProperties extends MyForm {
 //    MyForm previousForm;
     ItemList itemList;
     private static String screenTitle = "List";
- protected static String FORM_UNIQUE_ID = "ScreenItemListProperties"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+// protected static String FORM_UNIQUE_ID = "ScreenItemListProperties"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //     private UpdateField updateActionOnDone;
 
     ScreenItemListProperties(ItemList itemList, MyForm previousForm) { //throws ParseException, IOException {
@@ -44,6 +44,7 @@ public class ScreenItemListProperties extends MyForm {
         super(screenTitle, previousForm, doneAction);
 //        ScreenItemP.item = item;
         this.itemList = itemList;
+        setUniqueFormId( "ScreenItemListProperties");
 //        ScreenItemP.previousForm = previousForm;
 //        this.previousForm = previousForm;
 //        this.updateActionOnDone = doneAction;

@@ -7,12 +7,15 @@ package com.todocatalyst.todocatalyst;
 //import com.codename1.ui.*;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
+import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
+import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
 import java.util.Date;
 import java.util.List;
 //import com.java4less.rchart.*;
@@ -49,8 +52,11 @@ public class ScreenListOfWorkSlots extends MyForm {
 //    private KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
 //    private FetchWorkSlotList refreshWorkSlotList;
     private boolean showOwner; //true if show owner of workslots inline in list of workslots
-    protected static String FORM_UNIQUE_ID = "ScreenListOfWorkSlots"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    private String stickyStrKeep;
+    private MyTree2.StickyHeaderGenerator stickyHeaderGen = MyTree2.makeStickyHeaderGen(WorkSlot.PARSE_START_TIME, () -> stickyStrKeep, (s) -> stickyStrKeep = s); //group workSlots by eg day or week
+    private boolean showAlsoExpiredWorkSlots;
 
+//    protected static String FORM_UNIQUE_ID = "ScreenListOfWorkSlots"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     /**
      * edit a list of categories
      *
@@ -89,11 +95,12 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm,
         super(SCREEN_TITLE + ((owner.getText() != null && owner.getText().length() > 0) ? " for " + owner.getText() : ""), previousForm, updateActionOnDone);
+        setUniqueFormId("ScreenListOfWorkSlots");
 //                () -> {
 //                    if (updateItemListOnDone != null) {
 ////                        updateItemListOnDone.update(workSlotList);
-////                        updateItemListOnDone.update(workSlotList.getWorkSlotList());
-//                        updateItemListOnDone.update(owner.getWorkSlotListN().getWorkSlotList());
+////                        updateItemListOnDone.update(workSlotList.getWorkSlots());
+//                        updateItemListOnDone.update(owner.getWorkSlotListN().getWorkSlots());
 //                    }
 //                });
 //        setUpdateItemListOnDone(updateItemListOnDone);
@@ -102,6 +109,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        this.workSlotList = workSlotList;
 //        this.refreshWorkSlotList = refreshWorkSlotList;
         this.showOwner = showOwner;
+        setPinchInsertEnabled(true);
 //        this.previousForm = previousForm;
 //        this.updateItemListOnDone = updateItemListOnDone;
 
@@ -115,7 +123,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        getContentPane().setScrollableY(true);
         addCommandsToToolbar(getToolbar());
 //        setScrollableY(true);
-        setLayout(BoxLayout.y());
+//        setLayout(BoxLayout.y());
 //        getContentPane().setScrollableY(true);
         getContentPane().setScrollableY(false);
 //        getContentPane().add(buildContentPaneForItemList(workSlotList));
@@ -124,9 +132,9 @@ public class ScreenListOfWorkSlots extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        super.refreshAfterEdit();
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        List<WorkSlot> wsList = null;
 //        if (false) { //below code is a hack
 //            WorkSlotList wsList = null;
@@ -146,18 +154,23 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        }
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForWorkSlotList(wsList));
 //        getContentPane().add(buildContentPaneForWorkSlotList(wsList));
-        getContentPane().add(buildContentPaneForWorkSlotList(workSlotListOwner.getWorkSlotListN()));
+//</editor-fold>
+        WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
+        workSlotList.setIncludeExpiredWorkSlots(showAlsoExpiredWorkSlots);
+        getContentPane().add(BorderLayout.CENTER,buildContentPaneForWorkSlotList(workSlotList));
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
 //        }
+        super.refreshAfterEdit();
         revalidate();
         restoreKeepPos();
     }
 
+    @Override
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         //NEW WORKSLOT
-        toolbar.addCommandToRightBar(MyReplayCommand.create("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
+        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
             WorkSlot newWorkSlot = new WorkSlot();
             newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
             setKeepPos(new KeepInSameScreenPosition());
@@ -178,8 +191,9 @@ public class ScreenListOfWorkSlots extends MyForm {
 //</editor-fold>
                     //save new workSlot
                     DAO.getInstance().saveInBackground(newWorkSlot); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                    workSlotList.addItemAtIndex(workSlot, 0);
-                    //save updated owner of workslot //TODO not necessary to save the owners (they are not modified for workslots since these are fetched via a Parse query)??!!
+//save updated owner of workslot //TODO not necessary to save the owners (they are not modified for workslots since these are fetched via a Parse query)??!!
 //                    if (false) {
 //                        if (workSlotListOwner instanceof ItemList) {
 //                            DAO.getInstance().save((ItemList) workSlotListOwner); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
@@ -194,13 +208,14 @@ public class ScreenListOfWorkSlots extends MyForm {
 ////                            WorkSlot.sortWorkSlotList(workSlotList);
 //                        workSlotList.sortWorkSlotList();
 //                    }
-
-                    WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
-                    if (workSlotList == null) {
-                        workSlotList = new WorkSlotList();
-                    }
-                    workSlotList.add(newWorkSlot);
-                    workSlotListOwner.setWorkSlotList(workSlotList);
+//</editor-fold>
+//                    WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
+//                    if (workSlotList == null) {
+//                        workSlotList = new WorkSlotList();
+//                    }
+//                    workSlotList.add(newWorkSlot);
+//                    workSlotListOwner.setWorkSlotList(workSlotList);
+                    workSlotListOwner.addWorkSlot(newWorkSlot);
                     DAO.getInstance().saveInBackground((ParseObject) workSlotListOwner);
                     refreshAfterEdit();
                 }
@@ -211,6 +226,19 @@ public class ScreenListOfWorkSlots extends MyForm {
         //BACK
 //        toolbar.addCommandToLeftBar(makeDoneCommand("", FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle())));
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true));
+        toolbar.addCommandToOverflowMenu(new Command("", null) {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                showAlsoExpiredWorkSlots = !showAlsoExpiredWorkSlots;
+                refreshAfterEdit();
+            }
+
+            @Override
+            public String getCommandName() {
+                return showAlsoExpiredWorkSlots ? "Hide past" : "Show past";
+            }
+        });
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                new Command("", iconDone) {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
@@ -219,10 +247,11 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                previousForm.showBack();
 //            }
 //        });
-
+//</editor-fold>
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      *
      * @param content
@@ -241,6 +270,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot) {
 //        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, true);
 //    }
+//</editor-fold>
     protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot, boolean showOwner) {
         return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, showOwner, System.currentTimeMillis());
     }
@@ -248,11 +278,20 @@ public class ScreenListOfWorkSlots extends MyForm {
     protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos,
             boolean expandItemsInWorkSlot, boolean showOwner, long now) {
         Container cont = new Container();
+        MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(null, null, cont){
+            @Override
+            public ItemAndListCommonInterface getDragAndDropObject() {
+                return workSlot;
+            }
+        };
+        if (Config.TEST) cont.setName("WorkSlotCont:" + workSlot);
+        if (Config.TEST) swipCont.setName("WSltMyDD:" + workSlot);
         cont.setLayout(new BorderLayout());
 //        cont.addComponent(BorderLayout.CENTER, new Button(item.getText()));
         //EDIT items in category
 //        Button editItemButton = new Button(new Command(workSlot.getText()) {
         Button editWorkSlotButton = new Button(Icons.iconEditSymbolLabelStyle);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        editWorkSlotButton.addActionListener(new ActionListener() {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
@@ -268,7 +307,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                }).show();
 //            }
 //        });
-        editWorkSlotButton.setCommand(MyReplayCommand.create("EditWorkSLot-" , workSlot.getObjectIdP(), null, Icons.iconEditSymbolLabelStyle, (e) -> {
+//</editor-fold>
+        editWorkSlotButton.setCommand(MyReplayCommand.create("EditWorkSLot-", workSlot.getObjectIdP(), null, Icons.iconEditSymbolLabelStyle, (e) -> {
 //                keepPos.setKeepPos(new KeepInSameScreenPosition());
 //            ((MyForm) cont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(workSlot, cont));
             myForm.setKeepPos(new KeepInSameScreenPosition(workSlot, cont));
@@ -323,17 +363,21 @@ public class ScreenListOfWorkSlots extends MyForm {
         String startTimeStr = MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
         Label startTimeLabel = new Label(startTimeStr,
                 workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime");
+
         String endTimeStr = "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
                 + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
         Label endTimeLabel = new Label(endTimeStr, "WorkSlotEndTime");
+
 //        west.add(startTimeStr);
         west.add(startTimeLabel).add(endTimeLabel);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate, boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat) {
 
 //        east.addComponent(new Label("[" + workSlot.getDurationAdjustedInMinutes(now) + "]"));
 //        west.add(MyDate.formatTime(workSlot.getDurationInMillis()));
 //        west.add("(" + MyDate.formatTimeDuration(workSlot.getDurationInMillis()) + ")");
 //        cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getText() + (workSlot.getRepeatRule() != null ? "*" : "")));
+//</editor-fold>
         if (showOwner && workSlot.getOwner() != null) {
             cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getOwner().getText()));
         }
@@ -343,7 +387,8 @@ public class ScreenListOfWorkSlots extends MyForm {
         List<Item> items = workSlot.getItemsInWorkSlot();
         if (items != null && items.size() > 0) {
             Button showItemsInWorkSlotButton = new Button(new Command("[" + items.size() + "]"));
-            showItemsInWorkSlotButton.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, showItemsInWorkSlotButton);
+//            showItemsInWorkSlotButton.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, showItemsInWorkSlotButton);
+            swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, showItemsInWorkSlotButton);
             west.addComponent(showItemsInWorkSlotButton);
         }
 
@@ -360,7 +405,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        }
 //        cont.putClientProperty(ScreenListOfItems.DISPLAYED_ELEMENT, workSlot);
 
-        return cont;
+//        return cont;
+        return swipCont;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -403,28 +449,80 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        return cont;
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    protected Container buildContentPaneForWorkSlotListXXX(WorkSlotList workSlotList) {
+//        parseIdMapReset();
+//        Container cont = new ContainerScrollY(BoxLayout.y());
+//        cont.setScrollableY(true);
+////        long now = System.currentTimeMillis();
+//        if (workSlotList != null) {
+//            long now = workSlotList.getNow();
+////            for (WorkSlot workSlot : workSlotList) {
+//            for (WorkSlot workSlot : workSlotList.getWorkSlots()) {
+//
+////                if (Test.DEBUG || workSlot.getEndTime() <= now) { //ignore workSlots in the past
+//                if (Config.WORKTIME_TEST || workSlot.getEndTime() >= now) { //ignore workSlots in the past
+////                    cont.add(buildWorkSlotContainer(workSlot, () -> refreshAfterEdit(), keepPos));
+////                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, keepPos, false));
+//                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, null, false, showOwner, now));
+//                    if (keepPos != null) {
+//                        keepPos.testItemToKeepInSameScreenPosition(workSlot, cont);
+//                    }
+//                }
+//            }
+//        }
+//        return cont;
+//    }
+//</editor-fold>
     protected Container buildContentPaneForWorkSlotList(WorkSlotList workSlotList) {
+//    protected Container buildContentPaneForWorkSlotList(List<WorkSlot> workSlotList) {
         parseIdMapReset();
-        Container cont = new ContainerScrollY(BoxLayout.y());
-        cont.setScrollableY(true);
-//        long now = System.currentTimeMillis();
-        if (workSlotList != null) {
-            long now = workSlotList.getNow();
-//            for (WorkSlot workSlot : workSlotList) {
-            for (WorkSlot workSlot : workSlotList.getWorkSlotList()) {
 
-//                if (Test.DEBUG || workSlot.getEndTime() <= now) { //ignore workSlots in the past
-                if (Config.WORKTIME_TEST || workSlot.getEndTime() >= now) { //ignore workSlots in the past
-//                    cont.add(buildWorkSlotContainer(workSlot, () -> refreshAfterEdit(), keepPos));
-//                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, keepPos, false));
-                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, null, false, showOwner, now));
-                    if (keepPos != null) {
-                        keepPos.testItemToKeepInSameScreenPosition(workSlot, cont);
-                    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false){
+//        Container cont = new ContainerScrollY(BoxLayout.y());
+//        cont.setScrollableY(true);
+////        long now = System.currentTimeMillis();
+//        if (workSlotList != null) {
+//            long now = workSlotList.getNow();
+////            for (WorkSlot workSlot : workSlotList) {
+//            for (WorkSlot workSlot : workSlotList.getWorkSlots()) {
+//
+////                if (Test.DEBUG || workSlot.getEndTime() <= now) { //ignore workSlots in the past
+//                if (Config.WORKTIME_TEST || workSlot.getEndTime() >= now) { //ignore workSlots in the past
+////                    cont.add(buildWorkSlotContainer(workSlot, () -> refreshAfterEdit(), keepPos));
+////                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, keepPos, false));
+//                    cont.add(buildWorkSlotContainer(workSlot, ScreenListOfWorkSlots.this, null, false, showOwner, now));
+//                    if (keepPos != null) {
+//                        keepPos.testItemToKeepInSameScreenPosition(workSlot, cont);
+//                    }
+//                }
+//            }
+//        }
+//        return cont;}
+//</editor-fold>
+        if (workSlotList != null && workSlotList.size() > 0) {
+            MyTree2 myTree = new MyTree2(workSlotList, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
+                @Override
+                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+                    Container cmp = null;
+                    if (node instanceof WorkSlot) {
+                        cmp = buildWorkSlotContainer((WorkSlot) node, ScreenListOfWorkSlots.this, null, false, showOwner, now);
+                        return cmp;
+                    } else if (node instanceof Item) {
+                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfWorkSlots.this, (Item) node, null, null);
+                    } else assert false;
+                    setIndent(cmp, depth);
+                    return cmp;
                 }
-            }
+            };
+            return myTree;
+        } else {
+//                setInlineInsertContainer(new InlineInsertNewItemContainer2(this, null, workSlotList, null, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
+//                return (Container) getInlineInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
+            return BoxLayout.encloseY(new Label("Add a " + WorkSlot.WORKSLOT + " using +"));
         }
-        return cont;
+
     }
 
 }

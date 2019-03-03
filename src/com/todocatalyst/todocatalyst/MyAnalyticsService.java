@@ -167,7 +167,7 @@ public class MyAnalyticsService {
 //            String cleanedPage = clean(page); //remove spaces etc
             String cleanPage = clean(page);
             req.addArgument("cd", cleanPage);
-            String cleanReferer = clean(page);
+            String cleanReferer = clean(referer);
             req.addArgument("cd", cleanReferer);
 
 //            Log.p("Analytics VISIT: " + req.getRequestBody());

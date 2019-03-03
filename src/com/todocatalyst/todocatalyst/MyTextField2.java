@@ -19,6 +19,9 @@ public class MyTextField2 extends TextField {
     public MyTextField2(int columns) {
         super(columns);
     }
+    public MyTextField2() {
+        this(200);
+    }
     
        private UITimer timer;
        public void pointerReleased(int x, int y) {

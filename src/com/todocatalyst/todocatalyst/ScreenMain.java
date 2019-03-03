@@ -234,7 +234,7 @@ public class ScreenMain extends MyForm {
             ItemList tempWorkSlotOwnerList = new ItemList();
             tempWorkSlotOwnerList.setWorkSlotList(new WorkSlotList(DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis()))));
 //            new ItemList().setWorkSlotList(DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())));
-//            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())).getWorkSlotList(), true).show();
+//            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())).getWorkSlots(), true).show();
 //            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), true).show();
             new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null,
                     () -> {/*no need to removeFromCache workslotlist from DAO since it will be updated within the screen in a consistent way with the parse server list */

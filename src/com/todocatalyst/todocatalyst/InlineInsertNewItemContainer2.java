@@ -26,7 +26,7 @@ import com.todocatalyst.todocatalyst.MyForm.Action;
 public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer implements InsertNewElementFunc {
 
     private final static String ENTER_SUBTASK = "New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
-    private final static String ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK = "New task ->for subtask)"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK = "New task ->for subtask"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
     private final static String ENTER_TASK_NO_SWIPE_RIGHT = "New task"; //"Task (swipe right: subtask)"
 
     private boolean insertAsSubtask = false; //true if the user has selected to insert new task as a subtask of the preceding task, set by Swipe action!
@@ -119,6 +119,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 ev.consume();
                 swipC.revalidateWithAnimationSafety();//update with new hint
                 swipC.close();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                textEntryField2.repaint(); //update with new hint
 //                if (insertAsSubtask && !myForm.expandedObjects.contains(refItem)) {
 //                    //if adding as subtask, expand mother task and place container the right place in the hierarcy => or rather eliminate swipe support and always create right type of insertContainer on pinchOut?!
@@ -128,6 +129,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //                    textEntryField2.repaint(); //update with new hint
 //                    revalidate(); //ensure removeFromCache?! TODO necessary??!!
 //                }
+//</editor-fold>
             });
         }
 
@@ -155,8 +157,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //                            myForm.setKeepPos(new KeepInSameScreenPosition(element, this, -1)); //otherwise keep same position of mother-item
 //                        }
 //</editor-fold>
-//                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : refItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
-                            myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+                            if (false) myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+                            else myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : refItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        closeInsertNewTaskContainer();
 //                            getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
@@ -285,7 +287,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 newItem.addCategoryToItem(category2, false); //we don't add item to category here (done in xx) since we may still cancel
             }
             if (itemOrItemListForNewElements != null) {
-                newItem.setOwner(itemOrItemListForNewElements);
+                newItem.setOwner(itemOrItemListForNewElements); //must set owner here to display correctly if going to full screen edit of item
             }
             if (refItem != null && refItem.isTemplate()) {
                 newItem.setTemplate(true);
@@ -311,12 +313,13 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 MyForm myForm = (MyForm) getComponentForm();
                 myForm.expandedObjects.add(refItem); //expand to show subtasks
 //                    myForm2.refreshAfterEdit();
-                DAO.getInstance().saveInBackground((ParseObject) newItem, (ParseObject) refItem);
+                if (((ParseObject) refItem).getObjectIdP() != null) //don't save if refItem has not already been saved (to enable Cancel on mother task which adds subtasks
+                    DAO.getInstance().saveInBackground((ParseObject) newItem, (ParseObject) refItem);
                 insertAsSubtask = false; //remove the subtask property so next task does not become a subtask to the subtask
-            }
-//            else {
-////                Dialog.show("Internal error", "Could not insert subtask", "OK", null);
-//                DAO.getInstance().saveInBackground((ParseObject) newItem); //task only inserted into inbox
+            } else
+                //            else {
+                ////                Dialog.show("Internal error", "Could not insert subtask", "OK", null);
+                DAO.getInstance().saveInBackground((ParseObject) newItem); //task only inserted into inbox
 //            }
         } else {
             if (category2 != null) { //if category defined,  means we're inserting into list of category items, so the ItemList owning the refItem should be ignored!!

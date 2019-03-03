@@ -17,48 +17,21 @@ import java.util.List;
  *
  * @author Thomas
  */
-public class WorkSlotList {//extends ArrayList<WorkSlot> {
+public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> {
 
     private long now;//=-1; //ensure a single value of now is used for the work slots
-    private ArrayList<WorkSlot> workslotList = new ArrayList<>();
+    private ArrayList<WorkSlot> sortedWorkslotList = new ArrayList<>(); //full list of workslots, always assumed to be sorted
+    private ArrayList<WorkSlot> validworkslotList = new ArrayList<>(); //
+    private boolean showAlsoExpiredWorkSlots;
 
     public WorkSlotList() {
         super();
 //        if (now==-1) 
-        now = System.currentTimeMillis();
+        now = MyDate.MIN_DATE; //System.currentTimeMillis();
     }
 
-    /**
-    add workSlot *sorted*
-    @param workSlot 
-     */
-    public void add(WorkSlot workSlot) {
-//        workslotList.add(workSlot);
-//        sortWorkSlotList(); //TODO!!! //optimization: insert sorted instead of do entire bubblesort
-        for (int i = workslotList.size() - 1; i >= 0; i--) {
-            if (workslotList.get(i).getStartTimeD().getTime() < workSlot.getStartTimeD().getTime()) {
-                workslotList.add(i + 1, workSlot);
-                return;
-            }
-        }
-        //if no earlier slot found above, then insert at start of (possibly empty) list
-        workslotList.add(0, workSlot);
-        //simple solution: new workSlots are likely be the most recent, so simply search from end of list to find where to insert
-    }
-
-    public WorkSlot get(int index) {
-        return workslotList.get(index);
-    }
-
-    public boolean contains(WorkSlot workSlot) {
-        return workslotList.contains(workSlot);
-    }
-
-    public List<WorkSlot> getWorkSlotList() {
-        return workslotList;
-    }
-
-    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted, boolean removeExpiredWorkSlots) {
+//    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted, boolean removeExpiredWorkSlots) {
+    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
         this();
 //<editor-fold defaultstate="collapsed" desc="comment">
         //http://stackoverflow.com/questions/8441664/how-do-i-copy-the-contents-of-one-arraylist-into-another
@@ -86,16 +59,20 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
         if (!alreadySorted) {
             sortWorkSlotList();
         }
-        if (removeExpiredWorkSlots) {
-            workslotList.addAll(removePastWorkSlots(list, now)); //optimization - this makes a copy of the list, is it really necessary??
-        } else {
-            workslotList.addAll(list); //optimization - this makes a copy of the list, is it really necessary??
-        }//        this.copyOf(list);
+//        if (removeExpiredWorkSlots) {
+//            workslotList.addAll(removePastWorkSlots(list, now)); //optimization - this makes a copy of the list, is it really necessary??
+//        } else {
+//            workslotList.addAll(list); //optimization - this makes a copy of the list, is it really necessary??
+//        }//        this.copyOf(list);
+        sortedWorkslotList.addAll(list); //optimization - this makes a copy of the list, is it really necessary??
+        if (!alreadySorted) {
+            sortWorkSlotList();
+        }
     }
 
-    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
-        this(list, alreadySorted, true);
-    }
+//    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
+//        this(list, alreadySorted, true);
+//    }
 
     public WorkSlotList(List<WorkSlot> list) {
         this(list, false);
@@ -104,18 +81,95 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
     public long getNow() {
         return now;
     }
-//    static public long getWorkTimeSum(List<WorkSlot> list) {
 
-    public long getWorkTimeSum(List<WorkSlot> list) {
-//        List<WorkSlot> list = getWorkSlotListN(false);
-        long sum = 0;
-//        long now = System.currentTimeMillis();
-        for (WorkSlot workSlot : list) {
-            sum += workSlot.getDurationAdjusted(now);
-        }
-        return sum;
+    public void setIncludeExpiredWorkSlots(boolean showAlsoExpiredWorkSlots) {
+        this.showAlsoExpiredWorkSlots = showAlsoExpiredWorkSlots;
     }
 
+    public String toString() {
+        String workSlots = "WorkSlots: ";
+        String sep = "";
+        for (int i = 0, size = sortedWorkslotList.size(); i < size; i++) {
+            workSlots += sep + sortedWorkslotList.get(i).toString();
+            sep = "; ";
+        }
+        return workSlots;
+    }
+
+    /**
+    add workSlot *sorted*
+    @param workSlot 
+     */
+    public void add(WorkSlot workSlot) {
+//        workslotList.add(workSlot);
+//        sortWorkSlotList(); //TODO!!! //optimization: insert sorted instead of do entire bubblesort
+        for (int i = sortedWorkslotList.size() - 1; i >= 0; i--) {
+            if (sortedWorkslotList.get(i).getStartTimeD().getTime() < workSlot.getStartTimeD().getTime()) {
+                sortedWorkslotList.add(i + 1, workSlot);
+                return;
+            }
+        }
+        //if no earlier slot found above, then insert at start of (possibly empty) list
+        sortedWorkslotList.add(0, workSlot);
+        //simple solution: new workSlots are likely be the most recent, so simply search from end of list to find where to insert
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//    add workSlot *sorted*
+//    @param workSlot
+//     */
+//    public void addToList(WorkSlot workSlot) {
+//        WorkSlotList workSlotList = this;
+//                    if (workSlotList == null) {
+//                        workSlotList = new WorkSlotList();
+//                    }
+//                    add(workSlot);
+//                    setWorkSlotList(workSlotList);
+//    }
+//
+//</editor-fold>
+    /**
+    return valid (future) workslots
+    @return 
+     */
+    public List<WorkSlot> getWorkSlots(long now) {
+        //optimization: cache the filtered list (result) and only check if some of the earlier slots have become invalid and should be removed, becomes interesting with many past workslots
+        if (showAlsoExpiredWorkSlots) {
+//            now = MyDate.MIN_DATE;
+            return sortedWorkslotList;
+        } else {
+//            now = System.currentTimeMillis();
+            List<WorkSlot> result = new ArrayList<>();
+            for (WorkSlot ws : sortedWorkslotList) {
+                if (ws.getEndTimeD().getTime() > now) {
+                    result.add(ws);
+                }
+            }
+            return result;
+        }
+    }
+    public List<WorkSlot> getWorkSlots() {
+        return getWorkSlots(System.currentTimeMillis());
+    }
+
+    public List<WorkSlot> getWorkSlotListFull() {
+//        return getWorkSlots(MyDate.MIN_DATE); //too slow
+        return sortedWorkslotList;
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    static public long getWorkTimeSum(List<WorkSlot> list) {
+//    public long getWorkTimeSum(List<WorkSlot> list) {
+////        List<WorkSlot> list = getWorkSlotListN(false);
+//        long sum = 0;
+////        long now = System.currentTimeMillis();
+//        for (WorkSlot workSlot : list) {
+//            sum += workSlot.getDurationAdjusted(now);
+//        }
+//        return sum;
+//    }
+//</editor-fold>
     static public long getWorkTimeSum(List<WorkSlot> list, long fromTime, long toTime) {
 //        long fromTime = fromDate.getTime();
 //        long toTime = toDate.getTime();
@@ -133,7 +187,7 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
 
     public long getWorkTimeSum(Date fromDate, Date toDate) {
 //        return getWorkTimeSum(this, fromDate, toDate);
-        return getWorkTimeSum(workslotList, fromDate.getTime(), toDate.getTime());
+        return getWorkTimeSum(sortedWorkslotList, fromDate.getTime(), toDate.getTime());
     }
 
     /**
@@ -143,7 +197,8 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
      */
     public long getWorkTimeSum() {
 //        return getWorkTimeSum(this, new Date(), new Date(Long.MAX_VALUE));
-        return getWorkTimeSum(workslotList, new Date(), new Date(Long.MAX_VALUE));
+//        return getWorkTimeSum(workslotList, new Date(), new Date(Long.MAX_VALUE));
+        return getWorkTimeSum(getWorkSlots(), new Date(), new Date(Long.MAX_VALUE));
     }
 
     /**
@@ -228,9 +283,9 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
     public WorkSlotList sortWorkSlotList(boolean sortOnEndTime) {
 //        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
         if (sortOnEndTime) {
-            Collections.sort(workslotList, (i1, i2) -> FilterSortDef.compareLong(i1.getEndTime(), i2.getEndTime()));
+            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareLong(i1.getEndTime(), i2.getEndTime()));
         } else {
-            Collections.sort(workslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
         }
         return this;
     }
@@ -238,12 +293,12 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
     public void sortWorkSlotList2(boolean sortOnEndTime) {
 //        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
         if (sortOnEndTime) {
-            Collections.sort(workslotList, getMultipleComparator(new Comparator[]{
+            Collections.sort(sortedWorkslotList, getMultipleComparator(new Comparator[]{
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD())
             }));
         } else {
-            Collections.sort(workslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
         }
     }
 
@@ -273,7 +328,18 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
     }
 
     public int size() {
-        return workslotList.size();
+//        return workslotList.size();
+        return getWorkSlots().size();
+    }
+
+    public WorkSlot get(int index) {
+//        return sortedWorkslotList.get(index);
+        return getWorkSlots().get(index);
+    }
+
+    public boolean contains(WorkSlot workSlot) {
+//        return sortedWorkslotList.contains(workSlot);
+        return getWorkSlots().contains(workSlot);
     }
 
     /**
@@ -282,16 +348,16 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
     @param now
     @return 
      */
-    public static List<WorkSlot> removePastWorkSlots(List<WorkSlot> workSlots, long now) {
+    public static List<WorkSlot> removePastWorkSlotsXXX(List<WorkSlot> workSlots, long now) {
         final int WORKSLOT_LIMIT = 200;
 
         List<WorkSlot> result = new ArrayList<>();
 
 //        ASSERT.that(!workSlots.isSorted(), "workSlots must be sorted for this algo to work");
 //        long nowLong = now.getTime();
-//        List<WorkSlot>  workSlots =workSlotList.getWorkSlotList();
+//        List<WorkSlot>  workSlots =workSlotList.getWorkSlots();
         for (int i = workSlots.size() - 1; i >= 0; i--) {
-            if (workSlots.get(i).getEndTime()<= now) {
+            if (workSlots.get(i).getEndTime() <= now) {
                 result = workSlots.subList(i, workSlots.size() - 1);
                 return result;
             }
@@ -326,7 +392,7 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
 //            } //skip all elements that end *before* startTime, stops nu with workSlot
 //</editor-fold>
         //skip all elements that end *before* startTime, stops nu with workSlot
-        for (WorkSlot ws : workSlotList.workslotList) { //optimization: optimize for fact that workslotList is now sorted
+        for (WorkSlot ws : workSlotList.sortedWorkslotList) { //optimization: optimize for fact that workslotList is now sorted
             if (ws.getStartTimeD().getTime() < endTime && ws.hasDurationInInterval(startTime, endTime)) {
                 result.add(ws);
             }
@@ -402,20 +468,46 @@ public class WorkSlotList {//extends ArrayList<WorkSlot> {
 
     public boolean hasComingWorkSlots(long now) {
         if (size() == 0) {
-            return false; //return size()>0; //TODO!!!!!
+            return false; 
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        long now = System.currentTimeMillis();
 //        for (WorkSlot workSlot : workslotList) {
 //            if (workSlot.getEndTime() > now) {
 //                return true;
 //            }
 //        }
-        for (int i = workslotList.size() - 1; i >= 0; i--) {
-            if (workslotList.get(i).getEndTime() > now) {
+//</editor-fold>
+        for (int i = sortedWorkslotList.size() - 1; i >= 0; i--) {
+            if (sortedWorkslotList.get(i).getEndTime() > now) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public List getChildrenList(Object itemInThisList) {
+        if (itemInThisList == null) {
+            List itemList = getWorkSlots();
+            return itemList; //see JavaDoc of getChildren: null should return the tree roots
+        } else if (itemInThisList instanceof MyTreeModel) {
+            return ((MyTreeModel) itemInThisList).getChildrenList(null);
+        } else
+            return new ArrayList();
+    }
+
+    @Override
+    public boolean isLeaf(Object itemInThisList) {
+//        return node.getWorkSlots().size() == 0;
+        if (itemInThisList instanceof WorkSlot) {
+            List subtasks = ((WorkSlot) itemInThisList).getItemsInWorkSlot();
+            return subtasks == null || subtasks.size() == 0;
+        }
+        if (itemInThisList instanceof Item) {
+            List subtasks = ((Item) itemInThisList).getList();
+            return subtasks == null || subtasks.size() == 0;
+        } else return true;
     }
 
 }

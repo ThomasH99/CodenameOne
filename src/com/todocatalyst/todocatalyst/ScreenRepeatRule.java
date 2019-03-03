@@ -148,6 +148,7 @@ public class ScreenRepeatRule extends MyForm {
             UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate, boolean isForWorkSlot) {
 //        super(title, repeatRule);
         super(title, previousForm, doneAction);
+        setUniqueFormId("ScreenEditRepeatRule");
 //        this.defaultRepeatFromDate = defaultRepeatFromDate;
 //        this.repeatRuleOwner = (RepeatRuleObject) repeatRule.getOwner();
         this.repeatRuleOwner = repeatRuleOriginator;

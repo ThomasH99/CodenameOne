@@ -6,6 +6,7 @@
 package com.todocatalyst.todocatalyst;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -29,23 +30,6 @@ public class WorkTimeSlices {
 //    private long remainingDuration = 0; //if this WorkTimeSlices does not cover the needed duration, this is set to the missing
 //    private WorkTimeSlices nextWorkTime = null; //additional daisy chained WorkTimeSlices (n
 
-    public String toString() {
-        String res = "";
-        String sep="";
-        for (WorkSlotSlice workSlot : workSlotSlicesSortedOnStartTime) {
-            res += sep+workSlot.toString() ;
-            sep=", ";
-        }
-        if (workSlotSlicesSortedOnStartTime.size() == 0) {
-            res = "WorkTime empty";
-        }
-        return res;
-    }
-
-    public List<WorkSlotSlice> getWorkSlotSlices() {
-        return workSlotSlicesSortedOnStartTime;
-    }
-    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    /**
 //    returns true if there are any slices of workSlot
@@ -100,12 +84,17 @@ public class WorkTimeSlices {
 //        workSlotSlicesSortedOnStartTime.add(new WorkSlotSlice(workSlice));
 //    }
 //</editor-fold>
+    
+    WorkTimeSlices() {
+    }
+
     WorkTimeSlices(List<WorkSlotSlice> workSlotSlices) {
+        this();
 //        if (workSlots != null && workSlots.size() > 0) {
 //        if (workSlotSlicesSortedOnStartTime != null && workSlotSlicesSortedOnStartTime.size() > 0) {
         this.workSlotSlicesSortedOnStartTime = workSlotSlices;
         sortWorkSlotSlices();
-        for (WorkSlotSlice workSlotSlice:workSlotSlicesSortedOnStartTime) {
+        for (WorkSlotSlice workSlotSlice : workSlotSlicesSortedOnStartTime) {
             workSlotSlice.workSlot.resetItemWithSlice(); //reset previous allocations of this workslot
         }
 //        }
@@ -124,8 +113,9 @@ public class WorkTimeSlices {
 //        if (workSlots != null && workSlots.size() > 0) {
 //        if (workSlotSlicesSortedOnStartTime != null && workSlotSlicesSortedOnStartTime.size() > 0) {
 //        this.workSlotSlicesSortedOnStartTime = new ArrayList<>();
-        workSlotSlicesSortedOnStartTime.add(workSlotSlice);
-        sortWorkSlotSlices();
+//        workSlotSlicesSortedOnStartTime.add(workSlotSlice);
+//        sortWorkSlotSlices();
+        this(Arrays.asList(workSlotSlice));
 //        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        this.workSlots = workSlots;
@@ -148,6 +138,7 @@ public class WorkTimeSlices {
      */
 //    WorkTimeSlices(WorkSlotList workSlots, long now) {
     WorkTimeSlices(WorkSlotList workSlots) {
+        this();
         if (workSlots != null && workSlots.size() > 0) {
 //            for (WorkSlot workSlot : workSlots) {
             long now = workSlots.getNow();
@@ -183,15 +174,29 @@ public class WorkTimeSlices {
 //        }
 //    }
 //</editor-fold>
-    WorkTimeSlices() {
+    public String toString() {
+        String res = "";
+        String sep = "";
+        for (WorkSlotSlice workSlot : workSlotSlicesSortedOnStartTime) {
+            res += sep + workSlot.toString();
+            sep = ", ";
+        }
+        if (workSlotSlicesSortedOnStartTime.size() == 0) {
+            res = "WorkTime empty";
+        }
+        return res;
     }
 
-    private void sortWorkSlotSlices(){
-        Collections.sort(workSlotSlicesSortedOnStartTime, (slice1, slice2) -> {
-                return FilterSortDef.compareLong(slice1.getStartTime(), slice2.getStartTime());
-            });
+    public List<WorkSlotSlice> getWorkSlotSlices() {
+        return workSlotSlicesSortedOnStartTime;
     }
-    
+
+    private void sortWorkSlotSlices() {
+        Collections.sort(workSlotSlicesSortedOnStartTime, (slice1, slice2) -> {
+            return FilterSortDef.compareLong(slice1.getStartTime(), slice2.getStartTime());
+        });
+    }
+
     /**
      * combines two workTime into one, eg when acquired from two different
      * workTimeProviders.
@@ -326,7 +331,6 @@ public class WorkTimeSlices {
 //        return MyDate.MAX_DATE; //
 //    }
 //</editor-fold>
-
     /**
      *
      * @return MyDate.MIN_DATE if no slides available
@@ -569,7 +573,6 @@ public class WorkTimeSlices {
 ////</editor-fold>
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    WorkTimeSlices getWorkTime_NOLD(long startTime, long remainingDuration) {
 ////        long startTime = Long.MIN_VALUE;
@@ -631,5 +634,4 @@ public class WorkTimeSlices {
 ////</editor-fold>
 //    }
 //</editor-fold>
-
 }

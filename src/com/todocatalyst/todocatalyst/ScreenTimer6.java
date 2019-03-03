@@ -98,7 +98,7 @@ public class ScreenTimer6 extends MyForm {
 
     private TimerInstance timerInstance;//= new TimerStack();
     private Command backCommand = null;
-    protected static String FORM_UNIQUE_ID = "ScreenTimer"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+//    protected static String FORM_UNIQUE_ID = "ScreenTimer"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private Container timerContentainer = new Container(BoxLayout.y());
 //    private TimerStackEntry entry;
 
@@ -111,6 +111,7 @@ public class ScreenTimer6 extends MyForm {
     ScreenTimer6(MyForm previousScreen, TimerInstance timerInstance, SaveEditedValuesLocally previousValues) {//,  Map<Object, UpdateField> parseIdMap2) {
         super(SCREEN_TITLE, previousScreen, () -> {
         });
+        setUniqueFormId("ScreenTimer");
         this.timerInstance = timerInstance;
         if (!(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
@@ -141,7 +142,7 @@ public class ScreenTimer6 extends MyForm {
 
     //****************** UI *********************
     //
-    void addCommandsToToolbar(Toolbar toolbar) {
+    public void addCommandsToToolbar(Toolbar toolbar) {
 
         backCommand = makeDoneUpdateWithParseIdMapCommand(true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
         toolbar.setBackCommand(backCommand); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
@@ -150,7 +151,7 @@ public class ScreenTimer6 extends MyForm {
 //        toolbar.addCommandToRightBar(makeInterruptCommand());
         toolbar.addCommandToLeftBar(makeInterruptCommand()); //left like all other screens
 
-        toolbar.addCommandToRightBar(MyReplayCommand.create("TimerSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
+        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("TimerSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
             new ScreenSettingsTimer(ScreenTimer6.this, () -> {
                 refreshAfterEdit();
             }).show();

@@ -14,6 +14,7 @@ import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.Component;
+import com.codename1.ui.animations.ComponentAnimation;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.plaf.Style;
@@ -90,13 +91,14 @@ public class ScreenListOfItems extends MyForm {
     //DONE don't refreshTimersFromParseServer the entire list after editing one item, make sure the list stays in same place, and only the edited item's container is updated
     final static String SCREEN_ID = "ScreenListOfItems";
     final static String DISPLAYED_ELEMENT = "element";
-    protected static String FORM_UNIQUE_ID = "ScreenListOfItems"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+//    protected static String FORM_UNIQUE_ID = "ScreenListOfItems"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 //    final static String INSERT_NEW_TASK_AS_SUBTASK_KEY = "SubtaskLevel";
 //    final static String EXISTING_NEW_TASK_CONTAINER = "NewTaskContainer"; //stores the current newSubtask container to allow to automatically close one if a new one is created elsewhere
 //    private static String screenTitle = "Tasks";
 //    private ItemList<Item> itemListOrg;
-    private ItemList itemListOrg;
+//    private ItemList itemListOrg;
+    private ItemAndListCommonInterface itemListOrg;
     private GetItemListFct getItemListFct;
 //    private ItemList itemListFilteredSorted;
 //    private java.util.List workSlotList;
@@ -117,6 +119,7 @@ public class ScreenListOfItems extends MyForm {
     boolean projectEditMode = false; //indicates if projectEditMode is on (eg new tasks automatically added to end of list)
     private MyTree2.StickyHeaderGenerator stickyHeaderGen;
     private Container contentContainer = null; //holds Container with actual content, typically MyTree2
+    private ActionListener startAsyncListener = null; //stores the ayncEditListener, so we can remove the previous when adding a new for the new field
 
     /**
      * set to true if a fixed filter is passed to the screen, if true user is
@@ -289,9 +292,11 @@ public class ScreenListOfItems extends MyForm {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListOrg));
         super(title, previousForm, null);
+        setUniqueFormId("ScreenListOfItems");
         setScrollVisible(true); //UI: show scrollbar(?)
 //        super(title, previousForm, null);
         setOptions(options);
+        setPinchInsertEnabled(true);
         getComponentForm().getLayeredPane().setLayout(new BorderLayout()); //needed for StickyHeaderMod
 //        MyDragAndDropSwipeableContainer.dragEnabled = false; //always disable before setting up a new screen
 //        this.itemListOrg = itemList;
@@ -309,7 +314,6 @@ public class ScreenListOfItems extends MyForm {
         if (!(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        addShowListener((e) -> { //DOESN'T WORK since animate doesn't trigger onShow
 //            if (InsertNewTaskContainer.lastInsertNewTaskContainer != null) {
@@ -327,16 +331,15 @@ public class ScreenListOfItems extends MyForm {
 //        this.filterSortDef = itemListOrg.getFilterSortDef(); //if no filter previously defined/saved, then don't create one until the user either edits the filter or turns Sort on
 //        this.filterSortDef = filterSortDef;
 //        optionUnmodifiableFilter = !filterCanBeModified;
-//</editor-fold>
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
-        String expandedObjectsFileName = itemListOrg.isNoSave()?"":(getUniqueFormId(itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
+//</editor-fold>
+        String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId(itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         expandedObjects = new ExpandedObjects(expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         this.stickyHeaderGen = stickyHeaderGen;
-//        refreshItemListFilterSort();
-        addCommandsToToolbar(getToolbar());
-
 //<editor-fold defaultstate="collapsed" desc="comment">
+//        refreshItemListFilterSort();
+//        addCommandsToToolbar(getToolbar());
 //        addPullToRefresh(() -> {
 //            //refresh worktime
 //            itemListOrg.resetWorkTimeDefinition();
@@ -423,8 +426,7 @@ public class ScreenListOfItems extends MyForm {
             });
         }
 //</editor-fold>
-
-        getToolbar().addSearchCommand(makeSearchFunctionUpperLowerStickyHeaders(itemListOrg));
+//        getToolbar().addSearchCommand(makeSearchFunctionUpperLowerStickyHeaders(itemListOrg));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (itemList instanceof ParseObject && itemList.getObjectId() != null) {
 //            filterSortDef = DAO.getInstance().getFilterSortDef(SCREEN_ID, itemList.getObjectId());
@@ -437,6 +439,17 @@ public class ScreenListOfItems extends MyForm {
 //        getContentPane().add(CENTER, dragAndDropContainer);
 //        setupList();
 //</editor-fold>
+
+        getToolbar().addSearchCommand(makeSearchFunctionUpperLowerStickyHeaders(itemListOrg));
+        addCommandsToToolbar(getToolbar());
+
+//                removeShowListener(startAsyncListener);
+//        startAsyncListener = (e) -> {
+//            restoreKeepPos();
+//            setStartEditingAsyncIfDefined(contentContainer);
+//        };
+//        addShowListener(startAsyncListener); //do *after* show (will this make the async editing work?!)
+//getAnimationManager().
         refreshAfterEdit();
     }
 
@@ -478,7 +491,7 @@ public class ScreenListOfItems extends MyForm {
 //        }
 //</editor-fold>
         setInlineInsertContainerIfMyTree2(contentContainer);
-        getContentPane().removeAll();
+        if (false) getContentPane().removeAll();
 
         this.itemListOrg = getItemListFct.getUpdatedItemList();
         itemListOrg.resetWorkTimeDefinition(); //TODO!!!!! find a way to automatically reset wtd each time a list or its elements have been modified -> itemList.save(), or items call update/refresh on owner (and categories!)
@@ -503,7 +516,7 @@ public class ScreenListOfItems extends MyForm {
         if (false) { //TODO!!! re-activate (currently clashes with drag&drop: when trying to drag an element at the top of the list, it also activates pullToRefresh)
             contentContainer.addPullToRefresh(() -> {
                 Log.p("Pull to refresh... DEACTIVATED");
-                DAO.getInstance().removeFromCache(itemListOrg);
+                DAO.getInstance().removeFromCache((ParseObject) itemListOrg);
                 //refresh worktime
                 itemListOrg.resetWorkTimeDefinition();
                 //TODO!!!! load any changed data from server
@@ -513,7 +526,8 @@ public class ScreenListOfItems extends MyForm {
                 Log.p("Pull to refresh...DONE");
             });
         }
-        getContentPane().add(CENTER, contentContainer);
+
+        getContentPane().add(BorderLayout.CENTER, contentContainer);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (contentContainer instanceof MyTree2) {
 //            InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
@@ -535,12 +549,37 @@ public class ScreenListOfItems extends MyForm {
 //        revalidate(); //TODO: needed? YES
 //        animateHierarchy(300); not good since it visibly refreshes the screen
 //</editor-fold>
-        setTitleAnimation(contentContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
         super.refreshAfterEdit();
 //        revalidateWithAnimationSafety(); //TODO: needed? YES. Does revalidateWithAnimationSafety() take too long to revalidate, meaning the restoreKeepPos gets triggered before new components have been laid out?!
+//        revalidate(); //TODO: needed? YES. Does revalidateWithAnimationSafety() take too long to revalidate, meaning the restoreKeepPos gets triggered before new components have been laid out?!
+//        forceRevalidate();//TODO: needed? YES. Does revalidateWithAnimationSafety() take too long to revalidate, meaning the restoreKeepPos gets triggered before new components have been laid out?!
+//        revalidateWithAnimationSafety();//TODO: needed? YES. Does revalidateWithAnimationSafety() take too long to revalidate, meaning the restoreKeepPos gets triggered before new components have been laid out?!
         revalidate(); //TODO: needed? YES. Does revalidateWithAnimationSafety() take too long to revalidate, meaning the restoreKeepPos gets triggered before new components have been laid out?!
-        restoreKeepPos();
-        setStartEditingAsyncIfDefined(contentContainer);
+//        forceRevalidate();//TODO: needed? YES. Does revalidateWithAnimationSafety() take too long to revalidate, meaning the restoreKeepPos gets triggered before new components have been laid out?!
+//        repaint();
+        ComponentAnimation a;
+        if (false) getAnimationManager().addAnimation(new ComponentAnimation() {
+                @Override
+                public boolean isInProgress() {
+                    throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                protected void updateState() {
+                    throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+            });
+        getAnimationManager().flushAnimation(() -> {
+            restoreKeepPos();
+            setStartEditingAsyncIfDefined(contentContainer);
+        });
+//        addShowListener(startAsyncListener); //do *after* show (will this make the async editing work?!)
+
+//        restoreKeepPos(); //moved to onShow listener
+        setTitleAnimation(contentContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
+//        removeShowListener(startAsyncListener);
+//        startAsyncListener = (e)->setStartEditingAsyncIfDefined(contentContainer);
+//        addShowListener(startAsyncListener); //do *after* show (will this make the async editing work?!)
 //        setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
     }
 
@@ -570,11 +609,11 @@ public class ScreenListOfItems extends MyForm {
                 toolbar.addCommandToRightBar(newItemSaveToInboxCmd());
             } else {
 //            Command newCmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle(), (e) -> {
-                Command newCmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewTaskToolbarStyle(), (e) -> {
+                Command newCmd = MyReplayCommand.createKeep("CreateNewItem", "", Icons.iconNewTaskToolbarStyle(), (e) -> {
                     Item item = new Item();
 //                    item.setOwner(itemListOrg); //necessary to have an owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
                     item.setTemplate(optionTemplateEditMode);
-                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
+                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.size(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
 //                    ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                     setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllElementsInSublist(item, true);
@@ -601,7 +640,7 @@ public class ScreenListOfItems extends MyForm {
                             //only save if data (don't save if no relevant data)
                             if (false) {
                                 item.setTemplate(optionTemplateEditMode);
-                                addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+                                addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.size(), itemListOrg);
                             }
                             DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
                             refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
@@ -653,7 +692,7 @@ public class ScreenListOfItems extends MyForm {
         //NEW ITEM from TEMPLATE
         //TODO!!! create template by longpress on (+)
         if (true || optionTemplateEditMode) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("NewFromTemplate", "New from template", null, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "New from template", null, (e) -> {
                 //select appropriate template
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                List<Item> templateList = DAO.getInstance().getAllTemplates();
@@ -696,14 +735,14 @@ public class ScreenListOfItems extends MyForm {
                             DAO.getInstance().save(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner
                             if (itemListOrg != null && itemListOrg.getObjectIdP() != null && !optionTemplateEditMode) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
                                 //if creating new template instances within the TemplateList, then don't save it into template list
-                                itemListOrg.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), newTemplateInstantiation); //UI: add to top of list
-                                DAO.getInstance().save(itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                                itemListOrg.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.size(), newTemplateInstantiation); //UI: add to top of list
+                                DAO.getInstance().save((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
                             } else {
                                 assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
                             }
                         }
                         newTemplateInstantiation.setTemplate(optionTemplateEditMode);
-                        addNewTaskToListAndSave(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), itemListOrg);
+                        addNewTaskToListAndSave(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.size(), itemListOrg);
                         setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation)); //scroll to position of new item, whereever it is inserted
                         refreshAfterEdit();
                     }).show();
@@ -713,13 +752,13 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //EDIT PROPERTIES OF LIST
-        if (!optionTemplateEditMode && !optionNoEditListProperties) {
+        if (!optionTemplateEditMode && !optionNoEditListProperties && itemListOrg instanceof ItemList) {
             String txt = itemListOrg instanceof Category ? "Category Properties" : "List Properties";
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("EditCatListProps", txt, null, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditCatListProps", txt, null, (e) -> {
 //                ItemList itemList = new ItemList();
 //                    setKeepPos(new KeepInSameScreenPosition()); //not needed
-                new ScreenItemListProperties(itemListOrg, ScreenListOfItems.this, () -> {
-                    DAO.getInstance().save(itemListOrg);
+                new ScreenItemListProperties((ItemList) itemListOrg, ScreenListOfItems.this, () -> {
+                    DAO.getInstance().save((ParseObject) itemListOrg);
                     setTitle(itemListOrg.getText()); //refrehs title of screen after edit of list name
 //                    previousForm.revalidate(); //refresh list to show new items(??)
                 }).show();
@@ -729,7 +768,7 @@ public class ScreenListOfItems extends MyForm {
 
         //EDIT WORKSLOTS
         if (!optionTemplateEditMode && !optionNoWorkTime) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
                 setKeepPos(new KeepInSameScreenPosition());
 //                new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotListN(),
                 new ScreenListOfWorkSlots(itemListOrg, ScreenListOfItems.this, () -> {
@@ -765,7 +804,7 @@ public class ScreenListOfItems extends MyForm {
 
         //FILTER / SORT
         if (!optionTemplateEditMode && !optionUnmodifiableFilter) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", Icons.iconSettingsLabelStyle, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "", Icons.iconSettingsLabelStyle, (e) -> {
 //                    if (filterSortDef == null) {
 ////                        filterSortDef = FilterSortDef.fetchFilterSortDef(SCREEN_ID, itemListOrg, new FilterSortDef(SCREEN_ID, itemListOrg));
 //                        filterSortDef = itemListOrg.getFilterSortDef();
@@ -782,7 +821,7 @@ public class ScreenListOfItems extends MyForm {
 //                    itemList = filterSortDef.filterAndSortItemList(itemListOrg);
                     DAO.getInstance().save(filterSortDef);
                     itemListOrg.setFilterSortDef(filterSortDef);
-                    DAO.getInstance().save(itemListOrg);
+                    DAO.getInstance().save((ParseObject) itemListOrg);
 //                        refreshItemListFilterSort();
 //                        setupList(); //TODO optimize the application of a filter?
                     //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
@@ -863,7 +902,7 @@ public class ScreenListOfItems extends MyForm {
                     if (isSelectionMode()) {
 //                    selectedObjects=new HashSet(itemListFilteredSorted);
 //                        selectedObjects.addAll(itemListFilteredSorted);
-                        selectedObjects.addAll(itemListOrg);
+                        selectedObjects.addAll(itemListOrg.getList()); //UI: only add un-filtered objects (same as seen)
 //                    ScreenListOfItems.this.revalidate();
 //                    setupList(); //TODO optimize the application of a filter?
                         refreshAfterEdit(); //TODO optimize the application of a filter?
@@ -924,7 +963,7 @@ public class ScreenListOfItems extends MyForm {
                         MultipleSelection.performOnAll(selectedObjects, MultipleSelection.moveToTopOfList(itemListOrg));
 //                    selectedObjects.clear(); //DO NOT unselect objects to allow for additional operations on selection
 //                    setupList(); //TODO optimize the application of a filter?
-                        DAO.getInstance().save(itemListOrg); //save after having moved items around
+                        DAO.getInstance().save((ParseObject) itemListOrg); //save after having moved items around
                         refreshAfterEdit(); //TODO optimize the application of a filter?
                     } else {
 //                        ToastBar.showErrorMessage("Move to top not possible when list is shown sorted");
@@ -1018,12 +1057,15 @@ public class ScreenListOfItems extends MyForm {
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
         if (!optionTemplateEditMode && !optionNoTimer) {
 //            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
-            toolbar.addCommandToLeftBar(MyReplayCommand.create(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                TimerStack.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                if (itemListOrg instanceof ItemList)
+                    TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                else if (itemListOrg instanceof Item)
+                    TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
             }
             ));
         }
@@ -1865,7 +1907,7 @@ public class ScreenListOfItems extends MyForm {
         Button showSubtasksXXX = new Button(); //null;
 //        Label remainingEffortLabel = null;
         if (true || isDone) {
-            long actualEffort = item.getActualEffort();
+            long actualEffort = item.getActual();
             if (actualEffort != 0) {
 //                east.addComponent(actualEffortLabel = new Label(MyDate.formatTimeDuration(actualEffort)));
 //                actualEffortLabel = new Label();
@@ -1901,7 +1943,7 @@ public class ScreenListOfItems extends MyForm {
                         east.add(dueDateLabel);
                     }
                 }
-                long remainingEffort = item.getRemainingEffort();
+                long remainingEffort = item.getRemaining();
                 if (remainingEffort != 0 || MyPrefs.itemListShowRemainingEvenIfZero.getBoolean()) {
 //                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
                     remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining");
@@ -1975,7 +2017,7 @@ public class ScreenListOfItems extends MyForm {
 //                        refreshOnItemEdits.launchAction();
 //                    }
 //</editor-fold>
-                myForm.refreshAfterEdit();
+                if (Config.REFRESH_EVEN_THOUGH_DONE_IN_BACK) myForm.refreshAfterEdit();
             }).show();
 //                new ScreenItem(item, thisScreen).show();
         }
@@ -2165,9 +2207,9 @@ public class ScreenListOfItems extends MyForm {
         }
         //ESTIMATE
         Label effortEstimateLabel = new Label();
-        if (item.getEffortEstimate() != 0 && MyPrefs.itemListEffortEstimate.getBoolean()) {
+        if (item.getEstimate() != 0 && MyPrefs.itemListEffortEstimate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            effortEstimateLabel = new Label("E:" + MyDate.formatTimeDuration(item.getEffortEstimate()), "ItemEffortEstimateLabel");
+            effortEstimateLabel = new Label("E:" + MyDate.formatTimeDuration(item.getEstimate()), "ItemEffortEstimateLabel");
             if (Config.TEST) {
                 waitingTillLabel.setName("EffortEstimate");
             }

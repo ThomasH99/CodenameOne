@@ -17,26 +17,6 @@ import java.util.Map;
  */
 class MyDatePicker extends Picker implements SwipeClear {
 
-//    @Override
-    protected void updateValue() {
-        Date date = getDate();
-        if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
-            setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
-        } else {
-            super.updateValue(); //To change body of generated methods, choose Tools | Templates.
-        }
-    }
-
-    @Override
-    public void pressed() {
-        //set date to Now if empty when button is clicked
-        if (getDate().getTime() == 0) {
-//                setDate(new Date());
-            getDate().setTime(new Date().getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
-        }
-        super.pressed();
-    }
-
     String zeroValuePattern = "";
 
 //    MyDatePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
@@ -101,6 +81,25 @@ class MyDatePicker extends Picker implements SwipeClear {
 //        });
 //    }
 //</editor-fold>
+//    @Override
+    protected void updateValue() {
+        Date date = getDate();
+        if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
+            setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
+        } else {
+            super.updateValue(); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+
+    @Override
+    public void pressed() {
+        //set date to Now if empty when button is clicked
+        if (getDate().getTime() == 0) {
+//                setDate(new Date());
+            getDate().setTime(new Date().getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+        }
+        super.pressed();
+    }
 
     /**
     set date and notify listeners like if the picker had been used manually

@@ -878,7 +878,7 @@ class TimerStack {
                     boolean timerWasRunning = timerInstance.isInterruptedWhileRunning();
                     if (true || timerWasRunning) {
                         //update item with elapsed time 
-                        item.setActualEffort(item.getActualEffortProjectTaskItself() + timerInstance.getElapsedTime(),false);
+                        item.setActual(item.getActualForProjectTaskItself() + timerInstance.getElapsedTime(),false);
                     }
 //                item.setActualEffort(timerInstance.isTimerShowActualTotal() ? timerInstance.getElapsedTime()
 //                        : item.getActualEffortProjectTaskItself() + timerInstance.getElapsedTime());
@@ -1713,9 +1713,9 @@ class TimerStack {
 //                            long itemActualReduction = -diff > oldElapsedTime ? -diff - oldElapsedTime : 0;
                         long itemActualReduction = oldElapsedTime + diff < 0 ? -(oldElapsedTime + diff) : 0;
                         if (itemActualReduction > 0) {
-                            long itemOldActual = timedItem.getActualEffortProjectTaskItself();
+                            long itemOldActual = timedItem.getActualForProjectTaskItself();
                             long itemNewActual = itemOldActual - itemActualReduction;
-                            timedItem.setActualEffort(itemNewActual,false);
+                            timedItem.setActual(itemNewActual,false);
                         }
                     } else { //enough to just adjust the elapsed time
                         long editedElapsedTime = hiddenElapsedTimePicker.getDuration();
@@ -2030,7 +2030,7 @@ class TimerStack {
 //            return null;
             gotoNextTaskButtonWithItemText = MyPrefs.timerShowNextTask.getBoolean()
                     ? new SpanButton("Next: \"" + nextComingItem.getText() + "\"" //                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatTimeDuration(nextComingItem.getRemainingEffort()) + "]") : ""))
-                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatTimeDuration(nextComingItem.getRemainingEffortProjectTaskItself()) + "]") : ""))
+                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatTimeDuration(nextComingItem.getRemainingForProjectTaskItself(true)) + "]") : ""))
                     : new SpanButton(""); //gotoNextTask button is hidden unless timerAutomaticallyGotoNextTask is false
             gotoNextTaskButtonWithItemText.setCommand(cmdStartNextTask);
             if (MyPrefs.getBoolean(MyPrefs.timerAutomaticallyGotoNextTask)) {
@@ -2192,10 +2192,10 @@ class TimerStack {
                         status.setStatus(timedItem.getStatus());
                         comment.setText(timedItem.getComment());
 //                        effortEstimate.setTime((int) timedItem.getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS);
-                        effortEstimate.setDuration(timedItem.getEffortEstimate());
+                        effortEstimate.setDuration(timedItem.getEstimate());
 //                remainingEffort.setTime((int) timedItem.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
 //                        remainingEffort.setTime((int) timedItem.getRemainingEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
-                        remainingEffort.setDuration((int) timedItem.getRemainingEffortProjectTaskItself()); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
+                        remainingEffort.setDuration((int) timedItem.getRemainingForProjectTaskItself()); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
                         refreshTotalActualEffort.actionPerformed(null);
 //                ScreenTimer6.this.revalidate();
 //                    ((MyForm) contentPane.getComponentForm()).revalidate();
@@ -2286,22 +2286,22 @@ class TimerStack {
 //            remainingEffort = new MyDurationPicker();
             remainingEffort.setShowZeroValueAsZeroDuration(true); //show "0:00"
 //                MyForm.initField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
-//                        () -> timedItem.getRemainingEffort(false), (l) -> timedItem.setRemainingEffort((long) l),
+//                        () -> timedItem.getRemainingEffort(false), (l) -> timedItem.setRemaining((long) l),
 //                        () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), previousValues, parseIdMap2);
 //                effortEstimate = new MyDurationPicker();
             effortEstimate.setShowZeroValueAsZeroDuration(true); //show "0:00"
-//                MyForm.initField(Item.PARSE_EFFORT_ESTIMATE, effortEstimate, () -> timedItem.getEffortEstimate(), (l) -> timedItem.setEffortEstimate((long) l),
+//                MyForm.initField(Item.PARSE_EFFORT_ESTIMATE, effortEstimate, () -> timedItem.getEffortEstimate(), (l) -> timedItem.setEstimate((long) l),
 //                        () -> effortEstimate.getDuration(), (l) -> effortEstimate.setDuration((long) l), previousValues, parseIdMap2);
 //            boolean effortEstimateBeingAutoupdated = false;
 //            boolean remainingEstimateBeingAutoupdated = false;
 
             effortEstimate.addActionListener((e) -> {
 //                effortEstimateBeingAutoupdated=true;
-                timedItem.setEffortEstimate(effortEstimate.getDuration(), false); //saved immediately on edit
-                if (timedItem.getRemainingEffortProjectTaskItself() == 0
+                timedItem.setEstimate(effortEstimate.getDuration(), false); //saved immediately on edit
+                if (timedItem.getRemainingForProjectTaskItself() == 0
                         && remainingEffort.getDuration() == 0
                         && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()) {
-//                    timedItem.setRemainingEffort(effortEstimate.getDuration(), false); //NB. not necessary because updating the duration picker will trigger the other actionListener
+//                    timedItem.setRemaining(effortEstimate.getDuration(), false); //NB. not necessary because updating the duration picker will trigger the other actionListener
                     remainingEffort.setDuration(effortEstimate.getDuration());
                     remainingEffort.repaint();
                 }
@@ -2311,10 +2311,10 @@ class TimerStack {
 
             remainingEffort.addActionListener((e) -> {
 //                remainingEstimateBeingAutoupdated=true;
-                timedItem.setRemainingEffort(remainingEffort.getDuration(), false); //saved immediately on edit
-                if (timedItem.getEffortEstimate() == 0 && effortEstimate.getDuration() == 0
+                timedItem.setRemaining(remainingEffort.getDuration(), false); //saved immediately on edit
+                if (timedItem.getEstimate() == 0 && effortEstimate.getDuration() == 0
                         && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()) {
-//                    timedItem.setEffortEstimate(remainingEffort.getDuration(), false);
+//                    timedItem.setEstimate(remainingEffort.getDuration(), false);
                     effortEstimate.setDuration(remainingEffort.getDuration());
                     effortEstimate.repaint();
                 }
@@ -2322,9 +2322,9 @@ class TimerStack {
 //                remainingEstimateBeingAutoupdated=false;
             });
 
-            effortEstimate.setDuration(timedItem.getEffortEstimate());
+            effortEstimate.setDuration(timedItem.getEstimate());
 //            remainingEffort.setDuration(timedItem.getRemainingEffort());
-            remainingEffort.setDuration(timedItem.getRemainingEffortProjectTaskItself());
+            remainingEffort.setDuration(timedItem.getRemainingForProjectTaskItself());
 
 //            totalActualEffort = new Label(); //MyDate.formatTime(calcTotalEffortInMinutes(item, elapsedTimePicker.getTime(), MyPrefs.getBoolean((MyPrefs.timerShowTotalActualInTimer))), showSeconds), "Button");
             refreshTotalActualEffort.actionPerformed(null);
