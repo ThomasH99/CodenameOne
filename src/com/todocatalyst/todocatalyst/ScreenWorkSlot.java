@@ -49,7 +49,8 @@ public class ScreenWorkSlot extends MyForm {
 //        if (previousValues != null) {
 //            this.previousValues = previousValues;
 //        } else {
-        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId("-" + this.workSlot.getObjectIdP()));
+//        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId("-" + this.workSlot.getObjectIdP()));
+        initLocalSaveOfEditedValues(getUniqueFormId()+"-" + this.workSlot.getObjectIdP());
 //        }
         setLayout(BoxLayout.y());
         getContentPane().setScrollableY(true);

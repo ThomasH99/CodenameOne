@@ -113,6 +113,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         sortedWorkslotList.add(0, workSlot);
         //simple solution: new workSlots are likely be the most recent, so simply search from end of list to find where to insert
     }
+    public void remove(WorkSlot workSlot) {
+        sortedWorkslotList.remove(workSlot);
+    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    /**

@@ -162,6 +162,8 @@ public class MultipleSelection {
      * @param items
      * @param operations
      */
+//    static void performOnAll(List<Item> items, ItemOperation operation) {
+//    static void performOnAll(ListSelector<Item> items, ItemOperation operation) {
     static void performOnAll(List<Item> items, ItemOperation operation) {
         for (Item item : items) {
 //        for (int i=0, size=items.size(); i<size;i++) {
@@ -171,6 +173,7 @@ public class MultipleSelection {
         }
     }
 
+//    static void performMultipleOperationsOnAll(ListSelector<Item> items, List<ItemOperation> operations) {
     static void performMultipleOperationsOnAll(List<Item> items, List<ItemOperation> operations) {
 //        for (Item item : items) {
         for (int i=0, size=items.size(); i<size;i++) {

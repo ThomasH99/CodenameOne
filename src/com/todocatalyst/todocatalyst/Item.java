@@ -2086,13 +2086,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     @Override
     public void delete() { //throws ParseException {
+        delete(true);
+    }
+
+    public void delete(boolean removeRefs) { //throws ParseException {
 
         //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
 //        List<Item> itemsSubtasksOfThisItem = DAO.getInstance().getAllItemsOwnedBy(this); //best to get owned subtasks directly from DAO since less likely that some may be missed
         List<Item> itemsSubtasksOfThisItem = getList();
         for (Item item : itemsSubtasksOfThisItem) {
 //            item.delete(); //let each item delete itself properly, will recurse down the project hierarchy
-            DAO.getInstance().delete(item); //let each item delete itself properly, will recurse down the project hierarchy
+//            DAO.getInstance().delete(item); //let each item delete itself properly, will recurse down the project hierarchy
+            item.delete(removeRefs); //let each item delete itself properly, will recurse down the project hierarchy
+            //TODO!!!! However, this will remove them from their owner (this task), which is not what we want
         }
 
         //TODO!!! (?)anything to do to handle case where subtasks are created and saved, but where the new mother task is finally not saved?
@@ -2100,23 +2106,39 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         // remove item from all categories before deleting it
 //        DAO.getInstance().deleteItemFromAllCategories(this);
         for (Category cat : getCategories()) {
-            ((Category) cat).removeItem(this); //remove references to this item from the category before deleting it
-            DAO.getInstance().save(cat);
+            ((Category) cat).removeItemFromCategory(this, removeRefs); //remove references to this item from the category before deleting it (false: but keep the item's categories)
+//            DAO.getInstance().save(cat);
+//            DAO.getInstance().saveInBackground(cat);
+            DAO.getInstance().saveInBackground((ParseObject) cat);
         }
-        List<Category> catList = DAO.getInstance().getAllCategoriesContainingItem(this);
-        ASSERT.that(catList == null || catList.size() == 0, () -> "some categories still contain item after deleting it from its categories, item=" + this + " categories=" + catList);
+//        List<Category> catList = DAO.getInstance().getAllCategoriesContainingItemXXXNOT_NECESSARY(this);
+//        ASSERT.that(catList == null || catList.size() == 0, () -> "some categories still contain item after deleting it from its categories, item=" + this + " categories=" + catList);
 
         //DELETE IN OWNERS/PROJECTS
-        if (getOwnerItem() != null) {
-            Item ownerItem = getOwnerItem();
-            ownerItem.getList().remove(this);
-            DAO.getInstance().save(ownerItem);
-        }
-        if (getOwnerList() != null) {
-            ItemList ownerItemList = getOwnerList();
-//            ownerItemList.getList().remove(this);
-            ownerItemList.removeItem(this);
-            DAO.getInstance().save(ownerItemList);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (getOwnerItem() != null) {
+//            Item ownerItem = getOwnerItem();
+//            ownerItem.getList().remove(this);
+//            DAO.getInstance().save(ownerItem);
+//        }
+//        if (getOwnerList() != null) {
+//            ItemList ownerItemList = getOwnerList();
+////            ownerItemList.getList().remove(this);
+//            ownerItemList.removeItem(this);
+//            DAO.getInstance().save(ownerItemList);
+//        }
+//</editor-fold>
+        ItemAndListCommonInterface owner = getOwner();
+//        if (owner != null) {
+        if (owner instanceof Item) {
+            //removeFromList removes owner, but we want to keep it in the soft-deleted task so it can be undeleted if necessary
+            ((Item) owner).removeFromList(this, !removeRefs);
+//            if (removeRefs) setOwner(owner); 
+            DAO.getInstance().saveInBackground((ParseObject) owner);
+        } else {
+            owner.removeFromList(this);
+//            if (removeRefs) setOwner(owner); //removeFromList removes owner, but we want to keep it in the soft-deleted task so it can be undeleted if necessary
+            DAO.getInstance().saveInBackground((ParseObject) owner);
         }
 
         //handle repeatrule
@@ -2126,6 +2148,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we 
 //            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
             myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this);
+            //NB. We don't delete the item's refs to repeatrule
         }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2146,7 +2169,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        super.delete();
 //        put(PARSE_DELETED_DATE, new Date());
         setDeletedDate(new Date());
-        DAO.getInstance().save(this);
+        DAO.getInstance().saveInBackground(this);
 
         //TODO: any other references to an item??
 /////////////////////////////////////////////////////
@@ -2267,11 +2290,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public boolean removeFromList(ItemAndListCommonInterface subItemOrList) {
+        return removeFromList(subItemOrList, true);
+    }
+
+    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeFromOwner) {
         List subtasks = getList();
         boolean status = subtasks.remove(subItemOrList);
         setList(subtasks);
         assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
-        subItemOrList.setOwner(null);
+        if (removeFromOwner) subItemOrList.setOwner(null);
         return status;
     }
 
@@ -6815,6 +6842,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        update();
     }
 
+    @Override
     public void setDeletedDate(Date dateDeleted) {
         if (dateDeleted != null && dateDeleted.getTime() != 0) {
             put(PARSE_DELETED_DATE, dateDeleted);
@@ -6823,9 +6851,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+    @Override
     public Date getDeletedDate() {
         Date date = getDate(PARSE_DELETED_DATE);
-        return (date == null) ? new Date(0) : date;
+//        return (date == null) ? new Date(0) : date;
+        return date; //return null to indicate NOT deleted
     }
 
 //    public void setCompletedDateD(Date completedDate) {

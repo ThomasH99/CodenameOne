@@ -124,7 +124,8 @@ public class ScreenTimer6 extends MyForm {
         } else {
 //            this.previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
 //            this.previousValues = new SaveEditedValuesLocally("Timer-" + TimerStack.getInstance().getTimedItemN().getObjectIdP());
-            this.previousValues = new SaveEditedValuesLocally("Timer");
+//            this.previousValues = new SaveEditedValuesLocally("Timer");
+            initLocalSaveOfEditedValues("Timer");
         }
 
 //        setScrollable(false);
@@ -175,7 +176,8 @@ public class ScreenTimer6 extends MyForm {
         if (timedItem != null) {
 //            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
 //            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
-            previousValues = new SaveEditedValuesLocally("Timer-" + timedItem.getObjectIdP());
+//            previousValues = new SaveEditedValuesLocally("Timer-" + timedItem.getObjectIdP());
+            initLocalSaveOfEditedValues("Timer-" + timedItem.getObjectIdP());
 //        TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, timerContentainer,  previousValues); //also removes previous content of contentPane
             Container contentPane = getContentPane();
             contentPane.removeAll();

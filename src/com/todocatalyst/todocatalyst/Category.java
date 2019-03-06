@@ -872,7 +872,7 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
 //            item.save();
 //        }
 //</editor-fold>
-        DAO.getInstance().deleteCategoryFromAllItems(this);
+        DAO.getInstance().deleteCategoryFromAllItemsXXXNOT_NECESSARY(this);
 
         //remove category from meta-categories
         List<Category> listOfCategories = DAO.getInstance().getAllCategoriesIncludingThis(this);

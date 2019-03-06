@@ -678,6 +678,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         com.codename1.io.Util.register(RepeatRuleParseObject.CLASS_NAME, RepeatRuleParseObject.class); //register Externalizable class
         com.codename1.io.Util.register(FilterSortDef.CLASS_NAME, FilterSortDef.class); //register Externalizable class
         com.codename1.io.Util.register(WorkSlot.CLASS_NAME, WorkSlot.class); //register Externalizable class
+//        com.codename1.io.Util.register(ListSelector.CLASS_NAME, ListSelector.class); //register Externalizable class
 //</editor-fold>
 
         Display.getInstance().setLongPointerPressInterval(400); //UI: 600 too long, 700 is maybe a bit long, 650 a bit too long. set delay for activating LongPress (default 800 is too fast??)

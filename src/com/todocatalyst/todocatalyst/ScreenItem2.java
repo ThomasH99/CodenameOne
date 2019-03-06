@@ -151,10 +151,10 @@ public class ScreenItem2 extends MyForm {
         getTitleComponent().setEndsWith3Points(true);
 //        ScreenItemP.item = item;
         this.item = item;
-        initLocalSaveOfEditedValues(getUniqueFormId(item.getObjectIdP()));
+        initLocalSaveOfEditedValues(getUniqueFormId()+item.getObjectIdP());
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(FORM_UNIQUE_ID,this.item);
-        expandedObjects = new ExpandedObjects(getUniqueFormId(this.item.getObjectIdP()));
+        expandedObjects = new ExpandedObjects(getUniqueFormId()+this.item.getObjectIdP());
         try {
             //        DAO.getInstance().deleteCategoryFromAllItems(cat);
             if (this.item != null) {
@@ -341,18 +341,19 @@ public class ScreenItem2 extends MyForm {
         }
 
         //DELETE
-        toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {
+        toolbar.addCommandToOverflowMenu(CommandTracked.create("Delete", null, (e) -> {
 //            Log.p("Clicked");
 //            item.revert(); //forgetChanges***/refresh
 //            previousForm.showBack(); //drop any changes
 //            item.delete();
-            DAO.getInstance().delete(item);
+//            DAO.getInstance().delete(item);
+            item.delete();
 //            previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
 //            showPreviousScreenOrDefault(previousForm, true);
             showPreviousScreenOrDefault(true);
-        });
+        },"DeleteItem"));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //TASK STATUS

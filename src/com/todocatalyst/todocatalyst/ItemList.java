@@ -9,6 +9,7 @@ import com.codename1.ui.tree.TreeModel;
 import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
 import static com.todocatalyst.todocatalyst.Item.PARSE_WORKSLOTS;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
 import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
@@ -36,7 +37,7 @@ import java.util.ListIterator;
 //public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         implements /*ItemListModel,*/
-        MyTreeModel, /*Collection,*/ List, SumField, ItemAndListCommonInterface{ //, Iterable { //, DataChangedListener {
+        MyTreeModel, /*Collection,*/ List, SumField, ItemAndListCommonInterface { //, Iterable { //, DataChangedListener {
 //        MyTreeModel, /*Collection,*/ List, SumField, Iterable { //, DataChangedListener {
     //TODO implement deep fetchFromCacheOnly to get all tasks and sub-tasks at any depth
     //TODO: implement caching of worksum of sub-tasks (callback from subtasks to all affected owners and categories??)
@@ -141,8 +142,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        setList(list);
         this(list, false);
     }
-    
-        public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
+
+    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
         this();
         setText(listName);
         setList(list);
@@ -185,8 +186,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
         public boolean save();
     }
-
-
 
     /**
      * returns true if this list should NOT be saved to parse, e.g. because it
@@ -476,7 +475,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public int size() {
 //        return getSize();
 //        return (getListFull() == null) ? 0 : getListFull().size();
-return getSize();
+        return getSize();
     }
 
     @Override
@@ -1290,7 +1289,7 @@ return getSize();
     public void copyMeInto(ItemAndListCommonInterface destiny) {
         //public void copyMeInto(ItemList destiny) {
         ItemList destinyItemList = (ItemList) destiny;
-        ASSERT.that(false,"not sure why ItemList should be cloned?? List="+getText());
+        ASSERT.that(false, "not sure why ItemList should be cloned?? List=" + getText());
 //        super.copyMeInto(destinyItemList);
         // optimization: select the most efficient way of copying vectors (always using the head of lists?)
 //        System.arraycopy(...); //TODO!!!: use arraycopy for faster copy of vector
@@ -3571,6 +3570,22 @@ return getSize();
     @Override
     public String getObjectId() {
         return CLASS_NAME;
+    }
+
+    @Override
+    public void setDeletedDate(Date dateDeleted) {
+        if (dateDeleted != null && dateDeleted.getTime() != 0) {
+            put(PARSE_DELETED_DATE, dateDeleted);
+        } else {
+            remove(PARSE_DELETED_DATE); //delete when setting to default value
+        }
+    }
+
+    @Override
+    public Date getDeletedDate() {
+        Date date = getDate(PARSE_DELETED_DATE);
+//        return (date == null) ? new Date(0) : date;
+        return date; //return null to indicate NOT deleted
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

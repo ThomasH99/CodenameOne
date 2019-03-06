@@ -111,7 +111,7 @@ public class ScreenListOfItems extends MyForm {
 //    HashSet expandedObjects = new HashSet(); //TODO!! save expandedObjects for this screen and the given list
 //    boolean selectionMode = false; //is selectionMode on
 //    private HashSet selectedObjects; //selected objects
-    ArrayList selectedObjects = new ArrayList(); //selected objects
+//    private ListSelector<Item> selectedObjects; // = new ArrayList(); //selected objects
 //    private ArrayList oldSelectedObjects; //store selection after deactivating
 //    private static SwipeableContainer newTaskContainer = null; //stores the current newSubtask container to allow to automatically close one if a new one is created
 
@@ -302,6 +302,7 @@ public class ScreenListOfItems extends MyForm {
 //        this.itemListOrg = itemList;
         getItemListFct = itemListFct;
         itemListOrg = itemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!!
+        initLocalSaveOfEditedValues(getUniqueFormId() + itemListOrg.getObjectIdP());
 //        this.updateActionOnDone = () -> {
         setUpdateActionOnDone(() -> {
 //            this.itemListOrg = itemListFct.getUpdatedItemList(); //NO - WHY? Must set with edited subtask list
@@ -334,7 +335,7 @@ public class ScreenListOfItems extends MyForm {
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
 //</editor-fold>
-        String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId(itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
+        String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId() + (itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         expandedObjects = new ExpandedObjects(expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         this.stickyHeaderGen = stickyHeaderGen;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -872,37 +873,40 @@ public class ScreenListOfItems extends MyForm {
         //SELECTION MODE
         if (!optionTemplateEditMode && !optionNoMultipleSelectionMode) {
 
-            Command cmdInvertSelection = new Command("Invert selection", Icons.iconSelectedLabelStyle) {
+            Command cmdInvertSelection = new CommandTracked("Invert selection", Icons.iconSelectedLabelStyle) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
-                        HashSet invertedSelection = new HashSet();
-                        //for all visible (top-level - not expanded subtasks)
-//                        for (Object item : itemListFilteredSorted) {
-                        for (Object item : itemListOrg) {
-                            if (item instanceof Item) {
-                                if (!selectedObjects.contains(item)) {
-                                    invertedSelection.add(item);
-                                }
-                            }
-                        }
-                        selectedObjects.clear();
-                        selectedObjects.addAll(invertedSelection);
-//                    ScreenListOfItems.this.revalidate();
-//                    setupList(); //TODO optimize the application of a filter?
+                        selectedObjects.invertSelection();
+//                        HashSet invertedSelection = new HashSet();
+//                        //for all visible (top-level - not expanded subtasks)
+////                        for (Object item : itemListFilteredSorted) {
+//                        for (Object item : itemListOrg) {
+//                            if (item instanceof Item) {
+//                                if (!selectedObjects.contains(item)) {
+//                                    invertedSelection.add(item);
+//                                }
+//                            }
+//                        }
+//                        selectedObjects.clear();
+//                        selectedObjects.addAll(invertedSelection);
+////                    ScreenListOfItems.this.revalidate();
+////                    setupList(); //TODO optimize the application of a filter?
                         refreshAfterEdit(); //TODO optimize the application of a filter?
 //                    myTree.animateLayout(300);
                     }
                 }
             };
 
-            Command cmdSelectAll = new Command("Select All", Icons.iconSelectedLabelStyle) {
+            Command cmdSelectAll = new CommandTracked("Select All", Icons.iconSelectedLabelStyle) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
 //                    selectedObjects=new HashSet(itemListFilteredSorted);
 //                        selectedObjects.addAll(itemListFilteredSorted);
-                        selectedObjects.addAll(itemListOrg.getList()); //UI: only add un-filtered objects (same as seen)
+//                        selectedObjects.addAll(itemListOrg.getList()); //UI: only add un-filtered objects (same as seen)
+//                        selectedObjects.selectAll(itemListOrg.getList()); //UI: only add un-filtered objects (same as seen)
+                        selectedObjects.selectAll(); //UI: only add un-filtered objects (same as seen)
 //                    ScreenListOfItems.this.revalidate();
 //                    setupList(); //TODO optimize the application of a filter?
                         refreshAfterEdit(); //TODO optimize the application of a filter?
@@ -911,11 +915,12 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdUnselectAll = new Command("Unselect All", Icons.iconSelectedLabelStyle) {
+            Command cmdUnselectAll = new CommandTracked("Unselect All", Icons.iconSelectedLabelStyle) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
-                        selectedObjects.clear();
+//                        selectedObjects.clear();
+                        selectedObjects.unselectAll();
 //                    ScreenListOfItems.this.revalidate();
 //                    setupList(); //TODO optimize the application of a filter?
                         refreshAfterEdit(); //TODO optimize the application of a filter?
@@ -924,7 +929,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdSetAnything = new Command("Set multiple fields", Icons.iconSelectedLabelStyle) {
+            Command cmdSetAnything = new CommandTracked("Set multiple fields", Icons.iconSelectedLabelStyle) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
@@ -932,20 +937,20 @@ public class ScreenListOfItems extends MyForm {
                         setKeepPos(new KeepInSameScreenPosition());
                         new ScreenItem2(itemWithNewValues, ScreenListOfItems.this, () -> {
 //                        MultipleSelection.performOnAll(itemListFilteredSorted, MultipleSelection.setAnything(itemWithNewValues));
-                            MultipleSelection.performOnAll(selectedObjects, MultipleSelection.setAnything(itemWithNewValues));
+                            MultipleSelection.performOnAll(selectedObjects.getSelected(), MultipleSelection.setAnything(itemWithNewValues));
                             refreshAfterEdit();
                         }).show();
                     }
                 }
             };
 
-            Command cmdDeleteSelected = new Command("Delete selected", Icons.iconSelectedLabelStyle) {
+            Command cmdDeleteSelected = new CommandTracked("Delete selected", Icons.iconSelectedLabelStyle) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     //TODO!!! warning that this cannot be undone!!
                     if (isSelectionMode()) {
                         setKeepPos(new KeepInSameScreenPosition());
-                        MultipleSelection.performOnAll(selectedObjects, MultipleSelection.delete());
+                        MultipleSelection.performOnAll(selectedObjects.getSelected(), MultipleSelection.delete());
                         selectedObjects.clear(); //remove deleted items from the selection
 //                    setupList(); //TODO optimize the application of a filter?
                         refreshAfterEdit(); //TODO optimize the application of a filter?
@@ -953,14 +958,14 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdMoveSelectedToTopOfList = new Command("Move to top", Icons.iconSelectedLabelStyle) {
+            Command cmdMoveSelectedToTopOfList = new CommandTracked("Move to top", Icons.iconSelectedLabelStyle) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     //TODO!!! warning that this cannot be undone!!
 //                    if (isSelectionMode()&&!isSortOn()) {
                     if (isSelectionMode()) {
 //                        setKeepPos(new KeepInSameScreenPosition()); //NOT needed, natural to move to top of list
-                        MultipleSelection.performOnAll(selectedObjects, MultipleSelection.moveToTopOfList(itemListOrg));
+                        MultipleSelection.performOnAll(selectedObjects.getSelected(), MultipleSelection.moveToTopOfList(itemListOrg));
 //                    selectedObjects.clear(); //DO NOT unselect objects to allow for additional operations on selection
 //                    setupList(); //TODO optimize the application of a filter?
                         DAO.getInstance().save((ParseObject) itemListOrg); //save after having moved items around
@@ -976,7 +981,7 @@ public class ScreenListOfItems extends MyForm {
 
             if (true) {
 //            Button draggableOnOff = new Button();
-                Command draggableOnOff = new Command("Move ON", Icons.iconMoveUpDownToolbarStyle) {
+                Command draggableOnOff = new CommandTracked("Move ON", Icons.iconMoveUpDownToolbarStyle) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         Container cont = getComponentForm().getContentPane();
@@ -993,34 +998,42 @@ public class ScreenListOfItems extends MyForm {
                 };
                 toolbar.addCommandToOverflowMenu(draggableOnOff);
 
-                toolbar.addCommandToOverflowMenu(new Command("Selection mode ON", Icons.iconSelectedLabelStyle) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        if (!isSelectionMode()) {
+//                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
+                toolbar.addCommandToOverflowMenu(CommandTracked.create("Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
+                    if (!isSelectionMode()) {
 //                    isSelectionMode() = true;
 //                    selectedObjects = new HashSet(); //TODO keep a previous selection?
-                            setSelectionMode(true);
-                            setCommandName("Selection mode OFF");
-                            //TODO!! put the selectionCommands into a separate menu (like overflow menu, with same icon as the selection symbol?)
-                            toolbar.addCommandToOverflowMenu(cmdSetAnything);
-                            toolbar.addCommandToOverflowMenu(cmdMoveSelectedToTopOfList);
-                            toolbar.addCommandToOverflowMenu(cmdSelectAll);
-                            toolbar.addCommandToOverflowMenu(cmdUnselectAll);
-                            toolbar.addCommandToOverflowMenu(cmdInvertSelection);
-                            toolbar.addCommandToOverflowMenu(cmdDeleteSelected);
+                        setSelectionMode(true, itemListOrg.getList());
+//                            MyReplayCommand.this.setCommandName("Selection mode OFF");
+                        Object source =  e.getSource();
+                        if (source instanceof Command)
+                            ((Command) source).setCommandName("Selection OFF**");
+                        else if (source instanceof Button)
+                            ((Button) source).setText("Selection OFF");
+                        //TODO!! put the selectionCommands into a separate menu (like overflow menu, with same icon as the selection symbol?)
+                        toolbar.addCommandToOverflowMenu(cmdSetAnything);
+                        toolbar.addCommandToOverflowMenu(cmdMoveSelectedToTopOfList);
+                        toolbar.addCommandToOverflowMenu(cmdSelectAll);
+                        toolbar.addCommandToOverflowMenu(cmdUnselectAll);
+                        toolbar.addCommandToOverflowMenu(cmdInvertSelection);
+                        toolbar.addCommandToOverflowMenu(cmdDeleteSelected);
 //                            ScreenListOfItems.this.refreshAfterEdit(); //TODO!!!! keep same position, OR: simply make existing containers expand by traversing the list and adding the selectionButton and removing afterwards (faster!)
-                            refreshAfterEdit(); //TODO!!!! keep same position, OR: simply make existing containers expand by traversing the list and adding the selectionButton and removing afterwards (faster!)
+                        refreshAfterEdit(); //TODO!!!! keep same position, OR: simply make existing containers expand by traversing the list and adding the selectionButton and removing afterwards (faster!)
 //                        Component componentForm = getComponentForm();
 //                        Component parent = getParent();
 //                        if (parent != null) {
 //                            Component componentForm2 = getParent().getComponentForm();
 //                        }
-                        } else {
+                    } else {
 //                    isSelectionMode() = false;
 //                    selectedObjects = null;
-                            setSelectionMode(false);
-                            setCommandName("Selection mode ON");
-                            //TODO!!!! use Toolbar.removeOverflowCommand(Command) once added (see http://stackoverflow.com/questions/39200432/how-to-remove-commands-added-to-overflow-menu)
+                        setSelectionMode(false, null);
+                        Object source = e.getSource();
+                        if (source instanceof Command)
+                            ((Command) source).setCommandName("Selection ON**");
+                        else if (source instanceof Button)
+                            ((Button) source).setText("Selection ON");
+                        //TODO!!!! use Toolbar.removeOverflowCommand(Command) once added (see http://stackoverflow.com/questions/39200432/how-to-remove-commands-added-to-overflow-menu)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    ToolbarSideMenu  menuBar = (ToolbarSideMenu )getToolbar().getMenuBar();
 //                    menuBar.removeOverflowCommand(cmdSetAnything);
@@ -1033,20 +1046,20 @@ public class ScreenListOfItems extends MyForm {
 //                    ScreenListOfItems.this.removeCommand(cmdInvertSelection);
 //                    ScreenListOfItems.this.removeCommand(cmdDeleteSelected);
 //</editor-fold>
-                            Toolbar toolbar = getToolbar();
-                            toolbar.removeOverflowCommand(cmdSetAnything);
-                            toolbar.removeOverflowCommand(cmdMoveSelectedToTopOfList);
-                            toolbar.removeOverflowCommand(cmdSelectAll);
-                            toolbar.removeOverflowCommand(cmdUnselectAll);
-                            toolbar.removeOverflowCommand(cmdInvertSelection);
-                            toolbar.removeOverflowCommand(cmdDeleteSelected);
-                            if (false) {
-                                ScreenListOfItems.this.revalidate(); //needed to make the commands actually disappear??
-                            }//                            ScreenListOfItems.this.refreshAfterEdit();
-                            refreshAfterEdit();
-                        }
+//                            Toolbar toolbar = myForm.getToolbar();
+                        toolbar.removeOverflowCommand(cmdSetAnything);
+                        toolbar.removeOverflowCommand(cmdMoveSelectedToTopOfList);
+                        toolbar.removeOverflowCommand(cmdSelectAll);
+                        toolbar.removeOverflowCommand(cmdUnselectAll);
+                        toolbar.removeOverflowCommand(cmdInvertSelection);
+                        toolbar.removeOverflowCommand(cmdDeleteSelected);
+                        if (false) {
+                            ScreenListOfItems.this.revalidate(); //needed to make the commands actually disappear??
+                        }//                            ScreenListOfItems.this.refreshAfterEdit();
+                        refreshAfterEdit();
                     }
-                });
+//                }, true));
+                }));
             }
 
         }
@@ -1057,7 +1070,8 @@ public class ScreenListOfItems extends MyForm {
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
         if (!optionTemplateEditMode && !optionNoTimer) {
 //            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
-            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+//            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+            toolbar.addCommandToLeftBar(CommandTracked.create( "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
@@ -1779,7 +1793,7 @@ public class ScreenListOfItems extends MyForm {
 //        if (isSelectionMode()) {
         Button selected = new Button(); //null;
         selected.setUIID("ListOfItemsSelected");
-        if (myForm.selectedObjects != null) {
+        if (myForm.selectedObjects != null && myForm.selectedObjects.isSelectable(item)) {
 //            RadioButton selected = new RadioButton();
 //            selected = new Button();
 //            selected.setIcon(myForm.selectedObjects.contains(item) ? Icons.iconSelectedLabelStyle : Icons.iconUnselectedLabelStyle);
@@ -1805,9 +1819,10 @@ public class ScreenListOfItems extends MyForm {
 //                    }
 //                    selected.setIcon(myForm.selectedObjects.contains(item) ? Icons.iconSelectedLabelStyle : Icons.iconUnselectedLabelStyle);
 //</editor-fold>
-                    myForm.selectedObjects.flipSelection(item);
-                    selected.setIcon(myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedLabelStyle : Icons.iconUnselectedLabelStyle);
-                    selected.repaint();
+                    if (myForm.selectedObjects.flipSelection(item)) {
+                        selected.setIcon(myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedLabelStyle : Icons.iconUnselectedLabelStyle);
+                        selected.repaint();
+                    }
                 }
             });
             if (oldFormat) {

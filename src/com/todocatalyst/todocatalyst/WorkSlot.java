@@ -11,6 +11,7 @@ import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import com.todocatalyst.todocatalyst.Item.CopyMode;
 import com.todocatalyst.todocatalyst.Item.EstimateResult;
+import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
 import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -874,7 +875,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //            put(PARSE_START_TIME, start);
 //            updateEndTimeWithNewStartTime(start);
 //        }
-       if ((start != null && start.getTime() != 0)) {
+        if ((start != null && start.getTime() != 0)) {
             put(PARSE_START_TIME, start);
 //            updateEndTimeWithNewStartTime(start);
         } else {
@@ -895,6 +896,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private final void updateEndTimeWithNewDuration(long newDuration) {
 ////        put(PARSE_END_TIME, new Date(getStartTimeD().getTime() + newDuration));
 //        setEndTime(new Date(getStartTimeD().getTime() + newDuration));
@@ -904,6 +906,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        put(PARSE_END_TIME, new Date(newStartTime.getTime() + getDurationInMillis()));
 //        setEndTime(new Date(newStartTime.getTime() + getDurationInMillis()));
 //    }
+//</editor-fold>
     /**
     even though redundant (can be calculated from startTime and duration) we need to store endTime explicitly to allow Parse searches on its value
     @param endTime 
@@ -984,7 +987,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        } else {
 //            return duration;
 //        }
-//        return inactive ? 0 : duration;// </editor-fold>
+//        return inactive ? 0 : duration;
 //        if (has(PARSE_DURATION)) {
 ////            return getLong(PARSE_DURATION)*MINUTES_IN_MILLISECONDS; //only store the time as minutues (more readable in parse)
 //            return getLong(PARSE_DURATION) * MINUTES_IN_MILLISECONDS; //only store the time as minutues (more readable in parse)
@@ -997,6 +1000,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        } else {
 //            return 0;
 //        }
+// </editor-fold>
         return ((long) getDurationInMinutes()) * MyDate.MINUTE_IN_MILLISECONDS;
     }
 
@@ -1051,10 +1055,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         } else { //workslot in the future
             return durationInMillis;
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        return inactive ? 0
 //        return !isActive() ? 0
 ////                : startTime == 0 ? getDurationInMillis() - consumedDuration
-//                : startTime == 0 ? getDurationInMillis() 
+//                : startTime == 0 ? getDurationInMillis()
 //                        : //for undated slots, workSlot can only be reduced by consuming it, not by the passing of time
 ////                        getDurationInMillis() - Math.max(consumedDuration, //0 unless set
 //                        getDurationInMillis() - ( //0 unless set
@@ -1062,6 +1067,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //                                        ? //only
 //                                        ((int) Math.min(getDurationInMillis(), //with min() ensures that can never get bigger than duration
 //                                                Math.max(0, (MyDate.getNow() - startTime)))) : 0); //now-start==what is eaten out of duration if start is in the past; min(duration,*) to avoid that now-start can get bigger than int
+//</editor-fold>
     }
 
     /**
@@ -1282,11 +1288,28 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     //    }
     //</editor-fold>
     @Override
+    public void setDeletedDate(Date dateDeleted) {
+        if (dateDeleted != null && dateDeleted.getTime() != 0) {
+            put(Item.PARSE_DELETED_DATE, dateDeleted);
+        } else {
+            remove(Item.PARSE_DELETED_DATE); //delete when setting to default value
+        }
+    }
+
+    @Override
+    public Date getDeletedDate() {
+        Date date = getDate(Item.PARSE_DELETED_DATE);
+        return (date == null) ? new Date(0) : date;
+    }
+
+    @Override
     public void delete() throws ParseException {
         RepeatRuleParseObject myRepeatRule = getRepeatRule();
         if (myRepeatRule != null) {
 //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this, (ItemList) getOwner());
             myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
+            //TODO!!! if no more workSlots referenced fromrepeatrule, then also delete repeatrule
+            DAO.getInstance().saveInBackground(myRepeatRule);
         }
 //        try {
 //            //        ((WorkSlotList) getOwner()).removeItem(this);
@@ -1297,9 +1320,23 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        }
 //        DAO.getInstance().delete(this);
 //        super.delete();
-        put(Item.PARSE_DELETED_DATE, new Date());
-        DAO.getInstance().save(this);
 
+        //remove from owner (but don't remove owner from this workSlot, that allows us to recreate/undelete
+        ItemAndListCommonInterface owner = getOwner();
+        if (owner != null) {
+            WorkSlotList workSlotList = owner.getWorkSlotListN();
+            if (workSlotList != null) {
+                workSlotList.remove(this);
+                owner.setWorkSlotList(workSlotList);
+                DAO.getInstance().saveInBackground((ParseObject) owner);
+            }
+//            owner.removeFromList(this); //TODO implement removeFromList on WorkSlotList?
+            DAO.getInstance().saveInBackground(this);
+        }
+
+//        put(Item.PARSE_DELETED_DATE, new Date());
+        setDeletedDate(new Date());
+        DAO.getInstance().saveInBackground(this);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1443,7 +1480,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return null;
 //    }
 //</editor-fold>
-
     @Override
     public void updateRepeatInstanceRelativeDates(Date newDueDateTime) {
         setStartTime(newDueDateTime);
@@ -1484,7 +1520,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //                                if (slice.workSlot == this && !items.contains(item)) {
                                 //if slice is from this workslot, and item not already added (necessary??!) and slice is non-zero duration (to exclude house-keeping allocations) and task is not done
 //                                if (slice.workSlot == this && !items.contains(item) && slice.getDuration() > 0 && (!item.isDone() || includeDoneTasks)) {
-                                if (slice.workSlot == this && (slice.getDuration() > 0 || includeDoneTasks || Config.TEST)) {
+                                if (slice.workSlot == this && (slice.getDuration() > 0 || includeDoneTasks)) {// || Config.TEST)) {
                                     items.add(item);
                                 }
                             }

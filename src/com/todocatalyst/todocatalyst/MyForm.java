@@ -45,6 +45,7 @@ import com.codename1.ui.table.TableLayout;
 import com.codename1.ui.util.UITimer;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_OBJECT;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,9 +87,9 @@ public class MyForm extends Form {
     ExpandedObjects expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
     protected KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
 //    List selectedObjects; //selected objects
-    ListSelector<ItemAndListCommonInterface> selectedObjects; //selected objects
+    protected ListSelector<Item> selectedObjects; //selected objects
 //    private List oldSelectedObjects; //store selection after deactivating
-    private ListSelector<ItemAndListCommonInterface> oldSelectedObjects; //store selection after deactivating
+    private ListSelector<Item> oldSelectedObjects; //store selection after deactivating
 //    private static boolean showDetailsForAllTasks = false;
 //    private static HashSet tasksWithDetailsShown;
     protected HashSet showDetails = new HashSet(); //set of Items etc expanded to show task details
@@ -126,7 +127,7 @@ public class MyForm extends Form {
         return uniqueFormId != null ? uniqueFormId : (getTitle() != null && getTitle().length() > 0 ? getTitle() : "NoScreenId");
     }
 
-    public String getUniqueFormId(String extensionStr) {
+    public String getUniqueFormIdXXX(String extensionStr) {
         return getUniqueFormId() + extensionStr;
     }
 
@@ -179,7 +180,7 @@ public class MyForm extends Form {
     public void setStartEditingAsyncIfDefined(Container contentContainer) {
         if (contentContainer instanceof MyTree2) {
             InsertNewElementFunc insertNewElementFunc = ((MyTree2) contentContainer).getInlineInsertField();
-            if (insertNewElementFunc != null&&insertNewElementFunc.getTextArea()!=null) {
+            if (insertNewElementFunc != null && insertNewElementFunc.getTextArea() != null) {
 //                setStartEditingAsync(insertNewElementFunc.getTextArea());
                 insertNewElementFunc.getTextArea().startEditingAsync();
             }
@@ -676,7 +677,7 @@ public class MyForm extends Form {
     }
 
     static void dialogUpdateActualTime(Item item) {
-       if (item.isDone()
+        if (item.isDone()
                 || !(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()
                 || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero.getBoolean() && item.getActual() == 0))) {
             return; //do nothing if item is done, or settings/conditions not fulfilled
@@ -2653,6 +2654,7 @@ public class MyForm extends Form {
 
     protected void initLocalSaveOfEditedValues(String filename) {
 //        previousValuesFilename = filename;
+        if (Config.TEST) ASSERT.that(filename != null && filename.length() > 0, "empty filename");
         previousValues = new SaveEditedValuesLocally(filename);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        previousValues = new HashMap<Object, Object>() {
@@ -2928,14 +2930,20 @@ public class MyForm extends Form {
         return selectedObjects != null;
     }
 
-    void setSelectionMode(boolean activateSelectionMode) {
+    void setSelectionMode(boolean activateSelectionMode, Collection referenceSet) {
         if (activateSelectionMode) {
-//            selectedObjects = new HashSet();
-            selectedObjects = oldSelectedObjects;
-            if (selectedObjects == null) {
-//                selectedObjects = new ArrayList();
-//                selectedObjects = new ListSelector(1, true);
-                selectedObjects = new ListSelector();
+            if (oldSelectedObjects != null) {
+                oldSelectedObjects.setReferenceSetAndRefreshSelection(referenceSet);
+                selectedObjects = oldSelectedObjects;
+            } else if (previousValues.get(ListSelector.CLASS_NAME) != null) {
+                selectedObjects = new ListSelector(
+                        DAO.getInstance().fetchListOfItemsFromListOfObjectIds((List<String>) previousValues.get(ListSelector.CLASS_NAME)),
+                        true, Integer.MAX_VALUE, true,
+                        (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedObjIds()), true, referenceSet); //put: save selected values locally
+                selectedObjects = (ListSelector) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
+            } else {
+                assert (selectedObjects == null);
+                selectedObjects = new ListSelector(null, true, Integer.MAX_VALUE, true, (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedObjIds()), true, referenceSet); //put: save selected values locally
             }
         } else {
             oldSelectedObjects = selectedObjects; //UI:store selection so it isn't lost between selection sessions
@@ -2962,7 +2970,7 @@ public class MyForm extends Form {
             Log.p("Show MyForm: " + getTitle());
         }
         //restore scroll position on replay
-        if (previousValues != null) {
+        if (false &&previousValues != null) {
             int scrollY = previousValues.getScrollY();
             if (scrollY > 0) {
                 Form f = getComponentForm();

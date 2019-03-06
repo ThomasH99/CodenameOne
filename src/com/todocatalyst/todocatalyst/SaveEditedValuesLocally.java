@@ -29,17 +29,17 @@ public class SaveEditedValuesLocally {//extends HashMap {
     private static String PREFIX = "SAVED-EDITS-";
     private static String SCROLL_VALUE_KEY = "SCROLL-Y-VAL";
     private static int SCROLL_VALUE_TIMEOUT_MS = 500; //how long after last scroll should the scroll value be saved
-    private String previousValuesFilename;
+    private String filename;
 
     SaveEditedValuesLocally(String filename) {
 //        if (filename != null && filename.length() > 0) {
         if (filename == null || filename.length() == 0)
-            filename = "-NewItem";
-        ASSERT.that(filename != null && !filename.isEmpty());
-        previousValuesFilename = PREFIX + filename;
+            filename = "NewItem";
+//        ASSERT.that(filename != null && !filename.isEmpty());
+        this.filename = PREFIX + filename;
         previousValues = new HashMap<Object, Object>(); //implicit
-        if (Storage.getInstance().exists(previousValuesFilename)) {
-            previousValues.putAll((Map) Storage.getInstance().readObject(previousValuesFilename));
+        if (Storage.getInstance().exists(this.filename)) {
+            previousValues.putAll((Map) Storage.getInstance().readObject(this.filename));
         }
 
     }
@@ -74,7 +74,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
     public void saveFile() {
 //            Storage.getInstance().writeObject("ScreenItem-" + item.getObjectIdP(), this); //save 
         if (previousValues != null)
-            Storage.getInstance().writeObject(previousValuesFilename, previousValues); //save 
+            Storage.getInstance().writeObject(filename, previousValues); //save 
     }
 
     public Object put(Object key, Object value) {
@@ -153,7 +153,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         if (saveScrollYTimer != null) { //stop timer if running
             saveScrollYTimer.cancel();
         }
-        Storage.getInstance().deleteStorageFile(previousValuesFilename);
+        Storage.getInstance().deleteStorageFile(filename);
 //        }
     }
 

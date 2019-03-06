@@ -854,6 +854,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     public Object get(int index);
 
+    public void setDeletedDate(Date deletedDate);
+
+    public Date getDeletedDate();
+
+    default public boolean isDeleted() {
+        return getDeletedDate() != null;
+    }
+
 //    default public long getWorkTimeRequiredFromOwner() {
 ////        return getRemainingEffort(); //for lists and categories, we use the standard remaining, for Items it's a special impl
 //        throw new Error("Not supported yet."); //should never be called for ItemLists/Categories?!

@@ -8,6 +8,7 @@ package com.todocatalyst.todocatalyst;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import com.parse4cn1.ParseQuery;
+import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,7 +89,6 @@ public class FilterSortDef extends ParseObject {
 //        setFilteredObjectId(filteredObject.getObjectIdP());
 //        setFilteredObject(filteredObject);
 //    }
-
     public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortDescending) {
         this();
         setSortFieldId(sortParseFieldId);
@@ -170,7 +170,6 @@ public class FilterSortDef extends ParseObject {
 //    public void setScreenId(String screenId) {
 //        put(PARSE_SCREEN_ID, screenId);
 //    }
-
 //    public String getFilteredObjectId() {
 //        String objId = getString(PARSE_FILTERED_OBJECT_ID);
 //        if (objId != null) {
@@ -204,7 +203,6 @@ public class FilterSortDef extends ParseObject {
 //            remove(PARSE_FILTERED_OBJECT);
 //        }
 //    }
-
     public String getFilterName() {
         return getString(PARSE_FILTER_NAME);
     }
@@ -1186,4 +1184,21 @@ public class FilterSortDef extends ParseObject {
         return CLASS_NAME;
     }
 
+    public void setDeletedDate(Date dateDeleted) {
+        if (dateDeleted != null && dateDeleted.getTime() != 0) {
+            put(PARSE_DELETED_DATE, dateDeleted);
+        } else {
+            remove(PARSE_DELETED_DATE); //delete when setting to default value
+        }
+    }
+
+    public Date getDeletedDate() {
+        Date date = getDate(PARSE_DELETED_DATE);
+//        return (date == null) ? new Date(0) : date;
+        return date; //return null to indicate NOT deleted
+    }
+
+    public boolean isDeleted() {
+        return getDeletedDate() != null;
+    }
 }
