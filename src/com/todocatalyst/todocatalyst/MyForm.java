@@ -99,9 +99,21 @@ public class MyForm extends Form {
     private InsertNewElementFunc inlineInsertContainer;
 //    private BooleanFunction testIfEdit;
     private String uniqueFormId = null; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-    private TextArea startEditingAsync = null;
+    private TextArea startEditingAsyncTextArea = null;
 
     private String showIfEmptyList = null; //holds Container with actual content, typically MyTree2
+
+    public CheckDataIsComplete getCheckOnExit() {
+        return checkDataIsCompleteBeforeExit;
+    }
+
+    /**
+    check if data is complete (or otherwise not fit for saving and return the appropriate error message, used to prevent quitting a screen
+    @param showIfEmptyList 
+     */
+    public void setCheckOnExit(CheckDataIsComplete errorMsgIfDataIncomplete) {
+        this.checkDataIsCompleteBeforeExit = errorMsgIfDataIncomplete;
+    }
 
     public String getShowIfEmptyList() {
         return showIfEmptyList;
@@ -115,12 +127,16 @@ public class MyForm extends Form {
         this.showIfEmptyList = showIfEmptyList;
     }
 
-    protected void setStartEditingAsync(TextArea startEditTextArea) {
-        this.startEditingAsync = startEditTextArea;
+    /**
+    set an area will be in active edit mode when the screen is refreshed (eg an inlineInsert container)
+    @param startEditTextArea 
+     */
+    protected void setStartEditingAsyncTextArea(TextArea startEditTextArea) {
+        this.startEditingAsyncTextArea = startEditTextArea;
     }
 
-    public TextArea getStartEditingAsync() {
-        return startEditingAsync;
+    public TextArea getStartEditingAsyncTextArea() {
+        return startEditingAsyncTextArea;
     }
 
     public String getUniqueFormId() {
@@ -153,39 +169,45 @@ public class MyForm extends Form {
     }
 
     public void setInlineInsertContainer(InsertNewElementFunc inlineInsertContainer) {
-        //if resetting to null, remove previous container with animation
+//<editor-fold defaultstate="collapsed" desc="comment">
+//if resetting to null, remove previous container with animation
 //        if (inlineInsertContainer == null && this.inlineInsertContainer != null && this.inlineInsertContainer instanceof Component) {
 //            Container parent = ((Component) this.inlineInsertContainer).getParent();
 //            parent.removeComponent((Component) this.inlineInsertContainer);
 //            parent.animateLayout(300);
 //        }
-        if (inlineInsertContainer == null) { //) && this.inlineInsertContainer != null ) {
-            setEditOnShow(null); //remove old textArea
-        }
-        if (inlineInsertContainer != null && inlineInsertContainer.getTextArea() != null) {
-            setEditOnShow(inlineInsertContainer.getTextArea());
-        }
+//        if (inlineInsertContainer == null) { //) && this.inlineInsertContainer != null ) {
+//            setEditOnShow(null); //remove old textArea
+//        }
+//        if (inlineInsertContainer != null && inlineInsertContainer.getTextArea() != null) {
+//            setEditOnShow(inlineInsertContainer.getTextArea());
+//        }
+//</editor-fold>
         this.inlineInsertContainer = inlineInsertContainer;
+        if (inlineInsertContainer != null)
+            setStartEditingAsyncTextArea(inlineInsertContainer.getTextArea()); //set to ensure it starts up in edit-model
+//        if (this.inlineInsertContainer != null)
+////            setStartEditingAsync(this.inlineInsertContainer.getTextArea());
+//            setStartEditingAsyncTextArea(inlineInsertContainer.getTextArea()); //set to ensure it starts up in edit-model
     }
-
-    public void setInlineInsertContainerIfMyTree2(Container contentContainer) {
-        if (contentContainer instanceof MyTree2) {
-            InsertNewElementFunc insertNewElementFunc = ((MyTree2) contentContainer).getInlineInsertField();
-            if (insertNewElementFunc != null) {
-                setInlineInsertContainer(insertNewElementFunc);
-            }
-        }
-    }
-
-    public void setStartEditingAsyncIfDefined(Container contentContainer) {
-        if (contentContainer instanceof MyTree2) {
-            InsertNewElementFunc insertNewElementFunc = ((MyTree2) contentContainer).getInlineInsertField();
-            if (insertNewElementFunc != null && insertNewElementFunc.getTextArea() != null) {
-//                setStartEditingAsync(insertNewElementFunc.getTextArea());
-                insertNewElementFunc.getTextArea().startEditingAsync();
-            }
-        }
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void setInlineInsertContainerIfMyTree2(Container contentContainer) {
+//        if (contentContainer instanceof MyTree2) {
+//            InsertNewElementFunc insertNewElementFunc = ((MyTree2) contentContainer).getInlineInsertField();
+//            if (insertNewElementFunc != null) {
+//                setInlineInsertContainer(insertNewElementFunc);
+//            }
+//        }
+//    }
+//    public void setStartEditingAsyncIfDefined(Container contentContainer) {
+//        if (contentContainer instanceof MyTree2) {
+//            InsertNewElementFunc insertNewElementFunc = ((MyTree2) contentContainer).getInlineInsertField();
+//            if (insertNewElementFunc != null && insertNewElementFunc.getTextArea() != null) {
+////                setStartEditingAsync(insertNewElementFunc.getTextArea());
+//                insertNewElementFunc.getTextArea().startEditingAsync();
+//            }
+//        }
+//    }
 
 //    public void setEditOnShowOrRefresh(TextArea editFieldOnShowOrRefresh) { //, BooleanFunction testIfEdit) {
 //        this.editFieldOnShowOrRefresh = editFieldOnShowOrRefresh;
@@ -196,6 +218,7 @@ public class MyForm extends Form {
 //    public void setEditOnShowOrRefresh(TextArea editFieldOnShowOrRefresh) {
 //        setEditOnShowOrRefresh(editFieldOnShowOrRefresh, null);
 //    }
+//</editor-fold>
     String SCREEN_TITLE = "";
     //TODO: move titles into Screens
     static final String SCREEN_LISTS_TITLE = "Lists";
@@ -362,9 +385,9 @@ public class MyForm extends Form {
 //        if (timerContainer != null) {
 //            addComponent(CN.SOUTH, timerContainer);
 //        }
-        if (true || !(this instanceof ScreenTimer6)) {
-            TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
-        }
+//        if (true || !(this instanceof ScreenTimer6)) {
+//            TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
+//        }
 
         //<editor-fold defaultstate="collapsed" desc="comment">
         //************** CORRECT WAY TO MAKE SCROLLABLE
@@ -537,14 +560,14 @@ public class MyForm extends Form {
         String get();
     }
 
+    interface GetStringFrom {
+
+        String get(Object input);
+    }
+
     interface PutString {
 
         void accept(String s);
-    }
-
-    interface GetStringFrom {
-
-        String get(Object o);
     }
 
     interface GetInt {
@@ -720,10 +743,11 @@ public class MyForm extends Form {
         Container cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         dia.add(cont);
 
-        if (remainingTimePicker.getParent() != null) {
-//            repaint(); //see Java doc for removeComponent 
-            remainingTimePicker.getParent().removeComponent(remainingTimePicker);
-        }
+//        if (remainingTimePicker.getParent() != null) {
+////            repaint(); //see Java doc for removeComponent 
+//            remainingTimePicker.getParent().removeComponent(remainingTimePicker);
+//        }
+        remainingTimePicker.remove();
         cont.add(makeHelpButton(Item.EFFORT_REMAINING, "**"));
         cont.add(remainingTimePicker); //.add(new SpanLabel("Waiting tasks are automatically hidden until the set date."));
 
@@ -1373,12 +1397,12 @@ public class MyForm extends Form {
         }
         TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
 
-        if (false && startEditingAsync != null) {
-            startEditingAsync.startEditingAsync();
-        }
-        if (false) {
+        if (true) {
             revalidate();
             restoreKeepPos();
+            if (getStartEditingAsyncTextArea() != null) {
+                getStartEditingAsyncTextArea().startEditingAsync();
+            }
         }
         if (Config.TEST) {
             Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
@@ -1444,6 +1468,41 @@ public class MyForm extends Form {
         }
         return str;
     }
+
+    public static String getListAsSeparatedString(List setOrList, GetStringFrom listName, String separator, int maxLength) {
+        String str = "";
+        String sep = "";
+        if (setOrList != null) {
+//            for (Object s : setOrList) {
+            int size = maxLength > 0 ? maxLength : setOrList.size();
+            for (int i = 0; i < size; i++) {
+                Object s = setOrList.get(i);
+                str = str + sep + listName.get(s);
+                sep = separator;
+            }
+        }
+        return str;
+    }
+
+    public static String getListAsSeparatedString(List setOrList, GetStringFrom listName, String separator) {
+        return getListAsSeparatedString(setOrList, listName, separator, -1);
+    }
+
+    public static String getListAsCommaSeparatedString(List setOrList, GetStringFrom listName) {
+//        String str = "";
+//        String separator = "";
+//        if (setOrList != null) {
+//            for (Object s : setOrList) {
+//                str = str + separator + listName.get(s);
+//                separator = ", ";
+//            }
+//        }
+//        return str;
+        return getListAsSeparatedString(setOrList, listName, ", ");
+    }
+//    public static String getListAsCommaSeparatedString(List setOrList) {
+//        return getListAsCommaSeparatedString(setOrList, (o)->o.toString());
+//    }
 
     public static String getDefaultIfStrEmpty(String str, String defaultStr) {
         if (str == null || str.equals("")) {
@@ -1602,7 +1661,7 @@ public class MyForm extends Form {
 //            Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
             Container compList = getCompList.get();
             boolean showAll = text == null || text.length() == 0;
-            for (int i = 0, size = itemListList.size(); i < size; i++) {
+            for (int i = 0, size = itemListList.getSize(); i < size; i++) {
                 //TODO!!! compare same case (upper/lower)
                 //https://www.codenameone.com/blog/toolbar-search-mode.html:
 //                compList.getComponentAt(i).setHidden(((ItemList) itemListList.get(i)).getText().toLowerCase().indexOf(text) < 0);
@@ -1639,7 +1698,7 @@ public class MyForm extends Form {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 String errorMsg;
-                if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
+                if (getCheckOnExit() == null || (errorMsg = getCheckOnExit().check()) == null) {
                     putEditedValues2(parseIdMap2);
 //                    updateActionOnDone.update();
                     getUpdateActionOnDone().update();
@@ -1656,27 +1715,21 @@ public class MyForm extends Form {
         return cmd;
     }
 
-    public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetBoolean canGoBack, String errorMsg) {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit, canGoBack, errorMsg);
-    }
-
-    private Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, GetBoolean canGoBack, String errorMsg) {
-        Command cmd = new Command(title, icon) {
+//    public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetString canGoBack) {
+//        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit, canGoBack);
+//    }
+    public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetString canGoBack) {
+//        Command cmd = new Command(title, icon) {
+        Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                if (canGoBack.get()) {
-                    String errorMsg;
-                    if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
-                        putEditedValues2(parseIdMap2);
-//                        updateActionOnDone.update();
-                        getUpdateActionOnDone().update();
-//                previousForm.refreshAfterEdit();
-//                previousForm.showBack();
-//                        showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
-                        showPreviousScreenOrDefault(callRefreshAfterEdit);
-                    } else {
-                        Dialog.show("INFO", errorMsg, "OK", null);
-                    }
+                String errorMsg;
+                if ((errorMsg = canGoBack.get()) == null) {
+//                    if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
+//                    if (getCheckOnExit() != null || (errorMsg = getCheckOnExit().check()) != null) {
+                    putEditedValues2(parseIdMap2);
+                    getUpdateActionOnDone().update();
+                    showPreviousScreenOrDefault(callRefreshAfterEdit);
                 } else {
                     Dialog.show("Error", errorMsg, "OK", null);
                 }
@@ -1784,7 +1837,7 @@ public class MyForm extends Form {
      * @param pos
      */
     static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
-        addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.size(), itemListOrg);
+        addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.getSize(), itemListOrg);
     }
 
     static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg) {
@@ -2970,7 +3023,7 @@ public class MyForm extends Form {
             Log.p("Show MyForm: " + getTitle());
         }
         //restore scroll position on replay
-        if (false &&previousValues != null) {
+        if (false && previousValues != null) {
             int scrollY = previousValues.getScrollY();
             if (scrollY > 0) {
                 Form f = getComponentForm();
@@ -3246,77 +3299,77 @@ public class MyForm extends Form {
         Container wrappedInsertContainer = null;
         if (dropComponentAbove == null && dropComponentBelow != null) { //pull down on top-most item, insert before the first element (can be Item/Category/ItemList)
             insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-            setInlineInsertContainer(insertContainer);
 //            insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
             MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at position of dropComponentBelow
+            setInlineInsertContainer(insertContainer); //call this *after* inserting the new container to ensure that text field starts in editing mode
         } else if (dropComponentBelow == null && dropComponentAbove != null) { //pull down on bottom-most item, insert at the end of the list (can be Item/Category/ItemList)
             insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //create insertContainer
-            setInlineInsertContainer(insertContainer);
             wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //            insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //create insertContainer
             MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer *after* dropComponentAbove
+            setInlineInsertContainer(insertContainer);
 
         } else if (itemEltAbove instanceof Item) { //inserting *after* an Item
             if (itemEltBelow instanceof Category || itemEltBelow instanceof ItemList) {
                 //insert after itemEltAbove
                 insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                setInlineInsertContainer(insertContainer);
                 wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //                insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
                 MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                setInlineInsertContainer(insertContainer);
 
             } else if (itemEltBelow instanceof Item) {
                 //belong to same owner, insert after 
                 if (itemEltAbove.getOwner() == itemEltBelow.getOwner()) {
                     insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                    setInlineInsertContainer(insertContainer);
                     wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //                    insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
                     MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer at beginning of list that the other pinch finger touches
+                    setInlineInsertContainer(insertContainer);
                 } else if (((Item) itemEltAbove).hasAsSubtask((Item) itemEltBelow)) { //
                     insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                    setInlineInsertContainer(insertContainer);
                     wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //                    insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
                     MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                    setInlineInsertContainer(insertContainer);
                 } else { //simply insert before elementAbove (e.g. eltAbove=subask of previous item A, eltBelow a sibling to A
                     insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                    setInlineInsertContainer(insertContainer);
                     wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //                    insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
                     MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                    setInlineInsertContainer(insertContainer);
                 }
             }
 
         } else if (itemEltAbove instanceof Category || itemEltAbove instanceof ItemList) { //inserting *after* a Category or ItemList
             if (itemEltBelow instanceof Item) { //insert before itemEltBelow
                 insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                setInlineInsertContainer(insertContainer);
                 wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //                insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
                 MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                setInlineInsertContainer(insertContainer);
             } else {
                 ASSERT.that(itemEltBelow instanceof Category || itemEltBelow instanceof ItemList, "if itemEltBelow is not an Item, it can only a Cateogyr or ItemList");
                 insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //create insertContainer
-                setInlineInsertContainer(insertContainer);
                 wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //                insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //create insertContainer
                 MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer *after* dropComponentAbove
+                setInlineInsertContainer(insertContainer);
             }
-        } else if (itemEltAbove instanceof WorkSlot || itemEltAbove instanceof WorkSlot) {
+        } else if (itemEltAbove instanceof WorkSlot || itemEltBelow instanceof WorkSlot) {
             if (itemEltAbove instanceof WorkSlot) { //insert before itemEltBelow
                 insertContainer = createInsertContainer(itemEltAbove, itemEltAbove.getOwner(), category, false); //create insertContainer
-                setInlineInsertContainer(insertContainer);
                 wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //                insertContainer = createInsertContainer(itemEltAbove, ownerList, category, false); //create insertContainer
                 MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentAbove, wrappedInsertContainer, 1); //insert insertContainer *after* dropComponentAbove
+                setInlineInsertContainer(insertContainer);
             } else {
 //                ASSERT.that(itemEltBelow instanceof Category || itemEltBelow instanceof ItemList, "if itemEltBelow is not an Item, it can only a Cateogyr or ItemList");
                 insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-                setInlineInsertContainer(insertContainer);
                 wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //                insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
                 MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at start of subtask lise (before itemEltBelow)
+                setInlineInsertContainer(insertContainer);
             }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">

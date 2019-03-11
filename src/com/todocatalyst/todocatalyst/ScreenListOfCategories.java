@@ -94,7 +94,7 @@ public class ScreenListOfCategories extends MyForm {
                 String text = (String) e.getSource();
                 Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
                 boolean showAll = text == null || text.length() == 0;
-                for (int i = 0, size = this.categoryList.size(); i < size; i++) {
+                for (int i = 0, size = this.categoryList.getSize(); i < size; i++) {
                     //TODO!!! compare same case (upper/lower)
                     //https://www.codenameone.com/blog/toolbar-search-mode.html:
                     compList.getComponentAt(i).setHidden(((Category) categoryList.get(i)).getText().toLowerCase().indexOf(text) < 0);
@@ -124,15 +124,15 @@ public class ScreenListOfCategories extends MyForm {
 //            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
             InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
             if (insertNewElementFunc != null) {
-                setStartEditingAsync(insertNewElementFunc.getTextArea());
+                setStartEditingAsyncTextArea(insertNewElementFunc.getTextArea());
                 setInlineInsertContainer(insertNewElementFunc);
             }
         }
-        revalidate();
-//        if (this.keepPos != null) {
-//            this.keepPos.setNewScrollYPosition();
-//        }
-        restoreKeepPos();
+//        revalidate();
+////        if (this.keepPos != null) {
+////            this.keepPos.setNewScrollYPosition();
+////        }
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 
@@ -385,12 +385,14 @@ public class ScreenListOfCategories extends MyForm {
 
 //                new ScreenListOfItems(category, ScreenListOfCategories.this,
             ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, mainCont)); //mainCont right container to use here??
-            new ScreenListOfItems(category.getText(), () -> category, (MyForm) swipCont.getComponentForm(), (itemList) -> {
+            new ScreenListOfItems(category.getText(), () -> category, (MyForm) swipCont.getComponentForm(), (itemsInCategory) -> {
                 ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, swipCont));
-                category.setList(itemList.getList());
-                DAO.getInstance().save(category);
+                if (false) { // I don't think this makes any sense, all edits to items within the category should be updated directly (eg Item.softdelete should remove it from category, edit Item to remove the category should also update/save the category, ...)
+                    category.setList(itemsInCategory.getListFull()); //should probably be full, to check if re-activating this code
+                    DAO.getInstance().save(category);
+                }
 //                    refreshAfterEdit();
-                refreshOnItemEdits.launchAction();
+                refreshOnItemEdits.launchAction(); //refresh when items have been edited
             }, 0).show();
         }
         ));
@@ -412,7 +414,7 @@ public class ScreenListOfCategories extends MyForm {
 //            cont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandCategorySubTasksButton);
         }
-        east.addComponent(new Label(MyDate.formatTimeDuration(category.getRemaining()))); //TODO reactivate this once caching of sum of effort in category is implemented
+        east.addComponent(new Label(MyDate.formatDurationStd(category.getRemaining()))); //TODO reactivate this once caching of sum of effort in category is implemented
 
         east.addComponent(editItemPropertiesButton);
 

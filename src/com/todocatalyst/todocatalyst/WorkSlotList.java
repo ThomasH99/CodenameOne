@@ -23,6 +23,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     private ArrayList<WorkSlot> sortedWorkslotList = new ArrayList<>(); //full list of workslots, always assumed to be sorted
     private ArrayList<WorkSlot> validworkslotList = new ArrayList<>(); //
     private boolean showAlsoExpiredWorkSlots;
+    private ItemAndListCommonInterface owner;
 
     public WorkSlotList() {
         super();
@@ -31,7 +32,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     }
 
 //    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted, boolean removeExpiredWorkSlots) {
-    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
+    public WorkSlotList(ItemAndListCommonInterface owner, List<WorkSlot> list, boolean alreadySorted) {
         this();
 //<editor-fold defaultstate="collapsed" desc="comment">
         //http://stackoverflow.com/questions/8441664/how-do-i-copy-the-contents-of-one-arraylist-into-another
@@ -68,14 +69,30 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         if (!alreadySorted) {
             sortWorkSlotList();
         }
+        this.owner = owner;
+    }
+
+    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
+        this(null, list, alreadySorted);
     }
 
 //    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
 //        this(list, alreadySorted, true);
 //    }
-
     public WorkSlotList(List<WorkSlot> list) {
         this(list, false);
+    }
+
+    public WorkSlotList(ItemAndListCommonInterface owner, List<WorkSlot> list) {
+        this(owner, list, false);
+    }
+
+    public void setOwner(ItemAndListCommonInterface owner) {
+        this.owner = owner;
+    }
+
+    public ItemAndListCommonInterface getOwner() {
+        return owner;
     }
 
     public long getNow() {
@@ -113,6 +130,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         sortedWorkslotList.add(0, workSlot);
         //simple solution: new workSlots are likely be the most recent, so simply search from end of list to find where to insert
     }
+
     public void remove(WorkSlot workSlot) {
         sortedWorkslotList.remove(workSlot);
     }
@@ -152,6 +170,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
             return result;
         }
     }
+
     public List<WorkSlot> getWorkSlots() {
         return getWorkSlots(System.currentTimeMillis());
     }
@@ -204,14 +223,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         return getWorkTimeSum(getWorkSlots(), new Date(), new Date(Long.MAX_VALUE));
     }
 
-    /**
-     * sort on WorkSLot startTime
-     */
-    public WorkSlotList sortWorkSlotList() {
-        return sortWorkSlotList(false);
-    }
-
-    static Comparator<WorkSlot> getMultipleComparator(Comparator<WorkSlot>[] comparators) {
+    private static Comparator<WorkSlot> getMultipleComparator(Comparator<WorkSlot>[] comparators) {
         Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;
         Comparator<WorkSlot> comp2 = comparators.length >= 2 ? comparators[1] : null;
         Comparator<WorkSlot> comp3 = comparators.length >= 3 ? comparators[2] : null;
@@ -240,7 +252,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         };
     }
 
-    static Comparator<WorkSlot> getMultipleComparatorOLD(Comparator<WorkSlot>[] comparators) {
+    private static Comparator<WorkSlot> getMultipleComparatorOLD(Comparator<WorkSlot>[] comparators) {
 //        assert comparators.length >= 1 && comparators.length == sortDescending.length : "must be same length";
 //        for (int i = 0, size = getSortFieldId.length; i < size; i++) {
 //            Comparator<Item> comp1 = getSortingComparator(getSortFieldId[0], sortDescending[0]);
@@ -283,17 +295,37 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         };
     }
 
-    public WorkSlotList sortWorkSlotList(boolean sortOnEndTime) {
+    /**
+    sort on startTime, then on duration (put longest timeslots first if several starting at same time), 
+    @param sortOnEndTime
+    @return 
+     */
+    public WorkSlotList sortWorkSlotList() {
+//        boolean sortOnEndTime            }) {
 //        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
-        if (sortOnEndTime) {
-            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareLong(i1.getEndTime(), i2.getEndTime()));
-        } else {
-            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+//        if (sortOnEndTime) {
+//            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareLong(i1.getEndTime(), i2.getEndTime()));
+//        } else 
+        {
+//            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+            Collections.sort(sortedWorkslotList,
+                    //                    (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+                    getMultipleComparator(new Comparator[]{
+                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
+                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()),
+                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP().compareTo(i2.getObjectIdP()), //sort equal workslots on objectId to make it deterministic
+            }));
         }
         return this;
     }
 
-    public void sortWorkSlotList2(boolean sortOnEndTime) {
+    /**
+     * sort on WorkSLot startTime
+     */
+//    public WorkSlotList sortWorkSlotList() {
+//        return sortWorkSlotList(false);
+//    }
+    private void sortWorkSlotListOLD(boolean sortOnEndTime) {
 //        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
         if (sortOnEndTime) {
             Collections.sort(sortedWorkslotList, getMultipleComparator(new Comparator[]{
@@ -379,7 +411,8 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 
 //        if (workSlotList.size() > WORKSLOT_LIMIT) { //if more than 20 elements
         if (!isSorted) {
-            workSlotList.sortWorkSlotList(false);
+//            workSlotList.sortWorkSlotList(false);
+            workSlotList.sortWorkSlotList();
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Iterator<WorkSlot> it = workSlotList.iterator();
@@ -471,7 +504,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 
     public boolean hasComingWorkSlots(long now) {
         if (size() == 0) {
-            return false; 
+            return false;
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long now = System.currentTimeMillis();
@@ -508,7 +541,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
             return subtasks == null || subtasks.size() == 0;
         }
         if (itemInThisList instanceof Item) {
-            List subtasks = ((Item) itemInThisList).getList();
+            List subtasks = ((Item) itemInThisList).getList(); //getList since we use this call to know if there are visible (unfiltered) tasks to expand/show
             return subtasks == null || subtasks.size() == 0;
         } else return true;
     }

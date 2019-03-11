@@ -62,6 +62,8 @@ public class Icons {
     final static Image iconShowLessLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_EXPAND_LESS, labelStyle);
     final static Image iconEditSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, labelStyle);
     final static Image iconAddTimeStampToCommentLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ACCESS_TIME, labelStyle);
+    //drag and drop handle icon
+    final static Image iconDragHandle = FontImage.createMaterial(FontImage.MATERIAL_DRAG_HANDLE, labelStyle);
 
     //TIMER
 //    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, toolBarStyle);

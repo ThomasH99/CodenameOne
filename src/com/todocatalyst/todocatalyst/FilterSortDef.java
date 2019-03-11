@@ -158,6 +158,7 @@ public class FilterSortDef extends ParseObject {
         return filterSortDef;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    FilterPredicate filterPredicate = new FilterPredicate();
 //    MyHashMap<String, Object> filterMap = new MyHashMap();
 //    private String sortFieldId = Item.PARSE_DUE_DATE; //UI: default sort on DueDate (??)
@@ -203,6 +204,7 @@ public class FilterSortDef extends ParseObject {
 //            remove(PARSE_FILTERED_OBJECT);
 //        }
 //    }
+//</editor-fold>
     public String getFilterName() {
         return getString(PARSE_FILTER_NAME);
     }
@@ -899,7 +901,7 @@ public class FilterSortDef extends ParseObject {
     }
 
     /**
-     * returns a filtered and sorted copy of the list
+     * returns a filtered and sorted *copy* of the list
      *
      * @param orgList
      * @return
@@ -1200,5 +1202,15 @@ public class FilterSortDef extends ParseObject {
 
     public boolean isDeleted() {
         return getDeletedDate() != null;
+    }
+
+    public boolean softDelete(boolean removeReferences) {
+        setDeletedDate(new Date());
+        DAO.getInstance().saveInBackground(this);
+        return true;
+    }
+
+    public boolean softDelete() {
+        return softDelete(true);
     }
 }

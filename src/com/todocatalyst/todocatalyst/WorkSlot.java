@@ -146,8 +146,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return null;
 //    }
 //</editor-fold>
-    @Override
-    public ItemList getOwnerList() {
+//    @Override
+    public ItemList getOwnerItemList() {
 //        return owner; //TODO: Parsify
 //        ParseObject owner = getParseObject(PARSE_OWNER);
         ItemList ownerList = (ItemList) getParseObject(PARSE_OWNER_LIST);
@@ -158,7 +158,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
 //    @Override
-    private void setOwnerList(ItemList ownerList) {
+    private void setOwnerItemList(ItemList ownerList) {
 //        setOwnerDirectly(owner);
 //        ItemAndListCommonInterface oldOwner = getOwner();
 //        this.owner = owner; //TODO: Parsify
@@ -238,21 +238,21 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         if (owner instanceof Category) {
             setOwnerCategory((Category) owner);
             //TODO if we allow a workSlot to be moved to another type of owner (eg from ItemList to Category) then we must also reset any old owner
-            setOwnerList(null);
+            setOwnerItemList(null);
             setOwnerItem(null);
         } else if (owner instanceof ItemList) {
-            setOwnerList((ItemList) owner);
+            setOwnerItemList((ItemList) owner);
             setOwnerCategory(null);
             setOwnerItem(null);
         } else if (owner instanceof Item) {
             setOwnerItem((Item) owner);
             setOwnerCategory(null);
-            setOwnerList(null);
+            setOwnerItemList(null);
 //                    } else { //TODO: add flagging of new/unknown owner for workslots
 //                        throw RuntimeException("Unknown type of owner");
         } else if (owner == null) {
             setOwnerCategory(null);
-            setOwnerList(null);
+            setOwnerItemList(null);
             setOwnerItem(null);
         } else {
             assert false : "owner should never be set to this type:" + owner;
@@ -264,7 +264,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         ItemAndListCommonInterface owner;
         if ((owner = getOwnerCategory()) != null) {
             return owner;
-        } else if ((owner = getOwnerList()) != null) {
+        } else if ((owner = getOwnerItemList()) != null) {
             return owner;
         } else if ((owner = getOwnerItem()) != null) {
             return owner;
@@ -798,7 +798,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     public String toString() {
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
-        return MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatTimeDuration(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS) + " " + getText() + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
+        return MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS) + " " + getText() + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1299,7 +1299,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @Override
     public Date getDeletedDate() {
         Date date = getDate(Item.PARSE_DELETED_DATE);
-        return (date == null) ? new Date(0) : date;
+//        return (date == null) ? new Date(0) : date;
+        return date;
     }
 
     @Override
@@ -1419,8 +1420,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //</editor-fold>
     @Override
 //    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject) {
-    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface newRepeatRuleInstance) {
-        DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //simply save to Parse (for now)
+    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface workSlotRepeatCopy) {
+        ItemAndListCommonInterface owner = getOwner();
+        owner.addWorkSlot((WorkSlot) workSlotRepeatCopy);
+        DAO.getInstance().saveInBackground((ParseObject) workSlotRepeatCopy);
     }
 
     @Override
@@ -1509,7 +1512,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         ItemAndListCommonInterface owner = getOwner();
         List<Item> items = new ArrayList<>();
         if (owner != null) {
-            for (Object i : owner.getList()) { //go through everyone of the WorkSLot's Owner's tasks
+            for (Object i : owner.getListFull()) { //go through everyone of the WorkSLot's Owner's tasks
                 if (i instanceof Item) {
                     Item item = (Item) i;
                     WorkTimeSlices wTime = item.getAllocatedWorkTimeN();
@@ -1631,7 +1634,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////<editor-fold defaultstate="collapsed" desc="comment">
     @Override
     public boolean isDone() {
-        return ItemList.getNumberOfUndoneItems(getList(), true) == 0; //workSlot is considered 'done' if no undone tasks have slices from it
+        return ItemList.getNumberOfUndoneItems(getListFull(), true) == 0; //workSlot is considered 'done' if no undone tasks have slices from it
     }
 
     @Override
@@ -1681,7 +1684,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public int getNumberOfSubtasks(boolean onlyUndone, boolean countLeafTasks) {
-        return ItemList.getNumberOfItems(getList(), onlyUndone, countLeafTasks);
+        return ItemList.getNumberOfItems(getListFull(), onlyUndone, countLeafTasks);
     }
 
     @Override
@@ -1725,8 +1728,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public int size() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int getSize() {
+        return getItemsInWorkSlot().size(); //only count undone tasks
     }
 
     @Override
@@ -1745,7 +1748,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public boolean removeFromList(ItemAndListCommonInterface subItemOrList) {
+    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeReferences) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -1847,6 +1850,41 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @Override
     public void setFilterSortDef(FilterSortDef filterSortDef) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public boolean softDelete(boolean removeRefs) {
+
+        //DELETE IN OWNER
+        ItemAndListCommonInterface owner = getOwner();
+        WorkSlotList workSlotList = owner.getWorkSlotListN();
+        workSlotList.remove(this);
+        owner.setWorkSlotList(workSlotList);
+        DAO.getInstance().saveInBackground((ParseObject) owner);
+
+        //TODO!!!! need to delete in Sources - see comments/thoughts on this in comments inside Item.softDelete()
+        put(Item.PARSE_DELETED_DATE, new Date());
+        DAO.getInstance().saveInBackground((ParseObject) this);
+        return true;
+    }
+
+    @Override
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList) {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+    returns by how much time (duration) the two workslots overlap
+    @param workSlot
+    @return 
+    */
+    public long overlappingDuration(WorkSlot workSlot) {
+        if (getStartTimeD().getTime() > workSlot.getEndTimeD().getTime() || workSlot.getStartTimeD().getTime() > getEndTimeD().getTime())
+            return 0;
+        else { // !(S1>E2 || S2>E1) <=> (S1<=E2 && S2<=E1)
+            long start = Math.max(getStartTimeD().getTime(), workSlot.getStartTimeD().getTime());
+            long end = Math.min(getEndTimeD().getTime(), workSlot.getEndTimeD().getTime());
+            return end - start;
+        }
     }
 
 }

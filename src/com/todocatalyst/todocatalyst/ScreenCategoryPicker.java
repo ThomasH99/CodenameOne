@@ -89,18 +89,20 @@ public class ScreenCategoryPicker extends MyForm {
 //        addSearchToTitle();
 //        setToolbar(new Toolbar());
         addCommandsToToolbar(getToolbar());
-        if (false) getToolbar().addSearchCommand((e) -> {
-            String text = (String) e.getSource();
-            Container compList = getContentPane();
-            boolean showAll = text == null || text.length() == 0;
-//            for (int i = 0, size = this.listOfAllCategories.size(); i < size; i++) {
-            for (int i = 0, size = this.listOfAllCategories.getList().size(); i < size; i++) {
-                //TODO!!! compare same case (upper/lower)
-                //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                compList.getComponentAt(i).setHidden(((Category) this.listOfAllCategories.get(i)).getText().toLowerCase().indexOf(text) < 0);
-            }
-            compList.animateLayout(150);
-        });
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) getToolbar().addSearchCommand((e) -> {
+//            String text = (String) e.getSource();
+//            Container compList = getContentPane();
+//            boolean showAll = text == null || text.length() == 0;
+////            for (int i = 0, size = this.listOfAllCategories.size(); i < size; i++) {
+//            for (int i = 0, size = this.listOfAllCategories.getList().size(); i < size; i++) {
+//                //TODO!!! compare same case (upper/lower)
+//                //https://www.codenameone.com/blog/toolbar-search-mode.html:
+//                compList.getComponentAt(i).setHidden(((Category) this.listOfAllCategories.get(i)).getText().toLowerCase().indexOf(text) < 0);
+//            }
+//            compList.animateLayout(150);
+//        });
+//</editor-fold>
         getToolbar().addSearchCommand(makeSearchFunctionSimple(listOfAllCategories,()->getContentPane()));
 //        buildContentPane(getContentPane(), listOfAllCategories); //, this.selectedCategories);
         refreshAfterEdit();
@@ -110,9 +112,9 @@ public class ScreenCategoryPicker extends MyForm {
     public void refreshAfterEdit() {
         getContentPane().removeAll();
 //        buildContentPane(getContentPane(), listOfAllCategories); //, this.selectedCategories);
-        buildContentPane(getContentPane(), listOfAllCategories.getList()); //, this.selectedCategories);
-        revalidate();
-        restoreKeepPos();
+        buildContentPane(getContentPane(), listOfAllCategories.getListFull()); //, this.selectedCategories); //normally full to show all categories (could be filtered later)
+//        revalidate();
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 

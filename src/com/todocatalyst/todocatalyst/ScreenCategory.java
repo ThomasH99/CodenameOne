@@ -73,7 +73,7 @@ public class ScreenCategory extends MyForm {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         buildContentPane(getContentPane());
-        restoreKeepPos();
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 
@@ -112,17 +112,19 @@ public class ScreenCategory extends MyForm {
         }
 
         //DELETE
-        toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {
+        toolbar.addCommandToOverflowMenu(CommandTracked.create("Delete", null, (e) -> {
 //            Log.p("Clicked");
 //            item.revert(); //forgetChanges***/refresh
 //            previousForm.showBack(); //drop any changes
-            DAO.getInstance().delete(category);
+//            DAO.getInstance().delete(category);
+            category.softDelete();
 //            previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
 //            showPreviousScreenOrDefault(previousForm, true);
             showPreviousScreenOrDefault( true);
-        });
+        }));
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToSideMenu("New Task", icon, (e) -> {
 //            Log.p("Clicked");
 //            try {
@@ -145,6 +147,7 @@ public class ScreenCategory extends MyForm {
 //                });
 //            }
 //        });
+//</editor-fold>
     }
 
     /**

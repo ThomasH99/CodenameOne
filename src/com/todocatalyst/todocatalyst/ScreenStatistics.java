@@ -106,7 +106,7 @@ public class ScreenStatistics extends MyForm {
         switch (sortOn) {
             case dateAndTime:
             default:
-                Collections.sort(itemList, FilterSortDef.getSortingComparator(Item.PARSE_COMPLETED_DATE, false));
+                Collections.sort(itemList, FilterSortDef.getSortingComparator(Item.PARSE_COMPLETED_DATE, MyPrefs.statisticsShowMostRecentFirst.getBoolean()));
                 break;
             case dateThenLists:
                 Collections.sort(itemList, FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_COMPLETED_DATE, Item.PARSE_OWNER_LIST}, new boolean[]{false, false}));

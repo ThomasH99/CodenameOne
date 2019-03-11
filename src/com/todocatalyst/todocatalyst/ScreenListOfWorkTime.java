@@ -15,6 +15,7 @@ import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
+import com.parse4cn1.ParseObject;
 import java.util.Date;
 import java.util.List;
 //import com.java4less.rchart.*;
@@ -34,12 +35,15 @@ public class ScreenListOfWorkTime extends MyForm {
     static String SCREEN_TITLE = "Work time details: ";
 // protected static String FORM_UNIQUE_ID = "ScreenListOfWorkSlTime"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     private ItemAndListCommonInterface owner;
+    private WorkTimeSlices workTime;
 
-    ScreenListOfWorkTime(String nameOfOwner, WorkTimeSlices workTime, MyForm previousForm) {
+//    ScreenListOfWorkTime(String nameOfOwner, WorkTimeSlices workTime, MyForm previousForm) {
+    ScreenListOfWorkTime(ItemAndListCommonInterface owner, WorkTimeSlices workTime, MyForm previousForm) {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm, () -> updateItemListOnDone.update(workTime));
-        super(SCREEN_TITLE + nameOfOwner, previousForm, () -> {
+        super(SCREEN_TITLE + owner.getText(), previousForm, () -> {
         });
+        this.workTime = workTime;
         setUniqueFormId("ScreenListOfWorkTime");
 //        setUpdateItemListOnDone(updateItemListOnDone);
 //        this.workSlotList = workSLotList;
@@ -47,8 +51,13 @@ public class ScreenListOfWorkTime extends MyForm {
         addCommandsToToolbar(getToolbar());
         setLayout(BoxLayout.y());
         getContentPane().setScrollableY(true);
+//        String expandedObjectsFileName = getUniqueFormId() + owner.getObjectIdP();
+//        expandedObjects = new ExpandedObjects(expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+        expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+
 //        getContentPane().add(buildContentPaneForWorkSlotList(workTime));
-        buildContentPaneForWorkSlotList(workTime);
+//        buildContentPaneForWorkSlotList(workTime);
+        refreshAfterEdit();
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
@@ -72,8 +81,11 @@ public class ScreenListOfWorkTime extends MyForm {
                 Container sliceCont = new Container(new FlowLayout());
                 sliceCont
                         .add(new Label((workSlice.workSlot.getOwner().getText()) + " "
-                                + MyDate.formatDateTimeNew(new Date(workSlice.getStartTime())) + "-"
-                                + MyDate.formatTimeNew(new Date(workSlice.getEndTime()))));
+                                + MyDate.formatDateTimeNew(new Date(workSlice.getStartTime()))
+//                                + "-" + MyDate.formatTimeNew(new Date(workSlice.getEndTime()))));
+                                + " " + MyDate.formatDurationShort(workSlice.getDuration())));
+                if (Config.TEST)
+                    sliceCont.add(new Label("\"" + workSlice.workSlot.getText() + "\" [" + workSlice.workSlot.getObjectIdP() + "]"));
 //                    .add(new Label(MyDate.formatDateNew(workSlice.getStartTime())))
 //                    .add(new Label(MyDate.formatTimeDuration(workSlice.getDurationInMillis())));
                 cont.add(sliceCont);
@@ -87,7 +99,8 @@ public class ScreenListOfWorkTime extends MyForm {
     @Override
     public void refreshAfterEdit() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        ASSERT.that("Not supported yet.");
+//        ASSERT.that("Not supported yet.");
+        buildContentPaneForWorkSlotList(workTime);
         super.refreshAfterEdit();
 
     }

@@ -18,6 +18,7 @@ package com.todocatalyst.todocatalyst;
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,27 +27,32 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Simple implementation of a Bag
+ * Simple implementation of a Bag. NB. No need to Externizable.externalize since ParseObject stores it as a list which CN1 can externalize already
  *
  * @author pugh
+ * @param <E>
  */
-public class Bag<E>  {
+public class Bag<E> {//implements Map  { Map.size() is costly with this implementation
 
-    final Map<E, Integer> map;
+    final Map<E, Integer> map  = new HashMap<E, Integer>();;
 
-    public Bag() {
-        map = new HashMap<E, Integer>();
+     Bag() {
+//        map = new HashMap<E, Integer>();
     }
 
-    public Bag(Map<E, Integer> map) {
-        this.map = map;
-    }
+//    public Bag(Map<E, Integer> map) {
+//    public Bag(Bag map) {
+////        this.map = map;
+//        addAll( map.toList());
+//    }
 
     public Bag(List<E> itemList) {
-        map = new HashMap<E, Integer>();
-        for (E e:itemList) {
-            add(e);
-        }
+        this();
+//        map = new HashMap<E, Integer>();
+//        for (E e : itemList) {
+//            add(e);
+//        }
+        addAll(itemList);
     }
 
     public boolean add(E e) {
@@ -85,7 +91,6 @@ public class Bag<E>  {
         }
     }
 
-    
     public Set<E> keySet() {
         return map.keySet();
     }
@@ -138,6 +143,16 @@ public class Bag<E>  {
     public boolean isEmpty() {
         return map.isEmpty();
     }
+
+    public List<E> toList() {
+        ArrayList<E> arrayList = new ArrayList();
+        for (E o : keySet()) {
+            for (int i = 0, size = getCount(o); i < size; i++) {
+                arrayList.add(o); //add obj once for each count
+            }
+        }
+        return arrayList;
+    }
 //
 //    @Override
 //    public boolean contains(Object o) {
@@ -173,5 +188,58 @@ public class Bag<E>  {
 //    @Override
 //    public void clear() {
 //        map.clear();
+//    }
+//}
+
+//    @Override
+//    public void clear() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public boolean containsKey(Object key) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public boolean containsValue(Object value) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public Set entrySet() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public Object get(Object key) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public Object put(Object key, Object value) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public void putAll(Map map) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public Object remove(Object key) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public int size() {
+//        
+//    }
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
+//    @Override
+//    public Collection values() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
 }

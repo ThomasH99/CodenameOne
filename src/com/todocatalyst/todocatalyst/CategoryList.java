@@ -97,7 +97,7 @@ public class CategoryList extends ItemList {
         if (categoryName == null || categoryName.length() == 0) {
             return null;
         }
-        for (Category cat : getList()) {
+        for (Category cat : getListFull()) {
             if (cat.getText().equals(categoryName)) {
                 return cat;
             }

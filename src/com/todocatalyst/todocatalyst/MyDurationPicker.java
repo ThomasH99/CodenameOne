@@ -97,12 +97,15 @@ class MyDurationPicker extends Picker implements SwipeClear {
                 if (val == 0 && zeroValuePattern != null) {
                     return zeroValuePattern;
                 }
-                long seconds = val % MyDate.SECOND_IN_MILLISECONDS;
-                if (seconds != 0) {
-                    return MyDate.formatTimeDuration((Long) value, true); //if any seconds defined, show them
-                } else {
-                    return MyDate.formatTimeDuration((Long) value);
-                }
+                if (true) {
+                    long seconds = val % MyDate.MINUTE_IN_MILLISECONDS / MyDate.SECOND_IN_MILLISECONDS;
+                    if (seconds != 0 && MyPrefs.durationPickerShowSecondsIfLessThan1Minute.getBoolean()) {
+                        return MyDate.formatDurationStd((Long) value, true); //if any seconds in time, show them
+                    } else {
+                        return MyDate.formatDurationStd((Long) value);
+                    }
+                } else
+                    return MyDate.formatDurationStd((Long) value);
             }
         });
         setMinuteStep(MyPrefs.durationPickerMinuteStep.getInt()); //TODO!! setting to select interval of 1/5 minutes
@@ -225,7 +228,6 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //    public void setZeroValuePattern(String zeroValuePattern) {
 //        this.zeroValuePattern = zeroValuePattern;
 //    }
-
     public void setShowZeroValueAsZeroDuration(boolean showZeroValuePattern) {
         MyDate d;
         if (showZeroValuePattern) {

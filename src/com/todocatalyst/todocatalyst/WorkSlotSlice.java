@@ -35,8 +35,8 @@ class WorkSlotSlice {
     @Override
     public String toString() {
         return "Slice[" + MyDate.formatDateTimeNew(new Date(startTime)) + "-" + MyDate.formatTimeNew(new Date(endTime))
-                +" dur="+MyDate.formatTimeDuration(getDuration())
-                +" miss="+MyDate.formatTimeDuration(missingDuration)
+                +" dur="+MyDate.formatDurationShort(getDuration())
+                +" miss="+MyDate.formatDurationShort(missingDuration)
                 + " Owner:" + (workSlot != null && workSlot.getOwner() != null ? workSlot.getOwner().getText() : "<null>")
 //                + (allocatedToXXX != null ? ( " AllocTo:" +allocatedToXXX.getText() ): "")
                 + "]";
@@ -117,11 +117,17 @@ class WorkSlotSlice {
         //if either duration==0 or startTime==endTime, an empty slide will be allocated
         this.allocatedToXXX = allocatedTo;
         workSlot.addItemWithSlice(allocatedTo);
-        long actualSliceEndTime = Math.min(startTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
-        return new WorkSlotSlice(workSlot, startTime,
+        long actualStartTime = Math.max(startTime,this.startTime );
+//        long actualSliceEndTime = Math.min(startTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
+//        return new WorkSlotSlice(workSlot, startTime,
+//                actualSliceEndTime,
+//                //                Math.max(0, (startTime + duration) - Math.min(startTime + duration, endTime))); //missing = desiredEndTime - actualEndTime
+//                (startTime + duration) - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
+        long actualSliceEndTime = Math.min(actualStartTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
+        return new WorkSlotSlice(workSlot, actualStartTime,
                 actualSliceEndTime,
                 //                Math.max(0, (startTime + duration) - Math.min(startTime + duration, endTime))); //missing = desiredEndTime - actualEndTime
-                (startTime + duration) - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
+                (actualStartTime + duration) - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        }
 //        else {

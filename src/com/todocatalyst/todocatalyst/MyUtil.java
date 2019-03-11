@@ -33,7 +33,7 @@ public class MyUtil {
             s.deleteCharAt(0);
         }
 //        while (inputStr.charAt(inputStr.length()-1)==' ' || inputStr.charAt(inputStr.length()-1)=='\n')
-        while (s.toString().charAt(inputStr.length() - 1) == ' ') {
+        while (s.toString().charAt(s.length() - 1) == ' ') {
 //            inputStr = inputStr.substring(0, inputStr.length() - 2);
             s.deleteCharAt(s.length() - 1);
         }
@@ -49,15 +49,16 @@ public class MyUtil {
      */
     public static String keepMethodCallInStackTrace(String inputStr) {
         return inputStr;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //         StringBuilder s = new StringBuilder(inputStr);
 //         StringBuilder result = new StringBuilder();
 //        String line;
 //        int idx;
 //        while (result.length()<150) {
-//        //for each line: 
+//        //for each line:
 //        idx = s.toString().indexOf('\n');
 //        if (idx!=-1){
-//            
+//
 //        line = s.subSequence(0, idx).toString();
 //        s.
 //        s.delete(0, idx+1);
@@ -80,9 +81,10 @@ public class MyUtil {
 ////            inputStr = inputStr.substring(0, inputStr.length() - 2);
 //            s.deleteCharAt(s.length()-1);
 //        }
-////        inputStr = inputStr.replace("\n",""); //remove 
-////        inputStr = inputStr.replace('\n',""); //remove 
+////        inputStr = inputStr.replace("\n",""); //remove
+////        inputStr = inputStr.replace('\n',""); //remove
 //        return s.toString();
+//</editor-fold>
     }
 
     public static String removeTrailingPrecedingSpacesNewLinesEtcXXX(String inputStr) {

@@ -77,7 +77,7 @@ public class TimerInstance extends ParseObject {
                 + (getTimedProject() != null ? " Proj:" + getTimedProject().getText() : "")
                 + (getTimedItem() != null ? "Task:" + getTimedItem().getText() : "")
                 + (getStartTimeD().getTime() != 0 ? " Start:" + getStartTimeD() : "")
-                + (getElapsedTime() != 0 ? " Duration:" + MyDate.formatTimeDuration(getElapsedTime()) : "")
+                + (getElapsedTime() != 0 ? " Duration:" + MyDate.formatDurationShort(getElapsedTime()) : "")
                 + (isRunning() ? " Running" : " Stopped")
                 + " [" + getObjectIdP() + "]");
 //                +(isAutostart());

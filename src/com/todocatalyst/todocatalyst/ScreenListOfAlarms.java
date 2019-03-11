@@ -176,8 +176,8 @@ public class ScreenListOfAlarms extends MyForm {
             alarmCont.animateLayout(300); //works??
         }
 
-        revalidate();
-        restoreKeepPos();
+//        revalidate();
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 

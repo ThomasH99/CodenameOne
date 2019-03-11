@@ -409,13 +409,16 @@ public class MyPrefs {
 //    static PrefEntry statisticsGroupByCategoryInsteadOfList = new PrefEntry("eee", "statisticsGroupByCategoryInsteadOfList", false, "Show completed tasks grouped by Category instead of Lists (NB. If a task has multiple categories, only the first is used)");
     static PrefEntry statisticsGroupTasksUnderTheirProject = new PrefEntry("Show subtasks grouped under their project", "statisticsGroupTasksUnderTheirProject", true, "Show completed subtasks grouped under their top-level project");
     static PrefEntry statisticsShowDetailsForAllLists = new PrefEntry("Always show details for statistics", "statisticsShowDetailsForAllLists", false, "**");
+    static PrefEntry statisticsShowMostRecentFirst = new PrefEntry("Show most recent first", "statisticsShowMostRecentFirst", true, "**");
 
     //GLOBAL
     //localization
     static PrefEntry localeUserSelected = new PrefEntry("Language for text", "localeUserSelected", "en", "Determines the language used. Use this setting to override the default language used on your device");
 
-    static PrefEntry dateTimePickerMinuteStep = new PrefEntry("Picker minute steps", "pickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
-    static PrefEntry durationPickerMinuteStep = new PrefEntry("Duration picker minute steps", "pickerMinuteStep", 1, "Minutes in pickers, chose 1, 5, 10, 15");
+    static PrefEntry dateTimePickerMinuteStep = new PrefEntry("Picker minute steps", "dateTimePickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
+    static PrefEntry durationPickerMinuteStep = new PrefEntry("Duration picker minute steps", "durationPickerMinuteStep", 1, "Minutes in pickers, chose 1, 5, 10, 15");
+    static PrefEntry durationPickerShowSecondsIfLessThanXMinutes = new PrefEntry("Show seconds in time if under N minutes (0 disables)", "durationPickerShowSecondsIfLessThanXMinutes", 1, "**");
+    static PrefEntry durationPickerShowSecondsIfLessThan1Minute = new PrefEntry("Show seconds in time if less than 1 minute", "durationPickerShowSecondsIfLessThan1Minute", true, "**");
 
 //LOGIN
     static PrefEntry loginStoreEmail = new PrefEntry("Show email on login", "loginStoreEmail", true, "**");

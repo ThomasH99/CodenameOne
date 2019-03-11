@@ -90,7 +90,7 @@ public class ItemListList extends ItemList {
 //        INSTANCE.setList(temp.getList());
            ItemListList temp = DAO.getInstance().getItemListList();
         INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
-        for (ItemAndListCommonInterface elt : temp.getList()) {
+        for (ItemAndListCommonInterface elt : temp.getListFull()) {
             INSTANCE.addItem(elt);
         }
     }

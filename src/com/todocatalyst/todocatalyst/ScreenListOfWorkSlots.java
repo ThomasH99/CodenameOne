@@ -126,14 +126,19 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        setLayout(BoxLayout.y());
 //        getContentPane().setScrollableY(true);
         getContentPane().setScrollableY(false);
+        expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+
 //        getContentPane().add(buildContentPaneForItemList(workSlotList));
         refreshAfterEdit();
     }
 
     @Override
     public void refreshAfterEdit() {
+        if (getKeepPos() == null) { //if no position set before, try to keep same scroll position
+            setKeepPos(new KeepInSameScreenPosition());
+        }
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
-        getContentPane().removeAll();
+//        getContentPane().removeAll();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        List<WorkSlot> wsList = null;
 //        if (false) { //below code is a hack
@@ -155,15 +160,27 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForWorkSlotList(wsList));
 //        getContentPane().add(buildContentPaneForWorkSlotList(wsList));
 //</editor-fold>
+        workSlotListOwner.resetWorkTimeDefinition(); //force recalculation on each update of list to show tasks in workslots correctly
         WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
-        workSlotList.setIncludeExpiredWorkSlots(showAlsoExpiredWorkSlots);
-        getContentPane().add(BorderLayout.CENTER,buildContentPaneForWorkSlotList(workSlotList));
+        if (workSlotList != null)
+            workSlotList.setIncludeExpiredWorkSlots(showAlsoExpiredWorkSlots);
+        
+        Container contentContainer = buildContentPaneForWorkSlotList(workSlotList);
+        if (contentContainer instanceof MyTree2) 
+            setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
+        
+        getContentPane().add(BorderLayout.CENTER, contentContainer);
+//        if (getInlineInsertContainer()!= null)
+//            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
+
+        setTitleAnimation(contentContainer); //MUST do this here since we create a new container on each refresh
+
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
 //        }
         super.refreshAfterEdit();
-        revalidate();
-        restoreKeepPos();
+//        revalidate();
+//        restoreKeepPos();
     }
 
     @Override
@@ -174,7 +191,7 @@ public class ScreenListOfWorkSlots extends MyForm {
             WorkSlot newWorkSlot = new WorkSlot();
             newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
             setKeepPos(new KeepInSameScreenPosition());
-            new ScreenWorkSlot(newWorkSlot, ScreenListOfWorkSlots.this, () -> {
+            new ScreenWorkSlot(newWorkSlot,workSlotListOwner, ScreenListOfWorkSlots.this, () -> {
                 if (newWorkSlot.hasSaveableData()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    workSlot.setOwner(owner);
@@ -278,7 +295,7 @@ public class ScreenListOfWorkSlots extends MyForm {
     protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos,
             boolean expandItemsInWorkSlot, boolean showOwner, long now) {
         Container cont = new Container();
-        MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(null, null, cont){
+        MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(null, null, cont) {
             @Override
             public ItemAndListCommonInterface getDragAndDropObject() {
                 return workSlot;
@@ -314,13 +331,13 @@ public class ScreenListOfWorkSlots extends MyForm {
             myForm.setKeepPos(new KeepInSameScreenPosition(workSlot, cont));
 //                new ScreenWorkSlot(workSlot, ScreenListOfWorkSlots.this, () -> {
 //            new ScreenWorkSlot(workSlot, (MyForm) cont.getComponentForm(), () -> {
-            new ScreenWorkSlot(workSlot, myForm, () -> {
+            new ScreenWorkSlot(workSlot, workSlot.getOwner(), myForm, () -> {
                 //TODO!!! add same check as when creating a new WorkSlot (if both StartDate and Duration deleted, delete the workslot)??
 //                            workSlot.setList(itemList.getList());
                 DAO.getInstance().save(workSlot);
 //                    refreshAfterEdit();
 //                refreshOnItemEdits.launchAction();
-                myForm.refreshAfterEdit();
+                if (false) myForm.refreshAfterEdit(); //not needed anymore since always called on screen refresh
             }).show();
         }
         ));
@@ -364,7 +381,8 @@ public class ScreenListOfWorkSlots extends MyForm {
         Label startTimeLabel = new Label(startTimeStr,
                 workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime");
 
-        String endTimeStr = "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
+//        String endTimeStr = "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
+        String endTimeStr = " " + MyDate.formatDurationShort(workSlot.getDurationAdjusted())
                 + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
         Label endTimeLabel = new Label(endTimeStr, "WorkSlotEndTime");
 

@@ -45,6 +45,7 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
         addSettingEnum(cont, parseIdMap2, MyPrefs.statisticsGroupBy, ScreenStatistics.ShowGroupedBy.values(), false);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsGroupTasksUnderTheirProject);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsShowDetailsForAllLists);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsShowMostRecentFirst);
         
 //        addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsGroupByCategoryInsteadOfList);
         addSettingInt(cont, parseIdMap2, MyPrefs.statisticsScreenNumberPastDaysToShow, 1,365,1);

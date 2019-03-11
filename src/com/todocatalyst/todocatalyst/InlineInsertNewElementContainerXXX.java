@@ -13,7 +13,7 @@ import com.parse4cn1.ParseObject;
  *
  * @author Thomas
  */
-public class InlineInsertNewElementContainer extends Container {
+public class InlineInsertNewElementContainerXXX extends Container {
 
 //    private Container oldNewTaskCont=null;
     private boolean insertAsSubtask = false; //true if the user has selected to insert new task as a subtask of the preceding task
@@ -86,11 +86,11 @@ public class InlineInsertNewElementContainer extends Container {
      * @param myForm
      * @param itemOrItemListForNewTasks2 
      */
-    public InlineInsertNewElementContainer(MyForm myForm, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
+    public InlineInsertNewElementContainerXXX(MyForm myForm, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
         this(myForm, new Item(), itemOrItemListForNewTasks2);
     }
     
-    public InlineInsertNewElementContainer(MyForm myForm, Item item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
+    public InlineInsertNewElementContainerXXX(MyForm myForm, Item item2, ItemAndListCommonInterface itemOrItemListForNewTasks2) {
 //        this.myForm = myForm;
 ////        ASSERT.that(item2 != null, "why item==null here?"); //Can be null when an empty insertNewTaskContainer is created in an empty list
 //        this.item = item2;
@@ -564,7 +564,7 @@ public class InlineInsertNewElementContainer extends Container {
      * @param itemOrItemList
      * @return
      */
-    public InlineInsertNewElementContainer getInsertNewTaskContainerFromForm(Item item, ItemAndListCommonInterface itemOrItemList) {
+    public InlineInsertNewElementContainerXXX getInsertNewTaskContainerFromForm(Item item, ItemAndListCommonInterface itemOrItemList) {
 //        if (lastInsertNewTaskContainer == null) { //TODO Optimization: called for every container, replace by local variable?
 //            return null;
 //        } else {

@@ -105,6 +105,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         add(swipC);
 
         textEntryField2 = new MyTextField2(100); //TODO!!!! need field to enter edit mode //UI: 100 width of text field (to avoid showing a small one on eg tablet
+        if (Config.TEST) textEntryField2.setName("InlineInsert text field");
         textEntryField2.setHint(refItem == null || !(refItem instanceof Item) ? ENTER_TASK_NO_SWIPE_RIGHT : ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK); //if no item, then don't show hint about swipe right for subtask
         textEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
 //        myForm.setEditOnShowOrRefresh(textEntryField2); //ensure fields enters edit mode after show() or removeFromCache
@@ -158,7 +159,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //                        }
 //</editor-fold>
                             if (false) myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
-                            else myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : refItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+                            else myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : refItem, this, 0)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        closeInsertNewTaskContainer();
 //                            getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
@@ -199,7 +200,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         contForTextEntry.add(BorderLayout.WEST, westCont);
 
         //CLOSE button, only add if in a non-empty list
-        if (itemOrItemListForNewElements != null && itemOrItemListForNewElements.size() > 0) {
+        if (itemOrItemListForNewElements != null && itemOrItemListForNewElements.getSize() > 0) {
             westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -343,12 +344,15 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 if (refItem == null) {
                     itemOrItemListForNewElements.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
                 } else {
-                    int index = itemOrItemListForNewElements.getItemIndex(refItem);
-                    if (index > -1) {
-                        itemOrItemListForNewElements.addToList(index + (insertBeforeElement ? 0 : 1), newItem); //add after item, unless insertBeforeElement is true, then insert *before* element
-                    } else {
-                        itemOrItemListForNewElements.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
-                    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    int index = itemOrItemListForNewElements.getItemIndex(refItem);
+//                    if (index > -1) {
+//                        itemOrItemListForNewElements.addToList(index + (insertBeforeElement ? 0 : 1), newItem); //add after item, unless insertBeforeElement is true, then insert *before* element
+//                    } else {
+//                        itemOrItemListForNewElements.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
+//                    }
+//</editor-fold>
+                    itemOrItemListForNewElements.addToList(newItem, refItem,!insertBeforeElement ); //add after item, unless insertBeforeElement is true, then insert *before* element
                 }
                 DAO.getInstance().saveInBackground((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
             } else {
@@ -365,8 +369,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         if (closeAction != null) {
             closeAction.launchAction();
         }
-        if (parent != null) //TODO!!! edge case where inlineinsert is inserted into empty list (no previous elements in list), so seems it doesn't get a scrollY parent - to investigate
-            parent.animateLayout(300);
+        if (false && parent != null) //TODO!!! edge case where inlineinsert is inserted into empty list (no previous elements in list), so seems it doesn't get a scrollY parent - to investigate
+            parent.animateLayout(300); //this call might be what pushes the effect of refreshAfterEdit as an animation
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

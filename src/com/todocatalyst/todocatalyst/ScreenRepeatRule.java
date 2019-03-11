@@ -28,10 +28,11 @@ import java.util.List;
  * @author Thomas
  */
 public class ScreenRepeatRule extends MyForm {
+
     //TODO 
     //TODO add help text to repeatFromCompleted to explain that cancel/delete also counts as 'Completed'
     //TODO selectors like monthlyRepeatTypeSelectionBox should NOT allow to deselect all choices (should work as radiobuttons: exactly one is selected at all times(
- protected static String FORM_UNIQUE_ID = "ScreenEditRepeatRule"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    protected static String FORM_UNIQUE_ID = "ScreenEditRepeatRule"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     /**
      * set to true if repeatrule is the simplified version used for workslots
@@ -132,17 +133,17 @@ public class ScreenRepeatRule extends MyForm {
     public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm, UpdateField doneAction, boolean allowEditingStartDate) {
         this(title, repeatRule, null, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, null);
     }
-
+    
     public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleParseObject repeatRuleEdited, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm, UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate) {
         this(title, repeatRule, repeatRuleEdited, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, defaultStartDate, false);
     }
-
+    
     public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule,
             RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm,
             UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate, boolean isForWorkSlot) {
         this(title, repeatRule, null, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, defaultStartDate, isForWorkSlot);
     }
-
+    
     public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleParseObject repeatRuleEdited,
             RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm,
             UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate, boolean isForWorkSlot) {
@@ -170,7 +171,7 @@ public class ScreenRepeatRule extends MyForm {
 //        setupLayoutAndFields();
         refreshAfterEdit();
     }
-
+    
     @Override
     public void refreshAfterEdit() {
         super.refreshAfterEdit();
@@ -194,26 +195,35 @@ public class ScreenRepeatRule extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
 
         //DONE
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Command cmd = makeDoneUpdateWithParseIdMapCommand();
-        Command cmd = new Command(null, Icons.iconBackToPrevFormToolbarStyle()) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                RepeatRuleParseObject tempMyRepeatRule = new RepeatRuleParseObject();
-                if (restoreEditedFieldsToRepeatRule(tempMyRepeatRule)) { //TODO optimization: inefficient to restore twice just to test the rule
-                    restoreEditedFieldsToRepeatRule(myRepeatRuleEdited);
-                    DAO.getInstance().save((ParseObject) repeatRuleOwner); //if a new Item, must save before creating repeatInstances in putEditedValues2:
-                    putEditedValues2(parseIdMap2);
-//                    updateActionOnDone.update();
-                    getUpdateActionOnDone().update();
-//                    showPreviousScreenOrDefault(previousForm, true); //false);
-                    showPreviousScreenOrDefault(true); //false);
-                } else {
-                    Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
-                }
-            }
-        };
+//        Command cmd = new Command(null, Icons.iconBackToPrevFormToolbarStyle()) {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                RepeatRuleParseObject tempMyRepeatRule = new RepeatRuleParseObject();
+//                if (restoreEditedFieldsToRepeatRule(tempMyRepeatRule)) { //TODO optimization: inefficient to restore twice just to test the rule
+//                    restoreEditedFieldsToRepeatRule(myRepeatRuleEdited);
+//                    DAO.getInstance().save((ParseObject) repeatRuleOwner); //if a new Item, must save before creating repeatInstances in putEditedValues2:
+//                    putEditedValues2(parseIdMap2);
+////                    updateActionOnDone.update();
+//                    getUpdateActionOnDone().update();
+////                    showPreviousScreenOrDefault(previousForm, true); //false);
+//                    showPreviousScreenOrDefault(true); //false);
+//                } else {
+//                    Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
+//                }
+//            }
+//        };
+//        cmd.putClientProperty("android:showAsAction", "withText");
+//        toolbar.addCommandToLeftBar(cmd);
+//</editor-fold>
+        Command cmd = makeDoneUpdateWithParseIdMapCommand(true, () -> {
+            RepeatRuleParseObject tempMyRepeatRule = new RepeatRuleParseObject();
+            if (restoreEditedFieldsToRepeatRule(tempMyRepeatRule)) {
+                return (String) null;
+            } else return "Missing selection in one or more choices";
+        });
         cmd.putClientProperty("android:showAsAction", "withText");
-
         toolbar.addCommandToLeftBar(cmd);
 
         //CANCEL
@@ -272,11 +282,11 @@ public class ScreenRepeatRule extends MyForm {
                 Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
             }
         });
-
+        
         toolbar.addCommandToOverflowMenu("Run tests", null, (e) -> {
             RepeatRuleParseObject.testRepeatRules();
         });
-
+        
     }
 
     /**
@@ -299,20 +309,20 @@ public class ScreenRepeatRule extends MyForm {
     //    showHowMany_InstancesDaysAhead_Combo = new MyToggleButton(new String[]{"instances", "days ahead"}, new int[]{0, 1});
     private final int SHOW_HOW_MANY_AHEAD_INSTANCES = 0;
     private final int SHOW_HOW_MANY_AHEAD_DAYS_AHEAD = 1;
-
+    
     protected void setupLayoutAndFields() {
 //        if (!initialized) {
         parseIdMapReset();
-
+        
         setLayout(BoxLayout.y());
         setScrollableY(true);
         motherContainer = getContentPane();
-
+        
         if (myRepeatRule != null && myRepeatRule.getListOfUndoneRepeatInstances().size() > 0) {
 //                        SpanLabel itemHierarchyContainer = new SpanLabel(hierarchyStr);
             repeatRuleDetailsContainer = new Container();
             Container repeatRuleHideableDetailsContainer = new Container();
-
+            
             Button buttonRepeatRuleHistory = new Button();
             repeatRuleHideableDetailsContainer.setHidden(MyPrefs.repeatHidePreviousTasksDetails.getBoolean()); //UI: default hidden
             buttonRepeatRuleHistory.setIcon(repeatRuleHideableDetailsContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
@@ -342,7 +352,7 @@ public class ScreenRepeatRule extends MyForm {
                             refreshAfterEdit();
                         }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP | ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                                 | ScreenListOfItems.OPTION_NO_INTERRUPT | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME).show();
-
+                        
                     }))); //TODO!!!!
                 }
 //                repeatRuleHideableDetailsContainer.setHidden(!repeatRuleHideableDetailsContainer.isHidden());
@@ -388,7 +398,7 @@ public class ScreenRepeatRule extends MyForm {
             if (oldSel != newSel && newSel == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE && repeatStartDatePicker != null && repeatStartDatePicker.getDate().getTime() == 0) {
                 Dialog.show("INFO", "Please set the " + Item.DUE_DATE, "OK", null);
             }
-
+            
         });
 //        repeatFromDueOrCompletedFieldContainer = createLabelAndFieldContainer("Repeat from", repeatFromDueOrCompletedField);
         repeatFromDueOrCompletedFieldContainer = BoxLayout.encloseY(new Label("Repeat"), repeatFrom_NoneCompletedDue_Field);
@@ -614,7 +624,7 @@ public class ScreenRepeatRule extends MyForm {
         fieldsAdd();
         fieldsShow();
     }
-
+    
     private void addMonthlyFieldsToContainer(Container addToContainer) {//, RepeatRuleParseObject myRepeatRule, boolean forYear) {
 
         addToContainer.addComponent(monthlyRepeatType_DayWeekdaysWeeks_SelectionBox);
@@ -628,10 +638,10 @@ public class ScreenRepeatRule extends MyForm {
         addToContainer.addComponent(weekdaysInMonth_1st2nLast_Field);
         addToContainer.addComponent(daysInMonth_MonSunWeekdays_Field);
     }
-
+    
     private void fieldsAdd() {
         motherContainer.removeAll();
-
+        
         if (repeatRuleDetailsContainer != null) {
             motherContainer.addComponent(repeatRuleDetailsContainer); //may be null if new rule
         }
@@ -664,7 +674,7 @@ public class ScreenRepeatRule extends MyForm {
 
         //Select day of year
         motherContainer.addComponent(dayInYear_1_365_Field);
-
+        
         motherContainer.addComponent(monthsInYear_JanDec_Field);
 
         //Select yearly repeat on a monthly basis
@@ -682,9 +692,9 @@ public class ScreenRepeatRule extends MyForm {
         motherContainer.addComponent(showNumberFutureRepeats);
 //Show how many DAYS AHEAD
         motherContainer.addComponent(showNumberDaysAhead);
-
+        
         motherContainer.addComponent(showDatesButton);
-
+        
         if (false) {
             this.animateLayout(400);
         }
@@ -698,7 +708,7 @@ public class ScreenRepeatRule extends MyForm {
 
 //        monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.setHidden(false);
         monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.setHidden(!show);
-
+        
         if (!show) {
             dayInMonth_1_31_Last_FieldFM.setHidden(true);
             weeksInMonth_1st2ndLast_Field.setHidden(true);
@@ -713,7 +723,7 @@ public class ScreenRepeatRule extends MyForm {
                     if (dayInMonth_1_31_Last_FieldFM.isHidden()) { //avoid unnecessary animation
                         dayInMonth_1_31_Last_FieldFM.setHidden(false);
                     }
-
+                    
                     weeksInMonth_1st2ndLast_Field.setHidden(true);
                     daysInWeek_MonSun_Field.setHidden(true);
                     weekdaysInMonth_1st2nLast_Field.setHidden(true);
@@ -723,7 +733,7 @@ public class ScreenRepeatRule extends MyForm {
                     //SELECT WEEKS IN MONTH, e.g. 2nd week, and WWEK DAYS in those weeks, e.g. MONDAY and THURSDAY
                     weeksInMonth_1st2ndLast_Field.setHidden(false);
                     daysInWeek_MonSun_Field.setHidden(false);
-
+                    
                     dayInMonth_1_31_Last_FieldFM.setHidden(true);
                     weekdaysInMonth_1st2nLast_Field.setHidden(true);
                     daysInMonth_MonSunWeekdays_Field.setHidden(true);
@@ -732,7 +742,7 @@ public class ScreenRepeatRule extends MyForm {
                     //SELECT WEEKDAYS IN MONTH, e.g. 1st FRIDAY
                     weekdaysInMonth_1st2nLast_Field.setHidden(false);
                     daysInMonth_MonSunWeekdays_Field.setHidden(false);
-
+                    
                     dayInMonth_1_31_Last_FieldFM.setHidden(true);
                     //SELECT WEEKS IN MONTH, e.g. 2nd week, and WWEK DAYS in those weeks, e.g. MONDAY and THURSDAY
                     weeksInMonth_1st2ndLast_Field.setHidden(true);
@@ -741,7 +751,7 @@ public class ScreenRepeatRule extends MyForm {
             }
         }
     }
-
+    
     private void fieldsShow() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -835,7 +845,7 @@ public class ScreenRepeatRule extends MyForm {
                 case RepeatRule.WEEKLY:
                     showMonthlyFields(false);
                     daysInWeek_MonSun_Field.setHidden(false);
-
+                    
                     yearlyChoice_DayMonths_Combo.setHidden(true);
                     dayInYear_1_365_Field.setHidden(true);
                     monthsInYear_JanDec_Field.setHidden(true);
@@ -861,11 +871,11 @@ public class ScreenRepeatRule extends MyForm {
 //                showMonthlyFields(false);
                     break;
             }
-
+            
             if (true) {
                 repeatHowLong_ForeverUntilNumber_ChoiceCombo.setHidden(false);
             }
-
+            
             repeatEndDateEditButton.setHidden(repeatHowLong_ForeverUntilNumber_ChoiceCombo.getSelectedValue() != REPEAT_HOW_LONG_OPTION_UNTIL);
             repeatHowManyTimesField.setHidden(repeatHowLong_ForeverUntilNumber_ChoiceCombo.getSelectedValue() != REPEAT_HOW_LONG_OPTION_NUMBER);
 
@@ -914,12 +924,12 @@ public class ScreenRepeatRule extends MyForm {
         boolean missingData = false;
         String missingDataStr = "";
         int testVal;
-
+        
         myRepeatRule.setRepeatType(repeatFrom_NoneCompletedDue_Field.getSelectedValue());
         if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
             return !missingData;
         }
-
+        
         if (true || !isForWorkSlot) {
 //            if (repeatFrom_CompletedDue_Field != null) {
             if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE) {
@@ -978,13 +988,13 @@ public class ScreenRepeatRule extends MyForm {
             }
 //            }
         }
-
+        
         int frequency = frequency_DailyWeekMonthYearly_Field.getSelectedValue();
 //        int frequency = frequencyChoice.getSelectedValue();
 
         myRepeatRule.setFrequency(frequency);
         Log.p("setFrequency(" + frequency + ")");
-
+        
         if (false) {
 //                myRepeatRule.setInterval(intervalField.getSelectedValue());
 //                Log.p("setInterval(" + intervalField.getSelectedValue() + ")");
@@ -1002,7 +1012,7 @@ public class ScreenRepeatRule extends MyForm {
             myRepeatRule.setInterval(interval);
         }
         myRepeatRule.setInterval(intervalField_1_NN_TextField.getValue());
-
+        
         switch (frequency) {
             case RepeatRule.DAILY:
                 break;
@@ -1022,7 +1032,7 @@ public class ScreenRepeatRule extends MyForm {
                         dayInYearInt = 365; //UI: not allowed to enter day in year bigger than 365
                     }
                     myRepeatRule.setDayInYear(dayInYearInt);
-
+                    
                     myRepeatRule.setDayInMonth(0);
                     myRepeatRule.setWeeksInMonth(0);
                     myRepeatRule.setWeekdaysInMonth(0);
@@ -1053,7 +1063,7 @@ public class ScreenRepeatRule extends MyForm {
 //                        myRepeatRule.setDaysInWeek(daysInWeekField.getSelectedOredTogether());
                         myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInWeek_MonSun_Field.getSelectedValues()));
                         missingData = (testVal == 0) || missingData;
-
+                        
                         myRepeatRule.setWeekdaysInMonth(0);
                         myRepeatRule.setDayInMonth(0);
                         myRepeatRule.setDayInYear(0);
@@ -1067,7 +1077,7 @@ public class ScreenRepeatRule extends MyForm {
 //                        myRepeatRule.setDaysInWeek(daysInMonthField.getSelectedOredTogether());
                         myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInMonth_MonSunWeekdays_Field.getSelectedValues()));
                         missingData = (testVal == 0) || missingData;
-
+                        
                         myRepeatRule.setDayInMonth(0);
                         myRepeatRule.setWeeksInMonth(0);
                         myRepeatRule.setDayInYear(0);
@@ -1082,7 +1092,7 @@ public class ScreenRepeatRule extends MyForm {
                 if (monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.getSelectedValue() == MONTHLY_OPTION_DAY) { //"Select day of month(s):" : "Select day of month:"
 //                    myRepeatRule.setDayInMonth(dayInMonth_1_31_Last_FieldFM.getSelectedValue());
                     myRepeatRule.setDayInMonth(dayInMonth_1_31_Last_FieldFM.getSelectedValue());
-
+                    
                     myRepeatRule.setWeeksInMonth(0);
                     myRepeatRule.setWeekdaysInMonth(0);
                     myRepeatRule.setDaysInWeek(0);
@@ -1098,7 +1108,7 @@ public class ScreenRepeatRule extends MyForm {
 //                    myRepeatRule.setDaysInWeek(daysInWeekField.getSelectedOredTogether());
                     myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInWeek_MonSun_Field.getSelectedValues()));
                     missingData = (testVal == 0) || missingData;
-
+                    
                     myRepeatRule.setWeekdaysInMonth(0);
                     myRepeatRule.setDayInMonth(0);
                     myRepeatRule.setDayInYear(0);
@@ -1113,7 +1123,7 @@ public class ScreenRepeatRule extends MyForm {
 //                    myRepeatRule.setDaysInWeek(daysInMonthField.getSelectedOredTogether());
                     myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInMonth_MonSunWeekdays_Field.getSelectedValues()));
                     missingData = (testVal == 0) || missingData;
-
+                    
                     myRepeatRule.setDayInMonth(0);
                     myRepeatRule.setWeeksInMonth(0);
                     myRepeatRule.setDayInYear(0);
@@ -1124,7 +1134,7 @@ public class ScreenRepeatRule extends MyForm {
 //                myRepeatRule.setDaysInWeek(daysInWeekField.getSelectedOredTogether());
                 myRepeatRule.setDaysInWeek(testVal = RepeatRuleParseObject.bitOrIntegerVectorToInt(daysInWeek_MonSun_Field.getSelectedValues()));
                 missingData = (testVal == 0) || missingData;
-
+                
                 myRepeatRule.setDayInMonth(0);
                 myRepeatRule.setWeeksInMonth(0);
                 myRepeatRule.setWeekdaysInMonth(0);
@@ -1156,14 +1166,14 @@ public class ScreenRepeatRule extends MyForm {
 //        }
         return !missingData;
     }
-
+    
     void restoreEditedFieldsOnDone() {
 //        repeatRuleOwner.setRepeatStartTime(repeatStartDatePicker.getDate()); //update due date in case it was changed while editing the repeat rule
         if (!restoreEditedFieldsToRepeatRule(myRepeatRuleEdited)) {
             Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
         }
     }
-
+    
 }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

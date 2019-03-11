@@ -472,22 +472,23 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
 //</editor-fold>
     @Override
-    public int size() {
+    public int size() { //these operation must operate on visible (filtered) list!
 //        return getSize();
 //        return (getListFull() == null) ? 0 : getListFull().size();
-        return getSize();
+//        return getSize();
+        return getList().size();
     }
 
     @Override
     public boolean isEmpty() {
-        return getSize() == 0;
+//        return getSize() == 0;
+        return size() == 0;
     }
 
     @Override
     public boolean add(Object e) {
-        addToList((E) e);
+        addToList((E) e, true);
         return true;
-
     }
 
     @Override
@@ -499,11 +500,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return getList().get(index);
     }
 
-    public Object getFull(int index) {
-//        return getItemAt(index);
-        return getListFull().get(index);
-    }
-
+//    public Object getFull(int index) {
+////        return getItemAt(index);
+//        return getListFull().get(index);
+//    }
     @Override
     public Object set(int index, Object element) {
 //        return setItemAtIndex((E)element, index);
@@ -513,24 +513,31 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public void add(int index, Object element) {
 //        addItemAtIndex((E) element, index);
-        addToList(index, (E) element);
+        assert false : "check if below works correctly wrt getListFull etc";
+//        addToList(index, (E) element);
+        ItemAndListCommonInterface refElt = getList().get(index); //find the reference element (NB! won't work if multiple copies of same element in the list!)
+        addToList((E) element, refElt, false);
     }
 
     @Override
     public E remove(int index) {
-        E obj = getItemAt(index);
-        removeItem(index);
+        assert false : "check if below works correctly wrt getListFull etc";
+//        E obj = getItemAt(index);
+        E obj = getList().get(index);
+//        removeItem(index);
+        removeItem(obj);
         return obj;
     }
 
     @Override
     public int indexOf(Object o) {
-        return getItemIndex((E) o);
+//        return getItemIndex((E) o);
+        return getList().indexOf((E) o);
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        return getItemIndex((E) o); //assuming there will only be a single instance of each object in the list
+        return indexOf((E) o); //assuming there will only be a single instance of each object in the list
     }
 
     /**
@@ -628,6 +635,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         if (sourceList != null && !sourceList.isEmpty()) {
             put(PARSE_SOURCE_LISTS, sourceList);
         } else {
+            setItemBag(null); //if no (more) source lists, remove itembags
             remove(PARSE_SOURCE_LISTS);
         }
     }
@@ -648,7 +656,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         //when initiating subLists, add all items already in this list
 //            itemBag.addAll(itemList);
 //            itemBag.addAll(getList());
-        Bag itemBag = getItemBag();
+        Bag<E> itemBag = getItemBag();
         if (itemBag == null) {
             itemBag = new Bag();
         }
@@ -703,31 +711,36 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @return
      */
-    public void removeSubList(ItemList<E> itemList) {
+    public boolean removeSubList(ItemList<E> itemList) {
         if (itemList == null || getSourceLists().isEmpty() || !getSourceLists().contains(itemList)) {
             Log.p("Trying to remove itemList=" + itemList + " from SourceLists = " + getSourceLists());
-            return;
+            return false;
         } else {
-//            itemBag.removeAll(subList);
-            Bag itemBag = getItemBag();
-            if (itemBag != null) {
-                for (Object item : itemList) {
-                    if (itemBag.remove((E) item)) { //remove returns true if 
-                        removeItem((E) item);
-                    }
-                }
-                setItemBag(itemBag);
-            }
-//            sourceLists.remove(itemList);
             List<ItemList<E>> sourceLists = getSourceLists();
-            sourceLists.remove(itemList);
-            setSourceLists(sourceLists);
-            itemList.removeMetaList(this); //remove the reference from SourceList to this 
-            if (sourceLists.size() == 0) {
-                itemBag = null;
-                sourceLists = null; //help GC
+            if (sourceLists.contains(itemList)) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            itemBag.removeAll(subList);
+//            Bag itemBag = getItemBag();
+//            if (itemBag != null) {
+//                for (Object item : itemList) {
+//                    if (itemBag.remove((E) item)) { //remove returns true if
+//                        removeItem((E) item);
+//                    }
+//                }
+//                setItemBag(itemBag);
+//            }
+//</editor-fold>
+                for (E item : itemList.getListFull()) {
+                    removeItem(item); //also removes item from itemBag
+                }
+                sourceLists.remove(itemList);
+                setSourceLists(sourceLists);
+                itemList.removeMetaList(this); //remove the reference from SourceList to this 
+
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -766,7 +779,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * elements
      */
 //    public static boolean updateListWithDifferences(ItemListModel list, ItemListModel newList) {
-    public boolean updateListWithDifferences(List newList) {
+    public boolean updateListWithDifferencesXXX(List newList) {
         if (getSize() == 0 && newList.size() == 0) {
             return false;  //do  nothing if both lists are empty
         }
@@ -788,10 +801,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * to the metaLists of its sublist.
      */
     public void addMetaList(ItemList metaList) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (metaLists == null) {
 //            metaLists = new LinkedList<ItemList>();
 //        }
 //        metaLists.add(metaList);
+//</editor-fold>
         List<ItemList<E>> metaLists = getMetaList();
         metaLists.add(metaList);
         setMetaList(metaLists);
@@ -803,11 +818,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @return
      */
     public void removeMetaList(ItemList metaList) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (metaLists == null || !metaLists.contains(metaList)) {
 //            return;
 //        } else {
 //            metaLists.remove(metaList);
 //        }
+//</editor-fold>
         List<ItemList<E>> metaLists = getMetaList();
         metaLists.remove(metaList);
         setMetaList(metaLists);
@@ -827,6 +844,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return remainingEffortSumVector.getSumAt(index);
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * returns the int sum of all the Items' remaining effort, up to and
      * including item. Returns 0 if list is empty, if there are no Items in the
@@ -844,6 +862,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        }
 //        return getSumOfRemainingEffort(getItemIndex(item));
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * returns the first item where the sum of remaining effort for previous
@@ -975,15 +994,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        List<? extends ItemAndListCommonInterface> list = getListFull();
 //        FilterSortDef filterSortDef = getFilterSortDef();
         FilterSortDef filterSortDef;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null && filteredSortedList == null) { //buffer the sorted list
-        if (filteredSortedList == null && ((filterSortDef = getFilterSortDef()) != null)) { //buffer the sorted list
-//            filteredSortedList = (List<? extends ItemAndListCommonInterface>) filterSortDef.filterAndSortItemList(list);
-            filteredSortedList = (List<E>) filterSortDef.filterAndSortItemList(list);
-        }
-        if (filteredSortedList != null) { //reuse
-            list = filteredSortedList;
-        }
-        return list;
+//        if (filteredSortedList == null && ((filterSortDef = getFilterSortDef()) != null)) { //buffer the sorted list
+////            filteredSortedList = (List<? extends ItemAndListCommonInterface>) filterSortDef.filterAndSortItemList(list);
+//            filteredSortedList = (List<E>) filterSortDef.filterAndSortItemList(list);
+//        }
+//        if (filteredSortedList != null) { //reuse
+//            list = filteredSortedList;
+//        }
+//</editor-fold>
+        if ((filterSortDef = getFilterSortDef()) != null) { //no buffer for (see code above for buffer version)
+            return (List<E>) filterSortDef.filterAndSortItemList(list);
+        } else
+            return list;
     }
 
     /**
@@ -1013,7 +1037,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return cachedList;
     }
 
-    @Override
+//    @Override
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
         addItemAtIndex((E) subItemOrList, index);
         if (Config.TEST) {
@@ -1026,9 +1050,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface positionItem, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
-        int index = indexOf(positionItem);
-        addToList(index + (addAfterItem ? 1 : 0), subItemOrList);
+    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterItem) {
+        int index = indexOf(refElement);
+        if (index < 0)
+            addToList(newElement);
+        else
+            addToList(index + (addAfterItem ? 1 : 0), newElement);
 //        addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
 //        if (Config.TEST) {
 //            ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this), 
@@ -1040,17 +1067,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList) {
+//        addToList( subItemOrList,MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists));
+        addItemAtIndex((E) subItemOrList, addToEndOfList ? getSize() : 0);
+        return true;
+    }
+
     public boolean addToList(ItemAndListCommonInterface subItemOrList) {
-//        List subtasks = getList();
-//        boolean status = subtasks.add(subtask);
-//        setList(subtasks);
-//        return status;
-        addToList(MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : getListFull().size(), subItemOrList);
+        addToList(subItemOrList, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
         return true;
     }
 
     @Override
-    public boolean removeFromList(ItemAndListCommonInterface subItemOrList) {
+    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeReferences) {
 //        List subtasks = getList();
 //        boolean status = subtasks.remove(subtask);
 //        setList(subtasks);
@@ -1058,14 +1087,21 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         removeItem(subItemOrList); //TODO: update removeItem to return boolean
 //        assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subItemOrList=" + subItemOrList + ", owner=" + getOwner() + ", list=" + this;
         ASSERT.that(!(this instanceof ItemList) || subItemOrList.getOwner() == this, () -> "list not owner of removed subItemOrList (" + subItemOrList + "), owner=" + getOwner() + ", list=" + this); //
-        subItemOrList.setOwner(null);
+        if (removeReferences)
+            subItemOrList.setOwner(null);
         return true;
     }
 
+    private Bag cacheBag;
+
     public Bag<E> getItemBag() {
+        if (cacheBag != null)
+            return cacheBag;
+
         List<E> list = getList(PARSE_ITEM_BAG);
         if (list != null) {
-            return new Bag(list);
+            cacheBag = new Bag(list);;
+            return cacheBag;
         } else {
             return null; //new Bag();
         }
@@ -1073,15 +1109,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     public void setItemBag(Bag<E> itemBag) {
         if (itemBag != null && !itemBag.isEmpty()) {
-            ArrayList arrayList = new ArrayList();
-            for (E o : itemBag.keySet()) {
-                for (int i = 0, size = itemBag.getCount(o); i < size; i++) {
-                    arrayList.add(o);
-                }
-                put(PARSE_ITEM_BAG, arrayList);
-            }
+            put(PARSE_ITEM_BAG, itemBag.toList()); //optimization: 'serializing' the bag on each put (and get above) is costly for large sets, cache a copy?!
+            cacheBag = itemBag;
         } else {
             remove(PARSE_ITEM_BAG);
+            cacheBag = null;
         }
     }
 
@@ -1329,7 +1361,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                for (int i = 0; i < getSize(); i++) {
 //                    E baseItem = getItemAt(i);
 //                    if (baseItem != null) { //necessary when printing lists where change events are removing them (gives null pointerexception
-                for (ItemAndListCommonInterface elt : getList()) {
+                for (ItemAndListCommonInterface elt : getListFull()) {
 //                    E baseItem = getItemAt(i);
 //                    if (baseItem != null) { //necessary when printing lists where change events are removing them (gives null pointerexception
 //                    str += sepStr + ((BaseItem) getItemAt(i)).shortString();
@@ -1350,7 +1382,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public String toString() {
 //        return toString(ToStringFormat.TOSTRING_COMMA_SEPARATED_LIST);
 //        return getText().length() != 0 ? getText() : getObjectIdP();
-        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "") + (getList().size() > 0 ? (" " + getList().size() + " items") : "");
+        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "") + (getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "");
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1587,46 +1619,36 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * items, like the sub-tasks of a task, should the sub-items be deleted.
      *
      */
-    public void delete() throws ParseException {
-//        List<Item> itemsOwnedByThisList = DAO.getInstance().getAllItemsOwnedBy(this);
-        List<? extends ItemAndListCommonInterface> itemsOwnedByThisList = getListFull();
-        for (ItemAndListCommonInterface item : itemsOwnedByThisList) {
-            if (item instanceof ParseObject) {
-                DAO.getInstance().delete((ParseObject) item); //let each item delete itself properly
+    public boolean softDelete(boolean removeRefs) {
+
+        //since we're deleting the list, and thus soft-deleting all its tasks (and their subtasks, recursively), we don't need to remove the list as the tasks' owner!
+        List<? extends ItemAndListCommonInterface> tasks = getListFull();
+        for (Item item : (List<Item>) getListFull()) {
+            item.softDelete(removeRefs);
+        }
+
+        //remove itemList from meta-itemLists (all itemLists to which it is a sub-itemList)
+        //remove this ItemList from all lists (ItemLists or Categories) which include it as a sourceList
+        List<ParseObject> updatedElements = new ArrayList<>();
+        updatedElements.clear();
+        for (ItemList itemList : (List<ItemList<E>>) getMetaList()) {
+            if (itemList.removeSubList(this)) {
+                updatedElements.add(itemList);
             }
         }
+        DAO.getInstance().saveInBackground(updatedElements);
 
-        //remove this ItemList from all lists (ItemLists or Categories) which include it as a sourceList
-        List<ItemList> listOfItemLists = DAO.getInstance().getAllItemListsIncludingThis(this);
-        for (ItemList itemList : listOfItemLists) {
-            //retrieve the sourceList, remove this list from it, and store it again
-//            itemList.put(ItemList.PARSE_SOURCE_LISTS, ((ArrayList) itemList.getList(ItemList.PARSE_SOURCE_LISTS)).remove(this));
-            itemList.removeSubList(this); //remove this list as a sublist
-//            try {
-//                itemList.save();
-//            } catch (ParseException ex) {
-//                Log.e(ex);
-//            }
-            DAO.getInstance().save(itemList);
-        }
-
-//        ItemListList itemListList = DAO.getInstance().getItemListList();
         ItemListList itemListList = ItemListList.getInstance();
         itemListList.remove(this);
-        DAO.getInstance().save(itemListList);
+        DAO.getInstance().saveInBackground((ParseObject) itemListList);
 
         FilterSortDef filter = getFilterSortDef();
-        DAO.getInstance().delete((ParseObject) filter); //let each item delete itself properly
+        if (filter != null)
+            filter.softDelete(removeRefs);
 
-        //now delete the list itself (now all owned items are deleted)
-//        try {
-//            super.delete();
-//        } catch (ParseException ex) {
-//            Log.e(ex);
-//        }
-//        super.delete();
         put(Item.PARSE_DELETED_DATE, new Date());
-        DAO.getInstance().save(this);
+        DAO.getInstance().saveInBackground((ParseObject) this);
+        return true;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1671,8 +1693,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public int getSize() {
 //        return (itemList == null) ? 0 : itemList.size();
 //return (getListFull() == null) ? 0 : getListFull().size();
-        List l = getListFull();
-        return (l == null) ? 0 : l.size();
+//        List l = getListFull();
+//        return (l == null) ? 0 : l.size();
+        return getList().size();
     }
 
     /**
@@ -1721,21 +1744,37 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param index - the index position in the list
      */
     public void addItemAtIndex(E item, int index) {
+
+        List listFull = getListFull();
+        List list = getList();
+
+        int indexFull;
+        if (list != listFull) { //optimize for the case where list is not filtered
+            if (index >= 0 && index < list.size())
+                indexFull = listFull.indexOf(list.get(index));
+            else indexFull = 0;
+        } else
+            indexFull = index;
+
         Bag updatedBag = getItemBag(); //TODO: 
-        if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
+//        if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
+        if (hasSubLists() && updatedBag != null && indexFull != -1) { //if there are sublists and item has already been added at least once (so appears in list)
 //            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
-            updatedBag.add(item);
+            updatedBag.add(item); //item already in list, so add to bag to keep count
             setItemBag(updatedBag); //then don't add to list, but just add to bag to keep track of how many times added
             //TODO!!! should the next statement be an 'else'?? 
         } else {
-            List list = getListFull();
+
 //            if (!getListFull().contains(item)) {
-            if (!list.contains(item)) {
-                //else add normally
-                //only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
+            if (!listFull.contains(item)) {//UI: only allow one copy of each item
+//<editor-fold defaultstate="collapsed" desc="comment">
+//else add normally
+//only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
 //            if (!storeOnlySingleInstanceOfItems || getItemIndex(item) == -1) {
 //            assert getItemIndex(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
-                assert list.indexOf(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
+//</editor-fold>
+                assert listFull.indexOf(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (index <= getSize()) { // shouldn't make this check since it might make us miss some errors
 //                itemList.insertElementAt(item, index);
 //                itemList.add(index, item);
@@ -1745,12 +1784,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                List listCopy = new ArrayList(list);
 //                listCopy.add(index, item);
 //            list.add(index, item);
-                list.add(index, item);
+//</editor-fold>
+//                listFull.add(index, item);
+                listFull.add(indexFull, item);
 //            assert list.indexOf(item) != -1 : "item NOT in list thouygh just added (" + item + " already in list [" + this + "] at pos=" +list.indexOf(item); //if (getItemIndex(item) == -1) {
-                ASSERT.that(list.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + list.indexOf(item)); //if (getItemIndex(item) == -1) {
+                if (Config.TEST) ASSERT.that(listFull.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
 //            setList(editedList);
-                setList(list);
-                ASSERT.that(list.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + list.indexOf(item)); //if (getItemIndex(item) == -1) {
+                setList(listFull);
+                if (Config.TEST) ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
 //                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
 //                    selectedIndex++;
 //                }
@@ -1766,24 +1807,30 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     public ItemAndListCommonInterface setItemAtIndex(E item, int index) {
 //        List<? extends ItemAndListCommonInterface> editedList = getListFull();
-        List<E> editedList = getListFull();
-        ItemAndListCommonInterface oldElement = editedList.get(index);
-        Bag updatedBag = getItemBag();
-        if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
-            updatedBag.remove(oldElement);
+        List<E> listFull = getListFull();
+        List<E> list = getList();
+        ItemAndListCommonInterface oldElement = list.get(index);
+        Bag bag = getItemBag();
+//        if (hasSubLists() && bag != null && bag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
+        if (hasSubLists() && bag != null) { //if there are sublists and item has already been added at least once (so appears in list)
+            bag.remove(oldElement); //no need to test if oldElt is already in list, in either case remove will give right result( item added several timet: count-=1, only once added to list: count=0 (0-1)
 //            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
-            updatedBag.add(item);
-            setItemBag(updatedBag); //then don't add to list, but just add to bag to keep track of how many times added
-        } else {//if (!getListFull().contains(item)) {
-            //else add normally
-            //only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
+            if (bag.getCount(item) > 0)
+                bag.add(item); //only add to bag if *already* in the list only use bag when an element is added more than once)!
+            setItemBag(bag); //then don't add to list, but just add to bag to keep track of how many times added
+        } else {//not previously in bag, setif (!getListFull().contains(item)) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//else add normally
+//only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
 //            if (!storeOnlySingleInstanceOfItems || getItemIndex(item) == -1) {
 //            assert getItemIndex(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
 //            if (index <= getSize()) { // shouldn't make this check since it might make us miss some errors
 //                itemList.insertElementAt(item, index);
 //                itemList.add(index, item);
-            editedList.set(index, item);
-            setList(editedList);
+//</editor-fold>
+            listFull.set(index, item);
+            setList(listFull);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
 //                    selectedIndex++;
 //                }
@@ -1791,7 +1838,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            if (selIdx >= index && selIdx < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
 //                setSelectedIndex(selIdx + 1);
 //            }
-            int selIdx = index;
+//            int selIdx = index;
+//</editor-fold>
             fireDataChangedEvent(DataChangedListener.CHANGED, index);
 //            }
         }
@@ -1844,7 +1892,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     public void addItem(E item) {
-        addItemAtIndex(item, getSize());
+        addItemAtIndex(item, getListFull().size());
         //only add items if either store multiple instances (!storeOnlySingleInstanceOfItems) OR if the item is not already in the list
 //        if (!storeOnlySingleInstanceOfItems || getItemIndex(item) == -1) {
 ////            derivedSumVector.invalidate(getSize()); //not needed to call invalidate here since there will never be a sum value defined for an item added to the end of the itemVector
@@ -1977,6 +2025,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return -1;
 //        return getListFull().indexOf(item);
+//        return getListFull().indexOf(item);
         return getList().indexOf(item);
     }
 
@@ -1986,9 +2035,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public E getItemAt(int index) {
 //        if (index < itemVector.size() && index >= 0) {
 //            return itemVector.elementAt(index);
-        if (index < size() && index >= 0) {
+        if (index < getSize() && index >= 0) {
 //            return itemList.get(index);
-            return getListFull().get(index);
+//            return getListFull().get(index);
+            return getList().get(index);
         }
         return null;
     }
@@ -1999,7 +2049,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param index
      * @return
      */
-    public E getAndRemoveItemAt(int index) {
+    public E getAndRemoveItemAtXXX(int index) {
         E item = getItemAt(index);
         if (item != null) {
             removeItem(index);
@@ -2027,9 +2077,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            itemVector.removeElementAt(index);
 //                super.remove(index);
 //                itemList.remove(index);
-                List<E> list = getListFull();
-                list.remove(index);
-                setList(list);
+//                List<E> list = getListFull();
+                List<E> listFull = getListFull();
+                List<E> list = getList();
+                int indexFull = listFull.indexOf(item);
+                listFull.remove(indexFull);
+                setList(listFull);
 
 //                if (baseItem.getOwnerList() == this) {
 //                    baseItem.setOwnerList(null); //if removed BaseItem has this list as parent, then reset parent to null
@@ -2062,6 +2115,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     /**
      * removes item from list. If item is not in list, nothing is done.
+    Removes also works with bags/meta-lists
      *
      * @param item to remove
      */
@@ -2710,8 +2764,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         List result = new ArrayList();
         for (int i = 0, size = newList.size(); i < size; i++) {
 //            if (list.getItemIndex(newList.getItemAt(i)) == -1) // -1 means item in new list not found in old list
-            if (!orgList.contains(newList.get(i))) // -1 means item in new list not found in old list
-            {
+            if (!orgList.contains(newList.get(i))) {// -1 means item in new list not found in old list
                 result.add(newList.get(i)); // that means it was added, so add to result
             }
         }
@@ -2728,7 +2781,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return getAddedItems(newList, list);
 //        return newList.getAddedItems(itemList); //reverse getAddedItems by checking what is 'added' in this list vs newList
 //        return getAddedItems(newList, itemList);
-        return getAddedItems(newList, getListFull());
+        return getAddedItems(newList, getListFull()); //TODO!!! check if getListFull is correct (seems so, but not sure)
     }
 
     /**
@@ -2814,7 +2867,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public boolean contains(E item) {
 //        return (item != null && getVector().contains(item)); //
-        return (item != null && getListFull().contains(item)); //
+        return (item != null && getListFull().contains(item)); // is there a risk that the check could be on a filtered item (thus using listFull will give the wrong result)?
     }
 
     /**
@@ -3058,7 +3111,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        for (E itemOrList : itemList) {
 //        for (E itemOrList : getList()) {
 //        for (<? extends ItemAndListCommonInterface> itemOrList : getList()) {
-        for (ItemAndListCommonInterface itemOrList : getList()) {
+        for (ItemAndListCommonInterface itemOrList : getListFull()) { //full to set for every subtask, even hidden ones
 //            ((ItemAndListCommonInterface) itemOrList).setStatus(newStatus);
             itemOrList.setStatus(itemStatus);
         }
@@ -3409,7 +3462,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         List<WorkSlot> workslots = getList(PARSE_WORKSLOTS);
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
-            return new WorkSlotList(workslots);
+            return new WorkSlotList(this, workslots);
         } else {
             return null; //new WorkSlotList();
         }
@@ -3479,7 +3532,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public void resetWorkTimeDefinition() {
 //        workSlotListBuffer = null; //force reload of workslots from server
         workTimeAllocator = null; //recalculate worktime
-        for (Object item : getList()) { //reset for subtasks (recursively)
+        for (Object item : getListFull()) { //reset for subtasks (recursively), full to reset even for hidden subtasks!
             if (item instanceof ItemAndListCommonInterface) {
                 ((ItemAndListCommonInterface) item).resetWorkTimeDefinition();
             }

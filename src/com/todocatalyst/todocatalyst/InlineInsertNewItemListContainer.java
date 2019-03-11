@@ -95,7 +95,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 
         //close insert container
         contForTextEntry.add(BorderLayout.WEST, westCont);
-        if (itemOrItemListForNewItemLists != null && itemOrItemListForNewItemLists.size() > 0) { //only add close button if in a non-empty list
+        if (itemOrItemListForNewItemLists != null && itemOrItemListForNewItemLists.getSize() > 0) { //only add close button if in a non-empty list
             westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
 //                myForm.lastInsertNewElementContainer = null;
@@ -152,12 +152,15 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
      */
     private void insertNewItemListAndSaveChanges(ItemList newItemList) {
         //TODO!!!! if list is sorted used sortOn value and value in previous (rather the next!) item to detect the values of newItem to keep it in (roughly) the same place
-        int index = itemOrItemListForNewItemLists.getItemIndex(refItemList);
-        if (index > -1) {
-            itemOrItemListForNewItemLists.addToList(index + (insertBeforeRefElement ? 0 : 1), newItemList); //add after item
-        } else {
-            itemOrItemListForNewItemLists.addToList(newItemList); //if item is null or not in orgList, insert at beginning of (potentially empty) list
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        int index = itemOrItemListForNewItemLists.getItemIndex(refItemList);
+//        if (index > -1) {
+//            itemOrItemListForNewItemLists.addToList(index + (insertBeforeRefElement ? 0 : 1), newItemList); //add after item
+//        } else {
+//            itemOrItemListForNewItemLists.addToList(newItemList); //if item is null or not in orgList, insert at beginning of (potentially empty) list
+//        }
+//</editor-fold>
+        itemOrItemListForNewItemLists.addToList(newItemList, refItemList, !insertBeforeRefElement); //add after item
         DAO.getInstance().saveInBackground(newItemList, (ParseObject) itemOrItemListForNewItemLists);
     }
 

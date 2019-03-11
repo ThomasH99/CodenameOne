@@ -585,7 +585,16 @@ public class DAO {
         } else {
             try {
                 parseObject.fetchIfNeeded();
-                if (Config.TEST) assert !((ItemAndListCommonInterface) parseObject).isDeleted();
+                if (Config.TEST)
+                    if (parseObject instanceof ItemAndListCommonInterface) {
+                        ASSERT.that(!((ItemAndListCommonInterface) parseObject).isDeleted(), "DAO.fetch of deleted object:" + parseObject);
+                    } else if (parseObject instanceof FilterSortDef) {
+                        //                        assert !((FilterSortDef) parseObject).isDeleted();
+                        ASSERT.that(!((FilterSortDef) parseObject).isDeleted(), "DAO.fetch of deleted object:" + parseObject);
+                    } else if (parseObject instanceof RepeatRuleParseObject) {
+                        assert !((RepeatRuleParseObject) parseObject).isDeleted();
+                        ASSERT.that(!((RepeatRuleParseObject) parseObject).isDeleted(), "DAO.fetch of deleted object:" + parseObject);
+                    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (parseObject instanceof WorkSlot) {
 ////                        cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject.fetchIfNeeded());
@@ -628,14 +637,14 @@ public class DAO {
 //            }
 //        }
 //    }
-    public void fetchAllElementsInSublist(ItemAndListCommonInterface itemOrItemListOrCategoryOrList) {
-        fetchAllElementsInSublist((ParseObject) itemOrItemListOrCategoryOrList, false);
+    public void fetchAllElementsInSublistXXX(ItemAndListCommonInterface itemOrItemListOrCategoryOrList) {
+        fetchAllElementsInSublistXXX((ParseObject) itemOrItemListOrCategoryOrList, false);
     }
 
 //    public void fetchAllElementsInSublist(List itemOrItemListOrCategoryOrList) {
 //        fetchAllElementsInSublist(itemOrItemListOrCategoryOrList, false);
 //    }
-    public void fetchAllElementsInSublist(ParseObject itemOrItemListOrCategoryOrList, boolean recursively) {
+    public void fetchAllElementsInSublistXXX(ParseObject itemOrItemListOrCategoryOrList, boolean recursively) {
         assert itemOrItemListOrCategoryOrList != null : "fetchAllItemsIn called with null list";
 //        List<ParseObject> list = null;
         List list = null;
@@ -1483,7 +1492,7 @@ public class DAO {
     public void getAllItemsInCategory(Category category) {
         try {
             category.fetchIfNeeded();
-            List<Item> list = category.getList();
+            List<Item> list = category.getListFull();
             //TODO!!! find more efficient way to fetchFromCacheOnly all the objects
             for (int i = 0, size = list.size(); i < size; i++) {
                 list.set(i, (Item) fetchIfNeededReturnCachedIfAvail(list.get(i))); //NB! will possibly replace the parseObjects in the list with cached ones
@@ -2716,89 +2725,46 @@ public class DAO {
      */
     //    public List<WorkSlot> getWorkSlotsN(ItemList itemList) {
     //    public List<WorkSlot> getWorkSlotsN(ItemAndListCommonInterface itemWithWorkSlots) {
-    private WorkSlotList getWorkSlotsNXXX(ItemAndListCommonInterface itemWithWorkSlots) {
-        return DAO.this.getWorkSlotsNXXX(itemWithWorkSlots, true);
-    }
-
-    private WorkSlotList getWorkSlotsNXXX(ItemAndListCommonInterface itemWithWorkSlots, boolean onlyReturnFutureWorkSlots) {
-        if (itemWithWorkSlots == null || (itemWithWorkSlots instanceof ParseObject && ((ParseObject) itemWithWorkSlots).getObjectIdP() == null)) {
-            return null;
-        }
-
-        WorkSlot workSlot;
-//        List<WorkSlot> results = null;
-        WorkSlotList results = null;
-//        long now = System.currentTimeMillis();
-        boolean reload = true; //if one workSlot has expired, we'll need to start over loading since it may regenerate several future 
-        while (reload) {
-            reload = false;
-//            results = new ArrayList(); //reset list if need for reload
-            results = new WorkSlotList(); //reset list if need for reload
-            if (true || cacheWorkSlots != null) {
-                Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
-//                Vector keys = cache.getKeysInCache();
-
-                for (Object key : workSlotKeys) {
-                    workSlot = (WorkSlot) cacheWorkSlots.get(key);
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                Object o = cache.get(key);
-//                if (o instanceof WorkSlot) {
-//                workSlot = (WorkSlot) cacheWorkSlots.get(key);
-//                    workSlot = (WorkSlot) o;
-//                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
-//                if (workSlot != null) {
-//</editor-fold>
-                    ASSERT.that(workSlot != null, () -> "WorkSlot in cache for key=\"" + key + "\" is null. Key type=" + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
-                    Object owner = workSlot.getOwner();
-                    //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
-                    if (owner != null && owner.equals(itemWithWorkSlots)) {
-                        RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
-//                        repeatRule=(RepeatRuleParseObject)DAO.getInstance().fetchIfNeededReturnCachedIfAvail(repeatRule); //not necessary, dont in workSlot.getRepeatRule()
-                        if (repeatRule != null && workSlot.getEndTime() < System.currentTimeMillis() && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (workSlot.getRepeatRule()!=null) { //if repeating workslot
-//                        RepeatRuleParseObject repeatRule =workSlot.getRepeatRule();
-//                        //If workslot fully in the past, but still in list of active instances, then it has expired since last loading
-//                        if (workSlot.getEndTime()<now && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
-//                            RepeatRuleObjectInterface newWorkSlot = repeatRule.updateRepeatInstancesOnDoneCancelOrDelete(workSlot);
-//                            workSlot=(WorkSlot)newWorkSlot;
-//                        }
-//                    }
-//                    workSlot = workSlot.checkIfExpiredAndReturnNewRepeatInstance(now);
-//                        if (workSlot.getEndTime() < System.currentTimeMillis()) { //if workSlot has expired
-//                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
-//                            if (repeatRule != null) { //if repeating workslot
-                            //DONE!!!! continue generating new instances until we get enough future ones as defined by repeatRule
-//                            if (repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
-//</editor-fold>
-                            repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
-                            reload = true;
-                            break; //exit the for loop to reload workslots
-                        } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
-                            results.add(workSlot);
-                        }
-                    }
-                }
-            }
-        }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            else {
-//                Vector keys = cache.getKeysInCache();
-//                for (Object key : keys) {
+//    private WorkSlotList getWorkSlotsNXXX(ItemAndListCommonInterface itemWithWorkSlots) {
+//        return DAO.this.getWorkSlotsNXXX(itemWithWorkSlots, true);
+//    }
+//
+//    private WorkSlotList getWorkSlotsNXXX(ItemAndListCommonInterface itemWithWorkSlots, boolean onlyReturnFutureWorkSlots) {
+//        if (itemWithWorkSlots == null || (itemWithWorkSlots instanceof ParseObject && ((ParseObject) itemWithWorkSlots).getObjectIdP() == null)) {
+//            return null;
+//        }
+//
+//        WorkSlot workSlot;
+////        List<WorkSlot> results = null;
+//        WorkSlotList results = null;
+////        long now = System.currentTimeMillis();
+//        boolean reload = true; //if one workSlot has expired, we'll need to start over loading since it may regenerate several future
+//        while (reload) {
+//            reload = false;
+////            results = new ArrayList(); //reset list if need for reload
+//            results = new WorkSlotList(); //reset list if need for reload
+//            if (true || cacheWorkSlots != null) {
+//                Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
+////                Vector keys = cache.getKeysInCache();
+//
+//                for (Object key : workSlotKeys) {
+//                    workSlot = (WorkSlot) cacheWorkSlots.get(key);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                Object o = cache.get(key);
+////                if (o instanceof WorkSlot) {
 ////                workSlot = (WorkSlot) cacheWorkSlots.get(key);
-//                    Object o = cache.get(key);
-//                    if (o instanceof WorkSlot) {
-////                workSlot = (WorkSlot) cacheWorkSlots.get(key);
-//                        workSlot = (WorkSlot) o;
+////                    workSlot = (WorkSlot) o;
 ////                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
 ////                if (workSlot != null) {
-//                        Object owner = workSlot.getOwner();
-//                        //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
-//                        if (owner != null && owner.equals(itemWithWorkSlots)) {
-//                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
-//                            if (repeatRule != null
-//                                    && workSlot.getEndTime() < System.currentTimeMillis()
-//                                    && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
+////</editor-fold>
+//                    ASSERT.that(workSlot != null, () -> "WorkSlot in cache for key=\"" + key + "\" is null. Key type=" + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
+//                    Object owner = workSlot.getOwner();
+//                    //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
+//                    if (owner != null && owner.equals(itemWithWorkSlots)) {
+//                        RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+////                        repeatRule=(RepeatRuleParseObject)DAO.getInstance().fetchIfNeededReturnCachedIfAvail(repeatRule); //not necessary, dont in workSlot.getRepeatRule()
+//                        if (repeatRule != null && workSlot.getEndTime() < System.currentTimeMillis() && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////                    if (workSlot.getRepeatRule()!=null) { //if repeating workslot
 ////                        RepeatRuleParseObject repeatRule =workSlot.getRepeatRule();
@@ -2809,122 +2775,150 @@ public class DAO {
 ////                        }
 ////                    }
 ////                    workSlot = workSlot.checkIfExpiredAndReturnNewRepeatInstance(now);
-////</editor-fold>
 ////                        if (workSlot.getEndTime() < System.currentTimeMillis()) { //if workSlot has expired
 ////                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
 ////                            if (repeatRule != null) { //if repeating workslot
-//                                //DONE!!!! continue generating new instances until we get enough future ones as defined by repeatRule
+//                            //DONE!!!! continue generating new instances until we get enough future ones as defined by repeatRule
 ////                            if (repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
-//                                repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
-//                                reload = true;
-//                                break; //exit the for loop to reload workslots
-////                            }
-////                            }
-//                            } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
-//                                results.add(workSlot);
-//                            }
+////</editor-fold>
+//                            repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
+//                            reload = true;
+//                            break; //exit the for loop to reload workslots
+//                        } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
+//                            results.add(workSlot);
 //                        }
 //                    }
-////                }
 //                }
 //            }
-//</editor-fold>
 //        }
-        results.sortWorkSlotList();
-        //TODO!!! any way/need to check if workslots have been cached?! (empty results cannot be used since there may simply be no workslots)
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            else {
+////                Vector keys = cache.getKeysInCache();
+////                for (Object key : keys) {
+//////                workSlot = (WorkSlot) cacheWorkSlots.get(key);
+////                    Object o = cache.get(key);
+////                    if (o instanceof WorkSlot) {
+//////                workSlot = (WorkSlot) cacheWorkSlots.get(key);
+////                        workSlot = (WorkSlot) o;
+//////                    ASSERT.that(workSlot != null, "workSlot key " + key + " return null from cache");
+//////                if (workSlot != null) {
+////                        Object owner = workSlot.getOwner();
+////                        //only return workslots with itemWithWorkSlots as owner and where endTime is in the past
+////                        if (owner != null && owner.equals(itemWithWorkSlots)) {
+////                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+////                            if (repeatRule != null
+////                                    && workSlot.getEndTime() < System.currentTimeMillis()
+////                                    && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////                    if (workSlot.getRepeatRule()!=null) { //if repeating workslot
+//////                        RepeatRuleParseObject repeatRule =workSlot.getRepeatRule();
+//////                        //If workslot fully in the past, but still in list of active instances, then it has expired since last loading
+//////                        if (workSlot.getEndTime()<now && repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
+//////                            RepeatRuleObjectInterface newWorkSlot = repeatRule.updateRepeatInstancesOnDoneCancelOrDelete(workSlot);
+//////                            workSlot=(WorkSlot)newWorkSlot;
+//////                        }
+//////                    }
+//////                    workSlot = workSlot.checkIfExpiredAndReturnNewRepeatInstance(now);
+//////</editor-fold>
+//////                        if (workSlot.getEndTime() < System.currentTimeMillis()) { //if workSlot has expired
+//////                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+//////                            if (repeatRule != null) { //if repeating workslot
+////                                //DONE!!!! continue generating new instances until we get enough future ones as defined by repeatRule
+//////                            if (repeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
+////                                repeatRule.updateRepeatInstancesOnCancelDeleteOrExpired(workSlot); //if needed, will generate all slots until the right number of current workSlots
+////                                reload = true;
+////                                break; //exit the for loop to reload workslots
+//////                            }
+//////                            }
+////                            } else if (!onlyReturnFutureWorkSlots || workSlot.getEndTime() > System.currentTimeMillis()) {
+////                                results.add(workSlot);
+////                            }
+////                        }
+////                    }
+//////                }
+////                }
+////            }
+////</editor-fold>
+////        }
+//        results.sortWorkSlotList();
+//        //TODO!!! any way/need to check if workslots have been cached?! (empty results cannot be used since there may simply be no workslots)
+////<editor-fold defaultstate="collapsed" desc="comment">
+//
+//        if (false && (itemWithWorkSlots instanceof ParseObject
+//                && ((ParseObject) itemWithWorkSlots).getObjectIdP() != null)) { //Parse doesn't support queries on just created (not saved) objects
+//            ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+//            query.whereEqualTo(WorkSlot.PARSE_OWNER_LIST, itemWithWorkSlots);
+////            query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_START_TIME, new Date());
+//            query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME, new Date()); //enough to search for endTime later than Now
+//            query.addAscendingOrder(WorkSlot.PARSE_START_TIME); //sort on startTime
+//            if (false) {
+//                query.addAscendingOrder(WorkSlot.PARSE_DURATION); //sort on duration to have smallest slots first (to have WorkSlotDefinition ignore all with same start time except the last
+//
+//            }
+////            ParseQuery<WorkSlot> query2 = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+////            query2.whereEqualTo(WorkSlot.PARSE_OWNER_LIST, itemList);
+////            query2.whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME, new Date());
+////            ParseQuery<WorkSlot> queryOr = ParseQuery.getOrQuery(new ArrayList({query, query2}));
+//            try {
+////                ParseQuery<WorkSlot> queryOr = ParseQuery.getOrQuery(Arrays.asList(query, query2));
+////                results = (List<WorkSlot>) query.find();
+////                results = (List<WorkSlot>) query.find();
+////                results = (WorkSlotList) query.find();
+//                results = new WorkSlotList(query.find());
+////no point in caching workslots, they're only used for a single List/Item and caching will only help the second time displaying them
+//
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//        }
+////</editor-fold>
+////        }
+//        if (results == null || results.size() == 0) {
+//            return null;
+//        } else {
+//            return results;
+//        }
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
-
-        if (false && (itemWithWorkSlots instanceof ParseObject
-                && ((ParseObject) itemWithWorkSlots).getObjectIdP() != null)) { //Parse doesn't support queries on just created (not saved) objects
-            ParseQuery<WorkSlot> query
-                    = ParseQuery
-                            .getQuery(WorkSlot.CLASS_NAME
-                            );
-            query
-                    .whereEqualTo(WorkSlot.PARSE_OWNER_LIST,
-                            itemWithWorkSlots
-                    );
-//            query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_START_TIME, new Date());
-            query
-                    .whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME,
-                            new Date()); //enough to search for endTime later than Now
-            query
-                    .addAscendingOrder(WorkSlot.PARSE_START_TIME
-                    ); //sort on startTime
-
-            if (false) {
-                query
-                        .addAscendingOrder(WorkSlot.PARSE_DURATION
-                        ); //sort on duration to have smallest slots first (to have WorkSlotDefinition ignore all with same start time except the last
-
-            }
-//            ParseQuery<WorkSlot> query2 = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
-//            query2.whereEqualTo(WorkSlot.PARSE_OWNER_LIST, itemList);
-//            query2.whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME, new Date());
-//            ParseQuery<WorkSlot> queryOr = ParseQuery.getOrQuery(new ArrayList({query, query2}));
-            try {
-//                ParseQuery<WorkSlot> queryOr = ParseQuery.getOrQuery(Arrays.asList(query, query2));
-//                results = (List<WorkSlot>) query.find();
-//                results = (List<WorkSlot>) query.find();
-//                results = (WorkSlotList) query.find();
-                results
-                        = new WorkSlotList(query
-                                .find());
-//no point in caching workslots, they're only used for a single List/Item and caching will only help the second time displaying them
-
-            } catch (ParseException ex) {
-                Log
-                        .e(ex
-                        );
-
-            }
-        }
-//</editor-fold>
+//    public List<WorkSlot> initWorkSlotListsForWorkSlotOwnersXXX() { //only previously used in Repair
+//        WorkSlot workSlot;
+//        WorkSlotList results = new WorkSlotList(); //reset list if need for reload
+//        List<WorkSlot> unallocated = new ArrayList<>(); //reset list if need for reload
+//        HashSet<ItemAndListCommonInterface> owners = new HashSet<>(); //list of every owner with workslots
+//        Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
+//        for (Object key : workSlotKeys) {
+//            workSlot = (WorkSlot) cacheWorkSlots.get(key);
+//            ASSERT.that(workSlot != null, () -> "WorkSlot in cache for key=\"" + key + "\" is null. Key type=" + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
+//            ItemAndListCommonInterface owner = workSlot.getOwner();
+//            ASSERT.that(owner != null, "WorkSlot " + workSlot + " has no owner - should be deleted");
+//
+//            if (owner == null) {
+//                unallocated.add(workSlot);
+//            } else {
+//                WorkSlotList workslots = owner.getWorkSlotListN();
+//                if (workslots == null) {
+//                    workslots = new WorkSlotList();
+//                }
+//                if (!workslots.contains(workSlot)) {
+//                    workslots.add(workSlot);
+//                }
+//                owner.setWorkSlotList(workslots);
+//                owners.add(owner); //collect list of owners
+//            }
 //        }
-        if (results == null || results.size() == 0) {
-            return null;
-        } else {
-            return results;
-        }
-    }
-
-    public List<WorkSlot> initWorkSlotListsForWorkSlotOwners() {
-        WorkSlot workSlot;
-        WorkSlotList results = new WorkSlotList(); //reset list if need for reload
-        List<WorkSlot> unallocated = new ArrayList<>(); //reset list if need for reload
-        HashSet<ItemAndListCommonInterface> owners = new HashSet<>(); //list of every owner with workslots
-        Vector workSlotKeys = cacheWorkSlots.getKeysInCache();
-        for (Object key : workSlotKeys) {
-            workSlot = (WorkSlot) cacheWorkSlots.get(key);
-            ASSERT.that(workSlot != null, () -> "WorkSlot in cache for key=\"" + key + "\" is null. Key type=" + (key instanceof String ? "String" : (key instanceof Integer ? "Integer" : (key instanceof Long ? "Long" : "other"))));
-            ItemAndListCommonInterface owner = workSlot.getOwner();
-            ASSERT.that(owner != null, "WorkSlot " + workSlot + " has no owner - should be deleted");
-
-            if (owner == null) {
-                unallocated.add(workSlot);
-            } else {
-                WorkSlotList workslots = owner.getWorkSlotListN();
-                if (workslots == null) {
-                    workslots = new WorkSlotList();
-                }
-                if (!workslots.contains(workSlot)) {
-                    workslots.add(workSlot);
-                }
-                owner.setWorkSlotList(workslots);
-                owners.add(owner); //collect list of owners
-            }
-        }
-        //now all workslots have been added to their owner
-        for (ItemAndListCommonInterface owner : owners) {
-//            WorkSlotList sortedList = owner.getWorkSlotListN();
-            owner.setWorkSlotList(owner.getWorkSlotListN().sortWorkSlotList()); //sort list
-//            sortedList.sortWorkSlotList();
-//            owner.setWorkSlotList(sortedList);
-            saveInBackground((ParseObject) owner); //save owner with updated list
-        }
-//        saveBatch(Arrays.asList(owners.toArray()));
-        return unallocated;
-    }
+//        //now all workslots have been added to their owner
+//        for (ItemAndListCommonInterface owner : owners) {
+////            WorkSlotList sortedList = owner.getWorkSlotListN();
+//            owner.setWorkSlotList(owner.getWorkSlotListN().sortWorkSlotList()); //sort list
+////            sortedList.sortWorkSlotList();
+////            owner.setWorkSlotList(sortedList);
+//            saveInBackground((ParseObject) owner); //save owner with updated list
+//        }
+////        saveBatch(Arrays.asList(owners.toArray()));
+//        return unallocated;
+//    }
+//</editor-fold>
 
     /**
      * get all workslots that have at least some available time within the
@@ -2966,7 +2960,7 @@ public class DAO {
 
         try {
             list = query.find();
-            fetchListElementsIfNeededReturnCachedIfAvail(list);
+            list = fetchListElementsIfNeededReturnCachedIfAvail(list);
 //            results = new WorkSlotList(list);
 //            results = new WorkSlotList(list);
             return list;
@@ -2977,30 +2971,31 @@ public class DAO {
         return new ArrayList();
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public List<WorkSlot> getWorkSlotsInThePast() {
 //    public WorkSlotList getWorkSlotsInThePastXXX() {
 //        return getWorkSlotsInThePast(new Date(System.currentTimeMillis() - MyPrefs.completionLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS));
 //    }
 //    public List<WorkSlot> getWorkSlotsInThePast(Date startDate) {
-    public WorkSlotList getWorkSlotsInThePast(Date startDate) {
-//        List<WorkSlot> results = new ArrayList();
-        WorkSlotList results = new WorkSlotList();
-//        WorkSlot workSlot;
-        ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
-//            query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME, new Date(System.currentTimeMillis() - MyPrefs.completionLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS)); //enough to search for endTime later than Now
-        query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_START_TIME, startDate); //enough to search for endTime later than Now
-        query.whereLessThan(WorkSlot.PARSE_START_TIME, new Date());
-        query.addAscendingOrder(WorkSlot.PARSE_START_TIME); //sort on startTime
-        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-        try {
-//            results = (List<WorkSlot>) query.find();
-            results = new WorkSlotList(query.find());
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        return results;
-
-    }
+//    public WorkSlotList getWorkSlotsInThePastXXX(Date startDate) {
+////        List<WorkSlot> results = new ArrayList();
+//        WorkSlotList results = new WorkSlotList();
+////        WorkSlot workSlot;
+//        ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+////            query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_END_TIME, new Date(System.currentTimeMillis() - MyPrefs.completionLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS)); //enough to search for endTime later than Now
+//        query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_START_TIME, startDate); //enough to search for endTime later than Now
+//        query.whereLessThan(WorkSlot.PARSE_START_TIME, new Date());
+//        query.addAscendingOrder(WorkSlot.PARSE_START_TIME); //sort on startTime
+//        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//        try {
+////            results = (List<WorkSlot>) query.find();
+//            results = new WorkSlotList(query.find());
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        return results;
+//    }
+//</editor-fold>
 
     /**
      *
@@ -3009,7 +3004,7 @@ public class DAO {
      * @return null if no workslots defined
      */
 //    public List<WorkSlot> getAllWorkSlotsFromParse() {
-    public WorkSlotList getAllWorkSlotsFromParse() {
+    private WorkSlotList getAllWorkSlotsFromParse() {
 //        List<WorkSlot> results = null;
         WorkSlotList results = null;
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
@@ -3826,14 +3821,14 @@ public class DAO {
                     }
                 }
             } else {
-                List list2 = cat.getList();
+                List list2 = cat.getListFull();
 //                if ((list = cleanUpMissingInclusionInList("Item \"" + item + "\" has Category \"" + cat + "\" but category does not reference the item, category's list (" + cat.getList() + ")", item, list2)) != null) {
 //                cat.addItemToCategory(item, false); //add item to category //NO, done in cleanupMissing
                 if (list2 != null && !list2.contains(item)) {
                     Log.p("CLEANUP: Item \"" + item
                             + "\" (ObjId=" + item.getObjectIdP() + ") has Category \"" + cat
                             + "\" (ObjId=" + cat.getObjectIdP() + ") but category does not reference the item, category's list (" + cat
-                            .getList() + ")", logLevel
+                            .getListFull() + ")", logLevel
                     );
                     if (executeCleanup) {
                         list2.add(item);
@@ -3849,7 +3844,7 @@ public class DAO {
         }
 
         //SUBTASKS
-        List<Item> subtasks = item.getList();
+        List<Item> subtasks = item.getListFull();
 //        for (Item subtask : subtasks) {
         int i = 0;
         while (i < subtasks.size()) {
@@ -3896,9 +3891,9 @@ public class DAO {
      */
     private void cleanUpBadObjectReferencesItemListOrCategory(ItemList itemListOrCategory) {
         int i = 0;
-        while (i < itemListOrCategory.size()) {
+        while (i < itemListOrCategory.getSize()) {
             boolean moveToNextIndex = true; //hack to make sure we don't skip an i when an element in the list is removed
-            Object elt = itemListOrCategory.getFull(i);
+            Object elt = itemListOrCategory.getItemAt(i);
             //if not on server, simply remove the element
             if (elt instanceof ParseObject && notOnParseServer((ParseObject) elt)) {
 //                    logError(itemListOrCategory, (ParseObject)elt);
@@ -4060,7 +4055,7 @@ public class DAO {
 
     private void cleanUpItemList(ItemList itemList) {
         cleanUpBadObjectReferencesItemListOrCategory(itemList);
-        List items = itemList.getList();
+        List items = itemList.getListFull();
         cleanUpDuplicatesInList("ItemList " + ((ItemAndListCommonInterface) itemList).getText(), items, executeCleanup);
         if (executeCleanup) {
             itemList.setList(items);
@@ -4070,7 +4065,7 @@ public class DAO {
 
     private boolean makeAllSubTaskTemplatesAndRemoveDuplicates(Item template, boolean executeCleanup) {
         boolean changed = false;
-        List<Item> subtasks = template.getList();
+        List<Item> subtasks = template.getListFull();
         if (subtasks != null && subtasks.size() > 0) {
             for (Item item : subtasks) {
                 if (!item.isTemplate()) {
@@ -4118,7 +4113,7 @@ public class DAO {
 
         //for all top-level templates
         int i = 0;
-        while (i < templateList.size()) {
+        while (i < templateList.getSize()) {
             Object template = templateList.get(i);
             //remove any objects not stored on parse server
 
@@ -4172,7 +4167,7 @@ public class DAO {
      */
     private void cleanUpCategory(Category category) {
         cleanUpBadObjectReferencesItemListOrCategory(category);
-        List items = category.getList();
+        List items = category.getListFull();
         cleanUpDuplicatesInList("Category " + ((ItemAndListCommonInterface) category).getText(), items, executeCleanup);
         if (executeCleanup) {
             category.setList(items);
@@ -4242,13 +4237,13 @@ public class DAO {
         List<Category> listOfCategoriesFromParse = getAllCategoriesFromParse();
 
         Log.p("CLEANUP: number Categories in Parse = " + listOfCategoriesFromParse.size(), logLevel);
-        Log.p("CLEANUP: number Categories in CategoryList = " + categoryList.size(), logLevel);
+        Log.p("CLEANUP: number Categories in CategoryList = " + categoryList.getSize(), logLevel);
 
         //check that every category in Parse is in the stored list of categories
         for (int i = 0, size = listOfCategoriesFromParse.size(); i < size; i++) {
             Category cat = listOfCategoriesFromParse.get(i);
             if (cat.getOwner() == null) {
-                Log.p("CLEANUP: Missing owner (CategoryList) in Category \"" + cat.getText() + "\" ObjId=" + cat.getObjectIdP() + " size=" + cat.size() + ", to its owner ListOfCategories (which contains(cat)=" + categoryList.contains(cat) + ")", logLevel);
+                Log.p("CLEANUP: Missing owner (CategoryList) in Category \"" + cat.getText() + "\" ObjId=" + cat.getObjectIdP() + " size=" + cat.getSize() + ", to its owner ListOfCategories (which contains(cat)=" + categoryList.contains(cat) + ")", logLevel);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (false &&  categoryList.contains(cat)) {
 //                    if (executeCleanup) {
@@ -4287,7 +4282,7 @@ public class DAO {
             ItemList itemList = itemListsFromParse.get(i);
 
             if (itemList.getOwner() == null) {
-                Log.p("CLEANUP: Missing owner (ItemListList) in ItemList \"" + itemList.getText() + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.size() + ") to its owner ListOfItemLists (which contains=" + itemListList + ")", logLevel);
+                Log.p("CLEANUP: Missing owner (ItemListList) in ItemList \"" + itemList.getText() + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") to its owner ListOfItemLists (which contains=" + itemListList + ")", logLevel);
                 if (itemListList.contains(itemList)) {
                     if (executeCleanup) {
                         itemList.setOwner(itemListList);
@@ -4304,19 +4299,19 @@ public class DAO {
                     save(itemList);
                 }
             } else if (!itemList.getOwner().equals(itemListList)) {
-                Log.p("CLEANUP: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.size() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
+                Log.p("CLEANUP: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
                 if (itemListList.contains(itemList)) {
                     if (executeCleanup) { //correct to right owner
                         itemList.setOwner(itemListList);
                         save(itemList);
                     }
                 } else if (executeCleanup) { //force owner to ItemListList anyway //TODO may not be the right solution if one day ItemLists of ItemLists is supported
-                    Log.p("CLEANUP: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.size() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
+                    Log.p("CLEANUP: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
                     itemList.setOwner(itemListList);
                     save(itemList);
                 }
             } else if (!itemListList.contains(itemList)) {
-                Log.p("CLEANUP: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.size() + ") has owner ItemListList but ItemListList does not reference it", logLevel);
+                Log.p("CLEANUP: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") has owner ItemListList but ItemListList does not reference it", logLevel);
                 if (executeCleanup) {
                     itemListList.add(itemList);
                 }
@@ -4352,7 +4347,7 @@ public class DAO {
         Map<FilterSortDef, Category> catsWithFilter = new HashMap();
 
 //        for (Category cat : CategoryList.getInstance().getList()) {
-        for (Object o : CategoryList.getInstance().getList()) {
+        for (Object o : CategoryList.getInstance().getListFull()) {
             Category cat = (Category) o;
             if (cat.getFilterSortDef() != null) {
                 catsWithFilter.put(cat.getFilterSortDef(), cat);
@@ -4361,7 +4356,7 @@ public class DAO {
         Map<FilterSortDef, ItemList> itemListsWithFilter = new HashMap<>();
 
 //        for (ItemList itemList : ItemListList.getInstance().getList()) {
-        for (Object o : ItemListList.getInstance().getList()) {
+        for (Object o : ItemListList.getInstance().getListFull()) {
             ItemList itemList = (ItemList) o;
             if (itemList.getFilterSortDef() != null) {
                 itemListsWithFilter.put(itemList.getFilterSortDef(), itemList);

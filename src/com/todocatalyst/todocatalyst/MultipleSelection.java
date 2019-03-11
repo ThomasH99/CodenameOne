@@ -22,7 +22,6 @@ public class MultipleSelection {
 
 //    ItemOperation setStatus = (item) -> item.setStatus(ItemStatus.CREATED);
 //    ItemOperation setDueDate = (item) -> item.setStatus(ItemStatus.CREATED);
-
     static ItemOperation setStatus(ItemStatus itemStatus) {
         return (item) -> item.setStatus(itemStatus);
     }
@@ -35,40 +34,46 @@ public class MultipleSelection {
         return (item) -> item.setStarred(starred);
     }
 
-    static ItemOperation moveTo(Item newProject) {
+    static ItemOperation moveTo(ItemAndListCommonInterface newProject) {
         return (item) -> {
             item.removeFromOwner();
-            List list = newProject.getList();
-            if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
-                list.add(0, item);
-            } else {
-                list.add(item);
-            }
-            newProject.setList(list);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            List list = newProject.getList();
+//            if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
+//                list.add(0, item);
+//            } else {
+//                list.add(item);
+//            }
+//</editor-fold>
+            newProject.addToList(item, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+//            newProject.setList(list);
         };
     }
 
-    static ItemOperation moveTo(ItemList newItemList) {
-        return (item) -> {
-            item.removeFromOwner();
-            List list = newItemList.getList();
-            if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
-                list.add(0, item);
-            } else {
-                list.add(item);
-            }
-            newItemList.setList(list);
-        };
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    static ItemOperation moveTo(ItemList newItemList) {
+//        return (item) -> {
+//            item.removeFromOwner();
+//            List list = newItemList.getList();
+//            if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
+//                list.add(0, item);
+//            } else {
+//                list.add(item);
+//            }
+//            newItemList.setList(list);
+//        };
+//    }
+//</editor-fold>
 
 //    static ItemOperation moveToTopOfList(ItemList newItemList) {
     static ItemOperation moveToTopOfList(ItemAndListCommonInterface newItemList) {
         return (item) -> {
 //            item.removeFromOwner();
-            List list = newItemList.getList();
-            list.remove(item);
-            list.add(0, item);
-            newItemList.setList(list);
+//            List list = newItemList.getList();
+//            list.remove(item);
+//            list.add(0, item);
+//            newItemList.setList(list);
+            newItemList.addToList(item, false);
         };
     }
 
@@ -76,7 +81,7 @@ public class MultipleSelection {
         return (item) -> {
 //            item.delete();
 //            DAO.getInstance().delete(item);
-            item.delete();
+            item.softDelete();
         };
     }
 
@@ -117,7 +122,7 @@ public class MultipleSelection {
                 item.setRemaining(itm.getRemaining());
             }
             if (itm.getActual() != 0) {
-                item.setActual(itm.getActual(),false);
+                item.setActual(itm.getActual(), false);
             }
             if (itm.getHideUntilDateD().getTime() != 0) {
                 item.setHideUntilDate(itm.getHideUntilDateD());
@@ -176,8 +181,8 @@ public class MultipleSelection {
 //    static void performMultipleOperationsOnAll(ListSelector<Item> items, List<ItemOperation> operations) {
     static void performMultipleOperationsOnAll(List<Item> items, List<ItemOperation> operations) {
 //        for (Item item : items) {
-        for (int i=0, size=items.size(); i<size;i++) {
-            Item item=items.get(i);
+        for (int i = 0, size = items.size(); i < size; i++) {
+            Item item = items.get(i);
             for (ItemOperation operation : operations) {
                 operation.execute(item);
             }

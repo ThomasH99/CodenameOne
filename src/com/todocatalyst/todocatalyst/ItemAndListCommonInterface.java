@@ -53,6 +53,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO);
 //    public WorkSlotList getWorkSlotListN();
+    
+   
 
     /**
     get list of current & future workslots (exclude all that have expired ie endTime is in the past)
@@ -66,6 +68,24 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public void setWorkSlotList(WorkSlotList workSlotList);
 
     /**
+    return overlapping workslots, or null if none
+    @param workSlot
+    @return 
+    */
+    default public List<WorkSlot> getOverlappingWorkSlots(WorkSlot workSlot) {
+        WorkSlotList workSlotList = getWorkSlotListN();
+        if (workSlotList==null || workSlot==null)
+            return null;
+        List<WorkSlot> overlapping = new ArrayList<>();
+        for (WorkSlot ws:(List<WorkSlot>)workSlotList) {
+            if (workSlot.overlappingDuration(ws)>0) {
+                overlapping.add(ws);
+            }
+        }
+        return overlapping.isEmpty()?null:overlapping;
+    }
+    
+    /**
     add a new workslot to the list
     @param workSlot 
      */
@@ -73,6 +93,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         WorkSlotList workSlotList = getWorkSlotListN();
         if (workSlotList == null) {
             workSlotList = new WorkSlotList();
+            workSlotList.setOwner(this);
         }
         workSlotList.add(workSlot);
         setWorkSlotList(workSlotList);
@@ -151,8 +172,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * will return the list that owns a task/project, or the task that owns a subtask
      * @return
      */
-    default public List<? extends ItemAndListCommonInterface> getOwnerList() {
-        return getOwner().getList();
+    default public List<? extends ItemAndListCommonInterface> getOwnersList() {
+        return getOwner().getListFull(); //
     }
 
 //    public ParseObject getOwner();
@@ -237,31 +258,26 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 ////        return BaseItemTypes.toString(getTypeId()) + (getText().length() != 0 ? "\"" + getText() + "\"" : "Gui" + getGuid());
 //        return BaseItemTypes.toString(getTypeId()) + "\"" + getText() + "\"";
 //    }
-    /**
-     * deletes this instance
-     */
-    public void delete() throws ParseException;
-
     public void setStatus(ItemStatus itemStatus);
 
     /**
-     * returns the list of items owned (subtasks for an Item, items for an
+     * returns the size of the *full* unfiltered list of items owned (subtasks for an Item, items for an
      * ItemList) CANNOT be used since ItemLists needs to intercept the changes
      * to handle sublists (for meta-categories)
      *
      * @return
      */
-    public int size();
+    public int getSize();
 
     /**
-     * adds subitem to the list (gets the list from Parse, adds the element,
-     * sets the list). Makes this Item/ItemList the owner of the inserted
-     * element. Owner must be null before insert!
+     * adds subitem to the beginning or end of the list according to the setting . Makes this Item/ItemList the owner of the inserted
+     * element (except for Categories!). Checks that owner must be null before insert to catch any duplicated inserts!
      *
      * @param subItemOrList
      * @return
      */
     public boolean addToList(ItemAndListCommonInterface subItemOrList);
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList);
 
     /**
      * add subItemOrList to the list of subtasks at position index and setsubItemOrList's owner to this.
@@ -272,6 +288,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param index
      * @param subItemOrList
      * @return 
+    @deprecated TOO dangerous to use since index may come from filtered or unfiltered list!
      */
     public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
 
@@ -291,25 +308,29 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param subItemOrList
      * @return
      */
-    public boolean removeFromList(ItemAndListCommonInterface subItemOrList);
+    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeReferences);
+
+    default public boolean removeFromList(ItemAndListCommonInterface subItemOrList) {
+        return removeFromList(subItemOrList, true);
+    }
 
     /**
      * remove this from its owner and set this.owner=null;
      */
     default public void removeFromOwner() {
         ItemAndListCommonInterface owner = getOwner();
-        if (owner != null) {
-            List ownerList = getOwner().getList();
-//        getOwnerList().removeItem(this);
-            ownerList.remove(this);
-            getOwner().setList(ownerList);
-        }
+//        if (owner != null) {
+//            List ownerList = getOwner().getListFull();
+////        getOwnerList().removeItem(this);
+//            ownerList.remove(this);
+//            getOwner().setList(ownerList);
+//        }
+            owner.removeFromList(this);
         setOwner(null);
     }
 
     /**
-     * returns the index of the subitem/subtask in the list of subtasks, or the
-     * index in the list of items for an itemList
+     * returns the index of the item or subtask in the *full* unfiltered list of items/subtasks 
      *
      * @param subItemOrList
      * @return
@@ -332,7 +353,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public List<E> getListFull();
 
     /**
-     * sets the list of items owned
+     * sets the *full* list of items owned - MUST never be called with a (filtered) list retrieved via getList() since that would effectively remove all filtered elements definitively!
      *
      * @param listOfSubObjects
      */
@@ -671,7 +692,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-     * returns the calculated finishTime for this item
+     * returns the calculated finishTime for this item or MyDate.MAX_DATE if none
      *
      * @return finishTime or MyDate.MAX_DATE if no workTime was available/allocated, or if or insufficient workTime to finish the task was allocated
      */
@@ -802,6 +823,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
 //    public void forceCalculationOfWorkTime();
 //        @Override
+    /**
+    force the calculation of worktime for every subtask - is this really necessary??
+    */
     default public void forceCalculationOfWorkTime() {
         List<? extends ItemAndListCommonInterface> subtasks = getList();
         if (subtasks != null) {
@@ -830,13 +854,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
             int index = 0;
 
             public boolean hasNext() {
-                //implement...
-                return index < size();
+                return index < getSize();
             }
 
             public ItemAndListCommonInterface next() {
-                //implement...;
-                return (ItemAndListCommonInterface) getListFull().get(index++);
+                return (ItemAndListCommonInterface) getList().get(index++); //getList() to only return visible tasks
             }
 
             public void remove() {
@@ -860,6 +882,21 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     default public boolean isDeleted() {
         return getDeletedDate() != null;
+    }
+
+    /**
+    
+    @param removeReferences if true, will remove references in the element (to eg owner, categories, repeatRules ...) before soft-deleting it. Not sure this is really useful?!
+    @return 
+     */
+    public boolean softDelete(boolean removeReferences);
+
+    /**
+     * deletes this instance
+     */
+//    public void delete() throws ParseException;
+    default public boolean softDelete() {
+        return softDelete(false);
     }
 
 //    default public long getWorkTimeRequiredFromOwner() {

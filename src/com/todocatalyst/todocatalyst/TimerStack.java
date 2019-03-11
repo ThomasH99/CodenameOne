@@ -1374,9 +1374,13 @@ class TimerStack {
                 if (timerContainer != null) { //buildContentPaneSmall returns null if no timer active
 //            Container timerForContainer = MyForm.getContainerForSmallTimer();
 //                if (timerContainer != null && timerContainer.getParent() != null) {
-                    if (timerContainer.getParent() != null) {
-                        timerContainer.getParent().removeComponent(timerContainer); //remove from previous parent before adding to new
-                    }
+//                    if (timerContainer.getParent() != null) {
+//                        timerContainer.getParent().removeComponent(timerContainer); //remove from previous parent before adding to new
+//                    }
+                    timerContainer.remove();
+//                    if (TimerStack.getInstance().smallContainer!=null )
+//                        TimerStack.getInstance().smallContainer.remove();
+                    TimerStack.getInstance().removeTimerSmallContainer();
                     timerForContainer.add(timerContainer);
                     TimerStack.getInstance().smallContainer = timerContainer;
 //                if (form.get)
@@ -1465,11 +1469,13 @@ class TimerStack {
 //                setSmallContainer(null);
 //            }
 //        }
+//        if (smallContainer != null && smallContainer.getParent() != null) {
+//            smallContainer.getParent().removeComponent(smallContainer);
+//            smallContainer = null;
+//        }
 //</editor-fold>
-        if (smallContainer != null && smallContainer.getParent() != null) {
-            smallContainer.getParent().removeComponent(smallContainer);
+            if (smallContainer!=null) smallContainer.remove();
             smallContainer = null;
-        }
     }
 
     /**
@@ -1665,7 +1671,7 @@ class TimerStack {
 //                    ? timerInstance.getElapsedTime()
 //                    : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself();
             long totalEffort = timerInstance.getElapsedTotalTime();
-            totalActualEffort.setText(MyDate.formatTimeDuration(totalEffort, true)); //false=don't show seconds in Total
+            totalActualEffort.setText(MyDate.formatDurationStd(totalEffort, MyPrefs.durationPickerShowSecondsIfLessThan1Minute.getBoolean())); //false=don't show seconds in Total
 //            totalActualEffort.repaint();
             totalActualEffort.repaint();
 //            totalActualEffort.getParent().revalidate();
@@ -1675,7 +1681,7 @@ class TimerStack {
 //            elapsedTimeButton.setText(MyDate.formatTimeDuration(timerInstance.getElapsedTime(), MyPrefs.timerShowSecondsInTimer.getBoolean()));
 //            elapsedTimeButton.repaint(); //this is enough to update the value on the screen
 //            timerStartStopButton.setText(MyDate.formatTimeDuration(timerInstance.getElapsedTime(), MyPrefs.timerShowSecondsInTimer.getBoolean()));
-            timerStartStopButton.setText(MyDate.formatTimeDuration(timerInstance.getElapsedTimeToDisplay(), MyPrefs.timerShowSecondsInTimer.getBoolean()));
+            timerStartStopButton.setText(MyDate.formatDurationStd(timerInstance.getElapsedTimeToDisplay(), MyPrefs.timerShowSecondsInTimer.getBoolean()));
 //            timerStartStopButton.repaint(); //this is enough to update the value on the screen
 //            timerStartStopButton.getParent().repaint(); //this is enough to update the value on the screen
 
@@ -2030,7 +2036,7 @@ class TimerStack {
 //            return null;
             gotoNextTaskButtonWithItemText = MyPrefs.timerShowNextTask.getBoolean()
                     ? new SpanButton("Next: \"" + nextComingItem.getText() + "\"" //                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatTimeDuration(nextComingItem.getRemainingEffort()) + "]") : ""))
-                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatTimeDuration(nextComingItem.getRemainingForProjectTaskItself(true)) + "]") : ""))
+                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatDurationShort(nextComingItem.getRemainingForProjectTaskItself(true)) + "]") : ""))
                     : new SpanButton(""); //gotoNextTask button is hidden unless timerAutomaticallyGotoNextTask is false
             gotoNextTaskButtonWithItemText.setCommand(cmdStartNextTask);
             if (MyPrefs.getBoolean(MyPrefs.timerAutomaticallyGotoNextTask)) {

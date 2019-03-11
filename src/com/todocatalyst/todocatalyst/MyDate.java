@@ -1625,24 +1625,24 @@ public class MyDate extends Date {
         return dtfmt.format(cal.getTime());
     }
 
-    static String formatTimeDuration(long hoursMinutesInMilliSeconds) {
-        return formatTimeDuration(hoursMinutesInMilliSeconds, false);
+    static String formatDuration(long hoursMinutesInMilliSeconds) {
+        return MyDate.formatDuration(hoursMinutesInMilliSeconds, false);
     }
 
-    static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds) {
-        return formatTimeDuration(hoursMinutesInMilliSeconds, showSeconds, false);
+    static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds) {
+        return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, false);
     }
 
-    static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean showLeadingZeroForHour) {
-        return formatTimeDuration(hoursMinutesInMilliSeconds, showSeconds, false, showLeadingZeroForHour);
+    private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean showLeadingZeroForHour) {
+        return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, false, showLeadingZeroForHour);
     }
 
-    private static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour) {
-        return formatTimeDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, true);
+    private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour) {
+        return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, true);
     }
 
-    private static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes) {
-        return formatTimeDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, showHBtwHoursAndMinutes, true, true);
+    private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes) {
+        return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, showHBtwHoursAndMinutes, true, true);
     }
 
     /**
@@ -1656,7 +1656,7 @@ public class MyDate extends Date {
      * @param dontShowZeroHours
      * @return
      */
-    private static String formatTimeDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes, boolean dontShowZeroHours, boolean showSecondsIfNoMinutesOrHours) {//, boolean roundLessThan1MinuteUp) {
+    private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes, boolean dontShowZeroHours, boolean showSecondsIfNoMinutesOrHours) {//, boolean roundLessThan1MinuteUp) {
 //        boolean SHOW_SECONDS = false;
 //        boolean SHOW_LEADING_ZERO_FOR_HOUR = true;
         String s; // = "";
@@ -1700,6 +1700,60 @@ public class MyDate extends Date {
 //        }
 //</editor-fold>
         return s;
+    }
+
+    /**
+    standard duration formatting used everywhere where a 'formal' (not short) duration format is used, e.g. in pickers. 
+    Show as 1h12 = 1:12, 32m = 0:32, 12h01m = 12:01, 
+    @param hoursMinutesInMilliSeconds
+    @return 
+     */
+    static String formatDurationStd(long hoursMinutesInMilliSeconds, boolean showSeconds) {
+        StringBuilder s = new StringBuilder("");
+        int hours = (int) hoursMinutesInMilliSeconds / MyDate.HOUR_IN_MILISECONDS;//3600000;
+    
+        long restAfterHours = (int) hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS;
+        int minutes = (int) restAfterHours / MyDate.MINUTE_IN_MILLISECONDS; //60000;
+     
+        int restAfterMinutes = (int) hoursMinutesInMilliSeconds % MyDate.MINUTE_IN_MILLISECONDS; //60000;
+        int seconds = (int) restAfterMinutes / MyDate.SECOND_IN_MILLISECONDS; //60000;
+
+        s.append(hours).append(':');
+        if (minutes >= 10) s.append(minutes);
+        else s.append('0').append(minutes);
+        if (showSeconds)
+            if (seconds >= 10) s.append(seconds);
+            else s.append('0').append(seconds);
+
+        return s.toString();
+    }
+    
+    static String formatDurationStd(long hoursMinutesInMilliSeconds) {
+        return formatDurationStd(hoursMinutesInMilliSeconds, false);
+    }
+   
+
+    /**
+    for duration for short display, eg 1h, 2h30, 17m, 3m. Will not show seconds. Returns empty string for 0 duration
+    @param hoursMinutesInMilliSeconds
+    @return 
+     */
+    public static String formatDurationShort(long hoursMinutesInMilliSeconds, boolean showZeroDurationAsZeroMinutes) {
+        StringBuilder s = new StringBuilder("");
+        int hours = (int) hoursMinutesInMilliSeconds / MyDate.HOUR_IN_MILISECONDS;//3600000;
+        long restAfterHours = (int) hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS;
+        int minutes = (int) restAfterHours / MyDate.MINUTE_IN_MILLISECONDS; //60000;
+        if (hours > 0) {
+            s.append(hours).append('h');
+            if (minutes >= 10) s.append(minutes);
+            else if (minutes > 0) s.append('0').append(minutes);
+        } else if (minutes > 0 || showZeroDurationAsZeroMinutes)
+            s.append(minutes).append('m');
+        return s.toString();
+    }
+
+    public static String formatDurationShort(long hoursMinutesInMilliSeconds) {
+        return formatDurationShort(hoursMinutesInMilliSeconds, false);
     }
 
     public static Date makeDate(int secondsFromNow) {

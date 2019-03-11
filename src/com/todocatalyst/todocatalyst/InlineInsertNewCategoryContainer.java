@@ -101,7 +101,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  
 
         //close insert container
         contForTextEntry.add(BorderLayout.WEST, westCont);
-        if (categoryList != null && categoryList.size() > 0) { //only add close button if in a non-empty list
+        if (categoryList != null && categoryList.getSize() > 0) { //only add close button if in a non-empty list
             westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer. NO, too detailed...
 //                myForm.lastInsertNewElementContainer = null;
@@ -159,12 +159,13 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  
      */
     private void insertNewCategoryAndSaveChanges(Category newCategory) {
         //TODO!!!! if list is sorted used sortOn value and value in previous (rather the next!) item to detect the values of newItem to keep it in (roughly) the same place
-        int index = categoryList.getItemIndex(category);
-        if (index > -1) {
-            categoryList.addToList(index + (insertBeforeElement ? 0 : 1), newCategory); //add after item
-        } else {
-            categoryList.addToList(newCategory); //if item is null or not in orgList, insert at beginning of (potentially empty) list
-        }
+//        int index = categoryList.getItemIndex(category);
+//        if (index > -1) {
+//            categoryList.addToList(index + (insertBeforeElement ? 0 : 1), newCategory); //add after item
+//        } else {
+//            categoryList.addToList(newCategory); //if item is null or not in orgList, insert at beginning of (potentially empty) list
+//        }
+            categoryList.addToList(newCategory,category, !insertBeforeElement  ); //add after item
         DAO.getInstance().saveInBackground(newCategory, (ParseObject) categoryList);
     }
 

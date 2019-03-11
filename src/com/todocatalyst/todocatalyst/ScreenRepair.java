@@ -742,18 +742,20 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        content.add(new Button(new Command("Move workslots into owners' list") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                List<WorkSlot> unallocated = DAO.getInstance().initWorkSlotListsForWorkSlotOwners();
-                if (unallocated.size() > 0 && Dialog.show("", "Delete WorkSlots with no owner (" + unallocated + ")?", "OK", null)) {
-                    for (WorkSlot workSlot : unallocated) {
-                        Log.p("Deleting: "+workSlot);
-                        DAO.getInstance().delete(workSlot);
-                    }
-                }
-            }
-        }));
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        content.add(new Button(new Command("Move workslots into owners' list") {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                List<WorkSlot> unallocated = DAO.getInstance().initWorkSlotListsForWorkSlotOwners();
+//                if (unallocated.size() > 0 && Dialog.show("", "Delete WorkSlots with no owner (" + unallocated + ")?", "OK", null)) {
+//                    for (WorkSlot workSlot : unallocated) {
+//                        Log.p("Deleting: "+workSlot);
+//                        DAO.getInstance().delete(workSlot);
+//                    }
+//                }
+//            }
+//        }));
+//</editor-fold>
 
         content.add(new Button(new Command("Storage location info") {
             @Override

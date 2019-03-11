@@ -80,7 +80,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    private static WorkTimeDefinition wtd; //calculated when needed
     private WorkTimeAllocator workTimeAllocator; //calculated when needed
 //    private WorkTimeSlices workTime;// = new ItemList(); //lazy
-    private boolean forceWorkTimeCalculation = false;// = new ItemList(); //lazy
+    private boolean neverCacheWorkTimeAllocator = false;// = new ItemList(); //lazy
 
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
     public Item() {
@@ -162,7 +162,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            if (l == null) {
 //                return new ArrayList();
 //            } else {
-            List itemList = getList();
+            List itemList = getList(); //not full list, only show unfiltered
 //                DAO.getInstance().fetchAllElementsInSublist(itemList, false);
 //                DAO.getInstance().fetchAllElementsInSublist(itemList);
             return itemList; //see JavaDoc of getChildren: null should return the tree roots
@@ -207,7 +207,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getItemList() == null || getItemList().size() == 0;
         Item item = (Item) node;
 //        ItemList itemList = item.getItemList();
-        List itemList = item.getList();
+        List itemList = item.getList(); //not full list since we only want to expand is there are unfiltered items
         return itemList == null || itemList.size() == 0;
     }
 
@@ -254,50 +254,106 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
 //</editor-fold>
-    @Override
-//    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject) {
-    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface newRepeatRuleInstance) {
+    public void insertIntoListAndSaveListAndInstanceOLD(RepeatRuleObjectInterface newRepeatRuleInstance) {
 //        DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save first to be able to reference from other objects
 //        RepeatRuleObjectInterface orgInstance = this;
         Object owner = getOwner();
-        int index;
+//        int index;
         if (owner instanceof ItemList) {
             ItemList ownerList = (ItemList) owner;
 //            assert orgInstance != null;
             if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()
-                    && (index = ownerList.indexOf(this)) != -1) {
+                    //                    && (index = ownerList.indexOf(this)) != -1) {
+                    && (ownerList.indexOf(this)) != -1) {
 //                ownerList.add(index + 1, newRepeatRuleInstance); //+1: insert *after* orgInstance
-                ownerList.addToList(index + 1, (ItemAndListCommonInterface) newRepeatRuleInstance); //+1: insert *after* orgInstance
+//                ownerList.addToList(index + 1, (ItemAndListCommonInterface) newRepeatRuleInstance); //+1: insert *after* orgInstance
+                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); //+1: insert *after* orgInstance
             } else {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                ownerList.addToList(MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : ownerList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
-                ownerList.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : ownerList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
+//                ownerList.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : ownerList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
+//                if (MyPrefs.insertNewItemsInStartOfLists.getBoolean())
+//                    ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, ownerList.getItemAt(0), false);
+//                else
+//                    ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, ownerList.getItemAt(ownerList.size()), true);
+//</editor-fold>
+                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance);
             }
-            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-            DAO.getInstance().save(ownerList); //TODO!!!! optimization: when generating multiple repeat instances, do the save of the list at the end
+//            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//            DAO.getInstance().save(ownerList); //TODO!!!! optimization: when generating multiple repeat instances, do the save of the list at the end
+            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, ownerList); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
         } else if (owner instanceof Item) {
             Item itemOwner = (Item) owner;
             List subtaskList = itemOwner.getList();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (subtaskList != null && (index = subtaskList.indexOf(newRepeatRuleInstance)) != -1) {
 //                subtaskList.add(index + 1, newRepeatRuleInstance);
 //            } else {
 //                subtaskList.add(MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : subtaskList.size(), newRepeatRuleInstance);
 //            }
+//</editor-fold>
             assert subtaskList != null; //should never get null
             if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()
                     //                    && (index = subtaskList.indexOf(newRepeatRuleInstance)) != -1) {
-                    && (index = subtaskList.indexOf(this)) != -1) {
-                itemOwner.addToList(index + 1, (ItemAndListCommonInterface) newRepeatRuleInstance); //add just after 
+                    //                    && (index = subtaskList.indexOf(this)) != -1) {
+                    && (subtaskList.indexOf(this)) != -1) {
+//                itemOwner.addToList(index + 1, (ItemAndListCommonInterface) newRepeatRuleInstance); //add just after 
+                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); //add just after 
             } else {
-                itemOwner.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : subtaskList.size(),
-                        (ItemAndListCommonInterface) newRepeatRuleInstance);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                itemOwner.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : subtaskList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
+//                if (MyPrefs.insertNewItemsInStartOfLists.getBoolean())
+//                    itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, (ItemAndListCommonInterface) itemOwner.get(0), false);
+//                else
+//                    itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, (ItemAndListCommonInterface) itemOwner.get(itemOwner.size()), true);
+//</editor-fold>
+                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance);
             }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            item.setList(subtaskList); //done in addToList
-            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-            DAO.getInstance().save(itemOwner);
+//            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//            DAO.getInstance().save(itemOwner);
+//</editor-fold>
+            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, itemOwner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
         } else { //no owner, save for 'Inbox'
 //            assert false;
             DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
         }
+    }
+
+    @Override
+    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface newRepeatRuleInstance) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Object owner = getOwner();
+//        if (owner instanceof ItemList) {
+//            ItemList ownerList = (ItemList) owner;
+//            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
+//                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
+//            } else {
+//                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+//            }
+//            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, ownerList); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//        } else if (owner instanceof Item) {
+//            Item itemOwner = (Item) owner;
+//            List subtaskList = itemOwner.getList();
+//            assert subtaskList != null; //should never get null
+//            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()){// && (subtaskList.indexOf(this)) != -1) {
+//                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); //add just after
+//            } else {
+//                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance);
+//            }
+//            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, itemOwner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//        } else { //no owner, save for 'Inbox'
+//            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//        }
+//</editor-fold>
+        ItemAndListCommonInterface owner = getOwner();
+        if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
+            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
+        } else {
+            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+        }
+        DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, (ParseObject) owner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1169,8 +1225,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return isDone();
     }
 
-    @Override
-    public ItemList getOwnerList() {
+//    @Override
+    public ItemList getOwnerItemList() {
 //        return owner; //TODO: Parsify
 //        ParseObject owner = getParseObject(PARSE_OWNER);
         ItemList ownerList = (ItemList) getParseObject(PARSE_OWNER_LIST);
@@ -1185,7 +1241,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
 //    @Override
-    private void setOwnerList(ItemList ownerList) {
+    private void setOwnerItemList(ItemList ownerList) {
 //        setOwnerDirectly(owner);
 //        ItemAndListCommonInterface oldOwner = getOwner();
 //        this.owner = owner; //TODO: Parsify
@@ -1373,11 +1429,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (owner instanceof TemplateList) {
             setOwnerTemplateList((TemplateList) owner);
         } else if (owner instanceof ItemList) {
-            setOwnerList((ItemList) owner);
+            setOwnerItemList((ItemList) owner);
         } else if (owner instanceof Item) {
             setOwnerItem((Item) owner);
         } else if (owner == null) {
-            setOwnerList(null);
+            setOwnerItemList(null);
             setOwnerItem(null);
             setOwnerTemplateList(null);
         } else {
@@ -1391,7 +1447,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         ItemAndListCommonInterface owner;
         if ((owner = getOwnerItem()) != null) { //NB! ownerItem must be tested first, since ownerList now returns top-level owner list!!
             return owner;
-        } else if ((owner = getOwnerList()) != null) {
+        } else if ((owner = getOwnerItemList()) != null) {
             return owner;
 //        } else if ((owner = getOwnerCategory()) != null) {
 //            return owner;
@@ -1758,11 +1814,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                List<Item> subtaskCopy = new ArrayList();
                 List<Item> subtaskCopy;
                 if (fromTempl) {
-                    subtaskCopy = destination.getList(); //if copying from a template, *add* template subtasks to any existing subtasks!
+                    subtaskCopy = destination.getListFull(); //if copying from a template, *add* template subtasks to any existing subtasks! //full to include ALL tasks
                 } else {
                     subtaskCopy = new ArrayList();
                 }
-                List<Item> orgSubtasks = getList();
+                List<Item> orgSubtasks = getListFull();
 //                DAO.getInstance().fetchAllElementsInSublist(orgSubtasks, true);
 
                 for (int i = 0, size = orgSubtasks.size(); i < size; i++) {
@@ -2085,59 +2141,34 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      */
     @Override
-    public void delete() { //throws ParseException {
-        delete(true);
+    public boolean softDelete() { //throws ParseException {
+        return softDelete(true);
     }
 
-    public void delete(boolean removeRefs) { //throws ParseException {
+    @Override
+    public boolean softDelete(boolean removeRefs) { //throws ParseException {
 
         //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
-//        List<Item> itemsSubtasksOfThisItem = DAO.getInstance().getAllItemsOwnedBy(this); //best to get owned subtasks directly from DAO since less likely that some may be missed
-        List<Item> itemsSubtasksOfThisItem = getList();
+        List<Item> itemsSubtasksOfThisItem = getListFull();
         for (Item item : itemsSubtasksOfThisItem) {
-//            item.delete(); //let each item delete itself properly, will recurse down the project hierarchy
-//            DAO.getInstance().delete(item); //let each item delete itself properly, will recurse down the project hierarchy
-            item.delete(removeRefs); //let each item delete itself properly, will recurse down the project hierarchy
-            //TODO!!!! However, this will remove them from their owner (this task), which is not what we want
+            item.softDelete(removeRefs); //let each item delete itself properly, will recurse down the project hierarchy
         }
 
         //TODO!!! (?)anything to do to handle case where subtasks are created and saved, but where the new mother task is finally not saved?
         //DELETE IN CATEGORIES
         // remove item from all categories before deleting it
-//        DAO.getInstance().deleteItemFromAllCategories(this);
         for (Category cat : getCategories()) {
             ((Category) cat).removeItemFromCategory(this, removeRefs); //remove references to this item from the category before deleting it (false: but keep the item's categories)
-//            DAO.getInstance().save(cat);
-//            DAO.getInstance().saveInBackground(cat);
             DAO.getInstance().saveInBackground((ParseObject) cat);
         }
-//        List<Category> catList = DAO.getInstance().getAllCategoriesContainingItemXXXNOT_NECESSARY(this);
-//        ASSERT.that(catList == null || catList.size() == 0, () -> "some categories still contain item after deleting it from its categories, item=" + this + " categories=" + catList);
 
         //DELETE IN OWNERS/PROJECTS
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (getOwnerItem() != null) {
-//            Item ownerItem = getOwnerItem();
-//            ownerItem.getList().remove(this);
-//            DAO.getInstance().save(ownerItem);
-//        }
-//        if (getOwnerList() != null) {
-//            ItemList ownerItemList = getOwnerList();
-////            ownerItemList.getList().remove(this);
-//            ownerItemList.removeItem(this);
-//            DAO.getInstance().save(ownerItemList);
-//        }
-//</editor-fold>
         ItemAndListCommonInterface owner = getOwner();
-//        if (owner != null) {
         if (owner instanceof Item) {
-            //removeFromList removes owner, but we want to keep it in the soft-deleted task so it can be undeleted if necessary
             ((Item) owner).removeFromList(this, !removeRefs);
-//            if (removeRefs) setOwner(owner); 
             DAO.getInstance().saveInBackground((ParseObject) owner);
         } else {
             owner.removeFromList(this);
-//            if (removeRefs) setOwner(owner); //removeFromList removes owner, but we want to keep it in the soft-deleted task so it can be undeleted if necessary
             DAO.getInstance().saveInBackground((ParseObject) owner);
         }
 
@@ -2147,30 +2178,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (myRepeatRule != null) {
 //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we 
 //            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
-            myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this);
+            myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
             //NB. We don't delete the item's refs to repeatrule
         }
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        try {
-//            //finally delete the item itself
-////            DAO.getInstance().delete(this); //WON'T WORK since DAO cannot call super.delete() on Item
-//            super.delete();
-//        } catch (ParseException ex) {
-////            Log.getLogger(Item.class.getName()).log(Level.SEVERE, null, ex); //TODO!!!!!!
-//            Log.p(Item.class.getName() + "SEVERE " + ex); //TODO!!!!!!
-//        }
-//</editor-fold>
-        //finally delete the item itself
+        //TODO!!!! remove item from OriginalSource field (from copies of this task) - all these links are one way, so need to search in ParseServer.
+        //if deleting them, maybe replace the ObjectId link by the text of the original task??
+        //or better simply to leave them and add a mechanism to ignore soft-deleted sources?? The mechanism would likely have to check the server each time, so 
+        //this could make it very slow!!!!
         //ALARMS remove any active alarms
         AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
 
-//        DAO.getInstance().delete(this);
-//        super.delete();
-//        put(PARSE_DELETED_DATE, new Date());
         setDeletedDate(new Date());
         DAO.getInstance().saveInBackground(this);
 
+        return true;
         //TODO: any other references to an item??
 /////////////////////////////////////////////////////
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2199,12 +2221,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    public int getItemListSize() {
-//        return (getItemList().size());
-        return (getList().size());
-//        return (subitems == null || subitems.getSize() == 0) ? 0 : subitems.getSize();
-    }
-
+//    public int getItemListSize() {
+////        return (getItemList().size());
+//        return (getList().size());
+////        return (subitems == null || subitems.getSize() == 0) ? 0 : subitems.getSize();
+//    }
     /**
      * returns list of subitems/sub-tasks. If no list previously existed, the
      * list is created. Use getItemListSize() to check if a list already exists
@@ -2238,40 +2259,62 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public boolean hasAsSubtask(Item subtask) {
-        return getList().indexOf(subtask) >= 0;
+        return getListFull().indexOf(subtask) >= 0;
     }
 
     @Override
-    public int size() { //
+    public int getSize() { //
         return getList().size();
     }
 
-    @Override
+    /**
+    NB. The index must be in the full (unfiltered) list! Hence recommended to use addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subtask, boolean addAfterItem) which calculates right index for subtask
+    @param index
+    @param subtask
+    @return 
+     */
+//    @Override
     public boolean addToList(int index, ItemAndListCommonInterface subtask) {
-        List subtasks = getList();
         boolean status = true;
-        subtasks.add(index, subtask);
+        List listFull = getListFull();
+        int indexFull = listFull.indexOf(getList().get(index)); //convert index in filtered list to index in full list NB! doesn't work if there should be multiple instances one day/somewhere!!
+        listFull.add(indexFull, subtask);
         ASSERT.that(subtask.getOwner() == null || this == subtask.getOwner(), "subItemOrList owner not null when adding to list, SUBTASK=" + subtask + ", OLD OWNER=" + subtask.getOwner() + ", NEW OWNER=" + this);
         subtask.setOwner(this);
         ((Item) subtask).updateValuesInheritedFromOwner();
-        setList(subtasks);
+        setList(listFull);
         return status;
     }
 
     @Override
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList) {
+        List listFull = getListFull();
+        listFull.add(addToEndOfList ? listFull.size() : 0, subItemOrList);
+        setList(listFull);
+        return true;
+    }
+
+    @Override
     public boolean addToList(ItemAndListCommonInterface subItemOrList) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        List subtasks = getList();
 //        boolean status = subtasks.add(subtask);
 //        setList(subtasks);
 //        return status;
 //        return addToList(MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : getList().size(), subItemOrList); //TODO!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
-        return addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : getList().size(), subItemOrList); //DONE!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
+//        return addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : getList().size(), subItemOrList); //DONE!!! UI: consider if it makes sense to insert at beginning of a list of subtasks just because of this setting
+//        if (MyPrefs.insertNewItemsInStartOfLists.getBoolean())
+//            return addToList((ItemAndListCommonInterface) subItemOrList, (ItemAndListCommonInterface) getListFull().get(0), false);
+//        else
+//            return addToList((ItemAndListCommonInterface) subItemOrList, (ItemAndListCommonInterface) getListFull().get(getListFull().size()), true);
+//</editor-fold>
+        return addToList((ItemAndListCommonInterface) subItemOrList, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subtask, boolean addAfterItem) {
-        List subtasks = getList();
+    public boolean addToList(ItemAndListCommonInterface newItem, ItemAndListCommonInterface referenceItem, boolean addAfterItem) {
 //<editor-fold defaultstate="collapsed" desc="comment">
+//        List subtasks = getListFull();
 //        boolean status = true;
 ////        try {
 //        int index = subtasks.indexOf(item);
@@ -2283,18 +2326,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        }
 //        setList(subtasks);
 //        return status;
+//        int index = subtasks.indexOf(item);
 //</editor-fold>
-        int index = subtasks.indexOf(item) + (addAfterItem ? 1 : 0);
-        return addToList(index, subtask);
+        int indexFull = getListFull().indexOf(newItem);
+        if (indexFull < 0) {
+            ASSERT.that(false, "REFERENCE item not found in addToList(newItem,refItem), refItem=" + referenceItem + ", newItem=" + newItem);
+            return addToList(referenceItem); //UI: else add to end of list //TODO! should this depend on a setting?
+        } else
+            return addToList(indexFull + (addAfterItem ? 1 : 0), referenceItem);
     }
 
+//    @Override
+//    public boolean removeFromList(ItemAndListCommonInterface subItemOrList,boolean removeReferences)) {
+//        return removeFromList(subItemOrList, true);
+//    }
     @Override
-    public boolean removeFromList(ItemAndListCommonInterface subItemOrList) {
-        return removeFromList(subItemOrList, true);
-    }
-
     public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeFromOwner) {
-        List subtasks = getList();
+        List subtasks = getListFull();
         boolean status = subtasks.remove(subItemOrList);
         setList(subtasks);
         assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
@@ -3730,7 +3778,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     protected static Date getSubtasksStartedOnDateD(Item item) {
-        List<Item> subtasks = item.getList();
+        List<Item> subtasks = item.getListFull(); //full to include even done/filtered tasks
         long startTime = 0;
         if (subtasks.size() > 0) {
             for (Item it : subtasks) {
@@ -3805,10 +3853,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public void setStartedOnDateInParse(Date startedOnDate) {
-        if (isProject()) {
-            Date oldDate = getDate(PARSE_STARTED_ON_DATE);
+        if (false && isProject()) { //subtasks should never inherit their project's start date??
+            Date oldProjectDate = getDate(PARSE_STARTED_ON_DATE);
             for (Item subtask : (List<Item>) getList()) {
-                Date subtaskDate = subtask.getStartedOnDateD();
+                Date oldSubtaskDate = subtask.getStartedOnDateD();
 //<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
 //                if (oldDate == null) {
 //                    if (subtaskDate == null) {
@@ -3831,7 +3879,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                }
 //</editor-fold>
                 //above expressions are equivalent to this reduced/simplified version:
-                if ((oldDate == null && subtaskDate == null) || (subtaskDate == null || subtaskDate.equals(oldDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
+                if ((oldProjectDate == null && oldSubtaskDate == null)
+                        || oldSubtaskDate == null
+                        || oldSubtaskDate.equals(oldProjectDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
                     subtask.setStartedOnDate(startedOnDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
                 }
             }
@@ -3844,19 +3894,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        update();
     }
 
-    public void setStartedOnDateUpdateStatus(Date startedOnDate) {
-//        setStartedOnDate(startedOnDate.getTime());
-        if (startedOnDate != null && startedOnDate.getTime() != 0) {
-            put(PARSE_STARTED_ON_DATE, startedOnDate);
-            setStatus(ItemStatus.ONGOING);  //Better move this into the UI
-        } else {
-            remove(PARSE_STARTED_ON_DATE);
-            if (getActual() == 0) { //TODO!!!! this won't work if actualEffort was edited in the UI but not set yet!! Need to ensure this consistency in ScreenItem
-                setStatus(ItemStatus.CREATED);
-            }
-        }
-    }
-
+//    public void setStartedOnDateUpdateStatus(Date startedOnDate) {
+////        setStartedOnDate(startedOnDate.getTime());
+//        if (startedOnDate != null && startedOnDate.getTime() != 0) {
+//            put(PARSE_STARTED_ON_DATE, startedOnDate);
+//            setStatus(ItemStatus.ONGOING);  //Better move this into the UI
+//        } else {
+//            remove(PARSE_STARTED_ON_DATE);
+//            if (getActual() == 0) { //TODO!!!! this won't work if actualEffort was edited in the UI but not set yet!! Need to ensure this consistency in ScreenItem
+//                setStatus(ItemStatus.CREATED);
+//            }
+//        }
+//    }
     public long getLastModifiedDate() {
 //        return lastModDate;
         Date date = getUpdatedAt();
@@ -3904,6 +3953,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public boolean isProject() {
 //        return getItemListSize() > 0;
         return getListFull().size() > 0; //does a project stay a project if e.g. all subtasks are filtered or Done? Yes, most probably
+        //UI: even if a project is fully done (all subtasks potentially filtered), it stays a project! 
     }
 
     /**
@@ -4022,7 +4072,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         } else {
             //Project
-            List itemList = getList();
+            List itemList = getListFull();
 //            boolean previousItemFoundHere = (previousItem == null); //set to true if previousItem is null
             for (int i = 0, size = itemList.size(); i < size; i++) {
                 Item subTask = (Item) itemList.get(i);
@@ -4064,26 +4114,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        assert previousItem != null || previousItemAlreadyFound[0] : "getNextLeafItemMeetingConditionImpl called with previousItem==null and previousItemAlreadyFound not set true";
         if (!isProject()) { //LEAF
             if (condition == null || condition.meets(this)) {
-//                ArrayList list = new ArrayList(Arrays.asList(this));// list.add(this);
-//                return list;
                 return new ArrayList(Arrays.asList(this));// list.add(this);
             } else {
                 return new ArrayList(); //null; //always return a list (no null pointers)
             }
         } else { //Project
-            List<Item> subtasks = getList();
-//            List<ItemAndListCommonInterface> sublist;
+            List<Item> subtasks = getListFull(); //full to ensure every subtask matching condition is returned
             List<Item> leaftasks;
             int size = subtasks.size();
-//            List<ItemAndListCommonInterface> result = null;
             List<Item> result = null;
             if (size > 0) {
                 result = new ArrayList();
                 for (int i = 0; i < size; i++) {
                     leaftasks = subtasks.get(i).getLeafTasksAsList(condition);
-//                    if (sublist != null) {
                     result.addAll(leaftasks);
-//                    }
                 }
             }
             return result;
@@ -4111,12 +4155,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        } else {
 //            return isDone() ? 0 : 1;
 //        }
-        return ItemList.getNumberOfUndoneItems(getList(), includeSubTasks); //by default, only count direct subtasks (how many remaining subtasks *this* project has)
+        return ItemList.getNumberOfUndoneItems(getListFull(), includeSubTasks); //by default, only count direct subtasks (how many remaining subtasks *this* project has)
     }
 
     @Override
     public int getNumberOfItems(boolean onlyUndone, boolean countLeafTasks) {
-        List list = getList();
+        List list = getListFull();
         if (list.size() == 0) {
             return onlyUndone && isDone() ? 0 : 1; //this is a leafTask, so always return 1 if undone
         }
@@ -4131,7 +4175,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public int getNumberOfSubtasks(boolean onlyUndone, boolean countLeafTasks) {
         int count = 0;
-        for (Object obj : getList()) {
+        for (Object obj : getListFull()) { //full: count every subtask
             count += ((ItemAndListCommonInterface) obj).getNumberOfItems(onlyUndone, countLeafTasks);
         }
         return count; //if !countLeafTasks, then add 1 for this Item
@@ -4223,7 +4267,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
     @Override
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
-        List list = getList();
+        List list = getListFull();
         if (list == null || list.size() == 0) {
             return shouldTaskStatusChange(newStatus, getStatus()) ? 1 : 0;
         } else {
@@ -4233,7 +4277,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public int getCountOfSubtasksWithStatus(boolean recurse, List statuses) {
-        List list = getList();
+        List list = getListFull();
         if (list == null || list.size() == 0) {
             return statuses.indexOf(getStatus()) >= 0 ? 1 : 0;
         } else {
@@ -4594,7 +4638,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 List subtasksToSave = new ArrayList();
 //                    List<Item> subtasks = getList();
 //                    for (int i = 0, size = subtasks.size(); i < size; i++) {
-                for (Item item : (List<Item>) getList()) {
+                for (Item item : (List<Item>) getListFull()) {
 //                    if (!subtasks.get(i).isDone()) {
 //                        ItemStatus oldSubtaskStatus = subtasks.get(i).getStatus();
                     ItemStatus oldSubtaskStatus = item.getStatus();
@@ -4677,7 +4721,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     public ItemStatus getStatusFromSubtasks() {
-        return getStatus(getList());
+        return getStatus(getListFull());
     }
 
     public static ItemStatus getStatus(List<Item> list) {
@@ -4746,7 +4790,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param list
      * @param statusCount
      */
-    private static void getStatusImplProjectLeaftasks(List<Item> list, Bag<ItemStatus> statusCount) {
+    private static void getStatusImplProjectLeaftasksXXX(List<Item> list, Bag<ItemStatus> statusCount) {
 //    protected ItemStatus getListStatus() {
         for (int i = 0, size = list.size(); i < size; i++) {
 //            statusCount.add(list.get(i).getStatus());
@@ -4754,7 +4798,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            ItemAndListCommonInterface item = list.get(i);
             Item item = list.get(i);
             if (item.isProject()) {
-                getStatusImplProjectLeaftasks(item.getList(), statusCount);
+                getStatusImplProjectLeaftasksXXX(item.getListFull(), statusCount);
             } else {
                 statusCount.add(list.get(i).getStatus());
 //                statusCount.add(item.getStatus());
@@ -5720,7 +5764,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
     public long getEstimateForSubtasks() {
         long subItemSum = 0;
-        for (Item item : (List<Item>) getList()) {
+        for (Item item : (List<Item>) getListFull()) { //full to avoid that hidden (but not done) subtasks are not counted
 //            if (true || !item.isDone()) { //NO, get estimates for ALL subtasks, whether done or not
             subItemSum += item.getEstimate();
 //            }
@@ -6035,7 +6079,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public long getRemainingForSubtasks() {
         long effort = 0;
-        for (Item item : (List<Item>) getList()) {
+        for (Item item : (List<Item>) getListFull()) {
             effort += item.getRemaining(); //remainingEffort  returns complete actual effort for subtasks (including their own effort and that of any of their subtasks
         }
         return effort;
@@ -6248,7 +6292,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        List subtasks = getList();
 //        for (int i = 0, size = subtasks.size(); i < size; i++) {
 //            Item item = (Item) subtasks.get(i);
-        for (Item item : (List<Item>) getList()) {
+        for (Item item : (List<Item>) getListFull()) {
 //            if (true || !item.isDone()) { // /** || includeDone */) { //ALWAYS include actual even for Done tasks so project Actual is exhaustive
 //                actual += item.getActualEffortFromSubtasks();
             actual += item.getActual(); //actuelEffort now returns complete actual effort for subtasks (including their own effort and that of any of their subtasks
@@ -6723,7 +6767,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (isDone()) {
 //                Date latestSubTaskCompletedDate = new Date(MyDate.MIN_DATE);
                 Date latestSubTaskCompletedDate = new Date(0);
-                for (Object item : getList()) {
+                for (Object item : getListFull()) { //full to ensure we get the latest date, no matter status
                     if (item instanceof Item && ((Item) item).getCompletedDateD().getTime() > latestSubTaskCompletedDate.getTime()) {
                         latestSubTaskCompletedDate = ((Item) item).getCompletedDateD();
                     }
@@ -6803,9 +6847,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public void setCompletedDateInParse(Date completedDate) {
         if (isProject()) {
-            Date oldDate = getDate(PARSE_COMPLETED_DATE);
-            for (Item subtask : (List<Item>) getList()) {
-                Date subtaskDate = subtask.getCompletedDateD();
+            Date oldProjectDate = getDate(PARSE_COMPLETED_DATE);
+            for (Item subtask : (List<Item>) getListFull()) { //full set even for hidden subtasks
+                Date oldSubtaskDate = subtask.getCompletedDateD();
 //<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
 //                if (oldDate == null) {
 //                    if (subtaskDate == null) {
@@ -6828,7 +6872,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                }
 //</editor-fold>
                 //above expressions are equivalent to this reduced/simplified version:
-                if ((oldDate == null && subtaskDate == null) || (subtaskDate == null || subtaskDate.equals(oldDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
+                if ((oldProjectDate == null && oldSubtaskDate == null) || (oldSubtaskDate == null || oldSubtaskDate.equals(oldProjectDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
                     subtask.setCompletedDate(completedDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
                 }
             }
@@ -7318,8 +7362,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
         return getText() + " (" + getObjectIdP() + ")"
-                + (isDone() ? "[V]" : (getRemaining() > 0 ? MyDate.formatTimeDuration(getRemaining()) : ""))
-                + (getList().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getList()) + "}");
+                + (isDone() ? "[V]" : (getRemaining() > 0 ? MyDate.formatDurationShort(getRemaining()) : ""))
+                + (getListFull().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getListFull()) + "}");
     }
 
     /**
@@ -7451,7 +7495,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void save() throws ParseException {
         //update any subtasks that may be affected by project changes to inherited fields:
         if (ops != null && ops.size() > 0) {
-            for (Item subtask : (List<Item>) getList()) {
+            for (Item subtask : (List<Item>) getListFull()) {
                 boolean subtaskUpdated = false;
                 if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
                     for (UpdateItem f : ops) {
@@ -7531,7 +7575,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         List<WorkSlot> workslots = getList(PARSE_WORKSLOTS);
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
-            return new WorkSlotList(workslots);
+            boolean updated = RepeatRuleParseObject.updateWorkSlotList(workslots);
+            WorkSlotList workSlotList = new WorkSlotList(this, workslots);
+            if (updated) 
+                setWorkSlotList(workSlotList);
+            return workSlotList;
         } else {
             return null;//new WorkSlotList();
         }
@@ -7545,8 +7593,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        return workSlotListBuffer;
 //    }
-//    public void setWorkSlotList(List<WorkSlot> workSlotList) {
     @Override
+//    public void setWorkSlotList(List<WorkSlot> workSlotList) {
     public void setWorkSlotList(WorkSlotList workSlotList) {
         //TODO currently not stored in ItemList but get from DAO
 //        workSlotListBuffer = null;
@@ -7555,6 +7603,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (workSlotList != null && workSlotList.size() > 0) {
         if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
 //            put(PARSE_WORKSLOTS, workSlotList.getWorkSlots());
+            workSlotList.setOwner(this);
             put(PARSE_WORKSLOTS, workSlotList.getWorkSlotListFull());
         } else {
             remove(PARSE_WORKSLOTS);
@@ -7563,7 +7612,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
-        if (forceWorkTimeCalculation || workTimeAllocator == null || reset) {
+        if (neverCacheWorkTimeAllocator || workTimeAllocator == null || reset) {
             if (Config.WORKTIME_DETAILED_LOG) {
                 Log.p("-> .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"");
             }
@@ -7632,10 +7681,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public void resetWorkTimeDefinition() {
         workTimeAllocator = null;
-        for (Object subtask : getList()) {
+        for (Object subtask : getListFull()) {
             if (subtask instanceof Item) {// && ((Item)subtask).isProject()) {
                 ((Item) subtask).resetWorkTimeDefinition();
-            }
+            } else assert false;
         }
     }
 
@@ -8040,21 +8089,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_EFFORT_ESTIMATE:
                 if (toCSV) {
-                    list.add((MyDate.formatTimeDuration(getEstimate())));
+                    list.add((MyDate.formatDuration(getEstimate())));
                 } else {
                     setEstimate((Long) val, false);
                 }
                 break;
             case PARSE_REMAINING_EFFORT:
                 if (toCSV) {
-                    list.add((MyDate.formatTimeDuration(getRemainingFromParse())));
+                    list.add((MyDate.formatDuration(getRemainingFromParse())));
                 } else {
                     setRemaining((Long) val, false); //UI: import of project estimates
                 }
                 break;
             case PARSE_ACTUAL_EFFORT:
                 if (toCSV) {
-                    list.add((MyDate.formatTimeDuration(getActualForProjectTaskItself())));
+                    list.add((MyDate.formatDuration(getActualForProjectTaskItself())));
                 } else {
                     setActual((Long) val, false); //UI: import of project estimates
                 }
@@ -8315,7 +8364,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         //get the amount of worktime the subtasks require from this (their mother project)
         long required = 0;
-        List<ItemAndListCommonInterface> subtasks = getList();
+        List<ItemAndListCommonInterface> subtasks = getListFull();
 //        if (subtasks != null && subtasks.size() > 0) {
         if (isProject()) {
             for (ItemAndListCommonInterface subtask : subtasks) { //starts from the *last* element in the list!!!
@@ -8352,11 +8401,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     if (wt != null) {
                         required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
                         if (Config.WORKTIME_DETAILED_LOG) {
-                            Log.p("-> .getWorkTimeRequiredFromProvider - got workTime from (" + prov + ") allocated==" + MyDate.formatTimeDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatTimeDuration(required));
+                            Log.p("-> .getWorkTimeRequiredFromProvider - got workTime from (" + prov + ") allocated==" + MyDate.formatDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatDuration(required));
                         }
                     } else {
                         if (Config.WORKTIME_DETAILED_LOG) {
-                            Log.p("-> .getWorkTimeRequiredFromProvider - got a NULL workTime from (" + prov + ") allocated==" + MyDate.formatTimeDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatTimeDuration(required));
+                            Log.p("-> .getWorkTimeRequiredFromProvider - got a NULL workTime from (" + prov + ") allocated==" + MyDate.formatDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatDuration(required));
                         }
                     }
                 }
@@ -8597,10 +8646,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
         long remaining = 0;
-        List<? extends ItemAndListCommonInterface> subtasks = getList();
+        List<? extends ItemAndListCommonInterface> subtasks = getListFull();
         if (subtasks != null && subtasks.size() > 0) { //I'm a project
-            for (ItemAndListCommonInterface elt : subtasks) {
-                remaining += elt.getWorkTimeRequiredFromProvider(this); //remaining of last subtask will hold any unallocated required worktime
+            for (ItemAndListCommonInterface subt : subtasks) {
+                remaining += subt.getWorkTimeRequiredFromProvider(this); //remaining of last subtask will hold any unallocated required worktime
             }
         } else { //I'm a leaf task
             remaining = getRemaining(); //how much total workTime is required?
@@ -8644,7 +8693,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
         long remaining = 0;
-        List<? extends ItemAndListCommonInterface> subtasks = getList();
+        List<? extends ItemAndListCommonInterface> subtasks = getListFull();
         if (subtasks != null && subtasks.size() > 0) { //I'm a project
             for (ItemAndListCommonInterface elt : subtasks) {
 //                remaining += elt.getAllocatedWorkTimeN().getRemainingDuration(); //remaining of last subtask will hold any unallocated required worktime
@@ -8708,7 +8757,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private long getLatestSubtaskFinishTime() {
         long latestFinishTime = MyDate.MIN_DATE;
         Item subtask;
-        for (Object subt : getList()) {
+        for (Object subt : getListFull()) {
             if (subt instanceof Item && !(subtask = (Item) subt).isDone()) { //AndListCommonInterface) {
 //                     subtask = (Item) subt;
                 long finishT = subtask.getFinishTime();
@@ -8755,7 +8804,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         long lastSubtaskUpdate = getLastModifiedDate(); //if ever project task itself is updated the last, return that date. 
         long temp;
         if (isProject()) {
-            for (Object o : getList()) {
+            for (Object o : getListFull()) {
                 if (o instanceof Item) {
                     temp = ((Item) o).getLastModifiedDateProjectOrSubtasks().getTime(); //cache since potentially heavy operation
                     if (temp > lastSubtaskUpdate) {

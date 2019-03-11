@@ -11,6 +11,7 @@ import com.codename1.io.Log;
 import com.codename1.ui.events.DataChangedListener;
 import com.codename1.util.StringUtil;
 import com.parse4cn1.ParseException;
+import com.parse4cn1.ParseObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -226,7 +227,7 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
         }
     }
 
-    //just starting to play with this
+    //just starting to play with this //TODO autowords/autocategories should be supported by a popup showing the identified categories and allowing to deselect wrong ones (and disable the popup?)
     private void processAutoWords() {
         String autoWordsStr = getAutoWords();
         List<String> tokens = StringUtil.tokenize(autoWordsStr, " ,;");
@@ -616,7 +617,7 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
 //        }
 //        listOfContainingLists.add(category); //cannot choose the category itself either
 //        for (Object cat : itemList) {
-        for (Object cat : getList()) {
+        for (Object cat : getList()) { //TODO check if getList is correct!?
             listOfContainingLists.addAll((((Category) cat).getSetOfSubCategoriesContainingThisCategoryDirectlyOrIndirectly(category)));
         }
         return listOfContainingLists;
@@ -857,47 +858,39 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
 //    public String toString() {
 //        return getText();
 //    }
-    @Override
-    public void delete() throws ParseException { //throws ParseException {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        super.delete(); //informs all listeners on this ItemList this is has been deleted so they can remove it as a listener
+        public boolean softDelete(boolean removeReferences) { //throws ParseException {
+        if (Config.TEST) ASSERT.that(!isDeleted());
 
-//        for (Item item : (List<Item>) getItemList()) {
-//            try {
-//                item.fetchIfNeeded();
-//            } catch (ParseException ex) {
-//                Log.e(ex);
-//            }
-//            item.getCategories().remove(this); //remove references to this item from the category before deleting it
-//            item.save();
-//        }
-//</editor-fold>
-        DAO.getInstance().deleteCategoryFromAllItemsXXXNOT_NECESSARY(this);
-
-        //remove category from meta-categories
-        List<Category> listOfCategories = DAO.getInstance().getAllCategoriesIncludingThis(this);
-        for (Category category : listOfCategories) {
-            //retrieve the sourceList, remove this list from it, and store it again
-//            itemList.put(ItemList.PARSE_SOURCE_LISTS, ((ArrayList) itemList.getList(ItemList.PARSE_SOURCE_LISTS)).remove(this));
-            category.removeSubList(this); //remove this category as a subCategory (as well as any items added to the meta-lists)
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            try {
-//                category.save();
-//            } catch (ParseException ex) {
-//                Log.e(ex);
-//            }
-//</editor-fold>
-            DAO.getInstance().save(category);
+        // remove category from all items 
+        List<ParseObject> updatedElements = new ArrayList<>();
+        for (Item item : (List<Item>)getListFull()) {
+            if (Config.TEST) ASSERT.that(item.getCategories().contains(this));
+            item.removeCategoryFromItem(this, removeReferences); //remove references to this item from the category before deleting it (false: but keep the item's categories)
+            updatedElements.add(item);
         }
+        DAO.getInstance().saveInBackground(updatedElements);
 
-//        CategoryList categoriesList = DAO.getInstance().getCategoryList();
+        //remove category from meta-categories (all categories to which it is a subcategory)
+        updatedElements.clear();
+//        for (Category category : (List<Category>)CategoryList.getInstance()) {
+        for (Category category : (List<Category>)getMetaList()) {
+            //remove this category as a subCategory (as well as any items added to the meta-lists)
+            if (category.removeSubList(this)) {
+                updatedElements.add(category);
+            }
+        }
+        DAO.getInstance().saveInBackground(updatedElements);
+
+        //remove category from categorylist ==owner)
         CategoryList categoriesList = CategoryList.getInstance();
-        categoriesList.remove(this);
-        DAO.getInstance().save(categoriesList);
-
-//        super.delete();
+        if (Config.TEST) ASSERT.that(categoriesList.getListFull().contains(this));
+        categoriesList.removeFromList(this,removeReferences);
+//        DAO.getInstance().saveInBackground((ParseObject)categoriesList);
+        
         put(Item.PARSE_DELETED_DATE, new Date());
-        DAO.getInstance().save(this);
+//        DAO.getInstance().saveInBackground((ParseObject)this);
+        DAO.getInstance().saveInBackground(categoriesList,this); //group the two saves together
+        return true;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        deleteAllItemsInList(true); //by default, delete only items owned by this list
 //        itemList = null; //help garbage collector
@@ -909,7 +902,7 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
     }
 
     public void addItemToCategory(Item item, boolean addCategoryToItem) {
-        addItemToCategory(item, size(), addCategoryToItem); //add to end of category list by default
+        addItemToCategory(item, getSize(), addCategoryToItem); //add to end of category list by default
     }
 
     /**
@@ -990,11 +983,11 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
     }
 
     public boolean isOwnerOfItemInCategoryBeforeItem(ItemAndListCommonInterface item) {
-        return isOwnerOfItemInListBeforeItem(getList(), item);
+        return isOwnerOfItemInListBeforeItem(getListFull(), item);
     }
 
     public boolean isOwnerOfItemInCategoryBeforeItem(int itemIndex) {
-        return isOwnerOfItemInListBeforeItem(getList(), itemIndex);
+        return isOwnerOfItemInListBeforeItem(getListFull(), itemIndex);
     }
 
 } // end Category

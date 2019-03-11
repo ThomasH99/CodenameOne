@@ -203,8 +203,8 @@ public class ScreenItem2 extends MyForm {
         getContentPane().removeAll(); //clear old content pane
         buildContentPane(getContentPane()); //rebuild and removeFromCache
         super.refreshAfterEdit();
-        revalidate(); //refresh form
-        restoreKeepPos();
+//        revalidate(); //refresh form
+//        restoreKeepPos();
         //TODO!!!! restore scroll position in expanded list of subtasks 
 //       super();
     }
@@ -347,7 +347,7 @@ public class ScreenItem2 extends MyForm {
 //            previousForm.showBack(); //drop any changes
 //            item.delete();
 //            DAO.getInstance().delete(item);
-            item.delete();
+            item.softDelete();
 //            previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
@@ -979,7 +979,8 @@ public class ScreenItem2 extends MyForm {
             if (finishTime.getTime() != MyDate.MAX_DATE || Config.WORKTIME_TEST) {
                 Button showWorkTimeDetails = new Button(MyReplayCommand.create("ShowWorkTimeDetails", MyDate.formatDateTimeNew(finishTime), null, (e) -> {
 //                    new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTimeN(), ScreenItem.this).show();
-                    new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTimeN(), ScreenItem2.this).show();
+//                    new ScreenListOfWorkTime(item.getText(), item.getAllocatedWorkTimeN(), ScreenItem2.this).show();
+                    new ScreenListOfWorkTime(item, item.getAllocatedWorkTimeN(), ScreenItem2.this).show();
                 }));
                 mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true));
 
@@ -1469,7 +1470,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //REMAINING************
         if (isProject) {
 //            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
-            timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingForSubtasks()), "LabelFixed"),
+            timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatDurationStd(itemLS.getRemainingForSubtasks()), "LabelFixed"),
                     Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false)); //hack to insert after alarmDate field
         }
 //TODO: makes no sense to show remaining for project itself, just confusing??
@@ -1480,7 +1481,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //ACTUAL************
         //if project, show actual for subtasks
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
-            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getActualForSubtasks()), "LabelFixed"),
+            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatDurationStd(itemLS.getActualForSubtasks()), "LabelFixed"),
                     Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false));
         }
 
@@ -1521,7 +1522,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
 //            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
-            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEstimateForSubtasks()), "LabelFixed"),
+            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatDurationStd(itemLS.getEstimateForSubtasks()), "LabelFixed"),
                     Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
         }
         String estimateTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT : Item.EFFORT_ESTIMATE;

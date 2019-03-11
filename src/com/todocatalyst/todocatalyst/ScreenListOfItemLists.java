@@ -101,7 +101,7 @@ public class ScreenListOfItemLists extends MyForm {
                 String text = (String) e.getSource();
                 Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
                 boolean showAll = text == null || text.length() == 0;
-                for (int i = 0, size = this.itemListList.size(); i < size; i++) {
+                for (int i = 0, size = this.itemListList.getSize(); i < size; i++) {
                     //TODO!!! compare same case (upper/lower)
                     //https://www.codenameone.com/blog/toolbar-search-mode.html:
                     compList.getComponentAt(i).setHidden(((ItemList) this.itemListList.get(i)).getText().toLowerCase().indexOf(text) < 0);
@@ -128,17 +128,17 @@ public class ScreenListOfItemLists extends MyForm {
 //            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
             InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
             if (insertNewElementFunc != null) {
-                setStartEditingAsync(insertNewElementFunc.getTextArea());
+                setStartEditingAsyncTextArea(insertNewElementFunc.getTextArea());
                 setInlineInsertContainer(insertNewElementFunc);
             }
         }
 
 //        revalidate();
-        revalidateWithAnimationSafety();
-//        if (this.keepPos != null) {
-//            this.keepPos.setNewScrollYPosition();
-//        }
-        restoreKeepPos();
+//        revalidateWithAnimationSafety();
+////        if (this.keepPos != null) {
+////            this.keepPos.setNewScrollYPosition();
+////        }
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 
@@ -188,6 +188,8 @@ public class ScreenListOfItemLists extends MyForm {
 //                previousForm.showBack();
 //            }
 //        });
+
+
 
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
@@ -400,7 +402,7 @@ public class ScreenListOfItemLists extends MyForm {
                     if (true) {
 //                            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
                         f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
-                        itemList.setList(iList.getList());
+                        itemList.setList(iList.getListFull());
                         DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
                         swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
@@ -489,13 +491,13 @@ public class ScreenListOfItemLists extends MyForm {
 //        List<WorkSlot> workslots = itemList.getWorkSlotListN();
 //        long workTimeSumMillis = WorkSlot.sumWorkSlotList(workslots);
 //</editor-fold>
-            east.addComponent(new Label((remainingEffort != 0 ? MyDate.formatTimeDuration(remainingEffort) : "")
-                    + (workTimeSumMillis != 0 ? ((remainingEffort != 0 ? "/" : "") + MyDate.formatTimeDuration(workTimeSumMillis)) : ""))); //format: "remaining/workTime"
+            east.addComponent(new Label((remainingEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
+                    + (workTimeSumMillis != 0 ? ((remainingEffort != 0 ? "/" : "") + MyDate.formatDurationStd(workTimeSumMillis)) : ""))); //format: "remaining/workTime"
             east.addComponent(editItemListPropertiesButton);
         } else { //statisticsMode
             long actualEffort = itemList.getActual();
 //            long estimatedEffort = itemList.getEffortEstimate();
-            east.addComponent(new Label("Act:" + MyDate.formatTimeDuration(actualEffort)));
+            east.addComponent(new Label("Act:" + MyDate.formatDurationStd(actualEffort)));
 //                    + "/E" + MyDate.formatTimeDuration(estimatedEffort)
 //                    + "/W" + MyDate.formatTimeDuration(workTimeSumMillis)));
         }
@@ -514,8 +516,8 @@ public class ScreenListOfItemLists extends MyForm {
                         southDetailsContainer.setUIID("ItemDetails");
 //                        long remainingEffort = itemList.getRemainingEffort();
                         long estimatedEffort = itemList.getEstimate();
-                        southDetailsContainer.addComponent(new Label("Estimate:" + MyDate.formatTimeDuration(estimatedEffort)
-                                + " Work time" + MyDate.formatTimeDuration(workTimeSumMillis)));
+                        southDetailsContainer.addComponent(new Label("Estimate:" + MyDate.formatDurationStd(estimatedEffort)
+                                + " Work time" + MyDate.formatDurationStd(workTimeSumMillis)));
 //                        southDetailsContainer.setHidden(!showDetails); //hide details by default
                         mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
                         southCont = southDetailsContainer; //update for use below
@@ -645,8 +647,8 @@ public class ScreenListOfItemLists extends MyForm {
                     Container southDetailsContainer = new Container(new FlowLayout());
                     southDetailsContainer.setUIID("ItemDetails");
                     long estimatedEffort = itemList.getEstimate();
-                    southDetailsContainer.addComponent(new Label("Estimate:" + MyDate.formatTimeDuration(estimatedEffort)
-                            + " Work time" + MyDate.formatTimeDuration(workTimeSumMillis)));
+                    southDetailsContainer.addComponent(new Label("Estimate:" + MyDate.formatDurationStd(estimatedEffort)
+                            + " Work time" + MyDate.formatDurationStd(workTimeSumMillis)));
                     mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
                     southCont = southDetailsContainer; //update for use below
                 } else {

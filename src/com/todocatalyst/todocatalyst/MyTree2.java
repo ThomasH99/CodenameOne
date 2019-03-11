@@ -118,7 +118,7 @@ public class MyTree2 extends ContainerScrollY {
 //        return startEditTextArea;
 //    }
 
-    StickyHeaderGenerator stickyHeaderGen;
+    StickyHeaderGenerator stickyHeaderGen = null;
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
@@ -183,15 +183,19 @@ public class MyTree2 extends ContainerScrollY {
         this.stickyHeaderGen = stickyHeaderGen;
 
         FilterSortDef itemListFilteredSorted;
-        if (this.stickyHeaderGen == null && this.model instanceof ItemList && (itemListFilteredSorted = ((ItemList) this.model).getFilterSortDef()) != null && itemListFilteredSorted.isSortOn()) {
+        if (this.stickyHeaderGen == null) {
+            if (this.model instanceof ItemList
+                    && (itemListFilteredSorted = ((ItemList) this.model).getFilterSortDef()) != null
+                    && itemListFilteredSorted.isSortOn()) {
 //            FilterSortDef itemListFilteredSorted = ((ItemList) model).getFilterSortDef();
 //        if (this.itemListFilteredSorted != null && this.itemListFilteredSorted.isSortOn()) {
 //            if (itemListFilteredSorted != null && itemListFilteredSorted.isSortOn()) {
 //            stickyHeaderGen = makeStickyHeaderGen(this.itemListFilteredSorted.getSortFieldId());
-            this.stickyHeaderGen = makeStickyHeaderGen(itemListFilteredSorted.getSortFieldId());
+                this.stickyHeaderGen = makeStickyHeaderGen(itemListFilteredSorted.getSortFieldId());
 //            }
-        } else {
-            this.stickyHeaderGen = (item) -> null;
+            } else {
+                this.stickyHeaderGen = (item) -> null;
+            }
         }
 
         BoxLayout layout;
@@ -706,9 +710,18 @@ public class MyTree2 extends ContainerScrollY {
             }
             //check if a new insertNewTask container should be created for current and if so insert it:
 //            if (insertNewTask != null && current instanceof Item && model instanceof ItemAndListCommonInterface) {
-            if (insertNewElementFunc != null && current instanceof Item //instanceof false if current==null!
-                    && (parent instanceof ItemAndListCommonInterface
-                    || (parent == null && model instanceof ItemAndListCommonInterface))) {
+            InsertNewElementFunc newInsertCont;
+            if (insertNewElementFunc != null) {
+                if (current instanceof WorkSlot) {
+                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current, null, null);
+                    if (newInsertCont != null) {
+                        if (Config.TEST && current instanceof ItemAndListCommonInterface) ((Component) newInsertCont).setName("TreeInsertContainer-" + ((ItemAndListCommonInterface) current).getText());
+                        destination.add((Component) newInsertCont);
+                        setInsertField(newInsertCont);
+                    }
+                } else if ((current instanceof ItemAndListCommonInterface //instanceof false if current==null!
+                        && (parent instanceof ItemAndListCommonInterface
+                        || (parent == null && model instanceof ItemAndListCommonInterface)))) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                Component insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) model);
 //                InsertNewTaskContainer insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) parent);
@@ -717,23 +730,23 @@ public class MyTree2 extends ContainerScrollY {
 //                InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
 //                if (insertNewElement != null) {
 //</editor-fold>
-                InsertNewElementFunc newInsertContainer = insertNewElementFunc.make((Item) current,
-                        parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model,
-                        category);
-                if (newInsertContainer != null) {
+                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current,
+                            parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model, category);
+                    if (newInsertCont != null) {
 //                    destination.add(insertNewElement);
-                    if (Config.TEST && current instanceof ItemAndListCommonInterface)
-                        ((Component) newInsertContainer).setName("TreeInsertContainer-" + ((ItemAndListCommonInterface) current).getText());
-                    destination.add((Component) newInsertContainer);
+                        if (Config.TEST && current instanceof ItemAndListCommonInterface)
+                            ((Component) newInsertCont).setName("TreeInsertContainer-" + ((ItemAndListCommonInterface) current).getText());
+                        destination.add((Component) newInsertCont);
 //                        myForm.setInlineInsertContainer(newInsertContainer);
 //                    setAsyncEditField(newInsertContainer.getTextArea());
-                    setInsertField(newInsertContainer);
+                        setInsertField(newInsertCont);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    getComponentForm().setEditOnShow(insertNewTask.getTextField()); //ComponentForm should never be undefined here since MyTree should already be in a form
 //                    destination.getComponentForm().setEditOnShow(insertNewTask.getTextField()); //UI: set for edit
 //</editor-fold>
-                }
+                    }
 //                }
+                }
             }
         }
     }
@@ -1223,20 +1236,20 @@ public class MyTree2 extends ContainerScrollY {
                     default:
                         assert false : "Unhandled parseId in StickyHeader = " + parseId;
                 }
-                if (newStr != null && !newStr.equals(previousStickyStr)) {
-//                    newStickyStr = newStr;
-                    stringPut.put(newStr); //store to compare next time
-//                     Label headerLbl = new Label(newStickyStr, "ToggleButton"); //TODO!! define separate style for stickyheaders
-//                    Label headerLbl = new Label(newStickyStr, "ListOfItemsSectionHeader"); //TODO!! define separate style for stickyheaders
-//                    StickyHeaderDiamond headerLbl = new StickyHeaderDiamond("ToggleButton"); //TODO!! define separate style for stickyheaders //overwrites titlebar
-//                    StickyHeaderMod headerLbl = new StickyHeaderMod("ToggleButton"); //TODO!! define separate style for stickyheaders
-//                    StickyHeader headerLbl = new StickyHeader("ToggleButton"); //TODO!! define separate style for stickyheaders
-                    StickyHeader headerLbl = new StickyHeader("StickyHeader"); //TODO!! define separate style for stickyheaders
-//                    headerLbl.add(newStickyStr);
-                    headerLbl.add(newStr);
-//                    if (false) headerLbl.putClientProperty("STICKY_HEADER", true);
-                    return headerLbl;
-                }
+//                if (newStr != null && !newStr.equals(previousStickyStr)) {
+////                    newStickyStr = newStr;
+//                    stringPut.put(newStr); //store to compare next time
+////                     Label headerLbl = new Label(newStickyStr, "ToggleButton"); //TODO!! define separate style for stickyheaders
+////                    Label headerLbl = new Label(newStickyStr, "ListOfItemsSectionHeader"); //TODO!! define separate style for stickyheaders
+////                    StickyHeaderDiamond headerLbl = new StickyHeaderDiamond("ToggleButton"); //TODO!! define separate style for stickyheaders //overwrites titlebar
+////                    StickyHeaderMod headerLbl = new StickyHeaderMod("ToggleButton"); //TODO!! define separate style for stickyheaders
+////                    StickyHeader headerLbl = new StickyHeader("ToggleButton"); //TODO!! define separate style for stickyheaders
+//                    StickyHeader headerLbl = new StickyHeader("StickyHeader"); //TODO!! define separate style for stickyheaders
+////                    headerLbl.add(newStickyStr);
+//                    headerLbl.add(newStr);
+////                    if (false) headerLbl.putClientProperty("STICKY_HEADER", true);
+//                    return headerLbl;
+//                }
             } else if (current instanceof WorkSlot) {
                 WorkSlot workSlot = (WorkSlot) current;
                 switch (parseId) {
@@ -1245,6 +1258,13 @@ public class MyTree2 extends ContainerScrollY {
                         break;
                 }
             }
+            if (newStr != null && !newStr.equals(previousStickyStr)) {
+                stringPut.put(newStr); //store to compare next time
+                StickyHeader headerLbl = new StickyHeader("StickyHeader"); //TODO!! define separate style for stickyheaders
+                headerLbl.add(newStr);
+                return headerLbl;
+            }
+
             return null;
         };
     }

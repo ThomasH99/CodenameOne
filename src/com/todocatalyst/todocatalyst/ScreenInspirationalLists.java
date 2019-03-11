@@ -66,7 +66,7 @@ public class ScreenInspirationalLists extends MyForm {
     public void refreshAfterEdit() {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
-        restoreKeepPos();
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 

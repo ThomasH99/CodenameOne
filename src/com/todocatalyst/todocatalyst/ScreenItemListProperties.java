@@ -41,7 +41,8 @@ public class ScreenItemListProperties extends MyForm {
     }
 
     ScreenItemListProperties(ItemList itemList, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
-        super(screenTitle, previousForm, doneAction);
+        super("", previousForm, doneAction);
+        setTitle(itemList instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST);
 //        ScreenItemP.item = item;
         this.itemList = itemList;
         setUniqueFormId( "ScreenItemListProperties");
@@ -56,7 +57,7 @@ public class ScreenItemListProperties extends MyForm {
         setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
 
 //        setToolbar(new Toolbar());
-        setTitle(screenTitle);
+//        setTitle(screenTitle);
         addCommandsToToolbar(getToolbar());
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
@@ -66,7 +67,7 @@ public class ScreenItemListProperties extends MyForm {
     public void refreshAfterEdit() {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
-        restoreKeepPos();
+//        restoreKeepPos();
           super.refreshAfterEdit();
   }
 
@@ -102,12 +103,6 @@ public class ScreenItemListProperties extends MyForm {
                 showPreviousScreenOrDefault(true); //false);
             });
         }
-        toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {
-            DAO.getInstance().delete(itemList);
-//            previousForm.revalidate();
-//            previousForm.show(); //drop any changes
-                showPreviousScreenOrDefault(true);
-        });
     }
 
     /**

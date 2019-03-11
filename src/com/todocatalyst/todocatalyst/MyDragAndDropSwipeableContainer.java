@@ -116,15 +116,17 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        if (newInsertType != oldInsertType && dropPlaceholder != null) { //do nothing if there is no dropPlaceholder defined
         if (dropPlaceholder != null) { //do nothing if there is no dropPlaceholder defined
             if (newInsertType == InsertPositionType.NORMAL && insertDropPlaceholder != null) {
-                dropPlaceholder.getParent().removeComponent(dropPlaceholder);
+//                dropPlaceholder.getParent().removeComponent(dropPlaceholder);
+                dropPlaceholder.remove();
                 Log.p("InsertPosition = " + newInsertType + ", inserting normal dropPlaceholder", Log.DEBUG);
                 insertDropPlaceholder.insert(dropPlaceholder);
             } else if (newInsertType == InsertPositionType.SUBTASK && insertDropPlaceholderForSubtask != null) {
-                dropPlaceholder.getParent().removeComponent(dropPlaceholder);
+                dropPlaceholder.remove();
                 Log.p("InsertPosition = " + newInsertType + ", inserting SUBtask dropPlaceholder", Log.DEBUG);
                 insertDropPlaceholderForSubtask.insert(dropPlaceholder);
             } else if (newInsertType == InsertPositionType.SUPERTASK && insertDropPlaceholderForSupertask != null) {
-                dropPlaceholder.getParent().removeComponent(dropPlaceholder);
+//                dropPlaceholder.getParent().removeComponent(dropPlaceholder);
+                dropPlaceholder.remove();
                 Log.p("InsertPosition = " + newInsertType + ", inserting SUPERtask dropPlaceholder", Log.DEBUG);
                 insertDropPlaceholderForSupertask.insert(dropPlaceholder);
             } else {
@@ -169,6 +171,32 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             DAO.getInstance().saveInBackground((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList);
         }
     }
+
+    
+//    private void moveItemOrItemListAndSave(ItemAndListCommonInterface draggedElement, ItemAndListCommonInterface refElement, boolean insertAfterRefElement) {
+//
+//        ItemAndListCommonInterface oldOwner = draggedElement.getOwner(); //currenly only one single ItemListList to which all ItemLists belong
+//        ItemAndListCommonInterface newOwner = refElement.getOwner(); //currenly only one single ItemListList to which all ItemLists belong
+//        
+//        int insertIndex = newOwner.getItemIndex(refElement) ; //+1 drop at position *after* beforeItem
+////                        moveItemOrItemListAndSave(listOwner, listOwner, (ItemAndListCommonInterface) getDragAndDropObject(), indexItem); //+ addOneOnDownwardsDrag
+////        moveItemOrItemListAndSave(listOwner, listOwner, draggedElement, insertIndex); //+ addOneOnDownwardsDrag
+//        if (oldOwner == newOwner) { //moving within the same list, also means that insertposition must be adjusted if the 
+//            if (newPos > oldOwner.getItemIndex(itemOrItemList)) {
+//                oldOwner.removeFromList(itemOrItemList);
+//                newOwner.addToList(newPos - 1, itemOrItemList);
+//            } else { //newPos <= oldList.getItemIndex(itemOrItemList)
+//                oldOwner.removeFromList(itemOrItemList);
+//                newOwner.addToList(newPos, itemOrItemList);
+//            }
+////            DAO.getInstance().saveInBackground((ParseObject) oldList, (ParseObject) itemOrItemList);
+//            DAO.getInstance().saveInBackground((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
+//        } else {
+//            oldOwner.removeFromList(itemOrItemList);
+//            newOwner.addToList(newPos, itemOrItemList);
+//            DAO.getInstance().saveInBackground((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList);
+//        }
+//    }
 
     private void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList, int newPos) {
         moveItemOrItemListAndSave(itemOrItemList.getOwner(), newOwner, itemOrItemList, newPos);
@@ -983,7 +1011,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                int adjIndex = indexOfHiddenDraggedCont == 0 ? 1 : 0; //if hidden is first element, take the one after
 //                Container c = (Container) scrollYContainerWithSubtask.getComponentAt(0 + adjIndex); //get first element in the list
 //</editor-fold>
-            //if it has expanded subtasks, return the first (unless it is the hidden one)
+                //if it has expanded subtasks, return the first (unless it is the hidden one)
                 Container c = (Container) scrollYContainerWithSubtask.getComponentAt(0); //get first element in the list
                 return getTaskContainer(c);
             }
@@ -1875,7 +1903,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             //remove *before* finding the before/after MyDDConts
             if (draggedMyDDCont.dropPlaceholder != null) {
 //                form = dragged.dropPlaceholder.getComponentForm();
-                draggedMyDDCont.dropPlaceholder.getParent().removeComponent(draggedMyDDCont.dropPlaceholder);
+//                draggedMyDDCont.dropPlaceholder.getParent().removeComponent(draggedMyDDCont.dropPlaceholder);
+                draggedMyDDCont.dropPlaceholder.remove();
                 draggedMyDDCont.dropPlaceholder = null; //delete old dropPlaceholder
                 formNeedRefresh = true;
             }
@@ -2063,6 +2092,8 @@ T3
                         int insertIndex = listOwner.getItemIndex(beforeElement) + 1; //+1 drop at position *after* beforeItem
 //                        moveItemOrItemListAndSave(listOwner, listOwner, (ItemAndListCommonInterface) getDragAndDropObject(), indexItem); //+ addOneOnDownwardsDrag
                         moveItemOrItemListAndSave(listOwner, listOwner, draggedElement, insertIndex); //+ addOneOnDownwardsDrag
+//                        moveItemOrItemListAndSave(draggedElement, beforeElement, true); //true:insert *after* beforeElement
+//                        xx;
                     };
                     insertDropPlaceholder = (dropPh) -> {
                         addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
@@ -2091,7 +2122,7 @@ T3
 //                        ItemAndListCommonInterface listOwner = ((ItemList) getDragAndDropObject()).getOwner(); //currenly only one single ItemListList to which all ItemLists belong
                         ItemAndListCommonInterface listOwner = draggedElement.getOwner(); //currenly only one single ItemListList to which all ItemLists belong
 //                            int indexItem = listOwner.size(); // insert at the end of ItemListList --listOwner.getItemIndex((ItemList) beforeCont.getDragAndDropObject()); //+1 drop at position *after* beforeItem
-                        int insertIndex = listOwner.size();
+                        int insertIndex = listOwner.getSize();
 //                        moveItemOrItemListAndSave(listOwner, listOwner, (ItemList) getDragAndDropObject(), indexItem); //+ addOneOnDownwardsDrag
                         moveItemOrItemListAndSave(listOwner, listOwner, draggedElement, insertIndex); //+ addOneOnDownwardsDrag
                     };
@@ -3861,12 +3892,13 @@ T3
         if (dropPlaceholder != null) {
             f = dropPlaceholder.getComponentForm();
             if (Config.TEST_DRAG_AND_DROP)
-                if (dropPlaceholder.getParent() != null) {//remove the old placeholder ( not done in successful drop)
-                    Log.p("MyDragAndD.dragFinished: removing dropPlaceholder=" + dropPlaceholder.getName() + " from parent=" + dropPlaceholder.getParent().getName());
-                    dropPlaceholder.getParent().removeComponent(dropPlaceholder); //remove the old placeholder ( not done in successful drop)
-                } else {
-                    Log.p("***MyDragAndD.dragFinished: no parent() for dropPlaceholder=" + dropPlaceholder.getName());
-                }
+                //                if (dropPlaceholder.getParent() != null) {//remove the old placeholder ( not done in successful drop)
+                //                    Log.p("MyDragAndD.dragFinished: removing dropPlaceholder=" + dropPlaceholder.getName() + " from parent=" + dropPlaceholder.getParent().getName());
+                //                    dropPlaceholder.getParent().removeComponent(dropPlaceholder); //remove the old placeholder ( not done in successful drop)
+                //                } else {
+                //                    Log.p("***MyDragAndD.dragFinished: no parent() for dropPlaceholder=" + dropPlaceholder.getName());
+                //                }
+                dropPlaceholder.remove(); //remove the old placeholder ( not done in successful drop)
             dropPlaceholder = null;
 //            animate = true;
         }

@@ -49,10 +49,10 @@ public class ComboBoxMultiSelection extends ComboBox {
         setListAndSelected(elementList, selectedList);
     }
 
-    ComboBoxMultiSelection(ItemList list, Vector selectedList) {
-//        setListAndSelected(list.getVector(), selectedList);
-        setListAndSelected(new Vector(list.getList()), selectedList);
-    }
+//    ComboBoxMultiSelection(ItemList list, Vector selectedList) {
+////        setListAndSelected(list.getVector(), selectedList);
+//        setListAndSelected(new Vector(list.getList()), selectedList);
+//    }
 
     /** selects */
 //    ComboBoxMultiSelection(ItemList list) {

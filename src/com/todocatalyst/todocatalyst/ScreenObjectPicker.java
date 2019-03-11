@@ -223,8 +223,8 @@ public class ScreenObjectPicker<E> extends MyForm {
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllObjects, ScreenObjectPicker.this)); //TODO!!!! enable adding new elements to picker screen
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true, //false,
                 //                () -> (listSelector.getSelected().size() >= minNbOfSelected||listSelector.getSelected().size() <= maxNbOfSelected),
-                () -> (selectedObjects.size() >= minNbOfSelected && selectedObjects.size() <= maxNbOfSelected),
-                errorMsgInSelection)); //false: don't refresh ScreenItem when returning from Category selector
+                () -> (selectedObjects.size() >= minNbOfSelected && selectedObjects.size() <= maxNbOfSelected)?
+                        errorMsgInSelection:null)); //false: don't refresh ScreenItem when returning from Category selector
 
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //UI: always enable Cancel to make it easy to regret any changes
             toolbar.addCommandToOverflowMenu(

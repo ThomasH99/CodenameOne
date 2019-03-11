@@ -1692,7 +1692,7 @@ public class RepeatRuleParseObject
                 setLatestDateCompletedOrCancelled(null); //no need to reset this
             }//            setLastGeneratedDateIfGreaterThanLastDate(null);
             if (repeatRuleOriginator.getRepeatStartTime(false).getTime() != 0) {
-                setLastGeneratedDate(repeatRuleOriginator.getRepeatStartTime(false)); //set LastGeneratedDate to due date of the originator
+                setLastGeneratedDate(repeatRuleOriginator.getRepeatStartTime(false)); //initialize LastGeneratedDate to due date of the originator (TODO is this correct?)
             }
             DAO.getInstance().save(this);
         } else { //getRepeatType() == REPEAT_TYPE_FROM_DUE_DATE
@@ -2184,21 +2184,23 @@ public class RepeatRuleParseObject
 //        repeatRule.setInt(RepeatRule.COUNT, getCount(COUNTS_AHEAD));
 //        repeatRule.setInt(RepeatRule.COUNT, 2); //1 or 2 (2 if we generate the last generated date again)
 //</editor-fold>
-        if (false) {
-            RepeatRule repeatRule = getRepeatRule();
-            repeatRule.setInt(RepeatRule.COUNT, 2); //1 or 2 (2 if we generate the last generated date again)
-            //TODO!!! need to add 1 day to subsetBeginningDate to avoid repeat same date as last generated Date???
-//        Vector<Date> newDates = repeatRule.datesAsVector(getSpecifiedStartDate(), getSubsetBeginningDate(), getEndDate()); //CREATE new dates
-            ASSERT.that(getLastGeneratedDateD().getTime() != MyDate.MIN_DATE, "getLastGeneratedDate() should have been defined when we get to here");
-//        long subsetBeginningDate = getLastGeneratedDate() != 0 ? Math.min(getLastGeneratedDate(), getEndDate()) : getEndDate(); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            RepeatRule repeatRule = getRepeatRule();
+//            repeatRule.setInt(RepeatRule.COUNT, 2); //1 or 2 (2 if we generate the last generated date again)
+//            //TODO!!! need to add 1 day to subsetBeginningDate to avoid repeat same date as last generated Date???
+////        Vector<Date> newDates = repeatRule.datesAsVector(getSpecifiedStartDate(), getSubsetBeginningDate(), getEndDate()); //CREATE new dates
+//            ASSERT.that(getLastGeneratedDateD().getTime() != MyDate.MIN_DATE, "getLastGeneratedDate() should have been defined when we get to here");
+////        long subsetBeginningDate = getLastGeneratedDate() != 0 ? Math.min(getLastGeneratedDate(), getEndDate()) : getEndDate(); //get the last date we've generated so far, Math.min since endDate may get set to larger than
+//        }
 //        Vector<Date> newDates = repeatRule.datesAsVector(getSpecifiedStartDate(), getSubsetBeginningDate(), MAX_DATE); //CREATE new dates
 //        Date startDate = getSpecifiedStartDateD();
 //        Vector<Date> newDates = repeatRule.datesAsVector(startDate.getTime(), subsetBeginningDate.getTime(), MAX_DATE); //CREATE new dates
 //        Date date = getFirstNotEqualDate(dates, new Date(getSubsetBeginningDate()));
 //        Date date = getFirstNotEqualDate(dates, subsetBeginningDate);
-//        Date subsetBeginningDate = new Date(Math.max(getLastGeneratedDateD().getTime(), getSpecifiedStartDateD().getTime())); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
-//        Date subsetBeginningDate = calcSubsetBeginDate(); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
+//        Date subsetBeginningDate = new Date(Math.max(getLastGeneratedDateD().getTime(), getSpecifiedStartDateD().getTime())); //get the last date we've generated so far, Math.min since endDate may get set to larger than
+//        Date subsetBeginningDate = calcSubsetBeginDate(); //get the last date we've generated so far, Math.min since endDate may get set to larger than
+//</editor-fold>
         Date subsetBeginningDate
                 = new Date(Math.max(getLastGeneratedDateD().getTime(), getSpecifiedStartDateD().getTime())); //get the last date we've generated so far, Math.min since endDate may get set to larger than 
         //get the last date we've generated so far, Math.min since endDate may get set to larger than 
@@ -2331,6 +2333,88 @@ public class RepeatRuleParseObject
         setListOfUndoneRepeatInstances(workSlotInstanceItemList);
         DAO.getInstance().save(this);
 //        return repeatInstance;
+    }
+
+    public boolean updateWorkslots(WorkSlot workSlot) {
+        if (getNextcomingDateD().getTime() > System.currentTimeMillis()) return false;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//remove expired workslots from list of future generated workslots: //NO, don't thiink this is necessary!
+//        List<RepeatRuleObjectInterface> workSlotInstanceItemList = getListOfUndoneRepeatInstances();
+//        WorkSlotList workSlotInstanceItemList = new WorkgetListOfUndoneRepeatInstances();
+//        setLatestDateCompletedOrCancelledIfGreaterThanLast(workSlot.getRepeatStartTime(getRepeatType() == REPEAT_TYPE_FROM_COMPLETED_DATE));
+//        ASSERT.that(workSlotInstanceItemList.size() == 0 || workSlotInstanceItemList.contains(workSlot), "Error: \"" + workSlot + "\" not in list of already generated repeat instances");
+////        removeFromListOfUndoneRepeatInstances(repeatRuleObject);
+//        workSlotInstanceItemList.remove(workSlot);
+//</editor-fold>
+        //generate all missing (past and future) workslots
+        Date nextRepeatTime;
+        WorkSlot repeatInstance = null;
+        List newRepeatWorkSlots = new ArrayList<>();
+        while ((nextRepeatTime = getNextDueDate()) != null) {
+            setLastGeneratedDate(nextRepeatTime); //update the last generated date
+            setTotalNumberOfInstancesGeneratedSoFar(getTotalNumberOfInstancesGeneratedSoFar() + 1);
+
+            repeatInstance = (WorkSlot) workSlot.createRepeatCopy(nextRepeatTime); //the createRepeatCopy knows what to do with the repeat date (e.g. use as Due date
+            newRepeatWorkSlots.add(workSlot); //gather all new instances and update/save in batch below
+            if (Config.TEST) Log.p("**new repeat instance generated with repeat date=" + nextRepeatTime + ", instance=" + repeatInstance);
+        }
+        setNextcomingDate(getNextDueDate()); //update nextcoming date
+//            this.delete(); //delete the repeat rule //TODO!! for the moment keep the RepeatRules even when run out (easy to delete on server side if ever necessary)
+
+        //add and save all new workslots in batch
+        ItemAndListCommonInterface owner = workSlot.getOwner();
+        for (WorkSlot newWorkSlot : (List<WorkSlot>) newRepeatWorkSlots) {
+            owner.addWorkSlot(newWorkSlot);
+        }
+        DAO.getInstance().saveInBackground((List<ParseObject>) newRepeatWorkSlots);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        //for workSlots, time may have passed since so need to update to ensure all workslots are in the future (or overlaps the future)
+//        if (workSlotInstanceItemList.size() > 0) {
+//            workSlot = (WorkSlot) workSlotInstanceItemList.get(0);
+//        } else {
+//            workSlot = null;
+//        }
+//
+//        while (workSlot != null && (workSlot.getEndTime() <= System.currentTimeMillis()) && (nextRepeatTime = getNextDueDate()) != null) {
+//            //when we get here, the current/first in list workslot is in the past and we have a new repeatTime (so repeatRule is not expired)
+//            workSlotInstanceItemList.remove(workSlot); //remove workSlot in the past
+//            repeatInstance = (WorkSlot) workSlot.createRepeatCopy(nextRepeatTime); //the createRepeatCopy knows what to do with the repeat date (e.g. use as Due/Start date)
+//            workSlot.insertIntoListAndSaveListAndInstance(repeatInstance); //insert new created instance in appropriate list and save it
+//            workSlotInstanceItemList.add(repeatInstance);
+//
+//            setLastGeneratedDate(nextRepeatTime);
+//            setTotalNumberOfInstancesGeneratedSoFar(getTotalNumberOfInstancesGeneratedSoFar() + 1);
+//
+//            if (workSlotInstanceItemList.size() > 0) {
+//                workSlot = (WorkSlot) workSlotInstanceItemList.get(0); //get next workslot
+////                nextRepeatTime = getNextDueDate(); //get next date
+//            } else {
+//                workSlot = null;
+//            }
+//        }
+//
+//        setListOfUndoneRepeatInstances(workSlotInstanceItemList);
+//</editor-fold>
+        DAO.getInstance().saveInBackground(this, (ParseObject)owner);
+        return newRepeatWorkSlots.size() > 0; //true if any new workslots where created
+    }
+
+    /**
+    check if any workslots in the list have repeatRules, and if yes, refresh the repeats
+    @param workslots
+    @return 
+     */
+    public static boolean updateWorkSlotList(List<WorkSlot> workslots) {
+        boolean updated = false;
+//check if any workSlots have repeat rules
+        RepeatRuleParseObject repeatRule;
+        for (WorkSlot workSlot : workslots) {
+            if ((repeatRule = workSlot.getRepeatRule()) != null) {
+                if (repeatRule.updateWorkslots(workSlot))
+                    updated=true;
+            }
+        }
+        return updated;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2587,6 +2671,18 @@ public class RepeatRuleParseObject
 ////                updateRepeatInstancesOnDone(isCommitted(), keepThisRepeatInstance); //only update instances if the RepeatRule was already committed (otherwise the rule is being deleted before ever having been instantiated)
 //            }
 //        }
+    }
+
+    public boolean softDelete(boolean removeReferences) {
+        //TODO!!! do we really want to delete references from instantiated (future, done or undone) tasks to the rule that generated them?
+        //when will we actually delete a repeatRule? Not when removing from a task. 
+        //maybe only if there are no tasks generated 8or the single tasks are softDeleted)? 
+        //Since all tasks generated from a rule will normally be in same list (except of course if we've moved some of them)
+        //then softDeleting the list could lead to softdeleting the rule. But then all refernces to the rule will become 
+        //unavailable anyway...????
+        setDeletedDate(new Date());
+        DAO.getInstance().saveInBackground(this);
+        return true;
     }
 
     public void deleteThisRepeatInstanceFromRepeatRuleListOfInstances(RepeatRuleObjectInterface repeatInstanceBeingDeleted) {
@@ -3329,7 +3425,7 @@ public class RepeatRuleParseObject
 
     public Date getNextcomingDateD() {
         Date date = getDate(PARSE_NEXTCOMING_REPEAT_DATE);
-        return (date == null) ? new Date(MyDate.MIN_DATE) : date;
+        return (date == null) ? new Date(MyDate.MIN_DATE) : null;
     }
 
 //    public long getLastGeneratedDateXXX() {

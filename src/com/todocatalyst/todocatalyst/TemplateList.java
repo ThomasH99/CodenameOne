@@ -87,7 +87,7 @@ public class TemplateList<T> extends ItemList {
 //        return t;
         TemplateList temp = DAO.getInstance().getTemplateList();
         INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
-        for (Object elt : temp.getList()) {
+        for (Object elt : temp.getListFull()) {
             INSTANCE.addItem((ItemAndListCommonInterface)elt);
         }
     }

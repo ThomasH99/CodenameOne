@@ -89,7 +89,7 @@ public class ScreenFilter extends MyForm {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         buildContentPane(getContentPane());
-        restoreKeepPos();
+//        restoreKeepPos();
           super.refreshAfterEdit();
   }
 

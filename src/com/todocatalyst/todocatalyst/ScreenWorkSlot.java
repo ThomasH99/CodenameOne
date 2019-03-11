@@ -31,26 +31,30 @@ public class ScreenWorkSlot extends MyForm {
 //    Map<Object, UpdateField> parseIdMap2 = new HashMap<Object, UpdateField>();
 //    MyForm previousForm;
     WorkSlot workSlot;
+    ItemAndListCommonInterface owner;
     static String SCREEN_TITLE = "Workslot";
     private String FILE_LOCAL_EDITED_WORKSLOT = "ScreenWorkSlot-EditedItem";
     private RepeatRuleParseObject locallyEditedRepeatRule;
     private RepeatRuleParseObject repeatRuleCopyBeforeEdit;
     protected static String FORM_UNIQUE_ID = "ScreenEditWorkSlot"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    MyDateAndTimePicker startByDate;
+    MyDurationPicker duration;
 //    private UpdateField updateActionOnDone;
 
 //    ScreenWorkSlot(WorkSlot workSlot, MyForm previousForm) { //throws ParseException, IOException {
 //        this(workSlot, previousForm, null);
 //    }
-    ScreenWorkSlot(WorkSlot workSlot, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
+    ScreenWorkSlot(WorkSlot workSlot, ItemAndListCommonInterface owner, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
         super(SCREEN_TITLE, previousForm, doneAction);
         setUniqueFormId("ScreenEditWorkSlot");
 //        ScreenItemP.item = item;
         this.workSlot = workSlot;
+        this.owner = owner;
 //        if (previousValues != null) {
 //            this.previousValues = previousValues;
 //        } else {
 //        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId("-" + this.workSlot.getObjectIdP()));
-        initLocalSaveOfEditedValues(getUniqueFormId()+"-" + this.workSlot.getObjectIdP());
+        initLocalSaveOfEditedValues(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
 //        }
         setLayout(BoxLayout.y());
         getContentPane().setScrollableY(true);
@@ -111,7 +115,22 @@ public class ScreenWorkSlot extends MyForm {
 //            toolbar.addCommandToLeftBar(cmd);
 //        }
 //</editor-fold>
-        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
+        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand(true, () -> {
+            List<WorkSlot> overlapping;
+            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
+//            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
+                return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
+            } else if ((overlapping = owner.getOverlappingWorkSlots(workSlot)) != null) {
+                return ("This workslot overlaps with \n"
+                        + getListAsSeparatedString(overlapping,
+                                (ws)
+                                -> //WorkSlot.WORKSLOT +" "+
+                                MyDate.formatDateNew(((WorkSlot) ws).getStartTimeD())
+                                + MyDate.formatDurationShort(((WorkSlot) ws).getDurationInMillis()), "\n", 2)
+                        + (overlapping.size() > 2 ? "and more..." : ""));
+            } else
+                return (String) null;
+        }));
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -130,7 +149,8 @@ public class ScreenWorkSlot extends MyForm {
 //            Log.p("Clicked");
 //            item.revert(); //forgetChanges***/refresh
 //            previousForm.showBack(); //drop any changes
-            DAO.getInstance().delete(workSlot);
+//            DAO.getInstance().delete(workSlot);
+            workSlot.softDelete();
 //            previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
@@ -198,7 +218,7 @@ public class ScreenWorkSlot extends MyForm {
 //                (d) -> workSlot.setStartTime(d));
 //</editor-fold>
         Date defaultDate = (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? new Date(now) : new Date(0));
-        MyDateAndTimePicker startByDate = new MyDateAndTimePicker();
+        startByDate = new MyDateAndTimePicker();
         initField(WorkSlot.PARSE_START_TIME, startByDate,
                 //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ? 
                 //                        new Date(now) 
@@ -219,8 +239,8 @@ public class ScreenWorkSlot extends MyForm {
 //                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
 //                (i) -> workSlot.setDurationInMinutes((int) i));
 //</editor-fold>
-        MyDurationPicker duration = new MyDurationPicker();
-        duration.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt()*MyDate.MINUTE_IN_MILLISECONDS);
+        duration = new MyDurationPicker();
+        duration.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
         Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0 ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS : 0));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //           initField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
@@ -354,13 +374,14 @@ public class ScreenWorkSlot extends MyForm {
 
 //        repeatRuleButton.setUIID("TextField");
         content.add(layoutN(WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, true, false, true));//, true, false, false));
-        checkDataIsCompleteBeforeExit = () -> {
-            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
-//            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
-                return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
-            }
-            return null;
-        };
+//        checkDataIsCompleteBeforeExit = () -> {
+//        setCheckOnExit( () -> {
+//            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
+////            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
+//                return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
+//            }
+//            return null;
+//        });
 
         //HEADER - EDIT LIST IN FULL SCREEN MODE
 //                    Button editSubtasksFullScreen = ScreenListOfItems.makeSubtaskButton(item, null);
@@ -383,7 +404,7 @@ public class ScreenWorkSlot extends MyForm {
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
             content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
         }
-        content.add(layoutN("Unallocated time", new Label(MyDate.formatTimeDuration(workSlot.getUnallocatedTime())), "How much of this work slot is still free",
+        content.add(layoutN("Unallocated time", new Label(MyDate.formatDurationStd(workSlot.getUnallocatedTime())), "How much of this work slot is still free",
                 true, true, false));
 
         if (Config.WORKTIME_TEST) {
