@@ -8,6 +8,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Container;
+import com.codename1.ui.Dialog;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
@@ -164,7 +165,11 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
                     newWorkSlot.setStartTime(refWorkSlot.getEndTimeD()); //UI: set pinchInserted workslot to start at the end of the previous
             } else
                 newWorkSlot.setStartTime(new Date()); //UI: set pinchInserted workslot to start now
-            return newWorkSlot;
+            String errorMsg;
+            if ((errorMsg = ScreenWorkSlot.validateWorkSlot(newWorkSlot, workSlotListOwner)) != null) {
+                Dialog.show("Error", errorMsg, "OK", null);
+                return null;
+            } else return newWorkSlot;
         }
         return null;
     }
@@ -209,10 +214,10 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
-    * if the textEntry field is in Form f, then it is set to editOnShow
-    *
-    * @param f
-    */
+     * if the textEntry field is in Form f, then it is set to editOnShow
+     *
+     * @param f
+     */
 //    public void setTextFieldEditableOnShow(Form f) {
 ////        if (lastInsertNewTaskContainer != null && f.equals(lastInsertNewTaskContainer.getComponentForm())
 //        if (textEntryField != null) {
@@ -225,11 +230,10 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
 //        }
 //    }
 //</editor-fold>
-
     @Override
     public InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
         if (element == lastCreatedWorkSlot && element instanceof WorkSlot) {
-            return new InlineInsertNewWorkSlotContainer(null, (WorkSlot) lastCreatedWorkSlot,  false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
+            return new InlineInsertNewWorkSlotContainer(null, (WorkSlot) lastCreatedWorkSlot, false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
         }
         return null;
     }

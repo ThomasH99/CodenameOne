@@ -352,13 +352,17 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         if (Config.WORKTIME_DETAILED_LOG) {
             Log.p(ownerOrCategory + "." + "getAllocatedWorkTime(itemIndex=" + itemIndex + ", duration=" + desiredDuration + "), item=" + itemsSortedFiltered.get(itemIndex));
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (!cacheActive) return new WorkTimeSlices();
-        //if allocated work time is already calculated/cached return the old value
+//if allocated work time is already calculated/cached return the old value
 //        if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
 //        if (itemIndex < workTimeCache.size()) {
+//</editor-fold>
         if (itemIndex >= workTimeCache.size()) { //need to calculate first
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            return workTimeCache.get(itemIndex);
 //        } else {
+//</editor-fold>
             WorkTimeSlices workTS = null;
             Item item;
             long itemDuration;
@@ -372,9 +376,11 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
                 if (i == 0) {
 //                    workT = workTime.getWorkTime(desiredDuration);
                     workTS = workTimeSlices.getWorkTime(itemDuration);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (cacheActive && workTimeCache == null) {
 //                        workTimeCache = new ArrayList<>();
 //                    }
+//</editor-fold>
                 } else {
 //                    WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1, items.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
                     Item previousItem = (Item) itemsSortedFiltered.get(i - 1);
@@ -387,12 +393,12 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
             }
         }
         return workTimeCache.get(itemIndex);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (workT == null) {
 //                workT = new WorkTimeSlices();
 //            }
 //            return workT; //returns the last value calculated (which is for itemIndex)
 //        }
-//<editor-fold defaultstate="collapsed" desc="comment">
 ////        WorkTimeSlices workT;
 //        if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
 //            return workTimeCache.get(itemIndex);

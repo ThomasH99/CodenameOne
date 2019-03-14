@@ -5233,6 +5233,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        update();
     }
 
+    /**
+     * @return The last time this object was updated on the server.
+     */
+    public Date getUpdatedAt() {
+        Date date = super.getUpdatedAt();
+        return date != null ? date : new Date(0);
+    }
+
+    /**
+     * @return The first time this object was saved on the server.
+     */
+    public Date getCreatedAt() {
+        Date date = super.getCreatedAt();
+        return date != null ? date : new Date(0);
+    }
+
 ////<editor-fold defaultstate="collapsed" desc="comment">
 //    public void setDueDateXXX(Date dueDate) {
 ////        this.dueDate = val;
@@ -7577,7 +7593,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
             boolean updated = RepeatRuleParseObject.updateWorkSlotList(workslots);
             WorkSlotList workSlotList = new WorkSlotList(this, workslots);
-            if (updated) 
+            if (updated)
                 setWorkSlotList(workSlotList);
             return workSlotList;
         } else {

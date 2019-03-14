@@ -1474,7 +1474,7 @@ public class MyForm extends Form {
         String sep = "";
         if (setOrList != null) {
 //            for (Object s : setOrList) {
-            int size = maxLength > 0 ? maxLength : setOrList.size();
+            int size = maxLength > 0 ? (maxLength > setOrList.size()?setOrList.size():maxLength) : setOrList.size(); //limit maxLength if > than size()
             for (int i = 0; i < size; i++) {
                 Object s = setOrList.get(i);
                 str = str + sep + listName.get(s);

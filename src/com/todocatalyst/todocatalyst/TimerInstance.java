@@ -681,6 +681,7 @@ public class TimerInstance extends ParseObject {
                 itemList = getItemList();
                 if (itemList != null) {
                     while (nextTimedItem == null && project == null && itemList != null) { //iterate through list until nextItem or Project is found
+//                        nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
                         nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
                         if (nextTimedItem != null) {
                             if (TimerStack.isValidItemForTimer(nextTimedItem) || isTimeEvenInvalidItemOrProjects()) {

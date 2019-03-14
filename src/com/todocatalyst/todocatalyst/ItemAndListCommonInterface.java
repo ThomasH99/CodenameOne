@@ -77,7 +77,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         if (workSlotList==null || workSlot==null)
             return null;
         List<WorkSlot> overlapping = new ArrayList<>();
-        for (WorkSlot ws:(List<WorkSlot>)workSlotList) {
+//        for (WorkSlot ws:(List<WorkSlot>)workSlotList) {
+        for (WorkSlot ws:workSlotList.getWorkSlotListFull()) {
             if (workSlot.overlappingDuration(ws)>0) {
                 overlapping.add(ws);
             }

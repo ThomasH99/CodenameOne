@@ -398,6 +398,7 @@ public class MyTree2 extends ContainerScrollY {
             if (isInitialized() && animate) {
                 // prevent a race condition on node expansion contraction
 //                parent.animateHierarchyAndWait(300);
+//parent.getAnimationManager().
                 parent.animateLayout(300);
 //            if (multilineMode) {
 //                revalidate();
@@ -1260,9 +1261,9 @@ public class MyTree2 extends ContainerScrollY {
             }
             if (newStr != null && !newStr.equals(previousStickyStr)) {
                 stringPut.put(newStr); //store to compare next time
-                StickyHeader headerLbl = new StickyHeader("StickyHeader"); //TODO!! define separate style for stickyheaders
-                headerLbl.add(newStr);
-                return headerLbl;
+                StickyHeader stickyHeader = new StickyHeader("StickyHeader"); //TODO!! define separate style for stickyheaders
+                stickyHeader.add(newStr);
+                return stickyHeader;
             }
 
             return null;

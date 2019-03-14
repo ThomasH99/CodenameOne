@@ -84,6 +84,31 @@ public class ScreenWorkSlot extends MyForm {
         super.refreshAfterEdit();
     }
 
+    /**
+    validates a workSlot before saving, checks that both startDate and duration are defined and that it doesn't overlap with other of the owner's existing workslots.
+    Returns null if no error, otherwise an error message string to display. 
+     */
+//    public static String validateWorkSlot(ItemAndListCommonInterface owner, Date startByDate, int duration) {
+    public static String validateWorkSlot(WorkSlot workSlot, ItemAndListCommonInterface owner) {//, Date startByDate, int duration) {
+        List<WorkSlot> overlapping;
+//            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
+        if (workSlot.getStartTimeD().getTime() == 0 || workSlot.getDurationInMillis() == 0) {
+//            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
+            return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
+//            } else if ((overlapping = owner.getOverlappingWorkSlots(new WorkSlot(startByDate,duration))) != null) {
+        } else if ((overlapping = owner.getOverlappingWorkSlots(workSlot)) != null) {
+            return ("This workslot overlaps with \n"
+                    + getListAsSeparatedString(overlapping,
+                            (ws)
+                            -> //WorkSlot.WORKSLOT +" "+
+                            MyDate.formatDateNew(((WorkSlot) ws).getStartTimeD())
+                            + " " + MyDate.formatDurationShort(((WorkSlot) ws).getDurationInMillis()), "\n", 2)
+                    + (overlapping.size() > 2 ? "and " + (overlapping.size() - 2) + " more..." : "")
+                    + "\nPlease change " + WorkSlot.START_TIME + " or " + WorkSlot.DURATION + ", or Cancel");
+        } else
+            return (String) null;
+    }
+
     public void addCommandsToToolbar(Toolbar toolbar) {
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -116,20 +141,23 @@ public class ScreenWorkSlot extends MyForm {
 //        }
 //</editor-fold>
         toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand(true, () -> {
-            List<WorkSlot> overlapping;
-            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
-//            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
-                return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
-            } else if ((overlapping = owner.getOverlappingWorkSlots(workSlot)) != null) {
-                return ("This workslot overlaps with \n"
-                        + getListAsSeparatedString(overlapping,
-                                (ws)
-                                -> //WorkSlot.WORKSLOT +" "+
-                                MyDate.formatDateNew(((WorkSlot) ws).getStartTimeD())
-                                + MyDate.formatDurationShort(((WorkSlot) ws).getDurationInMillis()), "\n", 2)
-                        + (overlapping.size() > 2 ? "and more..." : ""));
-            } else
-                return (String) null;
+//            List<WorkSlot> overlapping;
+////            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
+//            if (startByDate.getDate().getTime() == 0 || duration.getDuration() == 0) { 
+////            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
+//                return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
+//            } else if ((overlapping = owner.getOverlappingWorkSlots(new WorkSlot(startByDate.getDate(),duration.getDuration()))) != null) {
+//                return ("This workslot overlaps with \n"
+//                        + getListAsSeparatedString(overlapping,
+//                                (ws)
+//                                -> //WorkSlot.WORKSLOT +" "+
+//                                MyDate.formatDateNew(((WorkSlot) ws).getStartTimeD())
+//                                +" "+ MyDate.formatDurationShort(((WorkSlot) ws).getDurationInMillis()), "\n", 2)
+//                        + (overlapping.size() > 2 ? "and "+(overlapping.size()-2)+" more..." : "")
+//                        +"\nPlease change " + WorkSlot.START_TIME + " or " + WorkSlot.DURATION + ", or Cancel");
+//            } else
+//                return (String) null;
+            return validateWorkSlot(new WorkSlot(startByDate.getDate(), duration.getDuration()), owner);
         }));
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??

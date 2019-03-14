@@ -92,11 +92,12 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        setTypeId(BaseItemTypes.WORKSLOT);
     }
 
-    public WorkSlot(String description, Date start, int durationInMinutes, RepeatRuleParseObject myRepeatRule) {//, boolean importedFromPIM) {
+//    public WorkSlot(String description, Date start, int durationInMinutes, RepeatRuleParseObject myRepeatRule) {//, boolean importedFromPIM) {
+    public WorkSlot(String description, Date start, long durationInMillis, RepeatRuleParseObject myRepeatRule) {//, boolean importedFromPIM) {
         this();
         setText(description);
         setStartTime(start);
-        setDurationInMinutes(durationInMinutes);
+        setDurationInMillis(durationInMillis);
         setRepeatRule(myRepeatRule);
     }
 
@@ -131,6 +132,12 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      */
     public WorkSlot(WorkSlot sourceWorkSlot, Date startDate) {
         this(sourceWorkSlot.getText(), startDate, sourceWorkSlot.getDurationInMinutes(), sourceWorkSlot.getRepeatRule());
+//        if (sourceWorkSlot.getMyRepeatRule()!=null)
+//            this.repeatRule=sourceWorkSlot.getMyRepeatRule();
+    }
+
+    public WorkSlot(Date startTime, long duration) {
+        this("", startTime, duration, null);
 //        if (sourceWorkSlot.getMyRepeatRule()!=null)
 //            this.repeatRule=sourceWorkSlot.getMyRepeatRule();
     }
@@ -850,6 +857,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     public long getStartAdjusted(long now) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        long start = getStart();
 //        long now = MyDate.getNow();
 // <editor-fold defaultstate="collapsed" desc="comment">
@@ -862,11 +870,13 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //if (startTime<now  ) {
 //    if ()
 //}
+//</editor-fold>
         return Math.max((getStartTimeD().getTime()), now); //"start + (initialDuration - duration)" add the difference btw initialDuration and current duration (=time consumed) to original start, return the latest time of this new start, and NOW
 //        }
     }
 
     public final void setStartTime(Date start) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (this.startTime != start) {
 //            this.startTime = start;
 ////            changed();
@@ -875,6 +885,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //            put(PARSE_START_TIME, start);
 //            updateEndTimeWithNewStartTime(start);
 //        }
+//</editor-fold>
         if ((start != null && start.getTime() != 0)) {
             put(PARSE_START_TIME, start);
 //            updateEndTimeWithNewStartTime(start);
@@ -1109,6 +1120,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     public final void setDurationInMillis(long durationInMilliSeconds) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (this.duration != duration) {
 //            this.duration = duration;
 ////            changed();
@@ -1121,6 +1133,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //            put(PARSE_DURATION, durationInMilliSeconds / MINUTES_IN_MILLISECONDS); //store duration in minutes for readability
 //            updateEndTimeWithNewDuration(durationInMilliSeconds);
 //        }
+//</editor-fold>
         setDurationInMinutes((int) (durationInMilliSeconds / MyDate.MINUTE_IN_MILLISECONDS));
     }
 
@@ -1312,6 +1325,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             //TODO!!! if no more workSlots referenced fromrepeatrule, then also delete repeatrule
             DAO.getInstance().saveInBackground(myRepeatRule);
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        try {
 //            //        ((WorkSlotList) getOwner()).removeItem(this);
 ////        ((ItemList) getOwner()).removeItem(this);
@@ -1321,7 +1335,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        }
 //        DAO.getInstance().delete(this);
 //        super.delete();
-
+//</editor-fold>
         //remove from owner (but don't remove owner from this workSlot, that allows us to recreate/undelete
         ItemAndListCommonInterface owner = getOwner();
         if (owner != null) {

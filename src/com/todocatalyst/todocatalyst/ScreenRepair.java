@@ -16,6 +16,7 @@ import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Font;
 import com.codename1.ui.Form;
+import com.codename1.ui.TextArea;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.geom.Dimension;
@@ -31,6 +32,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import net.informaticalibera.cn1.nativelogreader.NativeLogs;
 
 /**
  * Main screen should contain the following elements: Views - user defined views
@@ -756,6 +758,32 @@ public class ScreenRepair extends MyForm {
 //            }
 //        }));
 //</editor-fold>
+        content.add(new Button(Command.create("Native logs", null, (e9) -> {
+            Form hi = new Form("Native Logs Reader", BoxLayout.y());
+            hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
+            String logs = NativeLogs.getNativeLogs();
+            TextArea textArea = new TextArea(logs);
+            hi.add(textArea);
+//            hi.getToolbar().addSearchCommand((e) -> {
+//                String txt = (String) e.getSource();
+//                boolean searchOnLowerCaseOnly;
+////                    if (!txt.equals(txt.toLowerCase()))
+//                searchOnLowerCaseOnly = txt.equals(txt.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
+////                    Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+//                Container compList = hi.getContentPane();
+//                boolean showAll = txt == null || txt.length() == 0;
+//                for (int i = 0, size = textArea.getLines(); i < size; i++) {
+//                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
+//                    if (searchOnLowerCaseOnly) {
+//                        compList.getComponentAt(i).setHidden(((String) textArea.get(i)).toLowerCase().indexOf(txt) < 0);
+//                    } else {
+//                        compList.getComponentAt(i).setHidden(((String) textArea.get(i)).indexOf(txt) < 0);
+//                    }
+//                }
+//                compList.animateLayout(150);
+//            });
+            hi.show();
+        })));
 
         content.add(new Button(new Command("Storage location info") {
             @Override
@@ -774,7 +802,7 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        content.add(new Button(Command.create( "Test ScreenEdit2", null, (e) -> {
+        content.add(new Button(Command.create("Test ScreenEdit2", null, (e) -> {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
             new ScreenItem2(new Item(), ScreenRepair.this, () -> {

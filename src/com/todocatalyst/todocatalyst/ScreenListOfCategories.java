@@ -152,14 +152,30 @@ public class ScreenListOfCategories extends MyForm {
                     refreshOnItemEdits.launchAction();
                 }
             }).show();
-        }
-        );
+        },
+        true);
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         //NEW CATEGORY
         toolbar.addCommandToRightBar(makeNewCategoryCmd(categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
+//        toolbar.addCommandToRightBar(MyReplayCommand.create("CreateNewCategory", "", Icons.iconNewToolbarStyle(), (e) -> {
+//            Category category = new Category();
+////                new ScreenCategory(category, ScreenListOfCategories.this, () -> {
+//            previousForm.setKeepPos(new KeepInSameScreenPosition());
+//            new ScreenCategory(category, previousForm, () -> {
+//                if (category.hasSaveableData()) { //UI: do nothing for an empty category, allows user to add category and immediately return if regrests or just pushed wrong button
+//                    category.setOwner(categoryList); //TODO should store ordered list of categories
+//                    DAO.getInstance().save(category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                    categoryList.addItemAtIndex(category, 0);
+//                    DAO.getInstance().save(categoryList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
+////                        previousForm.revalidate(); //refresh list to show new items(??)
+//                    refreshAfterEdit();
+//                }
+//            }).show();
+//        }
+//        ));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                new Command("", iconNew) {
 //            @Override

@@ -84,7 +84,6 @@ public class WorkTimeSlices {
 //        workSlotSlicesSortedOnStartTime.add(new WorkSlotSlice(workSlice));
 //    }
 //</editor-fold>
-    
     WorkTimeSlices() {
     }
 
@@ -397,16 +396,19 @@ public class WorkTimeSlices {
             index++;
         }
 
-        WorkSlotSlice slice;
+        long nextStartTime = startTime;
+        WorkSlotSlice nextSlice;
         while (index < size) { //while there are non-zero workslots... don't test on remainingDuration==0, since we styill need to allocate a zero-length workslot to those
-            slice = workSlotSlicesSortedOnStartTime.get(index);
-            WorkSlotSlice newSlice = slice.getSlice(startTime, remainingDuration);
-            newWorkSlotSlices.add(newSlice);
-            remainingDuration = newSlice.missingDuration; //new remaining is what was not allocated in the last slot
-            if (remainingDuration == 0) {
-                break; //break after allocation of first slice when duration is zero (avoids having multiple zeru duration slices allocated)
+            nextSlice = workSlotSlicesSortedOnStartTime.get(index);
+            if (nextSlice.getEndTime() >= nextStartTime) { //case of overlapping workslots, only use next in list if it has later non-overlapping time
+                WorkSlotSlice newSlice = nextSlice.getSlice(nextStartTime, remainingDuration);
+                newWorkSlotSlices.add(newSlice);
+                remainingDuration = newSlice.missingDuration; //new remaining is what was not allocated in the last slot
+                if (remainingDuration == 0) {
+                    break; //break after allocation of first slice when duration is zero (avoids having multiple zeru duration slices allocated)
+                }
+                nextStartTime = newSlice.endTime; //new startTime is the end of the allocated workSlotSlice
             }
-            startTime = newSlice.endTime; //new startTime is the end of the allocated workSlotSlice
             index++;
         }
 //        return usedWorkSlotSlices != null && usedWorkSlotSlices.size() > 0 ? new WorkTimeSlices(usedWorkSlotSlices) : null;

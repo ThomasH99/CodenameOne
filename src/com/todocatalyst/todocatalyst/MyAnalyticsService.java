@@ -160,18 +160,20 @@ public class MyAnalyticsService {
         if (appsMode) {
             // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#apptracking
             ConnectionRequest req = GetGARequest();
-            req.addArgument("t", "appview");
+//            req.addArgument("t", "appview");
+            req.addArgument("t", "screenview");
             req.addArgument("an", Display.getInstance().getProperty("AppName", "Codename One App"));
             String version = Display.getInstance().getProperty("AppVersion", "1.0");
             req.addArgument("av", version);
 //            String cleanedPage = clean(page); //remove spaces etc
             String cleanPage = clean(page);
             req.addArgument("cd", cleanPage);
-            String cleanReferer = clean(referer);
-            req.addArgument("cd", cleanReferer);
-
+            if (false) { //no support for referer in 
+                String cleanReferer = clean(referer);
+                req.addArgument("cd", cleanReferer);
+            }
 //            Log.p("Analytics VISIT: " + req.getRequestBody());
-            Log.p("Analytics VISIT: " + "Page=" + cleanPage+" Ref="+cleanReferer);
+            Log.p("Analytics VISIT: " + "Page=" + cleanPage);// + " Ref=" + cleanReferer);
 
             NetworkManager.getInstance().addToQueue(req);
         } else {
@@ -265,13 +267,13 @@ public class MyAnalyticsService {
      * @param fatal is the exception fatal
      */
     public static void sendCrashReport(Throwable t, String message, boolean fatal) {
-                if (MyPrefs.disableGoogleAnalytics.getBoolean()) return;
+        if (MyPrefs.disableGoogleAnalytics.getBoolean()) return;
 
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#exception
         ConnectionRequest req = GetGARequest();
         req.addArgument("t", "exception");
 //        System.out.println(message);
-        String messageCleaned = message.substring(0, Math.min(message.length(), 150) - 1);
+        String messageCleaned = message.substring(0, Math.min(message.length(), 150) - 1); //TODO!!! extract only relevant/core data from stack trace
         req.addArgument("exd", messageCleaned);
         if (fatal) {
             req.addArgument("exf", "1");
@@ -280,7 +282,7 @@ public class MyAnalyticsService {
         }
 
 //        Log.p("Analytics CRASH: " + req.getRequestBody());
-        Log.p("Analytics CRASH: " + "Throwable="+t+" Msg="+messageCleaned+" Fatal="+(fatal?"YES":"no"));
+        Log.p("Analytics CRASH: " + "Throwable=" + t + " Msg=" + messageCleaned + " Fatal=" + (fatal ? "YES" : "no"));
 
         NetworkManager.getInstance().addToQueue(req);
     }

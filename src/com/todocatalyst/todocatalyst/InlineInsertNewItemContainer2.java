@@ -176,7 +176,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //                            }
 //                            myForm.animateMyForm();
 //</editor-fold>
-                            closeInsertNewItemContainer();
+                            closeInsertContainer();
                             myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
                         } else { //if no new item created, remove the container like with Close (x)
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -187,7 +187,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
 //                            parent.animateHierarchy(300);
 //</editor-fold>
-                            closeInsertNewItemContainer();
+                            closeInsertContainer();
                             myForm.setInlineInsertContainer(null); //remove this as inlineContainer
 //                            parent.animateLayout(300); //not necesssary with replace?
                         }
@@ -216,7 +216,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //                parent.animateLayout(300);
 //</editor-fold>
                 MyForm myForm = (MyForm) getComponentForm();
-                closeInsertNewItemContainer();
+                closeInsertContainer();
 //                if (myForm.getInlineInsertContainer() == this) {
                 myForm.setInlineInsertContainer(null);
 //                myForm.revalidate(); //necessary?!
@@ -363,7 +363,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //        return newItem;
     }
 
-    private void closeInsertNewItemContainer() {
+    private void closeInsertContainer() {
         //UI: close the text field
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(this);
         if (closeAction != null) {

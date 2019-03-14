@@ -64,6 +64,7 @@ public class ScreenCategory extends MyForm {
         setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
 
         addCommandsToToolbar(getToolbar());//, theme);
+
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
     }
@@ -122,7 +123,7 @@ public class ScreenCategory extends MyForm {
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
 //            showPreviousScreenOrDefault(previousForm, true);
-            showPreviousScreenOrDefault( true);
+            showPreviousScreenOrDefault(true);
         }));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToSideMenu("New Task", icon, (e) -> {
@@ -192,6 +193,16 @@ public class ScreenCategory extends MyForm {
         content.add(layout(Category.DESCRIPTION, description, "**"));
         description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
 
+        setCheckOnExit(() -> { //check that category is valid on exit
+            //TODO extend to check valid subcategories, auto-words, ...
+            if (categoryName.getText().isEmpty())
+                return "Category name cannot be empty";
+            else if (CategoryList.getInstance().findCategoryWithName(categoryName.getText()) != null)
+//                return "Category \"" + description.getText() + "\" already exists";
+                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
+            return null;
+        });
+
         Label createdDate = new Label(category.getCreatedAt() == null || category.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getCreatedAt()));
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
         content.add(layout(Item.CREATED_DATE, createdDate, "**"));
@@ -227,10 +238,10 @@ public class ScreenCategory extends MyForm {
             v.addSubmitButtons(getToolbar().findCommandComponent(backCommand)); // http://stackoverflow.com/questions/39690474/how-to-attach-a-command-to-longpress-on-a-command-in-the-toolbar
             v.setShowErrorMessageForFocusedComponent(true);
         }
-        
-                if (MyPrefs.showObjectIdsInEditScreens.getBoolean()){
-        Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "LabelFixed");
-        content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+
+        if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
+            Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "LabelFixed");
+            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
         return content;

@@ -17,6 +17,7 @@ import com.codename1.notifications.LocalNotificationCallback;
 import com.codename1.ui.*;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
+import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.Resources;
 import com.codename1.util.Callback;
@@ -34,6 +35,7 @@ import static com.todocatalyst.todocatalyst.ScreenLogin.getLastUserSessionFromSt
 import static com.todocatalyst.todocatalyst.ScreenLogin.setDefaultACL;
 import java.io.IOException;
 import java.util.Date;
+import net.informaticalibera.cn1.nativelogreader.NativeLogs;
 //import net.informaticalibera.cn1.nativelogreader.NativeLogs;
 //import net.informaticalibera.cn1.nativelogreader.*;
 //import javax.microedition.io.ConnectionNotFoundException;
@@ -332,6 +334,8 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        Resources theme = null;
 //</editor-fold>
         Log.p("init() starting...");
+
+        NativeLogs.initNativeLogs();
 
         if (false) {
             Log.install(new Log() {
@@ -855,7 +859,8 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 
         Log.p("init() - DONE - go to login screen...");
 
-        new ScreenLogin().go();
+        
+            new ScreenLogin().go();
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
 

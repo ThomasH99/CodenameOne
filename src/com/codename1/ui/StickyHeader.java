@@ -11,6 +11,8 @@ import com.codename1.ui.Graphics;
 import com.codename1.ui.Painter;
 import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.geom.Rectangle;
+import com.codename1.ui.layouts.BorderLayout;
+import com.todocatalyst.todocatalyst.Icons;
 import java.util.ArrayList;
 
 /* //example: simply add sticky headers where appropriate
@@ -43,16 +45,56 @@ Form hi = new Form("Sticky Header");
 public class StickyHeader extends Container implements ScrollListener {
 
     private int previousPosition;
+    private boolean hidden = false;
+    private Button hideShowButton = new Button();
 
     private boolean needToCheck = false;
     private static String KEY_STICKY = "sticky";
 
     public StickyHeader() {
+        super();
+        setLayout(BorderLayout.center());
+        hideShowButton.setCommand(Command.createMaterial("", FontImage.MATERIAL_EXPAND_MORE, (ev) -> {
+            hidden = !hidden;
+//            hideFollowingComponents(hidden);
+            Container parent = getParent();
+            int index = parent.getComponentIndex(this);
+            int count = parent.getComponentCount();
+            for (int i = index + 1; i < count; i++) {
+                Component comp = parent.getComponentAt(i);
+                if (comp instanceof StickyHeader) break;
+                else comp.setHidden(hidden);
+            }
+//            if (hidden)
+//                hideShowButton.setMaterialIcon(hidden?FontImage.MATERIAL_EXPAND_LESS:FontImage.MATERIAL_EXPAND_MORE);
+//            else
+//                hideShowButton.setMaterialIcon(FontImage.MATERIAL_EXPAND_MORE);
+            hideShowButton.setMaterialIcon(hidden ? FontImage.MATERIAL_EXPAND_LESS : FontImage.MATERIAL_EXPAND_MORE);
+            parent.animateHierarchy(300);
+
+        }));
+        super.add(BorderLayout.EAST, hideShowButton);
     }
 
     public StickyHeader(String uiid) {
         this();
         this.setUIID(uiid);
+    }
+
+    private void hideFollowingComponents(boolean hide) {
+        Container parent = getParent();
+        int index = parent.getComponentIndex(this);
+        int count = parent.getComponentCount();
+        for (int i = index + 1; i < count; i++) {
+            Component comp = parent.getComponentAt(i);
+            if (comp instanceof StickyHeader) break;
+            else comp.setHidden(hide);
+        }
+        parent.animateHierarchy(300);
+    }
+
+    public Container add(Component comp) {
+        return super.add(BorderLayout.CENTER, comp);
     }
 
     @Override
