@@ -142,7 +142,7 @@ public class ScreenListOfCategories extends MyForm {
             Category category = new Category();
 //                new ScreenCategory(category, ScreenListOfCategories.this, () -> {
             previousForm.setKeepPos(new KeepInSameScreenPosition());
-            new ScreenCategory(category, previousForm, () -> {
+            new ScreenCategoryProperties(category, previousForm, () -> {
                 if (category.hasSaveableData()) { //UI: do nothing for an empty category, allows user to add category and immediately return if regrests or just pushed wrong button
                     category.setOwner(categoryOwnerList); //TODO should store ordered list of categories
                     DAO.getInstance().save(category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject

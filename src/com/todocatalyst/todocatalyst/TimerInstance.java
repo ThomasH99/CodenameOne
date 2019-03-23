@@ -194,9 +194,9 @@ public class TimerInstance extends ParseObject {
 //        }
         return itemList;
     }
-    
-    private void setTimeEvenInvalidItemOrProjects(boolean timeEvenInvalidItemsOrProjects ) {
-        if (timeEvenInvalidItemsOrProjects ) {
+
+    private void setTimeEvenInvalidItemOrProjects(boolean timeEvenInvalidItemsOrProjects) {
+        if (timeEvenInvalidItemsOrProjects) {
             put(PARSE_TIMER_TIME_EVEN_INVALID_ITEMS, timeEvenInvalidItemsOrProjects);
         } else {
             remove(PARSE_TIMER_TIME_EVEN_INVALID_ITEMS);
@@ -204,9 +204,9 @@ public class TimerInstance extends ParseObject {
     }
 
     public boolean isTimeEvenInvalidItemOrProjects() {
-        Boolean timeEvenInvalidItemsOrProjects =  getBoolean(PARSE_TIMER_TIME_EVEN_INVALID_ITEMS);
+        Boolean timeEvenInvalidItemsOrProjects = getBoolean(PARSE_TIMER_TIME_EVEN_INVALID_ITEMS);
 //        if (i
-        return timeEvenInvalidItemsOrProjects==null?false:true;
+        return timeEvenInvalidItemsOrProjects == null ? false : true;
     }
 
     private final void setStartTime(Date start) {
@@ -267,15 +267,16 @@ public class TimerInstance extends ParseObject {
     /**
     updates elapsed time after the user editing it, will either update startTime if currently running, or elapsed time if stopped/paused
     @param newElapsedTime 
-    */
+     */
     public final void updateElapsedTime(long newElapsedTime) {
-           if (isRunning()) {
-             setStartTime(System.currentTimeMillis() - newElapsedTime); // + addPreviousActual;
+        if (isRunning()) {
+            setStartTime(System.currentTimeMillis() - newElapsedTime); // + addPreviousActual;
         } else {
-               setElapsedTime(newElapsedTime);
-           }
+            setElapsedTime(newElapsedTime);
+        }
     }
-/*elapsed time in milliseconds*/
+
+    /*elapsed time in milliseconds*/
     public long getElapsedTime() {
 //        long addPreviousActual = 0;
 //        if (MyPrefs.timerShowTotalActualInTimer.getBoolean()) {
@@ -464,7 +465,7 @@ public class TimerInstance extends ParseObject {
 //                timedItem.setActualEffort(timerInstance.isTimerShowActualTotal() //update actual
 //                        ? timerInstance.getElapsedTime()
 //                        : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
-            timedItem.setActual(timerInstance.getElapsedTime() + timedItem.getActualForProjectTaskItself(),false);
+            timedItem.setActual(timerInstance.getElapsedTime() + timedItem.getActualForProjectTaskItself(), false);
             DAO.getInstance().saveInBackground(timedItem);
             timerInstance.setElapsedTime(0); //reset elapsed time since it's now been added to Item's actual & saved
         }
@@ -543,11 +544,11 @@ public class TimerInstance extends ParseObject {
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
-    * returns true if the minimum Timer threshold for when to update status and
-    * save time is passed
-    *
-    * @return
-    */
+     * returns true if the minimum Timer threshold for when to update status and
+     * save time is passed
+     *
+     * @return
+     */
 //    private boolean isMinimumThresholdPassed(long elapsedTime) {
 ////        return status.getStatus() != ItemStatus.CREATED //if status already other than created we store any time -NO, since this will also later create a timer Start/Stop recording
 ////                && timerStack.currEntry.getTimerDurationInMillis() >= MyPrefs.getInt(MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActuals) * MyDate.SECOND_IN_MILLISECONDS;
@@ -561,7 +562,6 @@ public class TimerInstance extends ParseObject {
 //        }
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void refreshTimerUIWithNewItem() {
 //        Container currentContainer = getTimerContainer();
@@ -682,8 +682,28 @@ public class TimerInstance extends ParseObject {
                 if (itemList != null) {
                     while (nextTimedItem == null && project == null && itemList != null) { //iterate through list until nextItem or Project is found
 //                        nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
-                        nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
-                        if (nextTimedItem != null) {
+//                        nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
+                        ItemAndListCommonInterface nextElement = itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
+//                        if (nextTimedItem != null) {
+                        if (nextElement instanceof Item) {
+                            nextTimedItem = (Item) nextElement;
+                            if (TimerStack.isValidItemForTimer(nextTimedItem) || isTimeEvenInvalidItemOrProjects()) {
+                                previousTimedItem = null; //reset previous since we've now found the following item and don't want next iteration to search for an item after previous
+                                if (nextTimedItem.isProject()) {
+                                    project = nextTimedItem; //set project to search for a subtask
+                                    nextTimedItem = null; //force to repeat do while to check if there's a suitable subtask
+                                } //else: we've found the next item!
+//                                else { //else: a project, so we'll see if it is valid in the while(isValidItemForTimer...)
+////                                    if (!TimerStack.isValidItemForTimer(nextTimedItem)) {
+//                                    previousTimedItem = nextTimedItem;// get the next item *after* the nextTimeItem already found
+//                                    nextTimedItem = null;
+////                                    }
+//                                }
+                            } else { //not Valid
+                                previousTimedItem = nextTimedItem;// get the next item *after* the nextTimedItem already found
+                                nextTimedItem = null;
+                            }
+                        } else if (nextElement instanceof WorkSlot) { //treat WorkSlot like a project
                             if (TimerStack.isValidItemForTimer(nextTimedItem) || isTimeEvenInvalidItemOrProjects()) {
                                 previousTimedItem = null; //reset previous since we've now found the following item and don't want next iteration to search for an item after previous
                                 if (nextTimedItem.isProject()) {
@@ -711,7 +731,10 @@ public class TimerInstance extends ParseObject {
 
         if (update) {
             setTimedItem(nextTimedItem);
+            if (project instanceof Item)
             setTimedProject(project); //set project
+//            else if (project instanceof WorkSlot)
+//            setTimedProject(project); //set project
         }
         if (save) {
             saveMe();

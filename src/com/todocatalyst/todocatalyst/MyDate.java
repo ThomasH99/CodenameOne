@@ -1473,32 +1473,41 @@ public class MyDate extends Date {
     static public String formatDateSmart(Date date) {
         long now = System.currentTimeMillis();
         long diff = date.getTime() - now;
+                Date startOfToday = MyDate.getStartOfDay(new Date());
+                Date startOfYesterday = MyDate.getStartOfDay(new Date(startOfToday.getTime() - MyDate.DAY_IN_MILLISECONDS));
+        Date startOfTomorrow = new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS);
+
 //        long dateTime = date.getTime();
         //overdue
-        if (diff < 0) {
-            if (diff > getStartOfToday().getTime() - MyDate.DAY_IN_MILLISECONDS) {
-//            return "Overdue";
+//        if (diff < 0) {
+//            if (diff > getStartOfToday().getTime() - MyDate.DAY_IN_MILLISECONDS) {
+////            return "Overdue";
+//                return "Yesterday";
+//            } else {
+//                diff = -diff; //else use same distance from today to determine formatting??
+//            }
+//        }
+        if (date.getTime()<startOfToday.getTime()&&date.getTime()>=startOfYesterday.getTime())
                 return "Yesterday";
-            } else {
-                diff = -diff; //else use same distance from today to determine formatting??
-            }
-        }
         //within today(before midnight/*next 24h*?/till 5 in the morning for night owls?!): "13h14" / "1h14am"
 //        if (dateTime<=MyDate.getEndOfDay(new Date(dateTime+MyDate.DAY_IN_MILLISECONDS)).getTime())
-        if (diff <= MyDate.DAY_IN_MILLISECONDS) {
+//        if (diff <= MyDate.DAY_IN_MILLISECONDS) {
+        if (date.getTime()>=startOfToday.getTime()&&date.getTime()<startOfTomorrow.getTime()) {
             return new SimpleDateFormat("HH'h'mm").format(date);
         }
         //within next 7 days: "Mon13h"
-        if (diff <= MyDate.DAY_IN_MILLISECONDS * 7) {
+//        if (diff <= MyDate.DAY_IN_MILLISECONDS * 7) {
+        if (date.getTime()<startOfToday.getTime()+MyDate.DAY_IN_MILLISECONDS * 7) {
             return new SimpleDateFormat("EEEHH'h'mm").format(date);
         }
         //within next 365 days: "Jun11"
-        if (diff <= MyDate.DAY_IN_MILLISECONDS * 365) {
+//        if (diff <= MyDate.DAY_IN_MILLISECONDS * 365) {
+        if (date.getTime()<startOfToday.getTime()+MyDate.DAY_IN_MILLISECONDS * 365) {
             return new SimpleDateFormat("MMMdd").format(date);
         }
         //beyond 365 days: "Jun'18"
 
-        return new SimpleDateFormat("MMM''yy").format(date);
+        return new SimpleDateFormat("MMM'''yy").format(date);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1721,10 +1730,11 @@ public class MyDate extends Date {
         s.append(hours).append(':');
         if (minutes >= 10) s.append(minutes);
         else s.append('0').append(minutes);
-        if (showSeconds)
+        if (showSeconds){
+            s.append(':');
             if (seconds >= 10) s.append(seconds);
             else s.append('0').append(seconds);
-
+        }
         return s.toString();
     }
     

@@ -14,7 +14,19 @@ import java.util.Date;
  */
 public class MyPrefs {
 
-    //ESTIMATES
+    //TODAY view
+    static PrefEntry todayViewIncludeOverdueFromThisManyPastDays
+            = new PrefEntry("In Today, include overdue tasks from last X days", "todayViewIncludeOverdueFromThisManyPastDays", 1, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    static PrefEntry todayViewIncludeWaitingExpiringToday
+            = new PrefEntry("In Today, include tasks until today", "todayViewIncludeWaitingExpiringToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    static PrefEntry todayViewIncludeAlarmsExpiringToday
+            = new PrefEntry("In Today, include tasks with reminders today", "todayViewIncludeAlarmsExpiringToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    static PrefEntry todayViewIncludeStartingToday
+            = new PrefEntry("In Today, include tasks starting today", "todayViewIncludeStartingToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    static PrefEntry todayViewIncludeWorkSlotsCoveringToday
+            = new PrefEntry("In Today, include WorkSLots starting today", "todayViewIncludeWorkSlotsCoveringToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    
+//ESTIMATES
     static PrefEntry automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining
             = new PrefEntry("**", "automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining", true, "**");
 
@@ -371,6 +383,8 @@ public class MyPrefs {
             = new PrefEntry("**", "dateShowDatesInUSFormat", false, "**");
     static PrefEntry disableGoogleAnalytics
             = new PrefEntry("**", "disableGoogleAnalytics", false, "diable sending anonymous usage pattern information to Google Analytics (used to help improve TDC");
+    static PrefEntry enableRepairCommandsInMenus
+            = new PrefEntry("enableRepairCommandsInMenus", "enableRepairCommandsInMenus", true, "**");
 
     //REPEATRULE
     static PrefEntry repeatMaxInterval = new PrefEntry("**", "repeatMaxInterval", 365, "maximun value for repeat interval**");

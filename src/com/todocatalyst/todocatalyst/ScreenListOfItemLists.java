@@ -10,6 +10,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Button;
 import com.codename1.ui.Label;
 import com.codename1.ui.Component;
+import com.codename1.ui.Dialog;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
@@ -188,8 +189,6 @@ public class ScreenListOfItemLists extends MyForm {
 //                previousForm.showBack();
 //            }
 //        });
-
-
 
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
@@ -410,7 +409,7 @@ public class ScreenListOfItemLists extends MyForm {
 
                     }
 //                        ((MyForm) mainCont.getComponentForm()).refreshAfterEdit();
-                    f.refreshAfterEdit();
+                    if (false) f.refreshAfterEdit();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                categoryList.addItemAtIndex(category, 0);
 //                                DAO.getInstance().save(categoryList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
@@ -570,7 +569,7 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
                 TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
-            }
+            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             )));
         }
 
@@ -681,7 +680,7 @@ public class ScreenListOfItemLists extends MyForm {
             leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconNewItemFromTemplate, (e) -> {
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
                 TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
-            }
+            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             )));
         }
 

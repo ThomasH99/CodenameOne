@@ -66,9 +66,9 @@ public class ScreenSettingsCommon extends MyForm {
     public void refreshAfterEdit() {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
-        revalidate();
-        restoreKeepPos();
-        super.refreshAfterEdit();
+        revalidateWithAnimationSafety();
+//        restoreKeepPos();
+//        super.refreshAfterEdit();
     }
 
     public void addCommandsToToolbar() {

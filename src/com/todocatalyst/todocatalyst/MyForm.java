@@ -39,6 +39,7 @@ import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
+import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
@@ -457,6 +458,69 @@ public class MyForm extends Form {
 //            this.keepPos.setNewScrollYPosition();
     }
 
+    /**
+    returns the container in which to add the smallTimer, can be overridden to place the smallTimer in other places than the default South container. 
+    @return 
+     */
+    public Container getContainerForSmallTimer() {
+        Container containerForSmallTimer = null;
+        Form form = this;
+        if ((form instanceof ScreenCategoryPicker || form instanceof ScreenListOfAlarms
+                || form instanceof ScreenLogin || form instanceof ScreenObjectPicker
+                || form instanceof ScreenRepair || form instanceof ScreenTimer6)) {
+            return null;
+        } else {
+            Container formContentPane = form.getContentPane();
+            Layout contentPaneLayout = formContentPane.getLayout();
+            if (contentPaneLayout instanceof BorderLayout) {
+//                timerContainer = getContentPaneSouth(form);
+                Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                if (southComponent instanceof Container) {
+                    containerForSmallTimer = (Container) southComponent;
+                } else if (southComponent == null) {
+                    Container newCont = new Container(BoxLayout.y());
+                    formContentPane.add(BorderLayout.SOUTH, newCont);
+                    containerForSmallTimer = newCont;
+                }
+            }
+        }
+        return containerForSmallTimer;
+    }
+
+    public Container getSmallTimerCont() {
+        Container cont = getContainerForSmallTimer();
+        if (cont == null)
+            return null;
+        else {
+            if (cont.getComponentCount() == 0)
+                return null;
+            else if (cont.getComponentCount() == 1) {
+                return (Container) cont.getComponentAt(0);
+            } else {
+                if (Config.PROD_LOG) ASSERT.that(false, "more than one component in containerForSmallTimer");
+            }
+        }
+        return null;
+    }
+
+    public boolean removeSmallTimerCont() {
+        Container smallTimerCont = getSmallTimerCont();
+        if (smallTimerCont != null) {
+            smallTimerCont.remove();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean addSmallTimerCont(Container smallTimer) {
+        Container smallTimerCont = getContainerForSmallTimer();
+        if (smallTimerCont != null) {
+            smallTimerCont.add(smallTimer);
+            return true;
+        }
+        return false;
+    }
+
     interface GetParseValue {
 
         void saveEditedValueInParseObject();
@@ -542,7 +606,7 @@ public class MyForm extends Form {
          *
          * @return
          */
-        String check();
+        boolean check();
     }
 
     interface GetUpdatedList {
@@ -1395,10 +1459,12 @@ public class MyForm extends Form {
 //            editFieldOnShowOrRefresh.startEditingAsync();
             inlineInsertContainer.getTextArea().startEditingAsync();
         }
-        TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
+//        TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
+        if (true||!(this instanceof ScreenTimer6)) //don't refresh if Timer6 is being shown
+            TimerStack.getInstance().refreshOrShowTimerUI(this); //pass this since currentForm may be the previous (currently shown) form
 
         if (true) {
-            revalidate();
+            revalidateWithAnimationSafety();
             restoreKeepPos();
             if (getStartEditingAsyncTextArea() != null) {
                 getStartEditingAsyncTextArea().startEditingAsync();
@@ -1474,7 +1540,7 @@ public class MyForm extends Form {
         String sep = "";
         if (setOrList != null) {
 //            for (Object s : setOrList) {
-            int size = maxLength > 0 ? (maxLength > setOrList.size()?setOrList.size():maxLength) : setOrList.size(); //limit maxLength if > than size()
+            int size = maxLength > 0 ? (maxLength > setOrList.size() ? setOrList.size() : maxLength) : setOrList.size(); //limit maxLength if > than size()
             for (int i = 0; i < size; i++) {
                 Object s = setOrList.get(i);
                 str = str + sep + listName.get(s);
@@ -1697,8 +1763,9 @@ public class MyForm extends Form {
         Command cmd = new Command(title, icon) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                String errorMsg;
-                if (getCheckOnExit() == null || (errorMsg = getCheckOnExit().check()) == null) {
+//                String errorMsg;
+//                if (getCheckOnExit() == null || (errorMsg = getCheckOnExit().check()) == null) {
+                if (getCheckOnExit() == null || getCheckOnExit().check()) {
                     putEditedValues2(parseIdMap2);
 //                    updateActionOnDone.update();
                     getUpdateActionOnDone().update();
@@ -1706,9 +1773,10 @@ public class MyForm extends Form {
 //                previousForm.showBack();
 //                    showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
                     showPreviousScreenOrDefault(callRefreshAfterEdit);
-                } else {
-                    Dialog.show("INFO", errorMsg, "OK", null);
                 }
+//                else {
+//                    Dialog.show("INFO", errorMsg, "OK", null);
+//                }
             }
         };
         cmd.putClientProperty("android:showAsAction", "withText");
@@ -1780,10 +1848,12 @@ public class MyForm extends Form {
     }
 
     public Command makeInterruptCommand() {
-        return makeInterruptCommand("", Icons.iconInterruptToolbarStyle()); //"Interrupt", "New Interrupt"
-    }
-
-    private Command makeInterruptCommand(String title, Image icon) {
+//        return makeInterruptCommand("", Icons.iconInterruptToolbarStyle()); //"Interrupt", "New Interrupt"
+//    }
+//
+//    private Command makeInterruptCommand(String title, Image icon) {
+        String title = "";
+        Image icon = Icons.iconInterruptToolbarStyle();
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
         return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
@@ -1802,8 +1872,7 @@ public class MyForm extends Form {
             //Open it up in editing mode with timer running
 //            setupTimerForItem(item, 0);
             //Upon Done/Stop, save and return to previous task
-        }
-        );
+        }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean()); //only push this command if we start with BigTimer (do NOT always start with smallTimer)
     }
 
     /**

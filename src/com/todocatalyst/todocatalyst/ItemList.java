@@ -176,6 +176,16 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public ItemAndListCommonInterface cloneMe(Item.CopyMode copyFieldDefintion, int copyExclusions) {
         return cloneMe();
     }
+    public WorkTimeAllocator getWorkTimeAllocatorN() {
+        if (workTimeAllocator == null && mayProvideWorkTime()) {
+            workTimeAllocator = new WorkTimeAllocator(this);
+        }
+        return workTimeAllocator;
+    }
+
+    public void setWorkTimeAllocator(WorkTimeAllocator workTimeAllocator) {
+        this.workTimeAllocator = workTimeAllocator;
+    }
 
     @Override
     public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
@@ -1023,11 +1033,31 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            return cachedList;
 //        }
         List<E> cachedList = getList(PARSE_ITEMLIST);
+
 //            List<E> list = getList(PARSE_ITEMLIST);
 //            if (list != null) {
         if (cachedList != null) {
 //                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList); //optimization?? heavy operation, any way (OTHER than caching which does work
+        if (Config.CHECK_OWNERS)checkOwners( cachedList );
+//        {
+//            for (E elt : cachedList) {
+//                Item item = (Item)elt;
+//                ASSERT.that(item.getOwner() == this, () -> ("ERROR in owner: Item="
+//                        //<editor-fold defaultstate="collapsed" desc="comment">
+//                        //                        + ((Item) item).toString(false)
+//                        //                        + ((Item) ((Item) item).getOwner() instanceof Item
+//                        //                        ? (", item.owner=" + ((Item) ((Item) item).getOwner()).toString(false))
+//                        //                        : (", item.owner=" + ((ItemList) ((Item) item).getOwner()).toString(false)))
+//                        //                        + ", should be=" + this.toString(false)));
+//                        //</editor-fold>
+//                        + (item.toString(false)
+//                        + (item.getOwner() instanceof ItemList
+//                        ? (", item.owner=" + ((ItemList) item.getOwner()).toString(false))
+//                        : (", item.owner=" + ((Item) item.getOwner()).toString(false)))
+//                        + ", should be=" + this.toString(false))));
+//            }
+//        }
 //            return list;
         } else {
 //            return null; //returning null would mean every user must check for null and create a list. And returning a new empty ArrayList and saving it doesn't have any side-effect since a new empty list isn't actually saved
@@ -1380,9 +1410,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     @Override
     public String toString() {
+        return toString(true);
+    }
+
+    public String toString(boolean showSubtasks) {
 //        return toString(ToStringFormat.TOSTRING_COMMA_SEPARATED_LIST);
 //        return getText().length() != 0 ? getText() : getObjectIdP();
-        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "") + (getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "");
+//        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "") + showSubtasks ? ((getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "")  : "");
+        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
+                + (showSubtasks ? (getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "") : "");
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3460,18 +3496,26 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return workSlotListBuffer;
         List<WorkSlot> workslots = getList(PARSE_WORKSLOTS);
+
+//        if (Config.CHECK_OWNERS && workslots != null) {
+//            for (WorkSlot workSlot : workslots) {
+//                ASSERT.that(workSlot.getOwner() == this, "ERROR in owner: WorkSlot=" + workSlot + ", workSlot.owner=" + workSlot.getOwner() + ", should be=" + this);
+//            }
+//        }
+
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
+            if (Config.CHECK_OWNERS) checkOwners(workslots);
             return new WorkSlotList(this, workslots);
         } else {
             return null; //new WorkSlotList();
         }
     }
 
-    public WorkSlotList getWorkSlotListCurrent(boolean refreshWorkSlotListFromDAO) {
-        WorkSlotList workSlots = getWorkSlotListN(refreshWorkSlotListFromDAO);
-        return null;
-    }
+//    public WorkSlotList getWorkSlotListCurrent(boolean refreshWorkSlotListFromDAO) {
+//        WorkSlotList workSlots = getWorkSlotListN(refreshWorkSlotListFromDAO);
+//        return null;
+//    }
 
 //    @Override
 //    public WorkSlotList getWorkSlotListN() {
@@ -3509,22 +3553,26 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    public WorkTimeDefinition getWorkTimeAllocatorN() {
 //        return getWorkTimeAllocatorN(false);
 //    }
-    @Override
-    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
-        if (workTimeAllocator == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
-//            wtd = new WorkTimeDefinition(getList(), this);
-            WorkSlotList workSlots = getWorkSlotListN();
-//            long now = System.currentTimeMillis(); //this is the common value of 'now' used during all the allocations
-//            long now = workSlots.getNow(); //this is the common value of 'now' used during all the allocations
-            if (workSlots != null && workSlots.hasComingWorkSlots()) {
-//                wtd = new WorkTimeDefinition(((<? extends ItemAndListCommonInterface>)getList(), workSlots);
-//                wtd = new WorkTimeAllocator((List<ItemAndListCommonInterface>) getList(), new WorkTimeSlices(workSlots), this);
-                workTimeAllocator = new WorkTimeAllocator(new WorkTimeSlices(workSlots), this);
-            }
-        }
-        return workTimeAllocator;
-    }
-
+//    @Override
+//    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
+//        if (workTimeAllocator == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
+////            wtd = new WorkTimeDefinition(getList(), this);
+//            WorkSlotList workSlots = getWorkSlotListN();
+////            long now = System.currentTimeMillis(); //this is the common value of 'now' used during all the allocations
+////            long now = workSlots.getNow(); //this is the common value of 'now' used during all the allocations
+//            if (workSlots != null && workSlots.hasComingWorkSlots()) {
+////                wtd = new WorkTimeDefinition(((<? extends ItemAndListCommonInterface>)getList(), workSlots);
+////                wtd = new WorkTimeAllocator((List<ItemAndListCommonInterface>) getList(), new WorkTimeSlices(workSlots), this);
+//                workTimeAllocator = new WorkTimeAllocator(new WorkTimeSlices(workSlots), this);
+//            }
+//        }
+//        return workTimeAllocator;
+//    }
+//
+//         public WorkTimeSlices getAllocatedWorkTimeN() { //shouldn't be necessary because an ItemList does not get workTime allocated, it can only have its own workslots
+//        throw new Error("Not supported yet."); //should not be called for ItemLists and Categories (or WorkSlots)
+//    }
+    
     /**
      * forces a recalculation of workTime
      */
@@ -3654,7 +3702,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
 //</editor-fold>
 //    @Override
-//    public WorkTimeSlices getAllocatedWorkTimeN() {
+//    public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface elt) {
 ////        return new WorkTimeSlices(getWorkSlotListN()); //a list can only get workTime allocated via its workslots
 //        throw new Error("Not supported yet."); 
 //    }

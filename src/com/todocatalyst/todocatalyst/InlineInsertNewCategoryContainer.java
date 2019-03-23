@@ -21,7 +21,7 @@ import com.parse4cn1.ParseObject;
  *
  * @author Thomas
  */
-public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  implements InsertNewElementFunc {
+public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer implements InsertNewElementFunc {
 
 //    private Container oldNewTaskCont=null;
     private MyTextField2 textEntryField;
@@ -32,7 +32,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  
     private boolean insertBeforeElement;
 //    private Container cont=new Container(new BorderLayout());
 
-    private final static String ENTER_CATEGORY = "New "+Category.CATEGORY; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_CATEGORY = "New " + Category.CATEGORY; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
 
     /**
      *
@@ -62,7 +62,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  
      */
 //    public InlineInsertNewCategoryContainer(MyForm myForm, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeElement) {
     public InlineInsertNewCategoryContainer(MyForm myForm, Category category, boolean insertBeforeElement) {
-        this(myForm, category, (CategoryList)category.getOwner(), insertBeforeElement);
+        this(myForm, category, (CategoryList) category.getOwner(), insertBeforeElement);
     }
 
     private InlineInsertNewCategoryContainer(MyForm myForm, Category category2, CategoryList categoryList, boolean insertBeforeElement) {
@@ -74,7 +74,6 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  
 
 //        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
 //        add(swipC);
-
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField.setHint(ENTER_CATEGORY);
         textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
@@ -115,7 +114,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  
                 new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
                     if ((newCategory = createNewCategory()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                         myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this, -1)); //if editing the new task in separate screen, 
-                        new ScreenCategory(newCategory, (MyForm) getComponentForm(), () -> {
+                        new ScreenCategoryProperties(newCategory, (MyForm) getComponentForm(), () -> {
                             insertNewCategoryAndSaveChanges(newCategory);
                             myForm.refreshAfterEdit();
                         }).show();
@@ -141,13 +140,13 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  
 
     private Category createNewCategory(boolean createEvenIfNoTextInField) {
         String text = textEntryField.getText();
-        Category newCategory;
-        if (createEvenIfNoTextInField || (text != null && text.length() > 0)) {
+
+        if (ScreenItemListProperties.checkItemListIsValidForSaving(text)) {
+            Category newCategory = new Category(text); //true: interpret textual values
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
-            newCategory = new Category(text); //true: interpret textual values
             return newCategory;
-        }
-        return null;
+        } else
+            return null;
     }
 
     /**
@@ -165,7 +164,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer  
 //        } else {
 //            categoryList.addToList(newCategory); //if item is null or not in orgList, insert at beginning of (potentially empty) list
 //        }
-            categoryList.addToList(newCategory,category, !insertBeforeElement  ); //add after item
+        categoryList.addToList(newCategory, category, !insertBeforeElement); //add after item
         DAO.getInstance().saveInBackground(newCategory, (ParseObject) categoryList);
     }
 

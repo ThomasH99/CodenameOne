@@ -53,8 +53,6 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO);
 //    public WorkSlotList getWorkSlotListN();
-    
-   
 
     /**
     get list of current & future workslots (exclude all that have expired ie endTime is in the past)
@@ -71,21 +69,21 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     return overlapping workslots, or null if none
     @param workSlot
     @return 
-    */
+     */
     default public List<WorkSlot> getOverlappingWorkSlots(WorkSlot workSlot) {
         WorkSlotList workSlotList = getWorkSlotListN();
-        if (workSlotList==null || workSlot==null)
+        if (workSlotList == null || workSlot == null)
             return null;
         List<WorkSlot> overlapping = new ArrayList<>();
 //        for (WorkSlot ws:(List<WorkSlot>)workSlotList) {
-        for (WorkSlot ws:workSlotList.getWorkSlotListFull()) {
-            if (workSlot.overlappingDuration(ws)>0) {
+        for (WorkSlot ws : workSlotList.getWorkSlotListFull()) {
+            if (workSlot.overlappingDuration(ws) > 0) {
                 overlapping.add(ws);
             }
         }
-        return overlapping.isEmpty()?null:overlapping;
+        return overlapping.isEmpty() ? null : overlapping;
     }
-    
+
     /**
     add a new workslot to the list
     @param workSlot 
@@ -278,6 +276,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return
      */
     public boolean addToList(ItemAndListCommonInterface subItemOrList);
+
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList);
 
     /**
@@ -326,7 +325,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //            ownerList.remove(this);
 //            getOwner().setList(ownerList);
 //        }
-            owner.removeFromList(this);
+        owner.removeFromList(this);
         setOwner(null);
     }
 
@@ -381,8 +380,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return null if no worktime is defined
      */
 //    public WorkTimeDefinition getWorkTimeAllocatorN(boolean reset);
-    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset);
-
+//    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //default    public WorkTimeDefinition getWorkTimeAllocatorN(boolean reset) {
 //        if (wtd != null && !reset) {
@@ -413,31 +411,80 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return null if no worktime is defined
      */
 //    public WorkTimeDefinition getWorkTimeAllocatorN();
-    default public WorkTimeAllocator getWorkTimeAllocatorN() {
-        return getWorkTimeAllocatorN(false);
-    }
+//    default public WorkTimeAllocator getWorkTimeAllocatorN() {
+//        return getWorkTimeAllocatorN(false);
+//    }
+    public WorkTimeAllocator getWorkTimeAllocatorN();
 
+    /**
+     *
+     * @param elt
+     * @return
+     */
+//    public WorkTimeAllocator getWorkTimeAllocator();
+    public void setWorkTimeAllocator(WorkTimeAllocator workTimeAllocator);
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public WorkTimeSlices allocateNew(ItemAndListCommonInterface elt);
+//    default public WorkTimeSlices allocate2(ItemAndListCommonInterface elt) {
+//        List<ItemAndListCommonInterface> potentialProviders = null;
+//        WorkSlotList workSlotList;
+//        WorkTimeSlices workTimeSlices = null;
+//        WorkTimeAllocator workTimeAllocator = getWorkTimeAllocator();
+//        //if no workTimeAllocator already there (cached), if there are workSlots or owners with workTime get as much as needed or available
+//        if (workTimeAllocator == null && ((workSlotList = getWorkSlotListN(false)) != null || (potentialProviders = getPotentialWorkTimeProvidersInPrioOrder()) != null)) {
+//            long remaining = getWorkTimeRequiredFromProvider(this); //calculate how much time is needed from this' subtasks
+////            workTimeAllocator = new WorkTimeAllocator(null, null);
+//            if (workSlotList != null) {
+//                workTimeAllocator = new WorkTimeAllocator(workTimeSlices, this); //first add own workTime
+//            }
+//            long availWorktime = workTimeAllocator.getAvailableTime();
+//            if (remaining > availWorktime) { //if need additional workTime
+//                remaining -= availWorktime; //if need additional workTime
+//
+////          List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
+//                for (ItemAndListCommonInterface prov : potentialProviders) {
+//                    //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(reset);
+////                    if (workTimeAllocator != null) {
+////                        WorkTimeSlices allocatedWorkTime = workTimeAllocator.getAllocatedWorkTime(this, remaining);
+////                        if (allocatedWorkTime != null) {
+////                            if (workTimeSlices == null) {
+////                                workTimeSlices = new WorkTimeSlices(); //only allocate WorkTimeSlices if there is actually some workTime to return
+////                            }
+////                            workTimeSlices.addWorkTime(allocatedWorkTime);
+////                            workTimeAllocator.addWorkTimeSlices(prov.allocateNew(this));
+////                            remaining = allocatedWorkTime.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+////                            if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+////                                break;
+////                            }
+////                        }
+////                    }
+////</editor-fold>
+//                    workTimeAllocator.addWorkTimeSlices(prov.allocate2(this));
+//                    remaining = workTimeAllocator.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+//                    if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        setWorkTimeAllocator(workTimeAllocator); //set the updated version
+//        //if we managed to allocate some worktime above
+//        if (workTimeAllocator != null) {
+//            return workTimeAllocator.getAllocatedWorkTimeNew(elt);
+//        } else {
+//            return null;
+//        }
+//    }
+//</editor-fold>
     /**
      * reset/refresh the WorkTimeDefinition, must be called whenever work slots
      * or items have been changed.
      */
     public void resetWorkTimeDefinition();
 
-    /**
-     * returns the finish time of item based on the owner's work time
-     *
-     * @param item
-     * @return
-     */
-//    default public Date getFinishTimeXXX(ItemAndListCommonInterface item) {
-//        WorkTimeDefinition workTimeDef = getWorkTimeAllocatorN();
-//        if (workTimeDef != null) {
-////            return new Date(workTimeDef.getFinishTime(item));
-//            return workTimeDef.getAllocatedWorkTimeN(item).getFinishTimeD();
-//        } else {
-//            return new Date(0);
-//        }
-//    }
     public String getObjectIdP();
 
     /**
@@ -455,15 +502,16 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      *
      * @return null if no providers
      */
-    default public List<ItemAndListCommonInterface> getPotentialWorkTimeProvidersInPrioOrder() {
-        WorkSlotList workSlots = getWorkSlotListN();
-        if (workSlots == null) {
-            return null;
-        } else {
-            List<ItemAndListCommonInterface> res = new ArrayList();
-            res.add(this);
-            return res;
-        }
+    default public List<ItemAndListCommonInterface> getOtherPotentialWorkTimeProvidersInPrioOrderN() {
+//        WorkSlotList workSlots = getWorkSlotListN();
+//        if (workSlots == null || !workSlots.hasComingWorkSlots()) {
+//            return null;
+//        } else {
+//            List<ItemAndListCommonInterface> providers = new ArrayList();
+//            providers.add(this); //only possible provider for an ItemList or Category is itself
+//            return providers;
+//        }
+        return null; //return no other workTime providers for an ItemList/Category since its own workTime is already allocated directly when creating the WorkTimeAllocator
     }
 
     /**
@@ -474,21 +522,15 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     default public boolean mayProvideWorkTime() {
         WorkSlotList workSlots = getWorkSlotListN();
-//        return workSlots != null && workSlots.size() > 0; //||getAllocatedWorkTimeN()!=null;
-//        return (workSlots != null && workSlots.size() > 0) || getAvailableWorkTime() != null;
-//        return (workSlots != null && workSlots.size() > 0) || getAllocatedWorkTimeN() != null;
-        if (workSlots != null && workSlots.size() > 0) {
+        if (workSlots != null && workSlots.hasComingWorkSlots()) {
             return true;
         }
 
         ItemAndListCommonInterface owner = getOwner();
-//        if (false && owner != null && owner.mayProvideWorkTime()) { //NB - do not iterate up the hierarchy
         if (owner != null && owner.mayProvideWorkTime()) { //NB - yes, do iterate up the hierarchy since any owner (e.g. project) at a higher level may recursively provide worktime
             return true;
         }
-//        for (Category cat:getCa|| getAllocatedWorkTimeN() != null;
         return false;
-//        return getPotentialWorkTimeProvidersInPrioOrder() != null; //TODO optimization - is there a more efficient way?
     }
 
     /**
@@ -635,10 +677,39 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * time allocated to this item (from all workTimeProviders: own workslots,
      * categories, owner)
      *
+     * @param elt
      * @return null if no WorkTimeSlices allocated
      */
+//    default public WorkTimeSlices getAllocatedWorkTimeN() {
+//        throw new Error("Not supported yet."); //should not be called for ItemLists and Categories (or WorkSlots)
+//    }
+//    public WorkTimeSlices getAllocatedWorkTimeN();
+//    public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface elt);
+    /**
+    return the WorkTimeSlices allocated to elt
+    @param elt
+    @return 
+     */
+    default public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface elt) {
+        WorkTimeAllocator workTimeAllocator = getWorkTimeAllocatorN();
+        if (workTimeAllocator != null) {
+            return workTimeAllocator.getAllocatedWorkTimeN(elt);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+    return the element's allocated WorkTimeSlices
+    @return 
+     */
     default public WorkTimeSlices getAllocatedWorkTimeN() {
-        throw new Error("Not supported yet."); //should not be called for ItemLists and Categories (or WorkSlots)
+        ItemAndListCommonInterface owner = getOwner();
+        if (owner != null) {
+            return owner.getAllocatedWorkTimeN(this);
+        } else {
+            return null;
+        }
     }
 
 //     {
@@ -667,15 +738,31 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return
      */
 //    default public WorkTimeSlices allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
-    default public WorkTimeSlices allocateWorkTime(Item itemOrList, long remainingDuration) {
-//        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList, remainingDuration);
-        WorkTimeAllocator wt = getWorkTimeAllocatorN();
-        return wt != null ? wt.getAllocatedWorkTime(itemOrList, remainingDuration) : null;
-    }
-
+//    default public WorkTimeSlices allocateWorkTime(Item itemOrList, long remainingDuration) {
+////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList, remainingDuration);
+//        WorkTimeAllocator wt = getWorkTimeAllocatorN();
+//        return wt != null ? wt.getAllocatedWorkTime(itemOrList, remainingDuration) : null;
+//    }
+    /**
+     * returns the finish time of item based on the owner's work time
+     *
+     * @param item
+     * @return
+     */
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    default public Date getFinishTimeXXX(ItemAndListCommonInterface item) {
+//        WorkTimeDefinition workTimeDef = getWorkTimeAllocatorN();
+//        if (workTimeDef != null) {
+////            return new Date(workTimeDef.getFinishTime(item));
+//            return workTimeDef.getAllocatedWorkTimeN(item).getFinishTimeD();
+//        } else {
+//            return new Date(0);
+//        }
+//    }
 //    default public long getAllocatedWorkTimeN() {
 //        return getAllocatedWorkTimeN().getFinishTime();
 //    }
+//</editor-fold>
     default public Date getFinishTimeD() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        WorkTimeDefinition workTimeDef = getWorkTimeAllocatorN();
@@ -707,85 +794,99 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    default public long getFinishTime(long now) {
 //        return getAllocatedWorkTimeN().getFinishTime();
 //</editor-fold>
-        WorkTimeSlices workTime = getAllocatedWorkTimeN();
-//        long finishTime = MyDate.MAX_DATE;
-        if (workTime != null) {
-            if (Config.WORKTIME_DETAILED_LOG) {
-                Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (workTime != null ? workTime.toString() : "<null>") + ", returning=" + new Date(workTime.getFinishTime()));
-            }
-            if (workTime.getRemainingDuration() == 0) {
-//                return workTime.getFinishTime();
-                finishTime = workTime.getFinishTime();
-            }
+//        if (true) {
+//            return allocateNew(this).getFinishTime();
+        WorkTimeAllocator workTimeAllocator = getWorkTimeAllocatorN();
+        WorkTimeSlices workTimeSlices;
+        if (workTimeAllocator != null && ((workTimeSlices = workTimeAllocator.getAllocatedWorkTimeN(this)) != null))
+            return workTimeSlices.getFinishTime();
+        else
+            return MyDate.MAX_DATE;
+//        } 
 //<editor-fold defaultstate="collapsed" desc="comment">
-//            else {
+//        else {
+//            WorkTimeSlices workTime = getAllocatedWorkTimeN();
+////        long finishTime = MyDate.MAX_DATE;
+//            if (workTime != null) {
+//                if (Config.WORKTIME_DETAILED_LOG) {
+//                    Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (workTime != null ? workTime.toString() : "<null>") + ", returning=" + new Date(workTime.getFinishTime()));
+//                }
+//                if (workTime.getRemainingDuration() == 0) {
+////                return workTime.getFinishTime();
+//                    finishTime = workTime.getFinishTime();
+//                }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            else {
+////                return MyDate.MAX_DATE;
+////            }
+////        } else {
+////            return MyDate.MAX_DATE; //cannot allocate enough time
+////</editor-fold>
+//            }
+//            if (false && Config.WORKTIME_TEST) {
+//                long remainingEffort = getRemaining();
+//                long allocated = workTime.getAllocatedDuration();
+//                assert workTime == null || !(allocated > remainingEffort) : "allocated too much time";
+//            }
+////        return MyDate.MAX_DATE; // returning MAX, means cannot allocate enough time
+//            return finishTime; //cannot allocate enough time
+//        }
+//</editor-fold>
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    default public long getFinishTimeOLD2() {
+////        return getAllocatedWorkTimeN().getFinishTime();
+//        WorkTimeSlices wt = getAllocatedWorkTimeN();
+////        long finishTime = MyDate.MAX_DATE;
+//        if (wt != null) {
+//            long finishTime = wt.getFinishTime();
+//            if (Config.WORKTIME_DETAILED_LOG) {
+//                Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (wt != null ? wt.toString() : "<null>") + ", returning=" + new Date(finishTime));
+//            }
+//
+////        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
+////        ASSERT.that(wt.getAllocatedDuration() == getRemainingEffort() || wt.getAllocatedDuration() < getRemainingEffort(), "allocated too much time");
+////        if (wt != null) {
+//            long remainingEffort = getRemaining();
+//            long allocatedDuration = wt.getAllocatedDuration();
+//            if (Config.WORKTIME_TEST) {
+//                ASSERT.that(wt == null || !(allocatedDuration > remainingEffort), "allocated too much time");
+//            }
+////        return wt != null &&  allocatedDuration>= remainingEffort ? finishTime : MyDate.MAX_DATE;
+//            if (allocatedDuration >= remainingEffort) {
+//                return finishTime;
+//            } else {
 //                return MyDate.MAX_DATE;
 //            }
 //        } else {
 //            return MyDate.MAX_DATE; //cannot allocate enough time
-//</editor-fold>
-        }
-        if (false && Config.WORKTIME_TEST) {
-            long remainingEffort = getRemaining();
-            long allocated = workTime.getAllocatedDuration();
-            assert workTime == null || !(allocated > remainingEffort) : "allocated too much time";
-        }
-//        return MyDate.MAX_DATE; // returning MAX, means cannot allocate enough time
-        return finishTime; //cannot allocate enough time
-    }
-
-    default public long getFinishTimeOLD2() {
-//        return getAllocatedWorkTimeN().getFinishTime();
-        WorkTimeSlices wt = getAllocatedWorkTimeN();
-//        long finishTime = MyDate.MAX_DATE;
-        if (wt != null) {
-            long finishTime = wt.getFinishTime();
-            if (Config.WORKTIME_DETAILED_LOG) {
-                Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (wt != null ? wt.toString() : "<null>") + ", returning=" + new Date(finishTime));
-            }
-
-//        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
-//        ASSERT.that(wt.getAllocatedDuration() == getRemainingEffort() || wt.getAllocatedDuration() < getRemainingEffort(), "allocated too much time");
+//        }
+//    }
+//
+//    default public long getFinishTimeOLD() {
+////        return getAllocatedWorkTimeN().getFinishTime();
+//        WorkTimeSlices wt = getAllocatedWorkTimeN();
+//        long finishTime = wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
+//        if (Config.WORKTIME_DETAILED_LOG) {
+//            Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (wt != null ? wt.toString() : "<null>") + ", returning=" + new Date(finishTime));
+//        }
+//
+////        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
+////        ASSERT.that(wt.getAllocatedDuration() == getRemainingEffort() || wt.getAllocatedDuration() < getRemainingEffort(), "allocated too much time");
 //        if (wt != null) {
-            long remainingEffort = getRemaining();
-            long allocatedDuration = wt.getAllocatedDuration();
-            if (Config.WORKTIME_TEST) {
-                ASSERT.that(wt == null || !(allocatedDuration > remainingEffort), "allocated too much time");
-            }
-//        return wt != null &&  allocatedDuration>= remainingEffort ? finishTime : MyDate.MAX_DATE;
-            if (allocatedDuration >= remainingEffort) {
-                return finishTime;
-            } else {
-                return MyDate.MAX_DATE;
-            }
-        } else {
-            return MyDate.MAX_DATE; //cannot allocate enough time
-        }
-    }
-
-    default public long getFinishTimeOLD() {
-//        return getAllocatedWorkTimeN().getFinishTime();
-        WorkTimeSlices wt = getAllocatedWorkTimeN();
-        long finishTime = wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
-        if (Config.WORKTIME_DETAILED_LOG) {
-            Log.p("ItemAndListCI \"" + this + "\".getFinishTime(), workTime=" + (wt != null ? wt.toString() : "<null>") + ", returning=" + new Date(finishTime));
-        }
-
-//        return wt != null ? wt.getFinishTime() : MyDate.MAX_DATE;
-//        ASSERT.that(wt.getAllocatedDuration() == getRemainingEffort() || wt.getAllocatedDuration() < getRemainingEffort(), "allocated too much time");
-        if (wt != null) {
-            long remainingEffort = getRemaining();
-            long allocatedDuration = wt.getAllocatedDuration();
-            if (Config.WORKTIME_TEST) {
-                assert wt == null || !(allocatedDuration > remainingEffort) : "allocated too much time";
-            }
-//        return wt != null &&  allocatedDuration>= remainingEffort ? finishTime : MyDate.MAX_DATE;
-            return allocatedDuration >= remainingEffort ? finishTime : MyDate.MAX_DATE;
-        } else {
-            return MyDate.MAX_DATE; //cannot allocate enough time
-        }
-    }
-
+//            long remainingEffort = getRemaining();
+//            long allocatedDuration = wt.getAllocatedDuration();
+//            if (Config.WORKTIME_TEST) {
+//                assert wt == null || !(allocatedDuration > remainingEffort) : "allocated too much time";
+//            }
+////        return wt != null &&  allocatedDuration>= remainingEffort ? finishTime : MyDate.MAX_DATE;
+//            return allocatedDuration >= remainingEffort ? finishTime : MyDate.MAX_DATE;
+//        } else {
+//            return MyDate.MAX_DATE; //cannot allocate enough time
+//        }
+//    }
+//</editor-fold>
     /**
      * called to indicate the workTime needs to be udpated/refreshed. E.g. by an
      * Item if status or remaining time changes, or by a workslot if duration or
@@ -804,6 +905,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return
      */
     default public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
+//        throw new Error("Not supported yet."); //should never be called for ItemLists/Categories?!
+//    }
+//    default public long getWorkTimeRequiredFromOwner() {
+//        return getRemainingEffort(); //for lists and categories, we use the standard remaining, for Items it's a special impl
         throw new Error("Not supported yet."); //should never be called for ItemLists/Categories?!
     }
 
@@ -826,7 +931,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        @Override
     /**
     force the calculation of worktime for every subtask - is this really necessary??
-    */
+     */
     default public void forceCalculationOfWorkTime() {
         List<? extends ItemAndListCommonInterface> subtasks = getList();
         if (subtasks != null) {
@@ -900,8 +1005,41 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return softDelete(false);
     }
 
-//    default public long getWorkTimeRequiredFromOwner() {
-////        return getRemainingEffort(); //for lists and categories, we use the standard remaining, for Items it's a special impl
-//        throw new Error("Not supported yet."); //should never be called for ItemLists/Categories?!
-//    }
+    default void checkOwners(List<ItemAndListCommonInterface> list) {
+        if (list != null) {
+            for (ItemAndListCommonInterface elt : list) {
+                if (elt instanceof Item) {
+                    Item item = (Item) elt;
+                    ItemAndListCommonInterface owner = elt.getOwner();
+                    ASSERT.that(owner == this
+                            || owner == null
+                            || this.isNoSave(),
+                            () -> ("ERROR in owner: Item="
+                            + (item.toString(false)
+                            + (owner instanceof ItemList
+                                    ? (", item.owner=" + ((ItemList) owner).toString(false))
+                                    : (", item.owner=" + ((Item) owner).toString(false)))
+                            + (this instanceof ItemList
+                                    ? (", but in list=" + ((ItemList) this).toString(false))
+                                    : (", but in list=" + ((Item) this).toString(false))))));
+//                        + ", should be=" + this.toString(false))));
+                } else if (elt instanceof WorkSlot) {
+                    WorkSlot workSlot = (WorkSlot) elt;
+                    ItemAndListCommonInterface owner = elt.getOwner();
+                    ASSERT.that(owner == this
+                            || owner == null
+                            || this.isNoSave(),
+                            () -> ("ERROR in owner: WorkSlot="
+                            + (workSlot.toString()
+                            + (owner instanceof ItemList
+                                    ? (", item.owner=" + ((ItemList) owner).toString(false))
+                                    : (", item.owner=" + ((Item) owner).toString(false)))
+                            + (this instanceof ItemList
+                                    ? (", but in list=" + ((ItemList) this).toString(false))
+                                    : (", but in list=" + ((Item) this).toString(false))))));
+                }
+            }
+        }
+    }
+
 }

@@ -134,10 +134,10 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 
     private ItemList createNewItemList(boolean createEvenIfNoTextInField) {
         String text = textEntryField.getText();
-        ItemList newItemList;
-        if (createEvenIfNoTextInField || (text != null && text.length() > 0)) {
+//        if (createEvenIfNoTextInField || (text != null && text.length() > 0)) {
+        if (ScreenItemListProperties.checkItemListIsValidForSaving(text)) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
-            newItemList = new ItemList(text, false); //true: interpret textual values
+            ItemList newItemList = new ItemList(text, false); //true: interpret textual values
             return newItemList;
         }
         return null;

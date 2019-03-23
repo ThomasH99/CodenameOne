@@ -1,41 +1,10 @@
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.components.SpanButton;
-import com.codename1.components.SpanLabel;
-import com.codename1.io.Log;
-//import com.codename1.io.Preferences;
-import com.codename1.io.Storage;
-import com.codename1.io.Util;
-import com.codename1.l10n.SimpleDateFormat;
-import com.codename1.ui.Button;
-import com.codename1.ui.CN;
 import com.codename1.ui.Command;
-import com.codename1.ui.Component;
 import com.codename1.ui.Container;
-import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
-import com.codename1.ui.Form;
-import com.codename1.ui.Label;
-import com.codename1.ui.TextArea;
 import com.codename1.ui.Toolbar;
-import com.codename1.ui.animations.FlipTransition;
-import com.codename1.ui.layouts.BoxLayout;
-import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.FlowLayout;
-import com.codename1.ui.layouts.GridLayout;
-import com.codename1.ui.layouts.LayeredLayout;
-import com.codename1.ui.spinner.Picker;
-import com.codename1.ui.table.TableLayout;
-import com.codename1.ui.util.UITimer;
-//import com.todocatalyst.todocatalyst.MyDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import static com.todocatalyst.todocatalyst.MyForm.dialogSetWaitingDateAndAlarm;
-import static com.todocatalyst.todocatalyst.MyForm.dialogUpdateRemainingTime;
-import java.util.Map;
 //import java.util.function.*;
 
 /**
@@ -182,7 +151,8 @@ public class ScreenTimer6 extends MyForm {
             Container contentPane = getContentPane();
             contentPane.removeAll();
             contentPane.add(BorderLayout.CENTER, TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, previousValues)); //also removes previous content of contentPane
-            super.refreshAfterEdit();
+            if (false) super.refreshAfterEdit(); //WILL cause infinite loop when updating ScreenTimer6 via refreshOrShowTimerUI
+            revalidateWithAnimationSafety();
 //            revalidate();
             revalidateWithAnimationSafety();
         }

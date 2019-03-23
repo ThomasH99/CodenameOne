@@ -123,7 +123,7 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
         //Enter full screen edit of the new WorkSlot:
         contForTextEntry.add(BorderLayout.EAST,
                 new Button(CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
-                    if ((newWorkSlot = createNewWorkSlot(true)) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
+                    if ((newWorkSlot = createNewWorkSlot()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                         lastCreatedWorkSlot = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)
                         myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, -1)); //if editing the new task in separate screen, 
                         new ScreenWorkSlot(newWorkSlot, workSlotListOwner, (MyForm) getComponentForm(), () -> {
@@ -148,30 +148,28 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
      * @return true if a task was created
      */
     private WorkSlot createNewWorkSlot() {
-        return createNewWorkSlot(false);
-    }
-
-    private WorkSlot createNewWorkSlot(boolean createEvenIfNoTextInField) {
+//        return createNewWorkSlot(false);
+//    }
+//
+//    private WorkSlot createNewWorkSlot(boolean createEvenIfNoTextInField) {
         String text = textEntryField.getText();
-        WorkSlot newWorkSlot;
-        if (createEvenIfNoTextInField || (text != null && text.length() > 0)) {
+        WorkSlot newWorkSlot = new WorkSlot(); //true: interpret textual values
+        newWorkSlot.setText(text); //will interpret a textual duration like "5m" as 5 minutes
+        if (newWorkSlot.getDurationInMillis()==0)
+        newWorkSlot.setDurationInMinutes(MyPrefs.workSlotDefaultDurationInMinutes.getInt()); //UI: if no textual definition, use normal default value
+//        if (true || createEvenIfNoTextInField || (text != null && text.length() > 0)) {
+        if (refWorkSlot != null && refWorkSlot.getStartTimeD() != null) {
+            if (insertBeforeRefElement)
+                newWorkSlot.setStartTime(new Date(refWorkSlot.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis())); //UI: set pinchInserted workslot to start 'duration' before the startTime of the next workslot
+            else
+                newWorkSlot.setStartTime(refWorkSlot.getEndTimeD()); //UI: set pinchInserted workslot to start at the end of the previous
+        } else
+            newWorkSlot.setStartTime(new Date()); //UI: set pinchInserted workslot to start now
+
+        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, refWorkSlot.getStartTimeD(), refWorkSlot.getDurationInMillis())) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
-            newWorkSlot = new WorkSlot(); //true: interpret textual values
-            newWorkSlot.setText(text);
-            if (refWorkSlot != null && refWorkSlot.getStartTimeD() != null) {
-                if (insertBeforeRefElement)
-                    newWorkSlot.setStartTime(new Date(refWorkSlot.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis())); //UI: set pinchInserted workslot to start at the end of the previous
-                else
-                    newWorkSlot.setStartTime(refWorkSlot.getEndTimeD()); //UI: set pinchInserted workslot to start at the end of the previous
-            } else
-                newWorkSlot.setStartTime(new Date()); //UI: set pinchInserted workslot to start now
-            String errorMsg;
-            if ((errorMsg = ScreenWorkSlot.validateWorkSlot(newWorkSlot, workSlotListOwner)) != null) {
-                Dialog.show("Error", errorMsg, "OK", null);
-                return null;
-            } else return newWorkSlot;
-        }
-        return null;
+            return newWorkSlot;
+        } else return null;
     }
 
     /**

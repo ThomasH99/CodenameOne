@@ -785,6 +785,14 @@ public class ScreenRepair extends MyForm {
             hi.show();
         })));
 
+        content.add(new Button(MyCommand.create("Repair data menu", null, (e) -> {
+            new ScreenRepairData(ScreenRepair.this).show();
+        })));
+
+        content.add(new Button(Command.create("xxxRun tests menu", null, (e) -> {
+            new ScreenRunTests(ScreenRepair.this).show();
+        })));
+
         content.add(new Button(new Command("Storage location info") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -817,23 +825,6 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        content.add(new Button(new Command("Repair list of Categories") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                DAO.getInstance().setExecuteCleanup(true);
-                DAO.getInstance().cleanUpAllCategoriesFromParse();
-                DAO.getInstance().setExecuteCleanup(false);
-            }
-        }));
-
-        content.add(new Button(new Command("Repair list of ItemLists") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                DAO.getInstance().setExecuteCleanup(true);
-                DAO.getInstance().cleanUpAllItemListsInParse();
-                DAO.getInstance().setExecuteCleanup(false);
-            }
-        }));
 
         content.add(
                 new Button(new Command("Simulate notification", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
@@ -1051,32 +1042,6 @@ public class ScreenRepair extends MyForm {
                 }
                 ));
 
-        content.add(
-                new Button(new Command("Log all data inconsistencies", Icons.get().iconSettingsLabelStyle) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt
-                    ) {
-                        if (Dialog.show("INFO", "This will report all data inconsistencies and send them in a log file", "OK", "Cancel")) {
-                            DAO.getInstance().cleanUpAllBadObjectReferences(false);
-                            Log.sendLog();
-                        }
-                    }
-                }
-                ));
-
-        content.add(
-                new Button(new Command("Clean up all data inconsistencies", Icons.get().iconSettingsLabelStyle) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt
-                    ) {
-                        if (Dialog.show("WARNING", "This will log AND repair all data inconsistencies", "OK", "Cancel")) {
-                            DAO.getInstance().cleanUpAllBadObjectReferences(true);
-                            Log.sendLog();
-                        }
-                    }
-                }
-                ));
-
         content.add(new Button(new Command("Show device info") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -1165,74 +1130,6 @@ public class ScreenRepair extends MyForm {
                     }
                 }
                 ));
-
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        content.add(
-//                new Button(new Command("TimerNew", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
-//                    @Override
-//                    public void actionPerformed(ActionEvent evt
-//                    ) {
-//                        Item item = new Item("timerTest");
-//                        item.setActualEffort(MyDate.MINUTE_IN_MILLISECONDS * 20);
-//                        item.setEstimate(MyDate.MINUTE_IN_MILLISECONDS * 30);
-//                        item.setRemaining(MyDate.MINUTE_IN_MILLISECONDS * 5);
-////                if (ScreenTimerNew.getInstance().isTimerRunning()) {
-////                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer??
-//////                    item.setTaskInterrupted(ScreenTimerNew.getInstance().getTimedItemXXX());
-////                }
-//                        ScreenTimer2.getInstance().startInterrupt(item, (MyForm) content.getComponentForm());
-//                    }
-//                }
-//                ));
-//</editor-fold>
-        Button createTestValues = new Button(new Command("Create test values") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                Item i;
-
-//                ItemListList ilist = DAO.getInstance().getItemListList();
-                ItemListList ilist = ItemListList.getInstance();
-
-                ItemList list2 = new ItemList("testList2", false);
-                DAO.getInstance().save(list2);
-
-                ilist.addToList(list2);
-
-                list2.addToList(new Item("task23", 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28), true));
-                list2.addToList(new Item("task22", 15, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 21), true));
-                list2.addToList(new Item("task21", 5, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 14), true));
-                DAO.getInstance().save(list2);
-
-                ItemList list1 = new ItemList("testList1", false);
-                DAO.getInstance().save(list1);
-                ilist.addToList(list1);
-
-                list1.addToList(new Item("task13", 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28), true));
-                list1.addToList(new Item("task12", 15, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 21), true));
-                list1.addToList(new Item("task11", 5, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 14), true));
-                DAO.getInstance().save(list1);
-
-                DAO.getInstance().save(ilist);
-            }
-        });
-
-        content.add(createTestValues);
-
-        //add ItemListList as owner of all ItemLists
-        Button fixItemItemListRefsTestValues = new Button(new Command("Migrate ItemItemList refs to ItemListList test values") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                List<ItemList> itemLists = (List<ItemList>) DAO.getInstance().getAllItemListsFromParse();
-                for (ItemList itemList : itemLists) {
-                    itemList.setOwner(ItemListList.getInstance());
-                    DAO.getInstance().save(itemList);
-                }
-                ItemListList.getInstance().setList(itemLists);
-                DAO.getInstance().save(ItemListList.getInstance());
-            }
-        });
-
-        content.add(fixItemItemListRefsTestValues);
 
 //        Button doubleOwnerButton = new Button(new Command("Showtasks belonging to more than one list") {
 //            @Override

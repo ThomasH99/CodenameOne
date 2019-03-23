@@ -23,6 +23,7 @@ import com.parse4cn1.ParseQuery;
 import com.parse4cn1.ParseUser;
 import com.parse4cn1.callback.GetCallback;
 import com.parse4cn1.util.Logger;
+import static com.todocatalyst.todocatalyst.Item.PARSE_OWNER_ITEM;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -264,6 +265,34 @@ public class DAO {
             Log.e(ex);
         }
         return item;
+    }
+
+    public List<Item> fetchAllItemsOwnedByItemList(ItemList itemList) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
+        query.whereDoesNotExist(Item.PARSE_TEMPLATE);
+        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        query.whereEqualTo(Item.PARSE_OWNER_LIST, itemList);
+        try {
+            List items = query.find();
+            return items;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;
+    }
+
+    public List<Item> fetchAllItemsWithThisCategory(Category category) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
+        query.whereDoesNotExist(Item.PARSE_TEMPLATE);
+        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        query.whereEqualTo(Item.PARSE_CATEGORIES, category);
+        try {
+            List items = query.find();
+            return items;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;
     }
 
     public WorkSlot fetchWorkSlot(String objectId) {
@@ -620,6 +649,7 @@ public class DAO {
         }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public ParseObject fetchIfNeededReturnCachedIfAvailXXXCANNOT_RETURN_APRSEOBJECT(String parseObjectId) {
 //        if (parseObjectId == null||parseObjectId.length()==0) {
 //            return null;
@@ -637,6 +667,7 @@ public class DAO {
 //            }
 //        }
 //    }
+//</editor-fold>
     public void fetchAllElementsInSublistXXX(ItemAndListCommonInterface itemOrItemListOrCategoryOrList) {
         fetchAllElementsInSublistXXX((ParseObject) itemOrItemListOrCategoryOrList, false);
     }
@@ -739,121 +770,187 @@ public class DAO {
         return count;
     }
 
-    private ParseQuery<Item> getDueAndOrWaitingTodayQuery(boolean includeWaiting, boolean includeStartingToday) {
-        Date now = new Date();
+    private List removeDuplicates(List list) {
+        List noDups = new ArrayList();
+        for (Object obj : list) {
+            if (!list.contains(obj))
+                noDups.add(obj);
+        }
+        return noDups;
+    }
 
-        Date startOfToday = MyDate.getStartOfDay(now);
-//        Date endOfToday = MyDate.getEndOfDay(now);
-        Date startOfTomorrow = new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private ParseQuery<Item> getDueAndOrWaitingTodayQuery(boolean includeWaiting, boolean includeStartingToday) {
+//    private ParseQuery<Item> getDueAndOrWaitingTodayQuery(boolean includeWaiting, boolean includeStartingToday) {
+//        Date startDate = new Date(System.currentTimeMillis() - MyPrefs.includeOverdueFromThisManyPastDays.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//
+//        Date startOfToday = MyDate.getStartOfDay(startDate);
+////        Date endOfToday = MyDate.getEndOfDay(now);
+//        Date startOfTomorrow = new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS);
+//
+//        List<ParseQuery> queries = new ArrayList<>();
+//
+//        ParseQuery<Item> query = null;
+//
+//        ParseQuery<Item> queryDueToday = ParseQuery.getQuery(Item.CLASS_NAME);
+//        queryDueToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfToday);
+//        queryDueToday.whereLessThan(Item.PARSE_DUE_DATE, startOfTomorrow);
+////        queryDueToday.whereContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.CREATED.toString(), ItemStatus.ONGOING.toString(), ItemStatus.WAITING.toString()))); //item that are NOT DONE or CANCELLED
+//        queryDueToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
+////        setupItemQueryNoTemplatesLimit1000(queryDueToday);
+//        queryDueToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
+//        queryDueToday.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//
+//        ParseQuery<Item> queryWaitingExpiresToday = null;
+//        if (includeWaiting) {
+//            queryWaitingExpiresToday = ParseQuery.getQuery(Item.CLASS_NAME);
+//            queryWaitingExpiresToday.whereGreaterThanOrEqualTo(Item.PARSE_WAITING_TILL_DATE, startOfToday);
+//            queryWaitingExpiresToday.whereLessThan(Item.PARSE_WAITING_TILL_DATE, startOfTomorrow);
+//            if (false) {
+//                queryWaitingExpiresToday.whereLessThanOrEqualTo(Item.PARSE_DUE_DATE, startOfToday); //don't get Waiting tasks that are due today
+//                queryWaitingExpiresToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfTomorrow); //don't get Waiting tasks that are due today
+//            }
+//            queryWaitingExpiresToday.whereEqualTo(Item.PARSE_STATUS, ItemStatus.WAITING.toString()); //item that are NOT DONE or CANCELLED
+////        queryDueToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), ItemStatus.ONGOING.toString(), ItemStatus.CREATED.toString()))); //item that are NOT DONE or CANCELLED
+////        setupItemQueryNoTemplatesLimit1000(queryWaitingExpiresToday);
+//            queryWaitingExpiresToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
+//            queryWaitingExpiresToday.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//        }
+//
+//        ParseQuery<Item> queryStartToday = null;
+//        if (includeStartingToday) {
+//            queryStartToday = ParseQuery.getQuery(Item.CLASS_NAME);
+//            queryStartToday.whereGreaterThanOrEqualTo(Item.PARSE_START_BY_DATE, startOfToday);
+//            queryStartToday.whereLessThan(Item.PARSE_START_BY_DATE, startOfTomorrow);
+//            if (false) {
+//                queryStartToday.whereLessThanOrEqualTo(Item.PARSE_DUE_DATE, startOfToday); //don't get Waiting tasks that are due today
+//                queryStartToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfTomorrow); //don't get Waiting tasks that are due today
+//            }
+////            queryStartToday.whereEqualTo(Item.PARSE_STATUS, ItemStatus.WAITING.toString()); //item that are NOT DONE or CANCELLED
+////            queryStartToday.whereContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.CREATED.toString(), ItemStatus.ONGOING.toString()))); //item that are NOT DONE or CANCELLED, don't include WAITING since waiting for a later date overrides
+//            queryStartToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), ItemStatus.WAITING.toString()))); //item that are NOT DONE or CANCELLED, don't include WAITING since waiting for a later date overrides
+//            queryStartToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
+//            queryStartToday.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+////        setupItemQueryNoTemplatesLimit1000(queryStartToday);
+//        }
+//
+//        //TODO!!!! include tasks fitting into WorkSlots scheduled for today
+//        try {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (includeWaiting && includeStartingToday) {
+//////                query = ParseQuery.getOrQuery(Arrays.asList(queryDueToday, queryWaitingExpiresToday, queryStartToday)); //check if return order is same as order of OR queries
+////                query = ParseQuery.getOrQuery(Arrays.asList(queryStartToday, queryWaitingExpiresToday, queryDueToday)); //check if return order is same as order of OR queries
+////            } else if (includeWaiting) {
+////                query = ParseQuery.getOrQuery(Arrays.asList(queryWaitingExpiresToday, queryDueToday));
+////            } else if (includeStartingToday) {
+////                query = ParseQuery.getOrQuery(Arrays.asList(queryStartToday, queryDueToday));
+////            } else {
+////                query = queryDueToday;
+////            }
+////</editor-fold>
+//            query = ParseQuery.getOrQuery(queries);
+//            query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+////        setupItemQueryNoTemplatesLimit1000(query); //NO, putting a query at this level breaks the request(???)
+//        return query;
+//    }
+//</editor-fold>
+//    public List<ItemAndListCommonInterface> getTodayDueAndOrWaitingOrWorkSlotsItems(boolean includeWaiting, boolean includeStartingToday) {
+    public List<ItemAndListCommonInterface> getToday() {
+//        ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
+
+        List<ParseQuery> queries = new ArrayList<>();
 
         ParseQuery<Item> query = null;
 
-        ParseQuery<Item> queryDueToday = ParseQuery.getQuery(Item.CLASS_NAME);
-        queryDueToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfToday);
-        queryDueToday.whereLessThan(Item.PARSE_DUE_DATE, startOfTomorrow);
-//        queryDueToday.whereContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.CREATED.toString(), ItemStatus.ONGOING.toString(), ItemStatus.WAITING.toString()))); //item that are NOT DONE or CANCELLED
-        queryDueToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
-//        setupItemQueryNoTemplatesLimit1000(queryDueToday);
-        queryDueToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
-        queryDueToday.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        Date startOfToday = MyDate.getStartOfDay(new Date());
+        Date startOfTomorrow = new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS);
 
-        ParseQuery<Item> queryWaitingExpiresToday = null;
-        if (includeWaiting) {
-            queryWaitingExpiresToday = ParseQuery.getQuery(Item.CLASS_NAME);
+        Date startDate = new Date(System.currentTimeMillis() - MyPrefs.todayViewIncludeOverdueFromThisManyPastDays.getInt() * MyDate.DAY_IN_MILLISECONDS);
+        ParseQuery<Item> queryDueToday = ParseQuery.getQuery(Item.CLASS_NAME);
+        queryDueToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startDate);
+        queryDueToday.whereLessThan(Item.PARSE_DUE_DATE, startOfTomorrow);
+
+        queryDueToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
+
+        queryDueToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
+        queryDueToday.whereDoesNotExist(Item.PARSE_DELETED_DATE); //or deleted
+        queries.add(queryDueToday);
+
+        if (MyPrefs.todayViewIncludeWaitingExpiringToday.getBoolean()) {
+            ParseQuery<Item> queryWaitingExpiresToday = ParseQuery.getQuery(Item.CLASS_NAME);
             queryWaitingExpiresToday.whereGreaterThanOrEqualTo(Item.PARSE_WAITING_TILL_DATE, startOfToday);
             queryWaitingExpiresToday.whereLessThan(Item.PARSE_WAITING_TILL_DATE, startOfTomorrow);
-            if (false) {
+            if (false) { //TODO!!! find a way to eliminate duplicates, e.g. a task which is both due today, waiting till today and has an alarm today...
                 queryWaitingExpiresToday.whereLessThanOrEqualTo(Item.PARSE_DUE_DATE, startOfToday); //don't get Waiting tasks that are due today
                 queryWaitingExpiresToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfTomorrow); //don't get Waiting tasks that are due today
             }
             queryWaitingExpiresToday.whereEqualTo(Item.PARSE_STATUS, ItemStatus.WAITING.toString()); //item that are NOT DONE or CANCELLED
-//        queryDueToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), ItemStatus.ONGOING.toString(), ItemStatus.CREATED.toString()))); //item that are NOT DONE or CANCELLED
-//        setupItemQueryNoTemplatesLimit1000(queryWaitingExpiresToday);
+
             queryWaitingExpiresToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
             queryWaitingExpiresToday.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+            queries.add(queryWaitingExpiresToday);
         }
 
-        ParseQuery<Item> queryStartToday = null;
-        if (includeStartingToday) {
-            queryStartToday = ParseQuery.getQuery(Item.CLASS_NAME);
+        if (MyPrefs.todayViewIncludeStartingToday.getBoolean()) {
+            ParseQuery<Item> queryStartToday = ParseQuery.getQuery(Item.CLASS_NAME);
             queryStartToday.whereGreaterThanOrEqualTo(Item.PARSE_START_BY_DATE, startOfToday);
             queryStartToday.whereLessThan(Item.PARSE_START_BY_DATE, startOfTomorrow);
-            if (false) {
-                queryStartToday.whereLessThanOrEqualTo(Item.PARSE_DUE_DATE, startOfToday); //don't get Waiting tasks that are due today
-                queryStartToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfTomorrow); //don't get Waiting tasks that are due today
-            }
-//            queryStartToday.whereEqualTo(Item.PARSE_STATUS, ItemStatus.WAITING.toString()); //item that are NOT DONE or CANCELLED
-//            queryStartToday.whereContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.CREATED.toString(), ItemStatus.ONGOING.toString()))); //item that are NOT DONE or CANCELLED, don't include WAITING since waiting for a later date overrides
             queryStartToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), ItemStatus.WAITING.toString()))); //item that are NOT DONE or CANCELLED, don't include WAITING since waiting for a later date overrides
+
             queryStartToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
             queryStartToday.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-//        setupItemQueryNoTemplatesLimit1000(queryStartToday);
+            queries.add(queryStartToday);
         }
 
-        //TODO!!!! include tasks fitting into WorkSlots scheduled for today
+        if (MyPrefs.todayViewIncludeAlarmsExpiringToday.getBoolean()) {
+            ParseQuery<Item> queryStartToday = ParseQuery.getQuery(Item.CLASS_NAME);
+            queryStartToday.whereGreaterThanOrEqualTo(Item.PARSE_ALARM_DATE, startOfToday);
+            queryStartToday.whereLessThan(Item.PARSE_ALARM_DATE, startOfTomorrow);
+            queryStartToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), ItemStatus.WAITING.toString()))); //item that are NOT DONE or CANCELLED, don't include WAITING since waiting for a later date overrides
+
+            queryStartToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetchFromCacheOnly any templates
+            queryStartToday.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+            queries.add(queryStartToday);
+        }
+
+        List allTodayElements = new ArrayList();
+
+        //get all items
         try {
-            if (includeWaiting && includeStartingToday) {
-//                query = ParseQuery.getOrQuery(Arrays.asList(queryDueToday, queryWaitingExpiresToday, queryStartToday)); //check if return order is same as order of OR queries
-                query = ParseQuery.getOrQuery(Arrays.asList(queryStartToday, queryWaitingExpiresToday, queryDueToday)); //check if return order is same as order of OR queries
-            } else if (includeWaiting) {
-                query = ParseQuery.getOrQuery(Arrays.asList(queryWaitingExpiresToday, queryDueToday));
-            } else if (includeStartingToday) {
-                query = ParseQuery.getOrQuery(Arrays.asList(queryStartToday, queryDueToday));
-            } else {
-                query = queryDueToday;
-            }
+            query = ParseQuery.getOrQuery(queries);
             query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
+            query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+            List result = query.find();
+            allTodayElements.addAll(result);
         } catch (ParseException ex) {
             Log.e(ex);
         }
-//        setupItemQueryNoTemplatesLimit1000(query); //NO, putting a query at this level breaks the request(???)
-        return query;
-    }
 
-    public List<ItemAndListCommonInterface> getTodayDueAndOrWaitingOrWorkSlotsItems(boolean includeWaiting, boolean includeStartingToday) {
-//        List<Item> results;
-        ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
-        query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
-        try {
-            List results = query.find();
-            fetchListElementsIfNeededReturnCachedIfAvail(results);
+        //get workslots
+        //WORKSLOTS - get workslots starting today
+        if (MyPrefs.todayViewIncludeWorkSlotsCoveringToday.getBoolean()) { //fetch WorkSLots that have workTime between now and end of today
 
-            //WORKSLOTS - get workslots starting today
-            if (true) { //fetch WorkSLots that have workTime between now and end of today
-                Date now = new Date();
-//        Date startOfToday = MyDate.getStartOfDay(now);
-//        Date startOfTomorrow = new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS);
-                Date startOfTomorrow = MyDate.getStartOfDay(new Date(now.getTime() + MyDate.DAY_IN_MILLISECONDS));
+            ParseQuery<WorkSlot> queryWorkSlots = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+            queryWorkSlots.whereGreaterThan(WorkSlot.PARSE_END_TIME, new Date()); //slots that end *after* *now*
+            queryWorkSlots.whereLessThan(WorkSlot.PARSE_START_TIME, startOfTomorrow); //and starts before tomorrow
 
-                ParseQuery<WorkSlot> queryWorkSlots = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
-                queryWorkSlots.whereGreaterThan(WorkSlot.PARSE_END_TIME, now); //slots that end after now
-                queryWorkSlots.whereLessThan(WorkSlot.PARSE_START_TIME, startOfTomorrow); //and starts before tomorrow
-                queryWorkSlots.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-//                queryWorkSlots.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
-                query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+            queryWorkSlots.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+            query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
 
-//        setupItemQueryNoTemplatesLimit1000(queryDueToday);
-//        queryWorkSlots.whereDoesNotExist(WorkSlot.PARSE_CANCELLED); //don't fetchFromCacheOnly any templates
+            try {
                 List<WorkSlot> resultsWorkSlots = queryWorkSlots.find();
-                fetchListElementsIfNeededReturnCachedIfAvail(resultsWorkSlots);
-//                results.addAll(resultsWorkSlots);
-//add workslots as 'artificial' Items
-                for (WorkSlot workSlot : resultsWorkSlots) {
-//                    results.add(workSlot.getItemsInWorkSlotAsArticialItem()); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
-                    results.add(workSlot); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
-                }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                if (Config.INLINE_WORKSHOP_TESTCASE && resultsWorkSlots.isEmpty()) {
-//                    WorkSlot ws = new WorkSlot();
-//                    ws.getTasksInWorkSlotForToday():
-//                }
-//</editor-fold>
+                allTodayElements.addAll(resultsWorkSlots); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
+            } catch (ParseException ex) {
+                Log.e(ex);
             }
-            return results;
-        } catch (ParseException ex) {
-            Log.e(ex);
         }
-        return new ArrayList();
+
+        removeDuplicates(allTodayElements); //TODO!!!: will remove duplicate tasks, but not tasks in workslots, not sure this is an issue?!
+        fetchListElementsIfNeededReturnCachedIfAvail(allTodayElements);
+        return allTodayElements;
     }
 
     public List<Item> getOverdue() {
@@ -878,20 +975,21 @@ public class DAO {
         return new ArrayList();
     }
 
-    public int getDueAndOrWaitingTodayCount(boolean includeWaiting, boolean includeStartingToday) {
-        //DONE!!!! include Waiting expiring today (OrQuery)
-//        int count = 0;
-//TODO!!! this is called on app exit/stop(), don't send a query then
-        ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
-        try {
-            int count = query.count();
-            return count;
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        return 0;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public int getDueAndOrWaitingTodayCount(boolean includeWaiting, boolean includeStartingToday) {
+//        //DONE!!!! include Waiting expiring today (OrQuery)
+////        int count = 0;
+////TODO!!! this is called on app exit/stop(), don't send a query then
+//        ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
+//        try {
+//            int count = query.count();
+//            return count;
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        return 0;
+//    }
+//</editor-fold>
     /**
      * returns future Undone tasks with a future StartDate or DueDate
      *
@@ -947,7 +1045,20 @@ public class DAO {
      * @return
      */
     public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
-        return getDueAndOrWaitingTodayCount(includeWaiting, includeStartingToday);
+        //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
+//        return getDueAndOrWaitingTodayCount(includeWaiting, includeStartingToday);
+        List<ItemAndListCommonInterface> all = getToday();
+        int count = 0;
+        for (ItemAndListCommonInterface elt : all) {
+            if (elt instanceof WorkSlot)
+                count += ((WorkSlot) elt).getItemsInWorkSlot().size();
+            else if (elt instanceof Item) {
+                Item item = (Item) elt;
+                if (item.isProject())
+                    count += item.getLeafTasksAsList((itm) -> !itm.isDone()).size();
+            } else count++;
+        }
+        return count;
     }
 
 //<editor-fold defaultstate="collapsed" desc="//<editor-fold defaultstate="collapsed" desc="comment">
@@ -1294,6 +1405,11 @@ public class DAO {
         } catch (ParseException ex) {
             Log.e(ex);
         }
+        TemplateList templateListTmp = (TemplateList) DAO.getInstance().fetchFromCacheOnly(templateList.getObjectIdP()); //use same object if already cached
+//        TemplateList templateListTmp = (TemplateList) DAO.getInstance().fetchItemList(templateList.getObjectIdP());
+        if (templateListTmp != null)
+            templateList = templateListTmp;
+
 //        return TemplateList.getInstance();
         cachePut(templateList); //cache list 
         return templateList;
@@ -1307,7 +1423,8 @@ public class DAO {
         List<TimerInstance> results = null;
         ParseQuery<TimerInstance> query = ParseQuery.getQuery(TimerInstance.CLASS_NAME);
 //        query.orderByAscending(Item.PARSE_CREATED_AT); //assuming TimerInstances are necessarily created in the order they appear (and interrupt previous tiemrs)
-        query.orderByDescending(Item.PARSE_CREATED_AT); //assuming TimerInstances are necessarily created in the order they appear (and interrupt previous tiemrs)
+//        query.orderByDescending(Item.PARSE_CREATED_AT); //assuming TimerInstances are necessarily created in the order they appear (and interrupt previous tiemrs)
+        query.orderByAscending(Item.PARSE_CREATED_AT); //assuming TimerInstances are necessarily created in the order they appear (and interrupt previous tiemrs)
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
         try {
@@ -1556,6 +1673,10 @@ public class DAO {
     }
 
     public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks, boolean onlyWithoutOwner) {
+        return getAllItems(includeTemplates, onlyLeafTasks, onlyWithoutOwner, true);
+    }
+
+    public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks, boolean onlyWithoutOwner, boolean fetchFromScratch) {
 
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         if (!includeTemplates) {
@@ -1595,7 +1716,10 @@ public class DAO {
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        cacheList(results);
+        if (fetchFromScratch)
+            cacheList(results);
+        else
+            fetchListElementsIfNeededReturnCachedIfAvail(results);
         return results;
 //        return (List<Item>) getAll(Item.CLASS_NAME);
     }
@@ -2400,8 +2524,12 @@ public class DAO {
             ParseObject parseObject;
             while (!vector.isEmpty()) {
                 parseObject = (ParseObject) vector.remove(0);
-                Log.p("BACKGROUND saving: " + parseObject);
-                saveImpl((ParseObject) parseObject, true);
+                if (parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave())
+                    Log.p("BACKGROUND saving IGNORE: " + parseObject);
+                else {
+                    Log.p("BACKGROUND saving: " + parseObject);
+                    saveImpl((ParseObject) parseObject, true);
+                }
             }
         });
     }
@@ -2919,7 +3047,6 @@ public class DAO {
 //        return unallocated;
 //    }
 //</editor-fold>
-
     /**
      * get all workslots that have at least some available time within the
      * interval between startDate and endDate. after* startDate and NOT after
@@ -2996,7 +3123,6 @@ public class DAO {
 //        return results;
 //    }
 //</editor-fold>
-
     /**
      *
      * get all workslots (including past/expired) ones
@@ -3739,219 +3865,16 @@ public class DAO {
     }
 
     /**
-     *
-     * @param item
-     * @param checkOwner check if Owner exists and if item is included in the
-     * owner's list
-     */
-    private void cleanUpBadObjectReferencesItem(Item item) { //, boolean checkOwner) {
-//        boolean checkOwner = true;
-        //Check that if an owner is defined, it exists, and that it contains the item in its list. NB! ItemLists must then only check that their items point the themselves and not another list
-//        if (checkOwner && item.getOwner() != null) {
-        ItemAndListCommonInterface owner = item.getOwner();
-        if (owner != null) {
-            if (notOnParseServer((ParseObject) owner)) {
-                Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to Owner objectId=" + ((ParseObject) item.getOwner()).getObjectIdP(), logLevel);
-                if (executeCleanup) {
-                    item.setOwner(null);
-                }
-            } else if (owner.getItemIndex(item) == -1) {
-                Log.p("CLEANUP: Item \"" + item.getText() + "\"'s Owner:\"" + owner + "\" does not include item", logLevel);
-                if (executeCleanup) {
-                    //an item's listed owner takes precedence (so, objects determine their owner, it is not (one of) the owner that changes the item's owner to themselve
-                    item.setOwner(null); //hack to avoid that addToList below complains that owner is already defined
-//                    item.getOwner().addToList(item);
-                    owner.addToList(item);
-//                    item.getOwner().getList(item);
-                }
-            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (item.getOwner() != null && !item.getOwner().getList().contains(item))
-//                    cleanUpMissingInclusionInList("Item \"" + item + "\" owner's \"" + item.getOwner() + "\" does not reference the item (owner's list=" + item.getOwner().getList() + ")",
-//                            item, item.getOwner().getList())) {
-//                if (executeCleanup) {
-//                    DAO.getInstance().save((ParseObject) item.getOwner());
-//                }
-//            };
-//</editor-fold>
-        }
-
-        //Check repeat rule exists
-        if (item.getRepeatRule() != null && notOnParseServer((ParseObject) item.getRepeatRule())) {
-            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) item.getRepeatRule()).getObjectIdP(), logLevel);
-            if (executeCleanup) {
-                item.setRepeatRule(null); //remove reference to inexisting RepeatRule
-            }
-        }
-
-        //INterrupted tasks
-        if (item.getTaskInterrupted() != null && notOnParseServer((ParseObject) item.getTaskInterrupted())) {
-            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to TaskInterrupted, objectId=" + ((ParseObject) item.getTaskInterrupted()).getObjectIdP(), logLevel);
-            if (executeCleanup) {
-                item.setTaskInterrupted(null); //remove reference to inexisting Item
-            }
-        }
-
-        //Dependent tasks
-        if (item.getDependingOnTask() != null && notOnParseServer((ParseObject) item.getDependingOnTask())) {
-            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to DependingOnTask, objectId=" + ((ParseObject) item.getDependingOnTask()).getObjectIdP(), logLevel);
-            if (executeCleanup) {
-                item.setDependingOnTask(null); //remove reference to inexisting Item
-            }
-        }
-
-        //Original source (eg when copied from template)
-        if (item.getSource() != null && notOnParseServer((ParseObject) item.getSource())) {
-            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to Original source, objectId=" + ((ParseObject) item.getSource()).getObjectIdP(), logLevel);
-            if (executeCleanup) {
-                item.setSource(null); //remove reference to inexisting Item
-            }
-        }
-
-        //CATEGORIES
-//        cleanUpBadObjectReferences(item.getCategories()); //remove links to non-existing Categories
-        for (Category cat : item.getCategories()) {
-//            List list;
-            //DON'T test for templates (the template should not be in the category
-            if (item.isTemplate()) {
-                if (cat.contains(item)) {
-                    Log.p("CLEANUP: Template \"" + item.getText() + "\" is wrongly referenced in Category \"" + cat, logLevel);
-                    if (executeCleanup) {
-                        cat.removeItemFromCategory(item, false);
-                    }
-                }
-            } else {
-                List list2 = cat.getListFull();
-//                if ((list = cleanUpMissingInclusionInList("Item \"" + item + "\" has Category \"" + cat + "\" but category does not reference the item, category's list (" + cat.getList() + ")", item, list2)) != null) {
-//                cat.addItemToCategory(item, false); //add item to category //NO, done in cleanupMissing
-                if (list2 != null && !list2.contains(item)) {
-                    Log.p("CLEANUP: Item \"" + item
-                            + "\" (ObjId=" + item.getObjectIdP() + ") has Category \"" + cat
-                            + "\" (ObjId=" + cat.getObjectIdP() + ") but category does not reference the item, category's list (" + cat
-                            .getListFull() + ")", logLevel
-                    );
-                    if (executeCleanup) {
-                        list2.add(item);
-                        cat.setList(list2);
-                    }
-                }
-            }
-        }
-        List list3 = item.getCategories();
-        if (cleanUpDuplicatesInList("Item \"" + item + "\" (ObjId=" + item.getObjectIdP() + ") list of categories", list3, executeCleanup) && executeCleanup) {
-//        if (executeCleanup) {
-            item.setCategories(list3);
-        }
-
-        //SUBTASKS
-        List<Item> subtasks = item.getListFull();
-//        for (Item subtask : subtasks) {
-        int i = 0;
-        while (i < subtasks.size()) {
-            Item subtask = subtasks.get(i);
-            if (subtask.getOwner() == null) {
-                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has owner==null", logLevel);
-                if (executeCleanup) {
-                    subtask.setOwner(item);
-                    DAO.getInstance().save(subtask);
-                }
-//                i++;
-//            } else if (!subtask.getOwner().equals(item)) {
-            }
-            if (false && !subtask.getOwner().equals(item)) { //do not this this for subtasks - incompatible with the check above
-                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has another owner==\"" + subtask.getOwner() + "\"", logLevel);
-                if (executeCleanup) {
-//                    subtasks.remove(subtask); //
-                    subtask.setOwner(item); //force owner of subtask to this item
-                    item.setList(subtasks);
-//                } else {
-                }
-//                    i++;
-//            } else {
-//                i++;
-            }
-            i++;
-
-        }
-
-        cleanUpDuplicatesInList("Item \"" + item + "\" has duplicated subtask (subtasks=" + subtasks + ")", subtasks, executeCleanup);
-        //finally save
-        if (executeCleanup) {
-            item.setList(subtasks);
-            save(item);
-        }
-
-        //Workslots : WorkSlots point to their owner, NOT the other way around, so nothing to clean up here 
-    }
-    //    private void cleanUpBadObjectReferencesCategory(Category category) {
-
-    /**
-    cleans up a Category or ItemList. checks that each item in the list is on the server, adn that they refer back to the list/category
+    cleans up a Category or ItemList. On the full list. 
+     Check it belongs to ItemListList/CategoryList.
+     Check that each item has the list/category as owner.
+     Check that each item in the list is on the server. 
+     Check if there are any Items with this list as owner which are NOT in the list.
+     TODO: handle bags (use getItemAt/removeItem etc).
     @param itemListOrCategory 
      */
     private void cleanUpBadObjectReferencesItemListOrCategory(ItemList itemListOrCategory) {
-        int i = 0;
-        while (i < itemListOrCategory.getSize()) {
-            boolean moveToNextIndex = true; //hack to make sure we don't skip an i when an element in the list is removed
-            Object elt = itemListOrCategory.getItemAt(i);
-            //if not on server, simply remove the element
-            if (elt instanceof ParseObject && notOnParseServer((ParseObject) elt)) {
-//                    logError(itemListOrCategory, (ParseObject)elt);
-                if (itemListOrCategory instanceof Category) {
-                    Log.p("CLEANUP: Category \"" + itemListOrCategory + "\" bad ref to ObjId \"" + ((ParseObject) elt).getObjectIdP());
-                } else if (itemListOrCategory instanceof ItemList) {
-                    Log.p("CLEANUP: ItemList \"" + itemListOrCategory + "\" bad ref to ObjId \"" + ((ParseObject) elt).getObjectIdP());
-                }
-                if (executeCleanup) {
-//                    itemListOrCategory.remove(i);
-                    itemListOrCategory.removeItem(i);
-                    moveToNextIndex = false;
-                }
 
-            } else if (elt instanceof Item) { // if on the server AND and item
-                Item item = (Item) elt;
-//Category refers to elt, but elt does not have Category in its list
-                if (itemListOrCategory instanceof Category) {
-                    if (!item.getCategories().contains(itemListOrCategory)) { //if item does not reference the catogry, then add the category
-                        Log.p("CLEANUP: Category \"" + itemListOrCategory + "\" references Item \"" + item + "\" but no reference back (" + item.getCategories() + ")");
-                        if (executeCleanup) {
-                            item.addCategoryToItem((Category) itemListOrCategory, false); //add missing ref
-                            save(item);
-                        }
-                    }
-                    //ItemList refers to elt, but elt does not have Category in its list
-                } else if (itemListOrCategory instanceof ItemList) {
-//                    if (item.getOwner() == null || !item.getOwner().equals(itemListOrCategory)) { 
-                    if (item.getOwner() == null) { //IF ever an item is referenced from multiple lists or projects, the first one 'wins' and becomes the owner
-                        Log.p("CLEANUP: ItemList \"" + itemListOrCategory + "\" references Item \"" + item + "\" but is not Owner (owner=" + item.getOwner() + ")");
-                        if (executeCleanup) {
-//                            if (item.getOwner() == null) {
-                            item.setOwner((ItemList) itemListOrCategory); //if null, add ItemList as owner
-                            save(item);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                            } else {
-////                                itemListOrCategory.remove(i); //if another is owner, remove item from this list
-//                                itemListOrCategory.removeItem(i); //if another is owner, remove item from this list
-//                                moveToNextIndex = false;
-//                            }
-//</editor-fold>
-                        }
-                    } // else: if owner is not null, then if the owner is wrong, it will be fixed when fixing the item itself elsewhere
-                }
-            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (itemListOrCategory instanceof ParseObject && executeCleanup) {
-//            if (executeCleanup) {
-//                save((ParseObject) itemListOrCategory);
-//            }
-//</editor-fold>
-            if (moveToNextIndex) {
-                i++;
-            }
-        }
-        if (executeCleanup) {
-            save(itemListOrCategory);
-        }
     }
 
 //    private boolean cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(RepeatRuleParseObject repeatRule, List<ItemAndListCommonInterface> instanceList) {
@@ -4395,7 +4318,7 @@ public class DAO {
 
 //    private void cleanUpWorkSlots(List<WorkSlot> listOfWorkSlots) {
 //    private void cleanUpWorkSlots(WorkSlotList listOfWorkSlots) {
-    private void cleanUpWorkSlots() {
+    void cleanUpWorkSlots(boolean executeCleanup) {
         WorkSlotList listOfWorkSlots = getAllWorkSlotsFromParse();
         Log.p("CLEANUP: number elements in list = " + listOfWorkSlots.size(), logLevel);
         for (int i = 0, size = listOfWorkSlots.size(); i < size; i++) {
@@ -4538,7 +4461,7 @@ public class DAO {
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: WORKSLOTS", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
-        cleanUpWorkSlots(); //Clean up links to removed ItemLists
+        cleanUpWorkSlots(executeCleanup); //Clean up links to removed ItemLists
 //        cleanUpWorkSlots(getAllWorkSlotsFromParse()); //Clean up links to removed ItemLists
 
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
@@ -4565,6 +4488,536 @@ public class DAO {
 
 //        Logger.getInstance().setLogLevel(oldParseLogLevel);
 //        cleanUpBadObjectReferences(getAllProjects()); //handled under Items
+    }
+
+    //--------  NEW cleanup procedures  -----------------------------------------------
+    /**
+     *
+     * @param item
+     * @param checkOwner check if Owner exists and if item is included in the
+     * owner's list
+     */
+    void cleanUpBadObjectReferencesItem(Item item) { //, boolean checkOwner) {
+//        boolean checkOwner = true;
+        //Check that if an owner is defined, it exists, and that it contains the item in its list. NB! ItemLists must then only check that their items point the themselves and not another list
+//        if (checkOwner && item.getOwner() != null) {
+        ItemAndListCommonInterface owner = item.getOwner();
+        if (owner != null) {
+            if (notOnParseServer((ParseObject) owner)) {
+                Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to Owner objectId=" + ((ParseObject) item.getOwner()).getObjectIdP(), logLevel);
+                if (executeCleanup) {
+                    item.setOwner(null);
+                }
+            } else if (owner.getItemIndex(item) == -1) {
+                Log.p("CLEANUP: Item \"" + item.getText() + "\"'s Owner:\"" + owner + "\" does not include item", logLevel);
+                if (executeCleanup) {
+                    //an item's listed owner takes precedence (so, objects determine their owner, it is not (one of) the owner that changes the item's owner to themselve
+                    item.setOwner(null); //hack to avoid that addToList below complains that owner is already defined
+//                    item.getOwner().addToList(item);
+                    owner.addToList(item);
+//                    item.getOwner().getList(item);
+                }
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (item.getOwner() != null && !item.getOwner().getList().contains(item))
+//                    cleanUpMissingInclusionInList("Item \"" + item + "\" owner's \"" + item.getOwner() + "\" does not reference the item (owner's list=" + item.getOwner().getList() + ")",
+//                            item, item.getOwner().getList())) {
+//                if (executeCleanup) {
+//                    DAO.getInstance().save((ParseObject) item.getOwner());
+//                }
+//            };
+//</editor-fold>
+        }
+
+        //Check repeat rule exists
+        if (item.getRepeatRule() != null && notOnParseServer((ParseObject) item.getRepeatRule())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) item.getRepeatRule()).getObjectIdP(), logLevel);
+            if (executeCleanup) {
+                item.setRepeatRule(null); //remove reference to inexisting RepeatRule
+            }
+        }
+
+        //INterrupted tasks
+        if (item.getTaskInterrupted() != null && notOnParseServer((ParseObject) item.getTaskInterrupted())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to TaskInterrupted, objectId=" + ((ParseObject) item.getTaskInterrupted()).getObjectIdP(), logLevel);
+            if (executeCleanup) {
+                item.setTaskInterrupted(null); //remove reference to inexisting Item
+            }
+        }
+
+        //Dependent tasks
+        if (item.getDependingOnTask() != null && notOnParseServer((ParseObject) item.getDependingOnTask())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to DependingOnTask, objectId=" + ((ParseObject) item.getDependingOnTask()).getObjectIdP(), logLevel);
+            if (executeCleanup) {
+                item.setDependingOnTask(null); //remove reference to inexisting Item
+            }
+        }
+
+        //Original source (eg when copied from template)
+        if (item.getSource() != null && notOnParseServer((ParseObject) item.getSource())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to Original source, objectId=" + ((ParseObject) item.getSource()).getObjectIdP(), logLevel);
+            if (executeCleanup) {
+                item.setSource(null); //remove reference to inexisting Item
+            }
+        }
+
+        //CATEGORIES
+//        cleanUpBadObjectReferences(item.getCategories()); //remove links to non-existing Categories
+        for (Category cat : item.getCategories()) {
+//            List list;
+            //DON'T test for templates (the template should not be in the category
+            if (item.isTemplate()) {
+                if (cat.contains(item)) {
+                    Log.p("CLEANUP: Template \"" + item.getText() + "\" is wrongly referenced in Category \"" + cat, logLevel);
+                    if (executeCleanup) {
+                        cat.removeItemFromCategory(item, false);
+                    }
+                }
+            } else {
+                List list2 = cat.getListFull();
+//                if ((list = cleanUpMissingInclusionInList("Item \"" + item + "\" has Category \"" + cat + "\" but category does not reference the item, category's list (" + cat.getList() + ")", item, list2)) != null) {
+//                cat.addItemToCategory(item, false); //add item to category //NO, done in cleanupMissing
+                if (list2 != null && !list2.contains(item)) {
+                    Log.p("CLEANUP: Item \"" + item
+                            + "\" (ObjId=" + item.getObjectIdP() + ") has Category \"" + cat
+                            + "\" (ObjId=" + cat.getObjectIdP() + ") but category does not reference the item, category's list (" + cat
+                            .getListFull() + ")", logLevel
+                    );
+                    if (executeCleanup) {
+                        list2.add(item);
+                        cat.setList(list2);
+                    }
+                }
+            }
+        }
+        List list3 = item.getCategories();
+        if (cleanUpDuplicatesInList("Item \"" + item + "\" (ObjId=" + item.getObjectIdP() + ") list of categories", list3, executeCleanup) && executeCleanup) {
+//        if (executeCleanup) {
+            item.setCategories(list3);
+        }
+
+        //SUBTASKS
+        List<Item> subtasks = item.getListFull();
+//        for (Item subtask : subtasks) {
+        int i = 0;
+        while (i < subtasks.size()) {
+            Item subtask = subtasks.get(i);
+            if (subtask.getOwner() == null) {
+                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has owner==null", logLevel);
+                if (executeCleanup) {
+                    subtask.setOwner(item);
+                    DAO.getInstance().save(subtask);
+                }
+//                i++;
+//            } else if (!subtask.getOwner().equals(item)) {
+            }
+            if (false && !subtask.getOwner().equals(item)) { //do not this this for subtasks - incompatible with the check above
+                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has another owner==\"" + subtask.getOwner() + "\"", logLevel);
+                if (executeCleanup) {
+//                    subtasks.remove(subtask); //
+                    subtask.setOwner(item); //force owner of subtask to this item
+                    item.setList(subtasks);
+//                } else {
+                }
+//                    i++;
+//            } else {
+//                i++;
+            }
+            i++;
+
+        }
+
+        cleanUpDuplicatesInList("Item \"" + item + "\" has duplicated subtask (subtasks=" + subtasks + ")", subtasks, executeCleanup);
+        //finally save
+        if (executeCleanup) {
+            item.setList(subtasks);
+            save(item);
+        }
+
+        //Workslots : WorkSlots point to their owner, NOT the other way around, so nothing to clean up here 
+    }
+
+    /**
+    clean up an Item (leaf-task or project with subtasks). Check subtasks have project as owner. 
+    Check if any tasks has project as owner (or another task as owner). 
+    Update inherited values and values derived from subtasks. 
+    Check that all referenced elements exist (Categories, owners, repeatRules
+    @param item 
+     */
+    void cleanUpItem(Item item) {
+//        boolean checkOwner = true;
+        //Check that if an owner is defined, it exists, and that it contains the item in its list. NB! ItemLists must then only check that their items point the themselves and not another list
+//        if (checkOwner && item.getOwner() != null) {
+        ItemAndListCommonInterface owner = item.getOwner();
+        if (owner != null) {
+            if (notOnParseServer((ParseObject) owner)) {
+                Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to Owner objectId=" + ((ParseObject) item.getOwner()).getObjectIdP(), logLevel);
+                if (executeCleanup) {
+                    item.setOwner(null);
+                }
+            } else if (owner.getItemIndex(item) == -1) {
+                Log.p("CLEANUP: Item \"" + item.getText() + "\"'s Owner:\"" + owner + "\" does not include item", logLevel);
+                if (executeCleanup) {
+                    //an item's listed owner takes precedence (so, objects determine their owner, it is not (one of) the owner that changes the item's owner to themselve
+                    item.setOwner(null); //hack to avoid that addToList below complains that owner is already defined
+//                    item.getOwner().addToList(item);
+                    owner.addToList(item);
+//                    item.getOwner().getList(item);
+                }
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (item.getOwner() != null && !item.getOwner().getList().contains(item))
+//                    cleanUpMissingInclusionInList("Item \"" + item + "\" owner's \"" + item.getOwner() + "\" does not reference the item (owner's list=" + item.getOwner().getList() + ")",
+//                            item, item.getOwner().getList())) {
+//                if (executeCleanup) {
+//                    DAO.getInstance().save((ParseObject) item.getOwner());
+//                }
+//            };
+//</editor-fold>
+        }
+
+        //Check repeat rule exists
+        if (item.getRepeatRule() != null && notOnParseServer((ParseObject) item.getRepeatRule())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) item.getRepeatRule()).getObjectIdP(), logLevel);
+            if (executeCleanup) {
+                item.setRepeatRule(null); //remove reference to inexisting RepeatRule
+            }
+        }
+
+        //INterrupted tasks
+        if (item.getTaskInterrupted() != null && notOnParseServer((ParseObject) item.getTaskInterrupted())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to TaskInterrupted, objectId=" + ((ParseObject) item.getTaskInterrupted()).getObjectIdP(), logLevel);
+            if (executeCleanup) {
+                item.setTaskInterrupted(null); //remove reference to inexisting Item
+            }
+        }
+
+        //Dependent tasks
+        if (item.getDependingOnTask() != null && notOnParseServer((ParseObject) item.getDependingOnTask())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to DependingOnTask, objectId=" + ((ParseObject) item.getDependingOnTask()).getObjectIdP(), logLevel);
+            if (executeCleanup) {
+                item.setDependingOnTask(null); //remove reference to inexisting Item
+            }
+        }
+
+        //Original source (eg when copied from template)
+        if (item.getSource() != null && notOnParseServer((ParseObject) item.getSource())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to Original source, objectId=" + ((ParseObject) item.getSource()).getObjectIdP(), logLevel);
+            if (executeCleanup) {
+                item.setSource(null); //remove reference to inexisting Item
+            }
+        }
+
+        //CATEGORIES
+//        cleanUpBadObjectReferences(item.getCategories()); //remove links to non-existing Categories
+        for (Category cat : item.getCategories()) {
+//            List list;
+            //DON'T test for templates (the template should not be in the category
+            if (item.isTemplate()) {
+                if (cat.contains(item)) {
+                    Log.p("CLEANUP: Template \"" + item.getText() + "\" is wrongly referenced in Category \"" + cat, logLevel);
+                    if (executeCleanup) {
+                        cat.removeItemFromCategory(item, false);
+                    }
+                }
+            } else {
+                List list2 = cat.getListFull();
+//                if ((list = cleanUpMissingInclusionInList("Item \"" + item + "\" has Category \"" + cat + "\" but category does not reference the item, category's list (" + cat.getList() + ")", item, list2)) != null) {
+//                cat.addItemToCategory(item, false); //add item to category //NO, done in cleanupMissing
+                if (list2 != null && !list2.contains(item)) {
+                    Log.p("CLEANUP: Item \"" + item
+                            + "\" (ObjId=" + item.getObjectIdP() + ") has Category \"" + cat
+                            + "\" (ObjId=" + cat.getObjectIdP() + ") but category does not reference the item, category's list (" + cat
+                            .getListFull() + ")", logLevel
+                    );
+                    if (executeCleanup) {
+                        list2.add(item);
+                        cat.setList(list2);
+                    }
+                }
+            }
+        }
+        List list3 = item.getCategories();
+        if (cleanUpDuplicatesInList("Item \"" + item + "\" (ObjId=" + item.getObjectIdP() + ") list of categories", list3, executeCleanup) && executeCleanup) {
+//        if (executeCleanup) {
+            item.setCategories(list3);
+        }
+
+        //SUBTASKS
+        List<Item> subtasks = item.getListFull();
+//        for (Item subtask : subtasks) {
+        int i = 0;
+        while (i < subtasks.size()) {
+            Item subtask = subtasks.get(i);
+            if (subtask.getOwner() == null) {
+                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has owner==null", logLevel);
+                if (executeCleanup) {
+                    subtask.setOwner(item);
+                    DAO.getInstance().save(subtask);
+                }
+//                i++;
+//            } else if (!subtask.getOwner().equals(item)) {
+            }
+            if (false && !subtask.getOwner().equals(item)) { //do not this this for subtasks - incompatible with the check above
+                Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has another owner==\"" + subtask.getOwner() + "\"", logLevel);
+                if (executeCleanup) {
+//                    subtasks.remove(subtask); //
+                    subtask.setOwner(item); //force owner of subtask to this item
+                    item.setList(subtasks);
+//                } else {
+                }
+//                    i++;
+//            } else {
+//                i++;
+            }
+            i++;
+
+        }
+
+        cleanUpDuplicatesInList("Item \"" + item + "\" has duplicated subtask (subtasks=" + subtasks + ")", subtasks, executeCleanup);
+        //finally save
+        if (executeCleanup) {
+            item.setList(subtasks);
+            save(item);
+        }
+
+        //Workslots : WorkSlots point to their owner, NOT the other way around, so nothing to clean up here 
+    }
+    //    private void cleanUpBadObjectReferencesCategory(Category category) {
+
+    private String itemToString(Item item) {
+        return "\"" + item.getText() + "\" [" + item.getObjectIdP() + "]";
+    }
+
+    /**
+    check correct owner, remove duplicates, check repeatRule(?)
+    @param owner
+    @param executeCleanup
+    @return 
+     */
+    boolean cleanUpWorkSlotList(ItemAndListCommonInterface owner, boolean executeCleanup) {
+        //TODO check if there are other elements which has a given workSlot in their list -> highly unlikely
+        WorkSlotList workSlotList = owner.getWorkSlotListN(false);
+        if (workSlotList == null) return false;
+        boolean hasDuplicates = false;
+        List<WorkSlot> workSlots = workSlotList.getWorkSlotListFull();
+        List<WorkSlot> uniques = new ArrayList<>();
+//        Log.p("CLEANUP: number elements in list = " + listOfWorkSlots.size(), logLevel);
+//        Log.p("CLEANUP: number elements in list = " + listOfWorkSlots.size(), logLevel);
+//        for (int i = 0, size = workSlots.size(); i < size; i++) {
+        int i = 0;
+        while (i < workSlots.size()) {
+            WorkSlot workSlot = workSlots.get(i);
+            if (uniques.contains(workSlot)) {
+                hasDuplicates = true;
+                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationAdjusted() / MyDate.MINUTE_IN_MILLISECONDS, logLevel);
+                workSlots.remove(i);
+                //no i++!
+            } else {
+                if (workSlot.getOwner() == null) {
+                    Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationAdjusted() / MyDate.MINUTE_IN_MILLISECONDS, logLevel);
+                    workSlot.setOwner(owner);
+                } else if (workSlot.getOwner() != owner) {
+                    workSlot.setOwner(owner);
+                    saveInBackground(workSlot);
+                }
+                //repeatRule
+                RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+                if (repeatRule != null) {
+                    //no relevant checks to do here? RepeatRule should check if all copies refer back to it?!
+//                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
+                }
+                i++;
+            }
+        }
+        owner.setWorkSlotList(workSlotList);
+        saveInBackground((ParseObject) owner);
+        return hasDuplicates;
+    }
+
+    /**
+    clean up duplicates in the (full) ItemList or Category. Will remove any subsequent duplicates (leaving the first appearence).
+    Execute this *after* other clean-ups, notably ensuring that all elements are Items
+    @param description
+    @param itemListOrCategory
+    @param executeCleanup
+    @return 
+     */
+    private boolean cleanUpDuplicatesInItemListOrCategory(String description, ItemList itemListOrCategory, boolean executeCleanup) {
+        //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
+        //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
+        boolean hasDuplicates = false;
+        ArrayList uniqueItems = new ArrayList(); //items that have already been checked
+        int index = 0;
+//        for (int i = 0, size = itemListOrCategory.size(); i < size; i++) {
+        while (index < itemListOrCategory.size()) {
+            Item elt = (Item) itemListOrCategory.get(index);
+
+            if (uniqueItems.contains(elt)) {
+                //TODO duplicates can be either a second instance of same object, or a copy of it, should check for both and handle separately
+                hasDuplicates = true;
+                Log.p("CLEANUP: " + description + " contains duplicate of \"" + itemToString(elt) + "\" at position " + index + " (list= " + itemListOrCategory + ")", logLevel);
+                if (executeCleanup) {
+                    if (itemListOrCategory instanceof Category)
+                        ((Category) itemListOrCategory).removeItemFromCategory(elt, false); //
+                    else
+                        ((ItemList) itemListOrCategory).removeFromList(elt, false); //
+                    //don't index++ since we've removed the item and next iteration should treat the item now at position index
+                } else
+                    index++;
+            } else {
+                uniqueItems.add(elt); //no duplicate so add to list
+                index++;
+            }
+        }
+        return hasDuplicates;
+    }
+
+    boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup) {
+        boolean issuesFound = false;
+        String text = itemListOrCategory.getText();
+        String objectIdP = itemListOrCategory.getObjectIdP();
+        String prefix = "CLEANUP: " + (itemListOrCategory instanceof Category ? "Category" : "ItemList") + " \"" + text + " [" + objectIdP + "]";
+        //check if belongs to CategoryList/ItemListList
+        if (itemListOrCategory instanceof Category && itemListOrCategory.getOwner() != CategoryList.getInstance()) {
+            Log.p(prefix + " not in CategoryList, but in [" + itemListOrCategory.getOwner().getObjectIdP() + "]");
+            if (executeCleanup) itemListOrCategory.setOwner(CategoryList.getInstance());
+        } else if (itemListOrCategory instanceof ItemList && itemListOrCategory.getOwner() != ItemListList.getInstance()) {
+            Log.p(prefix + " not in ItemListList, but in [" + itemListOrCategory.getOwner().getObjectIdP() + "]");
+            if (executeCleanup) itemListOrCategory.setOwner(ItemListList.getInstance());
+        }
+
+        int i = 0;
+//        List<Item> items = itemListOrCategory.getListFull();
+        while (i < itemListOrCategory.size()) {
+            boolean moveToNextIndex = true; //hack to make sure we don't skip an i when an element in the list is removed
+            Object elt = itemListOrCategory.getItemAt(i);
+
+            if (!(elt instanceof Item)) {
+                boolean remove = false;
+                if (elt instanceof ParseObject) {
+                    Log.p(prefix + " refer to a ParseObject which is not an Item: [" + ((ParseObject) elt).getObjectIdP() + "]");
+                    remove = true;
+                } else {
+                    Log.p(prefix + " refer to an object which is not a ParseObject, toString()=\"" + elt + "\"");
+                    remove = true;
+                }
+                issuesFound = issuesFound || remove;
+                if (remove && executeCleanup) {
+                    itemListOrCategory.removeItem(i);
+                    moveToNextIndex = false;
+                }
+            } else {//an Item
+                //if not on server, simply remove the element
+                if (notOnParseServer((ParseObject) elt)) {
+                    Log.p(prefix + " refer to Item not on server [" + ((ParseObject) elt).getObjectIdP() + "]");
+                    if (executeCleanup) {
+                        itemListOrCategory.removeItem(i);
+                        moveToNextIndex = false;
+                    }
+                    issuesFound = true;
+                } else { //on server
+                    Item item = (Item) elt;
+                    String itemText = itemToString(item); //"\"" + item.getText() + "\" [" + item.getObjectIdP() + "]";
+
+                    //Category refers to elt, but elt does not have Category in its list
+                    if (itemListOrCategory instanceof Category) {
+                        if (!item.getCategories().contains(itemListOrCategory)) { //if item does not reference the category, then add the category
+                            Log.p(prefix + " references Item " + itemText + " but not in its categories (" + item.getCategories() + ")");
+                            if (executeCleanup) {
+                                item.addCategoryToItem((Category) itemListOrCategory, false); //add missing ref
+                                saveInBackground(item);
+                            }
+                            issuesFound = true;
+                        }
+                        //ItemList refers to elt, but elt does not have Category in its list
+                    } else if (itemListOrCategory instanceof ItemList) {
+//                    if (item.getOwner() == null || !item.getOwner().equals(itemListOrCategory)) { 
+                        if (item.getOwner() == null) { //IF ever an item is referenced from multiple lists or projects, the first one 'wins' and becomes the owner
+                            issuesFound = true;
+                            Log.p(prefix + " references Item " + itemText + " but is has no Owner (owner=null)");
+                            if (executeCleanup) {
+                                item.setOwner((ItemList) itemListOrCategory); //if null, add ItemList as owner
+                                saveInBackground(item);
+                            }
+                        } else if (item.getOwner() != itemListOrCategory) {
+                            Log.p(prefix + " references Item " + itemText + " which has another owner=" + item.getOwner());
+//                                itemListOrCategory.remove(i); //if another is owner, remove item from this list
+                            issuesFound = true;
+                            if (executeCleanup) {
+//                                itemListOrCategory.removeItem(i); //if another is owner, remove item from this list
+                                item.removeFromOwner(); //if another is owner, remove that one before assigning to this one
+                                itemListOrCategory.addItem(item); //it is more visible to end-user that item is in list, so keep it in this list
+                                saveInBackground(item);
+                                moveToNextIndex = false;
+                            }
+                        }
+                    } // else: if owner is not null, then if the owner is wrong, it will be fixed when fixing the item itself elsewhere
+                }
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (itemListOrCategory instanceof ParseObject && executeCleanup) {
+//            if (executeCleanup) {
+//                save((ParseObject) itemListOrCategory);
+//            }
+//</editor-fold>
+            if (moveToNextIndex) {
+                i++;
+            }
+        }
+
+        //check if all items on server that reference ItemList as owner, or which has Category in its categoryList are in the ItemList/Category:
+        if (itemListOrCategory instanceof Category) {
+            List<Item> itemsFromParse = fetchAllItemsWithThisCategory((Category) itemListOrCategory);
+            for (Item itm : itemsFromParse) {
+                if (((Category) itemListOrCategory).getItemIndex(itm) < 0) {
+                    Log.p("Item " + itemToString(itm) + " on server has category=" + prefix + " but is not in list");
+                    ((Category) itemListOrCategory).addItemToCategory(itm, false); //add to end
+                    issuesFound = true;
+                }
+            }
+        } else {
+            List<Item> itemsFromParse = fetchAllItemsOwnedByItemList((ItemList) itemListOrCategory);
+            for (Item itm : itemsFromParse) {
+                if (!itemListOrCategory.contains(itm)) {
+                    Log.p("Item " + itemToString(itm) + " on server has owner=" + prefix + " but is not in list");
+                    itemListOrCategory.addItem(itm); //add to end
+                    issuesFound = true;
+                }
+            }
+        }
+        //workslots:
+        issuesFound = cleanUpWorkSlotList(itemListOrCategory, executeCleanup) || issuesFound;
+
+        //TODO calculate all values in the list derived from the elements (currently none in ItemList nor Category)
+        if (issuesFound && executeCleanup) {
+            save(itemListOrCategory);
+        }
+        return issuesFound;
+    }
+
+    boolean cleanUpItemsWithNoValidOwner(boolean executeCleanup) {
+        boolean issuesFound = false;
+        List<Item> items = getAllItems(true, false, false, false); //include templates, fetch from cache
+        ItemList lostItems = new ItemList("Recovered items " + MyDate.formatDateTimeNew(new Date()),false);
+        for (Item item : items) {
+            if (item.getOwner() == null) { //getOwner also returns null for non-existant owners (e.g. a hard-deleted owner)
+                Log.p("Item " + itemToString(item) + " on server has no valid owner"+(executeCleanup?", adding to list \"" + lostItems.getText() + "\"":""));
+                if (executeCleanup) {
+                    lostItems.addToList(item);
+//                    saveInBackground(item); //save new owner //CAN'T do here because lostItems list is not saved yet so no ObjId
+                }
+                issuesFound = true;
+            }
+            //TODO: if item has a (non-existant) owner, then create a list named with that ObjectId and store all lost items together there (quite complicated to develop)
+        }
+        if (executeCleanup && lostItems.size() > 0) {
+            saveInBackground(lostItems.getListFull()); //first save all updated items
+            saveInBackground((ParseObject) lostItems);
+            ItemListList.getInstance().addToList(0, lostItems); //add to beginning of lists
+            saveInBackground((ParseObject) ItemListList.getInstance());
+        }
+        return issuesFound;
     }
 
     //--------  CACHE DATA  -----------------------------------------------

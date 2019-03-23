@@ -60,7 +60,6 @@ public class MyReplayCommand extends CommandTracked {
 ////        return getCommandName()+"/"+getCmdUniqueID();
 //        return cmdUniqueID;
 //    }
-
     @Override
     public void actionPerformed(ActionEvent evt) {
 //        ReplayLog.getInstance().pushCmd(this);
@@ -84,11 +83,26 @@ public class MyReplayCommand extends CommandTracked {
     }
 
     public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep) {
+        return create(cmdUniquePrefix, cmdUniquePostfix, commandName, icon, ev, keep, () -> true);
+    }
+
+    /**
+    
+    @param cmdUniquePrefix
+    @param cmdUniquePostfix
+    @param commandName
+    @param icon
+    @param ev
+    @param keep
+    @param pushCmd if this function returns false, the command will NOT be pushed (and thus not replayed later) - used for deciding whether to push Timer (should only be done if BigTimer is launched, not if smallTimer is launched)
+    @return 
+     */
+    public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep, MyForm.GetBool pushCmd) {
         String cmdUniqueId = cmdUniquePrefix + cmdUniquePostfix;
         MyReplayCommand cmd = new MyReplayCommand(cmdUniqueId, commandName, icon) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                ReplayLog.getInstance().pushCmd(this); //DON'T call here, is called in MyReplayCommand.actionPerformed which is called below!
+                if (pushCmd.getVal()) ReplayLog.getInstance().pushCmd(this); //DON'T call here, is called in MyReplayCommand.actionPerformed which is called below!
 //                ev.actionPerformed(evt);
                 if (ev != null) {
 //                    MyAnalyticsService.event(Display.getInstance().getCurrent(), cmdUniqueID);
@@ -108,17 +122,29 @@ public class MyReplayCommand extends CommandTracked {
     }
 
     public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev) {
-        return create(cmdUniquePrefix, cmdUniquePostfix, commandName, icon, ev, false);
+        return create(cmdUniquePrefix, cmdUniquePostfix, commandName, icon, ev, false, () -> true);
     }
 
-        public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev) {
-        return create(cmdUniqueID, "", commandName, icon, ev, false);
+    public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev) {
+        return create(cmdUniqueID, "", commandName, icon, ev, false, () -> true);
     }
-        public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, boolean keep) {
-        return create(cmdUniqueID, "", commandName, icon, ev, keep);
+//    public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, MyForm.GetBool pushCmd) {
+//        return create(cmdUniqueID, "", commandName, icon, ev, false, pushCmd);
+//    }
+
+    public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, MyForm.GetBool pushCmd) {
+        return create(cmdUniqueID, "", commandName, icon, ev, false, pushCmd);
+    }
+
+    public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, boolean keep) {
+        return create(cmdUniqueID, "", commandName, icon, ev, keep, () -> true);
+    }
+
+    public static MyReplayCommand createKeep(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, MyForm.GetBool pushCmd) {
+        return create(cmdUniqueID, "", commandName, icon, ev, true, pushCmd);
     }
     public static MyReplayCommand createKeep(String cmdUniqueID, String commandName, Image icon, final ActionListener ev) {
-        return create(cmdUniqueID, "", commandName, icon, ev, true);
+        return create(cmdUniqueID, "", commandName, icon, ev, true, () -> true);
     }
 
     public static MyReplayCommand create(String name) {
@@ -141,7 +167,7 @@ public class MyReplayCommand extends CommandTracked {
 //        return create(name, name, analyticsActionId, icon, ev);
 //    }
     public static MyReplayCommand create(String name, Image icon, final ActionListener ev) {
-        return create(name, "", name, icon, ev,false);
+        return create(name, "", name, icon, ev, false);
     }
 
 }

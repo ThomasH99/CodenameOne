@@ -119,7 +119,8 @@ public class ScreenObjectPicker<E> extends MyForm {
 //    }
     ScreenObjectPicker(String title, List listOfAllLists, List selectedObjects, MyForm previousForm, UpdateField updateOnDone,
             GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
-        this(title, listOfAllLists, null, selectedObjects, previousForm, updateOnDone, labelMaker, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
+        this(title, listOfAllLists, null, selectedObjects, previousForm, updateOnDone, 
+                labelMaker, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
     }
 //    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllProjects, List listOfAllTasks, List selectedObjects, MyForm previousForm, UpdateField updateOnDone,
 
@@ -173,9 +174,13 @@ public class ScreenObjectPicker<E> extends MyForm {
 //                errorMsgInSelection = "Please select at least " + minNbOfSelected + " elements";
 //            }
         } else {//if (maxNbOfSelected > 0) { //minNbOfSelected==0
-            errorMsgInSelection = "Please select 1 element at most";
-            errorMsgInSelection = "Please select %i elements at most";
-            errorMsgInSelection = "Please select " + (this.maxNbOfSelected + 1) + " element" + (this.maxNbOfSelected > 1 ? "s" : "") + " at most";
+//            errorMsgInSelection = "Please select 1 element at most";
+//            errorMsgInSelection = "Please select %i elements at most";
+//            errorMsgInSelection = "Please select " + (this.maxNbOfSelected + 1) + " element" + (this.maxNbOfSelected > 1 ? "s" : "") + " at most";
+            if (this.maxNbOfSelected > 1)
+                errorMsgInSelection = "Please select " + (this.maxNbOfSelected + 1) + " elements at most";
+            else
+                errorMsgInSelection = "Please select " + (this.maxNbOfSelected + 1) + " element at most";
         }
 
         if (this.labelMaker == null) {
@@ -223,8 +228,8 @@ public class ScreenObjectPicker<E> extends MyForm {
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllObjects, ScreenObjectPicker.this)); //TODO!!!! enable adding new elements to picker screen
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true, //false,
                 //                () -> (listSelector.getSelected().size() >= minNbOfSelected||listSelector.getSelected().size() <= maxNbOfSelected),
-                () -> (selectedObjects.size() >= minNbOfSelected && selectedObjects.size() <= maxNbOfSelected)?
-                        errorMsgInSelection:null)); //false: don't refresh ScreenItem when returning from Category selector
+                () -> (selectedObjects.size() >= minNbOfSelected && selectedObjects.size() <= maxNbOfSelected)
+                ? null:errorMsgInSelection )); //false: don't refresh ScreenItem when returning from Category selector
 
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //UI: always enable Cancel to make it easy to regret any changes
             toolbar.addCommandToOverflowMenu(
@@ -382,7 +387,7 @@ public class ScreenObjectPicker<E> extends MyForm {
                     if (((Item) firstSelectedObj).isProject()) { //selected element a project
 //                        cmdProjects.getCommand().actionPerformed(null);
                         buildList(listOfAllTopLevelProjects, cont);
-                    buttonProjects.setSelected(true);
+                        buttonProjects.setSelected(true);
                     }
                 } else { //UI: if no selected elements, always show list of Lists first
                     buildList(listOfAllLists, cont);

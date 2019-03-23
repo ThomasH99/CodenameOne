@@ -5,6 +5,7 @@ import com.codename1.l10n.L10NManager;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Container;
+import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
@@ -30,7 +31,7 @@ import com.codename1.ui.validation.Validator;
  *
  * @author Thomas
  */
-public class ScreenCategory extends MyForm {
+public class ScreenCategoryProperties extends MyForm {
 
 //    static Map<String, GetParseValue> parseIdMap = new HashMap<String, GetParseValue>() ;
     Category category;
@@ -44,7 +45,7 @@ public class ScreenCategory extends MyForm {
 //        this(category, previousForm, () -> {
 //        });
 //    }
-    ScreenCategory(Category category, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
+    ScreenCategoryProperties(Category category, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
         super(category.getText(), previousForm, doneAction);
         setUniqueFormId("ScreenEditCategory");
 //        ScreenItemP.item = item;
@@ -65,8 +66,29 @@ public class ScreenCategory extends MyForm {
 
         addCommandsToToolbar(getToolbar());//, theme);
 
+//        setCheckOnExit(()->checkCategoryIsValidForSaving(this.category));
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
+    }
+
+    /**
+    return true if (possibly modified) category can be saved
+     */
+    public static boolean checkCategoryIsValidForSaving(String category) {
+        //TODO extend to check valid subcategories, auto-words, ...
+        String errorMsg = null;
+//        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
+        if (category.isEmpty())
+            errorMsg = Format.f("{0 category_or_list} name cannot be empty", Category.CATEGORY);
+        else if (CategoryList.getInstance().findCategoryWithName(category) != null)
+            //                return "Category \"" + description.getText() + "\" already exists";
+            //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
+            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", Category.CATEGORY, category);
+
+        if (errorMsg != null) {
+            Dialog.show("Error", errorMsg, "OK", null);
+            return false;
+        } else return true;
     }
 
     @Override
@@ -78,6 +100,24 @@ public class ScreenCategory extends MyForm {
         super.refreshAfterEdit();
     }
 
+//    /**
+//    return true if (possibly modified) category can be saved
+//    */
+//    public static boolean checkCategoryIsValidForSaving(Category category) {
+//        //TODO extend to check valid subcategories, auto-words, ...
+//        String errorMsg = null;
+//        if (category.getText().isEmpty())
+//            errorMsg = "Category name cannot be empty";
+//        else if (CategoryList.getInstance().findCategoryWithName(category.getText()) != null)
+//            //                return "Category \"" + description.getText() + "\" already exists";
+//            //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
+//            errorMsg = Format.f("Category \"{0 just_entered_category_name}\" already exists", category.getText());
+//        
+//        if (errorMsg != null) {
+//            Dialog.show("Error", errorMsg, "OK", null);
+//            return false;
+//        } else return true;
+//    }
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
@@ -125,6 +165,16 @@ public class ScreenCategory extends MyForm {
 //            showPreviousScreenOrDefault(previousForm, true);
             showPreviousScreenOrDefault(true);
         }));
+              if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
+            toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
+                DAO.getInstance().cleanUpItemListOrCategory(category, false);
+            });
+        }
+        if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
+            toolbar.addCommandToOverflowMenu("Repair data issues", null, (e) -> {
+                DAO.getInstance().cleanUpItemListOrCategory(category,false);
+            });
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToSideMenu("New Task", icon, (e) -> {
 //            Log.p("Clicked");
@@ -193,16 +243,6 @@ public class ScreenCategory extends MyForm {
         content.add(layout(Category.DESCRIPTION, description, "**"));
         description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
 
-        setCheckOnExit(() -> { //check that category is valid on exit
-            //TODO extend to check valid subcategories, auto-words, ...
-            if (categoryName.getText().isEmpty())
-                return "Category name cannot be empty";
-            else if (CategoryList.getInstance().findCategoryWithName(categoryName.getText()) != null)
-//                return "Category \"" + description.getText() + "\" already exists";
-                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
-            return null;
-        });
-
         Label createdDate = new Label(category.getCreatedAt() == null || category.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getCreatedAt()));
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
         content.add(layout(Item.CREATED_DATE, createdDate, "**"));
@@ -211,38 +251,41 @@ public class ScreenCategory extends MyForm {
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
         content.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**"));
 
-        if (false) {
-            //TODO!! make the validator work, e.g. show Toastbar message
-            //https://www.codenameone.com/blog/validation-regex-masking.html and https://www.codenameone.com/javadoc/com/codename1/ui/validation/Validator.html#setValidationFailureHighlightMode-com.codename1.ui.validation.Validator.HighlightMode-
-            Validator v = new Validator();
-            v
-                    //                .addConstraint(categoryName, new LengthConstraint(1, "Category name cannot be empty")) //NOT needed since an empty category will be ignored where added (
-                    .addConstraint(categoryName, new Constraint() {
-                        @Override
-                        public boolean isValid(Object value) {
-//                String catName = ((MyTextField) value).getText();
-                            String catName = (String) value;
-//                        return DAO.getInstance().getAllCategories().findCategoryWithName(catName) == null;
-                            return CategoryList.getInstance().findCategoryWithName(catName) == null;
-                        }
-
-                        @Override
-                        public String getDefaultFailMessage() {
-                            return "Category \"" + categoryName.getText() + "\" already exists";
-                        }
-                    });
-//                .addSubmitButtons(backButton);
-//                v.setValidationFailureHighlightMode(Validator.HighlightMode.EMBLEM); //show error message
-            v.setValidateOnEveryKey(true);
-//                v.setErrorMessageUIID(String errorMessageUIID);
-            v.addSubmitButtons(getToolbar().findCommandComponent(backCommand)); // http://stackoverflow.com/questions/39690474/how-to-attach-a-command-to-longpress-on-a-command-in-the-toolbar
-            v.setShowErrorMessageForFocusedComponent(true);
-        }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            //TODO!! make the validator work, e.g. show Toastbar message
+//            //https://www.codenameone.com/blog/validation-regex-masking.html and https://www.codenameone.com/javadoc/com/codename1/ui/validation/Validator.html#setValidationFailureHighlightMode-com.codename1.ui.validation.Validator.HighlightMode-
+//            Validator v = new Validator();
+//            v
+//                    //                .addConstraint(categoryName, new LengthConstraint(1, "Category name cannot be empty")) //NOT needed since an empty category will be ignored where added (
+//                    .addConstraint(categoryName, new Constraint() {
+//                        @Override
+//                        public boolean isValid(Object value) {
+////                String catName = ((MyTextField) value).getText();
+//                            String catName = (String) value;
+////                        return DAO.getInstance().getAllCategories().findCategoryWithName(catName) == null;
+//                            return CategoryList.getInstance().findCategoryWithName(catName) == null;
+//                        }
+//
+//                        @Override
+//                        public String getDefaultFailMessage() {
+//                            return "Category \"" + categoryName.getText() + "\" already exists";
+//                        }
+//                    });
+////                .addSubmitButtons(backButton);
+////                v.setValidationFailureHighlightMode(Validator.HighlightMode.EMBLEM); //show error message
+//            v.setValidateOnEveryKey(true);
+////                v.setErrorMessageUIID(String errorMessageUIID);
+//            v.addSubmitButtons(getToolbar().findCommandComponent(backCommand)); // http://stackoverflow.com/questions/39690474/how-to-attach-a-command-to-longpress-on-a-command-in-the-toolbar
+//            v.setShowErrorMessageForFocusedComponent(true);
+//        }
+//</editor-fold>
         if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "LabelFixed");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
+
+        setCheckOnExit(() -> checkCategoryIsValidForSaving(description.getText()));
 
         return content;
     }

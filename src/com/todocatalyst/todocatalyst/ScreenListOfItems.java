@@ -513,13 +513,12 @@ public class ScreenListOfItems extends MyForm {
 
 //        getContentPane().add(CENTER, buildContentPaneForListOfItems(this.itemListFilteredSorted));
 //</editor-fold>
-        
         Container contentContainer = buildContentPaneForListOfItems(itemListOrg);
-        if (contentContainer instanceof MyTree2)setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
+        if (contentContainer instanceof MyTree2) setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
 //        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
         getContentPane().add(BorderLayout.CENTER, contentContainer);
-        
+
         setTitleAnimation(contentContainer); //MUST do this here since we create a new container on each refresh
         if (false) { //TODO!!! re-activate (currently clashes with drag&drop: when trying to drag an element at the top of the list, it also activates pullToRefresh) -> consume the dragged event?!
             contentContainer.addPullToRefresh(() -> {
@@ -579,7 +578,7 @@ public class ScreenListOfItems extends MyForm {
         if (false) getAnimationManager().flushAnimation(() -> {
 //            restoreKeepPos();
 //            setStartEditingAsyncIfDefined(contentContainer);
-        });
+            });
         super.refreshAfterEdit();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        addShowListener(startAsyncListener); //do *after* show (will this make the async editing work?!)
@@ -1079,8 +1078,8 @@ public class ScreenListOfItems extends MyForm {
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
         if (!optionTemplateEditMode && !optionNoTimer) {
 //            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
-//            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
-            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+//            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
@@ -1089,7 +1088,7 @@ public class ScreenListOfItems extends MyForm {
                     TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
                 else if (itemListOrg instanceof Item)
                     TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-            }
+            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             ));
         }
 

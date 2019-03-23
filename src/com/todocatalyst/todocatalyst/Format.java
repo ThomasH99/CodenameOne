@@ -53,7 +53,7 @@ import com.codename1.ui.plaf.UIManager;
  * <p>
  *
  * <pre>
- * String output = MessageFormat.format("Message {1} for formatting {2}",
+ * String output = MessageFormat.format("Message {0} for formatting {2}",
  * 				        new String[]{"first_arg",
  *                                      "second_arg"});
  * </pre>
@@ -85,6 +85,9 @@ public class Format {
         if (message == null || params == null) {
             throw new NullPointerException("Template or parameter array is null.");
         }
+        
+        UIManager.getInstance().localize(message, message); //localize the string before formatting!
+        
         boolean inside = false;
         boolean insideLabel = false;
         boolean escaped = false;

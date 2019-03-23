@@ -2142,7 +2142,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     @Override
     public boolean softDelete() { //throws ParseException {
-        return softDelete(true);
+        return softDelete(false); //false=leave references from softDeleted objects to other elements (Categories, owner Item/ItemList etc) - easier to restore
     }
 
     @Override
@@ -2165,7 +2165,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //DELETE IN OWNERS/PROJECTS
         ItemAndListCommonInterface owner = getOwner();
         if (owner instanceof Item) {
-            ((Item) owner).removeFromList(this, !removeRefs);
+            ((Item) owner).removeFromList(this, removeRefs); //
             DAO.getInstance().saveInBackground((ParseObject) owner);
         } else {
             owner.removeFromList(this);
@@ -2239,8 +2239,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public List<Item> getList() {
     public List getListFull() {
         List<Item> list = getList(PARSE_SUBTASKS);
+
         if (list != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+//            if (Config.CHECK_OWNERS && list != null) {
+//                for (Item item : list) {
+//                    ASSERT.that(item.getOwner() == this||(item.getOwner() instanceof ItemList && item.getOwner().isNoSave()), "ERROR in owner: Item=" + item.toString(false)
+//                            + ", item.owner="
+//                            + (item.getOwner() instanceof ItemList
+//                            ? (", item.owner=" + ((ItemList) item.getOwner()).toString(false))
+//                            : (", item.owner=" + ((Item) item.getOwner()).toString(false)))
+//                            + ", should be=" + this.toString(false));
+//                }
+//            }
+            if (Config.CHECK_OWNERS) checkOwners(list);
             return list;
         } else {
             return new ArrayList();
@@ -2341,12 +2353,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return removeFromList(subItemOrList, true);
 //    }
     @Override
-    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeFromOwner) {
+    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeOwner) {
         List subtasks = getListFull();
         boolean status = subtasks.remove(subItemOrList);
         setList(subtasks);
         assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
-        if (removeFromOwner) subItemOrList.setOwner(null);
+        if (removeOwner) subItemOrList.setOwner(null);
         return status;
     }
 
@@ -4634,7 +4646,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            int nbUndone = getNumberOfUndoneItems(true);
             int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
             if (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
-                    || Dialog.show("INFO", "Changing status to " + newStatus + " for " + nbChgStatus + " subtasks", "OK", "Cancel")) {
+                    || Dialog.show("INFO", "Changing status to " + newStatus.getDescription() + " for " + nbChgStatus + " subtasks", "OK", "Cancel")) {
                 List subtasksToSave = new ArrayList();
 //                    List<Item> subtasks = getList();
 //                    for (int i = 0, size = subtasks.size(); i < size; i++) {
@@ -6163,7 +6175,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 //if Actual is reduced to zero then set status back to Created and reset StartedOn date
 //            if (actualEffortMillis == 0 && getActualEffort() > 0 && Settings.getInstance().setStatusToCreatedIfActualReducedToZero()) { //TODO replace use of Settings by MyPrefs
 //            if (autoUpdateStatusAndStartedOnDate && getStatus() == ItemStatus.ONGOING && Settings.getInstance().setStatusToCreatedIfActualReducedToZero()) { //TODO replace use of Settings by MyPrefs
-                if (getStatus() == ItemStatus.ONGOING) { //TODO replace use of Settings by MyPrefs
+                if (getStatus() == ItemStatus.ONGOING && oldActualEffort > 0) { //TODO replace use of Settings by MyPrefs, only change status back from ongoing to created if an actual effort was already set
                     setStatus(ItemStatus.CREATED);
                 }
             }
@@ -7375,11 +7387,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
     @Override
     public String toString() {
+        return toString(true);
+    }
+
+    public String toString(boolean showSubtasks) {
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
         return getText() + " (" + getObjectIdP() + ")"
                 + (isDone() ? "[V]" : (getRemaining() > 0 ? MyDate.formatDurationShort(getRemaining()) : ""))
-                + (getListFull().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getListFull()) + "}");
+                + (showSubtasks ? (getListFull().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getListFull()) + "}") : "");
     }
 
     /**
@@ -7589,8 +7605,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        return workSlotListBuffer;
         List<WorkSlot> workslots = getList(PARSE_WORKSLOTS);
+
+//        if (Config.CHECK_OWNERS && workslots != null) {
+//            for (WorkSlot workSlot : workslots) {
+//                ASSERT.that(workSlot.getOwner() == this, "ERROR in owner: WorkSlot=" + workSlot + ", workSlot.owner=" + workSlot.getOwner() + ", should be=" + this);
+//            }
+//        }
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
+            if (Config.CHECK_OWNERS) checkOwners(workslots);
             boolean updated = RepeatRuleParseObject.updateWorkSlotList(workslots);
             WorkSlotList workSlotList = new WorkSlotList(this, workslots);
             if (updated)
@@ -7623,84 +7646,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             put(PARSE_WORKSLOTS, workSlotList.getWorkSlotListFull());
         } else {
             remove(PARSE_WORKSLOTS);
-        }
-    }
-
-    @Override
-    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
-        if (neverCacheWorkTimeAllocator || workTimeAllocator == null || reset) {
-            if (Config.WORKTIME_DETAILED_LOG) {
-                Log.p("-> .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"");
-            }
-
-//            WorkTimeSlices availableWorkTime = getAvailableWorkTime();
-            WorkTimeSlices availableWorkTime = getAllocatedWorkTimeN();
-            if (availableWorkTime != null) {
-//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), availableWorkTime);
-//                wtd = new WorkTimeAllocator(getList(), availableWorkTime, this);
-                workTimeAllocator = new WorkTimeAllocator(availableWorkTime, this);
-            }
-        }
-        if (Config.WORKTIME_DETAILED_LOG) {
-            Log.p("<  .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"returning=" + workTimeAllocator.toString());
-        }
-        return workTimeAllocator;
-    }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public WorkTimeDefinition getWorkTimeAllocatorN(boolean reset) {
-//        if (wtd != null && !reset) {
-//            return wtd;
-//        } else { //get right workSlots
-//            WorkSlotList workSlots = getWorkSlotListN();
-//            if (workSlots != null && workSlots.hasComingWorkSlots()) {
-//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), workSlots);
-//                return wtd;
-//            } else {
-//                WorkTimeDefinition workTimeDef;
-//                ItemAndListCommonInterface owner = getOwner();
-//                if (owner != null) {
-//                    workTimeDef = owner.getWorkTimeAllocatorN(reset);
-//                    if (workTimeDef != null) {
-//                        return workTimeDef;
-//                    }
-//                }
-//                List<Category> categories = getCategories();
-//                for (Category cat : categories) {
-//                    workTimeDef = cat.getWorkTimeAllocatorN(reset);
-//                    if (workTimeDef != null) {
-//                        return workTimeDef;
-//                    }
-//                }
-//            }
-//        }
-//        return null;
-//    }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public WorkTimeDefinition getWorkTimeDefinitionOLD(boolean reset) {
-//        if (wtd == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
-////            wtd = new WorkTimeDefinition(getList(), this);
-////            wtd = new WorkTimeDefinition(getList(), getWorkSlotListN());
-//            WorkSlotList workSlots = getWorkSlotListN();
-//            if (workSlots != null && !workSlots.isEmpty()) {
-////            wtd = new WorkTimeDefinition(getLeafTaskSAsList(item -> !item.isDone()) , getWorkSlotListN());
-//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), workSlots);
-//            }
-//        }
-//        return wtd;
-//    }
-//</editor-fold>
-
-    /**
-     * forces a recalculation of workTime
-     */
-    @Override
-    public void resetWorkTimeDefinition() {
-        workTimeAllocator = null;
-        for (Object subtask : getListFull()) {
-            if (subtask instanceof Item) {// && ((Item)subtask).isProject()) {
-                ((Item) subtask).resetWorkTimeDefinition();
-            } else assert false;
         }
     }
 
@@ -8231,32 +8176,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return noSave;
     }
 
-//    public boolean hasWorkTimeDefinition() {
-//        return getWorkSlotListN() != null;
-//    }
-    @Override
-    public List<ItemAndListCommonInterface> getPotentialWorkTimeProvidersInPrioOrder() {
-//        return getPotentialWorkTimeProvidersInPrioOrder(true);
-//    }
-//    private List<ItemAndListCommonInterface> getPotentialWorkTimeProvidersInPrioOrder(boolean includeOwner) {
+//    @Override
+    public List<ItemAndListCommonInterface> getPotentialWorkTimeProvidersInPrioOrderOLD() {
         boolean includeOwner = true;
         List<ItemAndListCommonInterface> potentialProviders = new ArrayList();
 
         //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
-//        if (hasWorkTimeDefinition()) {
 //UI: if an item has BOTH own workSlots AND a category with WorkSLots, then it will first try to get workTime from its own workslots (otherwise, why would it have them?!)
         WorkSlotList ownWorkSlotList = getWorkSlotListN();
-//        if (ownWorkSlotList != null && !ownWorkSlotList.isEmpty()) {//ownWorkSlotList.hasComingWorkSlots()) {
-        if (ownWorkSlotList != null && ownWorkSlotList.size() > 0) {//ownWorkSlotList.hasComingWorkSlots()) {
-            if (true || !potentialProviders.contains(this)) { //no need to test here
-                potentialProviders.add(this);
-            }
+        if (ownWorkSlotList != null && ownWorkSlotList.size() > 0) {//size() returns number of *future* workslots only!
+            potentialProviders.add(this);
         }
 
-        ItemAndListCommonInterface owner = includeOwner ? getOwner() : null;
-//        if (!MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean()) {
-//            if (owner != null) {
-//                if (owner.hasWorkTimeDefinition()) {
+//        ItemAndListCommonInterface owner = false && includeOwner ? getOwner() : null;
+        ItemAndListCommonInterface owner = getOwner();
         if (owner != null && !MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
             if (true || !potentialProviders.contains(owner)) { //no need to test here(?)
                 potentialProviders.add(owner);
@@ -8272,20 +8205,38 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
 
-//        if (MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean()) {
-//            if (owner != null) {
-//                if (owner.hasWorkTimeDefinition()) {
         if (owner != null && MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
             if (true || !potentialProviders.contains(owner)) {
                 potentialProviders.add(owner);
             }
         }
 
-//        if (providers.size() > 0) {
         return potentialProviders;
-//        } else {
-//            return null;
-//        }
+    }
+
+    public List<ItemAndListCommonInterface> getOtherPotentialWorkTimeProvidersInPrioOrderN() {
+        List<ItemAndListCommonInterface> potentialProviders = new ArrayList();
+
+        ItemAndListCommonInterface owner = getOwner();
+        if (owner != null && !MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
+            if (potentialProviders == null) potentialProviders = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
+            potentialProviders.add(owner);
+        }
+
+        List<Category> categories = getCategories();
+        for (Category cat : categories) {
+            if (cat.mayProvideWorkTime()) {
+                if (potentialProviders == null) potentialProviders = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
+                potentialProviders.add(cat);
+            }
+        }
+
+        if (owner != null && MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
+            if (potentialProviders == null) potentialProviders = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
+            potentialProviders.add(owner);
+        }
+
+        return potentialProviders; //potentialProviders.size()>=0?potentialProviders:null;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getNeededWorkTime() {
@@ -8367,79 +8318,142 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
 //    public long getWorkTimeRequiredFromOwner() {
     public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
-        if (false) {
-            Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
-        }
+        if (false) Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
+        if (isDone()) return 0;
+        if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\"");
 
-        if (isDone()) {
-            return 0;
-        }
-        if (Config.WORKTIME_DETAILED_LOG) {
-            Log.p("-> .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\"");
-        }
-
-        //get the amount of worktime the subtasks require from this (their mother project)
-        long required = 0;
-        List<ItemAndListCommonInterface> subtasks = getListFull();
-//        if (subtasks != null && subtasks.size() > 0) {
-        if (isProject()) {
-            for (ItemAndListCommonInterface subtask : subtasks) { //starts from the *last* element in the list!!!
+        long requiredCalc = 0;
+        if (Config.TEST) {
+            //get the amount of worktime the subtasks require from this (their mother project)
+            if (isProject()) {
+                List<ItemAndListCommonInterface> subtasks = getList(); //getListFull(); //NOT full list since elsewhere we only calculate finishTime for what is seen!
+                for (ItemAndListCommonInterface subtask : subtasks) { //starts from the *last* element in the list!!!
 //                required += subtask.getWorkTimeRequiredFromProvider(this);
-                required += subtask.getRemaining();
+                    requiredCalc += subtask.getRemaining();
+                }
+                requiredCalc += getRemainingForProjectTaskItself(true); //always add own 
+            } else { //leaf task
+                requiredCalc = getRemaining(); //how much total workTime is required?
             }
-        } else { //leaf task
-            required = getRemaining(); //how much total workTime is required?
         }
+        long required = getRemaining(true); //includes subtasks and own time
+        if (Config.TEST) ASSERT.that(required == requiredCalc, this+" -getWorkTimeRequiredFromProvider(): wrong Remaining, calculated=" 
+                + MyDate.formatDurationShort(requiredCalc) + ", getRemaining()=" + MyDate.formatDurationShort(required));
 
         //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
-        List<ItemAndListCommonInterface> providers = getPotentialWorkTimeProvidersInPrioOrder();
-//        if (providers != null) {
-//            ItemAndListCommonInterface prov;
-//            for (int i = 0, size = providers.size(); i < size; i++) {
-        for (ItemAndListCommonInterface prov : providers) {
-//                prov = providers.get(i);
-            if (prov.equals(provider)) { //prov == provider) {
-                if (Config.WORKTIME_DETAILED_LOG) {
-                    Log.p("   .getWorkTimeRequiredFromProvider - break since reached prov=\"" + prov + "\"");
-                }
-                break; // stop iteration when we get to provider itself and return what is remaining for provider to deliver
-            } else {
-                ASSERT.that(!prov.equals(provider), () -> "duplicate object instances for prov=" + prov + ", this=" + this);
-                if (prov instanceof Category && ((Category) prov).isOwnerOfItemInCategoryBeforeItem(this)) {
-                    if (Config.WORKTIME_DETAILED_LOG) {
-                        Log.p("-> .getWorkTimeRequiredFromProvider - trying to get worktime from Category (" + prov + ") AND isOwnerOfItemInCategoryBeforeItem(" + this + "\") is true");
+        List<ItemAndListCommonInterface> providers = getOtherPotentialWorkTimeProvidersInPrioOrderN();
+        if (providers != null)
+            for (ItemAndListCommonInterface prov : providers) {
+                if (prov == provider || prov.equals(provider)) { //prov == provider) {
+                    if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(prov == provider && prov.equals(provider), () -> "Two instances of same provider!! prov=" + prov + ", provider=" + provider);
+                    if (Config.WORKTIME_DETAILED_LOG) Log.p("   .getWorkTimeRequiredFromProvider - break since reached prov=\"" + prov + "\"");
+                    return required; // stop iteration when we get to provider itself and return what is remaining for provider to deliver
+//                break; // stop iteration when we get to provider itself and return what is remaining for provider to deliver
+                } else {
+                    if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(!prov.equals(provider), () -> "duplicate object instances for prov=" + prov + ", this=" + this);
+                    if (prov instanceof Category && ((Category) prov).isOwnerOfItemInCategoryBeforeItem(this)) { //special case to avoid infinite loops
+                        if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getWorkTimeRequiredFromProvider - trying to get worktime from Category (" + prov + ") AND isOwnerOfItemInCategoryBeforeItem(" + this + "\") is true");
+                        return 0;
                     }
-                    return 0;
+///<editor-fold defaultstate="collapsed" desc="comment">
+//                WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(false);
+//                if (workTimeAllocator != null) {
+//                    WorkTimeSlices wt = workTimeAllocator.getAllocatedWorkTime(this, required);
+//                    if (wt != null) {
+//                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+//                        if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getWorkTimeRequiredFromProvider - got workTime from (" + prov + ") allocated==" + MyDate.formatDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatDuration(required));
+//                    } else {
+//                        if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getWorkTimeRequiredFromProvider - got a NULL workTime from (" + prov + ") allocated==" + MyDate.formatDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatDuration(required));
+//                    }
+//                }
+//                WorkTimeSlices wt=prov.getAllocatedWorkTimeN(this);
+//</editor-fold>
+                    WorkTimeSlices wt = prov.getAllocatedWorkTimeN(this);
+                    required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
                 }
-                WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(false);
-                if (workTimeAllocator != null) {
-                    WorkTimeSlices wt = workTimeAllocator.getAllocatedWorkTime(this, required);
-                    if (wt != null) {
-                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
-                        if (Config.WORKTIME_DETAILED_LOG) {
-                            Log.p("-> .getWorkTimeRequiredFromProvider - got workTime from (" + prov + ") allocated==" + MyDate.formatDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatDuration(required));
-                        }
-                    } else {
-                        if (Config.WORKTIME_DETAILED_LOG) {
-                            Log.p("-> .getWorkTimeRequiredFromProvider - got a NULL workTime from (" + prov + ") allocated==" + MyDate.formatDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatDuration(required));
-                        }
-                    }
-                }
+                if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(required >= 0, "required has become negative=" + required + ", Item=" + this + ", providers=" + providers);
+                if (required == 0) return 0; //other higher prio providers allocated all required worktime so return here, don't go through other providers
             }
+        if (Config.WORKTIME_DETAILED_LOG) Log.p("<  .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\" returning " + required);
 
-            assert required >= 0;
-            if (required == 0) { //other higher prio providers allocated all required worktime
-                return 0;//required; //return here, don't go through other providers
-            }
-        }
-//        }
-        if (Config.WORKTIME_DETAILED_LOG) {
-            Log.p("<  .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\" returning " + required);
-        }
-
-        return required;
+        return required; //whatever was not supplied by one of the 
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public long getWorkTimeRequiredFromProviderOLD(ItemAndListCommonInterface provider) {
+//        if (false) {
+//            Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
+//        }
+//
+//        if (isDone()) {
+//            return 0;
+//        }
+//        if (Config.WORKTIME_DETAILED_LOG) {
+//            Log.p("-> .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\"");
+//        }
+//
+//        //get the amount of worktime the subtasks require from this (their mother project)
+//        long required = 0;
+////        if (subtasks != null && subtasks.size() > 0) {
+//        if (isProject()) {
+//            List<ItemAndListCommonInterface> subtasks = getListFull();
+//            for (ItemAndListCommonInterface subtask : subtasks) { //starts from the *last* element in the list!!!
+////                required += subtask.getWorkTimeRequiredFromProvider(this);
+//                required += subtask.getRemaining();
+//            }
+//        } else { //leaf task
+//            required = getRemaining(); //how much total workTime is required?
+//        }
+//
+//        //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+//        List<ItemAndListCommonInterface> providers = getPotentialWorkTimeProvidersInPrioOrder();
+////        if (providers != null) {
+////            ItemAndListCommonInterface prov;
+////            for (int i = 0, size = providers.size(); i < size; i++) {
+//        for (ItemAndListCommonInterface prov : providers) {
+////                prov = providers.get(i);
+//            if (prov.equals(provider)) { //prov == provider) {
+//                if (Config.WORKTIME_DETAILED_LOG) {
+//                    Log.p("   .getWorkTimeRequiredFromProvider - break since reached prov=\"" + prov + "\"");
+//                }
+//                break; // stop iteration when we get to provider itself and return what is remaining for provider to deliver
+//            } else {
+//                ASSERT.that(!prov.equals(provider), () -> "duplicate object instances for prov=" + prov + ", this=" + this);
+//                if (prov instanceof Category && ((Category) prov).isOwnerOfItemInCategoryBeforeItem(this)) {
+//                    if (Config.WORKTIME_DETAILED_LOG) {
+//                        Log.p("-> .getWorkTimeRequiredFromProvider - trying to get worktime from Category (" + prov + ") AND isOwnerOfItemInCategoryBeforeItem(" + this + "\") is true");
+//                    }
+//                    return 0;
+//                }
+//                WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(false);
+//                if (workTimeAllocator != null) {
+//                    WorkTimeSlices wt = workTimeAllocator.getAllocatedWorkTime(this, required);
+//                    if (wt != null) {
+//                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+//                        if (Config.WORKTIME_DETAILED_LOG) {
+//                            Log.p("-> .getWorkTimeRequiredFromProvider - got workTime from (" + prov + ") allocated==" + MyDate.formatDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatDuration(required));
+//                        }
+//                    } else {
+//                        if (Config.WORKTIME_DETAILED_LOG) {
+//                            Log.p("-> .getWorkTimeRequiredFromProvider - got a NULL workTime from (" + prov + ") allocated==" + MyDate.formatDuration(wt.getAllocatedDuration()) + ", remaining==" + MyDate.formatDuration(required));
+//                        }
+//                    }
+//                }
+//            }
+//
+//            assert required >= 0;
+//            if (required == 0) { //other higher prio providers allocated all required worktime
+//                return 0;//required; //return here, don't go through other providers
+//            }
+//        }
+////        }
+//        if (Config.WORKTIME_DETAILED_LOG) {
+//            Log.p("<  .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\" returning " + required);
+//        }
+//
+//        return required;
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 ////    public long getWorkTimeRequiredFromOwner() {
@@ -8608,6 +8622,201 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
+//    @Override
+//    public WorkTimeAllocator getWorkTimeAllocatorNXXX(boolean reset) {
+//        if (neverCacheWorkTimeAllocator || workTimeAllocator == null || reset) {
+//            if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"");
+//
+////            WorkTimeSlices availableWorkTime = getAvailableWorkTime();
+//            WorkTimeSlices availableWorkTime = getAllocatedWorkTimeN();
+//            if (availableWorkTime != null) {
+////                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), availableWorkTime);
+////                wtd = new WorkTimeAllocator(getList(), availableWorkTime, this);
+//                workTimeAllocator = new WorkTimeAllocator(availableWorkTime, this);
+//            }
+//        }
+//        if (Config.WORKTIME_DETAILED_LOG) Log.p("<  .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"returning=" + workTimeAllocator.toString());
+//        return workTimeAllocator;
+//    }
+//
+//    public WorkTimeAllocator getWorkTimeAllocatorN_newXXX(boolean reset) {
+//        if (neverCacheWorkTimeAllocator || workTimeAllocator == null || reset) {
+//            if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"");
+//
+////            WorkTimeSlices availableWorkTime = getAvailableWorkTime();
+//            WorkTimeSlices availableWorkTime = getAllocatedWorkTimeN();
+//            if (availableWorkTime != null) {
+////                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), availableWorkTime);
+////                wtd = new WorkTimeAllocator(getList(), availableWorkTime, this);
+//                workTimeAllocator = new WorkTimeAllocator(availableWorkTime, this);
+//            }
+//        }
+//        if (Config.WORKTIME_DETAILED_LOG) Log.p("<  .getWorkTimeAllocator(" + reset + ") for Item \"" + this + "\"returning=" + workTimeAllocator.toString());
+//        return workTimeAllocator;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public WorkTimeDefinition getWorkTimeAllocatorN(boolean reset) {
+//        if (wtd != null && !reset) {
+//            return wtd;
+//        } else { //get right workSlots
+//            WorkSlotList workSlots = getWorkSlotListN();
+//            if (workSlots != null && workSlots.hasComingWorkSlots()) {
+//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), workSlots);
+//                return wtd;
+//            } else {
+//                WorkTimeDefinition workTimeDef;
+//                ItemAndListCommonInterface owner = getOwner();
+//                if (owner != null) {
+//                    workTimeDef = owner.getWorkTimeAllocatorN(reset);
+//                    if (workTimeDef != null) {
+//                        return workTimeDef;
+//                    }
+//                }
+//                List<Category> categories = getCategories();
+//                for (Category cat : categories) {
+//                    workTimeDef = cat.getWorkTimeAllocatorN(reset);
+//                    if (workTimeDef != null) {
+//                        return workTimeDef;
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public WorkTimeDefinition getWorkTimeDefinitionOLD(boolean reset) {
+//        if (wtd == null || reset) { //            wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
+////            wtd = new WorkTimeDefinition(getList(), this);
+////            wtd = new WorkTimeDefinition(getList(), getWorkSlotListN());
+//            WorkSlotList workSlots = getWorkSlotListN();
+//            if (workSlots != null && !workSlots.isEmpty()) {
+////            wtd = new WorkTimeDefinition(getLeafTaskSAsList(item -> !item.isDone()) , getWorkSlotListN());
+//                wtd = new WorkTimeDefinition(getLeafTasksAsList(item -> !item.isDone()), workSlots);
+//            }
+//        }
+//        return wtd;
+//    }
+//</editor-fold>
+    /**
+     * forces a recalculation of workTime
+     */
+    @Override
+    public void resetWorkTimeDefinition() {
+        workTimeAllocator = null;
+        for (Object subtask : getListFull()) {
+            if (subtask instanceof Item) {// && ((Item)subtask).isProject()) {
+                ((Item) subtask).resetWorkTimeDefinition();
+            } else assert false;
+        }
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    WorkTimeSlices allocate2(long remaining) {
+//        WorkTimeAllocator workTimeAllocator = null;
+//        if (workTimeAllocator == null)
+//            workTimeAllocator = new WorkTimeAllocator(new WorkTimeSlices(getWorkSlotListN(false)), this);
+//        return null;
+//    }
+//
+//    WorkTimeSlices allocate(long remaining) {
+//        boolean reset = false;
+//        WorkTimeSlices workTime = null;
+//        //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+//        WorkTimeAllocator workTimeAllocator = getWorkTimeAllocatorN(reset);
+//        if (workTimeAllocator != null) {
+////                WorkTimeSlices allocatedWorkTimeSlices = workTimeAllocator.getAllocatedWorkTime(this, remaining);
+//            return workTimeAllocator.getAllocatedWorkTime(this, remaining);
+////                if (allocatedWorkTimeSlices != null) {
+////                    if (workTime == null) {
+////                        workTime = new WorkTimeSlices(); //only allocate WorkTimeSlices if there is actually some workTime to return
+////                    }
+////                    workTime.addWorkTime(allocatedWorkTimeSlices);
+////                    remaining = allocatedWorkTimeSlices.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+////                    if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+////                        return workTime;
+////                    } else
+////                }
+////            }
+//        }
+//        return null;
+//    }
+//</editor-fold>
+    public WorkTimeAllocator getWorkTimeAllocatorN() {
+        if (workTimeAllocator == null && mayProvideWorkTime()) {
+            workTimeAllocator = new WorkTimeAllocator(this);
+        }
+        return workTimeAllocator;
+    }
+
+    public void setWorkTimeAllocator(WorkTimeAllocator workTimeAllocator) {
+        this.workTimeAllocator = workTimeAllocator;
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public WorkTimeSlices allocate2(ItemAndListCommonInterface elt) {
+//        List<ItemAndListCommonInterface> potentialProviders = null;
+//        WorkSlotList workSlotList;
+//        WorkTimeSlices workTimeSlices = null;
+//        WorkTimeAllocator workTimeAllocator = getWorkTimeAllocator();
+//        //if no workTimeAllocator already there (cached), if there are workSlots or owners with workTime get as much as needed or available
+//        if (workTimeAllocator == null && ((workSlotList = getWorkSlotListN(false)) != null || (potentialProviders = getPotentialWorkTimeProvidersInPrioOrder()) != null)) {
+//            long remaining = getWorkTimeRequiredFromProvider(this); //calculate how much time is needed from this' subtasks
+////            workTimeAllocator = new WorkTimeAllocator(null, null);
+//            if (workSlotList != null) {
+//                workTimeAllocator = new WorkTimeAllocator(workTimeSlices, this); //first add own workTime
+//            }
+//            long availWorktime = workTimeAllocator != null ? workTimeAllocator.getAvailableTime() : 0;
+//            if (remaining > availWorktime) { //if need additional workTime
+//                remaining -= availWorktime; //if need additional workTime
+//
+////          List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
+//                for (ItemAndListCommonInterface prov : potentialProviders) {
+//                    //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(reset);
+////                    if (workTimeAllocator != null) {
+////                        WorkTimeSlices allocatedWorkTime = workTimeAllocator.getAllocatedWorkTime(this, remaining);
+////                        if (allocatedWorkTime != null) {
+////                            if (workTimeSlices == null) {
+////                                workTimeSlices = new WorkTimeSlices(); //only allocate WorkTimeSlices if there is actually some workTime to return
+////                            }
+////                            workTimeSlices.addWorkTime(allocatedWorkTime);
+////                            workTimeAllocator.addWorkTimeSlices(prov.allocateNew(this));
+////                            remaining = allocatedWorkTime.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+////                            if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+////                                break;
+////                            }
+////                        }
+////                    }
+////</editor-fold>
+//                    workTimeAllocator.addWorkTimeSlices(prov.allocate2(this));
+//                    remaining = workTimeAllocator.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+//                    if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        setWorkTimeAllocator(workTimeAllocator); //set the updated version
+//        //if we managed to allocate some worktime above
+//        if (workTimeAllocator != null) {
+//            return workTimeAllocator.getAllocatedWorkTimeNew(elt);
+//        } else {
+//            return null;
+//        }
+//    }
+//</editor-fold>
+//    public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface elt) {
+//        WorkTimeAllocator workTimeAllocator = getWorkTimeAllocator();
+//        if (workTimeAllocator != null) {
+//            return workTimeAllocator.getAllocatedWorkTime(elt);
+//        } else {
+//            return null;
+//        }
+//    }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public WorkTimeSlices getAllocatedWorkTimeOLD() {
 ////        boolean reset = false;
 ////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(this);
@@ -8644,124 +8853,162 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public WorkTimeSlices getAllocatedWorkTimeN() {
 //        return getAllocatedWorkTimeN(false);
 //    }
-    /**
-     * returns workTime for the item at index itemIndex and for an effort of
-     * remainingTime. NB. The work time may have been allocated from several different sources. 
-     *
-     * @return null if no workTime
-     */
-//    public WorkTimeSlices getAllocatedWorkTimeN(boolean reset) {
-    @Override
-    public WorkTimeSlices getAllocatedWorkTimeN() {
-        boolean reset = false;
-
-        WorkTimeSlices workTime = null;
-        if (Config.WORKTIME_DETAILED_LOG) {
-            Log.p("-> .getAllocatedWorkTime(" + reset + ") for Item \"" + this + "\"");
-        }
-
-        //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
-        long remaining = 0;
-        List<? extends ItemAndListCommonInterface> subtasks = getListFull();
-        if (subtasks != null && subtasks.size() > 0) { //I'm a project
-            for (ItemAndListCommonInterface subt : subtasks) {
-                remaining += subt.getWorkTimeRequiredFromProvider(this); //remaining of last subtask will hold any unallocated required worktime
-            }
-        } else { //I'm a leaf task
-            remaining = getRemaining(); //how much total workTime is required?
-        }
-
-        //now iterate over workTimeProviders (returned by prio order) and get as much as possible from each
-        List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
-        for (ItemAndListCommonInterface prov : potentialProviders) {
-            //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
-            WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(reset);
-            if (workTimeAllocator != null) {
-                WorkTimeSlices allocatedWorkTime = workTimeAllocator.getAllocatedWorkTime(this, remaining);
-                if (allocatedWorkTime != null) {
-                    if (workTime == null) {
-                        workTime = new WorkTimeSlices(); //only allocate WorkTimeSlices if there is actually some workTime to return
-                    }
-                    workTime.addWorkTime(allocatedWorkTime);
-                    remaining = allocatedWorkTime.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
-                    if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
-                        break;
-                    }
-                }
-            }
-        }
-        if (Config.WORKTIME_DETAILED_LOG) {
-            Log.p("<  .getAllocatedWorkTime(" + reset + ") for Item \"" + this.toString() + "\" returning " + (workTime != null ? workTime.toString() : "<null>"));
-        }
-        return workTime;
-    }
-
-    public WorkTimeSlices getAllocatedWorkTimeNOLD() {
-        boolean reset = false;
-        WorkTimeSlices workTime = null;
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        if (false && !(workTime == null || forceWorkTimeCalculation || reset)) { //true: don't cache values in Item, only cache WorkTimeAllocator
-//            return workTime;
-//        } else {
-//</editor-fold>
-        if (Config.WORKTIME_DETAILED_LOG) {
-            Log.p("-> .getAllocatedWorkTime(" + reset + ") for Item \"" + this + "\"");
-        }
-        //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
-        long remaining = 0;
-        List<? extends ItemAndListCommonInterface> subtasks = getListFull();
-        if (subtasks != null && subtasks.size() > 0) { //I'm a project
-            for (ItemAndListCommonInterface elt : subtasks) {
-//                remaining += elt.getAllocatedWorkTimeN().getRemainingDuration(); //remaining of last subtask will hold any unallocated required worktime
-                remaining += elt.getWorkTimeRequiredFromProvider(this); //remaining of last subtask will hold any unallocated required worktime
-            }
-        } else { //I'm a leaf task
-            remaining = getRemaining(); //how much total workTime is required?
-        }
-        //now iterate over workTimeProviders (returned by prio order) and get as much as possible from each
-        List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
-//            if (providers != null) {
-        for (ItemAndListCommonInterface prov : potentialProviders) {
-            //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
-//                if (prov != owner) {
-            if (false && prov == this) {
-                //UI: if a task allocates its own workslots to itself, still only allocate the exact time needed so that finishTime gets right. !!!TODO how to show if there is unallocated workTime?
-            }
-            WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(reset);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (true ||wtd != null) {
-//                        ASSERT.that(wtd!=null,"WTD should never ne null for a workTimeProvider");
-//                    WorkTimeSlices wt = prov.getWorkTimeAllocatorN(reset).getAllocatedWorkTimeN(this, remaining);
-//</editor-fold>
-            if (workTimeAllocator != null) {
-                WorkTimeSlices allocatedWorkTime = workTimeAllocator.getAllocatedWorkTime(this, remaining);
-//                        remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
-//                        if (forceWorkTimeCalculation || workTime == null) {
-                if (allocatedWorkTime != null) {
-                    if (workTime == null) {
-                        workTime = new WorkTimeSlices(); //only allocate WorkTimeSlices if there is actually some workTime to return
-                    }
-                    workTime.addWorkTime(allocatedWorkTime);
-//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//     * returns workTime for the item at index itemIndex and for an effort of
+//     * remainingTime. NB. The work time may have been allocated from several different sources.
+//     *
+//     * @return null if no workTime
+//     */
+////    public WorkTimeSlices getAllocatedWorkTimeN(boolean reset) {
+//    @Override
+//    public WorkTimeSlices getAllocatedWorkTimeN() {
+//        boolean reset = false;
+//
+//        WorkTimeSlices workTime = null;
+//        if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getAllocatedWorkTime(" + reset + ") for Item \"" + this + "\"");
+//
+//        //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
+//        long remaining = 0;
+//        List<? extends ItemAndListCommonInterface> subtasks = getListFull();
+//        if (subtasks != null && subtasks.size() > 0) { //I'm a project
+//            for (ItemAndListCommonInterface subt : subtasks) {
+//                remaining += subt.getWorkTimeRequiredFromProvider(this); //remaining of last subtask will hold any unallocated required worktime
+//            }
+//            remaining += getRemainingForProjectTaskItself(true); //add the project task's own work time (if any)
+//        } else { //I'm a leaf task
+//            remaining = getRemaining(); //how much total workTime is required?
+//        }
+//        //now iterate over workTimeProviders (returned by prio order) and get as much as possible from each
+//        List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
+//        for (ItemAndListCommonInterface prov : potentialProviders) {
+//            //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+//            WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(reset);
+//            if (workTimeAllocator != null) {
+//                WorkTimeSlices allocatedWorkTime = workTimeAllocator.getAllocatedWorkTime(this, remaining);
+//                if (allocatedWorkTime != null) {
+//                    if (workTime == null) {
+//                        workTime = new WorkTimeSlices(); //only allocate WorkTimeSlices if there is actually some workTime to return
 //                    }
-////                    remaining = (wt != null) ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
-//                    if (wt != null) {
+//                    workTime.addWorkTime(allocatedWorkTime);
+//                    remaining = allocatedWorkTime.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+//                    if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+//                        break;
 //                    }
-//                    if (wt != null && remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+//                }
+//            }
+//        }
+//        if (Config.WORKTIME_DETAILED_LOG) Log.p("<  .getAllocatedWorkTime(" + reset + ") for Item \"" + this.toString() + "\" returning " + (workTime != null ? workTime.toString() : "<null>"));
+//        return workTime;
+//    }
+//
+//    public WorkTimeSlices getAllocatedWorkTimeN_new() {
+//        boolean reset = false;
+//
+//        WorkTimeSlices workTime = null;
+//        if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getAllocatedWorkTime(" + reset + ") for Item \"" + this + "\"");
+//
+//        //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
+//        long remaining = 0;
+//        List<? extends ItemAndListCommonInterface> subtasks = getListFull();
+//        if (subtasks != null && subtasks.size() > 0) { //I'm a project
+//            for (ItemAndListCommonInterface subt : subtasks) {
+//                remaining += subt.getWorkTimeRequiredFromProvider(this); //remaining of last subtask will hold any unallocated required worktime
+//            }
+//            remaining += getRemainingForProjectTaskItself(true); //add the project task's own work time (if any)
+//        } else { //I'm a leaf task
+//            remaining = getRemaining(); //how much total workTime is required?
+//        }
+//
+//        //now iterate over workTimeProviders (returned by prio order) and get as much as possible from each
+//        List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
+//        for (ItemAndListCommonInterface prov : potentialProviders) {
+//            //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+//            WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(reset);
+//            if (workTimeAllocator != null) {
+//                WorkTimeSlices allocatedWorkTime = workTimeAllocator.getAllocatedWorkTime(this, remaining);
+//                if (allocatedWorkTime != null) {
+//                    if (workTime == null) {
+//                        workTime = new WorkTimeSlices(); //only allocate WorkTimeSlices if there is actually some workTime to return
+//                    }
+//                    workTime.addWorkTime(allocatedWorkTime);
+//                    remaining = allocatedWorkTime.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+//                    if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        if (Config.WORKTIME_DETAILED_LOG) Log.p("<  .getAllocatedWorkTime(" + reset + ") for Item \"" + this.toString() + "\" returning " + (workTime != null ? workTime.toString() : "<null>"));
+//        return workTime;
+//    }
+//
+//    public WorkTimeSlices getAllocatedWorkTimeNOLD() {
+//        boolean reset = false;
+//        WorkTimeSlices workTime = null;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (false && !(workTime == null || forceWorkTimeCalculation || reset)) { //true: don't cache values in Item, only cache WorkTimeAllocator
+////            return workTime;
+////        } else {
+////</editor-fold>
+//        if (Config.WORKTIME_DETAILED_LOG) {
+//            Log.p("-> .getAllocatedWorkTime(" + reset + ") for Item \"" + this + "\"");
+//        }
+//        //Calculate how much time this task requires (either simply Remaining, or sum of remaining that the subtasks require from this - their project (knowing that subtasks in categories may get worktime from there as well))
+//        long remaining = 0;
+//        List<? extends ItemAndListCommonInterface> subtasks = getListFull();
+//        if (subtasks != null && subtasks.size() > 0) { //I'm a project
+//            for (ItemAndListCommonInterface elt : subtasks) {
+////                remaining += elt.getAllocatedWorkTimeN().getRemainingDuration(); //remaining of last subtask will hold any unallocated required worktime
+//                remaining += elt.getWorkTimeRequiredFromProvider(this); //remaining of last subtask will hold any unallocated required worktime
+//            }
+//        } else { //I'm a leaf task
+//            remaining = getRemaining(); //how much total workTime is required?
+//        }
+//        //now iterate over workTimeProviders (returned by prio order) and get as much as possible from each
+//        List<ItemAndListCommonInterface> potentialProviders = getPotentialWorkTimeProvidersInPrioOrder();
+////            if (providers != null) {
+//        for (ItemAndListCommonInterface prov : potentialProviders) {
+//            //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+////                if (prov != owner) {
+//            if (false && prov == this) {
+//                //UI: if a task allocates its own workslots to itself, still only allocate the exact time needed so that finishTime gets right. !!!TODO how to show if there is unallocated workTime?
+//            }
+//            WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(reset);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    if (true ||wtd != null) {
+////                        ASSERT.that(wtd!=null,"WTD should never ne null for a workTimeProvider");
+////                    WorkTimeSlices wt = prov.getWorkTimeAllocatorN(reset).getAllocatedWorkTimeN(this, remaining);
+////</editor-fold>
+//            if (workTimeAllocator != null) {
+//                WorkTimeSlices allocatedWorkTime = workTimeAllocator.getAllocatedWorkTime(this, remaining);
+////                        remaining = wt != null ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
+////                        if (forceWorkTimeCalculation || workTime == null) {
+//                if (allocatedWorkTime != null) {
+//                    if (workTime == null) {
+//                        workTime = new WorkTimeSlices(); //only allocate WorkTimeSlices if there is actually some workTime to return
+//                    }
+//                    workTime.addWorkTime(allocatedWorkTime);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    }
+//////                    remaining = (wt != null) ? wt.getRemainingDuration() : remaining; //set remaining to any duration that could not be allocated by this provider
+////                    if (wt != null) {
+////                    }
+////                    if (wt != null && remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+////</editor-fold>
+//                    remaining = allocatedWorkTime.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+//                    if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        if (Config.WORKTIME_DETAILED_LOG) {
+//            Log.p("<  .getAllocatedWorkTime(" + reset + ") for Item \"" + this.toString() + "\" returning " + (workTime != null ? workTime.toString() : "<null>"));
+//        }
+//        return workTime;
+//    }
 //</editor-fold>
-                    remaining = allocatedWorkTime.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
-                    if (remaining == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
-                        break;
-                    }
-                }
-            }
-        }
-        if (Config.WORKTIME_DETAILED_LOG) {
-            Log.p("<  .getAllocatedWorkTime(" + reset + ") for Item \"" + this.toString() + "\" returning " + (workTime != null ? workTime.toString() : "<null>"));
-        }
-        return workTime;
-    }
-
     /**
      * set workTime, especially reset to null to force recalculation.
      *

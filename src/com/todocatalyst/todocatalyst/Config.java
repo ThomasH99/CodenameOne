@@ -13,17 +13,20 @@ public abstract class Config {
     /**
      * set to true during testing. Setting false will remove test code from the app. 
      */
-    public static final boolean TEST_CACHE = false; //false;
-    public static final boolean TEST_SCROLL_Y = true; //false;
-    public static final boolean TEST = true; //false;
-    public static final boolean TEST_DRAG_AND_DROP = true; //false;
-    public static final boolean TEST_PINCH = true; //false;
-    public static final boolean TEST_SHOW_ITEM_TEXT_AS_OBJECTID = false; //false;
-    public static final boolean DEBUG_LOGGING = true; //logs only enabled during 
-    public static final boolean WORKTIME_TEST = false; //
-    public static final boolean WORKTIME_DETAILED_LOG = false; //NB! these logs are very time-consuming!!
-    public static final boolean ENABLELOGGING = true;
-    public static final boolean PARSE_OFFLINE = false;
-    public static final boolean INLINE_WORKSHOP_TESTCASE = false;
-    public static final boolean REFRESH_EVEN_THOUGH_DONE_IN_BACK = false; //true <=> assumes that when going back to a screen, refresh is done in back. This removes the opportunity to optimize by avoiding unnecessary refresh if going back from screens which don't alter the content and therefore don't require refresh
+    public static final boolean PRODUCTION_RELEASE = false; //f
+    public static final boolean PROD_LOG = true; //log to keep in production
+    public static final boolean TEST_CACHE = false && !PRODUCTION_RELEASE; //false;
+    public static final boolean TEST_SCROLL_Y = true && !PRODUCTION_RELEASE; //false;
+    public static final boolean TEST = true && !PRODUCTION_RELEASE; //false;
+    public static final boolean CHECK_OWNERS = false && !PRODUCTION_RELEASE; //false;
+    public static final boolean TEST_DRAG_AND_DROP = true && !PRODUCTION_RELEASE; //false;
+    public static final boolean TEST_PINCH = true && !PRODUCTION_RELEASE; //false;
+    public static final boolean TEST_SHOW_ITEM_TEXT_AS_OBJECTID = false && !PRODUCTION_RELEASE; //false;
+    public static final boolean DEBUG_LOGGING = true && !PRODUCTION_RELEASE; //logs only enabled during 
+    public static final boolean WORKTIME_TEST = false && !PRODUCTION_RELEASE; //
+    public static final boolean WORKTIME_DETAILED_LOG = false && !PRODUCTION_RELEASE; //NB! these logs are very time-consuming!!
+    public static final boolean ENABLELOGGING = true && !PRODUCTION_RELEASE;
+    public static final boolean PARSE_OFFLINE = false && !PRODUCTION_RELEASE;
+    public static final boolean INLINE_WORKSHOP_TESTCASE = false && !PRODUCTION_RELEASE;
+    public static final boolean REFRESH_EVEN_THOUGH_DONE_IN_BACK = false && !PRODUCTION_RELEASE; //true <=> assumes that when going back to a screen, refresh is done in back. This removes the opportunity to optimize by avoiding unnecessary refresh if going back from screens which don't alter the content and therefore don't require refresh
 }

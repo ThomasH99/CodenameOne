@@ -39,6 +39,18 @@ public class ItemListList extends ItemList {
         return INSTANCE;
     }
 
+    Object findItemListWithName(String itemListName) {
+        if (itemListName == null || itemListName.length() == 0) {
+            return null;
+        }
+        for (ItemList itemList : getListFull()) {
+            if (itemList.getText().equals(itemListName)) {
+                return itemList;
+            }
+        }
+        return null;
+    }
+
 //    @Override
 //    public List<Category> getList() {
 ////        return (Category) getParseObject(PARSE_CATEGORY_LIST);
@@ -62,8 +74,8 @@ public class ItemListList extends ItemList {
 //        }
         return super.getListFull();
     }
-    
-        public List<ItemList> getList() {
+
+    public List<ItemList> getList() {
         return super.getList();
     }
 
@@ -88,7 +100,7 @@ public class ItemListList extends ItemList {
 //        INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
 ////        for(ItemList l: temp)
 //        INSTANCE.setList(temp.getList());
-           ItemListList temp = DAO.getInstance().getItemListList();
+        ItemListList temp = DAO.getInstance().getItemListList();
         INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
         for (ItemAndListCommonInterface elt : temp.getListFull()) {
             INSTANCE.addItem(elt);

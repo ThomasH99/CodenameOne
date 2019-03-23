@@ -805,7 +805,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     public String toString() {
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
-        return MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS) + " " + getText() + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
+        return "WS:"+MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS) 
+                + " " + getText() +"["+getObjectIdP()+"]"+ (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1529,7 +1530,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             for (Object i : owner.getListFull()) { //go through everyone of the WorkSLot's Owner's tasks
                 if (i instanceof Item) {
                     Item item = (Item) i;
-                    WorkTimeSlices wTime = item.getAllocatedWorkTimeN();
+//                    WorkTimeSlices wTime = item.getAllocatedWorkTimeN();
+                    WorkTimeSlices wTime = owner.getAllocatedWorkTimeN(item);
                     if (wTime != null) {
                         List<WorkSlotSlice> slices = wTime.getWorkSlotSlices();
                         if (slices != null) {
@@ -1676,11 +1678,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public WorkSlotList getWorkSlotListN() {
-        return getOwner().getWorkSlotListN();
-    }
-
+//    @Override
+//    public WorkSlotList getWorkSlotListN() {
+//        return getOwner().getWorkSlotListN();
+//    }
     @Override
     public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -1791,15 +1792,15 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+//    @Override
+//    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
 
-    @Override
-    public WorkTimeAllocator getWorkTimeAllocatorN() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+//    @Override
+//    public WorkTimeAllocator getWorkTimeAllocatorN() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
 
     @Override
     public void resetWorkTimeDefinition() {
@@ -1823,7 +1824,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public List<ItemAndListCommonInterface> getPotentialWorkTimeProvidersInPrioOrder() {
+    public List<ItemAndListCommonInterface> getOtherPotentialWorkTimeProvidersInPrioOrderN() {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -1866,6 +1867,17 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    public WorkTimeAllocator getWorkTimeAllocatorN() {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void setWorkTimeAllocator(WorkTimeAllocator workTimeAllocator) {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    public WorkTimeSlices  getAllocatedWorkTimeN() {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public boolean softDelete(boolean removeRefs) {
 
         //DELETE IN OWNER
@@ -1890,7 +1902,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     returns by how much time (duration) the two workslots overlap
     @param workSlot
     @return 
-    */
+     */
     public long overlappingDuration(WorkSlot workSlot) {
         if (getStartTimeD().getTime() > workSlot.getEndTimeD().getTime() || workSlot.getStartTimeD().getTime() > getEndTimeD().getTime())
             return 0;

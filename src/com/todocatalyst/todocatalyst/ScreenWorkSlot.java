@@ -37,8 +37,8 @@ public class ScreenWorkSlot extends MyForm {
     private RepeatRuleParseObject locallyEditedRepeatRule;
     private RepeatRuleParseObject repeatRuleCopyBeforeEdit;
     protected static String FORM_UNIQUE_ID = "ScreenEditWorkSlot"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-    MyDateAndTimePicker startByDate;
-    MyDurationPicker duration;
+//    MyDateAndTimePicker startByDate;
+//    MyDurationPicker duration;
 //    private UpdateField updateActionOnDone;
 
 //    ScreenWorkSlot(WorkSlot workSlot, MyForm previousForm) { //throws ParseException, IOException {
@@ -71,6 +71,7 @@ public class ScreenWorkSlot extends MyForm {
 //        setTitle(screenTitle);
 //</editor-fold>
         addCommandsToToolbar(getToolbar());
+//        setCheckOnExit(()->checkWorkSlotIsValidForSaving(this.workSlot, owner));
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
     }
@@ -88,16 +89,17 @@ public class ScreenWorkSlot extends MyForm {
     validates a workSlot before saving, checks that both startDate and duration are defined and that it doesn't overlap with other of the owner's existing workslots.
     Returns null if no error, otherwise an error message string to display. 
      */
-//    public static String validateWorkSlot(ItemAndListCommonInterface owner, Date startByDate, int duration) {
-    public static String validateWorkSlot(WorkSlot workSlot, ItemAndListCommonInterface owner) {//, Date startByDate, int duration) {
+    public static boolean checkWorkSlotIsValidForSaving(ItemAndListCommonInterface owner, Date startByDate, long duration) {
+//    public static boolean checkWorkSlotIsValidForSaving(WorkSlot workSlot, ItemAndListCommonInterface owner) {//, Date startByDate, int duration) {
         List<WorkSlot> overlapping;
-//            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
-        if (workSlot.getStartTimeD().getTime() == 0 || workSlot.getDurationInMillis() == 0) {
+        String errorMsg=null;
+            if (startByDate.getTime() == 0 || duration == 0) { // ^ XOR - if one and only one is true
+//        if (workSlot.getStartTimeD().getTime() == 0 || workSlot.getDurationInMillis() == 0) {
 //            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
-            return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
-//            } else if ((overlapping = owner.getOverlappingWorkSlots(new WorkSlot(startByDate,duration))) != null) {
-        } else if ((overlapping = owner.getOverlappingWorkSlots(workSlot)) != null) {
-            return ("This workslot overlaps with \n"
+            errorMsg= "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
+            } else if ((overlapping = owner.getOverlappingWorkSlots(new WorkSlot(startByDate,duration))) != null) {
+//        } else if (owner!=null && (overlapping = owner.getOverlappingWorkSlots(workSlot)) != null) {
+            errorMsg= ("This workslot overlaps with \n"
                     + getListAsSeparatedString(overlapping,
                             (ws)
                             -> //WorkSlot.WORKSLOT +" "+
@@ -105,8 +107,11 @@ public class ScreenWorkSlot extends MyForm {
                             + " " + MyDate.formatDurationShort(((WorkSlot) ws).getDurationInMillis()), "\n", 2)
                     + (overlapping.size() > 2 ? "and " + (overlapping.size() - 2) + " more..." : "")
                     + "\nPlease change " + WorkSlot.START_TIME + " or " + WorkSlot.DURATION + ", or Cancel");
-        } else
-            return (String) null;
+        } 
+         if (errorMsg != null) {
+            Dialog.show("Error", errorMsg, "OK", null);
+            return false;
+        } else return true;
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {
@@ -140,7 +145,7 @@ public class ScreenWorkSlot extends MyForm {
 //            toolbar.addCommandToLeftBar(cmd);
 //        }
 //</editor-fold>
-        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand(true, () -> {
+        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand(true)); //, () -> {
 //            List<WorkSlot> overlapping;
 ////            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
 //            if (startByDate.getDate().getTime() == 0 || duration.getDuration() == 0) { 
@@ -157,8 +162,8 @@ public class ScreenWorkSlot extends MyForm {
 //                        +"\nPlease change " + WorkSlot.START_TIME + " or " + WorkSlot.DURATION + ", or Cancel");
 //            } else
 //                return (String) null;
-            return validateWorkSlot(new WorkSlot(startByDate.getDate(), duration.getDuration()), owner);
-        }));
+//            return checkWorkSlotIsValidForSaving(new WorkSlot(startByDate.getDate(), duration.getDuration()), owner);
+//        }));
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -246,7 +251,7 @@ public class ScreenWorkSlot extends MyForm {
 //                (d) -> workSlot.setStartTime(d));
 //</editor-fold>
         Date defaultDate = (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? new Date(now) : new Date(0));
-        startByDate = new MyDateAndTimePicker();
+        MyDateAndTimePicker startByDate = new MyDateAndTimePicker();
         initField(WorkSlot.PARSE_START_TIME, startByDate,
                 //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ? 
                 //                        new Date(now) 
@@ -267,7 +272,7 @@ public class ScreenWorkSlot extends MyForm {
 //                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
 //                (i) -> workSlot.setDurationInMinutes((int) i));
 //</editor-fold>
-        duration = new MyDurationPicker();
+        MyDurationPicker duration = new MyDurationPicker();
         duration.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
         Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0 ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS : 0));
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -382,7 +387,7 @@ public class ScreenWorkSlot extends MyForm {
 //            owner.setEditable(false);
 //        }
 //</editor-fold>
-        Object ownerObj = workSlot.getOwner();
+        ItemAndListCommonInterface ownerObj = workSlot.getOwner();
         String ownerText = ""; // = item.getOwner() != null ? ((ItemAndListCommonInterface) item.getOwner()).getText() : ""; //TODO 
         if (ownerObj != null) {
             if (ownerObj instanceof Item) {
@@ -445,6 +450,8 @@ public class ScreenWorkSlot extends MyForm {
             Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
+        
+        setCheckOnExit(()->checkWorkSlotIsValidForSaving(ownerObj, startByDate.getDate(), duration.getDuration())); //TODO: when owner can be edited, use new/edited one
         return content;
     }
 
