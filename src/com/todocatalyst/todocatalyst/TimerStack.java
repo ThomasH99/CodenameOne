@@ -2319,7 +2319,7 @@ class TimerStack {
                         effortEstimate.setDuration(timedItem.getEstimate());
 //                remainingEffort.setTime((int) timedItem.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
 //                        remainingEffort.setTime((int) timedItem.getRemainingEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
-                        remainingEffort.setDuration((int) timedItem.getRemainingForProjectTaskItself()); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
+                        remainingEffort.setDuration((int) timedItem.getRemainingForProjectTaskItselfFromParse()); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
                         refreshTotalActualEffort.actionPerformed(null);
 //                ScreenTimer6.this.revalidate();
 //                    ((MyForm) contentPane.getComponentForm()).revalidate();
@@ -2422,7 +2422,7 @@ class TimerStack {
             effortEstimate.addActionListener((e) -> {
 //                effortEstimateBeingAutoupdated=true;
                 timedItem.setEstimate(effortEstimate.getDuration(), false); //saved immediately on edit
-                if (timedItem.getRemainingForProjectTaskItself() == 0
+                if (timedItem.getRemainingForProjectTaskItselfFromParse() == 0
                         && remainingEffort.getDuration() == 0
                         && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()) {
 //                    timedItem.setRemaining(effortEstimate.getDuration(), false); //NB. not necessary because updating the duration picker will trigger the other actionListener
@@ -2448,7 +2448,7 @@ class TimerStack {
 
             effortEstimate.setDuration(timedItem.getEstimate());
 //            remainingEffort.setDuration(timedItem.getRemainingEffort());
-            remainingEffort.setDuration(timedItem.getRemainingForProjectTaskItself());
+            remainingEffort.setDuration(timedItem.getRemainingForProjectTaskItselfFromParse());
 
 //            totalActualEffort = new Label(); //MyDate.formatTime(calcTotalEffortInMinutes(item, elapsedTimePicker.getTime(), MyPrefs.getBoolean((MyPrefs.timerShowTotalActualInTimer))), showSeconds), "Button");
             refreshTotalActualEffort.actionPerformed(null);

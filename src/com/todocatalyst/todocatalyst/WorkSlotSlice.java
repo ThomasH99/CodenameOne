@@ -35,8 +35,8 @@ class WorkSlotSlice {
     @Override
     public String toString() {
         return "Slice[" + MyDate.formatDateTimeNew(new Date(startTime)) + "-" + MyDate.formatTimeNew(new Date(endTime))
-                +" dur="+MyDate.formatDurationShort(getDuration())
-                +" miss="+MyDate.formatDurationShort(missingDuration)
+                +" Dur="+MyDate.formatDurationShort(getDuration(),true)
+                +" Mis="+MyDate.formatDurationShort(missingDuration, true)
                 + " Owner:" + (workSlot != null && workSlot.getOwner() != null ? workSlot.getOwner().getText() : "<null>")
 //                + (allocatedToXXX != null ? ( " AllocTo:" +allocatedToXXX.getText() ): "")
                 + "]";

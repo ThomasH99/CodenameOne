@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- *
+ * encapsulates a complete list of workSlots
  * @author Thomas
  */
 public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> {
@@ -28,7 +28,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     public WorkSlotList() {
         super();
 //        if (now==-1) 
-        now = MyDate.MIN_DATE; //System.currentTimeMillis();
+        now = System.currentTimeMillis(); //MyDate.MIN_DATE; //System.currentTimeMillis(); //for now, use a 'local' (object specific) value for now (should be global and coming from Screen/UI
     }
 
 //    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted, boolean removeExpiredWorkSlots) {
@@ -57,9 +57,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //            }
 //        }
 //</editor-fold>
-        if (!alreadySorted) {
-            sortWorkSlotList();
-        }
+//        if (!alreadySorted) {
+//            sortWorkSlotList();
+//        }
 //        if (removeExpiredWorkSlots) {
 //            workslotList.addAll(removePastWorkSlots(list, now)); //optimization - this makes a copy of the list, is it really necessary??
 //        } else {
@@ -99,6 +99,10 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         return now;
     }
 
+    /**
+    for testing purposes
+    @param showAlsoExpiredWorkSlots 
+    */
     public void setIncludeExpiredWorkSlots(boolean showAlsoExpiredWorkSlots) {
         this.showAlsoExpiredWorkSlots = showAlsoExpiredWorkSlots;
     }
@@ -151,7 +155,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //
 //</editor-fold>
     /**
-    return valid (future) workslots
+    return valid (future) workslots, meaning they end *after* now
     @return 
      */
     public List<WorkSlot> getWorkSlots(long now) {
@@ -162,9 +166,12 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         } else {
 //            now = System.currentTimeMillis();
             List<WorkSlot> result = new ArrayList<>();
-            for (WorkSlot ws : sortedWorkslotList) {
+//            for (WorkSlot ws : sortedWorkslotList) {
+            int size = sortedWorkslotList.size();
+            for (int i = size - 1; i >= 0; i--) { //test workslots from the end of list, more efficient if many expired workslots are present
+                WorkSlot ws = sortedWorkslotList.get(i);
                 if (ws.getEndTimeD().getTime() > now) {
-                    result.add(ws);
+                    result.add(0, ws); //insert at the head of the list to keep same order as sortedWorkslots
                 }
             }
             return result;
@@ -172,7 +179,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     }
 
     public List<WorkSlot> getWorkSlots() {
-        return getWorkSlots(System.currentTimeMillis());
+        return getWorkSlots(getNow());
     }
 
     public List<WorkSlot> getWorkSlotListFull() {
@@ -220,7 +227,13 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     public long getWorkTimeSum() {
 //        return getWorkTimeSum(this, new Date(), new Date(Long.MAX_VALUE));
 //        return getWorkTimeSum(workslotList, new Date(), new Date(Long.MAX_VALUE));
-        return getWorkTimeSum(getWorkSlots(), new Date(), new Date(Long.MAX_VALUE));
+//        return getWorkTimeSum(getWorkSlots(), new Date(), new Date(Long.MAX_VALUE));
+        long sum = 0;
+        for (WorkSlot workSlot : getWorkSlots()) { //getWorkSlots() <=> only sum up workslots with future worktime
+//            sum += workSlot.getDurationAdjusted(getNow(), MyDate.MAX_DATE);
+            sum += workSlot.getDurationAdjusted(getNow()); //, MyDate.MAX_DATE);
+        }
+        return sum;
     }
 
     private static Comparator<WorkSlot> getMultipleComparator(Comparator<WorkSlot>[] comparators) {
@@ -499,13 +512,13 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
      */
     public boolean hasComingWorkSlots() {
 //        return hasComingWorkSlots(System.currentTimeMillis());
-        return hasComingWorkSlots(now);
+        return hasComingWorkSlots(getNow());
     }
 
     public boolean hasComingWorkSlots(long now) {
-        if (size() == 0) {
-            return false;
-        }
+//        if (size() == 0) {
+//            return false;
+//        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long now = System.currentTimeMillis();
 //        for (WorkSlot workSlot : workslotList) {

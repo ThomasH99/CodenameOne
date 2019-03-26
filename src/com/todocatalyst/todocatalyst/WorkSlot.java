@@ -852,7 +852,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      * time of the slot). If startDate is in the past, return NOW
      * (MyDate.getNow())
      */
-    public long getStartAdjusted() {
+    public long getStartAdjustedXXX() {
 //        return getStartAdjusted(new Date().getTime());
         return getStartAdjusted(System.currentTimeMillis());
     }
@@ -1034,12 +1034,12 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      *
      * @return
      */
-    public long getDurationAdjusted() {
+    public long getDurationAdjustedXXX() {
 //        return getDurationAdjusted(new Date().getTime());
         return getDurationAdjusted(System.currentTimeMillis());
     }
 
-    public long getDurationAdjustedInMinutes() {
+    public long getDurationAdjustedInMinutesXXX() {
 //        return getDurationAdjusted(new Date().getTime()) / MyDate.MINUTE_IN_MILLISECONDS;
         return getDurationAdjusted(System.currentTimeMillis()) / MyDate.MINUTE_IN_MILLISECONDS;
     }
@@ -1365,11 +1365,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        DAO.getInstance().delete(this);
 //    }
 //</editor-fold>
-    @Override
-    public boolean isNoLongerRelevant() {
-//        return !isActiveAdjusted();
-        return getDurationAdjusted() == 0;
-    }
+//    @Override
+//    public boolean isNoLongerRelevant() {
+////        return !isActiveAdjusted();
+//        return getDurationAdjusted() == 0;
+//    }
 // <editor-fold defaultstate="collapsed" desc="comment">
 //    private int compareLong(long d1, long d2) {
 //        if (d1 < d2) {
@@ -1563,8 +1563,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return "WorkSlotAllocation EMPTY";
     }
 
-    public long getUnallocatedTime() {
-        if (getDurationAdjusted() == 0) {
+    public long getUnallocatedTime(long now) {
+        if (getDurationAdjusted(now) == 0) {
             return 0;
         }
         List<Item> items = getItemsInWorkSlot();

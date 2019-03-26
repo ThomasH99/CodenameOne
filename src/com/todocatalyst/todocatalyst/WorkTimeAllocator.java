@@ -12,6 +12,9 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 
 /**
+each list or item which has workTime, or worktime allocated, has its own WTA which is used to allocate
+workTime to its (sub-)tasks, itself (if the project task has its own Remaining) or its items (if its a list). 
+
  * Split btw WorkTimeDef and ItemList: WTD calculates work slots and finds
  * date/time corresponding to a workload sum; recalculated if work slots change.
  * IL adds an additional structure to calculate sum of workload for each item,
@@ -135,20 +138,50 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //        this.itemsSortedFiltered = (List<ItemAndListCommonInterface>) ownerOrCategory.getList();
         this.ownerOrCategory = ownerOrCategory;
 //        this.orgItemOrList = orgItemOrList;
-        this.workTimeSlices = new WorkTimeSlices(ownerOrCategory.getWorkSlotListN());
-        this.itemsSortedFiltered = (List<ItemAndListCommonInterface>) ownerOrCategory.getList();
+//        WorkSlotList workSlotList = this.ownerOrCategory.getWorkSlotListN();
+//        this.workTimeSlices = new WorkTimeSlices(this.ownerOrCategory.getWorkSlotListN()); //workSlotList != null ? new WorkTimeSlices(this.ownerOrCategory.getWorkSlotListN()) : null;
+//        this.itemsSortedFiltered = (List<ItemAndListCommonInterface>) this.ownerOrCategory.getList();
+//
+////        long requiredWorkTime = ownerOrCategory.getWorkTimeRequiredFromProvider(ownerOrCategory); //calculate how much time is needed from this' subtasks
+//        long requiredWorkTime = this.ownerOrCategory.getRemaining(); //calculate how much time is needed from all subtasks
+        initAndReset();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        long availWorktime = getAvailableTime();
+//        if (requiredWorkTime > availWorktime) { //if need additional workTime
+//            requiredWorkTime -= availWorktime; //reduce to needed additional workTime
+//            List<ItemAndListCommonInterface> potentialProviders = this.ownerOrCategory.getOtherPotentialWorkTimeProvidersInPrioOrderN();
+//            if (potentialProviders != null) {
+//                for (ItemAndListCommonInterface prov : potentialProviders) {
+//                    //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+////                addWorkTimeSlices(prov.allocate2(ownerOrCategory));
+//                    addWorkTimeSlices(prov.getAllocatedWorkTimeN(this.ownerOrCategory));
+//                    requiredWorkTime = getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+//                    if (requiredWorkTime == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//</editor-fold>
+    }
+
+    private void initAndReset() {
+        workTimeCache = null;
+//          WorkSlotList workSlotList = this.ownerOrCategory.getWorkSlotListN();
+        this.workTimeSlices = new WorkTimeSlices(this.ownerOrCategory.getWorkSlotListN()); //workSlotList != null ? new WorkTimeSlices(this.ownerOrCategory.getWorkSlotListN()) : null;
+        this.itemsSortedFiltered = (List<ItemAndListCommonInterface>) this.ownerOrCategory.getList();
 
 //        long requiredWorkTime = ownerOrCategory.getWorkTimeRequiredFromProvider(ownerOrCategory); //calculate how much time is needed from this' subtasks
-        long requiredWorkTime = ownerOrCategory.getRemaining(); //calculate how much time is needed from all subtasks
+        long requiredWorkTime = this.ownerOrCategory.getRemaining(); //calculate how much time is needed from all subtasks
         long availWorktime = getAvailableTime();
         if (requiredWorkTime > availWorktime) { //if need additional workTime
             requiredWorkTime -= availWorktime; //reduce to needed additional workTime
-            List<ItemAndListCommonInterface> potentialProviders = ownerOrCategory.getOtherPotentialWorkTimeProvidersInPrioOrderN();
+            List<ItemAndListCommonInterface> potentialProviders = this.ownerOrCategory.getOtherPotentialWorkTimeProvidersInPrioOrderN();
             if (potentialProviders != null) {
                 for (ItemAndListCommonInterface prov : potentialProviders) {
                     //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
 //                addWorkTimeSlices(prov.allocate2(ownerOrCategory));
-                    addWorkTimeSlices(prov.getAllocatedWorkTimeN(ownerOrCategory));
+                    addWorkTimeSlices(prov.getAllocatedWorkTimeN(this.ownerOrCategory));
                     requiredWorkTime = getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
                     if (requiredWorkTime == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
                         break;
@@ -158,13 +191,13 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         }
     }
 
-    void addWorkTimeSlices(WorkTimeSlices workTime) {
+    private void addWorkTimeSlices(WorkTimeSlices workTime) {
         if (workTime == null) return;
         if (workTimeSlices == null)
             workTimeSlices = workTime;
         else {
             workTimeSlices.addWorkTime(workTime);
-            resetCache();
+//            resetCache();
         }
     }
 
@@ -180,19 +213,24 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         for (WorkTimeSlices slice : workTimeCache) {
             sliceStr += sep + slice.toString();
         }
-        return "WorkTimeAllocator for owner:"
+        return "WorkTimeAllocator for:"
                 + (ownerOrCategory != null ? (ownerOrCategory.getText()) : "NONE??")
-                + "; WorkTime= " + workTimeSlices.toString()
-                + "; Allocations: " + sliceStr; //workTimeCache.toString(); Item.
+                + "Got:"+(workTimeSlices != null ? workTimeSlices.getAvailableTime():"<none>")
+                + ";\nWorkTime= " + (workTimeSlices != null ? workTimeSlices.toString() : "<none>")
+                + ";\nAllocations: " + (sliceStr.length() > 0 ? sliceStr : "<none>"); //workTimeCache.toString(); Item.
     }
 
     long getAvailableTime() {
-        long time = 0;
+//        long time = 0;
+//        if (workTimeSlices != null && workTimeSlices.getWorkSlotSlices() != null)
+//            for (WorkSlotSlice slice : workTimeSlices.getWorkSlotSlices()) {
+//                time += slice.getDuration();
+//            }
+//        return time;
         if (workTimeSlices != null)
-            for (WorkSlotSlice slice : workTimeSlices.getWorkSlotSlices()) {
-                time += slice.getDuration();
-            }
-        return time;
+            return workTimeSlices.getAvailableTime();
+        else
+            return 0;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -395,7 +433,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //</editor-fold>
     /**
      * returns allocated workTime for the item at index itemIndex and for an
-     * effort of desiredDuration, may return less than desired even 0
+     * effort of desiredDuration, may return less than desired even 0. Call with project task itself to get the time allocated to it. 
      *
      * @param itemIndex must be a valid itemIndex
      * @param desiredDuration
@@ -497,8 +535,8 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //        long desiredDuration = item.getWorkTimeRequiredFromProvider(ownerOrCategory);
 //        for (int i = 0, size = itemsSortedFiltered.size(); i < size; i++) {
 //</editor-fold>
-        if (workTimeCache == null) 
-            workTimeCache = new ArrayList<>(itemsSortedFiltered.size()); //allocate one for each item
+        if (workTimeCache == null)
+            workTimeCache = new ArrayList<>(itemsSortedFiltered.size() + 1); //pre-allocate one for each item, +1 for the item itself
         for (int i = 0, size = itemsSortedFiltered.size(); i < size; i++) {
             ItemAndListCommonInterface elt = itemsSortedFiltered.get(i);
             if (i < workTimeCache.size()) {
@@ -511,7 +549,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
                 long eltDuration = elt.getWorkTimeRequiredFromProvider(ownerOrCategory);
                 WorkTimeSlices newWorkTS = null;
                 if (i == 0) {
-                    newWorkTS = workTimeSlices.getWorkTime(eltDuration);
+                    newWorkTS = workTimeSlices.getWorkTime(eltDuration, elt);
                 } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    Item previousItem = (Item) itemsSortedFiltered.get(i - 1);
@@ -519,13 +557,36 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 //                    WorkTimeSlices prevWorkTime = getAllocatedWorkTime(previousItem); //recurse
 //                    workTS = workTimeSlices.getWorkTime(prevWorkTime.getFinishTime(), eltDuration); //get slice! starting from end of previous slice
 //</editor-fold>
-                    newWorkTS = workTimeSlices.getWorkTime(workTimeCache.get(i - 1).getFinishTime(), eltDuration); //get slice! starting from end of previous slice
+                    newWorkTS = workTimeSlices.getWorkTime(workTimeCache.get(i - 1).getFinishTime(), eltDuration, elt); //get slice! starting from end of previous slice
                 }
 //                if (cacheActive && workT != null) { //must cache even null values since cache is an array
                 workTimeCache.add(newWorkTS); //added in right, increasing order thanks to contruction of for loop
             }
             if (elt == item)
                 return workTimeCache.get(i); //return the just calculated value (and lazy: stop calculation here for now)
+        }
+        //if called with the project task itself, we'll 'fall through' to the following statements to calculate/return the time allocated to the project task itself
+        //UII: if the project task itself has its own Remaining, allocate that last (after all its subtasks have had their time allocated)
+        //TODO add a setting to allocate to project task *first*? 
+        if (item == ownerOrCategory && ownerOrCategory instanceof Item) {
+            Item itemOwner = (Item) ownerOrCategory;
+            long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(!itemOwner.isProject()); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
+            if (remainingPrjTask > 0) {
+                int cacheSize = workTimeCache.size();
+                //if there's already one extra allocated, it is the project task itself
+                if (cacheSize > itemsSortedFiltered.size())
+                    return workTimeCache.get(cacheSize - 1);
+                else {
+                    WorkTimeSlices newWorkTS = null;
+                    if (cacheSize == 0) //if cacheSize==0 means no subtasks (time has been allocatd to all subtasks when we arrive here)
+                        newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerOrCategory);
+                    else {
+                        newWorkTS = workTimeSlices.getWorkTime(workTimeCache.get(cacheSize - 1).getFinishTime(), remainingPrjTask, ownerOrCategory); //get slice! starting from end of previous slice
+                        workTimeCache.add(newWorkTS); //add the 
+                    }
+                    return newWorkTS;
+                }
+            }
         }
         return null;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -715,7 +776,8 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
      */
     private void resetCache() {
 //        resetCache(0); //TODO
-        workTimeCache = null;
+//        workTimeCache = null;
+        initAndReset();
     }
 
     private void resetCacheXXX(int fromIndex) {

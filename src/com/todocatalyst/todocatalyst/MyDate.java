@@ -1507,7 +1507,7 @@ public class MyDate extends Date {
         }
         //beyond 365 days: "Jun'18"
 
-        return new SimpleDateFormat("MMM'''yy").format(date);
+        return new SimpleDateFormat("MMM''yy").format(date);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -1768,6 +1768,7 @@ public class MyForm extends Form {
                 if (getCheckOnExit() == null || getCheckOnExit().check()) {
                     putEditedValues2(parseIdMap2);
 //                    updateActionOnDone.update();
+    if (getUpdateActionOnDone()!=null)
                     getUpdateActionOnDone().update();
 //                previousForm.refreshAfterEdit();
 //                previousForm.showBack();
@@ -1796,6 +1797,7 @@ public class MyForm extends Form {
 //                    if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
 //                    if (getCheckOnExit() != null || (errorMsg = getCheckOnExit().check()) != null) {
                     putEditedValues2(parseIdMap2);
+                    if (getUpdateActionOnDone()!=null)
                     getUpdateActionOnDone().update();
                     showPreviousScreenOrDefault(callRefreshAfterEdit);
                 } else {

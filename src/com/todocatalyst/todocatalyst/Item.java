@@ -1215,16 +1215,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     public boolean isWaiting() {
-        return getStatus() == ItemStatus.WAITING && (System.currentTimeMillis() < getWaitingTillDateD().getTime() || getWaitingTillDateD().getTime() == 0);
+        return getStatus() == ItemStatus.WAITING && (System.currentTimeMillis() < getWaitingTillDateD().getTime() || getWaitingTillDateD().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
 //    ItemStatus status = getStatus();
 //        if (statusreturn getStatus() == ItemStatus.WAITING && (System.currentTimeMillis()<getWaitingTillDate()||getWaitingTillDate()==0 && ); 
     }
 
-    @Override
-    public boolean isNoLongerRelevant() {
-        return isDone();
-    }
-
+//    @Override
+//    public boolean isNoLongerRelevant() {
+//        return isDone();
+//    }
 //    @Override
     public ItemList getOwnerItemList() {
 //        return owner; //TODO: Parsify
@@ -5656,7 +5655,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //auto-update Remaining
         if (autoUpdateRemainingEffort && effortEstimateProjectTaskItselfMillis > 0
                 && MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
-                && getRemainingForProjectTaskItself() == 0) {
+                && getRemainingForProjectTaskItselfFromParse() == 0) {
             setRemaining(effortEstimateProjectTaskItselfMillis - getActualForProjectTaskItself(), false); //TODO actualEffort should be set *before* effort estimate for this to work
         } else { // *increase* remaining //UI: 
             if (autoUpdateRemainingEffort
@@ -5937,7 +5936,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        long newEffortTotal = effortSubtasks + remainingEffortMillis;
 //        long prevRemainingProjectTask = getRemainingEffortProjectTaskItself();
 //</editor-fold>
-        if (autoUpdateEffortEstimate && getRemainingForProjectTaskItself() == 0 //if first time we set Remaining
+        if (autoUpdateEffortEstimate && getRemainingForProjectTaskItselfFromParse() == 0 //if first time we set Remaining
                 && MyPrefs.automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero.getBoolean()
                 && getEstimate() == 0 //and no effort estimate already set
                 ) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
@@ -5986,7 +5985,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     protected void updateRemainingOnSubtaskChange() {
-        setRemaining(getRemainingForProjectTaskItself(), true);
+        setRemaining(getRemainingForProjectTaskItselfFromParse(), true);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -6013,18 +6012,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
 //    private long getRemainingEffortProjectTaskFromParse() {
-    public long getRemainingForProjectTaskItself() {
+    public long getRemainingForProjectTaskItselfFromParse() {
         Long remainingProjectTaskItselfEffort = getLong(PARSE_REMAINING_EFFORT_PROJECT_TASK_ITSELF);
         return (remainingProjectTaskItselfEffort == null) ? 0L : remainingProjectTaskItselfEffort;
     }
 
     public long getRemainingForProjectTaskItself(boolean useDefaultEstimateForZeroEstimates) {
-        long effort = getRemainingForProjectTaskItself();
+        long effort = getRemainingForProjectTaskItselfFromParse();
         if (useDefaultEstimateForZeroEstimates && effort == 0) {
             return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
         } else {
             return effort;
         }
+    }
+    public long getRemainingForProjectTaskItself() {
+        return getRemainingForProjectTaskItself(true); //by default, 
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getRemainingEffortProjectTaskItself() {
@@ -8176,46 +8178,47 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return noSave;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
-    public List<ItemAndListCommonInterface> getPotentialWorkTimeProvidersInPrioOrderOLD() {
-        boolean includeOwner = true;
-        List<ItemAndListCommonInterface> potentialProviders = new ArrayList();
-
-        //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
-//UI: if an item has BOTH own workSlots AND a category with WorkSLots, then it will first try to get workTime from its own workslots (otherwise, why would it have them?!)
-        WorkSlotList ownWorkSlotList = getWorkSlotListN();
-        if (ownWorkSlotList != null && ownWorkSlotList.size() > 0) {//size() returns number of *future* workslots only!
-            potentialProviders.add(this);
-        }
-
-//        ItemAndListCommonInterface owner = false && includeOwner ? getOwner() : null;
-        ItemAndListCommonInterface owner = getOwner();
-        if (owner != null && !MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
-            if (true || !potentialProviders.contains(owner)) { //no need to test here(?)
-                potentialProviders.add(owner);
-            }
-        }
-
-        List<Category> categories = getCategories();
-        for (Category cat : categories) {
-            if (cat.mayProvideWorkTime()) {
-                if (true || !potentialProviders.contains(cat)) { //no need to test here(?) since categories should never have duplicates
-                    potentialProviders.add(cat);
-                }
-            }
-        }
-
-        if (owner != null && MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
-            if (true || !potentialProviders.contains(owner)) {
-                potentialProviders.add(owner);
-            }
-        }
-
-        return potentialProviders;
-    }
-
+//    public List<ItemAndListCommonInterface> getPotentialWorkTimeProvidersInPrioOrderOLD() {
+//        boolean includeOwner = true;
+//        List<ItemAndListCommonInterface> potentialProviders = new ArrayList();
+//
+//        //return own (possibly allocated) workTime - enable recursion of alloated workTime down the hierarcy of projects-subprojects-leaftasks
+////UI: if an item has BOTH own workSlots AND a category with WorkSLots, then it will first try to get workTime from its own workslots (otherwise, why would it have them?!)
+//        WorkSlotList ownWorkSlotList = getWorkSlotListN();
+//        if (ownWorkSlotList != null && ownWorkSlotList.size() > 0) {//size() returns number of *future* workslots only!
+//            potentialProviders.add(this);
+//        }
+//
+////        ItemAndListCommonInterface owner = false && includeOwner ? getOwner() : null;
+//        ItemAndListCommonInterface owner = getOwner();
+//        if (owner != null && !MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
+//            if (true || !potentialProviders.contains(owner)) { //no need to test here(?)
+//                potentialProviders.add(owner);
+//            }
+//        }
+//
+//        List<Category> categories = getCategories();
+//        for (Category cat : categories) {
+//            if (cat.mayProvideWorkTime()) {
+//                if (true || !potentialProviders.contains(cat)) { //no need to test here(?) since categories should never have duplicates
+//                    potentialProviders.add(cat);
+//                }
+//            }
+//        }
+//
+//        if (owner != null && MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
+//            if (true || !potentialProviders.contains(owner)) {
+//                potentialProviders.add(owner);
+//            }
+//        }
+//
+//        return potentialProviders;
+//    }
+//</editor-fold>
     public List<ItemAndListCommonInterface> getOtherPotentialWorkTimeProvidersInPrioOrderN() {
-        List<ItemAndListCommonInterface> potentialProviders = new ArrayList();
+        List<ItemAndListCommonInterface> potentialProviders = null;// = new ArrayList();
 
         ItemAndListCommonInterface owner = getOwner();
         if (owner != null && !MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
@@ -8331,14 +8334,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                required += subtask.getWorkTimeRequiredFromProvider(this);
                     requiredCalc += subtask.getRemaining();
                 }
-                requiredCalc += getRemainingForProjectTaskItself(true); //always add own 
+                requiredCalc += getRemainingForProjectTaskItself(false); //false=> no default effort (for a project with subtasks, only subtasks should have default values)
             } else { //leaf task
                 requiredCalc = getRemaining(); //how much total workTime is required?
             }
         }
         long required = getRemaining(true); //includes subtasks and own time
-        if (Config.TEST) ASSERT.that(required == requiredCalc, this+" -getWorkTimeRequiredFromProvider(): wrong Remaining, calculated=" 
-                + MyDate.formatDurationShort(requiredCalc) + ", getRemaining()=" + MyDate.formatDurationShort(required));
+        if (Config.TEST) ASSERT.that(required == requiredCalc, this + " -getWorkTimeRequiredFromProvider(): wrong Remaining, calculated="
+                    + MyDate.formatDurationShort(requiredCalc, true) + ", getRemaining()=" + MyDate.formatDurationShort(required, true));
 
         //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
         List<ItemAndListCommonInterface> providers = getOtherPotentialWorkTimeProvidersInPrioOrderN();
@@ -8369,7 +8372,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                WorkTimeSlices wt=prov.getAllocatedWorkTimeN(this);
 //</editor-fold>
                     WorkTimeSlices wt = prov.getAllocatedWorkTimeN(this);
-                    required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+                    if (wt != null)
+                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
                 }
                 if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(required >= 0, "required has become negative=" + required + ", Item=" + this + ", providers=" + providers);
                 if (required == 0) return 0; //other higher prio providers allocated all required worktime so return here, don't go through other providers
@@ -9035,9 +9039,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public long getFinishTime() {
-
 //        long latestFinishTime = MyDate.MIN_DATE;
         if (isProject()) { //UI: for projects, finishTime is ALWAYS latest finishTime for subtasks (or undefined if all subtasks are Done)
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            Item subtask;
 //            for (Object subt : getList()) {
 //                if (subt instanceof Item && !(subtask = (Item) subt).isDone()) { //AndListCommonInterface) {
@@ -9049,7 +9053,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    }
 //                }
 //            }
-            long latestFinishTime = getLatestSubtaskFinishTime();
+//</editor-fold>
+            long latestFinishTime = Math.max(ItemAndListCommonInterface.super.getFinishTime(),getLatestSubtaskFinishTime()); //super.getFinishTime() is the project task's own finishTime in case it has its own Remaining
 //            if (latestFinishTime != MyDate.MIN_DATE) { //only return if we actually have a date (all subtasks may be Done)
             return latestFinishTime == MyDate.MIN_DATE ? MyDate.MAX_DATE : latestFinishTime;
 //            }

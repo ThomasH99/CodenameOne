@@ -4350,7 +4350,7 @@ public class DAO {
             }
 //            if (deleteWorkSlot) {
             if (noOwner && noRepeatRule) {
-                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationAdjusted() / MyDate.MINUTE_IN_MILLISECONDS, logLevel);
+                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationInMinutes(), logLevel);
 //                try {
                 if (executeCleanup) {
                     delete(workSlot); //delete filters without ref to both objectId and Screen
@@ -4810,12 +4810,12 @@ public class DAO {
             WorkSlot workSlot = workSlots.get(i);
             if (uniques.contains(workSlot)) {
                 hasDuplicates = true;
-                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationAdjusted() / MyDate.MINUTE_IN_MILLISECONDS, logLevel);
+                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationInMinutes(), logLevel);
                 workSlots.remove(i);
                 //no i++!
             } else {
                 if (workSlot.getOwner() == null) {
-                    Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationAdjusted() / MyDate.MINUTE_IN_MILLISECONDS, logLevel);
+                    Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationInMinutes(), logLevel);
                     workSlot.setOwner(owner);
                 } else if (workSlot.getOwner() != owner) {
                     workSlot.setOwner(owner);
@@ -5004,6 +5004,7 @@ public class DAO {
             if (item.getOwner() == null) { //getOwner also returns null for non-existant owners (e.g. a hard-deleted owner)
                 Log.p("Item " + itemToString(item) + " on server has no valid owner"+(executeCleanup?", adding to list \"" + lostItems.getText() + "\"":""));
                 if (executeCleanup) {
+                    item.setOwner(lostItems);
                     lostItems.addToList(item);
 //                    saveInBackground(item); //save new owner //CAN'T do here because lostItems list is not saved yet so no ObjId
                 }
@@ -5012,8 +5013,8 @@ public class DAO {
             //TODO: if item has a (non-existant) owner, then create a list named with that ObjectId and store all lost items together there (quite complicated to develop)
         }
         if (executeCleanup && lostItems.size() > 0) {
-            saveInBackground(lostItems.getListFull()); //first save all updated items
-            saveInBackground((ParseObject) lostItems);
+            save((ParseObject) lostItems); //first save new list to have a valid objectId!!
+            saveInBackground(lostItems.getListFull()); //THEN save all updated items
             ItemListList.getInstance().addToList(0, lostItems); //add to beginning of lists
             saveInBackground((ParseObject) ItemListList.getInstance());
         }

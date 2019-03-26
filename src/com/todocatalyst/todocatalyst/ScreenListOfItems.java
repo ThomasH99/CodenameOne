@@ -1877,7 +1877,7 @@ public class ScreenListOfItems extends MyForm {
 //                            refreshOnItemEdits.launchAction();
 //                        }
                     myForm.refreshAfterEdit();
-                    DAO.getInstance().save(item);
+                    DAO.getInstance().saveInBackground(item);
                     //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
 //                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refreshTimersFromParseServer();}});
                 }

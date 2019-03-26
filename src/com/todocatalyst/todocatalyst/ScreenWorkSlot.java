@@ -437,7 +437,7 @@ public class ScreenWorkSlot extends MyForm {
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
             content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
         }
-        content.add(layoutN("Unallocated time", new Label(MyDate.formatDurationStd(workSlot.getUnallocatedTime())), "How much of this work slot is still free",
+        content.add(layoutN("Unallocated time", new Label(MyDate.formatDurationStd(workSlot.getUnallocatedTime(now))), "How much of this work slot is still free",
                 true, true, false));
 
         if (Config.WORKTIME_TEST) {

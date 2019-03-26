@@ -68,7 +68,7 @@ public interface RepeatRuleObjectInterface {
      *
      * @return
      */
-    boolean isNoLongerRelevant();
+//    boolean isNoLongerRelevant();
 
     /**
      * returns the list into which insert new repeat instances generated from

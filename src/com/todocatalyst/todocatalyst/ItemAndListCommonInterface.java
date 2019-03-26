@@ -532,17 +532,18 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
         return false;
     }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
-     * return the available work time. A list since can come from different work
-     * time providers for example if a category does not allocate enough time to
-     * completely finish a task, the rest may come from the owner. Will combine
-     * workTime from different sources into one.
-     *
-     * @return workSlots and possibly workTime allocated by owner. null if no
-     * WorkTime available
-     */
+    * return the available work time. A list since can come from different work
+    * time providers for example if a category does not allocate enough time to
+    * completely finish a task, the rest may come from the owner. Will combine
+    * workTime from different sources into one.
+    *
+    * @return workSlots and possibly workTime allocated by owner. null if no
+    * WorkTime available
+    */
 //    public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface itemOrList);
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    default public WorkTimeSlices getAvailableWorkTimeXXX() {
 //        WorkTimeSlices workTime = null; // = new WorkTimeSlices();
@@ -673,18 +674,20 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        return workTime;
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
-     * time allocated to this item (from all workTimeProviders: own workslots,
-     * categories, owner)
-     *
-     * @param elt
-     * @return null if no WorkTimeSlices allocated
-     */
+    * time allocated to this item (from all workTimeProviders: own workslots,
+    * categories, owner)
+    *
+    * @param elt
+    * @return null if no WorkTimeSlices allocated
+    */
 //    default public WorkTimeSlices getAllocatedWorkTimeN() {
 //        throw new Error("Not supported yet."); //should not be called for ItemLists and Categories (or WorkSlots)
 //    }
 //    public WorkTimeSlices getAllocatedWorkTimeN();
 //    public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface elt);
+//</editor-fold>
     /**
     return the WorkTimeSlices allocated to elt
     @param elt
@@ -700,49 +703,61 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    return the element's allocated WorkTimeSlices
+    return the element's own allocated WorkTimeSlices. May come from own worktime, from owner's worktime or from categories... (therefore simplest to always use a WorkTimeAllocator
     @return 
      */
     default public WorkTimeSlices getAllocatedWorkTimeN() {
-        ItemAndListCommonInterface owner = getOwner();
-        if (owner != null) {
-            return owner.getAllocatedWorkTimeN(this);
-        } else {
-            return null;
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        ItemAndListCommonInterface owner = getOwner();
+//        if (owner != null) {
+//            return owner.getAllocatedWorkTimeN(this);
+//        } else {
+//            return null;
+//        }
+//</editor-fold>
+            return getAllocatedWorkTimeN(this);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        ItemAndListCommonInterface owner = getOwner();
+//if (owner != null)
+//        if (isProject()) {
+//
+//        } else
+//            return owner.getAllocatedWorkTimeN(this);
+//</editor-fold>
     }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //     {
 ////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
     /**
-     * allocate workTime from this element's WorkTimeDefinition to itemOrList
-     * with duration remainingDuration.
-     *
-     * @param itemOrList
-     * @param remainingDuration
-     * @return
-     */
+    * allocate workTime from this element's WorkTimeDefinition to itemOrList
+    * with duration remainingDuration.
+    *
+    * @param itemOrList
+    * @param remainingDuration
+    * @return
+    */
 //    default public WorkTimeSlices allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
 ////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList);
 //        WorkTimeAllocator wt = getWorkTimeAllocatorN();
 //        return wt != null ? wt.allocateWorkTimeXXX(itemOrList) : null;
 //    }
     /**
-     * allocate workTime from this element's WorkTimeDefinition to itemOrList
-     * with duration remainingDuration.
-     *
-     * @param itemOrList
-     * @param remainingDuration
-     * @return
-     */
+    * allocate workTime from this element's WorkTimeDefinition to itemOrList
+    * with duration remainingDuration.
+    *
+    * @param itemOrList
+    * @param remainingDuration
+    * @return
+    */
 //    default public WorkTimeSlices allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
 //    default public WorkTimeSlices allocateWorkTime(Item itemOrList, long remainingDuration) {
 ////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList, remainingDuration);
 //        WorkTimeAllocator wt = getWorkTimeAllocatorN();
 //        return wt != null ? wt.getAllocatedWorkTime(itemOrList, remainingDuration) : null;
 //    }
+//</editor-fold>
     /**
      * returns the finish time of item based on the owner's work time
      *
@@ -785,23 +800,29 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return finishTime or MyDate.MAX_DATE if no workTime was available/allocated, or if or insufficient workTime to finish the task was allocated
      */
     default public long getFinishTime() {
-        long finishTime = MyDate.MAX_DATE;
 //<editor-fold defaultstate="collapsed" desc="comment">
+//        long finishTime = MyDate.MAX_DATE;
 //        assert false:"getFinishTime on ItemListCommonInterface should never be called";
 //        return getFinishTime(System.currentTimeMillis());
 //    }
 //
 //    default public long getFinishTime(long now) {
 //        return getAllocatedWorkTimeN().getFinishTime();
-//</editor-fold>
 //        if (true) {
 //            return allocateNew(this).getFinishTime();
-        WorkTimeAllocator workTimeAllocator = getWorkTimeAllocatorN();
-        WorkTimeSlices workTimeSlices;
-        if (workTimeAllocator != null && ((workTimeSlices = workTimeAllocator.getAllocatedWorkTimeN(this)) != null))
+//        WorkTimeAllocator workTimeAllocator = getWorkTimeAllocatorN();
+//        WorkTimeSlices workTimeSlices;
+//        if (workTimeAllocator != null && ((workTimeSlices = workTimeAllocator.getAllocatedWorkTimeN(this)) != null))
+//            return workTimeSlices.getFinishTime();
+//        else
+//            return MyDate.MAX_DATE;
+//</editor-fold>
+        WorkTimeSlices workTimeSlices=getAllocatedWorkTimeN();
+        if (workTimeSlices != null)
             return workTimeSlices.getFinishTime();
-        else
+        else 
             return MyDate.MAX_DATE;
+        
 //        } 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        else {
@@ -833,7 +854,6 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        }
 //</editor-fold>
     }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    default public long getFinishTimeOLD2() {
 ////        return getAllocatedWorkTimeN().getFinishTime();
@@ -887,15 +907,17 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        }
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
-     * called to indicate the workTime needs to be udpated/refreshed. E.g. by an
-     * Item if status or remaining time changes, or by a workslot if duration or
-     * startTime change. This assume that work time calculations are cached. It
-     * should invalidate as few items as possible, e.g. typically only items
-     * that come later than the changed one.
-     */
+    * called to indicate the workTime needs to be udpated/refreshed. E.g. by an
+    * Item if status or remaining time changes, or by a workslot if duration or
+    * startTime change. This assume that work time calculations are cached. It
+    * should invalidate as few items as possible, e.g. typically only items
+    * that come later than the changed one.
+    */
 //    public void refreshWorkTime();
-    //TODO!!!!! must store separately for cache!! Same as 
+    //TODO!!!!! must store separately for cache!! Same as
+//</editor-fold>
     /**
      * returns how much workTime this element requires from the provider. If the
      * element has other higher prioritized providers they are asked how much
