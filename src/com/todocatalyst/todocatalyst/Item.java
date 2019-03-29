@@ -8373,7 +8373,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
                     WorkTimeSlices wt = prov.getAllocatedWorkTimeN(this);
                     if (wt != null)
-                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+//                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+                        required -= wt.getAllocatedDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
                 }
                 if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(required >= 0, "required has become negative=" + required + ", Item=" + this + ", providers=" + providers);
                 if (required == 0) return 0; //other higher prio providers allocated all required worktime so return here, don't go through other providers

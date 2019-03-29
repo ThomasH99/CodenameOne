@@ -22,15 +22,18 @@ public class WorkTimeSlices {
     //TODO freeze start/finnishTime
     //TODO is sorting really necessary? Yes, since work time coming from different sources may not be sequential
 //    private List<WorkSlot> workSlots = null;
-    private List<WorkSlotSlice> workSlotSlicesSortedOnStartTime = new ArrayList(); //null;
+//    private List<WorkSlotSlice> workSlotSlicesSortedOnStartTime = new ArrayList(); //null;
     private ItemAndListCommonInterface allocatedTo;
+    private int lastIndex = 0;
+    private long lastEndTime = 0; //the last dateTime that was allocated
+    private List<WorkSlotSlice> workSlotSlicesSortedByPriority;
+
 //    Date startTime; 
 //    Date finnishTime; //0 if not reached due to insufficient wrkslots
 //    private long startTime = Long.MIN_VALUE; //time when WorkTimeSlices starts inside first workSlot
 //    private long finishTime = Long.MIN_VALUE; //time when WorkTimeSlices starts inside lst workSlot
 //    private long remainingDuration = 0; //if this WorkTimeSlices does not cover the needed duration, this is set to the missing
 //    private WorkTimeSlices nextWorkTime = null; //additional daisy chained WorkTimeSlices (n
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    /**
 //    returns true if there are any slices of workSlot
@@ -95,10 +98,12 @@ public class WorkTimeSlices {
         if (workSlotSlices == null || workSlotSlices.size() == 0)
             return;
 //        workSlotSlicesSortedOnStartTime = new ArrayList();
-        this.workSlotSlicesSortedOnStartTime = workSlotSlices;
+//        this.workSlotSlicesSortedOnStartTime = workSlotSlices;
+        this.workSlotSlicesSortedByPriority = workSlotSlices;
         sortWorkSlotSlices();
 //        if (workSlotSlicesSortedOnStartTime != null)
-        for (WorkSlotSlice workSlotSlice : workSlotSlicesSortedOnStartTime) {
+//        for (WorkSlotSlice workSlotSlice : workSlotSlicesSortedOnStartTime) {
+        for (WorkSlotSlice workSlotSlice : workSlotSlicesSortedByPriority) {
             workSlotSlice.workSlot.resetItemWithSlice(); //reset previous allocations of this workslot
         }
 //        }
@@ -160,7 +165,8 @@ public class WorkTimeSlices {
 //        List<WorkSlot> workslots = workSlotList.getWorkSlots();
         long now = workSlotList.getNow();
         for (WorkSlot workSlot : workSlotList.getWorkSlots()) {
-            workSlotSlicesSortedOnStartTime.add(new WorkSlotSlice(workSlot, now)); //use the 'now' set for the workslots (ensure consistent value with 'hasFutureWorkslots')
+//            workSlotSlicesSortedOnStartTime.add(new WorkSlotSlice(workSlot, now)); //use the 'now' set for the workslots (ensure consistent value with 'hasFutureWorkslots')
+            workSlotSlicesSortedByPriority.add(new WorkSlotSlice(workSlot, now)); //use the 'now' set for the workslots (ensure consistent value with 'hasFutureWorkslots')
         }
     }
 
@@ -190,22 +196,26 @@ public class WorkTimeSlices {
     public String toString() {
         String res = "";
         String sep = "";
-        for (WorkSlotSlice workSlot : workSlotSlicesSortedOnStartTime) {
+//        for (WorkSlotSlice workSlot : workSlotSlicesSortedOnStartTime) {
+        for (WorkSlotSlice workSlot : workSlotSlicesSortedByPriority) {
             res += sep + workSlot.toString();
             sep = ", ";
         }
-        if (workSlotSlicesSortedOnStartTime.size() == 0) {
+//        if (workSlotSlicesSortedOnStartTime.size() == 0) {
+        if (workSlotSlicesSortedByPriority.size() == 0) {
             res = "WorkTime empty";
         }
-        return res+" for:"+allocatedTo.getText();
+        return res + " for:" + (allocatedTo != null ? allocatedTo.getText() : "<none>");
     }
 
     public List<WorkSlotSlice> getWorkSlotSlices() {
-        return workSlotSlicesSortedOnStartTime;
+//        return workSlotSlicesSortedOnStartTime;
+        return workSlotSlicesSortedByPriority;
     }
 
     private void sortWorkSlotSlices() {
-        Collections.sort(workSlotSlicesSortedOnStartTime, (slice1, slice2) -> {
+//        Collections.sort(workSlotSlicesSortedOnStartTime, (slice1, slice2) -> {
+        Collections.sort(workSlotSlicesSortedByPriority, (slice1, slice2) -> {
             return FilterSortDef.compareLong(slice1.getStartTime(), slice2.getStartTime());
         });
     }
@@ -222,7 +232,8 @@ public class WorkTimeSlices {
      */
     void addWorkTime(WorkTimeSlices additionalWorkTime) {
         if (additionalWorkTime != null) {
-            workSlotSlicesSortedOnStartTime.addAll(additionalWorkTime.workSlotSlicesSortedOnStartTime);
+//            workSlotSlicesSortedOnStartTime.addAll(additionalWorkTime.workSlotSlicesSortedOnStartTime);
+            workSlotSlicesSortedByPriority.addAll(additionalWorkTime.workSlotSlicesSortedByPriority);
         }
         sortWorkSlotSlices();
     }
@@ -241,7 +252,8 @@ public class WorkTimeSlices {
         //sum up the time allocated from each workslot. NB. First and last may only be partially allocated
 //        for (WorkSlotSlice slice : workSlotSlicesSortedOnStartTime) {
 //        WorkSlotSlice slice;
-        for (WorkSlotSlice slice : workSlotSlicesSortedOnStartTime) {
+//        for (WorkSlotSlice slice : workSlotSlicesSortedOnStartTime) {
+        for (WorkSlotSlice slice : workSlotSlicesSortedByPriority) {
 //        for (int i = 0, size = workSlotSlicesSortedOnStartTime.size(); i < size; i++) {
 //            slice = workSlotSlicesSortedOnStartTime.get(i);
             allocatedTime += slice.getDuration();
@@ -296,7 +308,13 @@ public class WorkTimeSlices {
 //        return nextWorkTime == null ? startTime : Math.min(startTime, nextWorkTime.getStartTime());
 //        return workSlotSlicesSortedOnStartTime != null && workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(0).getStartTime() : MyDate.MIN_DATE;
 //        return workSlotSlicesSortedOnStartTime != null && workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(0).getStartTime() : MyDate.MAX_DATE;
-        return workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(0).getStartTime() : MyDate.MAX_DATE;
+//        return workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(0).getStartTime() : MyDate.MAX_DATE;
+        long earlistStartTime = MyDate.MAX_DATE;
+        for (WorkSlotSlice slice : workSlotSlicesSortedByPriority) {
+            if (slice.getStartTime() < earlistStartTime)
+                earlistStartTime = slice.getStartTime();
+        }
+        return earlistStartTime;
     }
 
     /**
@@ -315,6 +333,7 @@ public class WorkTimeSlices {
      * @return MyDate.MAX_DATE if no slices available (meaning no defined/calculated finish time)
      */
     public long getFinishTime() {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        return nextWorkTime == null ? finishTime : Math.max(finishTime, nextWorkTime.getFinishTime()); //must call getFinishTime() to get value recursively (although very rarely needed)
 //        if (Test.DEBUG) {
 //            ASSERT.that(workSlotSlicesSortedOnStartTime != null, "workSlotSlicesSortedOnStartTime==null in WorkTimeSlices:" + this);
@@ -324,7 +343,14 @@ public class WorkTimeSlices {
 //            assert workSlotSlicesSortedOnStartTime == null || workSlotSlicesSortedOnStartTime.size() > 0: "workSlotSlicesSortedOnStartTime.size()==0 in WorkTime:" + this; //normal case with empty list, e.g. ??
 //        }
 //        return workSlotSlicesSortedOnStartTime != null && workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(workSlotSlicesSortedOnStartTime.size() - 1).getEndTime() : MyDate.MAX_DATE;
-        return workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(workSlotSlicesSortedOnStartTime.size() - 1).getEndTime() : MyDate.MAX_DATE;
+//        return workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(workSlotSlicesSortedOnStartTime.size() - 1).getEndTime() : MyDate.MAX_DATE;
+//</editor-fold>
+        long latestEndTime = MyDate.MAX_DATE;
+        for (WorkSlotSlice slice : workSlotSlicesSortedByPriority) {
+            if (slice.getEndTime() > latestEndTime)
+                latestEndTime = slice.getEndTime();
+        }
+        return latestEndTime;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -356,17 +382,27 @@ public class WorkTimeSlices {
      *
      * @return MyDate.MIN_DATE if no slides available
      */
-    public long getRemainingDuration() {
-//        return nextWorkTime == null ? finishTime : Math.max(finishTime, nextWorkTime.getFinishTime()); //must call getFinishTime() to get value recursively (although very rarely needed)
-        return workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(workSlotSlicesSortedOnStartTime.size() - 1).getMissingDuration() : 0;
+//    public long getRemainingDurationXXX() {
+////        return nextWorkTime == null ? finishTime : Math.max(finishTime, nextWorkTime.getFinishTime()); //must call getFinishTime() to get value recursively (although very rarely needed)
+////        return workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(workSlotSlicesSortedOnStartTime.size() - 1).getMissingDuration() : 0;
+//        return workSlotSlicesSortedOnStartTime.size() > 0 ? workSlotSlicesSortedOnStartTime.get(workSlotSlicesSortedOnStartTime.size() - 1).getMissingDuration() : 0;
+////    }
 //    }
-    }
 
     public long getAvailableTime() {
         long time = 0;
 //        if (workTimeSlices != null && workTimeSlices.getWorkSlotSlices() != null)
-        for (WorkSlotSlice slice : workSlotSlicesSortedOnStartTime) {
-            time += slice.getDuration();
+//        for (WorkSlotSlice slice : workSlotSlicesSortedOnStartTime) {
+//DONE make it work with overlapping slots!! Calculate availableTime using the same approach as when allocating workslots (start w earliest slot, use its endTime as earliest start for next possibly overlapping slot
+//        sortWorkSlotSlices();
+        List<WorkSlotSlice> sorted = new ArrayList(workSlotSlicesSortedByPriority); //algo requires sorted slots by startTime
+        Collections.sort(sorted, (slice1, slice2) -> {
+            return FilterSortDef.compareLong(slice1.getStartTime(), slice2.getStartTime());
+        });
+        long lastEndTime = MyDate.MIN_DATE;
+        for (WorkSlotSlice slice : workSlotSlicesSortedByPriority) {
+            time += slice.getDuration(lastEndTime);
+            lastEndTime = Math.max(lastEndTime, slice.getEndTime());
         }
         return time;
     }
@@ -383,11 +419,10 @@ public class WorkTimeSlices {
 //        this.nextWorkTime = nextWorkTime;
 //    }
 //</editor-fold>
-    WorkTimeSlices getWorkTime(long remainingDuration, ItemAndListCommonInterface allocatedTo) {
-//        return getWorkTime(getStartTime(), remainingDuration); //default is startTime of this WorkTimeSlices
-        return getWorkTime(getStartTime(), remainingDuration, allocatedTo); //default is startTime of this WorkTimeSlices
-    }
-
+//    WorkTimeSlices getWorkTime(long remainingDuration, ItemAndListCommonInterface allocatedTo) {
+////        return getWorkTime(getStartTime(), remainingDuration); //default is startTime of this WorkTimeSlices
+//        return getWorkTime(getStartTime(), remainingDuration, allocatedTo); //default is startTime of this WorkTimeSlices
+//    }
     /**
      * get a new WorkTimeSlices based on workslots in this worktime which starts at time startTime with duration remainingDuration.  Special case  if
      * remainingDuration is 0 (either Done tasks, in the middle or end of a subtask list, or tasks with zero estimate) then return an empty slice of the last(!)
@@ -400,42 +435,106 @@ public class WorkTimeSlices {
      * @param remainingDuration duration required
      * @return
      */
-    WorkTimeSlices getWorkTime(long startTime, long remainingDuration, ItemAndListCommonInterface allocatedTo) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    WorkTimeSlices getWorkTimeOLD(long startTime, long remainingDuration, ItemAndListCommonInterface allocatedTo) {
+//        //special case if requestedDuration is zero:
+//        this.allocatedTo = allocatedTo;
+//        if (false && remainingDuration == 0 && workSlotSlicesSortedOnStartTime.size() > 0) {
+//            WorkSlotSlice lastSlice = workSlotSlicesSortedOnStartTime.get(workSlotSlicesSortedOnStartTime.size() - 1);
+//            WorkSlotSlice newSlice = lastSlice.getSlice(startTime, 0); //allocate empty slice of last workslot, see reason in javadoc above
+////            newWorkSlotSlices.add(newSlice);
+//            return new WorkTimeSlices(newSlice);
+//        }
+//
+//        List<WorkSlotSlice> newWorkSlotSlices = new ArrayList<WorkSlotSlice>();
+//
+//        int index = 0;
+//        int size = workSlotSlicesSortedOnStartTime.size();
+//        //find first slice with appropriate startTime (skip slides that start *after* startTime or end *before* startTime (<=> no overlap)
+////        while (index < size && startTime < workSlotSlicesSortedOnStartTime.get(index).getStartTime() && startTime > workSlotSlicesSortedOnStartTime.get(index).getEndTime()) {
+//        while (index < size && !(startTime >= workSlotSlicesSortedOnStartTime.get(index).getStartTime() && startTime <= workSlotSlicesSortedOnStartTime.get(index).getEndTime())) {
+//            index++;
+//        }
+//
+//        long nextStartTime = startTime;
+//        WorkSlotSlice nextSlice;
+//        while (index < size) { //while there are non-zero workslots... don't test on remainingDuration==0, since we styill need to allocate a zero-length workslot to those
+//            nextSlice = workSlotSlicesSortedOnStartTime.get(index);
+//            if (nextSlice.getEndTime() >= nextStartTime) { //case of overlapping workslots, only use next in list if it has later non-overlapping time
+//                WorkSlotSlice newSlice = nextSlice.getSlice(nextStartTime, remainingDuration);
+//                newWorkSlotSlices.add(newSlice);
+//                remainingDuration = newSlice.missingDuration; //new remaining is what was not allocated in the last slot
+//                if (remainingDuration == 0) {
+//                    break; //break after allocation of first slice when duration is zero (avoids having multiple zeru duration slices allocated)
+//                }
+//                nextStartTime = newSlice.endTime; //new startTime is the end of the allocated workSlotSlice
+//            }
+//            index++;
+//        }
+////        return usedWorkSlotSlices != null && usedWorkSlotSlices.size() > 0 ? new WorkTimeSlices(usedWorkSlotSlices) : null;
+//        return new WorkTimeSlices(newWorkSlotSlices);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////if (workSlot.getEndTime() <= startTime || workSlot.getDurationAdjusted() == 0) {
+////                //UI: 0-duration workslots will NOT be included in list for a task
+////                workSlotIndex++;
+////                continue; //continue with next workSLot
+////            }
+////            if (!startTimeCheckedAgainstFirstValidWorkSLot && workSlot.getStartAdjusted() > startTime) { //if next workSlot starts *after* startTime, adjust startTime
+////                startTime = workSlot.getStartAdjusted();
+////                startTimeCheckedAgainstFirstValidWorkSLot = true;
+////            }
+//////            startTime = Math.max(startTime, workSlot.getStartAdjusted()); //not needed! If workSlot.startTime is smaller than startTime, it will simply be ignored in WorkTimeSlices
+////            if (startTime + remainingDuration <= workSlot.getEndTime()) { //duration is fully covered within current workSlot
+////                endTime = startTime + remainingDuration;
+////                remainingDuration = 0;
+////            } else {
+////                remainingDuration -= workSlot.getEndTime() - workSlot.getStartAdjusted(startTime);
+////                endTime = workSlot.getEndTime(); //store this workslot'e endtime in case we've reached the last workslot (if not, endTime will get overwritten in next iteration)
+////                workSlotIndex++;
+////            }
+////            if (usedWorkSlots == null) { //lazy init
+////                usedWorkSlots = new ArrayList();
+////            }
+////            usedWorkSlots.add(workSlot);
+////            if (workSlotIndex >= workSlots.size() && workTime.nextWorkTime != null) {
+////                WorkTimeSlices newWT = new WorkTimeSlices();
+////                workTimeResult.nextWorkTime = newWT;
+////                workTimeResult = newWT;
+////                workTime = workTime.nextWorkTime;
+////                workSlots = workTime.workSlots;
+////            }
+////        }
+////        return new WorkTimeSlices(usedWorkSlots, startTime, endTime, remainingDuration, null, workSlotIndex);
+////</editor-fold>
+//    }
+//</editor-fold>
+    WorkTimeSlices getWorkTime(long remainingDuration, ItemAndListCommonInterface allocatedTo) {
         //special case if requestedDuration is zero: 
-        if (false && remainingDuration == 0 && workSlotSlicesSortedOnStartTime.size() > 0) {
-            WorkSlotSlice lastSlice = workSlotSlicesSortedOnStartTime.get(workSlotSlicesSortedOnStartTime.size() - 1);
-            WorkSlotSlice newSlice = lastSlice.getSlice(startTime, 0); //allocate empty slice of last workslot, see reason in javadoc above
-//            newWorkSlotSlices.add(newSlice);
-this.allocatedTo=allocatedTo;
-            return new WorkTimeSlices(newSlice);
-        }
-
+        this.allocatedTo = allocatedTo;
+        long needed = remainingDuration;
+        int lastIndex = 0;
+        long lastEndTime = 0; //the last dateTime that was allocated
+        List<WorkSlotSlice> workSlotSlicesSortedByPriority = new ArrayList();
         List<WorkSlotSlice> newWorkSlotSlices = new ArrayList<WorkSlotSlice>();
-
-        int index = 0;
-        int size = workSlotSlicesSortedOnStartTime.size();
-        //find first slice with appropriate startTime (skip slides that start *after* startTime or end *before* startTime (<=> no overlap)
-//        while (index < size && startTime < workSlotSlicesSortedOnStartTime.get(index).getStartTime() && startTime > workSlotSlicesSortedOnStartTime.get(index).getEndTime()) {
-        while (index < size && !(startTime >= workSlotSlicesSortedOnStartTime.get(index).getStartTime() && startTime <= workSlotSlicesSortedOnStartTime.get(index).getEndTime())) {
-            index++;
-        }
-
-        long nextStartTime = startTime;
-        WorkSlotSlice nextSlice;
-        while (index < size) { //while there are non-zero workslots... don't test on remainingDuration==0, since we styill need to allocate a zero-length workslot to those
-            nextSlice = workSlotSlicesSortedOnStartTime.get(index);
-            if (nextSlice.getEndTime() >= nextStartTime) { //case of overlapping workslots, only use next in list if it has later non-overlapping time
-                WorkSlotSlice newSlice = nextSlice.getSlice(nextStartTime, remainingDuration);
-                newWorkSlotSlices.add(newSlice);
-                remainingDuration = newSlice.missingDuration; //new remaining is what was not allocated in the last slot
-                if (remainingDuration == 0) {
-                    break; //break after allocation of first slice when duration is zero (avoids having multiple zeru duration slices allocated)
+        if (workSlotSlicesSortedByPriority == null || workSlotSlicesSortedByPriority.size() == 0)
+            return null;
+        //         while (needed>0 && lastIndex<workSlotSlicesSortedByPriority.size()) {
+        do { //always iterate at least once to allocate an 'empty' slice w startTime to 0-duration tasks (e.g. no estimate)
+            WorkSlotSlice workSlice = workSlotSlicesSortedByPriority.get(lastIndex);
+            if (workSlice.getEndTime() > lastEndTime) { //if there's still workTime left in this slice
+                //allocate 
+                WorkSlotSlice newSlice = workSlice.getSlice(lastEndTime, remainingDuration);
+                if (newSlice != null) {
+                    newWorkSlotSlices.add(newSlice);
+                    lastEndTime = newSlice.getEndTime();
+                    needed -= newSlice.getDuration();
                 }
-                nextStartTime = newSlice.endTime; //new startTime is the end of the allocated workSlotSlice
+            } else {
+                lastIndex++;
+//                  lastEndTime=newSlice.getEndTime();
             }
-            index++;
-        }
-//        return usedWorkSlotSlices != null && usedWorkSlotSlices.size() > 0 ? new WorkTimeSlices(usedWorkSlotSlices) : null;
+        } while (needed > 0 && lastIndex < workSlotSlicesSortedByPriority.size());
+
         return new WorkTimeSlices(newWorkSlotSlices);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //if (workSlot.getEndTime() <= startTime || workSlot.getDurationAdjusted() == 0) {
@@ -470,6 +569,11 @@ this.allocatedTo=allocatedTo;
 //        }
 //        return new WorkTimeSlices(usedWorkSlots, startTime, endTime, remainingDuration, null, workSlotIndex);
 //</editor-fold>
+    }
+
+    public void reset() {
+        lastIndex = 0;
+        lastEndTime = MyDate.MIN_DATE;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -16,7 +16,7 @@ import java.util.Date;
  */
 //    private int lastWorkSlotIndex = -1;
 class WorkSlotSlice {
-    
+
     WorkSlot workSlot;
 
     public WorkSlot getWorkSlot() {
@@ -31,20 +31,20 @@ class WorkSlotSlice {
     long missingDuration;// = 0;
     long now; //DEBUG: keep for the ASSERT statements
     private ItemAndListCommonInterface allocatedToXXX;
-    
+
     @Override
     public String toString() {
         return "Slice[" + MyDate.formatDateTimeNew(new Date(startTime)) + "-" + MyDate.formatTimeNew(new Date(endTime))
-                +" Dur="+MyDate.formatDurationShort(getDuration(),true)
-                +" Mis="+MyDate.formatDurationShort(missingDuration, true)
+                + " Dur=" + MyDate.formatDurationShort(getDuration(), true)
+                + " Mis=" + MyDate.formatDurationShort(missingDuration, true)
                 + " Owner:" + (workSlot != null && workSlot.getOwner() != null ? workSlot.getOwner().getText() : "<null>")
-//                + (allocatedToXXX != null ? ( " AllocTo:" +allocatedToXXX.getText() ): "")
+                //                + (allocatedToXXX != null ? ( " AllocTo:" +allocatedToXXX.getText() ): "")
                 + "]";
 //                + " of "
 //                + (workSlot != null ? new Date(workSlot.getDurationAdjusted()) : "null") + "-"
 //                + (workSlot != null ? new Date(workSlot.getEndTime()) : "null");
     }
-    
+
     WorkSlotSlice(WorkSlot workSlot, long startTime, long endTime, long missingDuration) {
         this.workSlot = workSlot;
 //            this.startTime = startTime < workSlot.getStartAdjusted() ? workSlot.getStartAdjusted() : startTime;
@@ -57,14 +57,14 @@ class WorkSlotSlice {
         this.missingDuration = missingDuration;
 //        ASSERT.that(startTime >= workSlot.getStartAdjusted(), "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted()));
         if (Config.WORKTIME_TEST) {
-            assert startTime >= workSlot.getStartAdjusted(now): "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted(now));
+            assert startTime >= workSlot.getStartAdjusted(now) : "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted(now));
         }
         if (Config.WORKTIME_TEST) {
-            assert endTime <= workSlot.getEndTime(): "endTime:" + new Date(endTime) + "must be less than workSlot.getEndTime():" + new Date(workSlot.getEndTime());
+            assert endTime <= workSlot.getEndTime() : "endTime:" + new Date(endTime) + "must be less than workSlot.getEndTime():" + new Date(workSlot.getEndTime());
         }
 //        ASSERT.that(startTime != endTime, "zero duration workSlotSlice not allowed, startTime:" + new Date(startTime) + " endTime:" + new Date(endTime));
     }
-    
+
     WorkSlotSlice(WorkSlot workSlot, long startTime, long endTime) {
         this(workSlot, startTime, endTime, 0);
     }
@@ -97,7 +97,7 @@ class WorkSlotSlice {
     WorkSlotSlice getSlice(long startTime, long duration) {
         return getSlice(startTime, duration, null);
     }
-    
+
 //    private WorkSlotSlice getSlice(long startTime, long duration, ItemAndListCommonInterface allocatedTo) {
     private WorkSlotSlice getSlice(long startTime, long duration, Item allocatedTo) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -117,7 +117,7 @@ class WorkSlotSlice {
         //if either duration==0 or startTime==endTime, an empty slide will be allocated
         this.allocatedToXXX = allocatedTo;
         workSlot.addItemWithSlice(allocatedTo);
-        long actualStartTime = Math.max(startTime,this.startTime );
+        long actualStartTime = Math.max(startTime, this.startTime);
 //        long actualSliceEndTime = Math.min(startTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
 //        return new WorkSlotSlice(workSlot, startTime,
 //                actualSliceEndTime,
@@ -135,7 +135,7 @@ class WorkSlotSlice {
 //        }
 //</editor-fold>
     }
-    
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    WorkSlotSlice getSliceXX(long startTime, long duration) {
 ////            if (startTime == MyDate.MIN_DATE) {
@@ -177,7 +177,7 @@ class WorkSlotSlice {
         return duration > 0 && (startTime >= getStartTime() && startTime <= getEndTime()) && getDuration() > 0; //TODO optimization: simplify/optimize epxression
 //            return getEndTime() - getStartTime() >= duration;
     }
-    
+
     long getStartTime() {
 //            return Math.max(startTime, workSlot.getStartAdjusted());
 //            if (startTime == MyDate.MIN_DATE) {
@@ -187,7 +187,7 @@ class WorkSlotSlice {
 //            }
         return startTime;
     }
-    
+
     long getEndTime() {
 //            return Math.min(endTime, workSlot.getEndTime());
 //            if (endTime == MyDate.MAX_DATE) {
@@ -197,23 +197,31 @@ class WorkSlotSlice {
 //            }
         return endTime;
     }
-    
+
     long getMissingDuration() {
         return missingDuration;
     }
-    
+
     long getDuration() {
 //            return Math.max(0, getEndTime() - getStartTime());
 //            return Math.max(0, endTime - startTime);
         return endTime - startTime; //should always be positive, otherwise error elsewhere
     }
-    
+
+    long getDuration(long start) {
+//            return Math.max(0, getEndTime() - getStartTime());
+//            return Math.max(0, endTime - startTime);
+        long actualStart = Math.max(start, startTime);
+//        return endTime - startTime; //should always be positive, otherwise error elsewhere
+        return endTime - actualStart; //should always be positive, otherwise error elsewhere
+    }
+
     public ItemAndListCommonInterface getAllocatedToXXX() {
         return allocatedToXXX;
     }
-    
+
     public void setAllocatedToXXX(ItemAndListCommonInterface allocatedTo) {
         this.allocatedToXXX = allocatedTo;
     }
-    
+
 }

@@ -8,6 +8,8 @@ import com.codename1.io.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
@@ -173,7 +175,8 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 
 //        long requiredWorkTime = ownerOrCategory.getWorkTimeRequiredFromProvider(ownerOrCategory); //calculate how much time is needed from this' subtasks
         long requiredWorkTime = this.ownerOrCategory.getRemaining(); //calculate how much time is needed from all subtasks
-        long availWorktime = getAvailableTime();
+//        long availWorktime = getAvailableTime();
+        long availWorktime = workTimeSlices.getAvailableTime();
         if (requiredWorkTime > availWorktime) { //if need additional workTime
             requiredWorkTime -= availWorktime; //reduce to needed additional workTime
             List<ItemAndListCommonInterface> potentialProviders = this.ownerOrCategory.getOtherPotentialWorkTimeProvidersInPrioOrderN();
@@ -181,8 +184,12 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
                 for (ItemAndListCommonInterface prov : potentialProviders) {
                     //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
 //                addWorkTimeSlices(prov.allocate2(ownerOrCategory));
-                    addWorkTimeSlices(prov.getAllocatedWorkTimeN(this.ownerOrCategory));
-                    requiredWorkTime = getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+//                    addWorkTimeSlices(prov.getAllocatedWorkTimeN(this.ownerOrCategory));
+                    WorkTimeSlices slices = prov.getAllocatedWorkTimeN(this.ownerOrCategory);
+                    workTimeSlices.addWorkTime(slices);
+//                    requiredWorkTime = getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+//                    requiredWorkTime = workTimeSlices.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
+                    requiredWorkTime -= slices.getAllocatedDuration(); //set remaining to any duration that could not be allocated by this provider
                     if (requiredWorkTime == 0) { //only stop allocating workTime if remaining is 0 *after* some workTime wt was allocated
                         break;
                     }
@@ -191,22 +198,22 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         }
     }
 
-    private void addWorkTimeSlices(WorkTimeSlices workTime) {
-        if (workTime == null) return;
-        if (workTimeSlices == null)
-            workTimeSlices = workTime;
-        else {
-            workTimeSlices.addWorkTime(workTime);
-//            resetCache();
-        }
-    }
-
-    long getRemainingDuration() {
-//        if (workTimeSlices.getWorkSlotSlices().size()>0)
-        return workTimeSlices.getRemainingDuration();
-//        else return 0;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void addWorkTimeSlices(WorkTimeSlices workTime) {
+//        if (workTime == null) return;
+//        if (workTimeSlices == null)
+//            workTimeSlices = workTime;
+//        else {
+//            workTimeSlices.addWorkTime(workTime);
+////            resetCache();
+//        }
+//    }
+//    long getRemainingDuration() {
+////        if (workTimeSlices.getWorkSlotSlices().size()>0)
+//        return workTimeSlices.getRemainingDuration();
+////        else return 0;
+//    }
+//</editor-fold>
     public String toString() {
         String sep = "";
         String sliceStr = "";
@@ -215,24 +222,27 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         }
         return "WorkTimeAllocator for:"
                 + (ownerOrCategory != null ? (ownerOrCategory.getText()) : "NONE??")
-                + "Got:"+(workTimeSlices != null ? workTimeSlices.getAvailableTime():"<none>")
+                + "Got:" + (workTimeSlices != null ? workTimeSlices.getAvailableTime() : "<none>")
                 + ";\nWorkTime= " + (workTimeSlices != null ? workTimeSlices.toString() : "<none>")
                 + ";\nAllocations: " + (sliceStr.length() > 0 ? sliceStr : "<none>"); //workTimeCache.toString(); Item.
     }
 
-    long getAvailableTime() {
-//        long time = 0;
-//        if (workTimeSlices != null && workTimeSlices.getWorkSlotSlices() != null)
-//            for (WorkSlotSlice slice : workTimeSlices.getWorkSlotSlices()) {
-//                time += slice.getDuration();
-//            }
-//        return time;
-        if (workTimeSlices != null)
-            return workTimeSlices.getAvailableTime();
-        else
-            return 0;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    long getAvailableTime() {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        long time = 0;
+////        if (workTimeSlices != null && workTimeSlices.getWorkSlotSlices() != null)
+////            for (WorkSlotSlice slice : workTimeSlices.getWorkSlotSlices()) {
+////                time += slice.getDuration();
+////            }
+////        return time;
+////</editor-fold>
+//        if (workTimeSlices != null)
+//            return workTimeSlices.getAvailableTime();
+//        else
+//            return 0;
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
     returns the list of items that have a slice of this workSlot allocated to them, in allocation order based on order of the list of items in itemsSortedFiltered
@@ -518,74 +528,151 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
 ////</editor-fold>
 //    }
 //</editor-fold>
-    WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface item) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        if (Config.WORKTIME_TEST) {
-//            assert itemIndex >= 0 : "WorkTimeAllocator.getAllocatedWorkTime called with negative itemIndex";
-//        }
-//        if (Config.WORKTIME_DETAILED_LOG) {
-//            Log.p(ownerOrCategory + "." + "getAllocatedWorkTime(itemIndex=" + itemIndex + ", duration=" + desiredDuration + "), item=" + itemsSortedFiltered.get(itemIndex));
-//        }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (!cacheActive) return new WorkTimeSlices();
-//if allocated work time is already calculated/cached return the old value
-//        if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
-//        if (itemIndex < workTimeCache.size()) {
-//        long desiredDuration = item.getWorkTimeRequiredFromProvider(ownerOrCategory);
+//    WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface item) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (Config.WORKTIME_TEST) {
+////            assert itemIndex >= 0 : "WorkTimeAllocator.getAllocatedWorkTime called with negative itemIndex";
+////        }
+////        if (Config.WORKTIME_DETAILED_LOG) {
+////            Log.p(ownerOrCategory + "." + "getAllocatedWorkTime(itemIndex=" + itemIndex + ", duration=" + desiredDuration + "), item=" + itemsSortedFiltered.get(itemIndex));
+////        }
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (!cacheActive) return new WorkTimeSlices();
+////if allocated work time is already calculated/cached return the old value
+////        if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
+////        if (itemIndex < workTimeCache.size()) {
+////        long desiredDuration = item.getWorkTimeRequiredFromProvider(ownerOrCategory);
+////        for (int i = 0, size = itemsSortedFiltered.size(); i < size; i++) {
+////</editor-fold>
+//        if (workTimeCache == null)
+//            workTimeCache = new ArrayList<>(itemsSortedFiltered.size() + 1); //pre-allocate one for each item, +1 for the item itself
 //        for (int i = 0, size = itemsSortedFiltered.size(); i < size; i++) {
+//            ItemAndListCommonInterface elt = itemsSortedFiltered.get(i);
+//            if (i < workTimeCache.size()) {
+//                if (elt == item || elt.equals(item)) {
+//                    if (Config.TEST) ASSERT.that(!(elt.equals(item)) || elt == item, "element dupliicated item=" + item + ", elt=" + elt);
+//                    return workTimeCache.get(i);
+//                }
+//                //else: do nothing since already calculated
+//            } else { //not calculated
+//                long eltDuration = elt.getWorkTimeRequiredFromProvider(ownerOrCategory);
+//                WorkTimeSlices newWorkTS = null;
+//                if (i == 0) {
+//                    newWorkTS = workTimeSlices.getWorkTime(eltDuration, elt);
+//                } else {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    Item previousItem = (Item) itemsSortedFiltered.get(i - 1);
+//////                    WorkTimeSlices prevWorkTime = getAllocatedWorkTime(i - 1, previousItem.getWorkTimeRequiredFromProvider(ownerOrCategory)); //recurse
+////                    WorkTimeSlices prevWorkTime = getAllocatedWorkTime(previousItem); //recurse
+////                    workTS = workTimeSlices.getWorkTime(prevWorkTime.getFinishTime(), eltDuration); //get slice! starting from end of previous slice
+////</editor-fold>
+//                    newWorkTS = workTimeSlices.getWorkTime(workTimeCache.get(i - 1).getFinishTime(), eltDuration, elt); //get slice! starting from end of previous slice
+//                }
+////                if (cacheActive && workT != null) { //must cache even null values since cache is an array
+//                workTimeCache.add(newWorkTS); //added in right, increasing order thanks to contruction of for loop
+//            }
+//            if (elt == item)
+//                return workTimeCache.get(i); //return the just calculated value (and lazy: stop calculation here for now)
+//        }
+//        //if called with the project task itself, we'll 'fall through' to the following statements to calculate/return the time allocated to the project task itself
+//        //UII: if the project task itself has its own Remaining, allocate that last (after all its subtasks have had their time allocated)
+//        //TODO add a setting to allocate to project task *first*?
+//        if (item == ownerOrCategory && ownerOrCategory instanceof Item) {
+//            Item itemOwner = (Item) ownerOrCategory;
+//            long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(!itemOwner.isProject()); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
+//            if (remainingPrjTask > 0) {
+//                int cacheSize = workTimeCache.size();
+//                //if there's already one extra allocated, it is the project task itself
+//                if (cacheSize > itemsSortedFiltered.size())
+//                    return workTimeCache.get(cacheSize - 1);
+//                else {
+//                    WorkTimeSlices newWorkTS = null;
+//                    if (cacheSize == 0) //if cacheSize==0 means no subtasks (time has been allocatd to all subtasks when we arrive here)
+//                        newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerOrCategory);
+//                    else {
+//                        newWorkTS = workTimeSlices.getWorkTime(workTimeCache.get(cacheSize - 1).getFinishTime(), remainingPrjTask, ownerOrCategory); //get slice! starting from end of previous slice
+//                        workTimeCache.add(newWorkTS); //add the
+//                    }
+//                    return newWorkTS;
+//                }
+//            }
+//        }
+//        return null;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (workT == null) {
+////                workT = new WorkTimeSlices();
+////            }
+////            return workT; //returns the last value calculated (which is for itemIndex)
+////        }
+//////        WorkTimeSlices workT;
+////        if (workTimeCache != null && itemIndex >= 0 && itemIndex < workTimeCache.size()) {
+////            return workTimeCache.get(itemIndex);
+////        } else {
+////            if (itemIndex > 0) {
+////                WorkTimeSlices prevWorkTime = getAllocatedWorkTimeN(itemIndex - 1, itemsSortedFiltered.get(itemIndex - 1).getWorkTimeRequiredFromProvider(owner)); //recurse
+////                workT = workTime.getWorkTime(prevWorkTime.getFinishTime(), desiredDuration); //get slice! starting from end of previous slice
+////            } else { //itemIndex == 0, allocate time to very first element in list and end recursion
+////                workT = workTime.getWorkTime(desiredDuration);
+////                if (workTimeCache == null && cacheActive) {
+////                    workTimeCache = new ArrayList<>();
+////                }
+////            }
+////            if (cacheActive) { //must cache even null values since cache is an array
+////                workTimeCache.add(workT);
+////            }
+////            return workT;
+////        }
+////</editor-fold>
+//    }
 //</editor-fold>
+    WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface item) {
+        HashMap<ItemAndListCommonInterface, WorkTimeSlices> workTimeCache = new HashMap();
         if (workTimeCache == null)
-            workTimeCache = new ArrayList<>(itemsSortedFiltered.size() + 1); //pre-allocate one for each item, +1 for the item itself
-        for (int i = 0, size = itemsSortedFiltered.size(); i < size; i++) {
-            ItemAndListCommonInterface elt = itemsSortedFiltered.get(i);
-            if (i < workTimeCache.size()) {
-                if (elt == item || elt.equals(item)) {
-                    if (Config.TEST) ASSERT.that(!(elt.equals(item)) || elt == item, "element dupliicated item=" + item + ", elt=" + elt);
-                    return workTimeCache.get(i);
-                }
-                //else: do nothing since already calculated
-            } else { //not calculated
+            workTimeCache = new HashMap(itemsSortedFiltered.size() + 1); //pre-allocate one for each item, +1 for the item itself
+        ItemAndListCommonInterface elt = null;
+        if (workTimeCache.get(item) != null) //already calculated
+            return workTimeCache.get(item);
+        else {
+            //not calculated
+            //first first element with allocated time
+            for (int i = workTimeCache.size(), size = itemsSortedFiltered.size(); i >= 0 && i < size; i++) {
+                elt = itemsSortedFiltered.get(i);
                 long eltDuration = elt.getWorkTimeRequiredFromProvider(ownerOrCategory);
-                WorkTimeSlices newWorkTS = null;
-                if (i == 0) {
-                    newWorkTS = workTimeSlices.getWorkTime(eltDuration, elt);
-                } else {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    Item previousItem = (Item) itemsSortedFiltered.get(i - 1);
-////                    WorkTimeSlices prevWorkTime = getAllocatedWorkTime(i - 1, previousItem.getWorkTimeRequiredFromProvider(ownerOrCategory)); //recurse
-//                    WorkTimeSlices prevWorkTime = getAllocatedWorkTime(previousItem); //recurse
-//                    workTS = workTimeSlices.getWorkTime(prevWorkTime.getFinishTime(), eltDuration); //get slice! starting from end of previous slice
-//</editor-fold>
-                    newWorkTS = workTimeSlices.getWorkTime(workTimeCache.get(i - 1).getFinishTime(), eltDuration, elt); //get slice! starting from end of previous slice
-                }
-//                if (cacheActive && workT != null) { //must cache even null values since cache is an array
-                workTimeCache.add(newWorkTS); //added in right, increasing order thanks to contruction of for loop
+//                WorkTimeSlices newWorkTS = null;
+//                if (i == 0) {
+//                    newWorkTS = workTimeSlices.getWorkTime(eltDuration, elt);
+//                } else {
+//                    newWorkTS = workTimeSlices.getWorkTime(workTimeCache.get(itemsSortedFiltered.get(i - 1)).getFinishTime(), eltDuration, elt); //get slice! starting from end of previous slice
+//                }
+                  WorkTimeSlices  newWorkTS = workTimeSlices.getWorkTime(eltDuration, elt); //get workTime in order, slices keep track of up to where slices are already reserved
+                workTimeCache.put(elt, newWorkTS); //added by increasing index in itemsSortedFiltered
+                if (elt == item) return newWorkTS;
             }
-            if (elt == item)
-                return workTimeCache.get(i); //return the just calculated value (and lazy: stop calculation here for now)
         }
+        assert itemsSortedFiltered == null || itemsSortedFiltered.size() == 0
+                || (elt != null && itemsSortedFiltered.get(itemsSortedFiltered.size() - 1) == elt); //if there are subtasks, then elt is assigned to last element - used below
+
+        if (Config.TEST) ASSERT.that(itemsSortedFiltered.size() == workTimeCache.size(), "error - not all subtasks got allocated a slice, owner=" + ownerOrCategory + ", item=" + item);
         //if called with the project task itself, we'll 'fall through' to the following statements to calculate/return the time allocated to the project task itself
         //UII: if the project task itself has its own Remaining, allocate that last (after all its subtasks have had their time allocated)
         //TODO add a setting to allocate to project task *first*? 
         if (item == ownerOrCategory && ownerOrCategory instanceof Item) {
             Item itemOwner = (Item) ownerOrCategory;
-            long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(!itemOwner.isProject()); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
+            boolean isProject = (elt != null); //itemOwner.isProject();
+            long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(!isProject); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
             if (remainingPrjTask > 0) {
-                int cacheSize = workTimeCache.size();
-                //if there's already one extra allocated, it is the project task itself
-                if (cacheSize > itemsSortedFiltered.size())
-                    return workTimeCache.get(cacheSize - 1);
-                else {
-                    WorkTimeSlices newWorkTS = null;
-                    if (cacheSize == 0) //if cacheSize==0 means no subtasks (time has been allocatd to all subtasks when we arrive here)
-                        newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerOrCategory);
-                    else {
-                        newWorkTS = workTimeSlices.getWorkTime(workTimeCache.get(cacheSize - 1).getFinishTime(), remainingPrjTask, ownerOrCategory); //get slice! starting from end of previous slice
-                        workTimeCache.add(newWorkTS); //add the 
-                    }
-                    return newWorkTS;
-                }
+//                WorkTimeSlices newWorkTS = null;
+//                if (isProject) {
+//                    newWorkTS = workTimeSlices.getWorkTime(workTimeCache.get(elt).getFinishTime(), remainingPrjTask, ownerOrCategory); //get slice! starting from end of previous slice
+//                } else {
+//                    // no subtasks (time has been allocatd to all subtasks when we arrive here)
+//                    newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerOrCategory);
+//                }
+                   WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerOrCategory);
+                workTimeCache.put(itemOwner, newWorkTS); //add the 
+                return newWorkTS;
             }
         }
         return null;
