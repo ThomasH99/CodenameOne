@@ -6025,6 +6025,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return effort;
         }
     }
+
     public long getRemainingForProjectTaskItself() {
         return getRemainingForProjectTaskItself(true); //by default, 
     }
@@ -7396,7 +7397,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
         return getText() + " (" + getObjectIdP() + ")"
-                + (isDone() ? "[V]" : (getRemaining() > 0 ? MyDate.formatDurationShort(getRemaining()) : ""))
+                + (isDone() ? " [DONE]" : (getRemaining() > 0 ? MyDate.formatDurationShort(getRemaining()) : ""))
                 + (showSubtasks ? (getListFull().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getListFull()) + "}") : "");
     }
 
@@ -8322,7 +8323,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public long getWorkTimeRequiredFromOwner() {
     public long getWorkTimeRequiredFromProvider(ItemAndListCommonInterface provider) {
         if (false) Log.p("getWorkTimeRequiredFromProvider(provider=" + provider + ") for item=" + this);
-        if (isDone()) return 0;
+        if (isDone())
+            return 0;
         if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\"");
 
         long requiredCalc = 0;
@@ -8331,8 +8333,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (isProject()) {
                 List<ItemAndListCommonInterface> subtasks = getList(); //getListFull(); //NOT full list since elsewhere we only calculate finishTime for what is seen!
                 for (ItemAndListCommonInterface subtask : subtasks) { //starts from the *last* element in the list!!!
-//                required += subtask.getWorkTimeRequiredFromProvider(this);
-                    requiredCalc += subtask.getRemaining();
+//                    requiredCalc += subtask.getRemaining();
+                    requiredCalc += subtask.getWorkTimeRequiredFromProvider(this);
                 }
                 requiredCalc += getRemainingForProjectTaskItself(false); //false=> no default effort (for a project with subtasks, only subtasks should have default values)
             } else { //leaf task
@@ -8343,21 +8345,26 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (Config.TEST) ASSERT.that(required == requiredCalc, this + " -getWorkTimeRequiredFromProvider(): wrong Remaining, calculated="
                     + MyDate.formatDurationShort(requiredCalc, true) + ", getRemaining()=" + MyDate.formatDurationShort(required, true));
 
-        //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
-        List<ItemAndListCommonInterface> providers = getOtherPotentialWorkTimeProvidersInPrioOrderN();
-        if (providers != null)
-            for (ItemAndListCommonInterface prov : providers) {
-                if (prov == provider || prov.equals(provider)) { //prov == provider) {
-                    if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(prov == provider && prov.equals(provider), () -> "Two instances of same provider!! prov=" + prov + ", provider=" + provider);
-                    if (Config.WORKTIME_DETAILED_LOG) Log.p("   .getWorkTimeRequiredFromProvider - break since reached prov=\"" + prov + "\"");
-                    return required; // stop iteration when we get to provider itself and return what is remaining for provider to deliver
+        WorkSlotList ownWorkSlots = getWorkSlotListN();
+        if (ownWorkSlots != null)
+            required -= ownWorkSlots.getWorkTimeSum(); //deduct own worktime since that's always used first
+
+        if (required > 0) {
+            //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
+            List<ItemAndListCommonInterface> providers = getOtherPotentialWorkTimeProvidersInPrioOrderN();
+            if (providers != null)
+                for (ItemAndListCommonInterface prov : providers) {
+                    if (prov == provider || prov.equals(provider)) { //prov == provider) {
+                        if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(prov == provider && prov.equals(provider), () -> "Two instances of same provider!! prov=" + prov + ", provider=" + provider);
+                        if (Config.WORKTIME_DETAILED_LOG) Log.p("   .getWorkTimeRequiredFromProvider - break since reached prov=\"" + prov + "\"");
+                        return required; // stop iteration when we get to provider itself and return what is remaining for provider to deliver
 //                break; // stop iteration when we get to provider itself and return what is remaining for provider to deliver
-                } else {
-                    if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(!prov.equals(provider), () -> "duplicate object instances for prov=" + prov + ", this=" + this);
-                    if (prov instanceof Category && ((Category) prov).isOwnerOfItemInCategoryBeforeItem(this)) { //special case to avoid infinite loops
-                        if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getWorkTimeRequiredFromProvider - trying to get worktime from Category (" + prov + ") AND isOwnerOfItemInCategoryBeforeItem(" + this + "\") is true");
-                        return 0;
-                    }
+                    } else {
+                        if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(!prov.equals(provider), () -> "duplicate object instances for prov=" + prov + ", this=" + this);
+                        if (prov instanceof Category && ((Category) prov).isOwnerOfItemInCategoryBeforeItem(this)) { //special case to avoid infinite loops
+                            if (Config.WORKTIME_DETAILED_LOG) Log.p("-> .getWorkTimeRequiredFromProvider - trying to get worktime from Category (" + prov + ") AND isOwnerOfItemInCategoryBeforeItem(" + this + "\") is true");
+                            return 0;
+                        }
 ///<editor-fold defaultstate="collapsed" desc="comment">
 //                WorkTimeAllocator workTimeAllocator = prov.getWorkTimeAllocatorN(false);
 //                if (workTimeAllocator != null) {
@@ -8371,16 +8378,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                }
 //                WorkTimeSlices wt=prov.getAllocatedWorkTimeN(this);
 //</editor-fold>
-                    WorkTimeSlices wt = prov.getAllocatedWorkTimeN(this);
-                    if (wt != null)
-//                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
-                        required -= wt.getAllocatedDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+                        WorkTimeSlices wt = prov.getAllocatedWorkTimeN(this);
+                        if (wt != null)
+                            //                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+                            required -= wt.getAllocatedDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
+                    }
+                    if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(required >= 0, "required has become negative=" + required + ", Item=" + this + ", providers=" + providers);
+                    if (required == 0) return 0; //other higher prio providers allocated all required worktime so return here, don't go through other providers
                 }
-                if (Config.WORKTIME_DETAILED_LOG) ASSERT.that(required >= 0, "required has become negative=" + required + ", Item=" + this + ", providers=" + providers);
-                if (required == 0) return 0; //other higher prio providers allocated all required worktime so return here, don't go through other providers
-            }
-        if (Config.WORKTIME_DETAILED_LOG) Log.p("<  .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\" returning " + required);
-
+            if (Config.WORKTIME_DETAILED_LOG) Log.p("<  .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\" returning " + required);
+        }
         return required; //whatever was not supplied by one of the 
     }
 
@@ -8624,6 +8631,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return false;
 //        return getPotentialWorkTimeProvidersInPrioOrder() != null; //TODO optimization - is there a more efficient way?
+    }
+
+    public WorkTimeSlices getAllocatedWorkTimeN() {
+        return getAllocatedWorkTimeN(this);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -9055,7 +9066,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                }
 //            }
 //</editor-fold>
-            long latestFinishTime = Math.max(ItemAndListCommonInterface.super.getFinishTime(),getLatestSubtaskFinishTime()); //super.getFinishTime() is the project task's own finishTime in case it has its own Remaining
+            long latestFinishTime = getLatestSubtaskFinishTime(); //super.getFinishTime() is the project task's own finishTime in case it has its own Remaining
+            long projTaskFinishTime = ItemAndListCommonInterface.super.getFinishTime(); //super.getFinishTime() is the project task's own finishTime in case it has its own Remaining
+            if (projTaskFinishTime != MyDate.MAX_DATE && projTaskFinishTime > latestFinishTime)
+                latestFinishTime = projTaskFinishTime;
 //            if (latestFinishTime != MyDate.MIN_DATE) { //only return if we actually have a date (all subtasks may be Done)
             return latestFinishTime == MyDate.MIN_DATE ? MyDate.MAX_DATE : latestFinishTime;
 //            }

@@ -89,26 +89,27 @@ public class ScreenWorkSlot extends MyForm {
     validates a workSlot before saving, checks that both startDate and duration are defined and that it doesn't overlap with other of the owner's existing workslots.
     Returns null if no error, otherwise an error message string to display. 
      */
-    public static boolean checkWorkSlotIsValidForSaving(ItemAndListCommonInterface owner, Date startByDate, long duration) {
+    public static boolean checkWorkSlotIsValidForSaving(ItemAndListCommonInterface owner, WorkSlot workSlot, Date startByDate, long duration) {
 //    public static boolean checkWorkSlotIsValidForSaving(WorkSlot workSlot, ItemAndListCommonInterface owner) {//, Date startByDate, int duration) {
         List<WorkSlot> overlapping;
-        String errorMsg=null;
-            if (startByDate.getTime() == 0 || duration == 0) { // ^ XOR - if one and only one is true
+        String errorMsg = null;
+        if (startByDate.getTime() == 0 || duration == 0) { // ^ XOR - if one and only one is true
 //        if (workSlot.getStartTimeD().getTime() == 0 || workSlot.getDurationInMillis() == 0) {
 //            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
-            errorMsg= "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
-            } else if ((overlapping = owner.getOverlappingWorkSlots(new WorkSlot(startByDate,duration))) != null) {
+            errorMsg = "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
+        } else if ((overlapping = owner.getOverlappingWorkSlots(new WorkSlot(startByDate, duration))) != null
+                && !(overlapping.size() == 1 && overlapping.contains(workSlot))) { //to avoid error if an edited workSlot overlaps with its previous values
 //        } else if (owner!=null && (overlapping = owner.getOverlappingWorkSlots(workSlot)) != null) {
-            errorMsg= ("This workslot overlaps with \n"
+            errorMsg = ("This workslot overlaps with \n"
                     + getListAsSeparatedString(overlapping,
                             (ws)
                             -> //WorkSlot.WORKSLOT +" "+
-                            MyDate.formatDateNew(((WorkSlot) ws).getStartTimeD())
+                            MyDate.formatDateTimeNew(((WorkSlot) ws).getStartTimeD())
                             + " " + MyDate.formatDurationShort(((WorkSlot) ws).getDurationInMillis()), "\n", 2)
                     + (overlapping.size() > 2 ? "and " + (overlapping.size() - 2) + " more..." : "")
                     + "\nPlease change " + WorkSlot.START_TIME + " or " + WorkSlot.DURATION + ", or Cancel");
-        } 
-         if (errorMsg != null) {
+        }
+        if (errorMsg != null) {
             Dialog.show("Error", errorMsg, "OK", null);
             return false;
         } else return true;
@@ -450,8 +451,8 @@ public class ScreenWorkSlot extends MyForm {
             Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
-        
-        setCheckOnExit(()->checkWorkSlotIsValidForSaving(ownerObj, startByDate.getDate(), duration.getDuration())); //TODO: when owner can be edited, use new/edited one
+
+        setCheckOnExit(() -> checkWorkSlotIsValidForSaving(ownerObj, workSlot, startByDate.getDate(), duration.getDuration())); //TODO: when owner can be edited, use new/edited one
         return content;
     }
 

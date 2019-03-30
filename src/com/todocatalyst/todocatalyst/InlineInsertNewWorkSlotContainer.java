@@ -166,7 +166,7 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
         } else
             newWorkSlot.setStartTime(new Date()); //UI: set pinchInserted workslot to start now
 
-        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, refWorkSlot.getStartTimeD(), refWorkSlot.getDurationInMillis())) {
+        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, newWorkSlot, refWorkSlot.getStartTimeD(), refWorkSlot.getDurationInMillis())) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             return newWorkSlot;
         } else return null;

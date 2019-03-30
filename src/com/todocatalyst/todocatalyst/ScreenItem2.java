@@ -151,10 +151,10 @@ public class ScreenItem2 extends MyForm {
         getTitleComponent().setEndsWith3Points(true);
 //        ScreenItemP.item = item;
         this.item = item;
-        initLocalSaveOfEditedValues(getUniqueFormId()+item.getObjectIdP());
+        initLocalSaveOfEditedValues(getUniqueFormId() + item.getObjectIdP());
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(FORM_UNIQUE_ID,this.item);
-        expandedObjects = new ExpandedObjects(getUniqueFormId()+this.item.getObjectIdP());
+        expandedObjects = new ExpandedObjects(getUniqueFormId() + this.item.getObjectIdP());
         try {
             //        DAO.getInstance().deleteCategoryFromAllItems(cat);
             if (this.item != null) {
@@ -353,7 +353,14 @@ public class ScreenItem2 extends MyForm {
 //            previousForm.showBack(); //drop any changes
 //            showPreviousScreenOrDefault(previousForm, true);
             showPreviousScreenOrDefault(true);
-        },"DeleteItem"));
+        }, "DeleteItem"));
+
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", null, Icons.iconSettingsLabelStyle, (e) -> {
+            new ScreenSettingsItem(ScreenItem2.this, () -> {
+                refreshAfterEdit();
+            }).show();
+        }
+        ));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //TASK STATUS
@@ -872,8 +879,8 @@ public class ScreenItem2 extends MyForm {
 //        }
 //</editor-fold>
 //        Component starredComp = initField(Item.STARRED, Item.STARRED_HELP, starred, Item.PARSE_STARRED, () -> item.isStarred(), (b) -> item.setStarred((boolean) b),
-        initField(Item.PARSE_STARRED, starred, 
-                () -> item.isStarred(), 
+        initField(Item.PARSE_STARRED, starred,
+                () -> item.isStarred(),
                 (b) -> item.setStarred((boolean) b),
                 () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
                 (b) -> starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle)

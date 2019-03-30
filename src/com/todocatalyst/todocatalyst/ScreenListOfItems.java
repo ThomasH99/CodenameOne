@@ -1106,6 +1106,13 @@ public class ScreenListOfItems extends MyForm {
             showPreviousScreenOrDefault(true);
         });
 
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", null, Icons.iconSettingsLabelStyle, (e) -> {
+            new ScreenSettingsListOfItems(ScreenListOfItems.this, () -> {
+                refreshAfterEdit();
+            }).show();
+        }
+        ));
+
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
 
@@ -1547,12 +1554,11 @@ public class ScreenListOfItems extends MyForm {
      * containers when displaying items in categories
      * @return
      */
-    public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category) //<editor-fold defaultstate="collapsed" desc="comment">
-    //            MyForm.GetBoolean isDragAndDropEnabled, MyForm.Action refreshOnItemEdits,
-    //            boolean selectionModeAllowed, ArrayList<Item> selectedObjects,
-    //            KeepInSameScreenPosition keepPos, HashSet expandedObjects, MyForm.Action animator, boolean projectEditMode, boolean singleSelectionMode
-    //</editor-fold>
-    {
+    public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category) { //<editor-fold defaultstate="collapsed" desc="comment">
+        //            MyForm.GetBoolean isDragAndDropEnabled, MyForm.Action refreshOnItemEdits,
+        //            boolean selectionModeAllowed, ArrayList<Item> selectedObjects,
+        //            KeepInSameScreenPosition keepPos, HashSet expandedObjects, MyForm.Action animator, boolean projectEditMode, boolean singleSelectionMode
+        //</editor-fold>
         ScreenListOfItems myFormScreenListOfItems = null;
         if (myForm instanceof ScreenListOfItems) {
             myFormScreenListOfItems = (ScreenListOfItems) myForm;
@@ -1956,8 +1962,13 @@ public class ScreenListOfItems extends MyForm {
 //        } else {
             long due = item.getDueDate();
             if (finishTime != MyDate.MAX_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
-                finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
-                        due != 0 && finishTime > due ? "ListOfItemsFinishTimeOverdue" : "ListOfItemsFinishTime");
+                if (Config.TEST) {
+                    finishTimeLabel = new Label("F:" + MyDate.formatDateTimeNew(new Date(finishTime)),
+                            due != 0 && finishTime > due ? "ListOfItemsFinishTimeOverdue" : "ListOfItemsFinishTime"
+                    );
+                } else
+                    finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
+                            due != 0 && finishTime > due ? "ListOfItemsFinishTimeOverdue" : "ListOfItemsFinishTime");
                 if (oldFormat) {
                     east.add(finishTimeLabel);
                 }
@@ -2289,7 +2300,7 @@ public class ScreenListOfItems extends MyForm {
                                 .add(BorderLayout.SOUTH,
                                         bottomContent
                                                 //                                                .add(WEST, BorderLayout.centerEastWest(null, null, BoxLayout.encloseX(prioCont, dateCont,effortCont) ))
-                                                .add(BorderLayout.WEST, BoxLayout.encloseX(prioCont, dateCont, effortCont))
+                                                .add(BorderLayout.WEST, BoxLayout.encloseX(prioCont, effortCont, dateCont))
                                                 .add(BorderLayout.EAST, expandSubsCont)
                                                 .add(BorderLayout.SOUTH, southDetailsContainer)));
 //<editor-fold defaultstate="collapsed" desc="comment">

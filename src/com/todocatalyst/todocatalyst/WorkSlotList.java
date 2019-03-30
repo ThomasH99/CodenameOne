@@ -20,9 +20,9 @@ import java.util.List;
 public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> {
 
     private long now;//=-1; //ensure a single value of now is used for the work slots
-    private ArrayList<WorkSlot> sortedWorkslotList = new ArrayList<>(); //full list of workslots, always assumed to be sorted
-    private ArrayList<WorkSlot> validworkslotList = new ArrayList<>(); //
-    private boolean showAlsoExpiredWorkSlots;
+    private List<WorkSlot> sortedWorkslotList = new ArrayList<>(); //full list of workslots, always assumed to be sorted
+//    private List<WorkSlot> validworkslotList = new ArrayList<>(); //
+    private boolean showAlsoExpiredWorkSlotsFOR_TESTING_ONLY;
     private ItemAndListCommonInterface owner;
 
     public WorkSlotList() {
@@ -65,11 +65,12 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        } else {
 //            workslotList.addAll(list); //optimization - this makes a copy of the list, is it really necessary??
 //        }//        this.copyOf(list);
+        this.owner = owner;
         sortedWorkslotList.addAll(list); //optimization - this makes a copy of the list, is it really necessary??
         if (!alreadySorted) {
             sortWorkSlotList();
+//            Work.sortWorkSlotList(sortedWorkslotList);
         }
-        this.owner = owner;
     }
 
     public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
@@ -80,7 +81,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        this(list, alreadySorted, true);
 //    }
     public WorkSlotList(List<WorkSlot> list) {
-        this(list, false);
+        this(null,list, false);
     }
 
     public WorkSlotList(ItemAndListCommonInterface owner, List<WorkSlot> list) {
@@ -102,9 +103,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     /**
     for testing purposes
     @param showAlsoExpiredWorkSlots 
-    */
+     */
     public void setIncludeExpiredWorkSlots(boolean showAlsoExpiredWorkSlots) {
-        this.showAlsoExpiredWorkSlots = showAlsoExpiredWorkSlots;
+        this.showAlsoExpiredWorkSlotsFOR_TESTING_ONLY = showAlsoExpiredWorkSlots;
     }
 
     public String toString() {
@@ -160,7 +161,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
      */
     public List<WorkSlot> getWorkSlots(long now) {
         //optimization: cache the filtered list (result) and only check if some of the earlier slots have become invalid and should be removed, becomes interesting with many past workslots
-        if (showAlsoExpiredWorkSlots) {
+        if (showAlsoExpiredWorkSlotsFOR_TESTING_ONLY) {
 //            now = MyDate.MIN_DATE;
             return sortedWorkslotList;
         } else {
@@ -313,7 +314,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     @param sortOnEndTime
     @return 
      */
-    public WorkSlotList sortWorkSlotList() {
+    public static void sortWorkSlotList(List<WorkSlot> sortedWorkslotList) {
 //        boolean sortOnEndTime            }) {
 //        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
 //        if (sortOnEndTime) {
@@ -325,11 +326,15 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
                     //                    (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
                     getMultipleComparator(new Comparator[]{
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
-                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()),
+                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()), //longest slots first
                 (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP().compareTo(i2.getObjectIdP()), //sort equal workslots on objectId to make it deterministic
             }));
         }
-        return this;
+//        return sortedWorkslotList;
+    }
+
+    private void sortWorkSlotList() {
+        sortWorkSlotList(sortedWorkslotList);
     }
 
     /**
@@ -372,7 +377,17 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
      * @return
      */
     public WorkSlotList getWorkSlotsInInterval(Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
-        return removeWorkSlotsInInterval(this, startDate, endDate, includeFullDay, isSorted);
+//        return removeWorkSlotsInInterval(this, startDate, endDate, includeFullDay, isSorted);
+        //skip all elements that end *before* startTime, stops nu with workSlot
+        ArrayList<WorkSlot> result = new ArrayList<>();
+        long endTime = endDate.getTime();
+        long startTime = startDate.getTime();
+        for (WorkSlot ws : sortedWorkslotList) { //optimization: optimize for fact that workslotList is now sorted
+            if (ws.getStartTimeD().getTime() < endTime && ws.hasDurationInInterval(startTime, endTime)) {
+                result.add(ws);
+            }
+        }
+        return new WorkSlotList(result);
     }
 
     public int size() {
@@ -414,7 +429,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         return workSlots;
     }
 
-    public static WorkSlotList removeWorkSlotsInInterval(WorkSlotList workSlotList, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
+    public static WorkSlotList removeWorkSlotsInIntervalXXX(WorkSlotList workSlotList, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
         final int WORKSLOT_LIMIT = 200;
         long startTime = includeFullDay ? MyDate.getStartOfDay(startDate).getTime() : startDate.getTime();
         long endTime = includeFullDay ? MyDate.getEndOfDay(endDate).getTime() : endDate.getTime();
@@ -425,7 +440,8 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        if (workSlotList.size() > WORKSLOT_LIMIT) { //if more than 20 elements
         if (!isSorted) {
 //            workSlotList.sortWorkSlotList(false);
-            workSlotList.sortWorkSlotList();
+//            workSlotList.sortWorkSlotList();
+            sortWorkSlotList(workSlotList.getWorkSlotListFull());
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Iterator<WorkSlot> it = workSlotList.iterator();

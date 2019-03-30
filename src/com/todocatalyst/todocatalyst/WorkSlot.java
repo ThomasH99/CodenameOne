@@ -32,7 +32,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         implements RepeatRuleObjectInterface,
         //SumField, 
         ItemAndListCommonInterface,
-        Externalizable //Comparable /* * , IComparable 
+        Externalizable, Work //Comparable /* * , IComparable 
 {
 
     public static String CLASS_NAME = "WorkSlot";
@@ -784,6 +784,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         }
     }
 
+    @Override
     public String getText() {
 // <editor-fold defaultstate="collapsed" desc="comment">
 //        if (sourceSlotA != null) {
@@ -803,6 +804,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         }
     }
 
+    @Override
     public String toString() {
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
         return "WS:"+MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS) 
@@ -829,6 +831,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return isNoLongerRelevant();
 //    }
 //</editor-fold>
+    @Override
     public Date getStartTimeD() {
 //        return start;
         //ensures that start is updated to a later value if duration is reduced as the workSlot is eaten up by tasks
@@ -936,6 +939,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      *
      * @return
      */
+    @Override
     public long getEndTime() {
 //        return end!=0L?end:start+duration;
 //        return start + duration;
@@ -943,10 +947,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return getEndTimeD().getTime();
     }
 
+    @Override
     public Date getEndTimeD() {
 //        return end!=0L?end:start+duration;
 //        return start + duration;
-        return new Date(getStartTimeD().getTime() + getDurationInMillis()); //unchanged, even as start is in the past, or consumedDuration>0
+//        return new Date(getStartTimeD().getTime() + getDurationInMillis()); //unchanged, even as start is in the past, or consumedDuration>0
+         Date time = getDate(PARSE_END_TIME);
+        return (time == null) ? new Date(0) : time; //TODO!!! is 'Date(0)' best undefined time?! Rather use MyDate.MAXDATE?!
+
     }
 
     /**
@@ -1539,7 +1547,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //                                if (slice.workSlot == this && !items.contains(item)) {
                                 //if slice is from this workslot, and item not already added (necessary??!) and slice is non-zero duration (to exclude house-keeping allocations) and task is not done
 //                                if (slice.workSlot == this && !items.contains(item) && slice.getDuration() > 0 && (!item.isDone() || includeDoneTasks)) {
-                                if (slice.workSlot == this && (slice.getDuration() > 0 || includeDoneTasks)) {// || Config.TEST)) {
+                                if (slice.workSlot == this && (slice.getDurationInMillis() > 0 || includeDoneTasks)) {// || Config.TEST)) {
                                     items.add(item);
                                 }
                             }

@@ -693,7 +693,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     @param elt
     @return 
      */
-    default public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface elt) {
+//    default public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface elt) {
+    default public WorkTimeSlices getAllocatedWorkTimeN(Item elt) {
         WorkTimeAllocator workTimeAllocator = getWorkTimeAllocatorN();
         if (workTimeAllocator != null) {
             return workTimeAllocator.getAllocatedWorkTimeN(elt);
@@ -715,7 +716,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //            return null;
 //        }
 //</editor-fold>
-            return getAllocatedWorkTimeN(this);
+//            return getAllocatedWorkTimeN(this);
+             throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+ 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        ItemAndListCommonInterface owner = getOwner();
 //if (owner != null)

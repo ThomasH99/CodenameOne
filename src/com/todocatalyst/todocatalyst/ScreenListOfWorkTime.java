@@ -75,17 +75,17 @@ public class ScreenListOfWorkTime extends MyForm {
         cont.removeAll();
         if (workTime != null) {
             for (WorkSlotSlice workSlice : workTime.getWorkSlotSlices()) {
-                if (false && workSlice.getDuration() == 0) { //don't filter these since they are used for 
+                if (false && workSlice.getDurationInMillis() == 0) { //don't filter these since they are used for 
                     continue;
                 }
                 Container sliceCont = new Container(new FlowLayout());
                 sliceCont
-                        .add(new Label((workSlice.workSlot.getOwner().getText()) + " "
+                        .add(new Label("From "+(workSlice.workSlot.getOwner().getText()) + ": "
                                 + MyDate.formatDateTimeNew(new Date(workSlice.getStartTime()))
 //                                + "-" + MyDate.formatTimeNew(new Date(workSlice.getEndTime()))));
-                                + " " + MyDate.formatDurationShort(workSlice.getDuration())));
+                                + " " + MyDate.formatDurationShort(workSlice.getDurationInMillis())));
                 if (Config.TEST)
-                    sliceCont.add(new Label("\"" + workSlice.workSlot.getText() + "\" [" + workSlice.workSlot.getObjectIdP() + "]"));
+                    sliceCont.add(new Label("WorkSlot: \"" + workSlice.workSlot.getText() + "\" [" + workSlice.workSlot.getObjectIdP() + "]"));
 //                    .add(new Label(MyDate.formatDateNew(workSlice.getStartTime())))
 //                    .add(new Label(MyDate.formatTimeDuration(workSlice.getDurationInMillis())));
                 cont.add(sliceCont);

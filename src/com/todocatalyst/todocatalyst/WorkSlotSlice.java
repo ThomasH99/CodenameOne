@@ -5,7 +5,10 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -15,7 +18,7 @@ import java.util.Date;
  * in which workSlot does the task with this index finish
  */
 //    private int lastWorkSlotIndex = -1;
-class WorkSlotSlice {
+class WorkSlotSlice implements Work {
 
     WorkSlot workSlot;
 
@@ -28,15 +31,15 @@ class WorkSlotSlice {
     }
     long startTime;// = Long.MIN_VALUE;
     long endTime;// = Long.MAX_VALUE;
-    long missingDuration;// = 0;
+//    long missingDuration;// = 0;
     long now; //DEBUG: keep for the ASSERT statements
     private ItemAndListCommonInterface allocatedToXXX;
 
     @Override
     public String toString() {
         return "Slice[" + MyDate.formatDateTimeNew(new Date(startTime)) + "-" + MyDate.formatTimeNew(new Date(endTime))
-                + " Dur=" + MyDate.formatDurationShort(getDuration(), true)
-                + " Mis=" + MyDate.formatDurationShort(missingDuration, true)
+                + " Dur=" + MyDate.formatDurationShort(getDurationInMillis(), true)
+//                + " Mis=" + MyDate.formatDurationShort(missingDuration, true)
                 + " Owner:" + (workSlot != null && workSlot.getOwner() != null ? workSlot.getOwner().getText() : "<null>")
                 //                + (allocatedToXXX != null ? ( " AllocTo:" +allocatedToXXX.getText() ): "")
                 + "]";
@@ -45,7 +48,8 @@ class WorkSlotSlice {
 //                + (workSlot != null ? new Date(workSlot.getEndTime()) : "null");
     }
 
-    WorkSlotSlice(WorkSlot workSlot, long startTime, long endTime, long missingDuration) {
+//    WorkSlotSlice(WorkSlot workSlot, long startTime, long endTime, long missingDuration) {
+    WorkSlotSlice(WorkSlot workSlot, long startTime, long endTime) {
         this.workSlot = workSlot;
 //            this.startTime = startTime < workSlot.getStartAdjusted() ? workSlot.getStartAdjusted() : startTime;
 //        this.startTime = Math.max(startTime, workSlot.getStartAdjusted()); //use the larger value (knowing that startTime must never be smaller than getStartAdjusted())
@@ -54,7 +58,7 @@ class WorkSlotSlice {
 //            this.endTime = workSlot.getEndTime() < endTime ? workSlot.getEndTime() : endTime; //endTime < workSlot.getEndTime() ? endTime : workSlot.getEndTime();
 //        this.endTime = Math.min(workSlot.getEndTime(), endTime); //use the smaller value (knowing that endTime must never be larger than getEndTime())
         this.endTime = endTime; //use the smaller value (knowing that endTime must never be larger than getEndTime())
-        this.missingDuration = missingDuration;
+//        this.missingDuration = missingDuration;
 //        ASSERT.that(startTime >= workSlot.getStartAdjusted(), "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted()));
         if (Config.WORKTIME_TEST) {
             assert startTime >= workSlot.getStartAdjusted(now) : "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted(now));
@@ -65,9 +69,9 @@ class WorkSlotSlice {
 //        ASSERT.that(startTime != endTime, "zero duration workSlotSlice not allowed, startTime:" + new Date(startTime) + " endTime:" + new Date(endTime));
     }
 
-    WorkSlotSlice(WorkSlot workSlot, long startTime, long endTime) {
-        this(workSlot, startTime, endTime, 0);
-    }
+//    WorkSlotSlice(WorkSlot workSlot, long startTime, long endTime) {
+//        this(workSlot, startTime, endTime, 0);
+//    }
 
 //    WorkSlotSlice(WorkSlot workSlot) {
 //        
@@ -125,9 +129,10 @@ class WorkSlotSlice {
 //                (startTime + duration) - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
         long actualSliceEndTime = Math.min(actualStartTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
         return new WorkSlotSlice(workSlot, actualStartTime,
-                actualSliceEndTime,
+                actualSliceEndTime
                 //                Math.max(0, (startTime + duration) - Math.min(startTime + duration, endTime))); //missing = desiredEndTime - actualEndTime
-                (actualStartTime + duration) - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
+//                (actualStartTime + duration) - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
+                ); //missing = desiredEndTime - actualEndTime
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        }
 //        else {
@@ -174,11 +179,12 @@ class WorkSlotSlice {
 //            }
 //            return Math.max(0, getEndTime()-getStartTime());
 //            return (startTime >= getStartTime() && startTime < getEndTime()) || getDurationInMillis() == 0; //TODO optimization: simplify/optimize epxression
-        return duration > 0 && (startTime >= getStartTime() && startTime <= getEndTime()) && getDuration() > 0; //TODO optimization: simplify/optimize epxression
+        return duration > 0 && (startTime >= getStartTime() && startTime <= getEndTime()) && getDurationInMillis() > 0; //TODO optimization: simplify/optimize epxression
 //            return getEndTime() - getStartTime() >= duration;
     }
 
-    long getStartTime() {
+    @Override
+    public long getStartTime() {
 //            return Math.max(startTime, workSlot.getStartAdjusted());
 //            if (startTime == MyDate.MIN_DATE) {
 //                return workSlot.getStartAdjusted();
@@ -188,7 +194,12 @@ class WorkSlotSlice {
         return startTime;
     }
 
-    long getEndTime() {
+//    @Override
+//    public Date getEndTimeD() {
+//        return new Date(getEndTime());
+//    }
+    @Override
+    public long getEndTime() {
 //            return Math.min(endTime, workSlot.getEndTime());
 //            if (endTime == MyDate.MAX_DATE) {
 //                return workSlot.getEndTime();
@@ -198,17 +209,18 @@ class WorkSlotSlice {
         return endTime;
     }
 
-    long getMissingDuration() {
-        return missingDuration;
-    }
+//    long getMissingDuration() {
+//        return missingDuration;
+//    }
 
-    long getDuration() {
+    @Override
+    public long getDurationInMillis() {
 //            return Math.max(0, getEndTime() - getStartTime());
 //            return Math.max(0, endTime - startTime);
         return endTime - startTime; //should always be positive, otherwise error elsewhere
     }
 
-    long getDuration(long start) {
+    public long getDuration(long start) {
 //            return Math.max(0, getEndTime() - getStartTime());
 //            return Math.max(0, endTime - startTime);
         long actualStart = Math.max(start, startTime);
@@ -222,6 +234,59 @@ class WorkSlotSlice {
 
     public void setAllocatedToXXX(ItemAndListCommonInterface allocatedTo) {
         this.allocatedToXXX = allocatedTo;
+    }
+    
+        private static Comparator<WorkSlot> getMultipleComparator(Comparator<WorkSlot>[] comparators) {
+        Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;
+        Comparator<WorkSlot> comp2 = comparators.length >= 2 ? comparators[1] : null;
+        Comparator<WorkSlot> comp3 = comparators.length >= 3 ? comparators[2] : null;
+
+        return (i1, i2) -> {
+            //http://stackoverflow.com/questions/23981199/java-comparator-for-objects-with-multiple-fields            
+            int res1 = comp1.compare(i1, i2);
+            if (res1 != 0) {
+                return res1;
+            }
+            if (comp2 == null) {
+                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+            }
+            res1 = comp2.compare(i1, i2);
+            if (res1 != 0) {
+                return res1;
+            }
+            if (comp3 == null) {
+                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+            }
+            res1 = comp3.compare(i1, i2);
+            if (res1 != 0) {
+                return res1;
+            }
+            return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+        };
+    }
+        
+            /**
+    sort on startTime, then on duration (put longest timeslots first if several starting at same time), 
+    @param sortOnEndTime
+    @return 
+     */
+    public static void sortWorkSlotList(List<WorkSlot> sortedWorkslotList) {
+//        boolean sortOnEndTime            }) {
+//        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
+//        if (sortOnEndTime) {
+//            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareLong(i1.getEndTime(), i2.getEndTime()));
+//        } else 
+        {
+//            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+            Collections.sort(sortedWorkslotList,
+                    //                    (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+                    getMultipleComparator(new Comparator[]{
+                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
+                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()),
+                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP().compareTo(i2.getObjectIdP()), //sort equal workslots on objectId to make it deterministic
+            }));
+        }
+//        return sortedWorkslotList;
     }
 
 }
