@@ -166,7 +166,7 @@ public class TimerStackEntry implements Externalizable {
     public void updateTimerStartTimeOnTimerStart() {
 //        assert timerElapsedTimeSavedDuringPauseMillis!=0:"timer elapsed";
         ASSERT.that(virtualTimerStartTimeMillis == 0, "timer elapsed");
-        virtualTimerStartTimeMillis = System.currentTimeMillis() - timerElapsedTimeSavedDuringPauseMillis; //set virtual start time as long back into the past as if it had been started alreadyElapsedTime ago
+        virtualTimerStartTimeMillis = MyDate.currentTimeMillis() - timerElapsedTimeSavedDuringPauseMillis; //set virtual start time as long back into the past as if it had been started alreadyElapsedTime ago
         timerElapsedTimeSavedDuringPauseMillis = 0;
     }
 
@@ -181,13 +181,13 @@ public class TimerStackEntry implements Externalizable {
     public void updateAndStoreElapseTimerDurationOnPause() {
 //        virtualTimerStartTimeMillis = System.currentTimeMillis() - virtualTimerStartTimeMillis; //update with duration since last time
         ASSERT.that(timerElapsedTimeSavedDuringPauseMillis == 0, "timer elapsed");
-        timerElapsedTimeSavedDuringPauseMillis = System.currentTimeMillis() - virtualTimerStartTimeMillis; //update with duration since last time
+        timerElapsedTimeSavedDuringPauseMillis = MyDate.currentTimeMillis() - virtualTimerStartTimeMillis; //update with duration since last time
         virtualTimerStartTimeMillis = 0;
     }
 
     public long getTimerDurationInMillis() {
         if (virtualTimerStartTimeMillis != 0) {
-            return System.currentTimeMillis() - virtualTimerStartTimeMillis; //timer is running
+            return MyDate.currentTimeMillis() - virtualTimerStartTimeMillis; //timer is running
         } else {
             return timerElapsedTimeSavedDuringPauseMillis;
         }
@@ -346,7 +346,7 @@ public class TimerStackEntry implements Externalizable {
     public void externalize(DataOutputStream out) throws IOException {
 
         if (timedItem != null && timedItem.getObjectIdP() == null) {
-            DAO.getInstance().save(timedItem); //if needed, save temporary item (interupt task) so it is kept if app is closed and can be recovered on startup (and possibly deleted if Timer exited using Cancelled)
+            DAO.getInstance().saveInBackground(timedItem); //if needed, save temporary item (interupt task) so it is kept if app is closed and can be recovered on startup (and possibly deleted if Timer exited using Cancelled)
             timedItemSavedLocallyInTimer = true;
         } else {
             timedItemSavedLocallyInTimer = false;

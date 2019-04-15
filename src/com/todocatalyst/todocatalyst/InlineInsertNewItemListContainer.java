@@ -167,8 +167,8 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
     private void closeInsertNewItemListContainer() {
         //UI: close the text field
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(this);
-        if (parent != null) {
-            parent.animateLayout(300);
+        if (parent != null&&parent.getParent()!=null) {
+            parent.getParent().animateLayout(300); //parent of parent since pinchcontainer is kept inside a variable height container
         }
     }
 

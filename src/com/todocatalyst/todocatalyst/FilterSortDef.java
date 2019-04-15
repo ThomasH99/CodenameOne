@@ -473,9 +473,9 @@ public class FilterSortDef extends ParseObject {
                 && (status != ItemStatus.CANCELLED || showCancelledTasks)
                 //all the following conditions must ALL be met to show the item (or vice-versa if either is false, don't show)
                 //TODO!!!! hideUntilDate should only compare on calendar date, not absolute time (unless the date stored 
-                && (showBeforeHideUntilDate || item.getHideUntilDateD().getTime() == 0 || System.currentTimeMillis() >= item.getHideUntilDateD().getTime()) //before now <=> hideUntil date is already passed so show the item
+                && (showBeforeHideUntilDate || item.getHideUntilDateD().getTime() == 0 || MyDate.currentTimeMillis() >= item.getHideUntilDateD().getTime()) //before now <=> hideUntil date is already passed so show the item
                 && (showDependingOnUndoneTasks || item.isDependingOnTasksDone())
-                && (showExpiresOnDate || item.getExpiresOnDate() == 0 || item.getExpiresOnDate() < System.currentTimeMillis()) //before now <=> hideUntil date is already passed so show the item
+                && (showExpiresOnDate || item.getExpiresOnDate() == 0 || item.getExpiresOnDate() < MyDate.currentTimeMillis()) //before now <=> hideUntil date is already passed so show the item
                 && (!showProjectsOnly || item.isProject()) //before now <=> hideUntil date is already passed so show the item
                 && (!showInterruptTasksOnly || item.isInteruptOrInstantTask()) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithoutEstimatesOnly || !item.has(Item.PARSE_EFFORT_ESTIMATE)) //before now <=> hideUntil date is already passed so show the item

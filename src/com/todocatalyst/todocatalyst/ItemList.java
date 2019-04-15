@@ -100,7 +100,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         setText(listName);
         setNoSave(temporaryNoSaveList);
         if (!temporaryNoSaveList && saveImmediatelyToParse) {
-            DAO.getInstance().save(this);
+            DAO.getInstance().saveInBackground((ParseObject)this);
         }
     }
 
@@ -1561,7 +1561,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public void setFilterSortDef(FilterSortDef filterSortDef) {
         if (filterSortDef != null) {
             if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved
-                DAO.getInstance().save(filterSortDef); //
+                DAO.getInstance().saveInBackground(filterSortDef); //
             }
             put(PARSE_FILTER_SORT_DEF, filterSortDef);
         } else {

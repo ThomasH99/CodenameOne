@@ -129,7 +129,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         Item.this.setRemaining(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS, true);
         setDueDate(dueDate);
         if (saveToDAO) {
-            DAO.getInstance().save(this);
+            DAO.getInstance().saveInBackground(this);
         }
     }
 
@@ -317,12 +317,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, itemOwner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
         } else { //no owner, save for 'Inbox'
 //            assert false;
-            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
         }
     }
 
     @Override
-    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface newRepeatRuleInstance) {
+    public ItemAndListCommonInterface insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface newRepeatRuleInstance) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Object owner = getOwner();
 //        if (owner instanceof ItemList) {
@@ -353,7 +353,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
         }
-        DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, (ParseObject) owner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//        DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, (ParseObject) owner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+        return owner;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1389,17 +1390,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             oldOwner.removeFromList(this); //remove item from previous owner's list (remove first to remove Owner)
             if (saveChangedItems) {
 //            DAO.getInstance().saveInBackground((ParseObject) oldOwner); //save the list from which subtask was removed
-                DAO.getInstance().save((ParseObject) oldOwner); //save the list from which subtask was removed
+                DAO.getInstance().saveInBackground((ParseObject) oldOwner); //save the list from which subtask was removed
             }
         }
         if (owner != null) {
             owner.addToList(this); //insert at head of sublist
             if (saveChangedItems) {
-                DAO.getInstance().save((ParseObject) owner); //save project onto which subtask was dropped
+                DAO.getInstance().saveInBackground((ParseObject) owner); //save project onto which subtask was dropped
             }
         }
         if (false && saveChangedItems) { //false: no need to save Item since will be only be used when saving an edited item
-            DAO.getInstance().save((ParseObject) this);
+            DAO.getInstance().saveInBackground((ParseObject) this);
         }
     }
 
@@ -1784,7 +1785,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                destination.getCategories().addAll(getCategories()); //just add the same categories
 //            }
             if (false && destination.getObjectIdP() == null) { //now done in ScreenItem2
-                DAO.getInstance().save(destination); //need to save destination before we can save copies of subtasks with it as owner or add it to categories
+                DAO.getInstance().saveInBackground(destination); //need to save destination before we can save copies of subtasks with it as owner or add it to categories
             }
 
             //CATEGORIES - always only ADD categories, to avoid removing any manually set before adding the template
@@ -1826,7 +1827,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     copy.setOwnerItem(destination); //set owner for subtask copy (MUST be done before to ensure repeatCopies are inserted in right place)
                     orgSubtasks.get(i).copyMeInto(copy, copyFieldDefintion, copyExclusions);
                     //TODO!!!!! how to avoid saving subtasks, so we can Cancel the creation of a template instance??? (it is not acceptable to accumulate dangling subtasks which would be visible to the user in some view)!
-                    DAO.getInstance().save(copy); //need to save copies as we go along, otherwise cannot save owner (Porject) due to "unable to encode an association with an unsaved ParseObject"
+                    DAO.getInstance().saveInBackground(copy); //need to save copies as we go along, otherwise cannot save owner (Porject) due to "unable to encode an association with an unsaved ParseObject"
                     //Keep everything in memory and add a special lambda function to save everything created from the template *if* it is saved!
                     subtaskCopy.add(copy);
                 }
@@ -2288,8 +2289,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public boolean addToList(int index, ItemAndListCommonInterface subtask) {
         boolean status = true;
         List listFull = getListFull();
-        int indexFull = listFull.indexOf(getList().get(index)); //convert index in filtered list to index in full list NB! doesn't work if there should be multiple instances one day/somewhere!!
-        listFull.add(indexFull, subtask);
+        List list = getList();
+        if (listFull.size() == 0)
+            listFull.add(subtask);
+        else {
+            if (index >= list.size())
+                listFull.add(subtask);
+            else {
+                int indexFull = listFull.indexOf(list.get(index)); //Math.min: if adding to end of list; convert index in filtered list to index in full list NB! doesn't work if there should be multiple instances one day/somewhere!!
+                listFull.add(indexFull, subtask);
+            }
+        }
         ASSERT.that(subtask.getOwner() == null || this == subtask.getOwner(), "subItemOrList owner not null when adding to list, SUBTASK=" + subtask + ", OLD OWNER=" + subtask.getOwner() + ", NEW OWNER=" + this);
         subtask.setOwner(this);
         ((Item) subtask).updateValuesInheritedFromOwner();
@@ -2352,12 +2362,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return removeFromList(subItemOrList, true);
 //    }
     @Override
+//    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeOwner) {
     public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeOwner) {
         List subtasks = getListFull();
         boolean status = subtasks.remove(subItemOrList);
         setList(subtasks);
         assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
-        if (removeOwner) subItemOrList.setOwner(null);
+        if (removeOwner)
+            subItemOrList.setOwner(null);
+        ((Item)subItemOrList).removeValuesInheritedFromOwner(this);
         return status;
     }
 
@@ -2663,7 +2676,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(prio, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getPriority(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getPriority(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setPriority(prio);
                     return true;
                 }
@@ -2742,7 +2755,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(challenge, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getChallengeN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getChallengeN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setChallenge(challenge);
                     return true;
                 }
@@ -2837,7 +2850,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(dreadFunValue, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getDreadFunValueN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getDreadFunValueN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setDreadFunValue(dreadFunValue);
                     return true;
                 }
@@ -2888,7 +2901,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(importance, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getImportanceN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getImportanceN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setImportance(importance);
                     return true;
                 }
@@ -2945,7 +2958,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(urgency, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getUrgencyN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getUrgencyN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setUrgency(urgency);
                     return true;
                 }
@@ -3067,7 +3080,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
-     * returns the string to display for the Imp/Urg pair in a list of items
+     * returns the string to display for the Imp/Urg pair in a list of items, empty string if no values defined
      *
      * @return
      */
@@ -3215,7 +3228,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(expiresOnDate, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getExpiresOnDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getExpiresOnDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setExpiresOnDate(expiresOnDate);
                     return true;
                 }
@@ -5058,6 +5071,77 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     }
 
+    /**
+    when removing a subtask from its project, reset all inherited values (where subtask has same value as project) back to 'undefined')
+    @param previousOwner 
+     */
+    private void removeValuesInheritedFromOwner(Item previousOwner) {
+        //***Inherited from owner***
+        //PARSE_DUE_DATE -> subtasks can inherit due date from parent? TODO
+        //PARSE_EXPIRES_ON_DATE -> all subtasks are impacted if their project experies, BUT is it enough to act at the project-level? Yes, setting a Proje t CANCELLED will/should also cancel subtasks!! (
+        //PARSE_HIDE_UNTIL_DATE -> also hide all subtasks!!
+        //PARSE_WAITING_TILL_DATE -> if a project is waiting, all its subtasks are waiting
+        //PARSE_DATE_WHEN_SET_WAITING -> hmm, yes
+        //PARSE_PRIORITY ->
+        //PARSE_START_BY_DATE -> if a project should start on a certain date, it is most likely the case for all its subtasks
+        //PARSE_TEMPLATE ->
+        //PARSE_FILTER_SORT_DEF -> filtering, you expect to see the same view for subprojects as for project. You could override but too complex to manage?!
+//        Item owner = getOwnerItem();
+
+        //NB!! we need to distinguish when an owner has changed value (so need before/after value!) => the subtasks must be updated
+        if (previousOwner != null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean()) {
+
+            if (MyPrefs.itemInheritOwnerProjectDueDate.getBoolean() && getDueDateD().equals(previousOwner.getDueDateD())) { //getDueDateD().getTime() == 0 =>> only set inherited value if no value has been set manually already
+                setDueDate(new Date(0));
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectExpiresOnDate.getBoolean() && getExpiresOnDateD().equals(previousOwner.getExpiresOnDateD())) {
+                setExpiresOnDate(0);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && getWaitingTillDateD().equals(previousOwner.getWaitingTillDateD())) {
+                setWaitingTillDate(0);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean() && getHideUntilDateD().equals(previousOwner.getHideUntilDateD())) {
+                setHideUntilDate(0);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaiting.getBoolean() && getDateWhenSetWaitingD().equals(previousOwner.getDateWhenSetWaitingD())) {
+                setDateWhenSetWaiting(0);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectPriority.getBoolean() && getPriority() == previousOwner.getPriority()) {
+                setPriority(0);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectUrgency.getBoolean() && MyUtil.eql(getUrgencyN(), previousOwner.getUrgencyN())) {
+                setUrgency(null);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectImportance.getBoolean() && MyUtil.eql(getImportanceN(), previousOwner.getImportanceN())) {
+                setImportance(null);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectChallenge.getBoolean() && MyUtil.eql(getChallengeN(), previousOwner.getChallengeN())) { //false=> challenge is not making a lot of sense to inherit for each subtask (a challenging project may have simply subtasks)
+                setChallenge(null);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean() && MyUtil.eql(getDreadFunValueN(), previousOwner.getDreadFunValueN())) { //false=> challenge is not making a lot of sense to inherit for each subtask (a challenging project may have simply subtasks)
+                setDreadFunValue(null);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean() && MyUtil.eql(getStartByDateD(), previousOwner.getStartByDateD())) {
+                setStartByDate(0);
+            }
+
+            if (MyPrefs.itemInheritOwnerProjectTemplate.getBoolean()) {//&&previousOwner.isTemplate()) {
+                setTemplate(false);
+            }
+        }
+
+    }
+
     //<editor-fold defaultstate="collapsed" desc="comment">
     /**
     If this Item is a subtask, then update its values inherited from is Project (owner)
@@ -5229,7 +5313,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(dueDate, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getDueDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getDueDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setDueDate(dueDate);
                     return true;
                 }
@@ -5309,7 +5393,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(hideUntil, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getHideUntilDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getHideUntilDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setHideUntilDate(hideUntil);
                     return true;
                 }
@@ -5377,7 +5461,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(startByDate, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getStartByDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getStartByDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setStartByDate(startByDate);
                     return true;
                 }
@@ -5494,7 +5578,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(waitingTillDate, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getWaitingTillDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getWaitingTillDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setWaitingTillDate(waitingTillDate);
                     return true;
                 }
@@ -5558,7 +5642,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyUtil.neql(waitingLastActivatedDate, oldVal)) {
             ops.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.neql(subtask.getDateWhenSetWaitingD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getDateWhenSetWaitingD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setDateWhenSetWaiting(waitingLastActivatedDate);
                     return true;
                 }
@@ -6632,7 +6716,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         for (Category cat : addedCats) {
 //            cat.addItemAtIndex(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : cat.getSize());
             cat.addItemToCategory(item, false);
-            DAO.getInstance().save(cat);
+            DAO.getInstance().saveInBackground((ParseObject)cat);
         }
 
         if (!onlyAddNewCatsDontRemoveAny) {
@@ -6641,7 +6725,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             for (Category cat : unSelectedCats) {
 //                cat.remove(item);
                 cat.removeItemFromCategory(item, false);
-                DAO.getInstance().save(cat);
+                DAO.getInstance().saveInBackground((ParseObject)cat);
             }
             item.setCategories(new ArrayList(locallyEditedCategories)); //set the item's categories as the locally edited ones
         } else {
@@ -7530,17 +7614,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void save() throws ParseException {
         //update any subtasks that may be affected by project changes to inherited fields:
         if (ops != null && ops.size() > 0) {
+            List<Item> updatedSubtasks = new ArrayList<>();
             for (Item subtask : (List<Item>) getListFull()) {
                 boolean subtaskUpdated = false;
                 if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
                     for (UpdateItem f : ops) {
-                        subtaskUpdated = f.update(subtask) || subtaskUpdated;
+//                        subtaskUpdated = f.update(subtask) || subtaskUpdated;
+                        if (f.update(subtask))
+                            updatedSubtasks.add(subtask);
                     }
                 }
-                if (subtaskUpdated) {
-                    DAO.getInstance().saveInBackground(subtask); //optimization: batch up all subtasks in saveInBackground
-                }
+//                if (subtaskUpdated) {
+//                    DAO.getInstance().saveInBackground(subtask); //optimization: batch up all subtasks in saveInBackground
+//                }
             }
+            DAO.getInstance().saveInBackground((List)updatedSubtasks); //optimization: batch up all subtasks in saveInBackground
             ops = null; //reset after all subtasks have updated
             ops = new ArrayList<>(); //reset after all subtasks have updated
         }
@@ -7617,7 +7705,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
             if (Config.CHECK_OWNERS) checkOwners(workslots);
-            boolean updated = RepeatRuleParseObject.updateWorkSlotList(workslots);
+            boolean updated = RepeatRuleParseObject.updateWorkSlotListXXX(workslots);
             WorkSlotList workSlotList = new WorkSlotList(this, workslots);
             if (updated)
                 setWorkSlotList(workSlotList);

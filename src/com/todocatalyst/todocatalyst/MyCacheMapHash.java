@@ -141,7 +141,7 @@ public class MyCacheMapHash {
 //                Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value);
 //            }
             Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save to persist changes on device between app activations
-            memoryCache.put(key, value);
+            Object oldVal = memoryCache.put(key, value);
         }
     }
 

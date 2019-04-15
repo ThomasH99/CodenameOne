@@ -437,8 +437,8 @@ public class InlineInsertNewElementContainerXXX extends Container {
             if (insertAsSubtask) { //add as subtask to previous task, and keep the subtask level
                 if (item != null) {
                     item.addToList(newItem); //add to end of subtask list (depending on setting for add to beginning/end of lists)
-                    DAO.getInstance().save(newItem);
-                    DAO.getInstance().save(item);
+                    DAO.getInstance().saveAndWait(newItem);
+                    DAO.getInstance().saveAndWait(item);
                     insertAsSubtask = false; //remove the subtask property so next task does not become a subtask to the subtask
 //                    myForm.expandedObjects.add(item); //UI: expand the item to show its newly added subtask
 //                    ((MyForm) getComponentForm()).expandedObjects.add(item); //UI: expand the item to show newly added subtask
@@ -454,11 +454,11 @@ public class InlineInsertNewElementContainerXXX extends Container {
                 } else {
                     itemOrItemListForNewTasks.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
                 }
-                DAO.getInstance().save(newItem); //need to save again since itemOrItemList is added as owner
+                DAO.getInstance().saveAndWait(newItem); //need to save again since itemOrItemList is added as owner
                 DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewTasks);
 //                } //else: task only inserted into inbox
             } else {
-                DAO.getInstance().save(newItem);
+                DAO.getInstance().saveAndWait(newItem);
             }
             return newItem;
         }

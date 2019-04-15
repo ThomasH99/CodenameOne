@@ -43,10 +43,10 @@ public class ScreenItemListProperties extends MyForm {
 
     ScreenItemListProperties(ItemList itemList, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
         super("", previousForm, doneAction);
-        setTitle(itemList instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST);
+        setTitle(itemList instanceof Category ? Category.CATEGORY : ItemList.ITEM_LIST);
 //        ScreenItemP.item = item;
         this.itemList = itemList;
-        setUniqueFormId( "ScreenItemListProperties");
+        setUniqueFormId("ScreenItemListProperties");
 //        ScreenItemP.previousForm = previousForm;
 //        this.previousForm = previousForm;
 //        this.updateActionOnDone = doneAction;
@@ -69,31 +69,32 @@ public class ScreenItemListProperties extends MyForm {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
 //        restoreKeepPos();
-          super.refreshAfterEdit();
-  }
-    
-            /**
+        super.refreshAfterEdit();
+    }
+
+    /**
     return true if (possibly modified) category can be saved
-    */
-    public static boolean checkItemListIsValidForSaving(String itemListName) {
+     */
+//    public  boolean checkItemListIsValidForSaving(ItemList itemList) {
+    public boolean checkItemListIsValidForSaving(String itemListName) {
         //TODO extend to check valid subcategories, auto-words, ...
         String errorMsg = null;
+//        String itemListName = itemList.getText();
 //        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
         if (itemListName.isEmpty())
-            errorMsg = Format.f("{0 category_or_list} name cannot be empty",ItemList.ITEM_LIST);
-        else if (ItemListList.getInstance().findItemListWithName(itemListName) != null)
+            errorMsg = Format.f("{0 category_or_list} name cannot be empty", ItemList.ITEM_LIST);
+        else if (ItemListList.getInstance().findItemListWithName(itemListName) != null
+                && ItemListList.getInstance().findItemListWithName(itemListName) != itemList
+                && !MyPrefs.itemListAllowDuplicateListNames.getBoolean())
             //                return "Category \"" + description.getText() + "\" already exists";
             //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
-            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", ItemList.ITEM_LIST,itemListName);
-        
+            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", ItemList.ITEM_LIST, itemListName);
+
         if (errorMsg != null) {
             Dialog.show("Error", errorMsg, "OK", null);
             return false;
         } else return true;
     }
-
-
-
 
     public void addCommandsToToolbar(Toolbar toolbar) {
 
@@ -134,7 +135,7 @@ public class ScreenItemListProperties extends MyForm {
         }
         if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
             toolbar.addCommandToOverflowMenu("Repair data issues", null, (e) -> {
-                DAO.getInstance().cleanUpItemListOrCategory(itemList,false);
+                DAO.getInstance().cleanUpItemListOrCategory(itemList, false);
             });
         }
     }
@@ -188,12 +189,12 @@ public class ScreenItemListProperties extends MyForm {
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
         content.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**"));
 
-        if (MyPrefs.showObjectIdsInEditScreens.getBoolean()){
-        Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "LabelFixed");
-        content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+        if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
+            Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "LabelFixed");
+            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
-        
-        setCheckOnExit(()->checkItemListIsValidForSaving(description.getText()));
+
+        setCheckOnExit(() -> checkItemListIsValidForSaving(name.getText()));
 
         return content;
     }

@@ -9,6 +9,7 @@ import com.codename1.io.Log;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -77,7 +78,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         List<WorkSlot> overlapping = new ArrayList<>();
 //        for (WorkSlot ws:(List<WorkSlot>)workSlotList) {
         for (WorkSlot ws : workSlotList.getWorkSlotListFull()) {
-            if (workSlot.overlappingDuration(ws) > 0) {
+            if ((ws != workSlot || !ws.equals(workSlot)) && workSlot.overlappingDuration(ws) > 0) {
                 overlapping.add(ws);
             }
         }
@@ -91,7 +92,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default public void addWorkSlot(WorkSlot workSlot) {
         WorkSlotList workSlotList = getWorkSlotListN();
         if (workSlotList == null) {
-            workSlotList = new WorkSlotList();
+//            workSlotList = new WorkSlotList();
+            workSlotList = new WorkSlotList(this, Arrays.asList(workSlot), true);
             workSlotList.setOwner(this);
         }
         workSlotList.add(workSlot);
@@ -533,15 +535,16 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return false;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
+
     /**
-    * return the available work time. A list since can come from different work
-    * time providers for example if a category does not allocate enough time to
-    * completely finish a task, the rest may come from the owner. Will combine
-    * workTime from different sources into one.
-    *
-    * @return workSlots and possibly workTime allocated by owner. null if no
-    * WorkTime available
-    */
+     * return the available work time. A list since can come from different work
+     * time providers for example if a category does not allocate enough time to
+     * completely finish a task, the rest may come from the owner. Will combine
+     * workTime from different sources into one.
+     *
+     * @return workSlots and possibly workTime allocated by owner. null if no
+     * WorkTime available
+     */
 //    public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface itemOrList);
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -676,12 +679,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
-    * time allocated to this item (from all workTimeProviders: own workslots,
-    * categories, owner)
-    *
-    * @param elt
-    * @return null if no WorkTimeSlices allocated
-    */
+     * time allocated to this item (from all workTimeProviders: own workslots,
+     * categories, owner)
+     *
+     * @param elt
+     * @return null if no WorkTimeSlices allocated
+     */
 //    default public WorkTimeSlices getAllocatedWorkTimeN() {
 //        throw new Error("Not supported yet."); //should not be called for ItemLists and Categories (or WorkSlots)
 //    }
@@ -717,8 +720,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        }
 //</editor-fold>
 //            return getAllocatedWorkTimeN(this);
-             throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
- 
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        ItemAndListCommonInterface owner = getOwner();
 //if (owner != null)
@@ -733,27 +736,28 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 ////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
+
     /**
-    * allocate workTime from this element's WorkTimeDefinition to itemOrList
-    * with duration remainingDuration.
-    *
-    * @param itemOrList
-    * @param remainingDuration
-    * @return
-    */
+     * allocate workTime from this element's WorkTimeDefinition to itemOrList
+     * with duration remainingDuration.
+     *
+     * @param itemOrList
+     * @param remainingDuration
+     * @return
+     */
 //    default public WorkTimeSlices allocateWorkTimeXXX(ItemAndListCommonInterface itemOrList) {
 ////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList);
 //        WorkTimeAllocator wt = getWorkTimeAllocatorN();
 //        return wt != null ? wt.allocateWorkTimeXXX(itemOrList) : null;
 //    }
     /**
-    * allocate workTime from this element's WorkTimeDefinition to itemOrList
-    * with duration remainingDuration.
-    *
-    * @param itemOrList
-    * @param remainingDuration
-    * @return
-    */
+     * allocate workTime from this element's WorkTimeDefinition to itemOrList
+     * with duration remainingDuration.
+     *
+     * @param itemOrList
+     * @param remainingDuration
+     * @return
+     */
 //    default public WorkTimeSlices allocateWorkTime(ItemAndListCommonInterface itemOrList, long remainingDuration) {
 //    default public WorkTimeSlices allocateWorkTime(Item itemOrList, long remainingDuration) {
 ////        return getWorkTimeAllocatorN().getAllocatedWorkTimeN(itemOrList, remainingDuration);
@@ -820,12 +824,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        else
 //            return MyDate.MAX_DATE;
 //</editor-fold>
-        WorkTimeSlices workTimeSlices=getAllocatedWorkTimeN();
+        WorkTimeSlices workTimeSlices = getAllocatedWorkTimeN();
         if (workTimeSlices != null)
             return workTimeSlices.getFinishTime();
-        else 
+        else
             return MyDate.MAX_DATE;
-        
+
 //        } 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        else {
@@ -911,13 +915,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
+
     /**
-    * called to indicate the workTime needs to be udpated/refreshed. E.g. by an
-    * Item if status or remaining time changes, or by a workslot if duration or
-    * startTime change. This assume that work time calculations are cached. It
-    * should invalidate as few items as possible, e.g. typically only items
-    * that come later than the changed one.
-    */
+     * called to indicate the workTime needs to be udpated/refreshed. E.g. by an
+     * Item if status or remaining time changes, or by a workslot if duration or
+     * startTime change. This assume that work time calculations are cached. It
+     * should invalidate as few items as possible, e.g. typically only items
+     * that come later than the changed one.
+     */
 //    public void refreshWorkTime();
     //TODO!!!!! must store separately for cache!! Same as
 //</editor-fold>

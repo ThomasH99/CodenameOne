@@ -74,16 +74,17 @@ public class ScreenCategoryProperties extends MyForm {
     /**
     return true if (possibly modified) category can be saved
      */
-    public static boolean checkCategoryIsValidForSaving(String category) {
+    public  boolean checkCategoryIsValidForSaving(String categoryName) {
         //TODO extend to check valid subcategories, auto-words, ...
         String errorMsg = null;
 //        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
-        if (category.isEmpty())
+        if (categoryName.isEmpty())
             errorMsg = Format.f("{0 category_or_list} name cannot be empty", Category.CATEGORY);
-        else if (CategoryList.getInstance().findCategoryWithName(category) != null)
+        else if (CategoryList.getInstance().findCategoryWithName(categoryName) != null 
+                &&CategoryList.getInstance().findCategoryWithName(categoryName)!=category)
             //                return "Category \"" + description.getText() + "\" already exists";
             //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
-            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", Category.CATEGORY, category);
+            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", Category.CATEGORY, categoryName);
 
         if (errorMsg != null) {
             Dialog.show("Error", errorMsg, "OK", null);
@@ -165,14 +166,14 @@ public class ScreenCategoryProperties extends MyForm {
 //            showPreviousScreenOrDefault(previousForm, true);
             showPreviousScreenOrDefault(true);
         }));
-              if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
+        if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
             toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
                 DAO.getInstance().cleanUpItemListOrCategory(category, false);
             });
         }
         if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
             toolbar.addCommandToOverflowMenu("Repair data issues", null, (e) -> {
-                DAO.getInstance().cleanUpItemListOrCategory(category,false);
+                DAO.getInstance().cleanUpItemListOrCategory(category, false);
             });
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -285,7 +286,7 @@ public class ScreenCategoryProperties extends MyForm {
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
-        setCheckOnExit(() -> checkCategoryIsValidForSaving(description.getText()));
+        setCheckOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText()));
 
         return content;
     }

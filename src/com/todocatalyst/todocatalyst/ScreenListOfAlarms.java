@@ -104,7 +104,7 @@ public class ScreenListOfAlarms extends MyForm {
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
 
-        now = System.currentTimeMillis();
+        now = MyDate.currentTimeMillis();
 
         getContentPane().removeAll();
         expiredAlarms = new ArrayList(AlarmHandler.getInstance().getExpiredAlarms()); //need a copy of the list to avoid java.util.ConcurrentModificationException in CancellAll/SnoozeAll loops below
@@ -167,7 +167,7 @@ public class ScreenListOfAlarms extends MyForm {
 //                    AlarmHandler.getInstance().snoozeAlarm(expired, snoozeExpireTimeInMillis);
 //                }
                 AlarmHandler.getInstance().snoozeAllExpiredAlarms(
-                        MyDate.getStartOfMinute(new Date(System.currentTimeMillis() + ((long) snoozeTimePicker.getDuration()) * MyDate.MINUTE_IN_MILLISECONDS)));
+                        MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + ((long) snoozeTimePicker.getDuration()) * MyDate.MINUTE_IN_MILLISECONDS)));
                 showPreviousScreenOrDefault(true); //false);
             },"SnoozeAllAlarms"))));
 
@@ -183,7 +183,7 @@ public class ScreenListOfAlarms extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
-        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("AlarmSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
+        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("AlarmSettings", "Settings", Icons.iconSettingsLabelStyle, (e) -> {
             boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
             int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
 
@@ -267,7 +267,7 @@ public class ScreenListOfAlarms extends MyForm {
 //        }))).add(BorderLayout.EAST, Container.encloseIn(BoxLayout.x(), new Button(Command.create("Snooze", Icons.iconSnoozeLabelStyle, (evt) -> {
                 },"CancelAlarm")), Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(CommandTracked.create("Snooze", Icons.iconSnoozeLabelStyle, (evt) -> {
 //            Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
-                    Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + snoozeTimePicker.getDuration()* MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
+                    Date snoozeExpireTimeInMillis = new Date(MyDate.currentTimeMillis() + snoozeTimePicker.getDuration()* MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (expiredAlarm.type == AlarmType.notification) {
 //                expiredAlarms.snoozeAlarm(expiredAlarm.notificationId, snoozeExpireTimeInMillis, item.makeNotificationTitleText(AlarmType.notification), item.makeNotificationBodyText(AlarmType.notification));

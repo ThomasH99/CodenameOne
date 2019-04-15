@@ -6,6 +6,7 @@ package com.todocatalyst.todocatalyst;
 
 //import static com.todocatalyst.todocatalyst.CategoryList.PARSE_CATEGORY_LIST;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,9 +24,7 @@ public class ItemListList extends ItemList {
 
 //    final static String PARSE_ITEMLIST_LIST = "itemListList";
 //    final static String PARSE_ITEMLIST_LIST = ItemList.PARSE_ITEMLIST; //reuse column name from ItemList to ensure any non-overwritten calls (notably getListFull()) works, was: "categoryList";
-    ;
 //    final static String PARSE_ITEMLIST_LIST = "itemList";
-
     private static ItemListList INSTANCE = null;
 
     public ItemListList() {
@@ -92,7 +91,7 @@ public class ItemListList extends ItemList {
         super.setList(list);
     }
 
-    public synchronized void reloadFromParse() {
+    public synchronized boolean reloadFromParse(boolean forceLoadFromParse, Date startDate, Date endDate) {
 //        ItemListList t= INSTANCE;
 //        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
 //        return t;
@@ -100,11 +99,17 @@ public class ItemListList extends ItemList {
 //        INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
 ////        for(ItemList l: temp)
 //        INSTANCE.setList(temp.getList());
-        ItemListList temp = DAO.getInstance().getItemListList();
-        INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
-        for (ItemAndListCommonInterface elt : temp.getListFull()) {
-            INSTANCE.addItem(elt);
+        ItemListList temp = DAO.getInstance().getItemListList(forceLoadFromParse, startDate, endDate);
+        if (temp != null) {
+//            if (INSTANCE==null)
+            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+            for (ItemAndListCommonInterface elt : temp.getListFull()) {
+                INSTANCE.addItem(elt);
+            }
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(this); //
+            return true;
         }
+        return false;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

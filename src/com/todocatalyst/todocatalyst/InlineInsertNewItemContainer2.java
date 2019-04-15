@@ -217,6 +217,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //</editor-fold>
                 MyForm myForm = (MyForm) getComponentForm();
                 closeInsertContainer();
+                remove();
+                myForm.refreshAfterEdit();
 //                if (myForm.getInlineInsertContainer() == this) {
                 myForm.setInlineInsertContainer(null);
 //                myForm.revalidate(); //necessary?!
@@ -369,7 +371,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         if (closeAction != null) {
             closeAction.launchAction();
         }
-        if (false && parent != null) //TODO!!! edge case where inlineinsert is inserted into empty list (no previous elements in list), so seems it doesn't get a scrollY parent - to investigate
+        if (parent != null) //TODO!!! edge case where inlineinsert is inserted into empty list (no previous elements in list), so seems it doesn't get a scrollY parent - to investigate
             parent.animateLayout(300); //this call might be what pushes the effect of refreshAfterEdit as an animation
     }
 

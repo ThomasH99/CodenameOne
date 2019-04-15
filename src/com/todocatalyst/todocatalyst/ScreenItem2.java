@@ -22,6 +22,7 @@ import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.table.TableLayout;
 import com.parse4cn1.ParseException;
+import com.parse4cn1.ParseObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -276,7 +277,7 @@ public class ScreenItem2 extends MyForm {
                 putEditedValues2(parseIdMap2, item); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
                 Item template = new Item();
                 item.copyMeInto(template, Item.CopyMode.COPY_TO_TEMPLATE);
-                DAO.getInstance().save(template);
+                DAO.getInstance().saveInBackground(template);
 //                TemplateList templateList = DAO.getInstance().getTemplateList();
                 TemplateList templateList = TemplateList.getInstance();
                 if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
@@ -284,7 +285,7 @@ public class ScreenItem2 extends MyForm {
                 } else {
                     templateList.add(template);
                 }
-                DAO.getInstance().save(templateList);
+                DAO.getInstance().saveInBackground((ParseObject)templateList);
                 ip.dispose();
 //                if (Dialog.show("INFO", "Do you want to edit the template now? You can find and edit it later under Templates.", "Yes", "No")) {
 //                    new ScreenItem(template, ScreenItem.this, () -> {
@@ -355,7 +356,7 @@ public class ScreenItem2 extends MyForm {
             showPreviousScreenOrDefault(true);
         }, "DeleteItem"));
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", null, Icons.iconSettingsLabelStyle, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", "Settings", Icons.iconSettingsLabelStyle, (e) -> {
             new ScreenSettingsItem(ScreenItem2.this, () -> {
                 refreshAfterEdit();
             }).show();
@@ -746,6 +747,8 @@ public class ScreenItem2 extends MyForm {
         //TAB MAIN
         Container mainTabCont = new Container(new BorderLayout());
         Container mainCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        if (Config.TEST) mainCont.setName("MainTab");
+        
         mainTabCont.add(BorderLayout.CENTER, mainCont);
         mainCont.setScrollableY(true);
 
@@ -1072,7 +1075,7 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
                 List<Category> catList = (previousValues.get(Item.PARSE_CATEGORIES) != null
                         ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)) //if previous edited value exists, use that
-                        : item.getCategories());
+                        : new ArrayList(item.getCategories())); //make a copy to be able to compare the edited version to the orginal list from Item after editing
                 ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(),
                         catList,
                         ScreenItem2.this, () -> {
@@ -1113,7 +1116,8 @@ public class ScreenItem2 extends MyForm {
         categoriesButton.setCommand(categoryEditCmd);
         parseIdMap2.put(Item.PARSE_CATEGORIES, () -> {
             if (previousValues.get(Item.PARSE_CATEGORIES) != null) {
-                item.setCategories(Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)));
+//                item.setCategories(Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)));
+                item.updateCategories(Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)));
             }
         });
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1230,7 +1234,8 @@ public class ScreenItem2 extends MyForm {
 //            new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
 //</editor-fold>
 //            new ScreenRepeatRule(Item.REPEAT_RULE, (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE), item, ScreenItem2.this, () -> {
-            new ScreenRepeatRule(Item.REPEAT_RULE, item.getRepeatRule(), locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
+//            new ScreenRepeatRule(Item.REPEAT_RULE, item.getRepeatRule(), locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
+            new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
                 if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
                     previousValues.remove(Item.PARSE_REPEAT_RULE);
                     repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
@@ -1254,7 +1259,7 @@ public class ScreenItem2 extends MyForm {
 //                repeatRuleButton.getParent().revalidate(); //enough to update? NO
                 mainCont.revalidate(); //enough to update? NO
 //                    }
-            }, true, dueDate.getDate()).show(); //TODO false<=>editing startdate not allowed - correct???
+            }, true, dueDate.getDate(),false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
 //        parseIdMap2.put("REPEAT_RULE", () -> {
@@ -1468,7 +1473,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //</editor-fold>
         //TAB TIME
         Container timeCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
-
+        if (Config.TEST) timeCont.setName("TimeTab");
         timeCont.setScrollableY(true);
         tabs.addTab("Time", null, timeCont);
 
@@ -1645,6 +1650,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         Container prioCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 
         prioCont.setScrollableY(true);
+        if (Config.TEST) prioCont.setName("PrioTab");
         tabs.addTab("Prio", null, prioCont);
 
 //        MyStringPicker priority = new MyStringPicker(new String[]{"None", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, parseIdMap2, () -> item.getPriority(), (i) -> item.setPriority(i));
@@ -2002,7 +2008,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
         //TAB STATUS FIELDS
         Container statusCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
-
+        if (Config.TEST) statusCont.setName("StatusTab");
         statusCont.setScrollableY(true);
         tabs.addTab("Status", null, statusCont);
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2598,7 +2604,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        }
 //</editor-fold>
         //ORIGINAL SOURCE
-        if (item.getSource() != null) { //don't show unless defined
+        if (item.getSource() != null&&MyPrefs.showSourceItemInEditScreens.getBoolean()) { //don't show unless defined
             //TODO!! what happens if source is set to template or other item, then saved locally on app exit and THEN recreated via Replay???
 //            Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
             Label sourceLabel = new Label(item.getSource().getText(), "LabelFixed");

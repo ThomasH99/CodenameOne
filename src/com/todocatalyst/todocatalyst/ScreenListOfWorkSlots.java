@@ -164,11 +164,11 @@ public class ScreenListOfWorkSlots extends MyForm {
         WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
         if (workSlotList != null)
             workSlotList.setIncludeExpiredWorkSlots(showAlsoExpiredWorkSlots);
-        
+
         Container contentContainer = buildContentPaneForWorkSlotList(workSlotList);
-        if (contentContainer instanceof MyTree2) 
+        if (contentContainer instanceof MyTree2)
             setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
-        
+
         getContentPane().add(BorderLayout.CENTER, contentContainer);
 //        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
@@ -191,7 +191,7 @@ public class ScreenListOfWorkSlots extends MyForm {
             WorkSlot newWorkSlot = new WorkSlot();
             newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
             setKeepPos(new KeepInSameScreenPosition());
-            new ScreenWorkSlot(newWorkSlot,workSlotListOwner, ScreenListOfWorkSlots.this, () -> {
+            new ScreenWorkSlot(newWorkSlot, workSlotListOwner, ScreenListOfWorkSlots.this, () -> {
                 if (newWorkSlot.hasSaveableData()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    workSlot.setOwner(owner);
@@ -289,7 +289,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //    }
 //</editor-fold>
     protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot, boolean showOwner) {
-        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, showOwner, System.currentTimeMillis());
+        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, showOwner, MyDate.currentTimeMillis());
     }
 
     protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos,
@@ -334,7 +334,7 @@ public class ScreenListOfWorkSlots extends MyForm {
             new ScreenWorkSlot(workSlot, workSlot.getOwner(), myForm, () -> {
                 //TODO!!! add same check as when creating a new WorkSlot (if both StartDate and Duration deleted, delete the workslot)??
 //                            workSlot.setList(itemList.getList());
-                DAO.getInstance().save(workSlot);
+                DAO.getInstance().saveInBackground(workSlot);
 //                    refreshAfterEdit();
 //                refreshOnItemEdits.launchAction();
                 if (false) myForm.refreshAfterEdit(); //not needed anymore since always called on screen refresh
@@ -378,7 +378,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        startTimeStr += "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
 //                + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
         String startTimeStr = MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
-        Label startTimeLabel = new Label(startTimeStr,
+        Label startTimeLabel = new Label(startTimeStr, Icons.iconWorkSlot,
                 workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime");
 
 //        String endTimeStr = "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))

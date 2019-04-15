@@ -1398,7 +1398,7 @@ public class MyForm extends Form {
      */
     protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2, ParseObject parseObject) {
         if (false && parseObject.getObjectIdP() == null) {
-            DAO.getInstance().save(parseObject); //TODO!!! why is it necessary to save here??
+            DAO.getInstance().saveInBackground(parseObject); //TODO!!! why is it necessary to save here??
         }
         putEditedValues2(parseIdMap2);
     }
@@ -1893,9 +1893,9 @@ public class MyForm extends Form {
         if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
             itemListOrg.addToList(pos, item); //UI: add to top of list
         }
-        DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
+        DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
         if (addToList) {
-            DAO.getInstance().save((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+            DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
         }
     }
 //    static void addNewTaskSetTemplateAddToListAndSave(Item item, ItemList itemListOrg) {
@@ -1944,7 +1944,7 @@ public class MyForm extends Form {
                     }
                     addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : Inbox.getInstance().getSize(), Inbox.getInstance());
 
-                    DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
                     refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                    }
                 } else {

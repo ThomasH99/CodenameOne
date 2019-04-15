@@ -1255,7 +1255,7 @@ public class MyTree2 extends ContainerScrollY {
                 WorkSlot workSlot = (WorkSlot) current;
                 switch (parseId) {
                     case WorkSlot.PARSE_START_TIME:
-                        newStr = getDiffStr(previousStickyStr, WorkSlot.START_TIME + " " + MyDate.formatDateNew(workSlot.getStartAdjusted(System.currentTimeMillis()))); //UI: use adjusted, so a workslot stretching over midnight will get the right date after midnignt
+                        newStr = getDiffStr(previousStickyStr, WorkSlot.START_TIME + " " + MyDate.formatDateNew(workSlot.getStartAdjusted(MyDate.currentTimeMillis()))); //UI: use adjusted, so a workslot stretching over midnight will get the right date after midnignt
                         break;
                 }
             }

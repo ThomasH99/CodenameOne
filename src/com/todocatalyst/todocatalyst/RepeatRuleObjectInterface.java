@@ -78,14 +78,14 @@ public interface RepeatRuleObjectInterface {
      */
 //    List getInsertNewRepeatInstancesIntoList();
     /**
-     * save the list
+     * add the new repeatCopy to the right place in the owner list and return the owner list so it can be saved
      *
      * @param newRepeatRuleInstance
      */
 //    void saveInsertList();
 //    void insertIntoListAndSaveList(RepeatRuleObjectInterface repeatRuleObject);
 //public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject);    
-    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface newRepeatRuleInstance);
+    public ItemAndListCommonInterface insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface newRepeatRuleInstance);
 
     /**
      *

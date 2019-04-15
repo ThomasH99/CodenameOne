@@ -57,7 +57,7 @@ public class MyPrefs {
     //INSERTION OF NEW ITEMS
 //    static PrefEntry insertNewItemsInStartOfCategory = new PrefEntry("insertNewItemsInStartOfCategory", true, "Always insert new tasks at the beginning of lists (instead of at the end)");
     static PrefEntry insertNewItemsInStartOfLists
-            = new PrefEntry("Insert created/moved at top of list", "insertNewItemsInStartOfLists", true, "Always insert new or moved tasks at the beginning of lists (instead of at the end)");
+            = new PrefEntry("Insert tasks at top of lists", "insertNewItemsInStartOfLists", true, "Always insert new or moved tasks at the beginning of lists (instead of at the end)");
     
     static PrefEntry insertNewSubtasksInScreenItemInStartOfLists
             = new PrefEntry("**Insert new subtasks created at top of list", "insertNewSubtasksInScreenItemInStartOfLists", false, "**Always insert new subtasks at the beginning of lists (instead of at the end)");
@@ -195,8 +195,12 @@ public class MyPrefs {
     static PrefEntry commentMaxSizeInChars
             = new PrefEntry("**", "commentMaxSizeInChars", 512, "**"); //TODO make max comment size a PRO subscription dependendant setting
 
+    
+    //CATEGORY
     static PrefEntry showCategoryDescriptionInCategoryList
             = new PrefEntry("**", "showCategoryDescriptionInCategoryList", false, "Show Category description in category lists");
+//    static PrefEntry categoryAllowDuplicateNamesDescriptionInCategoryList
+//            = new PrefEntry("**", "showCategoryDescriptionInCategoryList", false, "Show Category description in category lists");
 
     //ALARMS
 //    static PrefEntry alarmLastDateUptoWhichAlarmsHaveBeenSet = new PrefEntry("alarmLastDateUptoWhichAlarmsHaveBeenSet", new Date(0));
@@ -207,7 +211,7 @@ public class MyPrefs {
             = new PrefEntry("**", "alarmSoundFile", "notification_sound_Cuckoo_bird_sound.mp3", "**");
 
     static PrefEntry alarmIntervalBetweenAlarmsRepeatsMillisInMinutes
-            = new PrefEntry("**", "alarmIntervalBetweenAlarmsRepeatsMillisInMinutes", 1, "Defines the minutes between the repeats of a reminder. Chose 0 to not repeat."); //alarms activated by default
+            = new PrefEntry("Minutes between reminder notifications", "alarmIntervalBetweenAlarmsRepeatsMillisInMinutes", 1, "Defines the minutes between the repeats of a reminder. Chose 0 to not repeat."); //alarms activated by default
 
     static PrefEntry alarmDefaultSnoozeTimeInMinutes
             = new PrefEntry("Snooze time in minutes", "alarmDefaultSnoozeTimeInMinutes", 1, "Set the time an alarm is snoozed"); //alarms activated by default
@@ -369,6 +373,12 @@ public class MyPrefs {
     static PrefEntry showObjectIdsInEditScreens
             = new PrefEntry("Show ObjectIds when editing", "showObjectIdsInEditScreens", true, "show internal unique ID when editing - NOT END USER");
 
+    static PrefEntry showSourceItemInEditScreens
+            = new PrefEntry("For a copy, show the original", "showSourceItemInEditScreens", true, "**");
+    
+    static PrefEntry showSourceWorkSlotInEditScreens
+            = new PrefEntry("For a copy, show the original", "showSourceWorkSlotInEditScreens", true, "**");
+
     static PrefEntry showDebugInfoInLabelsEtc
             = new PrefEntry("Show debug info, e.g. add ^ to subtask", "showDebugInfoInLabelsEtc", true, "** - NOT END USER");
 
@@ -403,7 +413,9 @@ public class MyPrefs {
     static PrefEntry itemListExpiresByDate = new PrefEntry("iii", "itemListExpiresByDate", true, "**");
     static PrefEntry itemListWaitingTillDate = new PrefEntry("uuu", "itemListWaitingTillDate", true, "**");
     static PrefEntry itemListShowRemainingEvenIfZero = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", "itemListShowRemainingEvenIfZero", false, "**");
+    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", "itemListShowActualIfNonZeroEvenIfNotDone", true, "**");
     static PrefEntry itemListEffortEstimate = new PrefEntry("Show Effort Estimate in list details**", "itemListEffortEstimate", true, "**");
+    static PrefEntry itemListAllowDuplicateListNames = new PrefEntry("Show Effort Estimate in list details**", "itemListAllowDuplicateListNames", false, "**");
 
     //
     static PrefEntry creationLogInterval = new PrefEntry("yyy", "creationLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_CREATION_LOG_TITLE);

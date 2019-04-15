@@ -95,7 +95,7 @@ public class AlarmHandler {
     static void scheduleLocalNotification(String notificationId, String titleText, String bodyText, Date alarmDate) {
         Display.getInstance().cancelLocalNotification(notificationId); //always cancel any previous set local notifs, just in case
         alarmLog("Set local notification " + notificationId + " alarm=" + MyDate.formatDateTimeNew(alarmDate) + " for \"" + titleText + "\" (" + bodyText + ")");
-        if (alarmDate.getTime() < System.currentTimeMillis()) {
+        if (alarmDate.getTime() < MyDate.currentTimeMillis()) {
             return;
         }
         LocalNotification n = new LocalNotification();
@@ -306,7 +306,7 @@ public class AlarmHandler {
         refreshInAppTimerAndSaveNotificationList();
         //save snooze time
         item.setSnoozeDate(snoozeExpireTime);
-        DAO.getInstance().save(item);
+        DAO.getInstance().saveInBackground(item);
     }
 
     public void snoozeAllExpiredAlarms(Date snoozeExpireTime) {
@@ -551,7 +551,7 @@ public class AlarmHandler {
     NotificationShadow getNextFutureAlarm() {
 //        return notificationList.getNextFutureAlarm();
         NotificationShadow notif;
-        Long now = System.currentTimeMillis();
+        Long now = MyDate.currentTimeMillis();
         //remove expired alarms and add them to expiredAlarms
         if (false) { //now done in processExpiredAlarm()
             while ((notif = notificationList.getNextFutureAlarm()) != null && notif.alarmTime.getTime() <= now) {
@@ -569,20 +569,20 @@ public class AlarmHandler {
 
     public void simulateNotificationReceived_TEST(int secondsFromNow) {
         String notificationId;
-        Item testItem = new Item("test local notification", 20, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 48));
-        testItem.setAlarmDate(new Date(System.currentTimeMillis() + secondsFromNow * 1000)); //alarm in 10s from now
-        DAO.getInstance().save(testItem);
+        Item testItem = new Item("test local notification", 20, new Date(MyDate.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 48));
+        testItem.setAlarmDate(new Date(MyDate.currentTimeMillis() + secondsFromNow * 1000)); //alarm in 10s from now
+        DAO.getInstance().saveInBackground(testItem);
     }
 
     public void simulateNotificationReceived_TEST(String taskText, Date due, Date alarm, Date waiting) {
         Item testItem = new Item(taskText, 7, due);
         testItem.setAlarmDate(alarm);
         testItem.setWaitingAlarmDate(waiting);
-        DAO.getInstance().save(testItem);
+        DAO.getInstance().saveInBackground(testItem);
     }
 
     public void simulateNotificationReceived_TEST(String taskText, Date due, int alarmInSecondsFromNow, int waitingAlarmInSecondsFromNow) {
-        simulateNotificationReceived_TEST(taskText, due, new Date(System.currentTimeMillis() + alarmInSecondsFromNow * 1000), new Date(System.currentTimeMillis() + waitingAlarmInSecondsFromNow * 1000));
+        simulateNotificationReceived_TEST(taskText, due, new Date(MyDate.currentTimeMillis() + alarmInSecondsFromNow * 1000), new Date(MyDate.currentTimeMillis() + waitingAlarmInSecondsFromNow * 1000));
     }
 
     public static void setPreferredBackgroundFetchInterval() {

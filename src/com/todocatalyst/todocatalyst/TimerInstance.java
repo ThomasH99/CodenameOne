@@ -270,7 +270,7 @@ public class TimerInstance extends ParseObject {
      */
     public final void updateElapsedTime(long newElapsedTime) {
         if (isRunning()) {
-            setStartTime(System.currentTimeMillis() - newElapsedTime); // + addPreviousActual;
+            setStartTime(MyDate.currentTimeMillis() - newElapsedTime); // + addPreviousActual;
         } else {
             setElapsedTime(newElapsedTime);
         }
@@ -283,7 +283,7 @@ public class TimerInstance extends ParseObject {
 //            addPreviousActual = getTimedItemN().getActualEffortProjectTaskItself();
 //        }
         if (isRunning()) {
-            return System.currentTimeMillis() - getStartTime(); // + addPreviousActual;
+            return MyDate.currentTimeMillis() - getStartTime(); // + addPreviousActual;
         }
         Long elapsedTime = getLong(PARSE_TIMER_ELAPSED_TIME);
         return ((elapsedTime == null) ? 0L : elapsedTime); // + addPreviousActual;
@@ -410,7 +410,7 @@ public class TimerInstance extends ParseObject {
             if (!isRunning()) { //do nothing if already running
 //            setStartTime(new Date(new Date().getTime() - getElapsedTime()));
 //            setStartTime(new Date(new Date().getTime() - getElapsedTime()));
-                setStartTime(System.currentTimeMillis() - getElapsedTime()); //set a 'virtual' start time elapsed seconds before 'now'
+                setStartTime(MyDate.currentTimeMillis() - getElapsedTime()); //set a 'virtual' start time elapsed seconds before 'now'
                 setElapsedTime(0); //reset elapsed to 0 while timer is running
                 if (save) {
                     saveMe(); //update server
@@ -429,7 +429,7 @@ public class TimerInstance extends ParseObject {
         synchronized (TimerStack.TIMER_LOCK) {
             if (isRunning()) { //getStartTime() != 0) {
 //            setElapsedTime(new Date().getTime() - new Date().getTime());
-                setElapsedTime(System.currentTimeMillis() - getStartTime());
+                setElapsedTime(MyDate.currentTimeMillis() - getStartTime());
                 setStartTime(0);
 //                setStartTime(0);
                 if (save) {

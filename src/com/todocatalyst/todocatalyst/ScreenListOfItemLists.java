@@ -16,6 +16,7 @@ import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
+import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
 import java.util.HashSet;
@@ -98,19 +99,6 @@ public class ScreenListOfItemLists extends MyForm {
 //        expandedObjects = new HashSet();
         expandedObjects = new ExpandedObjects(getUniqueFormId());
         addCommandsToToolbar(getToolbar());
-        if (false) getToolbar().addSearchCommand((e) -> {
-                String text = (String) e.getSource();
-                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-                boolean showAll = text == null || text.length() == 0;
-                for (int i = 0, size = this.itemListList.getSize(); i < size; i++) {
-                    //TODO!!! compare same case (upper/lower)
-                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                    compList.getComponentAt(i).setHidden(((ItemList) this.itemListList.get(i)).getText().toLowerCase().indexOf(text) < 0);
-                }
-                compList.animateLayout(150);
-            });
-        getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList));
-
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.itemListList));
         refreshAfterEdit();
     }
@@ -144,29 +132,9 @@ public class ScreenListOfItemLists extends MyForm {
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
-        //NEW TASK
-        toolbar.addCommandToLeftBar(newItemSaveToInboxCmd());
 
-        //NEW ITEMLIST
-        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("EditListProperties", "", Icons.iconNewToolbarStyle(), (e) -> {
-            ItemList itemList = new ItemList();
-            setKeepPos(new KeepInSameScreenPosition());
-            new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
-//                    if (itemList.getText().length() > 0||itemList.getComment().length() > 0) {
-                if (itemList.hasSaveableData()) {
-//                    itemList.setOwner(itemListList); //NB cannot set an owner which is not saved in parse
-//                    DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//                    itemListList.addItemAtIndex(itemList, 0);
-                    itemListList.addToList(0, itemList);
-                    DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                    DAO.getInstance().save(itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//                    previousForm.revalidate(); //refresh list to show new items(??)
-//                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
-                    refreshAfterEdit();//refresh list to show new items(??)
-                }
-            }).show();
-        }
-        ));
+        //BACK
+        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 
         //MOVE mode
         if (false) { //causes a problem in the animation (out of bounds array
@@ -179,8 +147,6 @@ public class ScreenListOfItemLists extends MyForm {
             });
         }
 
-        //BACK
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 //                new Command("", iconDone) {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
@@ -189,6 +155,44 @@ public class ScreenListOfItemLists extends MyForm {
 //                previousForm.showBack();
 //            }
 //        });
+
+//        addCommandsToToolbar(getToolbar());
+        
+        if (false) getToolbar().addSearchCommand((e) -> {
+                String text = (String) e.getSource();
+                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+                boolean showAll = text == null || text.length() == 0;
+                for (int i = 0, size = this.itemListList.getSize(); i < size; i++) {
+                    //TODO!!! compare same case (upper/lower)
+                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
+                    compList.getComponentAt(i).setHidden(((ItemList) this.itemListList.get(i)).getText().toLowerCase().indexOf(text) < 0);
+                }
+                compList.animateLayout(150);
+            });
+        getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList));
+//NEW TASK
+        toolbar.addCommandToRightBar(newItemSaveToInboxCmd()); //put all generic (not specific to current screen) icons on the left
+
+        //NEW ITEMLIST
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconNewToolbarStyle(), (e) -> {
+            ItemList itemList = new ItemList();
+            setKeepPos(new KeepInSameScreenPosition());
+            new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
+//                    if (itemList.getText().length() > 0||itemList.getComment().length() > 0) {
+                if (itemList.hasSaveableData()) {
+//                    itemList.setOwner(itemListList); //NB cannot set an owner which is not saved in parse
+//                    DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                    itemListList.addItemAtIndex(itemList, 0);
+                    itemListList.addToList(0, itemList);
+                    DAO.getInstance().saveInBackground((ParseObject)itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                    previousForm.revalidate(); //refresh list to show new items(??)
+//                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
+                    refreshAfterEdit();//refresh list to show new items(??)
+                }
+            }).show();
+        }
+        ));
 
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
@@ -402,7 +406,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
                         f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
                         itemList.setList(iList.getListFull());
-                        DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        DAO.getInstance().saveInBackground((ParseObject)itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
                         swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
                     } else {

@@ -1865,7 +1865,7 @@ class TimerStack {
                 timedItem.setStatus(ItemStatus.ONGOING);
                 status.repaint(); //update UI
                 parseIdMap2.put("SET_ITEM_STARTED_ON_DATE",
-                        () -> timedItem.setStartedOnDate(System.currentTimeMillis() - MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS));
+                        () -> timedItem.setStartedOnDate(MyDate.currentTimeMillis() - MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS));
             }
 //            elapsedTimeButton.setText(MyDate.formatTimeDuration(timerInstance.getElapsedTime(), MyPrefs.timerShowSecondsInTimer.getBoolean()));
 //            elapsedTimeButton.repaint(); //this is enough to update the value on the screen
@@ -2594,7 +2594,8 @@ class TimerStack {
             }
             
             return contentPane;
-        } else { //SMALL TIMER container
+        } else { 
+            //SMALL TIMER container
 //                Container swipeSmallContainer = new SwipeableContainer(nextTask, null, contentPane);
             boolean interruptTask = timedItem.isInteruptOrInstantTask();
             Button nextTask = new Button(cmdStopTimerAndGotoNextTaskOrExit); //, Icons.iconTimerNextTask);
@@ -2602,11 +2603,14 @@ class TimerStack {
             exitTimer.setText(""); //remove text in small timer
             nextTask.setText("");
 //                Container swipeable = new SwipeableContainer(BoxLayout.encloseX(nextTask,exitTimer), null, contentPane);
-            Container swipeable = new SwipeableContainer(nextTask, exitTimer, contentPane){
-                public void fireActionEvent(ActionEvent ev) {
-                    ev.consume();
+            SwipeableContainer swipeable = new SwipeableContainer(nextTask, exitTimer, contentPane){
+//                public void fireActionEvent(ActionEvent ev) {
+                public void actionPerformed(ActionEvent evt) {
+                    evt.consume();
                 }
             };
+            if (Config.TEST) swipeable.setName("SmallTimerSwipeable");
+//            swipeable.setGrabsPointerEvents(true);
             swipeable.setGrabsPointerEvents(true);
 //                contentPane.setUIID("SmallTimerContainer");
             swipeable.setUIID("SmallTimerContainer");

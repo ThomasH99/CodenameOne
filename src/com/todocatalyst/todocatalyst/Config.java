@@ -26,7 +26,7 @@ public abstract class Config {
     public static final boolean WORKTIME_TEST = false && !PRODUCTION_RELEASE; //
     public static final boolean WORKTIME_DETAILED_LOG = false && !PRODUCTION_RELEASE; //NB! these logs are very time-consuming!!
     public static final boolean ENABLELOGGING = true && !PRODUCTION_RELEASE;
-    public static final boolean PARSE_OFFLINE = false && !PRODUCTION_RELEASE;
+    public static final boolean PARSE_OFFLINE = true && !PRODUCTION_RELEASE;
     public static final boolean INLINE_WORKSHOP_TESTCASE = false && !PRODUCTION_RELEASE;
     public static final boolean REFRESH_EVEN_THOUGH_DONE_IN_BACK = false && !PRODUCTION_RELEASE; //true <=> assumes that when going back to a screen, refresh is done in back. This removes the opportunity to optimize by avoiding unnecessary refresh if going back from screens which don't alter the content and therefore don't require refresh
 }

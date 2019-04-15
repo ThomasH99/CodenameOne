@@ -121,7 +121,8 @@ public class MyDate extends Date {
      */
     public MyDate() {
 //        timeWithFlags = MyDate.getNow();
-        setTime(MyDate.getNow()); //set date
+//        setTime(MyDate.getNow()); //set date
+        setTime(MyDate.currentTimeMillis()); //set date
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1471,10 +1472,10 @@ public class MyDate extends Date {
     }
 
     static public String formatDateSmart(Date date) {
-        long now = System.currentTimeMillis();
+        long now = MyDate.currentTimeMillis();
         long diff = date.getTime() - now;
-                Date startOfToday = MyDate.getStartOfDay(new Date());
-                Date startOfYesterday = MyDate.getStartOfDay(new Date(startOfToday.getTime() - MyDate.DAY_IN_MILLISECONDS));
+        Date startOfToday = MyDate.getStartOfDay(new Date());
+        Date startOfYesterday = MyDate.getStartOfDay(new Date(startOfToday.getTime() - MyDate.DAY_IN_MILLISECONDS));
         Date startOfTomorrow = new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS);
 
 //        long dateTime = date.getTime();
@@ -1487,22 +1488,22 @@ public class MyDate extends Date {
 //                diff = -diff; //else use same distance from today to determine formatting??
 //            }
 //        }
-        if (date.getTime()<startOfToday.getTime()&&date.getTime()>=startOfYesterday.getTime())
-                return "Yesterday";
+        if (date.getTime() < startOfToday.getTime() && date.getTime() >= startOfYesterday.getTime())
+            return "Yesterday";
         //within today(before midnight/*next 24h*?/till 5 in the morning for night owls?!): "13h14" / "1h14am"
 //        if (dateTime<=MyDate.getEndOfDay(new Date(dateTime+MyDate.DAY_IN_MILLISECONDS)).getTime())
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS) {
-        if (date.getTime()>=startOfToday.getTime()&&date.getTime()<startOfTomorrow.getTime()) {
+        if (date.getTime() >= startOfToday.getTime() && date.getTime() < startOfTomorrow.getTime()) {
             return new SimpleDateFormat("HH'h'mm").format(date);
         }
         //within next 7 days: "Mon13h"
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS * 7) {
-        if (date.getTime()<startOfToday.getTime()+MyDate.DAY_IN_MILLISECONDS * 7) {
+        if (date.getTime() < startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * 7) {
             return new SimpleDateFormat("EEEHH'h'mm").format(date);
         }
         //within next 365 days: "Jun11"
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS * 365) {
-        if (date.getTime()<startOfToday.getTime()+MyDate.DAY_IN_MILLISECONDS * 365) {
+        if (date.getTime() < startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * 365) {
             return new SimpleDateFormat("MMMdd").format(date);
         }
         //beyond 365 days: "Jun'18"
@@ -1720,28 +1721,27 @@ public class MyDate extends Date {
     static String formatDurationStd(long hoursMinutesInMilliSeconds, boolean showSeconds) {
         StringBuilder s = new StringBuilder("");
         int hours = (int) hoursMinutesInMilliSeconds / MyDate.HOUR_IN_MILISECONDS;//3600000;
-    
+
         long restAfterHours = (int) hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS;
         int minutes = (int) restAfterHours / MyDate.MINUTE_IN_MILLISECONDS; //60000;
-     
+
         int restAfterMinutes = (int) hoursMinutesInMilliSeconds % MyDate.MINUTE_IN_MILLISECONDS; //60000;
         int seconds = (int) restAfterMinutes / MyDate.SECOND_IN_MILLISECONDS; //60000;
 
         s.append(hours).append(':');
         if (minutes >= 10) s.append(minutes);
         else s.append('0').append(minutes);
-        if (showSeconds){
+        if (showSeconds) {
             s.append(':');
             if (seconds >= 10) s.append(seconds);
             else s.append('0').append(seconds);
         }
         return s.toString();
     }
-    
+
     static String formatDurationStd(long hoursMinutesInMilliSeconds) {
         return formatDurationStd(hoursMinutesInMilliSeconds, false);
     }
-   
 
     /**
     for duration for short display, eg 1h, 2h30, 17m, 3m. Will not show seconds. Returns empty string for 0 duration
@@ -1803,6 +1803,25 @@ public class MyDate extends Date {
      */
     static long getNow() {
         return System.currentTimeMillis();
+    }
+
+    private static long forceCurrentTime = 0;
+
+    static long currentTimeMillis() {
+//        if (forceCurrentTime!=0)
+        return System.currentTimeMillis() + forceCurrentTime;
+    }
+
+    static void setCurrentTime(long forcedTime) {
+        forceCurrentTime = forcedTime - System.currentTimeMillis();
+    }
+
+    static void resetCurrentTime() {
+        forceCurrentTime = 0;
+    }
+
+    static long getCurrentTimeShift() {
+        return forceCurrentTime;
     }
 
     /**

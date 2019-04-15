@@ -13,6 +13,7 @@ import com.codename1.ui.Button;
 import com.codename1.ui.Label;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
 import java.util.HashSet;
 import java.util.List;
@@ -145,9 +146,9 @@ public class ScreenListOfCategories extends MyForm {
             new ScreenCategoryProperties(category, previousForm, () -> {
                 if (category.hasSaveableData()) { //UI: do nothing for an empty category, allows user to add category and immediately return if regrests or just pushed wrong button
                     category.setOwner(categoryOwnerList); //TODO should store ordered list of categories
-                    DAO.getInstance().save(category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    DAO.getInstance().saveInBackground((ParseObject)category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
                     categoryOwnerList.addItemAtIndex(category, 0);
-                    DAO.getInstance().save(categoryOwnerList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
+                    DAO.getInstance().saveInBackground((ParseObject)categoryOwnerList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
 //                        previousForm.revalidate(); //refresh list to show new items(??)
                     refreshOnItemEdits.launchAction();
                 }
@@ -405,7 +406,7 @@ public class ScreenListOfCategories extends MyForm {
                 ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, swipCont));
                 if (false) { // I don't think this makes any sense, all edits to items within the category should be updated directly (eg Item.softdelete should remove it from category, edit Item to remove the category should also update/save the category, ...)
                     category.setList(itemsInCategory.getListFull()); //should probably be full, to check if re-activating this code
-                    DAO.getInstance().save(category);
+                    DAO.getInstance().saveInBackground((ParseObject)category);
                 }
 //                    refreshAfterEdit();
                 refreshOnItemEdits.launchAction(); //refresh when items have been edited

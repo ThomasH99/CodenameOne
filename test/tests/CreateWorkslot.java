@@ -1,0 +1,87 @@
+package tests;
+
+import com.codename1.testing.AbstractTest;
+
+import com.codename1.ui.Display;
+import com.todocatalyst.todocatalyst.TodoCatalystParse;
+
+public class CreateWorkslot extends AbstractTest {
+    public boolean runTest() throws Exception {
+        waitForFormTitle("Work time for Future Workslots");
+        assertEqual(getToolbarCommands().length, 5);
+        executeToolbarCommandAtOffset(2);
+        waitForFormTitle("Workslot");
+        Display.getInstance().getCurrent().setName("Form_1");
+        pointerPress(0.43678162f, 0.47f, new int[]{0, 1, 2, 0});
+        waitFor(69);
+        pointerRelease(0.43678162f, 0.47f, new int[]{0, 1, 2, 0});
+        ensureVisible(new int[]{6, 0, 1});
+        ensureVisible(new int[]{6, 0, 1});
+        ensureVisible(new int[]{6, 0, 1});
+        clickButtonByLabel("Done");
+        pointerPress(0.3768116f, 0.63f, new int[]{1, 1, 2, 0});
+        waitFor(90);
+        pointerRelease(0.3768116f, 0.63f, new int[]{1, 1, 2, 0});
+        clickButtonByLabel("Done");
+        assertEqual(getToolbarCommands().length, 4);
+        executeToolbarCommandAtOffset(0);
+        waitForFormTitle("Work time for Future Workslots");
+        Display.getInstance().getCurrent().setName("Form_2");
+        assertLabel("");
+        assertLabel("Start by 05/04/2019");
+        assertLabel(null);
+        assertLabel("Future Workslots");
+        assertLabel("05/04/2019 14:00");
+        assertLabel(" 2h");
+        assertLabel("");
+        assertLabel("Start by 09/04/2019");
+        assertLabel(null);
+        assertLabel("x009");
+        assertLabel("09/04/2019 22:00");
+        assertLabel(" 2h");
+        assertLabel("");
+        assertLabel("Start by 13/04/2019");
+        assertLabel(null);
+        assertLabel("testcat2");
+        assertLabel("13/04/2019 15:00");
+        assertLabel(" 2h");
+        assertLabel("[5]");
+        assertLabel("");
+        assertLabel("Start by 16/04/2019");
+        assertLabel(null);
+        assertLabel("x009");
+        assertLabel("16/04/2019 19:00");
+        assertLabel(" 1h");
+        assertLabel("[4]");
+        assertLabel(null);
+        assertLabel("x009");
+        assertLabel("16/04/2019 22:00");
+        assertLabel(" 2h*");
+        assertLabel(null);
+        assertLabel("x009");
+        assertLabel("16/04/2019 22:00");
+        assertLabel(" 2h*");
+        assertLabel("");
+        assertLabel("Start by 10/06/2019");
+        assertLabel(null);
+        assertLabel("876kuhk");
+        assertLabel("10/06/2019 15:00");
+        assertLabel(" 1h");
+        assertLabel("[3]");
+        assertLabel("");
+        assertLabel("Start by 27/06/2019");
+        assertLabel(null);
+        assertLabel("x009");
+        assertLabel("27/06/2019 21:00");
+        assertLabel(" 2h");
+        assertLabel("[1]");
+        assertLabel("");
+        assertLabel("Start by 16/07/2019");
+        assertLabel(null);
+        assertLabel("876kuhk");
+        assertLabel("16/07/2019 15:00");
+        assertLabel(" 1h");
+        screenshotTest("create workslot_1");
+        return true;
+    }
+}

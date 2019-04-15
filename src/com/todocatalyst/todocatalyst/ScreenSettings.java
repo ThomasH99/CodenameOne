@@ -58,31 +58,13 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //            content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
 //            ;
 //        }
-        addSettingBoolean(content, parseIdMap2, MyPrefs.showDebugInfoInLabelsEtc);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.cacheLoadChangedElementsOnAppStart);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewItemsInStartOfLists);
-        addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 120, 1);
         addSettingInt(content, parseIdMap2, MyPrefs.overdueLogInterval, 0, 365, 1);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice);
-        addSettingInt(content, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime);
-        addSettingInt(content, parseIdMap2, MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation, 0, 10, 1);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectProperties);
-        
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectChallenge);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerStarredProperties);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectPriority);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDreadFun);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectImportance);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectUrgency);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDueDate);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStartByDate);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectWaitingTillDate);
-
+//        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice);
+//        addSettingInt(content, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);
+//        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);
+//        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);
+//        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime);
+    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
 //

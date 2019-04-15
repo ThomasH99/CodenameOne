@@ -25,15 +25,16 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     private boolean showAlsoExpiredWorkSlotsFOR_TESTING_ONLY;
     private ItemAndListCommonInterface owner;
 
-    public WorkSlotList() {
-        super();
-//        if (now==-1) 
-        now = System.currentTimeMillis(); //MyDate.MIN_DATE; //System.currentTimeMillis(); //for now, use a 'local' (object specific) value for now (should be global and coming from Screen/UI
-    }
-
+//    public WorkSlotList() {
+//        super();
+////        if (now==-1) 
+//        now = System.currentTimeMillis(); //MyDate.MIN_DATE; //System.currentTimeMillis(); //for now, use a 'local' (object specific) value for now (should be global and coming from Screen/UI
+//        updateRepeatingWorkSlots();
+//    }
 //    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted, boolean removeExpiredWorkSlots) {
     public WorkSlotList(ItemAndListCommonInterface owner, List<WorkSlot> list, boolean alreadySorted) {
-        this();
+//        this();
+//        super();
 //<editor-fold defaultstate="collapsed" desc="comment">
         //http://stackoverflow.com/questions/8441664/how-do-i-copy-the-contents-of-one-arraylist-into-another
         //http://stackoverflow.com/questions/17036405/how-to-copy-a-array-into-another-array-that-already-has-data-in-it
@@ -71,6 +72,10 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
             sortWorkSlotList();
 //            Work.sortWorkSlotList(sortedWorkslotList);
         }
+//        now = System.currentTimeMillis(); //MyDate.MIN_DATE; //System.currentTimeMillis(); //for now, use a 'local' (object specific) value for now (should be global and coming from Screen/UI
+//        updateRepeatingWorkSlots();
+        setNow(MyDate.currentTimeMillis()); //MyDate.MIN_DATE; //System.currentTimeMillis(); //for now, use a 'local' (object specific) value for now (should be global and coming from Screen/UI
+
     }
 
     public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
@@ -81,7 +86,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        this(list, alreadySorted, true);
 //    }
     public WorkSlotList(List<WorkSlot> list) {
-        this(null,list, false);
+        this(null, list, false);
     }
 
     public WorkSlotList(ItemAndListCommonInterface owner, List<WorkSlot> list) {
@@ -94,6 +99,12 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 
     public ItemAndListCommonInterface getOwner() {
         return owner;
+    }
+
+    public void setNow(long now) {
+        this.now = now;
+        if (false)
+            updateRepeatingWorkSlots();
     }
 
     public long getNow() {
@@ -156,10 +167,23 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //
 //</editor-fold>
     /**
-    return valid (future) workslots, meaning they end *after* now
+    update repeating workSlots, done every time the time ('now') changes. 
     @return 
      */
-    public List<WorkSlot> getWorkSlots(long now) {
+    private boolean updateRepeatingWorkSlots() {
+        RepeatRuleParseObject repeatRule;
+        boolean updated = false;
+        for (WorkSlot ws : sortedWorkslotList) { //test workslots from the end of list, more efficient if many expired workslots are present
+//                WorkSlot ws = sortedWorkslotList.get(i);
+            if ((repeatRule = ws.getRepeatRule()) != null) {
+                if (repeatRule.updateWorkslots(ws))
+                    updated = true;
+            }
+        }
+        return updated;
+    }
+
+    private List<WorkSlot> getWorkSlots(long now) {
         //optimization: cache the filtered list (result) and only check if some of the earlier slots have become invalid and should be removed, becomes interesting with many past workslots
         if (showAlsoExpiredWorkSlotsFOR_TESTING_ONLY) {
 //            now = MyDate.MIN_DATE;
@@ -169,18 +193,31 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
             List<WorkSlot> result = new ArrayList<>();
 //            for (WorkSlot ws : sortedWorkslotList) {
             int size = sortedWorkslotList.size();
+            //NB! workSlot liist can contain both individual workslots and (many) repeats of same workSlot -> 
+
             for (int i = size - 1; i >= 0; i--) { //test workslots from the end of list, more efficient if many expired workslots are present
                 WorkSlot ws = sortedWorkslotList.get(i);
                 if (ws.getEndTimeD().getTime() > now) {
                     result.add(0, ws); //insert at the head of the list to keep same order as sortedWorkslots
+                } else { //check if expired, has repeatRule and needs updated (and not updated on server yet) - to avoid delay from server: create new instances and return them, while in background check exist on server??
+                    RepeatRuleParseObject repeatRule;
+                    if ((repeatRule = ws.getRepeatRule()) != null) {
+                        repeatRule.updateWorkslots(ws);
+                    }
                 }
             }
             return result;
         }
+//        return null;
     }
 
+    /**
+    return valid (future) workslots, meaning they end *after* the 'now' value set for this WorkSlotList
+    @return 
+     */
     public List<WorkSlot> getWorkSlots() {
-        return getWorkSlots(getNow());
+//        return getWorkSlots(getNow());
+        return getWorkSlots(now);
     }
 
     public List<WorkSlot> getWorkSlotListFull() {
@@ -232,7 +269,8 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         long sum = 0;
         for (WorkSlot workSlot : getWorkSlots()) { //getWorkSlots() <=> only sum up workslots with future worktime
 //            sum += workSlot.getDurationAdjusted(getNow(), MyDate.MAX_DATE);
-            sum += workSlot.getDurationAdjusted(getNow()); //, MyDate.MAX_DATE);
+//            sum += workSlot.getDurationAdjusted(getNow()); //, MyDate.MAX_DATE);
+            sum += workSlot.getDurationAdjusted(now); //, MyDate.MAX_DATE);
         }
         return sum;
     }
@@ -320,7 +358,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        if (sortOnEndTime) {
 //            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareLong(i1.getEndTime(), i2.getEndTime()));
 //        } else 
-        {
+        if (sortedWorkslotList != null) {
 //            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
             Collections.sort(sortedWorkslotList,
                     //                    (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
@@ -528,7 +566,8 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
      */
     public boolean hasComingWorkSlots() {
 //        return hasComingWorkSlots(System.currentTimeMillis());
-        return hasComingWorkSlots(getNow());
+//        return hasComingWorkSlots(getNow());
+        return hasComingWorkSlots(now);
     }
 
     public boolean hasComingWorkSlots(long now) {

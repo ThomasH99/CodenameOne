@@ -174,7 +174,8 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
     private void initAndReset() {
         workTimeCache = null;
 //          WorkSlotList workSlotList = this.ownerOrCategory.getWorkSlotListN();
-        this.workTimeSlices = new WorkTimeSlices(this.ownerItemItemListOrCategory.getWorkSlotListN()); //workSlotList != null ? new WorkTimeSlices(this.ownerOrCategory.getWorkSlotListN()) : null;
+WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
+        this.workTimeSlices = new WorkTimeSlices(workSlots); //workSlotList != null ? new WorkTimeSlices(this.ownerOrCategory.getWorkSlotListN()) : null;
 //        this.itemsSortedFiltered = (List<ItemAndListCommonInterface>) this.ownerOrCategory.getList();
         this.itemsSortedFiltered = (List<Item>) this.ownerItemItemListOrCategory.getList();
 
@@ -182,7 +183,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         long requiredWorkTime = this.ownerItemItemListOrCategory.getRemaining(); //calculate how much time is needed from all subtasks
 //        long availWorktime = getAvailableTime();
         long availWorktime = workTimeSlices.getAvailableTime();
-        if (requiredWorkTime > availWorktime) { //if need additional workTime
+        if (requiredWorkTime > availWorktime||workSlots==null) { //if need additional workTime, ==null to get even a zero-slice for zero-duration tasks
             requiredWorkTime -= availWorktime; //reduce to needed additional workTime
             List<ItemAndListCommonInterface> potentialProviders = this.ownerItemItemListOrCategory.getOtherPotentialWorkTimeProvidersInPrioOrderN();
             if (potentialProviders != null) {
@@ -224,8 +225,9 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
     public String toString() {
         String sep = "";
         String sliceStr = "";
-        if (workTimeCache != null) for (WorkTimeSlices slice : workTimeCache.values()) {
-                sliceStr += sep + slice.toString();
+        if (workTimeCache != null)
+            for (WorkTimeSlices slice : workTimeCache.values()) {
+                sliceStr += sep + (slice == null ? "<null>" : slice.toString());
             }
         return "WorkTimeAllocator for:"
                 + (ownerItemItemListOrCategory != null ? (ownerItemItemListOrCategory.getText()) : "NONE??")
@@ -638,11 +640,12 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
     WorkTimeSlices getAllocatedWorkTimeN(Item item) {
         if (workTimeCache == null) {
             workTimeCache = new HashMap(itemsSortedFiltered.size() + 1); //pre-allocate one for each item, +1 for the item itself in case it's an Item
+            //allocate to subtasks
             for (Item itm : itemsSortedFiltered) {
                 long eltDuration = itm.getWorkTimeRequiredFromProvider(ownerItemItemListOrCategory);
-                if (itm.isDone()) {
-                    workTimeCache.put(itm, null); //null to indicate a Done task with no workTime, contrary to zero-duration tasks which get a slice w a starttime
-                } else {
+                if (!itm.isDone()) {
+//                    workTimeCache.put(itm, null); //null to indicate a Done task with no workTime, contrary to zero-duration tasks which get a slice w a starttime //NO, no point in doing this when count/size of cache no longer used
+//                } else {
                     WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(eltDuration, itm); //get workTime in order, slices keep track of up to where slices are already reserved
                     workTimeCache.put(itm, newWorkTS); //added by increasing index in itemsSortedFiltered
                 }
@@ -650,13 +653,14 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
             //UII: if the project task itself has its own Remaining, allocate that last (after all its subtasks have had their time allocated)
             //TODO add a setting to allocate to project task *first*? 
 //            if (item == ownerItemItemListOrCategory) {// && ownerOrCategory instanceof Item) {
+            //allocate to project task itself, in case it requires its own workTime
             if (ownerItemItemListOrCategory instanceof Item) {
                 Item itemOwner = (Item) ownerItemItemListOrCategory;
                 boolean notAProject = !itemOwner.isProject();
                 long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(notAProject); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
-                if (remainingPrjTask > 0 ||notAProject) {
+                if (remainingPrjTask > 0 || notAProject) {
                     WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerItemItemListOrCategory);
-                    workTimeCache.put(itemOwner, newWorkTS); //add the 
+                    if (newWorkTS!=null) workTimeCache.put(itemOwner, newWorkTS); //add the 
                 }
             }
 //            }

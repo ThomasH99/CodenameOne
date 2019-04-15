@@ -11,6 +11,7 @@ import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
+import com.parse4cn1.ParseObject;
 import java.util.List;
 
 /**
@@ -177,10 +178,10 @@ public class ScreenRepairData extends MyForm {
                 List<ItemList> itemLists = (List<ItemList>) DAO.getInstance().getAllItemListsFromParse();
                 for (ItemList itemList : itemLists) {
                     itemList.setOwner(ItemListList.getInstance());
-                    DAO.getInstance().save(itemList);
+                    DAO.getInstance().saveInBackground((ParseObject)itemList);
                 }
                 ItemListList.getInstance().setList(itemLists);
-                DAO.getInstance().save(ItemListList.getInstance());
+                DAO.getInstance().saveInBackground((ParseObject)ItemListList.getInstance());
             }
         }));
 

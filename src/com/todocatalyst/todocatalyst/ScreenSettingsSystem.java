@@ -19,15 +19,15 @@ import com.codename1.ui.Container;
  *
  * @author Thomas
  */
-public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
+public class ScreenSettingsSystem extends ScreenSettingsCommon {
     
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 
-    ScreenSettingsListOfItems(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
+    ScreenSettingsSystem(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
           super(mainScreen, doneAction);
-          setUniqueFormId("ScreenListOfItemsSettings");
+          setUniqueFormId("ScreenItemSettings");
   }
 
     /**
@@ -36,8 +36,8 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
-//        cont.setScrollableY(true);
-              addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewItemsInStartOfLists);
-  
+        addSettingBoolean(content, parseIdMap2, MyPrefs.showDebugInfoInLabelsEtc);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.cacheLoadChangedElementsOnAppStart);
+
     }
 }

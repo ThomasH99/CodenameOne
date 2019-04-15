@@ -20,23 +20,43 @@ import com.codename1.ui.Container;
  * @author Thomas
  */
 public class ScreenSettingsItem extends ScreenSettingsCommon {
-    
+
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-
-
     ScreenSettingsItem(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
-          super(mainScreen, doneAction);
-          setUniqueFormId("ScreenItemSettings");
-  }
+        super(mainScreen, doneAction);
+        setUniqueFormId("ScreenItemSettings");
+    }
 
     /**
      * This method shows the main user interface of the app
      *
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
-    protected void buildContentPane(Container cont) {
+    protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
-        addSettingInt(cont, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes,0,60,1);
+//        addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 60, 1);
+        addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 120, 1);
+
+        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);
+
+
+        addSettingInt(content, parseIdMap2, MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation, 0, 10, 1);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress);
+
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectProperties);
+        //TODO!!! only show below settings when MyPrefs.itemInheritOwnerProjectProperties is true or just set true
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectChallenge);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerStarredProperties);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectPriority);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDreadFun);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectImportance);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectUrgency);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDueDate);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStartByDate);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectWaitingTillDate);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues);
+
     }
 }

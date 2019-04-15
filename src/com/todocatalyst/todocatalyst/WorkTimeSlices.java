@@ -96,10 +96,12 @@ public class WorkTimeSlices {
 //        if (workSlots != null && workSlots.size() > 0) {
 //        if (workSlotSlicesSortedOnStartTime != null && workSlotSlicesSortedOnStartTime.size() > 0) {
         if (workSlotSlices == null || workSlotSlices.size() == 0)
-            return;
-//        workSlotSlicesSortedOnStartTime = new ArrayList();
-//        this.workSlotSlicesSortedOnStartTime = workSlotSlices;
-        this.workSlotSlicesInPriorityOrder = workSlotSlices;
+            //            return;
+            this.workSlotSlicesInPriorityOrder = new ArrayList<>();
+        else
+            //        workSlotSlicesSortedOnStartTime = new ArrayList();
+            //        this.workSlotSlicesSortedOnStartTime = workSlotSlices;
+            this.workSlotSlicesInPriorityOrder = workSlotSlices;
 //        sortWorkSlotSlices();
 //        if (workSlotSlicesSortedOnStartTime != null)
 //        for (WorkSlotSlice workSlotSlice : workSlotSlicesSortedOnStartTime) {
@@ -513,16 +515,16 @@ public class WorkTimeSlices {
 //</editor-fold>
     WorkTimeSlices getWorkTime(long remainingDuration, ItemAndListCommonInterface allocatedTo) {
         //special case if requestedDuration is zero: 
-        this.allocatedTo = allocatedTo;
-        long needed = remainingDuration;
 //        int lastIndex = 0;
 //        long lastEndTime = 0; //the last dateTime that was allocated
 //        List<WorkSlotSlice> workSlotSlicesSortedByPriority = new ArrayList();
-        List<WorkSlotSlice> newWorkSlotSlices = new ArrayList<WorkSlotSlice>();
 //        if (workSlotSlicesSortedByPriority == null || workSlotSlicesSortedByPriority.size() == 0)
         if (workSlotSlicesInPriorityOrder == null || workSlotSlicesInPriorityOrder.size() == 0
                 || lastIndex >= workSlotSlicesInPriorityOrder.size())
             return null;
+        this.allocatedTo = allocatedTo;
+        long needed = remainingDuration;
+        List<WorkSlotSlice> newWorkSlotSlices = new ArrayList<WorkSlotSlice>();
         //         while (needed>0 && lastIndex<workSlotSlicesSortedByPriority.size()) {
         do { //always iterate at least once to allocate an 'empty' slice w startTime to 0-duration tasks (e.g. no estimate)
             WorkSlotSlice workSlice = workSlotSlicesInPriorityOrder.get(lastIndex);

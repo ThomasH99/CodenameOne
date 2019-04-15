@@ -50,6 +50,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     final static String DURATION_HELP = "Define the duration of the " + WORKSLOT;
     final static String START_TIME_HELP = "Define when the " + WORKSLOT + " starts"; //"Start time";
     final static String REPEAT_DEFINITION_HELP = Item.REPEAT_RULE_HELP; //"Repeat";
+    final static String SOURCE = Item.SOURCE; //Template or Task that this one is a copy of, "Task copy of"
+    final static String SOURCE_HELP = "Shows the " + WORKSLOT + " was copied from. E.g. for repeating or copy/paste.?"; //Template or Task that this one is a copy of, "Task copy of"
 
     final static int FIELD_DESCRIPTION = 0;
     final static int FIELD_DURATION = 1;
@@ -441,7 +443,22 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         setRepeatRuleNoUpdate(repeatRule);
     }
 
-    public final void setRepeatRule(RepeatRuleParseObject repeatRule) {
+    public final void setRepeatRule(RepeatRuleParseObject newRepeatRule) {
+        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
+        if (newRepeatRule != null) {
+            setRepeatRuleNoUpdate(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+            if (oldRepeatRule == null) {
+                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+            } else {
+                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+            }
+        } else if (oldRepeatRule != null) { //if the user deleted the repeatRule, /* repeatRule == null && */ 
+            getRepeatRule().deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this);
+            setRepeatRuleNoUpdate(newRepeatRule);
+        } //else both old and new RR are null, do nothing
+    }
+
+    public final void setRepeatRuleOLD(RepeatRuleParseObject repeatRule) {
         //TODO!!!!! copy code from Item.setRepeatRule()
 //        if (this.repeatRule != repeatRule) {
 //            this.repeatRule = repeatRule;
@@ -807,8 +824,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @Override
     public String toString() {
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
-        return "WS:"+MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS) 
-                + " " + getText() +"["+getObjectIdP()+"]"+ (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
+        return "WS:" + MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS)
+                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -857,7 +874,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      */
     public long getStartAdjustedXXX() {
 //        return getStartAdjusted(new Date().getTime());
-        return getStartAdjusted(System.currentTimeMillis());
+        return getStartAdjusted(MyDate.currentTimeMillis());
     }
 
     public long getStartAdjusted(long now) {
@@ -952,7 +969,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return end!=0L?end:start+duration;
 //        return start + duration;
 //        return new Date(getStartTimeD().getTime() + getDurationInMillis()); //unchanged, even as start is in the past, or consumedDuration>0
-         Date time = getDate(PARSE_END_TIME);
+        Date time = getDate(PARSE_END_TIME);
         return (time == null) ? new Date(0) : time; //TODO!!! is 'Date(0)' best undefined time?! Rather use MyDate.MAXDATE?!
 
     }
@@ -1044,12 +1061,12 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      */
     public long getDurationAdjustedXXX() {
 //        return getDurationAdjusted(new Date().getTime());
-        return getDurationAdjusted(System.currentTimeMillis());
+        return getDurationAdjusted(MyDate.currentTimeMillis());
     }
 
     public long getDurationAdjustedInMinutesXXX() {
 //        return getDurationAdjusted(new Date().getTime()) / MyDate.MINUTE_IN_MILLISECONDS;
-        return getDurationAdjusted(System.currentTimeMillis()) / MyDate.MINUTE_IN_MILLISECONDS;
+        return getDurationAdjusted(MyDate.currentTimeMillis()) / MyDate.MINUTE_IN_MILLISECONDS;
     }
 
     public long getDurationAdjustedInMinutesXXX(long now) {
@@ -1327,6 +1344,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public void delete() throws ParseException {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates. 
+    }
+
+    public void deleteXXX() throws ParseException {
         RepeatRuleParseObject myRepeatRule = getRepeatRule();
         if (myRepeatRule != null) {
 //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this, (ItemList) getOwner());
@@ -1398,7 +1419,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    public int compareTo(IComparable c, int compareOn) {
 //        throw new RuntimeException("Not supported yet.");
 //    }
-
 //    public String getComment() {
 //        String s = getString(PARSE_COMMENT);
 //        if (s == null) {
@@ -1443,10 +1463,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //</editor-fold>
     @Override
 //    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject) {
-    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface workSlotRepeatCopy) {
+    public ItemAndListCommonInterface insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface workSlotRepeatCopy) {
         ItemAndListCommonInterface owner = getOwner();
         owner.addWorkSlot((WorkSlot) workSlotRepeatCopy);
-        DAO.getInstance().saveInBackground((ParseObject) workSlotRepeatCopy);
+//        DAO.getInstance().saveInBackground((ParseObject) workSlotRepeatCopy);
+        return owner;
     }
 
     @Override
@@ -1804,12 +1825,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-
 //    @Override
 //    public WorkTimeAllocator getWorkTimeAllocatorN() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-
     @Override
     public void resetWorkTimeDefinition() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -1882,7 +1901,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     public void setWorkTimeAllocator(WorkTimeAllocator workTimeAllocator) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    public WorkTimeSlices  getAllocatedWorkTimeN() {
+
+    public WorkTimeSlices getAllocatedWorkTimeN() {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

@@ -720,6 +720,8 @@ public class ScreenRepair extends MyForm {
                 pinchForm.setLayout(BorderLayout.center());
                 pinchForm.setPinchInsertEnabled(false);
                 pinchForm.getContentPane().setName("ContentPane");
+                pinchForm.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
+                
                 Container cont = new Container(BoxLayout.y());
                 cont.setScrollableY(true);
                 cont.setName("Container.y");
@@ -785,6 +787,22 @@ public class ScreenRepair extends MyForm {
             hi.show();
         })));
 
+        content.add(new Button(MyCommand.create("Force current time", null, (e) -> {
+            MyForm fd = new MyForm("Set current time", ScreenRepair.this, ()->{});
+            fd.setLayout( BoxLayout.y());
+            fd.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e2) -> ScreenRepair.this.showBack()));
+            fd.add(new Label("Current shift:"));
+            fd.add(new Label(MyDate.formatDurationStd(MyDate.getCurrentTimeShift())));
+            fd.add(new Label("Current time:"));
+            MyDateAndTimePicker picker = new MyDateAndTimePicker(new Date(MyDate.currentTimeMillis()));
+            picker.addActionListener(evt->{MyDate.setCurrentTime(picker.getDate().getTime());fd.revalidateWithAnimationSafety();});
+//            fd.add(BoxLayout.encloseX(new Label("Current time:"), new Label())picker);
+            fd.add(picker);
+            Button reset = new Button(Command.create("Reset to normal time", null, (e3)->{MyDate.resetCurrentTime();fd.revalidateWithAnimationSafety();}));
+            fd.add(reset);
+            fd.show();
+        })));
+        
         content.add(new Button(MyCommand.create("Repair data menu", null, (e) -> {
             new ScreenRepairData(ScreenRepair.this).show();
         })));
@@ -834,11 +852,11 @@ public class ScreenRepair extends MyForm {
                             Date alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 14);
                             Item item = new Item("TestAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
                             item.setAlarmDate(alarm);
-                            DAO.getInstance().save(item);
+                            DAO.getInstance().saveInBackground(item);
                             alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 12);
                             item = new Item("TestWaitingAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
                             item.setWaitingAlarmDate(alarm);
-                            DAO.getInstance().save(item);
+                            DAO.getInstance().saveInBackground(item);
                         }
                         switch (3) {
                             case 1:
@@ -1125,8 +1143,9 @@ public class ScreenRepair extends MyForm {
                     ) {
                         RepeatRuleParseObject repeatRule = new RepeatRuleParseObject();
                         repeatRule.setSpecifiedStartDate(new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 48).getTime());
-                        new ScreenRepeatRule("test", repeatRule, new Item("taskX", 15, new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 24)), (MyForm) content.getComponentForm(), () -> {
-                        }, true).show();
+                        new ScreenRepeatRule("test", repeatRule, new Item("taskX", 15, new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 24)), 
+                                (MyForm) content.getComponentForm(), () -> {
+                        }, true, null, false).show();
                     }
                 }
                 ));

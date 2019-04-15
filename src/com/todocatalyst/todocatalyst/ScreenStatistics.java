@@ -124,7 +124,7 @@ public class ScreenStatistics extends MyForm {
     }
     
     private void reloadData() {
-        Date startDate = new Date(System.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
+        Date startDate = new Date(MyDate.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
         Date endDate = new Date();
 //        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
         workSlots = new WorkSlotList(DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted

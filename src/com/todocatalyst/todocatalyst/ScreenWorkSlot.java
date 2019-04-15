@@ -1,5 +1,6 @@
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.components.SpanLabel;
 import com.codename1.io.Storage;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
@@ -81,7 +82,7 @@ public class ScreenWorkSlot extends MyForm {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         buildContentPane(getContentPane());
-        restoreKeepPos();
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 
@@ -190,6 +191,14 @@ public class ScreenWorkSlot extends MyForm {
 //            previousForm.showBack(); //drop any changes
             showPreviousScreenOrDefault(true);
         });
+
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("WorkSlotSettings", "Settings", Icons.iconSettingsLabelStyle, (e) -> {
+            new ScreenSettingsWorkSlot(ScreenWorkSlot.this, () -> {
+                refreshAfterEdit();
+            }).show();
+        }
+        ));
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToSideMenu("New Task", icon, (e) -> {
 //            Log.p("Clicked");
@@ -244,7 +253,7 @@ public class ScreenWorkSlot extends MyForm {
             tl.setGrowHorizontally(true);
             content.setLayout(tl);
         }
-        long now = System.currentTimeMillis();
+        long now = MyDate.currentTimeMillis();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDateAndTimePicker startByDate = new MyDateAndTimePicker("<start work on this date>", parseIdMap2,
 //                () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()
@@ -315,7 +324,8 @@ public class ScreenWorkSlot extends MyForm {
 //        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> workSlot.getComment(), (s) -> workSlot.setComment(s));
 //        content.add(new Label("Description")).add(comment);
 //REPEAT RULE
-        locallyEditedRepeatRule = workSlot.getRepeatRule();
+        if (locallyEditedRepeatRule == null)
+            locallyEditedRepeatRule = workSlot.getRepeatRule();
 //        SpanButton repeatRuleButton = new SpanButton();
         WrapButton repeatRuleButton = new WrapButton();
 //        Command repeatRuleEditCmd = new Command("<click to set repeat>NOT SHOWN?!") {
@@ -336,15 +346,17 @@ public class ScreenWorkSlot extends MyForm {
             ASSERT.that(workSlot.getRepeatRule() == null || (repeatRuleCopyBeforeEdit.equals(locallyEditedRepeatRule) && locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)),
                     "problem in cloning repeatRule");
 
-            new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRule, workSlot, ScreenWorkSlot.this, () -> {
-                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
+            new ScreenRepeatRule(Item.REPEAT_RULE + " " + WorkSlot.WORKSLOT, locallyEditedRepeatRule, workSlot, ScreenWorkSlot.this, () -> {
+//                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
                 if (false) { //now done when exiting via parseIdMap2 below
                     workSlot.setRepeatRule(locallyEditedRepeatRule);
-                    DAO.getInstance().save(locallyEditedRepeatRule);
+                    DAO.getInstance().saveInBackground(locallyEditedRepeatRule);
                 }
 //                    repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
-                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-                repeatRuleButton.revalidate();
+                if (false) { //not currentlynecessary because whole ScreenWorkSlot is redrawn after editing the repeatRule
+                    repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
+                    repeatRuleButton.revalidate();
+                }
 //                }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
             }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
         }
@@ -355,7 +367,7 @@ public class ScreenWorkSlot extends MyForm {
 //            if (locallyEditedRepeatRule != null && !locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)) { //if rule was edited //NO need to test here, item.setRepeatRule() will check if the rule has changed
             if (locallyEditedRepeatRule != null && !locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit) //if rule was edited
                     && !(workSlot.getRepeatRule() != null && repeatRuleCopyBeforeEdit == null)) { //test if repeatRule exists but was not edited (repeatRuleCopyBeforeEdit==null if rule was not edited)
-                DAO.getInstance().save(locallyEditedRepeatRule); //save first to enable saving repeatInstances
+                DAO.getInstance().saveInBackground(locallyEditedRepeatRule); //save first to enable saving repeatInstances
                 workSlot.setRepeatRule(locallyEditedRepeatRule);  //TODO!! optimize and see if there's a way to check if rule was just opened in editor but not changed
 //                    repeatRuleButton.setText(getDefaultIfStrEmpty(item.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
 //                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
@@ -364,7 +376,8 @@ public class ScreenWorkSlot extends MyForm {
         });
 
         repeatRuleButton.setCommand(repeatRuleEditCmd);
-        repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule() != null ? workSlot.getRepeatRule().toString() : null, "")); //"<click to make task/project repeat>"
+//        repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule() != null ? workSlot.getRepeatRule().toString() : null, "")); //"<click to make task/project repeat>"
+        repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "")); //"<click to make task/project repeat>"
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -450,6 +463,23 @@ public class ScreenWorkSlot extends MyForm {
 
             Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+        }
+
+        //ORIGINAL SOURCE
+        if (workSlot.getSource() != null && MyPrefs.showSourceWorkSlotInEditScreens.getBoolean()) { //don't show unless defined
+            //TODO!! what happens if source is set to template or other item, then saved locally on app exit and THEN recreated via Replay???
+//            Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
+            WorkSlot workSlotSource = (WorkSlot) workSlot.getSource();
+            String text = workSlotSource.getText();
+            if (text == null || text.isEmpty())
+                text = MyDate.formatDateTimeNew(workSlotSource.getStartTimeD())
+                        + " " + MyDate.formatDateTimeNew(workSlotSource.getDurationInMillis())
+                        + " [" + workSlotSource.getObjectIdP() + "]";
+            SpanLabel sourceLabel = new SpanLabel(text, "LabelFixed");
+//            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
         }
 
         setCheckOnExit(() -> checkWorkSlotIsValidForSaving(ownerObj, workSlot, startByDate.getDate(), duration.getDuration())); //TODO: when owner can be edited, use new/edited one

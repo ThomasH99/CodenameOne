@@ -63,12 +63,10 @@ public class TemplateList<T> extends ItemList {
 ////        }
 //        super.getListFull();
 //    }
-
 //    @Override
 //    public List<Item> getList() {
 //        return super.getList();
 //    }
-
 //    @Override
 //    public void setList(List templatesList) {
 ////        if (has(PARSE_ITEMLIST_LIST) || itemListList != null) {
@@ -80,16 +78,20 @@ public class TemplateList<T> extends ItemList {
 //            remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
 //        }
 //    }
-
-    public synchronized void reloadFromParse() {
+    public synchronized boolean reloadFromParse(boolean forceLoadFromParse, Date startDate, Date endDate) {
 //        TemplateList t= INSTANCE;
 //        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
 //        return t;
-        TemplateList temp = DAO.getInstance().getTemplateList();
-        INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
-        for (Object elt : temp.getListFull()) {
-            INSTANCE.addItem((ItemAndListCommonInterface)elt);
+        TemplateList temp = DAO.getInstance().getTemplateList(forceLoadFromParse, startDate, endDate);
+        if (temp != null) {
+            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+            for (Object elt : temp.getListFull()) {
+                INSTANCE.addItem((ItemAndListCommonInterface) elt);
+            }
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(this); //
+            return true;
         }
+        return false;
     }
 
     @Override

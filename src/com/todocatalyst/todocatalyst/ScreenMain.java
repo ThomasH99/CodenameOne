@@ -105,7 +105,7 @@ public class ScreenMain extends MyForm {
     }
 
     public void addCommandsToToolbar(Toolbar toolbar, Container cont) { //, Resources theme) {
-        toolbar.addCommandToLeftBar(newItemSaveToInboxCmd());
+        toolbar.addCommandToRightBar(newItemSaveToInboxCmd());
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
         MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconAlarmSetLabelStyle/*FontImage.create(" \ue838 ", iconStyle)*/,
@@ -234,7 +234,7 @@ public class ScreenMain extends MyForm {
 //            new ScreenListOfWorkSlots("", DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), null, ScreenMain.this, (i) -> {
 //if (true){
             ItemList tempWorkSlotOwnerList = new ItemList("Future "+WorkSlot.WORKSLOT+"s", true);
-            tempWorkSlotOwnerList.setWorkSlotList(new WorkSlotList(tempWorkSlotOwnerList, DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis()))));
+            tempWorkSlotOwnerList.setWorkSlotList(new WorkSlotList(tempWorkSlotOwnerList, DAO.getInstance().getWorkSlots(new Date(MyDate.currentTimeMillis()))));
 //} else{
 //WorkSlotList tempWorkSlotList = new WorkSlotList(DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())));
 //}

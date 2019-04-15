@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.parse4cn1.ParseObject;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -111,7 +112,7 @@ public class MultipleSelection {
                 for (Category cat : itm.getCategories()) {
                     prevCategories.add(cat);
                     cat.addItemAtIndex(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : cat.getSize());
-                    DAO.getInstance().save(cat);
+                    DAO.getInstance().saveInBackground((ParseObject)cat);
                 }
                 item.setCategories(prevCategories);
             }
@@ -186,7 +187,7 @@ public class MultipleSelection {
             for (ItemOperation operation : operations) {
                 operation.execute(item);
             }
-            DAO.getInstance().save(item);
+            DAO.getInstance().saveInBackground(item);
         }
     }
 
