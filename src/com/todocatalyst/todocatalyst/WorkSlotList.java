@@ -103,8 +103,8 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 
     public void setNow(long now) {
         this.now = now;
-        if (false)
-            updateRepeatingWorkSlots();
+//        if (false)
+//            updateRepeatingWorkSlots();
     }
 
     public long getNow() {
@@ -170,19 +170,18 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     update repeating workSlots, done every time the time ('now') changes. 
     @return 
      */
-    private boolean updateRepeatingWorkSlots() {
-        RepeatRuleParseObject repeatRule;
-        boolean updated = false;
-        for (WorkSlot ws : sortedWorkslotList) { //test workslots from the end of list, more efficient if many expired workslots are present
-//                WorkSlot ws = sortedWorkslotList.get(i);
-            if ((repeatRule = ws.getRepeatRule()) != null) {
-                if (repeatRule.updateWorkslots(ws))
-                    updated = true;
-            }
-        }
-        return updated;
-    }
-
+//    private boolean updateRepeatingWorkSlots() {
+//        RepeatRuleParseObject repeatRule;
+//        boolean updated = false;
+//        for (WorkSlot ws : sortedWorkslotList) { //test workslots from the end of list, more efficient if many expired workslots are present
+////                WorkSlot ws = sortedWorkslotList.get(i);
+//            if ((repeatRule = ws.getRepeatRule()) != null) {
+//                if (repeatRule.updateWorkslots(ws))
+//                    updated = true;
+//            }
+//        }
+//        return updated;
+//    }
     private List<WorkSlot> getWorkSlots(long now) {
         //optimization: cache the filtered list (result) and only check if some of the earlier slots have become invalid and should be removed, becomes interesting with many past workslots
         if (showAlsoExpiredWorkSlotsFOR_TESTING_ONLY) {
@@ -365,7 +364,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
                     getMultipleComparator(new Comparator[]{
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()), //longest slots first
-                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP().compareTo(i2.getObjectIdP()), //sort equal workslots on objectId to make it deterministic
+                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP() == null
+                ? (i2.getObjectIdP() == null ? 0 : -1)
+                : (i2.getObjectIdP() == null ? 1 : i1.getObjectIdP().compareTo(i2.getObjectIdP())), //sort equal workslots on objectId to make it deterministic
             }));
         }
 //        return sortedWorkslotList;

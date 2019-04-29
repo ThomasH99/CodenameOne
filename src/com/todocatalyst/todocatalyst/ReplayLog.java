@@ -7,6 +7,7 @@ package com.todocatalyst.todocatalyst;
 
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
+import com.codename1.ui.Display;
 import com.codename1.ui.events.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ public class ReplayLog {
 //    private boolean storeAllCommandsForScreen = true; //turn on/off ???
     private MyReplayCommand replayCommandToReplay = null; //stores the command for the current screen that should be replayed
     private boolean replayingInProgress = false; //true while replaying commands on startup, used to avoid ??
+    private boolean justFinishedReplaying = false; //true while replaying commands on startup, used to avoid ??
 //    private boolean firstTime = true;
     private String screenName;
 
@@ -72,9 +74,8 @@ public class ReplayLog {
 //    void deleteAllReplayCommandsFromPreviousScreen() {
 //        deleteAllReplayCommandsFromPreviousScreen(null);
 //    }
-
 //    void deleteAllReplayCommandsFromPreviousScreen(String screenName) {
-     void clearSetOfScreenCommands() {
+    void clearSetOfScreenCommands() {
 //        if (storeAllCommandsForScreen) {
 //        this.screenName = screenName;
         Map<String, MyReplayCommand> newCmds = new HashMap<>();
@@ -85,8 +86,8 @@ public class ReplayLog {
         }
         screenCommands = newCmds;
     }
-    
-        /**
+
+    /**
      * ********************************************************
      */
     /**
@@ -97,8 +98,6 @@ public class ReplayLog {
 ////        screenCommands.clear();
 //        deleteAllReplayCommandsFromPreviousScreen();
 //    }
-
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void init() {
 ////        if (logList == null && Storage.getInstance().exists(REPLAY_LOG_FILE_NAME)) {
@@ -106,7 +105,6 @@ public class ReplayLog {
 ////        }
 //        nextIndex = 0;
 //    }
-
 //    public void addCmdToReplayLog(String cmdUIID) {
 //</editor-fold>
     /**
@@ -135,7 +133,7 @@ public class ReplayLog {
             }
             replayStack.add(replayCommand.getCmdUniqueID());
             Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack);
-            Log.p("+++ ReplayCommand: " + replayCommand.getCmdUniqueID());
+            Log.p("ADD    ReplayCommand: " + replayCommand.getCmdUniqueID());
         }
     }
 
@@ -146,7 +144,7 @@ public class ReplayLog {
 //        if (true) { //deactivate while testing
         if (replayStack.size() > 0) { //while debugging //TODO!!!!! remove DEBUG once ReplayCommands have been added everywhere
             if (Config.TEST) {
-                Log.p("--- ReplayCommand: " + replayStack.get(replayStack.size() - 1));
+                Log.p("REMOVE ReplayCommand: " + replayStack.get(replayStack.size() - 1));
             }
             replayStack.remove(replayStack.size() - 1); //TODO!!! add check that logList.size>=1 (not during testing to provoke stacktrace
         }
@@ -177,15 +175,21 @@ public class ReplayLog {
 //                return screenCommands.get(cmdUIID);
                 MyReplayCommand cmd = screenCommands.get(cmdUIID);
                 if (cmd != null) {
+                    if (currentIndex == replayStack.size()-1) //just returned the last command
+                        justFinishedReplaying = true;
                     return cmd;
                 } else {
 //                        +Display.getInstance().getCurrent() instanceof MyForm?((MyForm)Display.getInstance().getCurrent()).SCREEN_TITLE:"<not a MyForm>"Display.getInstance().getCurrent().getTitle());
 //                    in screen" + Display.getInstance().getCurrent().getTitle()
-                    ASSERT.that(false, "!! ReplayCommand: " + cmdUIID + " not defined" + (screenName != null ? (" in screen " + screenName) : "") + " ScreenCmds=" + screenCommands + " " + this);
+                    ASSERT.that(false, "ERROR  ReplayCommand: \"" + cmdUIID + "\" not defined"
+                            + (Display.getInstance().getCurrent() != null ? " in screen " + ((MyForm) Display.getInstance().getCurrent()).getUniqueFormId() : "")
+                            + " ScreenCmds=" + screenCommands + ", ReplayLog=" + this);
                 }
             }
         } else {
             replayingInProgress = false;
+//            justFinishedReplaying = true;
+//            TimerStack.getInstance().refreshOrShowTimerUI(); //ensure big timer is shown once the replay has finished
         }
         return null;
     }
@@ -234,6 +238,21 @@ public class ReplayLog {
         return replayingInProgress;
     }
 
+    /**
+    returns true if last replay command is at the last command
+    @return 
+     */
+    public boolean isReplayAtLastCommand() {
+        return currentIndex == replayStack.size() - 1;
+    }
+
+    public boolean justFinishedReplaying() {
+        if (justFinishedReplaying) {
+            justFinishedReplaying = false;
+            return true;
+        } else return false;
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private boolean startReplayXXX() {
 //        return nextIndex == -1 && logList.size() > 0;
@@ -279,7 +298,7 @@ public class ReplayLog {
 //        MyReplayCommand cmd = screenCommands.get(getNextCmdToReplayLog());
             MyReplayCommand cmd = fetchNextCmdFromReplayLog();
             if (cmd != null) { //if ever logged command is not found (eg the Item has beend deleted), the replay stops here
-                Log.p("x ReplayCommand: " + cmd.getCmdUniqueID());
+                Log.p("REPLAY ReplayCommand: " + cmd.getCmdUniqueID());
                 cmd.actionPerformed(evt);
 //                updateReplayingNow(); //update *after* replaying the command to avoid storing it again
                 return true;
@@ -289,10 +308,11 @@ public class ReplayLog {
 //                while (logList.size() >= currentIndex - 1) { //if force breaking the replay, remove all non-replayed commands including the broken one at nextIndex-1 (so log is correct as other actions are added)
                 while (replayStack.size() - 1 > currentIndex - 1) { //if force breaking the replay, remove all non-replayed commands including the broken one at nextIndex-1 (so log is correct as other actions are added)
                     //eg log={cmd1, cmd2, cmd3}, cmd1 replayes well, cmd2 breaks (nextIndex is then moved ahead to 2) => remove all commands until size==1 (size:2 >= nextIndex-1)
-                    Log.p("!!!! Replay Command not found and removed from ReplayLog: " + replayStack.get(replayStack.size() - 1) + " " + this);
+                    Log.p("ERROR  Replay Command not found and removed from ReplayLog: " + replayStack.get(replayStack.size() - 1) + " " + this);
                     replayStack.remove(replayStack.size() - 1);
                 }
                 Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack); //ensure reduced log is stored 
+//                TimerStack.getInstance().refreshOrShowTimerUI(); //ensure big timer is shown once the replay has finished
             }
         }
         return false;

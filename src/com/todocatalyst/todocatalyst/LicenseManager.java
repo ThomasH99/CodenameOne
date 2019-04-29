@@ -35,7 +35,8 @@ public class LicenseManager {
     
 
     public boolean isLicensed(LicensedFeature feature) {
-        return System.currentTimeMillis() < expirationDate.getTime() && keys.get(feature.key) != null;
+//        return System.currentTimeMillis() < expirationDate.getTime() && keys.get(feature.key) != null;
+        return MyDate.getNow() < expirationDate.getTime() && keys.get(feature.key) != null;
     }
 
 }

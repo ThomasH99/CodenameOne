@@ -448,13 +448,17 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         if (newRepeatRule != null) {
             setRepeatRuleNoUpdate(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
             if (oldRepeatRule == null) {
-                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+                newRepeatRule.updateWorkslots(this, false);
             } else {
-                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+                oldRepeatRule.update(newRepeatRule); //update existing rule with updated values
+                oldRepeatRule.updateWorkslots(this);
             }
         } else if (oldRepeatRule != null) { //if the user deleted the repeatRule, /* repeatRule == null && */ 
-            getRepeatRule().deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this);
-            setRepeatRuleNoUpdate(newRepeatRule);
+            if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
+//            setRepeatRuleNoUpdate(newRepeatRule);
+            setRepeatRuleNoUpdate(null);
         } //else both old and new RR are null, do nothing
     }
 
@@ -824,8 +828,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @Override
     public String toString() {
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
-        return "WS:" + MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS)
-                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
+        return (getRepeatRule() != null ? "*" : "") + "WS:" + MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS)
+                //                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
+                + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -978,8 +983,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     does't make sense because time is in minutes, so setting a specific endTime will be very imprecise!!
     @param endTimeInMillis 
      */
-    public void setEndXXX(long endTimeInMillis) {
-        setDurationInMillis((int) (endTimeInMillis - getStartTimeD().getTime()));
+    public void setEndTime(long endTimeInMillis) {
+        setDurationInMillis(Math.max(0, endTimeInMillis - getStartTimeD().getTime())); //max=> avoid negative duration
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1463,7 +1468,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //</editor-fold>
     @Override
 //    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject) {
-    public ItemAndListCommonInterface insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface workSlotRepeatCopy) {
+    public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface workSlotRepeatCopy) {
         ItemAndListCommonInterface owner = getOwner();
         owner.addWorkSlot((WorkSlot) workSlotRepeatCopy);
 //        DAO.getInstance().saveInBackground((ParseObject) workSlotRepeatCopy);
@@ -1910,10 +1915,24 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
         //DELETE IN OWNER
         ItemAndListCommonInterface owner = getOwner();
-        WorkSlotList workSlotList = owner.getWorkSlotListN();
-        workSlotList.remove(this);
-        owner.setWorkSlotList(workSlotList);
-        DAO.getInstance().saveInBackground((ParseObject) owner);
+        ASSERT.that(owner != null, "softDeleting workSlot with no owner, workSlot=" + this);
+        if (owner != null) {
+            WorkSlotList workSlotList = owner.getWorkSlotListN();
+            if (Config.PRODUCTION_RELEASE || workSlotList != null) { //don't crash in case there is an error
+                workSlotList.remove(this);
+                owner.setWorkSlotList(workSlotList);
+                DAO.getInstance().saveInBackground((ParseObject) owner);
+            }
+        }
+
+        RepeatRuleParseObject myRepeatRule = getRepeatRule();
+        if (myRepeatRule != null) {
+//            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we 
+//            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
+//            myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+            myRepeatRule.updateWorkslots(this, true); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+            //NB. We don't delete the item's refs to repeatrule
+        }
 
         //TODO!!!! need to delete in Sources - see comments/thoughts on this in comments inside Item.softDelete()
         put(Item.PARSE_DELETED_DATE, new Date());
@@ -1932,7 +1951,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @return 
      */
     public long overlappingDuration(WorkSlot workSlot) {
-        if (getStartTimeD().getTime() > workSlot.getEndTimeD().getTime() || workSlot.getStartTimeD().getTime() > getEndTimeD().getTime())
+        if (getStartTimeD().getTime() >= workSlot.getEndTimeD().getTime() || workSlot.getStartTimeD().getTime() >= getEndTimeD().getTime())
             return 0;
         else { // !(S1>E2 || S2>E1) <=> (S1<=E2 && S2<=E1)
             long start = Math.max(getStartTimeD().getTime(), workSlot.getStartTimeD().getTime());

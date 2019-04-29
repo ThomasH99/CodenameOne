@@ -13,7 +13,7 @@ import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
-import static com.todocatalyst.todocatalyst.MyForm.putEditedValues2;
+//import static com.todocatalyst.todocatalyst.MyForm.putEditedValues2;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -90,7 +90,7 @@ public class ScreenWorkSlot extends MyForm {
     validates a workSlot before saving, checks that both startDate and duration are defined and that it doesn't overlap with other of the owner's existing workslots.
     Returns null if no error, otherwise an error message string to display. 
      */
-    public static boolean checkWorkSlotIsValidForSaving(ItemAndListCommonInterface owner, WorkSlot workSlot, Date startByDate, long duration) {
+    public static boolean checkWorkSlotIsValidForSaving(ItemAndListCommonInterface owner, WorkSlot orgUneditedWorkSlot, Date startByDate, long duration) {
 //    public static boolean checkWorkSlotIsValidForSaving(WorkSlot workSlot, ItemAndListCommonInterface owner) {//, Date startByDate, int duration) {
         List<WorkSlot> overlapping;
         String errorMsg = null;
@@ -99,7 +99,7 @@ public class ScreenWorkSlot extends MyForm {
 //            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
             errorMsg = "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
         } else if ((overlapping = owner.getOverlappingWorkSlots(new WorkSlot(startByDate, duration))) != null
-                && !(overlapping.size() == 1 && overlapping.contains(workSlot))) { //to avoid error if an edited workSlot overlaps with its previous values
+                && !(overlapping.size() == 1 && overlapping.contains(orgUneditedWorkSlot))) { //to avoid error if an edited workSlot overlaps with its previous values
 //        } else if (owner!=null && (overlapping = owner.getOverlappingWorkSlots(workSlot)) != null) {
             errorMsg = ("This workslot overlaps with \n"
                     + getListAsSeparatedString(overlapping,
@@ -148,9 +148,10 @@ public class ScreenWorkSlot extends MyForm {
 //        }
 //</editor-fold>
         toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand(true)); //, () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            List<WorkSlot> overlapping;
 ////            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
-//            if (startByDate.getDate().getTime() == 0 || duration.getDuration() == 0) { 
+//            if (startByDate.getDate().getTime() == 0 || duration.getDuration() == 0) {
 ////            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
 //                return "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
 //            } else if ((overlapping = owner.getOverlappingWorkSlots(new WorkSlot(startByDate.getDate(),duration.getDuration()))) != null) {
@@ -166,6 +167,7 @@ public class ScreenWorkSlot extends MyForm {
 //                return (String) null;
 //            return checkWorkSlotIsValidForSaving(new WorkSlot(startByDate.getDate(), duration.getDuration()), owner);
 //        }));
+//</editor-fold>
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -181,14 +183,16 @@ public class ScreenWorkSlot extends MyForm {
 
         //DELETE
         toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            Log.p("Clicked");
 //            item.revert(); //forgetChanges***/refresh
 //            previousForm.showBack(); //drop any changes
 //            DAO.getInstance().delete(workSlot);
-            workSlot.softDelete();
 //            previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
+//</editor-fold>
+            workSlot.softDelete();
             showPreviousScreenOrDefault(true);
         });
 
@@ -329,7 +333,7 @@ public class ScreenWorkSlot extends MyForm {
 //        SpanButton repeatRuleButton = new SpanButton();
         WrapButton repeatRuleButton = new WrapButton();
 //        Command repeatRuleEditCmd = new Command("<click to set repeat>NOT SHOWN?!") {
-        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule", "", null, (e) -> {
+        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenWorkSlot", "", null, (e) -> {
             if (locallyEditedRepeatRule == null) {
                 locallyEditedRepeatRule = new RepeatRuleParseObject();
             }
@@ -347,17 +351,19 @@ public class ScreenWorkSlot extends MyForm {
                     "problem in cloning repeatRule");
 
             new ScreenRepeatRule(Item.REPEAT_RULE + " " + WorkSlot.WORKSLOT, locallyEditedRepeatRule, workSlot, ScreenWorkSlot.this, () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-                if (false) { //now done when exiting via parseIdMap2 below
-                    workSlot.setRepeatRule(locallyEditedRepeatRule);
-                    DAO.getInstance().saveInBackground(locallyEditedRepeatRule);
-                }
-//                    repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
-                if (false) { //not currentlynecessary because whole ScreenWorkSlot is redrawn after editing the repeatRule
-                    repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-                    repeatRuleButton.revalidate();
-                }
+//                if (false) { //now done when exiting via parseIdMap2 below
+//                    workSlot.setRepeatRule(locallyEditedRepeatRule);
+//                    DAO.getInstance().saveInBackground(locallyEditedRepeatRule);
+//                }
+////                    repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
+//                if (false) { //not currentlynecessary because whole ScreenWorkSlot is redrawn after editing the repeatRule
+//                    repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
+//                    repeatRuleButton.revalidate();
+//                }
 //                }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
+//</editor-fold>
             }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );

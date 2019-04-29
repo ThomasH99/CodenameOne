@@ -76,11 +76,12 @@ public class ScreenItemListProperties extends MyForm {
     return true if (possibly modified) category can be saved
      */
 //    public  boolean checkItemListIsValidForSaving(ItemList itemList) {
-    public boolean checkItemListIsValidForSaving(String itemListName) {
+    public static boolean checkItemListIsValidForSaving(String itemListName, ItemList itemList) {
         //TODO extend to check valid subcategories, auto-words, ...
         String errorMsg = null;
 //        String itemListName = itemList.getText();
 //        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
+        itemListName = MyUtil.removeTrailingPrecedingSpacesNewLinesEtc(itemListName);
         if (itemListName.isEmpty())
             errorMsg = Format.f("{0 category_or_list} name cannot be empty", ItemList.ITEM_LIST);
         else if (ItemListList.getInstance().findItemListWithName(itemListName) != null
@@ -88,7 +89,8 @@ public class ScreenItemListProperties extends MyForm {
                 && !MyPrefs.itemListAllowDuplicateListNames.getBoolean())
             //                return "Category \"" + description.getText() + "\" already exists";
             //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
-            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", ItemList.ITEM_LIST, itemListName);
+            //            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", ItemList.ITEM_LIST, itemListName);
+            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists, and more than one {0} with same name is not allowed. Please set a different name.", ItemList.ITEM_LIST, itemListName);
 
         if (errorMsg != null) {
             Dialog.show("Error", errorMsg, "OK", null);
@@ -194,7 +196,7 @@ public class ScreenItemListProperties extends MyForm {
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
-        setCheckOnExit(() -> checkItemListIsValidForSaving(name.getText()));
+        setCheckOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));
 
         return content;
     }

@@ -111,7 +111,8 @@ public class LocalNotificationsShadowList implements Externalizable {
         removeAlarmAndRepeatAlarm(objectId, type); //alwlays remove (eg if newAlarm is null)
 //        removeAlarmAndRepeatAlarm(objectId, repeatType); //always remove repeatAlarm (eg if newAlarm is null)
 
-        if (newAlarm != null && newAlarm.getTime() > System.currentTimeMillis() //!= 0
+//        if (newAlarm != null && newAlarm.getTime() > System.currentTimeMillis() //!= 0
+        if (newAlarm != null && newAlarm.getTime() > MyDate.getNow() //!= 0
                 && newAlarm.getTime() < getLastAlarmTime(type).getTime()) {
             int repeatInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
 //            if (getNumberAvailableLocalNotificationSlots() >= (repeatInterval > 0 ? 2 : 1)) {

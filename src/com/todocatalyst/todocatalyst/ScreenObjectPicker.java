@@ -10,6 +10,7 @@ import com.codename1.ui.CheckBox;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
+import com.codename1.ui.Dialog;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 import com.codename1.ui.InfiniteContainer;
@@ -119,7 +120,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 //    }
     ScreenObjectPicker(String title, List listOfAllLists, List selectedObjects, MyForm previousForm, UpdateField updateOnDone,
             GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
-        this(title, listOfAllLists, null, selectedObjects, previousForm, updateOnDone, 
+        this(title, listOfAllLists, null, selectedObjects, previousForm, updateOnDone,
                 labelMaker, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
     }
 //    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllProjects, List listOfAllTasks, List selectedObjects, MyForm previousForm, UpdateField updateOnDone,
@@ -222,14 +223,25 @@ public class ScreenObjectPicker<E> extends MyForm {
 //        animateMyForm();
     }
 
+    /**
+    return true if (possibly modified) category can be saved
+     */
+//    public  boolean checkItemListIsValidForSaving(ItemList itemList) {
+    public boolean checkObjectChoiceIsValid(int nbSelectedItems) {
+        String errorMsg = (nbSelectedItems >= minNbOfSelected && nbSelectedItems <= maxNbOfSelected)
+                ? null : (minNbOfSelected == maxNbOfSelected ? "Please select 1 element" : Format.f("Please select {0} to {1} elements", "" + minNbOfSelected, "" + maxNbOfSelected));
+        if (errorMsg != null) {
+            Dialog.show("Error", errorMsg, "OK", null);
+            return false;
+        } else return true;
+    }
+
     public void addCommandsToToolbar(Toolbar toolbar) {
 
         //if (objectCreator!=null)
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllObjects, ScreenObjectPicker.this)); //TODO!!!! enable adding new elements to picker screen
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true, //false,
-                //                () -> (listSelector.getSelected().size() >= minNbOfSelected||listSelector.getSelected().size() <= maxNbOfSelected),
-                () -> (selectedObjects.size() >= minNbOfSelected && selectedObjects.size() <= maxNbOfSelected)
-                ? null:errorMsgInSelection )); //false: don't refresh ScreenItem when returning from Category selector
+        setCheckOnExit(() -> checkObjectChoiceIsValid(selectedObjects.size()));
+        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
 
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //UI: always enable Cancel to make it easy to regret any changes
             toolbar.addCommandToOverflowMenu(

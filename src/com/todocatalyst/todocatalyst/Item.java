@@ -87,9 +87,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         super(CLASS_NAME);
     }
 
-    public Item(Item source) {
+//    public Item(Item source) {
+//        this();
+//        source.copyMeInto(this);
+//    }
+    public Item(Item owner) {
         this();
-        source.copyMeInto(this);
+        updateValuesInheritedFromOwner(owner);
     }
 
     public Item(String text) {
@@ -322,7 +326,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     @Override
-    public ItemAndListCommonInterface insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface newRepeatRuleInstance) {
+    public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Object owner = getOwner();
 //        if (owner instanceof ItemList) {
@@ -1196,7 +1200,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return status == ItemStatus.DONE || status == ItemStatus.CANCELLED;  //CANCELLED since this makes a Cancelled task flip back to Created when clicked in a list
     }
 
-    public boolean areAnySubtasksOngoing() {
+    public boolean areAnySubtasksOngoingOrDone() {
         return getCountOfSubtasksWithStatus(true, Arrays.asList(ItemStatus.DONE, ItemStatus.ONGOING)) > 0;
     }
 
@@ -1205,7 +1209,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public boolean hasWorkStarted() {
-        return getActual() > 0 || (isProject() && areAnySubtasksOngoing()); //TODO!!! ensure that ONGOING is true whenever there is actualeffort or subtasks done
+        return getActual() > 0 || (isProject() && areAnySubtasksOngoingOrDone()); //TODO!!! ensure that ONGOING is true whenever there is actualeffort or subtasks done
     }
 
     /**
@@ -1216,7 +1220,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     public boolean isWaiting() {
-        return getStatus() == ItemStatus.WAITING && (System.currentTimeMillis() < getWaitingTillDateD().getTime() || getWaitingTillDateD().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
+//        return getStatus() == ItemStatus.WAITING && (System.currentTimeMillis() < getWaitingTillDateD().getTime() || getWaitingTillDateD().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
+        return getStatus() == ItemStatus.WAITING && (MyDate.getNow() < getWaitingTillDateD().getTime() || getWaitingTillDateD().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
 //    ItemStatus status = getStatus();
 //        if (statusreturn getStatus() == ItemStatus.WAITING && (System.currentTimeMillis()<getWaitingTillDate()||getWaitingTillDate()==0 && ); 
     }
@@ -1750,8 +1755,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
             //IMPORTANCE / URGENCY
             if ((copyExclusions & COPY_EXCLUDE_IMP_URG) == 0) {
-                if (destination.getImpUrgPrioValue() == 0) { //copy from template, iff nothing's already set for item
+                if (destination.getImportanceN() == null) { //copy from template, iff nothing's already set for item
                     destination.setImportance(getImportanceN());
+//                    destination.setUrgency(getUrgencyN());split;
+                }
+                if (destination.getUrgencyN() == null) { //copy from template, iff nothing's already set for item
                     destination.setUrgency(getUrgencyN());
                 }
             }
@@ -1853,6 +1861,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
 
+        }
+
+        if (toRepeatInst) { //repeat instances will always have same owner, and it needs to be set so that when creating multiple instances, they get inserted into the owner's list
+            destination.setOwner(getOwner());
         }
 
         //optimization: bundle all 'all' copies together in a single if statement
@@ -2349,12 +2361,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return status;
 //        int index = subtasks.indexOf(item);
 //</editor-fold>
-        int indexFull = getListFull().indexOf(newItem);
+        int indexFull = getListFull().indexOf(referenceItem);
         if (indexFull < 0) {
             ASSERT.that(false, "REFERENCE item not found in addToList(newItem,refItem), refItem=" + referenceItem + ", newItem=" + newItem);
-            return addToList(referenceItem); //UI: else add to end of list //TODO! should this depend on a setting?
+            return addToList(newItem); //UI: else add to end of list //TODO! should this depend on a setting?
         } else
-            return addToList(indexFull + (addAfterItem ? 1 : 0), referenceItem);
+            return addToList(indexFull + (addAfterItem ? 1 : 0), newItem);
     }
 
 //    @Override
@@ -2370,7 +2382,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
         if (removeOwner)
             subItemOrList.setOwner(null);
-        ((Item)subItemOrList).removeValuesInheritedFromOwner(this);
+        ((Item) subItemOrList).removeValuesInheritedFromOwner(this);
         return status;
     }
 
@@ -2616,11 +2628,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public boolean isStarred() {
-        return isStarred(true);
-    }
-
-    public boolean isStarred(boolean useInheritedValue) {
-        Boolean b = getBoolean(PARSE_STARRED);
+//        return isStarred(true);
+//    }
+//
+//    public boolean isStarred(boolean useInheritedValue) {
+//        Boolean b = getBoolean(PARSE_STARRED);
 //        if (b == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()) {
 //            if (getOwnerItem() != null) {
 //                return getOwnerItem().isStarred();
@@ -2704,10 +2716,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
 
     public Challenge getChallengeN() {
-        return getChallengeN(true);
-    }
-
-    public Challenge getChallengeN(boolean useInheritedValue) {
+//        return getChallengeN(true);
+//    }
+//
+//    public Challenge getChallengeN(boolean useInheritedValue) {
 //        String challenge = getString(PARSE_CHALLENGE);
 //        return (challenge == null) ? Challenge.AVERAGE.getDescription() : challenge;
 //        String challenge = getString(PARSE_CHALLENGE);
@@ -2809,10 +2821,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     public DreadFunValue getDreadFunValueN() {
-        return getDreadFunValueN(true);
-    }
-
-    public DreadFunValue getDreadFunValueN(boolean useInheritedValue) {
+//        return getDreadFunValueN(true);
+//    }
+//
+//    public DreadFunValue getDreadFunValueN(boolean useInheritedValue) {
         String dreadFunValue = getString(PARSE_DREAD_FUN_VALUE);
 //        if (dreadFunValue == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean()) {
 //            if (getOwnerItem() != null) {
@@ -2977,10 +2989,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
 //    public HighMediumLow getUrgencyN() {
     public HighMediumLow getUrgencyN() {
-        return getUrgencyN(true);
-    }
-
-    public HighMediumLow getUrgencyN(boolean useInheritedValue) {
+//        return getUrgencyN(true);
+//    }
+//
+//    public HighMediumLow getUrgencyN(boolean useInheritedValue) {
 //        String urgency = getString(PARSE_URGENCY);
 ////        return (status == null) ? HighMediumLow.LOW : HighMediumLow.valueOf(status); //Created is initial value
 ////        return (status == null) ? HighMediumLow.LOW.toString() : status; //Created is initial value
@@ -3811,6 +3823,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (startT != null && startT.getTime() != 0) {
                     startTime = Math.min(startTime, startT.getTime());
                 }
+
             }
 //            if (startTime != 0) {
 //                return new Date(startTime);
@@ -3911,6 +3924,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
         if (startedOnDate != null && startedOnDate.getTime() != 0) {
+//            setStatus(ItemStatus.ONGOING,false, false, false);
             put(PARSE_STARTED_ON_DATE, startedOnDate);
         } else {
             remove(PARSE_STARTED_ON_DATE);
@@ -4210,13 +4224,27 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * used in the UI to update status when actual is changing. If no reason to
      * change status, returns newStatus (already set status => no change)
      *
-     * @param oldActualMillis old value (item value before editing)
-     * @param newActualMillis new value (possibly manually edited by user)
-     * @param oldStatus old value (item value before editing)
-     * @param newStatus new value (possibly manually edited by user)
+     * @param orgItemActualMillis old value (item value before editing) //TODO: not used
+     * @param editedActualMillis new value (possibly manually edited by user)
+     * @param orgItemStatus old value (item value before editing) //TODO: not used
+     * @param editedStatus new value (possibly manually edited by user)
      * @return
      */
-    static public ItemStatus updateStatusOnActualChange(long oldActualMillis, long newActualMillis, ItemStatus oldStatus, ItemStatus newStatus, boolean areAnySubtasksOngoing) {
+    static public ItemStatus updateStatusOnActualChange(long orgItemActualMillis, long editedActualMillis, ItemStatus orgItemStatus, ItemStatus editedStatus, boolean areAnySubtasksOngoing) {
+//        if (orgItemActualMillis == editedActualMillis) {
+//            return editedStatus; //return if no change
+//        } else 
+        if (editedActualMillis > 0) { //if user has changed actual
+            return ItemStatus.ONGOING;
+        } else {//if (orgItemStatus == ItemStatus.ONGOING && editedStatus == orgItemStatus) {
+            if (areAnySubtasksOngoing) //if some subtasks are done
+                return ItemStatus.ONGOING;
+            else
+                return ItemStatus.CREATED; //if setting actual to 0, set status back to Created
+        }
+    }
+
+    static public ItemStatus updateStatusOnActualChangeXXX(long oldActualMillis, long newActualMillis, ItemStatus oldStatus, ItemStatus newStatus, boolean areAnySubtasksOngoing) {
         if (oldActualMillis == newActualMillis) {
             return oldStatus; //return if no change
         } else if (areAnySubtasksOngoing) { //if some subtasks are done
@@ -5005,6 +5033,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     private void updateValuesInheritedFromOwner() {
+        updateValuesInheritedFromOwner(getOwnerItem());
+    }
+
+    /**
+    update with values from ownerElt but only if ownerElt is an Item, otherwise (e.g. if owned by ItemList) 
+    @param ownerElt 
+     */
+    void updateValuesInheritedFromOwner(ItemAndListCommonInterface ownerElt) {
         //***Inherited from owner***
         //PARSE_DUE_DATE -> subtasks can inherit due date from parent? TODO
         //PARSE_EXPIRES_ON_DATE -> all subtasks are impacted if their project experies, BUT is it enough to act at the project-level? Yes, setting a Proje t CANCELLED will/should also cancel subtasks!! (
@@ -5015,8 +5051,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //PARSE_START_BY_DATE -> if a project should start on a certain date, it is most likely the case for all its subtasks
         //PARSE_TEMPLATE ->
         //PARSE_FILTER_SORT_DEF -> filtering, you expect to see the same view for subprojects as for project. You could override but too complex to manage?!
-        Item owner = getOwnerItem();
-
+//        Item owner = getOwnerItem();
+        Item owner = null;
+        if (ownerElt instanceof Item)
+            owner = (Item) ownerElt;
+        else return;
         //NB!! we need to distinguish when an owner has changed value (so need before/after value!) => the subtasks must be updated
         if (owner != null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean()) {
 
@@ -5232,16 +5271,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return getDueDateD().getTime();
     }
 
-    public Date getDueDateD() {
-        return getDueDateD(true);
-    }
-
     private Date getDueDateDFromParse() {
         Date date = getDate(PARSE_DUE_DATE);
         return (date == null) ? new Date(0) : date;
     }
 
-    public Date getDueDateD(boolean useInheritedValue) {
+    public Date getDueDateD() {
+//        return getDueDateD(true);
+//    }
+//    public Date getDueDateD(boolean useInheritedValue) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        return dueDate;
 //        Date date = getDate(PARSE_DUE_DATE);
@@ -5489,10 +5527,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Date getWaitingTillDateD() {
-        return getWaitingTillDateD(true);
-    }
-
-    public Date getWaitingTillDateD(boolean useInheritedValue) {
+//        return getWaitingTillDateD(true);
+//    }
+//
+//    public Date getWaitingTillDateD(boolean useInheritedValue) {
         Date date = getDate(PARSE_WAITING_TILL_DATE);
 //        if (date == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()) {
 //            if (getOwnerItem() != null) {
@@ -6716,7 +6754,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         for (Category cat : addedCats) {
 //            cat.addItemAtIndex(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : cat.getSize());
             cat.addItemToCategory(item, false);
-            DAO.getInstance().saveInBackground((ParseObject)cat);
+            DAO.getInstance().saveInBackground((ParseObject) cat);
         }
 
         if (!onlyAddNewCatsDontRemoveAny) {
@@ -6725,7 +6763,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             for (Category cat : unSelectedCats) {
 //                cat.remove(item);
                 cat.removeItemFromCategory(item, false);
-                DAO.getInstance().saveInBackground((ParseObject)cat);
+                DAO.getInstance().saveInBackground((ParseObject) cat);
             }
             item.setCategories(new ArrayList(locallyEditedCategories)); //set the item's categories as the locally edited ones
         } else {
@@ -7506,7 +7544,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (getObjectIdP() != null && item.getObjectIdP() != null) {
             //compare isDirty in case we have two instances of the same 
 //            return getObjectId().equals(((Item) obj).getObjectId()) && isDirty()==((Item) obj).isDirty();
-            ASSERT.that(!getObjectIdP().equals(item.getObjectIdP()) || isDirty() == item.isDirty(), () -> "comparing dirty and not dirty instance of same object=" + this);
+            if (Config.CHECK_OWNERS) ASSERT.that(!getObjectIdP().equals(item.getObjectIdP()) || isDirty() == item.isDirty(), () -> "comparing dirty and not dirty instance of same object=" + this);
             if (getObjectIdP().equals(item.getObjectIdP())) {
                 return true;
             }
@@ -7628,7 +7666,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    DAO.getInstance().saveInBackground(subtask); //optimization: batch up all subtasks in saveInBackground
 //                }
             }
-            DAO.getInstance().saveInBackground((List)updatedSubtasks); //optimization: batch up all subtasks in saveInBackground
+            DAO.getInstance().saveInBackground((List) updatedSubtasks); //optimization: batch up all subtasks in saveInBackground
             ops = null; //reset after all subtasks have updated
             ops = new ArrayList<>(); //reset after all subtasks have updated
         }
@@ -7870,7 +7908,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             } else {
                 RE hours_RE = new RE("\\b(([1-9][0-9]+)|([1-9]))h(our(s)?)?\\b"); //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
                 if (hours_RE.match(txt)) {
-                    minutes = getIntFromTextString(txt, hours_RE.getParenStart(1), hours_RE.getParenLength(1));
+                    minutes = getIntFromTextString(txt, hours_RE.getParenStart(1), hours_RE.getParenLength(1)) * 60;
                     if (!keepOrgTextUnchanged && !MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
                         txt = deleteSubstring(txt, hours_RE.getParenStart(0), hours_RE.getParenLength(0));
                     }
@@ -8094,7 +8132,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (toCSV) {
                     list.add(MyDate.formatDateNew(getStartedOnDateD()));
                 } else {
-                    setStartedOnDate((Date) val);
+                    setStartedOnDate((Date) val, true); //force the explicit date (even if indirectly set via other field updates). Set dependent fields here? Could make sense if not set explicitly to ensure consistency, e.g. with status
                 }
                 break;
             case PARSE_STATUS:

@@ -233,7 +233,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                    workSlotList.add(newWorkSlot);
 //                    workSlotListOwner.setWorkSlotList(workSlotList);
                     workSlotListOwner.addWorkSlot(newWorkSlot);
-                    DAO.getInstance().saveInBackground((ParseObject) workSlotListOwner);
+                    DAO.getInstance().saveInBackground(newWorkSlot,(ParseObject) workSlotListOwner);
                     refreshAfterEdit();
                 }
             }).show();

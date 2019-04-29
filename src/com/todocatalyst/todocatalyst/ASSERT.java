@@ -18,7 +18,7 @@ public class ASSERT {
     }
     
     public static void that(boolean trueAssertion, GenString assertion) {
-        assert true;
+//        assert true;
         if (!trueAssertion) {
             try {
 //                Log.l("ASSERTION not true:"+assertion);
@@ -29,7 +29,7 @@ public class ASSERT {
         }
     }
     public static void that(boolean trueAssertion, String assertion) {
-        assert true;
+//        assert true;
         if (!trueAssertion) {
             try {
 //                Log.l("ASSERTION not true:"+assertion);

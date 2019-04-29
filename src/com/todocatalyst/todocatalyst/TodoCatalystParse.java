@@ -15,6 +15,7 @@ import com.codename1.l10n.L10NManager;
 import com.codename1.messaging.Message;
 import com.codename1.notifications.LocalNotificationCallback;
 import com.codename1.ui.*;
+import static com.codename1.ui.CN.getPlatformName;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BoxLayout;
@@ -882,6 +883,18 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
     //        }
     //    }
     //</editor-fold>
+    public String getAppstoreURL() { //copied from CN1 kitchensink demo
+        if (Config.ENABLE_ASK_USER_TO_RATE_APP) {
+            if (getPlatformName().equals("ios")) {
+                return "https://itunes.apple.com/us/app/kitchen-sink-codename-one/id635048865";
+            }
+            if (getPlatformName().equals("and")) {
+                return "https://play.google.com/store/apps/details?id=com.codename1.demos.kitchen";
+            }
+        }
+        return null;
+    }
+
     /**
      * This is a callback from Codename One, its invoked when the app is started
      * and whenever it is restored from the minimized state.
@@ -898,6 +911,9 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
     public void start() {
         //throws ParseException, IOException {
         Log.p("start()");
+        if (getAppstoreURL() != null) {  //copied from CN1 kitchensink demo
+            RatingWidget.bindRatingListener(180000, getAppstoreURL(), "support@todocatalyst.com");
+        }
 
         //TODO!!! How to find and display previously expired alarms (corresponding to the #notificatins shown on the app badge)?
         //reset badge number when app is launched
@@ -909,6 +925,10 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //            if (false && current == ScreenTimer.getInstance()) { //NOT necessary since current.show() should update the timemr
 //                ScreenTimer.getInstance().refreshDisplayedTimerInfo();//repaint to update timer count (especially necessary if timer is only updating every minute or so, otherwise it will show wrong time for a long time)
 //            }
+            if (current instanceof Dialog) {
+                ((Dialog) current).dispose();
+                current = Display.getInstance().getCurrent();
+            }
             current.show();
             return;
         }
@@ -1077,10 +1097,10 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        }
 //        setNotification(new Date(System.currentTimeMillis() + 10 * 1000));
 //</editor-fold>
+        current = Display.getInstance().getCurrent(); //do first in case of issues
         Log.p("stop()"); //do before updating badgeCount which calls network and may be too slow and get killed
         //set the app icon badge count
         setBadgeCount();
-        current = Display.getInstance().getCurrent();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (Display.getInstance().isBadgingSupported()) {
 //            Display.getInstance().setBadgeNumber(DAO.getInstance().getBadgeCount(true));

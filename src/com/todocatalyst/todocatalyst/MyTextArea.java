@@ -14,46 +14,46 @@ import java.util.Map;
  *
  * @author thomashjelm
  */
-     class MyTextArea extends TextArea {
+class MyTextArea extends TextArea {
 
 //            String title;
 //            String parseId;
-        MyTextArea(String hint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
-            this(hint, COLUMNS_FOR_STRING, TextArea.ANY, parseIdMap, getValue, setValue);
-        }
+    MyTextArea(String hint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
+        this(hint, COLUMNS_FOR_STRING, TextArea.ANY, parseIdMap, getValue, setValue);
+    }
 
-        MyTextArea(String hint, int columns, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
-            this(hint, columns, 1, 1, 128, constraint, parseIdMap, getValue, setValue); //UI: 128 = default max size of a text field //TODO: make a preference or PRO feature
-        }
+    MyTextArea(String hint, int columns, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
+        this(hint, columns, 1, 1, 128, constraint, parseIdMap, getValue, setValue); //UI: 128 = default max size of a text field //TODO: make a preference or PRO feature
+    }
 //        MyTextField(String title, String hint, int columns, int constraint, Map<String, ScreenItemP.GetParseValue> parseIdMap, Consumer<String> setValue, Supplier<String> getValue, ParseObject parseObject, String parseId) {
 
-        MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
-            super("", rows, columns, constraint);
+    MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
+        super("", rows, columns, constraint);
 //            if (rows != 1) {
 //                setRows(rows);
 //            }
-            setGrowByContent(true);
-            setAutoDegradeMaxSize(true);
-            setGrowLimit(maxRows);
-            setHint(hint);
+        setGrowByContent(true);
+        setAutoDegradeMaxSize(true);
+        setGrowLimit(maxRows);
+        setHint(hint);
 //            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
-            setMaxSize(maxTextSize);
-            setText(getValue.get());
-            parseIdMap.put(this, () -> setValue.accept(getText()));
-        }
-        
-        MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint                ) {
-            super("", rows, columns, constraint);
+        setMaxSize(maxTextSize);
+        setText(getValue.get());
+        parseIdMap.put(this, () -> setValue.accept(getText()));
+    }
+
+    MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint) {
+        super("", rows, columns, constraint);
 //            if (rows != 1) {
 //                setRows(rows);
 //            }
-            setGrowByContent(true);
-            setAutoDegradeMaxSize(true);
-            setGrowLimit(maxRows);
-            setHint(hint);
+        setGrowByContent(true);
+        setAutoDegradeMaxSize(true);
+        setGrowLimit(maxRows);
+        setHint(hint);
 //            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
-            setMaxSize(maxTextSize);
-        }
+        setMaxSize(maxTextSize);
+    }
 
 //        MyTextArea(String hint, int columns, int constraint, Map<Object, UpdateField> parseIdMap, GetDouble getValue, PutDouble setValue) {
 //            super("", 1, columns, constraint);
@@ -73,6 +73,4 @@ import java.util.Map;
 ////            parseIdMap.put(parseId, () -> getText());
 //                parseIdMap.put(parseId, () -> parseObject.put(parseId, getText()));
 //            }
-    };
-
-
+};

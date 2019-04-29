@@ -21,6 +21,8 @@ public abstract class Config {
     public static final boolean CHECK_OWNERS = false && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_DRAG_AND_DROP = true && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_PINCH = true && !PRODUCTION_RELEASE; //false;
+    public final static int TEST_PINCH_SCR_WIDTH_PERCENT = 5; //% of right-hand side of screen where a touch is programatically converted to a pinch
+
     public static final boolean TEST_SHOW_ITEM_TEXT_AS_OBJECTID = false && !PRODUCTION_RELEASE; //false;
     public static final boolean DEBUG_LOGGING = true && !PRODUCTION_RELEASE; //logs only enabled during 
     public static final boolean WORKTIME_TEST = false && !PRODUCTION_RELEASE; //
@@ -29,4 +31,5 @@ public abstract class Config {
     public static final boolean PARSE_OFFLINE = true && !PRODUCTION_RELEASE;
     public static final boolean INLINE_WORKSHOP_TESTCASE = false && !PRODUCTION_RELEASE;
     public static final boolean REFRESH_EVEN_THOUGH_DONE_IN_BACK = false && !PRODUCTION_RELEASE; //true <=> assumes that when going back to a screen, refresh is done in back. This removes the opportunity to optimize by avoiding unnecessary refresh if going back from screens which don't alter the content and therefore don't require refresh
+    public static final boolean ENABLE_ASK_USER_TO_RATE_APP = false && !PRODUCTION_RELEASE; //ask users to rate the app, requires url to appstore/android store
 }

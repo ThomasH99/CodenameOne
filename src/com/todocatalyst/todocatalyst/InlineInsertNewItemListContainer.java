@@ -24,6 +24,7 @@ import com.parse4cn1.ParseObject;
 public class InlineInsertNewItemListContainer extends InlineInsertNewContainer implements InsertNewElementFunc {
 
     private MyTextField2 textEntryField;
+    private MyForm myForm;
     private ItemList refItemList;
     private ItemListList itemOrItemListForNewItemLists;
     private ItemList newItemList;
@@ -63,6 +64,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 //    }
 //
 //    public InlineInsertNewItemListContainer(MyForm myForm, ItemList itemList2, ItemList refItemList, boolean insertBeforeRefElement) {
+        this.myForm = myForm;
         this.refItemList = refItemList;
         ASSERT.that(refItemList != null, () -> "why itemOrItemListForNewTasks2==null here?");
         this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
@@ -135,7 +137,8 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
     private ItemList createNewItemList(boolean createEvenIfNoTextInField) {
         String text = textEntryField.getText();
 //        if (createEvenIfNoTextInField || (text != null && text.length() > 0)) {
-        if (ScreenItemListProperties.checkItemListIsValidForSaving(text)) {
+//        if (ScreenItemListProperties.checkItemListIsValidForSaving(text)) {
+        if (ScreenItemListProperties.checkItemListIsValidForSaving(text, itemOrItemListForNewItemLists)) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             ItemList newItemList = new ItemList(text, false); //true: interpret textual values
             return newItemList;
@@ -166,9 +169,11 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 
     private void closeInsertNewItemListContainer() {
         //UI: close the text field
-        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(this);
-        if (parent != null&&parent.getParent()!=null) {
-            parent.getParent().animateLayout(300); //parent of parent since pinchcontainer is kept inside a variable height container
+        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(this);
+//        if (parent != null && parent.getParent() != null) {
+        if (parent != null ) {
+//            parent.getParent().animateLayout(300); //parent of parent since pinchcontainer is kept inside a variable height container
+            parent.animateLayout(300); //parent of parent since pinchcontainer is kept inside a variable height container
         }
     }
 

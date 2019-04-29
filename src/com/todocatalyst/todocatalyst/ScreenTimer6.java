@@ -114,7 +114,15 @@ public class ScreenTimer6 extends MyForm {
     //
     public void addCommandsToToolbar(Toolbar toolbar) {
 
-        backCommand = makeDoneUpdateWithParseIdMapCommand(true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+//        backCommand = makeDoneUpdateWithParseIdMapCommand(true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+        backCommand = makeDoneUpdateWithParseIdMapCommand(() -> {
+            TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
+            if (timerInstance != null) {//can be null if exiting after finishing with last timer?!
+                timerInstance.setFullScreen(false);
+                timerInstance.saveMe();
+            }
+            return true;
+        }); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
         toolbar.setBackCommand(backCommand); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
 
         //Create an interrupt task and start the timer on it
@@ -191,5 +199,12 @@ public class ScreenTimer6 extends MyForm {
             super.show();
         }
     }
+
+//    @Override
+//    public void showBack() {
+////        ReplayLog.getInstance().popCmd(); //pop any previous command
+////        super.showBack();
+//        showBack(false);
+//    }
 
 }

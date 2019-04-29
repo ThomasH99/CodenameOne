@@ -110,7 +110,8 @@ public class ScreenListOfItemLists extends MyForm {
     @Override
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
-        getContentPane().removeAll();
+        if (false) getContentPane().removeAll(); //NOT necessary since getContentPane().add() will remove the previous content. AND it will remove components that are added later...
+
         Container cont = buildContentPaneForItemList(itemListList);
         getContentPane().add(BorderLayout.CENTER, cont);
         if (cont instanceof MyTree2) {
@@ -157,7 +158,8 @@ public class ScreenListOfItemLists extends MyForm {
 //        });
 
 //        addCommandsToToolbar(getToolbar());
-        
+
+        //SEARCH
         if (false) getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
                 Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
@@ -170,8 +172,9 @@ public class ScreenListOfItemLists extends MyForm {
                 compList.animateLayout(150);
             });
         getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList));
-//NEW TASK
-        toolbar.addCommandToRightBar(newItemSaveToInboxCmd()); //put all generic (not specific to current screen) icons on the left
+
+        //NEW TASK
+        toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox()); //put all generic (not specific to current screen) icons on the left
 
         //NEW ITEMLIST
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconNewToolbarStyle(), (e) -> {
@@ -562,7 +565,8 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconNewItemFromTemplate, (e) -> {
+//            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, "SwipeLaunchTimerOnItemList", Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(CommandTracked.create("",Icons.iconNewItemFromTemplate, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    Item newTemplateInstantiation = new Item();
 //                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
@@ -573,7 +577,9 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
                 TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
-            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+//            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+//            }, "InterruptInScreen"+((MyForm) mainCont.getComponentForm()).getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+            }, "InterruptInScreenListOfItemLists" //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             )));
         }
 
@@ -681,10 +687,12 @@ public class ScreenListOfItemLists extends MyForm {
         mainCont.addComponent(BorderLayout.EAST, east);
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconNewItemFromTemplate, (e) -> {
+//            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(CommandTracked.create("", Icons.iconNewItemFromTemplate, (e) -> {
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
                 TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
-            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+//            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+            }, "InterruptSwipeInScreen"+((MyForm) mainCont.getComponentForm()).getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             )));
         }
 

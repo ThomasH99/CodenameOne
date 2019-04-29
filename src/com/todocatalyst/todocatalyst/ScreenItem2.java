@@ -11,6 +11,8 @@ import com.codename1.ui.Label;
 import com.codename1.ui.Button;
 import com.codename1.ui.Form;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.Image;
+import com.codename1.ui.RadioButton;
 import com.codename1.ui.Tabs;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
@@ -23,6 +25,8 @@ import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.table.TableLayout;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.MyForm.REPEAT_RULE_KEY;
+import static com.todocatalyst.todocatalyst.MyForm.putEditedValues2;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -210,6 +214,24 @@ public class ScreenItem2 extends MyForm {
 //       super();
     }
 
+    /**
+    validates a Item before saving.
+    Returns null if no error, otherwise an error message string to display. 
+     */
+    public static boolean checkItemIsValidForSaving(String text, String comment, Date dueDate, long actual, long remaining, int nbSelectedCategories, int nbSubtasks) {
+
+        boolean validData = text.length() != 0
+                || comment.length() != 0
+                || dueDate.getTime() != 0
+                || actual > 0
+                || remaining > 0
+                || nbSelectedCategories > 0
+                || nbSubtasks > 0;
+        if (validData || Dialog.show("INFO", "No key data in this task, save anyway?", "Yes", "No")) {
+            return true;
+        } else return false;
+    }
+
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -234,7 +256,34 @@ public class ScreenItem2 extends MyForm {
 //        Command cmd = makeDoneUpdateWithParseIdMapCommand();
 //        toolbar.addCommandToLeftBar(cmd);
 //</editor-fold>
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(() -> item.hasSaveableData()));
+
+        setCheckOnExit(() -> item.hasSaveableData());
+
+        Command exitScreenItemAndUpdateAndSave = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                if (getCheckOnExit() == null || getCheckOnExit().check()) {
+
+                    UpdateField repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+
+                    for (Object parseId : parseIdMap2.keySet()) {
+//            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
+                        parseIdMap2.get(parseId).update();
+                    }
+                    if (getUpdateActionOnDone() != null)
+                        getUpdateActionOnDone().update();
+                    if (repeatRule != null) {
+                        if (item != null && item.getObjectIdP() == null)
+                            DAO.getInstance().saveInBackground(item); //if not saved
+                        repeatRule.update();
+                    }
+//                    putEditedValues2(parseIdMap2);
+                    showPreviousScreenOrDefault(true);
+                }
+            }
+        };
+        exitScreenItemAndUpdateAndSave.putClientProperty("android:showAsAction", "withText");
 
         //TIMER
 //        Command timerCmd = makeTimerCommand(title, iconNew, itemList);
@@ -274,7 +323,8 @@ public class ScreenItem2 extends MyForm {
                 Dialog ip = new InfiniteProgress().showInfiniteBlocking();
                 //TODO add option to let user edit template after creation
                 //TODO enable user to select which fields to exclude
-                putEditedValues2(parseIdMap2, item); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
+//                putEditedValues2(parseIdMap2, item); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
+                putEditedValues2(parseIdMap2); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
                 Item template = new Item();
                 item.copyMeInto(template, Item.CopyMode.COPY_TO_TEMPLATE);
                 DAO.getInstance().saveInBackground(template);
@@ -285,7 +335,7 @@ public class ScreenItem2 extends MyForm {
                 } else {
                     templateList.add(template);
                 }
-                DAO.getInstance().saveInBackground((ParseObject)templateList);
+                DAO.getInstance().saveInBackground((ParseObject) templateList);
                 ip.dispose();
 //                if (Dialog.show("INFO", "Do you want to edit the template now? You can find and edit it later under Templates.", "Yes", "No")) {
 //                    new ScreenItem(template, ScreenItem.this, () -> {
@@ -305,7 +355,8 @@ public class ScreenItem2 extends MyForm {
                 if (!MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem.getBoolean()
                         || Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
                     //TODO enable user to select which fields to exclude
-                    putEditedValues2(parseIdMap2, item); //save any already edited values before inserting the template
+//                    putEditedValues2(parseIdMap2, item); //save any already edited values before inserting the template
+                    putEditedValues2(parseIdMap2); //save any already edited values before inserting the template to avoid overwriting values only entered into the screen but not stored in the Item itself (yet)
 //                    Item template = pickTemplateOLD(); //TODO!!!! make this a full Screen picker like CategorySelector
                     List selectedTemplates = new ArrayList();
                     if (false) { //shouldn't be necessary
@@ -625,7 +676,8 @@ public class ScreenItem2 extends MyForm {
      * @param comment
      * @return
      */
-    public static Container makeCommentContainer(MyTextArea comment) {
+//    public static Container makeCommentContainer(MyTextArea comment) {
+    public static Container makeCommentContainer(MyTextField comment) {
 //        MyTextArea commentField = new MyTextArea(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(),
 //                TextArea.ANY, parseIdMap2, () -> itemLS.getComment(), (s) -> item.setComment(s));
 //        MyTextArea comment = new MyTextArea(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2, () -> {
@@ -741,14 +793,16 @@ public class ScreenItem2 extends MyForm {
         });
         cont.add(BorderLayout.CENTER, tabs);
 
-        MyTextArea description;
+        MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker();
+//        MyTextArea description;
+        MyTextField description;
         MyDurationPicker effortEstimate;
         MyDurationPicker remainingEffort;
         //TAB MAIN
         Container mainTabCont = new Container(new BorderLayout());
         Container mainCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         if (Config.TEST) mainCont.setName("MainTab");
-        
+
         mainTabCont.add(BorderLayout.CENTER, mainCont);
         mainCont.setScrollableY(true);
 
@@ -772,13 +826,16 @@ public class ScreenItem2 extends MyForm {
 //                //TODO!!! call templatePicker
 //            }
 //        };
-        description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
+//        description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
+//        description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
+        description = new MyTextField(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
             @Override
             public void longPointerPress(int x, int y) {
                 Log.p("longPointerPress on text area");
                 //TODO!!! call templatePicker
             }
         };
+
 //        initField(Item.DESCRIPTION, Item.DESCRIPTION_HELP, description, Item.PARSE_TEXT, () -> item.getText(), (t) -> item.setText((String) t),
 //                () -> description.getText(), (t) -> description.setText((String) t), null);
         initField(Item.PARSE_TEXT, description, () -> item.getText(), (t) -> item.setText((String) t), () -> description.getText(), (t) -> description.setText((String) t));
@@ -838,6 +895,7 @@ public class ScreenItem2 extends MyForm {
             }
             setTitle(getScreenTitle(item.isTemplate(), description.getText()));
         }); //update the form title when text is changed
+        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, item, 5000, () -> item.setText(description.getText()));
 
         //STATUS
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -864,7 +922,10 @@ public class ScreenItem2 extends MyForm {
         //STARRED
 //        CheckBox starredcb = new CheckBox(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
 //        Button starred = new Button(itemLS.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
+//        Button starred = new RadioButton(); //TODO change to use RadionButton and automatically switch icon when selected/unselected --> RB no good
         Button starred = new Button(); //TODO change to use RadionButton and automatically switch icon when selected/unselected
+        starred.addActionListener((e) -> starred.setIcon(starred.getIcon() == Icons.iconStarUnselectedLabelStyle
+                ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        starred.setToggle(true);
 //        if (false) {
@@ -885,8 +946,10 @@ public class ScreenItem2 extends MyForm {
         initField(Item.PARSE_STARRED, starred,
                 () -> item.isStarred(),
                 (b) -> item.setStarred((boolean) b),
+                //                () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
                 () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
                 (b) -> starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle)
+        //                (b) -> starred.setIcon((boolean) b ?  Icons.iconStarUnselectedLabelStyle:Icons.iconStarSelectedLabelStyle )
         //                    starred.repaint();
         ); //add taskCont just to avoid creating an unnecessary field container
 
@@ -918,8 +981,12 @@ public class ScreenItem2 extends MyForm {
 //        MyTextField comment = new MyTextField("Details", "Comments", 20, TextArea.ANY, parseIdMap, item, Item.PARSE_COMMENT);
 //        MyTextArea comment = new MyTextArea(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
 //                () -> itemLS.getComment(), (s) -> item.setComment(s));
-        MyTextArea comment = new MyTextArea(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
+//        MyTextArea comment = new MyTextArea(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
+        MyTextField comment = new MyTextField(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
+        comment.setSingleLineTextArea(false);
         Container commentField = makeCommentContainer(comment);
+         AutoSaveTimer commentSaveTimer = new AutoSaveTimer(this, comment, item, 5000, () -> item.setComment(comment.getText()));
+
 //        mainCont.add(initField(Item.COMMENT, Item.COMMENT_HELP, comment, Item.PARSE_COMMENT, () -> item.getComment(), (t) -> item.setComment((String) t),
         initField(Item.PARSE_COMMENT, comment, () -> item.getComment(), (t) -> item.setComment((String) t), () -> comment.getText(), (t) -> comment.setText((String) t));
 //        comment.putClientProperty("goButton", true);
@@ -1161,7 +1228,8 @@ public class ScreenItem2 extends MyForm {
 //        RepeatRule 
 //        locallyEditedRepeatRule = item.getRepeatRule();
 //        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRules", "", null, (e) -> {
-        Command repeatRuleEditCmd = Command.create(repeatRuleButtonStr, null, (e) -> {
+//        Command repeatRuleEditCmd = Command.create(repeatRuleButtonStr, null, (e) -> {
+        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenEditItem", null, (e) -> {
             //TODO!!!! by making this a ReplayCommand, it is also necessary to store the edited values within the screen, otherwise the user is returned, but the values are lost => annoying!
 //DON'T set a string since SpanButton shows both Command string and SpanLabel string
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1259,7 +1327,7 @@ public class ScreenItem2 extends MyForm {
 //                repeatRuleButton.getParent().revalidate(); //enough to update? NO
                 mainCont.revalidate(); //enough to update? NO
 //                    }
-            }, true, dueDate.getDate(),false).show(); //TODO false<=>editing startdate not allowed - correct???
+            }, true, dueDate.getDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
 //        parseIdMap2.put("REPEAT_RULE", () -> {
@@ -1400,7 +1468,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        if (false) {
 //            mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2));
 //        }
-        mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2));
+        mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2)); //edit subtasks
         //TODO!!!!! editing of subtasks should be local (and saved locally on app exit)
 //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, item, templateEditMode));
 
@@ -1520,7 +1588,21 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 //</editor-fold>
         actualEffort.addActionListener((evt) -> {
-            status.setStatus(Item.updateStatusOnActualChange(item.getActual(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoing()));
+//            status.setStatus(Item.updateStatusOnActualChange(item.getActual(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoingOrDone()));
+            if (actualEffort.getDuration() > 0) { //if user has changed actual
+                status.setStatus(ItemStatus.ONGOING, false);
+                if (startedOnDate.getDate().getTime() == 0)
+                    startedOnDate.setDate(new Date());
+            } else { // actual effort set to 0
+                if (item.isProject() && item.areAnySubtasksOngoingOrDone()) { //if some subtasks are ongoing or done
+                    status.setStatus(ItemStatus.ONGOING, false);
+                    if (startedOnDate.getDate().getTime() == 0)
+                        startedOnDate.setDate(new Date());
+                } else {
+                    status.setStatus(ItemStatus.CREATED, false); //if setting actual to 0, set status back to Created
+                    startedOnDate.setDate(new Date(0));
+                }
+            }
             status.repaint();
         });
 
@@ -2046,7 +2128,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
 //        MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker("<set>", parseIdMap2, () -> item.getStartedOnDateD(), (d) -> item.setStartedOnDate(d));
 //        MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker("", parseIdMap2, () -> itemLS.getStartedOnDateD(), (d) -> item.setStartedOnDate(d));
-        MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker();
+//        MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(addDatePickerWithClearButton(startedOnDate)).add(new SpanLabel("Set automatically when using the timer"));
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(startedOnDate.makeContainerWithClearButton()).add(new SpanLabel("Set automatically when using the timer"));
@@ -2604,7 +2686,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        }
 //</editor-fold>
         //ORIGINAL SOURCE
-        if (item.getSource() != null&&MyPrefs.showSourceItemInEditScreens.getBoolean()) { //don't show unless defined
+        if (item.getSource() != null && MyPrefs.showSourceItemInEditScreens.getBoolean()) { //don't show unless defined
             //TODO!! what happens if source is set to template or other item, then saved locally on app exit and THEN recreated via Replay???
 //            Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
             Label sourceLabel = new Label(item.getSource().getText(), "LabelFixed");
@@ -2832,6 +2914,11 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (previousValues.containsKey(LAST_TAB_SELECTED)) {
             tabs.setSelectedIndex((int) previousValues.get(LAST_TAB_SELECTED)); //keep same tab selected even if regenerating the screen
         }
+
+        setCheckOnExit(() -> checkItemIsValidForSaving(description.getText(), comment.getText(), dueDate.getDate(), actualEffort.getDuration(),
+                remainingEffort.getDuration(), (((List) previousValues.get(Item.PARSE_CATEGORIES))!=null?((List) previousValues.get(Item.PARSE_CATEGORIES)).size():0), item.getListFull().size())); //item.getListFull().size() sinze subtasks are stored 
+//TODO: when owner can be edited, use new/edited one
+
         return cont;
     }
 

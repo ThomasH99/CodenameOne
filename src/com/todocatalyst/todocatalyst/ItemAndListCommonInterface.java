@@ -94,9 +94,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         if (workSlotList == null) {
 //            workSlotList = new WorkSlotList();
             workSlotList = new WorkSlotList(this, Arrays.asList(workSlot), true);
-            workSlotList.setOwner(this);
+//            workSlotList.setOwner(this);
+        } else {//else needed since new workSlot already added in WorkSlotList constructor above
+            workSlotList.add(workSlot);
+            workSlot.setOwner(this);
         }
-        workSlotList.add(workSlot);
         setWorkSlotList(workSlotList);
     }
 
@@ -296,12 +298,34 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     /**
      * 
-     * @param item
-     * @param subItemOrList
-     * @param addAfterItem if true, add subItemOrList *after* the position of item
+     * @param newElement new item
+     * @param refElement the reference item item inserted before/after this one
+     * @param addAfterRefElement if true, add subItemOrList *after* the position of item
      * @return 
      */
-    public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem);
+    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefElement);
+
+    /**
+     *
+     * @param item
+     * @param itemRef if null, item is inserted at the end of the list
+     * @param insertAfterRefOrEndOfList if true, insert after itemRef. If itemRef is null, then true => insert at end of list, false => insert at head of list
+     */
+    default public void moveToPositionOf(E item, E itemRef, boolean insertAfterRefOrEndOfList) {
+        //NB. Since just reshuffling the list, no impact on any bags
+        List listFull = getListFull();
+
+        int newPos = itemRef == null ? (insertAfterRefOrEndOfList?listFull.size():0) : (listFull.indexOf(itemRef) + (insertAfterRefOrEndOfList ? 1 : 0));
+//        int oldPos = listFull.indexOf(item);
+        if (newPos >= 0)
+            listFull.add(newPos, item); //insert *before* remove so that removing the item doesn't impact the insert index
+        else
+            listFull.add(item); //insert *before* remove so that removing the item doesn't impact the insert index
+        listFull.remove(item);
+
+        setList(listFull);
+//        fireDataChangedEvent(DataChangedListener.CHANGED, newPos);
+    }
 
     /**
      * remove the subitem from the list (gets the list from Parse, removes the
@@ -327,8 +351,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //            ownerList.remove(this);
 //            getOwner().setList(ownerList);
 //        }
-        owner.removeFromList(this);
-        setOwner(null);
+        if (owner != null) {
+            owner.removeFromList(this);
+            setOwner(null);
+        }
     }
 
     /**

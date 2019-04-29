@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -23,6 +24,7 @@ import java.util.List;
  */
 public class FilterSortDef extends ParseObject {
 
+//    private static FilterSortDef DEFAULT_FILTER = null; //no good to use an (editable) filter with singleton, since edits will change the original. Must use separate instances and equal() to compare
     //TODO save filters to parse (with the list, not the view?!). Save each field to make it easy to understand what filters users use)
     //TODO save filter either as for the screen (applied to all lists shown) or specific to the list (later option since less intuitive)
     //TODO filter on 'leaf tasks' only
@@ -41,6 +43,29 @@ public class FilterSortDef extends ParseObject {
 //    public static String PARSE_SORT_FILTER_ID = "filterId"; //name of screen and objectId of object displayed
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) 
+            return true;
+        if (!(obj instanceof FilterSortDef)) 
+            return false; //covers obj==null
+        
+        FilterSortDef filterSortDef = (FilterSortDef) obj;
+        if (!Objects.equals(this.getObjectIdP(), filterSortDef.getObjectIdP())) 
+            return false;
+        if (!Objects.equals(getSortFieldId(), filterSortDef.getSortFieldId())) 
+            return false;
+        if (!Objects.equals(isSortDescending(), filterSortDef.isSortDescending())) 
+            return false;
+        if (isSortOn() != filterSortDef.isSortOn()) 
+            return false;
+        if (!Objects.equals(getFilterName(), filterSortDef.getFilterName())) 
+            return false;
+        if (!Objects.equals(getDescription(), filterSortDef.getDescription())) 
+            return false;
+        return false;
+    }
 
     public static String FILTER_SHOW_NEW_TASKS = "showNewTasks";
     public static String FILTER_SHOW_ONGOING_TASKS = "showOngoingTasks";
@@ -78,7 +103,7 @@ public class FilterSortDef extends ParseObject {
 
     public FilterSortDef() {
         super(CLASS_NAME);
-        setDefaults();
+//        setDefaults();
 //        assert sortOptions.length == sortField.length: "error different number items in sortOptions and softField"; //already done in ScreenFilter
     }
 
@@ -113,6 +138,38 @@ public class FilterSortDef extends ParseObject {
         setSortDescending(false);
     }
 
+    /**
+    return default task filter, unsorted, hiding Done/Cancelled tasks. 
+    @return 
+     */
+    static FilterSortDef getDefaultFilter() {
+//        if (DEFAULT_FILTER == null) {
+        FilterSortDef filter = new FilterSortDef();
+        filter.setSortFieldId(Item.PARSE_DUE_DATE); //show sort on DUE as default option *if* setting sortOn
+        filter.setSortOn(false); //don't sort by default, 
+        filter.setSortDescending(false);
+        filter.extractAndSetFilterOptions(FILTER_SHOW_NEW_TASKS + FILTER_SHOW_ONGOING_TASKS + FILTER_SHOW_WAITING_TASKS);//when creating filter first time, show all tasks (to avoid that tasks suddenly disappear in the list)
+        filter.putFilterOptions();
+//            DEFAULT_FILTER = filter;
+//        }
+//        return DEFAULT_FILTER;
+        return filter;
+    }
+
+    /**
+    return default task filter, unsorted, hiding Done/Cancelled tasks. 
+    @return 
+     */
+    static FilterSortDef getDefaultFilterNuetral() {
+        FilterSortDef filter = new FilterSortDef();
+//            filter.setSortFieldId(Item.PARSE_DUE_DATE); //show sort on DUE as default option *if* setting sortOn
+//            filter.setSortOn(false); //don't sort by default, 
+//            filter.setSortDescending(false);
+//            filter.extractAndSetFilterOptions(FILTER_SHOW_NEW_TASKS + FILTER_SHOW_ONGOING_TASKS + FILTER_SHOW_WAITING_TASKS);//when creating filter first time, show all tasks (to avoid that tasks suddenly disappear in the list)
+//            filter.putFilterOptions();
+        return filter;
+    }
+
 //    static String[] sortOptions = new String[]{
 //        "Priority", "Due date", "Remaining time",
 //        "Difficulty", "Fun", "Value",
@@ -144,11 +201,11 @@ public class FilterSortDef extends ParseObject {
      * @param itemList
      * @return
      */
-    static FilterSortDef fetchFilterSortDef(String screenId, ParseObject itemList, FilterSortDef defaultFilter) {
+    static FilterSortDef fetchFilterSortDefXXX(String screenId, ParseObject itemList, FilterSortDef defaultFilter) {
         FilterSortDef filterSortDef = null;
         if (itemList instanceof ParseObject && ((ParseObject) itemList).getObjectIdP() != null) {
 //            filterSortDef = DAO.getInstance().getFilterSortDef(screenId, ((ParseObject) itemList).getObjectId());
-            filterSortDef = DAO.getInstance().getFilterSortDef(((ParseObject) itemList).getObjectIdP());
+            filterSortDef = DAO.getInstance().getFilterSortDefXXX(((ParseObject) itemList).getObjectIdP());
         }
         if (filterSortDef == null) {
 //            filterSortDef = new FilterSortDef(screenId, itemList);
@@ -324,7 +381,7 @@ public class FilterSortDef extends ParseObject {
 //        showInterruptTasksOnly = filterOptions.indexOf("showInterruptTasksOnly") != -1;
 //        showWithoutEstimatesOnly = filterOptions.indexOf("showWithoutEstimatesOnly") != -1;
 //        showWithActualsOnly = filterOptions.indexOf("showWithActualsOnly") != -1;
-        if (filterOptions == null) {
+        if (filterOptions == null || filterOptions.length() == 0) {
             return;
         }
 
@@ -346,10 +403,11 @@ public class FilterSortDef extends ParseObject {
     }
 
 //    public void getFilterOptions(String filterOptions) {
-    public void getFilterOptions() {
+    public String getFilterOptions() {
 //        if (filterOptions == null) {
         String filterOptions = getString(PARSE_FILTER_OPTIONS);
         extractAndSetFilterOptions(filterOptions);
+        return filterOptions;
 //        }
     }
 

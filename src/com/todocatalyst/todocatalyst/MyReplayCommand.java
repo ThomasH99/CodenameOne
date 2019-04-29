@@ -54,6 +54,9 @@ public class MyReplayCommand extends CommandTracked {
         this(commandName, commandName, null);
     }
 
+    public String toString() {
+        return cmdUniqueID + " keep="+keep;
+    }
     //TODO: toString is used (I think) in eg menu commands to get the string to display, should use getCommandName() instead - puch fix
 //    @Override
 //    public String toString() {
@@ -88,7 +91,7 @@ public class MyReplayCommand extends CommandTracked {
 
     /**
     
-    @param cmdUniquePrefix
+    @param cmdUniqueId
     @param cmdUniquePostfix
     @param commandName
     @param icon
@@ -97,9 +100,10 @@ public class MyReplayCommand extends CommandTracked {
     @param pushCmd if this function returns false, the command will NOT be pushed (and thus not replayed later) - used for deciding whether to push Timer (should only be done if BigTimer is launched, not if smallTimer is launched)
     @return 
      */
-    public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep, MyForm.GetBool pushCmd) {
-        String cmdUniqueId = cmdUniquePrefix + cmdUniquePostfix;
-        MyReplayCommand cmd = new MyReplayCommand(cmdUniqueId, commandName, icon) {
+    public static MyReplayCommand create(String cmdUniqueId, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep, MyForm.GetBool pushCmd) {
+//        String cmdUniqueIdFull = cmdUniqueId + cmdUniquePostfix;
+        String cmdUniqueIdFull = cmdUniqueId + cmdUniquePostfix;
+        MyReplayCommand cmd = new MyReplayCommand(cmdUniqueIdFull, commandName, icon) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 if (pushCmd.getVal()) ReplayLog.getInstance().pushCmd(this); //DON'T call here, is called in MyReplayCommand.actionPerformed which is called below!
@@ -114,7 +118,7 @@ public class MyReplayCommand extends CommandTracked {
                 super.actionPerformed(evt);
             }
         };
-        cmd.setAnalyticsActionId(cmdUniquePrefix);
+        cmd.setAnalyticsActionId(cmdUniqueIdFull);
         cmd.setKeep(keep);
 //        if (Config.TEST) cmd.setName("ReplayCmd-" + cmdUniqueId);
 

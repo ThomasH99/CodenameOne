@@ -76,17 +76,31 @@ public class MyPrefs {
             = new PrefEntry("**", "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task"); //"at the end"
 
     static PrefEntry dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList
-            = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks", "dropItemAtBeginningOfUnexpandedCategorySubtaskList", true, "**");
-
-    static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
-            = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
-                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 20, "**");
+            = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks", "dropItemAtBeginningOfUnexpandedCategorySubtaskList", false, "**");
 
     static PrefEntry insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList
 //            = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", 
             = new PrefEntry("Add subtasks at end of subtask list", 
                     "insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList", true, "**");
 
+    //DRAG AND DROP
+    static PrefEntry dragDropAsSubtaskEnabled
+            = new PrefEntry("Drag and drop to right edge of screen inserts as subtask", "dragDropAsSubtaskEnabled", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+    
+    static PrefEntry dragDropAsSupertaskEnabled
+            = new PrefEntry("Drag and drop to left edge of screen inserts tasks at level above", "dragDropAsSupertaskEnabled", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+    
+//    static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
+    static PrefEntry dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask
+            = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
+                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 10, "**");
+
+//    static PrefEntry dragDropLeftDropZoneWidth
+//            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+//    
+//    static PrefEntry dragDropRightDropZoneWidth
+//            = new PrefEntry("Width of the right-hand drop zone (%)", "dragDropRightDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+    
     //TIMER
     static PrefEntry timerAutomaticallyStartTimer
             = new PrefEntry("Automatically start timer for a task", "automaticallyStartTimer", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
@@ -382,6 +396,10 @@ public class MyPrefs {
     static PrefEntry showDebugInfoInLabelsEtc
             = new PrefEntry("Show debug info, e.g. add ^ to subtask", "showDebugInfoInLabelsEtc", true, "** - NOT END USER");
 
+    //ITEMLIST
+    static PrefEntry useDefaultFilterInItemListsWhenNoneDefined
+            = new PrefEntry("By default, hide Done and Cancelled tasks in lists", "useDefaultFilterInItemListsWhenNoneDefined", true, "**");
+    
     //LOOK AND FEEL
     static PrefEntry themeNameWithoutBackslash
             = new PrefEntry("**", "themeNameWithoutBackslash", "theme", "name of the graphical theme");
@@ -398,7 +416,7 @@ public class MyPrefs {
 
     //REPEATRULE
     static PrefEntry repeatMaxInterval = new PrefEntry("**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
-    static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead = new PrefEntry("xxx", "repeatMaxNumberFutureInstancesToGenerateAhead", 10, "**");
+    static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead = new PrefEntry("repeatMaxNumberFutureInstancesToGenerateAhead", "repeatMaxNumberFutureInstancesToGenerateAhead", 10, "0 disables - TODO**");
     static PrefEntry repeatMaxNumberFutureDaysToGenerateAhead = new PrefEntry("zzz", "repeatMaxNumberFutureDaysToGenerateAhead", 31, "**");
     static PrefEntry maxNumberRepeatInstancesToDeleteWithoutConfirmation = new PrefEntry("ttt", "maxNumberRepeatInstancesToDeleteWithoutConfirmation", 1, "**");
     static PrefEntry repeatSetRelativeFieldsWhenCreatingRepeatInstances
@@ -406,6 +424,7 @@ public class MyPrefs {
                     "set the relative date fields like Alarm/HideUntil/StartBy/Autoexpire** etc to same time before/after due date**");
     static PrefEntry repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule = new PrefEntry("Reuse existing instances when changing " + RepeatRuleParseObject.REPEAT_RULE, "repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule", true, "When changing a repeat rule, reuse any task instances that already exist, this will keep any edits to such instances");
     static PrefEntry repeatHidePreviousTasksDetails = new PrefEntry("lll", "repeatHidePreviousTasksDetails", true, "When editing an existing repeat rule, expand the list of existing tasks");
+    static PrefEntry repeatMaxNumberOfRepeatsToGenerate = new PrefEntry("To avoid that too many repeats get generated and overflod the server or the app, 0 disables", "repeatMaxNumberOfRepeatsToGenerate", 20, "more of an internal limitation for now**"); //TODO: what happens if the max is reached? Will the algorithms still work?
 
     //ITEMS IN LIST
     static PrefEntry itemListAlwaysShowHideUntilDate = new PrefEntry("ppp", "itemListAlwaysShowHideUntilDate", true, "**");

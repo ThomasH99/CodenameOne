@@ -1868,15 +1868,15 @@ public class DAO {
      * @return
      */
     public List<Item> getAllItems(boolean includeTemplates) {
-        return getAllItems(includeTemplates, false);
+        return getAllItems(includeTemplates, false, false);
     }
 
-    public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks) {
-        return getAllItems(includeTemplates, onlyLeafTasks, false);
-    }
+//    public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks) {
+//        return getAllItems(includeTemplates, onlyLeafTasks, false);
+//    }
 
     public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks, boolean onlyWithoutOwner) {
-        return getAllItems(includeTemplates, onlyLeafTasks, onlyWithoutOwner, true);
+        return getAllItems(includeTemplates, onlyLeafTasks, onlyWithoutOwner, false);
     }
 
     public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks, boolean onlyWithoutOwner, boolean fetchFromScratch) {
@@ -3808,7 +3808,7 @@ public class DAO {
      * same screen
      * @return
      */
-    public FilterSortDef getFilterSortDef(String screenId, String objectId) { //, String filterName) {
+    public FilterSortDef getFilterSortDefXXX(String screenId, String objectId) { //, String filterName) {
         ParseQuery<FilterSortDef> query = ParseQuery.getQuery(FilterSortDef.CLASS_NAME);
         query.whereEqualTo(FilterSortDef.PARSE_SCREEN_ID, screenId);
         query.whereEqualTo(FilterSortDef.PARSE_FILTERED_OBJECT_ID, objectId);
@@ -3829,7 +3829,7 @@ public class DAO {
         return filterSortDef;
     }
 
-    public FilterSortDef getFilterSortDef(String objectId) {//, String filterName) {
+    public FilterSortDef getFilterSortDefXXX(String objectId) {//, String filterName) {
         //TODO!! change the use of objectId as a string to usual Parse pattern
         FilterSortDef filterSortDef = null;
 
@@ -4806,7 +4806,7 @@ public class DAO {
     Check that all referenced elements exist (Categories, owners, repeatRules
     @param item 
      */
-    void cleanUpItem(Item item) {
+    void cleanUpItem(Item item, boolean executeCleanup) {
 //        boolean checkOwner = true;
         //Check that if an owner is defined, it exists, and that it contains the item in its list. NB! ItemLists must then only check that their items point the themselves and not another list
 //        if (checkOwner && item.getOwner() != null) {
@@ -4919,19 +4919,22 @@ public class DAO {
                 }
 //                i++;
 //            } else if (!subtask.getOwner().equals(item)) {
-            }
-            if (false && !subtask.getOwner().equals(item)) { //do not this this for subtasks - incompatible with the check above
+            } else
+//            if (false && !subtask.getOwner().equals(item)) { //do not this this for subtasks - incompatible with the check above
+            if (subtask.getOwner()!=item) { //subtask ownership 'wins' over other ownerships (e.g. if subtask is also in a list or a project at a higher level
                 Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has another owner==\"" + subtask.getOwner() + "\"", logLevel);
                 if (executeCleanup) {
 //                    subtasks.remove(subtask); //
                     subtask.setOwner(item); //force owner of subtask to this item
-                    item.setList(subtasks);
+//                    item.setList(subtasks); //no need to setList since subtask is already in list of subtasks, so no change
+                    saveInBackground(subtask); //save new owner
 //                } else {
                 }
 //                    i++;
 //            } else {
 //                i++;
             }
+            cleanUpItem(subtask, executeCleanup); //iterate down the hierarchy
             i++;
 
         }
@@ -5036,6 +5039,10 @@ public class DAO {
     }
 
     boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup) {
+        return cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
+    }
+    
+    boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup, boolean cleanupItems) {
         boolean issuesFound = false;
         String text = itemListOrCategory.getText();
         String objectIdP = itemListOrCategory.getObjectIdP();
@@ -5044,7 +5051,7 @@ public class DAO {
         if (itemListOrCategory instanceof Category && itemListOrCategory.getOwner() != CategoryList.getInstance()) {
             Log.p(prefix + " not in CategoryList, but in [" + itemListOrCategory.getOwner().getObjectIdP() + "]");
             if (executeCleanup) itemListOrCategory.setOwner(CategoryList.getInstance());
-        } else if (itemListOrCategory instanceof ItemList && itemListOrCategory.getOwner() != ItemListList.getInstance()) {
+        } else if (itemListOrCategory instanceof ItemList && itemListOrCategory.getOwner() != ItemListList.getInstance() && itemListOrCategory!=Inbox.getInstance()) {
             Log.p(prefix + " not in ItemListList, but in [" + itemListOrCategory.getOwner().getObjectIdP() + "]");
             if (executeCleanup) itemListOrCategory.setOwner(ItemListList.getInstance());
         }
@@ -5115,6 +5122,8 @@ public class DAO {
                             }
                         }
                     } // else: if owner is not null, then if the owner is wrong, it will be fixed when fixing the item itself elsewhere
+                    if (cleanupItems) 
+                        cleanUpItem(item, executeCleanup);
                 }
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -6074,7 +6083,7 @@ public class DAO {
             Date now = new Date(); //UI: only cache data that was already changed when update was launched
             Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
 
-            if (MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active
+            if (true || MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active -> test doesn't make sense since app cannot currently function without cache
                 //get date when local cache was last updated
                 if (Storage.getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH)) {
                     lastCacheRefreshDate = (Date) Storage.getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH); //read in when initializing the Timer - from here on it is only about saving updates
@@ -6082,6 +6091,7 @@ public class DAO {
                 Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
             }
             boolean result = cacheAllData(lastCacheRefreshDate, now);
+            Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date only *after* caching is done, in case app is interrupted (so it will restart from same place next time)!
             if (ip != null) {
                 ip.dispose();
             }

@@ -24,16 +24,16 @@ public class MyUtil {
         }
         StringBuilder s = new StringBuilder(inputStr);
         int idx;
-        while ((idx = s.toString().indexOf('\n')) != -1) {
+        while (s.length()>0 && (idx = s.toString().indexOf('\n')) != -1) {
 //            inputStr = inputStr.substring(0, idx) + inputStr.substring(idx + 1, inputStr.length());
             s.deleteCharAt(idx);
         }
-        while (s.toString().charAt(0) == ' ') {
+        while (s.length()>0 && s.toString().charAt(0) == ' ') {
 //            inputStr = inputStr.substring(1);
             s.deleteCharAt(0);
         }
 //        while (inputStr.charAt(inputStr.length()-1)==' ' || inputStr.charAt(inputStr.length()-1)=='\n')
-        while (s.toString().charAt(s.length() - 1) == ' ') {
+        while (s.length()>0 && s.toString().charAt(s.length() - 1) == ' ') {
 //            inputStr = inputStr.substring(0, inputStr.length() - 2);
             s.deleteCharAt(s.length() - 1);
         }
@@ -122,11 +122,11 @@ public class MyUtil {
         StringBuilder s = new StringBuilder(inputStr);
         int idx;
         //delete newlines
-        while ((idx = s.toString().indexOf('\n')) != -1) {
+        while (s.length()>0 && (idx = s.toString().indexOf('\n')) != -1) {
             s.deleteCharAt(idx);
         }
         //delete inline spaces
-        while ((idx = s.toString().indexOf(' ')) != -1) {
+        while (s.length()>0 && (idx = s.toString().indexOf(' ')) != -1) {
             s.deleteCharAt(idx);
         }
         return s.toString();

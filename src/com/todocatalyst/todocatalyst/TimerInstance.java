@@ -39,7 +39,8 @@ public class TimerInstance extends ParseObject {
 //    final static String PARSE_AUTOSTART_TIMER = "autostart"; //automatically startTimer the timer on the next item 
 //    final static String PARSE_TIMER_PAUSED = "paused"; //timer is only paused (e.g. by interrupt) so shoud automatically restart when interrupt is over 
     final static String PARSE_TIMER_WAS_INTERRUPTED_WHILE_RUNNING = "interrupted"; //timer was interrupted while running so should automatically restart when interrupt is over 
-    final static String PARSE_TIMER_TIME_EVEN_INVALID_ITEMS = "timeInvalidTasks"; //timer was interrupted while running so should automatically restart when interrupt is over 
+    final static String PARSE_TIMER_TIME_EVEN_INVALID_ITEMS = "timeInvalidTasks"; //time eg Done/Cancelled tasks, used when launching timer via leftSwipe directly on any tasks, to timer will continue on (equally) invalid subtasks etc
+    final static String PARSE_TIMER_FULL_SCREEN = "fullScreen"; //timer was interrupted while running so should automatically restart when interrupt is over 
 //    final static String PARSE_TIMER_SHOWS_TOTAL_ACTUAL = "showTotal"; //should Timer show total time spend on task, or only time spend during this timing sessions?
 //    final static String PARSE_TIMER_AUTO_GOTO_NEXT_TASK = "autoNextTask"; //should Timer show total time spend on task, or only time spend during this timing sessions?
 //    private boolean timeEvenInvalidItem = false; //TODO: no need to persist as long as it only supports timing of the specific swipeleft started task (and e.g. invalid subtasks)
@@ -177,6 +178,21 @@ public class TimerInstance extends ParseObject {
         timedItem = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(timedItem);
 //        }
         return timedItem;
+    }
+
+    public void setFullScreen(boolean fullScreen) {
+        if (fullScreen) {
+            put(PARSE_TIMER_FULL_SCREEN, true);
+        } else {
+            remove(PARSE_TIMER_FULL_SCREEN);
+        }
+    }
+
+    public boolean isFullScreen() {
+        Boolean fullScreen = getBoolean(PARSE_TIMER_FULL_SCREEN);
+        if (fullScreen != null)
+            return true;
+        else return false;
     }
 
     private void setItemList(ItemList itemList) {
@@ -732,7 +748,7 @@ public class TimerInstance extends ParseObject {
         if (update) {
             setTimedItem(nextTimedItem);
             if (project instanceof Item)
-            setTimedProject(project); //set project
+                setTimedProject(project); //set project
 //            else if (project instanceof WorkSlot)
 //            setTimedProject(project); //set project
         }

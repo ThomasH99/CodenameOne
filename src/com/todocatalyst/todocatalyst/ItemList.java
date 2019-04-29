@@ -66,7 +66,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    private List<? extends ItemAndListCommonInterface> cachedList = null;
 //    private List<E> cachedList = null;
 //    private List<? extends ItemAndListCommonInterface> filteredSortedList = null;
-    private List<E> filteredSortedList = null;
+//    private List<E> filteredSortedList = null;
     private int selectedIndex;// = 0;
     /**
      * contains the list of workslots (if defined, otherwise null)
@@ -100,7 +100,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         setText(listName);
         setNoSave(temporaryNoSaveList);
         if (!temporaryNoSaveList && saveImmediatelyToParse) {
-            DAO.getInstance().saveInBackground((ParseObject)this);
+            DAO.getInstance().saveInBackground((ParseObject) this);
         }
     }
 
@@ -176,6 +176,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public ItemAndListCommonInterface cloneMe(Item.CopyMode copyFieldDefintion, int copyExclusions) {
         return cloneMe();
     }
+
     public WorkTimeAllocator getWorkTimeAllocatorN() {
         if (workTimeAllocator == null && mayProvideWorkTime()) {
             workTimeAllocator = new WorkTimeAllocator(this);
@@ -959,7 +960,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             remove(PARSE_ITEMLIST); //if setting a list to null or setting an empty list, then simply delete the field
         }
 //        cachedList = null; //reset
-        filteredSortedList = null; //reset
+//        filteredSortedList = null; //reset
     }
 
 //    List<E> getList(int index, int amount) {
@@ -1039,7 +1040,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         if (cachedList != null) {
 //                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList); //optimization?? heavy operation, any way (OTHER than caching which does work
-        if (Config.CHECK_OWNERS)checkOwners( cachedList );
+            if (Config.CHECK_OWNERS) checkOwners(cachedList);
 //        {
 //            for (E elt : cachedList) {
 //                Item item = (Item)elt;
@@ -1080,12 +1081,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterItem) {
+    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefElement) {
         int index = indexOf(refElement);
         if (index < 0)
             addToList(newElement);
         else
-            addToList(index + (addAfterItem ? 1 : 0), newElement);
+            addToList(index + (addAfterRefElement ? 1 : 0), newElement);
 //        addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
 //        if (Config.TEST) {
 //            ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this), 
@@ -1559,7 +1560,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param filterSortDef
      */
     public void setFilterSortDef(FilterSortDef filterSortDef) {
-        if (filterSortDef != null) {
+//        if (filterSortDef != null && filterSortDef != FilterSortDef.getDefaultFilter()) { //only save if not the default filter
+        if (filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) { //only save if changed compared to the default filter
             if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved
                 DAO.getInstance().saveInBackground(filterSortDef); //
             }
@@ -1567,17 +1569,21 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else {
             remove(PARSE_FILTER_SORT_DEF);
         }
-        filteredSortedList = null;
+//        filteredSortedList = null;
     }
 
     public FilterSortDef getFilterSortDef() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
+        if (filterSortDef == null && MyPrefs.useDefaultFilterInItemListsWhenNoneDefined.getBoolean())
+            return FilterSortDef.getDefaultFilter();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null) {
 //            return filterSortDef;
 //        } else {
 //            return null;
 //        }
+//</editor-fold>
         return filterSortDef;
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1841,6 +1847,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
     }
 
+//    public void moveToPositionOf(E item, E itemRef, boolean insertAfter) {
+//        //NB. Since just reshuffling the list, no impact on any bags
+//        List listFull = getListFull();
+//
+//        int newPos = listFull.indexOf(itemRef)+ (insertAfter ? 1 : 0);
+//        int oldPos = listFull.indexOf(item) ;
+//        
+//        listFull.add(newPos, item); //insert *before* remove so that removing the item doesn't impact the insert index
+//        listFull.remove(item);
+//        
+//        setList(listFull);
+//        fireDataChangedEvent(DataChangedListener.CHANGED, newPos);
+//    }
+
     public ItemAndListCommonInterface setItemAtIndex(E item, int index) {
 //        List<? extends ItemAndListCommonInterface> editedList = getListFull();
         List<E> listFull = getListFull();
@@ -1884,7 +1904,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     public boolean setToList(int index, ItemAndListCommonInterface subItemOrList) {
         setItemAtIndex((E) subItemOrList, index);
-        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this, () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this
+                || this.equals(subItemOrList.getOwner()), () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
@@ -3185,9 +3206,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             }
         }
 
-        if (getObjectIdP() != null && itemList.getObjectIdP() != null) {
+        if (getObjectIdP() != null) {//&& itemList.getObjectIdP() != null) {
             //compare isDirty in case we have two instances of the same 
-            ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(), () -> "comparing dirty and not dirty instance of same object=" + this);
+            if (Config.CHECK_OWNERS) ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(),
+                        () -> "comparing dirty and not dirty instance of same object, this=" + this + ", other=" + obj);
             if (getObjectIdP().equals(itemList.getObjectIdP())) {
                 return true;
             }
@@ -3502,7 +3524,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                ASSERT.that(workSlot.getOwner() == this, "ERROR in owner: WorkSlot=" + workSlot + ", workSlot.owner=" + workSlot.getOwner() + ", should be=" + this);
 //            }
 //        }
-
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
             if (Config.CHECK_OWNERS) checkOwners(workslots);
@@ -3516,7 +3537,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        WorkSlotList workSlots = getWorkSlotListN(refreshWorkSlotListFromDAO);
 //        return null;
 //    }
-
 //    @Override
 //    public WorkSlotList getWorkSlotListN() {
 //        if (workSlotListBuffer == null) {
@@ -3533,6 +3553,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        workTimeAllocator = null;
         if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
 //            put(PARSE_WORKSLOTS, workSlotList.getWorkSlots());
+            workSlotList.setOwner(this);
             put(PARSE_WORKSLOTS, workSlotList.getWorkSlotListFull());
         } else {
             remove(PARSE_WORKSLOTS);
@@ -3572,7 +3593,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //         public WorkTimeSlices getAllocatedWorkTimeN() { //shouldn't be necessary because an ItemList does not get workTime allocated, it can only have its own workslots
 //        throw new Error("Not supported yet."); //should not be called for ItemLists and Categories (or WorkSlots)
 //    }
-    
     /**
      * forces a recalculation of workTime
      */

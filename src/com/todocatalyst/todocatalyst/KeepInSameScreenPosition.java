@@ -32,7 +32,7 @@ import static com.todocatalyst.todocatalyst.Config.TEST;
  *
  * @author Thomas
  */
-class KeepInSameScreenPosition {
+public class KeepInSameScreenPosition {
 
     private int relScroll; //store the 'relative scroll' (magic number) to 
     private int scrollY = 0; //Integer.MIN_VALUE; //store the total scrollY in case we cannot find the new component corresponding to the old one
@@ -464,7 +464,7 @@ class KeepInSameScreenPosition {
      */
     void setNewScrollYPosition() {
         if (newComponent == null) {
-            if (true) return;
+            if (false && true) return;
 //            if (scrollY != 0) {
             if (scrollY != 0) {//Integer.MIN_VALUE) {
                 //original object has disappeared from the list (eg filtered after set Done) so simply scroll to same Y position

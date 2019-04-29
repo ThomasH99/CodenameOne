@@ -85,7 +85,7 @@ public interface RepeatRuleObjectInterface {
 //    void saveInsertList();
 //    void insertIntoListAndSaveList(RepeatRuleObjectInterface repeatRuleObject);
 //public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject);    
-    public ItemAndListCommonInterface insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface newRepeatRuleInstance);
+    public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance);
 
     /**
      *

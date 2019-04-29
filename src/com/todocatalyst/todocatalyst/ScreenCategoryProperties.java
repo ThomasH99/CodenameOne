@@ -36,30 +36,34 @@ public class ScreenCategoryProperties extends MyForm {
 //    static Map<String, GetParseValue> parseIdMap = new HashMap<String, GetParseValue>() ;
     Category category;
     private static String screenTitle = "Category";
-    private Button backButton;
-    private Command backCommand;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Button backButton;
+//    private Command backCommand;
 // protected static String FORM_UNIQUE_ID = "ScreenEditCategory"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //     private UpdateField updateActionOnDone;
-
+    
 //    ScreenCategory(Category category, MyForm previousForm) { //throws ParseException, IOException {
 //        this(category, previousForm, () -> {
 //        });
 //    }
+//</editor-fold>
     ScreenCategoryProperties(Category category, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
         super(category.getText(), previousForm, doneAction);
         setUniqueFormId("ScreenEditCategory");
 //        ScreenItemP.item = item;
         this.category = category;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        ScreenItemP.previousForm = previousForm;
 //        this.previousForm = previousForm;
 //        this.updateActionOnDone = doneAction;
-        // we initialize the main form and add the favorites command so we can navigate there
+// we initialize the main form and add the favorites command so we can navigate there
 //        form = new Form("TodoCatalyst");
 //        form = this;
-        // we use border layout so the list will take up all the available space
+// we use border layout so the list will take up all the available space
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
 //        setToolbar(new Toolbar());
 //        setTitle(screenTitle);
+//</editor-fold>
 
         setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
@@ -74,17 +78,18 @@ public class ScreenCategoryProperties extends MyForm {
     /**
     return true if (possibly modified) category can be saved
      */
-    public  boolean checkCategoryIsValidForSaving(String categoryName) {
+    public static boolean checkCategoryIsValidForSaving(String categoryName, Category category) {
         //TODO extend to check valid subcategories, auto-words, ...
         String errorMsg = null;
 //        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
+        categoryName = MyUtil.removeTrailingPrecedingSpacesNewLinesEtc(categoryName);
         if (categoryName.isEmpty())
             errorMsg = Format.f("{0 category_or_list} name cannot be empty", Category.CATEGORY);
-        else if (CategoryList.getInstance().findCategoryWithName(categoryName) != null 
-                &&CategoryList.getInstance().findCategoryWithName(categoryName)!=category)
+        else if (CategoryList.getInstance().findCategoryWithName(categoryName) != null
+                && CategoryList.getInstance().findCategoryWithName(categoryName) != category)
             //                return "Category \"" + description.getText() + "\" already exists";
             //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
-            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", Category.CATEGORY, categoryName);
+            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists, and more than one {0} with same name is not allowed. Please set a different name.", Category.CATEGORY, categoryName);
 
         if (errorMsg != null) {
             Dialog.show("Error", errorMsg, "OK", null);
@@ -101,6 +106,7 @@ public class ScreenCategoryProperties extends MyForm {
         super.refreshAfterEdit();
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    /**
 //    return true if (possibly modified) category can be saved
 //    */
@@ -113,14 +119,16 @@ public class ScreenCategoryProperties extends MyForm {
 //            //                return "Category \"" + description.getText() + "\" already exists";
 //            //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
 //            errorMsg = Format.f("Category \"{0 just_entered_category_name}\" already exists", category.getText());
-//        
+//
 //        if (errorMsg != null) {
 //            Dialog.show("Error", errorMsg, "OK", null);
 //            return false;
 //        } else return true;
 //    }
+//</editor-fold>
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle());
 //        toolbar.addCommandToLeftBar("Done", icon, (e) -> Log.p("Clicked"));
@@ -138,10 +146,13 @@ public class ScreenCategoryProperties extends MyForm {
 //        Command backCmd = makeDoneUpdateWithParseIdMapCommand();
 //        backButton = new Button(backCmd);
 //        toolbar.addCommandToLeftBar(backCmd);
-        toolbar.setBackCommand(backCommand = makeDoneUpdateWithParseIdMapCommand());
+//</editor-fold>
+//        toolbar.setBackCommand(backCommand = makeDoneUpdateWithParseIdMapCommand());
+        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            Log.p("Clicked");
 //            item.revert(); //forgetChanges***/refresh
 //            previousForm.showBack(); //drop any changes
@@ -149,21 +160,25 @@ public class ScreenCategoryProperties extends MyForm {
 
 //            previousForm.show(); //drop any changes
 //                showPreviousScreenOrDefault(previousForm, false);
+//</editor-fold>
                 showPreviousScreenOrDefault(false);
             });
         }
 
         //DELETE
         toolbar.addCommandToOverflowMenu(CommandTracked.create("Delete", null, (e) -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            Log.p("Clicked");
 //            item.revert(); //forgetChanges***/refresh
 //            previousForm.showBack(); //drop any changes
 //            DAO.getInstance().delete(category);
-            category.softDelete();
+//            category.softDelete();
 //            previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
 //            showPreviousScreenOrDefault(previousForm, true);
+//</editor-fold>
+            category.softDelete();
             showPreviousScreenOrDefault(true);
         }));
         if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
@@ -286,7 +301,7 @@ public class ScreenCategoryProperties extends MyForm {
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
-        setCheckOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText()));
+        setCheckOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText(), category));
 
         return content;
     }

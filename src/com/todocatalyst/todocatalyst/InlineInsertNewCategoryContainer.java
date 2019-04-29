@@ -141,7 +141,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
     private Category createNewCategory(boolean createEvenIfNoTextInField) {
         String text = textEntryField.getText();
 
-        if (ScreenItemListProperties.checkItemListIsValidForSaving(text)) {
+        if (ScreenCategoryProperties.checkCategoryIsValidForSaving(text, category)) {
             Category newCategory = new Category(text); //true: interpret textual values
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             return newCategory;
@@ -170,8 +170,9 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
 
     private void closeInsertNewCategoryContainer() {
         //UI: close the text field
-        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(this);
-        parent.animateLayout(300);
+        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(this);
+        if (parent != null)
+            parent.animateLayout(300);
     }
 
     /**

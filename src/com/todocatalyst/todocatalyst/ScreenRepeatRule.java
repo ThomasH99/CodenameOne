@@ -195,6 +195,14 @@ public class ScreenRepeatRule extends MyForm {
 //        setupLayoutAndFields();
 //    }
 //</editor-fold>
+    public boolean checkRepeatRuleIsValid(boolean noMissingFields) {
+        String errorMsg = noMissingFields ? null : "Missing selection in one or more choices";
+        if (errorMsg != null) {
+            Dialog.show("Error", errorMsg, "OK", null);
+            return false;
+        } else return true;
+    }
+
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
 
         //DONE
@@ -220,12 +228,8 @@ public class ScreenRepeatRule extends MyForm {
 //        cmd.putClientProperty("android:showAsAction", "withText");
 //        toolbar.addCommandToLeftBar(cmd);
 //</editor-fold>
-        Command cmd = makeDoneUpdateWithParseIdMapCommand(true, () -> {
-//            RepeatRuleParseObject tempMyRepeatRule = new RepeatRuleParseObject();
-            if (restoreEditedFieldsToRepeatRule(repeatRuleEdited)) {
-                return (String) null;
-            } else return "Missing selection in one or more choices";
-        });
+        setCheckOnExit(() -> checkRepeatRuleIsValid(restoreEditedFieldsToRepeatRule(repeatRuleEdited)));
+        Command cmd = makeDoneUpdateWithParseIdMapCommand(true);
         cmd.putClientProperty("android:showAsAction", "withText");
         toolbar.addCommandToLeftBar(cmd);
 
@@ -381,7 +385,6 @@ public class ScreenRepeatRule extends MyForm {
         }
 
 //        daysInWeekField = new ComboBoxLogicalMultiSelection(new int[]{RepeatRule.MONDAY, RepeatRule.TUESDAY, RepeatRule.WEDNESDAY, RepeatRule.THURSDAY, RepeatRule.FRIDAY, RepeatRule.SATURDAY, RepeatRule.SUNDAY}, new String[]{MyDate.MONDAY, MyDate.TUESDAY, MyDate.WEDNESDAY, MyDate.THURSDAY, MyDate.FRIDAY, MyDate.SATURDAY, MyDate.SUNDAY});
-        int frequency = repeatRuleEdited.getFrequency();
         //Repeat from "completion date", "due date", "today"
         if (isForWorkSlot) {
 //            repeatFromDueOrCompletedField = new ComboBoxLogicalNames(MyRepeatRule.getRepeatRuleTypeNumbers(), new String[]{"inactive** date", "start date"}, myRepeatRule.getRepeatFromDueOrCompleted());
@@ -431,6 +434,7 @@ public class ScreenRepeatRule extends MyForm {
 //            repeatStartDateLabel=new Label(MyDate.formatDateTimeNew(endDate));
 //        }
         //FREQUENCY: DAILY/MONTHLY/ BASIS
+        int frequency = repeatRuleEdited.getFrequency();
 //        frequencyField = new MyToggleButton(MyRepeatRule.getRepeatRuleFrequencyNames(), MyRepeatRule.getRepeatRuleFrequencyNumbers(), frequency);
 //        frequencyField = new ComboBoxLogicalNames(MyRepeatRule.getRepeatRuleFrequencyNumbers(), MyRepeatRule.getRepeatRuleFrequencyNames(), frequency);
         frequency_DailyWeekMonthYearly_Field = new MyToggleButton(RepeatRuleParseObject.getRepeatRuleFrequencyNames(), RepeatRuleParseObject.getRepeatRuleFrequencyNumbers(), frequency);
@@ -920,7 +924,7 @@ public class ScreenRepeatRule extends MyForm {
      * returns true if all necessary values are set, and false if not
      *
      * @param myRepeatRule
-     * @return
+     * @return true if everything OK (no missing data)
      */
     private boolean restoreEditedFieldsToRepeatRule(RepeatRuleParseObject myRepeatRule) {
 
@@ -937,7 +941,7 @@ public class ScreenRepeatRule extends MyForm {
 
         myRepeatRule.setRepeatType(repeatFrom_NoneCompletedDue_Field.getSelectedValue());
         if (repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
-            return !missingData;
+            return true; //!missingData;
         }
 
         if (true || !isForWorkSlot) {
@@ -1177,7 +1181,7 @@ public class ScreenRepeatRule extends MyForm {
         return !missingData;
     }
 
-    void restoreEditedFieldsOnDone() {
+    void restoreEditedFieldsOnDoneXXX() {
 //        repeatRuleOwner.setRepeatStartTime(repeatStartDatePicker.getDate()); //update due date in case it was changed while editing the repeat rule
         if (!restoreEditedFieldsToRepeatRule(repeatRuleEdited)) {
             Dialog.show("Error", "Missing selection in one or more choices", "OK", null);

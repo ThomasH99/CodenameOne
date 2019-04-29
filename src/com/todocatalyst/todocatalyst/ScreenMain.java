@@ -105,7 +105,7 @@ public class ScreenMain extends MyForm {
     }
 
     public void addCommandsToToolbar(Toolbar toolbar, Container cont) { //, Resources theme) {
-        toolbar.addCommandToRightBar(newItemSaveToInboxCmd());
+        toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
         MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconAlarmSetLabelStyle/*FontImage.create(" \ue838 ", iconStyle)*/,
@@ -333,7 +333,7 @@ public class ScreenMain extends MyForm {
         );
         Command allTasksWithoutOwner = MyReplayCommand.create("Tasks without owner**"/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                     new ScreenListOfItems("Tasks without owner**",
-                            () -> new ItemList("Tasks without owner", DAO.getInstance().getAllItems(false, false, true), true),
+                            () -> new ItemList("Tasks without owner", DAO.getInstance().getAllItems(false, false, true, false), true),
                             ScreenMain.this, (i) -> {
                             }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                 }

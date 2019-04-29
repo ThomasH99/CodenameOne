@@ -20,15 +20,13 @@ import com.codename1.ui.Container;
  * @author Thomas
  */
 public class ScreenSettingsRepeatRules extends ScreenSettingsCommon {
-    
+
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-
-
     ScreenSettingsRepeatRules(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
-          super(mainScreen, doneAction);
-          setUniqueFormId("ScreenItemSettings");
-  }
+        super(mainScreen, doneAction);
+        setUniqueFormId("ScreenItemSettings");
+    }
 
     /**
      * This method shows the main user interface of the app
@@ -37,6 +35,12 @@ public class ScreenSettingsRepeatRules extends ScreenSettingsCommon {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
         addSettingBoolean(content, parseIdMap2, MyPrefs.repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule);
-
+        addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberOfRepeatsToGenerate, 0, 52, 1);
+        addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxInterval, 0, 731, 1);
+        addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead, 0, 30, 1);
+        addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead, 0, 62, 1);
+        addSettingInt(content, parseIdMap2, MyPrefs.maxNumberRepeatInstancesToDeleteWithoutConfirmation, 1, 1000, 1);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.repeatHidePreviousTasksDetails);
     }
 }

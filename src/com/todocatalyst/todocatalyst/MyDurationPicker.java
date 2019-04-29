@@ -21,7 +21,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //    private String zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN;
     private String zeroValuePattern = null;
 //    private int defaultValueInMinutes = 0;
-    private Long preserveMillis = null;
+    private long preserveSecondsAndMillis = 0; //preserve seconds and milliseconds so if the picker is used eg for Actuals, and closed with Done, but value not changed, that the value won't dhange and trigger an errenous update of the item
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        String title;
 //        String parseId;
@@ -171,10 +171,11 @@ class MyDurationPicker extends Picker implements SwipeClear {
 ////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
 //            clearButton.setVisible(timeInMillis != 0); //hide clear button when field is cleared, show if value is set
 //        }
-        long millis = timeInMillis % 1000;
-        if (millis != 0) {
-            preserveMillis = millis;
-        }
+//        long millis = timeInMillis % MyDate.MINUTE_IN_MILLISECONDS;
+//        if (true || millis != 0) {
+//            preserveSeconds = millis; //always save milliseconds
+//        }
+            preserveSecondsAndMillis = timeInMillis % MyDate.MINUTE_IN_MILLISECONDS;; //always save seconds
 //        super.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
         super.setDuration(timeInMillis);
 //        notifyMyActionListeners();
@@ -208,12 +209,13 @@ class MyDurationPicker extends Picker implements SwipeClear {
 
     @Override
     public long getDuration() {
-        long editedMillis = super.getDuration();
-        long millis = editedMillis % 1000;
-        if (millis == 0 && preserveMillis != null) { //if milliseconds were removed during editing, and were preserved before editing, then add back again
-            editedMillis += preserveMillis; //add the missing millis back again
-            preserveMillis = null;
-        }
+//        long millis = editedMillis % 1000;
+//        if (millis == 0 && preserveSeconds != null) { //if milliseconds were removed during editing, and were preserved before editing, then add back again
+//            editedMillis += preserveSeconds; //add the missing millis back again
+//            preserveSeconds = null;
+//        }
+        long editedMillis = super.getDuration() + preserveSecondsAndMillis;
+//            preserveSeconds = 0;  //DON'T reset, since same picker may be activated multiple times
         return editedMillis;
     }
 

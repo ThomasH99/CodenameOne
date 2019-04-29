@@ -365,7 +365,7 @@ public class MyForm extends Form {
         }
 //        this.previousForm = previousForm;
 //        this.previousForm = getComponentForm();
-        this.updateActionOnDone = updateActionOnDone;
+        setUpdateActionOnDone(updateActionOnDone);
 //        ASSERT.that(updateActionOnDone != null, () -> "doneAction should always be defined, Form=" + this); //NOT necessary, we may set it with setUpdateActionOnDone()
         parseIdMapReset();
 
@@ -453,6 +453,7 @@ public class MyForm extends Form {
     protected void restoreKeepPos() {
         if (this.keepPos != null) {
             this.keepPos.setNewScrollYPosition();
+            this.keepPos = null;
         }
 //        else if (previousValues.get(KEEP_POS_KEY)!=null)
 //            this.keepPos.setNewScrollYPosition();
@@ -860,29 +861,6 @@ public class MyForm extends Form {
 //        return dia;
 //    }
 //</editor-fold>
-    class MySimpleDateFormat extends SimpleDateFormat {
-
-        String showWhenUndefined;
-
-        /**
-         * Construct a SimpleDateFormat with a given pattern.
-         *
-         * @param pattern
-         */
-        public MySimpleDateFormat(String pattern, String showWhenUndefined) {
-            super(pattern);
-            this.showWhenUndefined = showWhenUndefined;
-        }
-
-        public String format(Date source) {
-            if (source.getTime() == 0) {
-                return showWhenUndefined;
-            } else {
-                return super.format(source);
-            }
-        }
-    }
-
 ////<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * // * stores the index of the string array in Parse. E.g. ["str1",
@@ -1038,219 +1016,7 @@ public class MyForm extends Form {
 //</editor-fold>
     static int COLUMNS_FOR_INT = 5;
 
-    class MyNumericTextField extends TextField {
-
-        MyNumericTextField(String hint, Map<Object, UpdateField> parseIdMap, GetDouble getValue, PutDouble setValue) {
-            super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
-//                        super("", 1, columns, constraint);
-//            setHint(hint);
-            setGrowByContent(false);
-            setAlignment(Component.RIGHT);
-//            setSameWidth(new Label("9999"));
-            setAutoDegradeMaxSize(true);
-//            setGrowLimit(maxRows);
-//            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
-//            setMaxSize(maxTextSize);
-            Double val = getValue.get();
-            if (val != 0) {
-//                this.setText(getValue.get() + "");
-//                DecimalFormat df2 = new DecimalFormat(".##");
-//                String s = df2.format(val);
-                String s = L10NManager.getInstance().format(val, 2);
-//                this.setText(val..get() + "");
-                this.setText(s);
-            }
-//            this.set //TODO how to ensure cursor is positioned at end of entered text and not beginning?
-            if (parseIdMap != null) {
-                parseIdMap.put(this, () -> setValue.accept(getText().equals("") ? 0 : Double.valueOf(getText())));
-            }
-        }
-
-        MyNumericTextField(String hint) {
-            super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
-            setGrowByContent(false);
-            setAlignment(Component.RIGHT);
-//            setSameWidth(new Label("9999"));
-            setAutoDegradeMaxSize(true);
-//            setGrowLimit(maxRows);
-//            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
-//            setMaxSize(maxTextSize);
-        }
-
-        void setVal(double val) {
-            if (val != 0) {
-//                DecimalFormat df2 = new DecimalFormat(".##");
-//                String s = df2.format(val);
-                String s = L10NManager.getInstance().format(val, 2);;
-                this.setText(s);
-            }
-        }
-    }
-
-    class MyIntTextField extends TextField {
-
-        int intMin = Integer.MIN_VALUE;
-        int intMax = Integer.MAX_VALUE;
-        int intDefault = 0;
-
-        MyIntTextField(Integer initialValue, String hint, Integer intMin, Integer intMax, Integer defaultValue) {
-            super("", hint, COLUMNS_FOR_INT, TextArea.NUMERIC);
-            if (intMin != null) {
-                this.intMin = intMin;
-            }
-            if (intMax != null) {
-                this.intMax = intMax;
-            }
-            if (defaultValue != null) {
-                this.intDefault = defaultValue;
-            }
-            setGrowByContent(false);
-            setAutoDegradeMaxSize(true);
-            if (initialValue != null) {
-                this.setText(initialValue + "");
-            }
-//            this.set //TODO how to ensure cursor is positioned at end of entered text and not beginning?
-        }
-
-        public int getValue() {
-            String str = getText();
-            int interval = intDefault;
-            if (str != null && str.length() > 0) {
-                interval = Integer.parseInt(str);
-                if (interval < intMin || interval > intMax) {
-                    interval = intDefault;
-                }
-            }
-            return interval;
-        }
-
-        MyIntTextField(String hint, Map<Object, UpdateField> parseIdMap, GetInt getValue, PutInt setValue, Integer intMin, Integer intMax, Integer defaultValue) {
-//            super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
-            this(getValue.get(), hint, intMin, intMax, defaultValue);
-//            this.set //TODO how to ensure cursor is positioned at end of entered text and not beginning?
-            parseIdMap.put(this, () -> setValue.accept(getValue()));
-        }
-    }
-
     static int COLUMNS_FOR_STRING = 20;
-
-    class MyTextField extends TextField {
-
-        MyTextField(String hint, Map<Object, UpdateField> parseIdMap, GetString getValue, PutString setValue) {
-            this(hint, COLUMNS_FOR_STRING, TextArea.ANY, parseIdMap, getValue, setValue);
-        }
-
-        MyTextField(String hint, int columns, int constraint, Map<Object, UpdateField> parseIdMap, GetString getValue, PutString setValue) {
-            this(hint, columns, 128, constraint, parseIdMap, getValue, setValue); //UI: 128 = default max size of a text field //TODO: make a preference or PRO feature
-        }
-
-        MyTextField(String hint, int columns, int maxTextSize, int constraint, Map<Object, UpdateField> parseIdMap, GetString getValue, PutString setValue) {
-            this(hint, columns, maxTextSize, constraint, parseIdMap, getValue, setValue, TextField.LEFT);
-        }
-
-        MyTextField(String hint, int columns, int maxTextSize, int constraint, Map<Object, UpdateField> parseIdMap, GetString getValue, PutString setValue, int alignment) {
-            super("", hint, columns, constraint);
-            setAlignment(alignment);
-            setGrowByContent(true);
-            setAutoDegradeMaxSize(true);
-//            setGrowLimit(maxRows);
-            setHint(hint);
-//            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
-            setMaxSize(maxTextSize);
-            setText(getValue.get());
-            parseIdMap.put(this, () -> setValue.accept(getText()));
-        }
-
-    };
-
-    class MyIntPicker extends Picker {
-
-        int intMin = Integer.MIN_VALUE;
-        int intMax = Integer.MAX_VALUE;
-//        int intDefault = 0;
-
-//                MyStringPicker(String[] stringArray, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
-        MyIntPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue) {
-            this(parseIdMap, get, set, minValue, maxValue, 1);
-        }
-
-        MyIntPicker(Integer value, Integer minValue, Integer maxValue) {
-            this(value, minValue, maxValue, 1);
-        }
-
-        MyIntPicker(Integer value, Integer minValue, Integer maxValue, Integer step) {
-            super();
-            if (minValue != null) {
-                this.intMin = minValue;
-            }
-            if (maxValue != null) {
-                this.intMax = maxValue;
-            }
-//            int defaultSelectedValue = get.get();
-            assert minValue < maxValue && step != 0 && value >= minValue && value <= maxValue && (value - minValue) % step == 0 : "wrong init values";
-            this.setType(Display.PICKER_TYPE_STRINGS);
-            int i = minValue;
-            int count = 0;
-            String[] strings = new String[((maxValue - minValue) / step) + 1];
-            while (i <= maxValue) {
-                strings[count] = Integer.toString(i);
-                count++;
-                i += step;
-            }
-
-            this.setStrings(strings);
-            this.setSelectedString(Integer.toString(value));
-        }
-
-        MyIntPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue, int step) {
-            this(get.get(), minValue, maxValue, step);
-            if (parseIdMap != null) {
-                parseIdMap.put(this, () -> {
-//                    String str = this.getSelectedString();
-//                    set.accept(Integer.parseInt(str));
-                    set.accept(getValueInt());
-                });
-            }
-        }
-
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        MyIntPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue, int step) {
-//            super();
-//            int defaultSelectedValue = get.get();
-//            assert minValue < maxValue && step != 0 && defaultSelectedValue >= minValue && defaultSelectedValue <= maxValue && (defaultSelectedValue - minValue) % step == 0 : "wrong init values";
-//            this.setType(Display.PICKER_TYPE_STRINGS);
-//            int i = minValue;
-//            int count = 0;
-//            String[] strings = new String[((maxValue - minValue) / step) + 1];
-//            while (i <= maxValue) {
-//                strings[count] = Integer.toString(i);
-//                count++;
-//                i += step;
-//            }
-//
-//            this.setStrings(strings);
-////        this.setSelectedString(stringArray[get.get()]);
-//            this.setSelectedString(Integer.toString(defaultSelectedValue));
-//            if (parseIdMap != null) {
-//                parseIdMap.put(this, () -> {
-//                    String str = this.getSelectedString();
-//                    set.accept(Integer.parseInt(str));
-//                });
-//            }
-//        }
-//</editor-fold>
-        public int getValueInt() {
-//            String str = getSelectedString();
-//            int interval;
-//            if (str != null && str.length() > 0) {
-//                interval = Integer.parseInt(str);
-//                if (interval < intMin || interval > intMax) {
-//                    interval = intDefault;
-//                }
-//            }
-            return Integer.parseInt(getSelectedString());
-        }
-    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    static Component clearcreate(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, boolean addClearButton) {
@@ -1390,21 +1156,8 @@ public class MyForm extends Form {
         }
     }
 
-    /**
-     * will iterate over all the fields in parseIdMap and call the stored lambda
-     * functions to update the corresponding fields in the edited ParseObject
-     *
-     * @param parseObject will save parseObject first if new object
-     */
-    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2, ParseObject parseObject) {
-        if (false && parseObject.getObjectIdP() == null) {
-            DAO.getInstance().saveInBackground(parseObject); //TODO!!! why is it necessary to save here??
-        }
-        putEditedValues2(parseIdMap2);
-    }
-
 //            for (String parseId : parseIdMap2.keySet()) {
-    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2) {
+    protected static void putEditedValues2OLD(Map<Object, UpdateField> parseIdMap2) {
 ////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
 //                parseIdMap.get(parseId).saveEditedValueInParseObject();
 //            }
@@ -1427,7 +1180,49 @@ public class MyForm extends Form {
         }
     }
 
-    protected void putEditedValues2() {
+    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2, ParseObject parseObject) {
+////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
+//                parseIdMap.get(parseId).saveEditedValueInParseObject();
+//            }
+        //Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
+//        ASSERT.that(parseIdMap2 != null);
+//        if (parseIdMap2 != null) {
+        UpdateField repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+//            UpdateField repeatRule = parseIdMap2.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
+//            if (false && repeatRule != null) {
+//                DAO.getInstance().saveInBackground((ParseObject) repeatRule); //MUST save before saving Item, since item will reference a new repeatRule
+//            }
+
+        for (Object parseId : parseIdMap2.keySet()) {
+//            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
+            parseIdMap2.get(parseId).update();
+        }
+        if (repeatRule != null) {
+            if (parseObject != null && parseObject.getObjectIdP() == null)
+                DAO.getInstance().saveInBackground(parseObject); //if not saved
+            repeatRule.update();
+        }
+//        }
+    }
+
+    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2) {
+        putEditedValues2(parseIdMap2, null);
+    }
+
+    /**
+     * will iterate over all the fields in parseIdMap and call the stored lambda
+     * functions to update the corresponding fields in the edited ParseObject
+     *
+     * @param parseObject will save parseObject first if new object
+     */
+    protected static void putEditedValues2XXX(Map<Object, UpdateField> parseIdMap2, ParseObject parseObject) {
+        if (false && parseObject.getObjectIdP() == null) {
+            DAO.getInstance().saveInBackground(parseObject); //TODO!!! why is it necessary to save here??
+        }
+        putEditedValues2(parseIdMap2);
+    }
+
+    protected void putEditedValues2XXX() {
         putEditedValues2(parseIdMap2);
     }
 
@@ -1460,8 +1255,10 @@ public class MyForm extends Form {
             inlineInsertContainer.getTextArea().startEditingAsync();
         }
 //        TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
-        if (true||!(this instanceof ScreenTimer6)) //don't refresh if Timer6 is being shown
-            TimerStack.getInstance().refreshOrShowTimerUI(this); //pass this since currentForm may be the previous (currently shown) form
+//        if (true || !(this instanceof ScreenTimer6)) //don't refresh if Timer6 is being shown
+//        if (!ReplayLog.getInstance().isReplayInProgress()) //don't refresh (which may show big timer) if replay is still ongoing
+//        if (!ReplayLog.getInstance().isReplayInProgress() || ReplayLog.getInstance().isReplayAtLastCommand()) //don't refresh (which may show big timer) if replay is still ongoing
+        TimerStack.getInstance().refreshOrShowTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
 
         if (true) {
             revalidateWithAnimationSafety();
@@ -1469,10 +1266,14 @@ public class MyForm extends Form {
             if (getStartEditingAsyncTextArea() != null) {
                 getStartEditingAsyncTextArea().startEditingAsync();
             }
+//            if (getStartEditingAsyncTextArea() != null) {
+//                getStartEditingAsyncTextArea().startEditingAsync();
+//            }
         }
         if (Config.TEST) {
             Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
         }
+
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -1638,7 +1439,7 @@ public class MyForm extends Form {
         if (callRefreshAfterEdit) {
             previousForm.refreshAfterEdit();
         }
-        previousForm.showBack();
+        previousForm.showBack(!(this instanceof ScreenTimer6));  //prevent exiting from ScreenTimer6 to pop the last replayCommand (since ScreenTimer6 is never launched with a replayCommand)
     }
 
 //    void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
@@ -1670,6 +1471,19 @@ public class MyForm extends Form {
 //            Container compList = null;
 //            compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
             Container compList = getCompList.get();
+            MyForm myForm = (MyForm) getComponentForm();
+            //UI: search will automatically remove an insert container (since it breaks the below algorithm)
+            if (myForm != null && myForm.getInlineInsertContainer() != null) {
+                Component topLevelComp = (Component) myForm.getInlineInsertContainer();
+//                Component topLevelParent = topLevelComp.getParent();
+                while (topLevelComp != null && topLevelComp.getParent() != compList) {
+                    topLevelComp = topLevelComp.getParent();
+                }
+//                MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(topLevelComp);
+                if (true || topLevelComp != null) //should never be null?!
+                    topLevelComp.remove();
+                myForm.setInlineInsertContainer(null);
+            }
             if (compList != null) {
                 int labelCount = 0;
                 int nonLabelCount = 0;
@@ -1688,6 +1502,8 @@ public class MyForm extends Form {
                         nonLabelCount = 0; //reset count on every Label
                         labelCount++; //hack: StickyHeaders are Labels, so count them and add to count
                         lastLabel = comp;
+//                    } else if (comp instanceof InlineInsertNewContainer) {
+//                        comp.remove();
                     } else {
                         if (searchOnLowerCaseOnly) {
                             hide = ((ItemAndListCommonInterface) itemListOrg.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0;
@@ -1726,6 +1542,19 @@ public class MyForm extends Form {
             String text = (String) e.getSource();
 //            Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
             Container compList = getCompList.get();
+            MyForm myForm = (MyForm) getComponentForm();
+            //UI: search will automatically remove an insert container (since it breaks the below algorithm)
+            if (myForm != null && myForm.getInlineInsertContainer() != null) {
+                Component topLevelComp = (Component) myForm.getInlineInsertContainer();
+//                Component topLevelParent = topLevelComp.getParent();
+                while (topLevelComp != null && topLevelComp.getParent() != compList) {
+                    topLevelComp = topLevelComp.getParent();
+                }
+//                MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(topLevelComp);
+                if (true || topLevelComp != null) //should never be null?!
+                    topLevelComp.remove();
+                myForm.setInlineInsertContainer(null);
+            }
             boolean showAll = text == null || text.length() == 0;
             for (int i = 0, size = itemListList.getSize(); i < size; i++) {
                 //TODO!!! compare same case (upper/lower)
@@ -1748,6 +1577,51 @@ public class MyForm extends Form {
 ////        return makeTimerCommand(null, Icons.iconTimerSymbolToolbarStyle, itemList, filterSortDef);
 //        return makeTimerCommand(null, Icons.iconTimerSymbolToolbarStyle, itemList);
 //    }
+    //    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon) {
+//        return makeDoneUpdateWithParseIdMapCommand(title, icon, true);
+//    }
+    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
+        Command cmd = new Command(title, icon) {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                //use checkOnExit from parameters if defined, otherwise use the one set for the form if defined
+                if ((getCheckOnExit == null || getCheckOnExit.check()) && (getCheckOnExit() == null || getCheckOnExit().check())) {
+                    putEditedValues2(parseIdMap2);
+                    if (getUpdateActionOnDone() != null)
+                        getUpdateActionOnDone().update();
+                    showPreviousScreenOrDefault(callRefreshAfterEdit);
+                }
+            }
+        };
+        cmd.putClientProperty("android:showAsAction", "withText");
+        return cmd;
+    }
+
+    //makeDoneUpdateWithParseIdMapCommand above is better: each check will show one or more dialogs etc and can fix things before returning true or false
+    public Command makeDoneUpdateWithParseIdMapCommandXXX(boolean callRefreshAfterEdit, GetString canGoBack) {
+//        Command cmd = new Command(title, icon) {
+        Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                String errorMsg;
+                if ((errorMsg = canGoBack.get()) == null || Dialog.show("INFO", errorMsg, "Yes", "No")) {
+//                    if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
+//                    if (getCheckOnExit() != null || (errorMsg = getCheckOnExit().check()) != null) {
+                    putEditedValues2(parseIdMap2);
+                    if (getUpdateActionOnDone() != null)
+                        getUpdateActionOnDone().update();
+                    showPreviousScreenOrDefault(callRefreshAfterEdit);
+                } else {
+                    //nothing, stay in screen
+//                    Dialog.show("Error", errorMsg, "OK", null);
+//                    Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save");
+                }
+            }
+        };
+        cmd.putClientProperty("android:showAsAction", "withText");
+        return cmd;
+    }
+
     public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit) {
         return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit);
     }
@@ -1756,59 +1630,17 @@ public class MyForm extends Form {
         return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), true); //false); //default false since otherwise edited values will be lost
     }
 
-//    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon) {
-//        return makeDoneUpdateWithParseIdMapCommand(title, icon, true);
-//    }
+    public Command makeDoneUpdateWithParseIdMapCommand(CheckDataIsComplete getCheckOnExit) {
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), true, getCheckOnExit);
+    }
+
     public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit) {
-        Command cmd = new Command(title, icon) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-//                String errorMsg;
-//                if (getCheckOnExit() == null || (errorMsg = getCheckOnExit().check()) == null) {
-                if (getCheckOnExit() == null || getCheckOnExit().check()) {
-                    putEditedValues2(parseIdMap2);
-//                    updateActionOnDone.update();
-    if (getUpdateActionOnDone()!=null)
-                    getUpdateActionOnDone().update();
-//                previousForm.refreshAfterEdit();
-//                previousForm.showBack();
-//                    showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
-                    showPreviousScreenOrDefault(callRefreshAfterEdit);
-                }
-//                else {
-//                    Dialog.show("INFO", errorMsg, "OK", null);
-//                }
-            }
-        };
-        cmd.putClientProperty("android:showAsAction", "withText");
-        return cmd;
+        return makeDoneUpdateWithParseIdMapCommand(title, icon, callRefreshAfterEdit, getCheckOnExit());
     }
 
 //    public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetString canGoBack) {
 //        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit, canGoBack);
 //    }
-    public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetString canGoBack) {
-//        Command cmd = new Command(title, icon) {
-        Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                String errorMsg;
-                if ((errorMsg = canGoBack.get()) == null) {
-//                    if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
-//                    if (getCheckOnExit() != null || (errorMsg = getCheckOnExit().check()) != null) {
-                    putEditedValues2(parseIdMap2);
-                    if (getUpdateActionOnDone()!=null)
-                    getUpdateActionOnDone().update();
-                    showPreviousScreenOrDefault(callRefreshAfterEdit);
-                } else {
-                    Dialog.show("Error", errorMsg, "OK", null);
-                }
-            }
-        };
-        cmd.putClientProperty("android:showAsAction", "withText");
-        return cmd;
-    }
-
     public Command makeDoneCommandWithNoUpdate() {
         Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
             @Override
@@ -1858,7 +1690,8 @@ public class MyForm extends Form {
         Image icon = Icons.iconInterruptToolbarStyle();
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
-        return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
+//        return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
+        return CommandTracked.create("", icon, (e) -> {
             Item interruptItem = new Item();
             interruptItem.setInteruptOrInstantTask(true);
             DAO.getInstance().saveInBackground(interruptItem);
@@ -1874,7 +1707,8 @@ public class MyForm extends Form {
             //Open it up in editing mode with timer running
 //            setupTimerForItem(item, 0);
             //Upon Done/Stop, save and return to previous task
-        }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean()); //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+//        }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean()); //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+        }, "InterruptInScreen" + getUniqueFormId()); //only push this command if we start with BigTimer (do NOT always start with smallTimer)
     }
 
     /**
@@ -1907,12 +1741,12 @@ public class MyForm extends Form {
      * @param item
      * @param pos
      */
-    static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
+    private static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
         addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.getSize(), itemListOrg);
     }
 
-    static void addNewTaskToListAndSave(Item item, ItemAndListCommonInterface itemListOrg) {
-        addNewTaskToListAndSave(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+    static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg) {
+        addNewTaskToListAndSaveXXX(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1929,22 +1763,26 @@ public class MyForm extends Form {
 //        }
 //    }
 //</editor-fold>
-    public Command newItemSaveToInboxCmd() {
+    public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText) {
+        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTaskToolbarStyle());
+    }
 
-        Command cmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewTaskToolbarStyle(), (e) -> {
+    public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, Image icon) {
+
+        Command cmd = MyReplayCommand.create("CreateNewItem", cmdText, icon, (e) -> {
             Item item = new Item();
+            item.setOwner(itemListOrg);
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItem2(item, (MyForm) getComponentForm(), () -> {
-                if (item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
+                if (true || item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
                     //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
                     //only save if data (don't save if no relevant data)
                     if (true) {
                         //TODO!!! save directly to Inbox
 //                            addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                     }
-                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : Inbox.getInstance().getSize(), Inbox.getInstance());
-
-                    DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
+                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+//                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                    }
                 } else {
@@ -1955,6 +1793,10 @@ public class MyForm extends Form {
             }, false).show(); //false=optionTemplateEditMode
         });
         return cmd;
+    }
+
+    public Command makeCommandNewItemSaveToInbox() {
+        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), "");
     }
 
     public static Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
@@ -2983,7 +2825,7 @@ public class MyForm extends Form {
         }
 
         //set edited value on exit 
-        if (putOrg != null && getField != null) {
+        if (putOrg != null && getField != null && parseIdMap2!=null) {
             //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
             parseIdMap2.put(fieldIdentifier, () -> {
 //        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
@@ -3111,13 +2953,28 @@ public class MyForm extends Form {
 //            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
             MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
             super.show();
+            if (ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
+                //if bigTimer was actime, and we're not replaying, then show big timer again
+                TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
+                if (!(this instanceof ScreenTimer6) && !ReplayLog.getInstance().isReplayInProgress() && timerInstance != null && timerInstance.isFullScreen())
+                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
+//            else
+//                super.show();
+            }
         }
+    }
+
+    public void showBack(boolean popCommand) {
+        if (popCommand)
+            ReplayLog.getInstance().popCmd(); //pop any previous command
+        super.showBack();
     }
 
     @Override
     public void showBack() {
-        ReplayLog.getInstance().popCmd(); //pop any previous command
-        super.showBack();
+//        ReplayLog.getInstance().popCmd(); //pop any previous command
+//        super.showBack();
+        showBack(true);
     }
 
     /**
@@ -3140,7 +2997,7 @@ public class MyForm extends Form {
 //    }
     private Container pinchContainer; //Container holding the pinchComponent (and implementing the resize)
     private Container oldPinchContainer; //keeping the old pinchContainer to decrease while pinching out the new (and to swap back to old if new is too small to keep)
-    private Component pinchContainerPrevious; //Container holding the pinchComponent (and implementing the resize)
+    private Component previousPinchContainer; //Container holding the pinchComponent (and implementing the resize)
 //    private Component pinchComponent;
 //    private Component prevComponentAbove;
 //    private Component prevComponentBelow;
@@ -3284,15 +3141,15 @@ public class MyForm extends Form {
 //        Container parentContainerBelow = compBelow.getParent();
 //</editor-fold>
         //find the drop containers
-        MyDragAndDropSwipeableContainer dropComponentAbove = findDropContainerStartingFrom(compAbove);
+        MyDragAndDropSwipeableContainer dropComponentAbove = MyDragAndDropSwipeableContainer.findDropContainerStartingFrom(compAbove);
 
         MyDragAndDropSwipeableContainer dropComponentBelow = null;
         if (dropComponentAbove != null) { //UI: be default we ignore the lowest placed finger and always create insertCont below the highest placed finger
 //            if (isOrPartOfInsertNewContainer(compAbove) || isOrPartOfInsertNewContainer(compBelow)) return null; //UI: cannot pinchinsert next to an existing insertContainer
             dropComponentBelow = MyDragAndDropSwipeableContainer.findNextDDCont(dropComponentAbove);
         } else if (compBelow != null) { //if dropComponentAbove==null, then use the container , can happen eg if inserting above top-most item in list (above finger is on toolbar)
-            dropComponentBelow = findDropContainerStartingFrom(compBelow);
-            if (dropComponentBelow != null)
+            dropComponentBelow = MyDragAndDropSwipeableContainer.findDropContainerStartingFrom(compBelow);
+            if (false && dropComponentBelow != null) //false: why set dropComponentAbove if it was originally null (indicating that top finger was on toolbar)?!
                 dropComponentAbove = MyDragAndDropSwipeableContainer.findPrecedingDDCont(dropComponentBelow, null);
         }
 
@@ -3371,6 +3228,7 @@ public class MyForm extends Form {
         if (dropComponentAbove == null && dropComponentBelow != null) { //pull down on top-most item, insert before the first element (can be Item/Category/ItemList)
             insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
 //            insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+            wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
             MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow, wrappedInsertContainer, 0); //insert insertContainer at position of dropComponentBelow
             setInlineInsertContainer(insertContainer); //call this *after* inserting the new container to ensure that text field starts in editing mode
         } else if (dropComponentBelow == null && dropComponentAbove != null) { //pull down on bottom-most item, insert at the end of the list (can be Item/Category/ItemList)
@@ -3477,107 +3335,6 @@ public class MyForm extends Form {
         return wrappedInsertContainer;
     }
 
-    protected static MyDragAndDropSwipeableContainer findDropContainerIn(Component comp) {
-        if (comp instanceof MyDragAndDropSwipeableContainer) { //check if comp itself is a MyDragAndDropSwipeableContainer
-            return (MyDragAndDropSwipeableContainer) comp;
-        } else if (comp instanceof Container) { //search in hierarchy below comp
-            Container cont = (Container) comp;
-            for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-                Component cmp = cont.getComponentAt(i);
-                MyDragAndDropSwipeableContainer myDragAndDrop = findDropContainerIn(cmp);
-                if (myDragAndDrop != null) {
-                    return myDragAndDrop;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-    find a drop target in container hierarchy below or above comp. Used to start from whatever container is found under 
-    a pinch finger and find the corresponding container to get the corresponding Item elements. 
-    @param comp
-    @return drop target or null if none found
-     */
-    protected static MyDragAndDropSwipeableContainer findDropContainerStartingFrom(Component comp) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (comp == null) {
-//            return null;
-//        }
-//</editor-fold>
-        while (comp != null && !(comp instanceof Form)) { // when searching starting from e.g. the Ttoolbar, we may reach up to Form, from which the algo will search down and find a (wrong) MyDDCont, e.g. in tests the last element in the lisit
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        int count = cont.getComponentCount();
-//        for (int i = count - 1; i >= 0; i--) {
-//            if (comp instanceof MyDragAndDropSwipeableContainer) { //check if comp itself is a MyDragAndDropSwipeableContainer
-//                return (MyDragAndDropSwipeableContainer) comp;
-//            } else if (comp instanceof Container) { //search in hierarchy below comp
-//                Container cont = (Container) comp;
-//                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-//                    Component cmp = cont.getComponentAt(i);
-//                    MyDragAndDropSwipeableContainer myDragAndDrop = findDropContainerStartingFrom(cmp);
-//                    if (myDragAndDrop != null) {
-//                        return myDragAndDrop;
-//                    }
-//</editor-fold>
-            MyDragAndDropSwipeableContainer myDragAndDrop = findDropContainerIn(comp);
-            if (myDragAndDrop != null) {
-                return myDragAndDrop;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (cmp instanceof MyDragAndDropSwipeableContainer) {
-//                        return (MyDragAndDropSwipeableContainer) cmp;
-//                    } else if (cmp instanceof Container){
-//
-//                }
-//                //for performance reasons, avoid diving into hierarchy of each sub Container, test top-level first
-//                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-//                    Component cmp = cont.getComponentAt(i);
-//                    if (cmp instanceof Container) {
-//                        MyDragAndDropSwipeableContainer myDragAndDrop = findDropContainerStartingFrom((Container) cmp);
-//                        if (myDragAndDrop != null) {
-//                            return myDragAndDrop;
-//                        }
-//                    }
-//                }
-//</editor-fold>
-            } else {
-                //search in hierarchy above comp
-                //TODO!!! optimization: this will search each container once for each level of the container hierarchy, e.g. 
-                comp = comp.getParent();
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            Container parent = comp.getParent();
-//            while (parent != null) {
-//                Container cont = parent; //(Container) comp;
-//                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-//                    Component cmp = cont.getComponentAt(i);
-//                    if (cmp == comp) {
-//                        continue;
-//                    }
-//                    if (cmp instanceof MyDragAndDropSwipeableContainer) {
-//                        return (MyDragAndDropSwipeableContainer) cmp;
-//                    }
-//                }
-//                //for performance reasons, avoid diving into hierarchy of each sub Container, test top-level first
-//                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-//                    Component cmp = cont.getComponentAt(i);
-//                    if (cmp == comp) {
-//                        continue;
-//                    }
-//                    if (cmp instanceof Container) {
-//                        MyDragAndDropSwipeableContainer component = findDropContainerStartingFrom((Container) cmp);
-//                        if (component != null) {
-//                            return component;
-//                        }
-//                    }
-//                }
-//                parent = cont.getParent(); //
-//            }
-//</editor-fold>
-            }
-        }
-        return null;
-    }
-
     private Container wrapInPinchableContainer(final InsertNewElementFunc pinchComponent) {
         //TODO!! make more fancy animation for container (eg fold like Clear)
 //        Container pinchCont;
@@ -3596,7 +3353,7 @@ public class MyForm extends Form {
 //                    int h = Math.max(0, orgPrefSize.getHeight()+pinchDistance); //distance negative if pinching in, max(0 to avoid negative) //TODO!! what happens if pinching out beyond the preferred height (does it just grow or leave white space??)
                         int h = Math.max(0, Math.min(pinchDistance, orgPrefSize.getHeight())); //min:cannot become bigger than preferredHeight of the component, max: can't get negative
                         return new Dimension(orgPrefSize.getWidth(), h); //Math.max(0, since pinch distance may become negative when fingers cross vertically
-                    } else if (this == pinchContainerPrevious) { //I'm the previously inserted container
+                    } else if (this == previousPinchContainer) { //I'm the previously inserted container
                         if (pinchContainer != null) { //the other pinchContainer may be pinching me down in size
                             int h = Math.max(0, Math.min(orgPrefSize.getHeight() - pinchDistance, orgPrefSize.getHeight())); //cannot become bigger than preferredHeight of the component
                             return new Dimension(orgPrefSize.getWidth(), h); //Math.max(0, since pinch distance may become negative when fingers cross vertically
@@ -3622,24 +3379,30 @@ public class MyForm extends Form {
         if (Config.TEST_PINCH) Log.p("pinchInsertFinished called");
         if (true || isPinchInsertEnabled()) { //checked before calling pinchInsertFinished()
             Container parentToAnimate = null;
-            if (pinchContainer == null) { //no new pinch created 
-                if (pinchContainerPrevious != null) { //if pinched in previous container
-                    if (!minimumPinchSizeReached(pinchDistance, pinchContainerPrevious)) {
-                        parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(pinchContainerPrevious); //just remove it
-                        pinchContainerPrevious = null;
+            if (pinchContainer == null) { //no new pinch created
+                if (previousPinchContainer != null) { //if pinched-in previous container
+                    if (Config.TEST_PINCH) Log.p("[A] removing  pinchContainerPrevious");
+//                    if (!minimumPinchSizeReached(pinchDistance, previousPinchContainer)) {
+                    if (!minimumPinchSizeReached(pinchDistance, previousPinchContainer)) {
+                        parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(previousPinchContainer); //just remove it
+                        ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent());
+                        previousPinchContainer = null;
                     }
                 }
                 //TODO!!! what if we do a new pinch out at the same place as before (where a pinch cont is already inserted)?? ideally do nothing, but complicated to detect
             } else { //a new pinch created, pinchContainer != null
                 //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
                 if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
+                    if (Config.TEST_PINCH) Log.p("pinchContainerPrevious left visible");
 //                    Container pinchContainerParent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(pinchContainer);
-                    if (pinchContainerPrevious != null && !MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(pinchContainerPrevious)) {
+                    if (previousPinchContainer != null && !MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(previousPinchContainer)) {
                         if (Config.TEST_PINCH) Log.p("!! pinchContainerPrevious not removed correctly");
                     } //remove previous in one exists
-                    pinchContainerPrevious = pinchContainer; //save just inserted container
+                    previousPinchContainer = pinchContainer; //save just inserted container
                     parentToAnimate = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
+                    ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent());
                 } else {
+                    if (Config.TEST_PINCH) Log.p("[B] removing  pinchContainer");
                     MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(pinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
                 }
             }
@@ -3654,12 +3417,16 @@ public class MyForm extends Form {
                 parentToAnimate.revalidateWithAnimationSafety();
             }
             pinchInsertInitiated = false;
-            removePointerReleasedListener(pointerReleasedListener);
-            pointerReleasedListener = null;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (pointerReleasedListener != null) {
+//                removePointerReleasedListener(pointerReleasedListener);
+//                pointerReleasedListener = null;
+//            }
+//</editor-fold>
         }
     }
 
-    ActionListener pointerReleasedListener = null;
+//    ActionListener pointerReleasedListener = null;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    = (e) -> {
 //        Log.p("pointerReleased called!!!!");
@@ -3669,7 +3436,6 @@ public class MyForm extends Form {
 ////            }
 //        } //else { //don't call super.pointerR if finishing pinch since it may launch other events
 //    };
-
 //    @Override
 //    public void pointerReleased(int x, int y) {
 //        Log.p("pointerReleased called!!!!");
@@ -3773,7 +3539,23 @@ public class MyForm extends Form {
 //        return null;
 //    }
 //</editor-fold>
-    private final static int TEST_PINCH_WIDTH = 10; //% of right-hand side of screen where a touch is programatically converted to a pinch
+    public void pointerReleased(int[] x, int[] y) {
+        if (pinchInsertInitiated) {
+            if (Config.TEST_PINCH) Log.p("pointerReleased(int[] x, int[] y) called!!!!");
+            pinchInsertFinished();
+            return;
+        }
+        super.pointerReleased(x, y);
+    }
+
+    public void pointerReleased(int x, int y) {
+        if (pinchInsertInitiated) {
+            if (Config.TEST_PINCH) Log.p("pointerReleased(int x, int y) called!!!!");
+            pinchInsertFinished();
+            return;
+        }
+        super.pointerReleased(x, y);
+    }
 
     @Override
     public void pointerDragged(int[] x, int[] y) {
@@ -3781,7 +3563,7 @@ public class MyForm extends Form {
         if (testingPinchOnSimulator) {
             int displayHeight = Display.getInstance().getDisplayHeight();
             if (Display.getInstance().isSimulator() && y.length == 1 && x.length == 1
-                    && x[0] >= Display.getInstance().getDisplayWidth() / 100 * (100 - TEST_PINCH_WIDTH)
+                    && x[0] >= Display.getInstance().getDisplayWidth() / 100 * (100 - Config.TEST_PINCH_SCR_WIDTH_PERCENT)
                     && y[0] < displayHeight / 2) {
                 //simulate a pinch by mirroring the y values when dragging on the very right (10%) of the screen
                 int[] y2 = new int[2];
@@ -3791,8 +3573,9 @@ public class MyForm extends Form {
 
                 x2[1] = x[0]; //set simulated x for other finger to same value as first finger
                 y2[1] = Math.min(displayHeight, (displayHeight / 2 - y[0]) + displayHeight / 2); //set simulated y to y mirrored around the middle of the screen
+//                y2[1] = Math.min(displayHeight, y[0] + 140); //80==roughly one workslot container
 //                Log.p("simulating pinch x[0]=" + x[0] + " y[0]=" + y[0] + " simulated x[1]=" + x[1] + " y[1]=" + y[1]);
-                if (Config.TEST_PINCH) Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
+                if (false && Config.TEST_PINCH) Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
                 x = x2; //replace org values with simulatd pair
                 y = y2;
             }
@@ -3830,21 +3613,23 @@ public class MyForm extends Form {
 //</editor-fold>
             super.pointerDragged(x, y);
         } else { // (x.length > 1) => PINCH ONGOING
-            ASSERT.that(pinchInsertInitiated || pointerReleasedListener == null, "pointerReleasedListener NOT null as it should be");
+//            ASSERT.that(pinchInsertInitiated || pointerReleasedListener == null, "pointerReleasedListener NOT null as it should be");
             pinchInsertInitiated = true;
-            if (pointerReleasedListener == null) {
-                pointerReleasedListener = (e) -> {
-                    if (Config.TEST_PINCH) Log.p("pointerReleased called!!!!");
-//                    if (pinchInsertEnabled && pinchInsertInitiated) {
-                    if (pinchInsertInitiated) {
-//            if (pinchContainer != null) {
-                        pinchInsertFinished();
-                        e.consume(); //to avoid that finishing the pinch triggers other actions
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (false && pointerReleasedListener == null) {
+//                pointerReleasedListener = (e) -> {
+//                    if (Config.TEST_PINCH) Log.p("pointerReleased called!!!!");
+////                    if (pinchInsertEnabled && pinchInsertInitiated) {
+//                    if (pinchInsertInitiated) {
+////            if (pinchContainer != null) {
+//                        pinchInsertFinished();
+////                        e.consume(); //to avoid that finishing the pinch triggers other actions
+////            }
+//                    } //else { //don't call super.pointerR if finishing pinch since it may launch other events
+//                };
+//                addPointerReleasedListener(pointerReleasedListener);
 //            }
-                    } //else { //don't call super.pointerR if finishing pinch since it may launch other events
-                };
-                addPointerReleasedListener(pointerReleasedListener);
-            }
+//</editor-fold>
             //TODO!!! What happens if a pinch in is changed to PinchOut while moving fingers? Should *not* insert a new container but just leave the old one)
             //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
             int yMin = Math.min(y[1], y[0]); //y[1] <= y[0] ? y[1] : y[0];

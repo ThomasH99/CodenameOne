@@ -18,12 +18,13 @@ import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
  * @author Thomas
  */
-public class InlineInsertNewWorkSlotContainer extends Container implements InsertNewElementFunc {
+public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer implements InsertNewElementFunc {
 
 //    private Container oldNewTaskCont=null;
     private MyTextField2 textEntryField;
@@ -62,7 +63,7 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
     /**
      * create a new Container and a new Item
      *
-     * @param myForm
+     * @param myForm 
      * @param refWorkSlot2
      */
 //    public InlineInsertNewWorkSlotContainer(MyForm myForm, WorkSlot refWorkSlot2, boolean insertBeforeRefElement) {
@@ -94,13 +95,13 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
             if (!ev.isConsumed()) {
                 newWorkSlot = createNewWorkSlot(); //store new category for use when recreating next insert container
                 if (newWorkSlot != null) {
-                    myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, 0)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+                    this.myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, 0)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                     lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //store new task for use when recreating next insert container
 
                 }
                 closeInsertNewWorkSlotContainer();
                 insertNewWorkSlotAndSaveChanges(newWorkSlot);
-                myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
+                this.myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });
 
@@ -116,7 +117,7 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
 //                closeInsertNewCategoryContainer(myForm); //close without inserting new task
 //                getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
                 this.remove(); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-                myForm.animateLayout(300);
+                this.myForm.animateLayout(300);
             }, "EditItemFromInsertNewContainer")));
         }
 
@@ -125,11 +126,11 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
                 new Button(CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
                     if ((newWorkSlot = createNewWorkSlot()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                         lastCreatedWorkSlot = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)
-                        myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, -1)); //if editing the new task in separate screen, 
+                        this.myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, -1)); //if editing the new task in separate screen, 
                         new ScreenWorkSlot(newWorkSlot, workSlotListOwner, (MyForm) getComponentForm(), () -> {
                             insertNewWorkSlotAndSaveChanges(newWorkSlot);
                             lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //ensures that MyTree2 will create a new insertContainer after newTask
-                            myForm.refreshAfterEdit();
+                            this.myForm.refreshAfterEdit();
                         }).show();
                     } else {
                         ASSERT.that(false, "Something went wrong here, what to do? ...");
@@ -155,8 +156,8 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
         String text = textEntryField.getText();
         WorkSlot newWorkSlot = new WorkSlot(); //true: interpret textual values
         newWorkSlot.setText(text); //will interpret a textual duration like "5m" as 5 minutes
-        if (newWorkSlot.getDurationInMillis()==0)
-        newWorkSlot.setDurationInMinutes(MyPrefs.workSlotDefaultDurationInMinutes.getInt()); //UI: if no textual definition, use normal default value
+        if (newWorkSlot.getDurationInMillis() == 0)
+            newWorkSlot.setDurationInMinutes(MyPrefs.workSlotDefaultDurationInMinutes.getInt()); //UI: if no textual definition, use normal default value
 //        if (true || createEvenIfNoTextInField || (text != null && text.length() > 0)) {
         if (refWorkSlot != null && refWorkSlot.getStartTimeD() != null) {
             if (insertBeforeRefElement)
@@ -166,7 +167,19 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
         } else
             newWorkSlot.setStartTime(new Date()); //UI: set pinchInserted workslot to start now
 
-        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, newWorkSlot, refWorkSlot.getStartTimeD(), refWorkSlot.getDurationInMillis())) {
+        //UI: ensure no overlap with *following* workslot:
+        if (refWorkSlot != null && refWorkSlot.getOwner() != null && refWorkSlot.getOwner().getWorkSlotListN() != null) {
+            List workslots = refWorkSlot.getOwner().getWorkSlotListN().getWorkSlotListFull();
+            int refIndex = refWorkSlot.getOwner().getWorkSlotListN().getWorkSlotListFull().indexOf(refWorkSlot);
+            if (refIndex >= 0 && refIndex + 1 < workslots.size()) {
+                WorkSlot nextWorkSlot = (WorkSlot) workslots.get(refIndex + 1);
+                if (newWorkSlot.getStartTime() > nextWorkSlot.getEndTime())
+                    newWorkSlot.setEndTime(nextWorkSlot.getStartTime()); //UI: reduce a pinchinserted workslot overlapping with the next one, to end when the next one starts
+            }
+        }
+//        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, newWorkSlot, refWorkSlot.getStartTimeD(), refWorkSlot.getDurationInMillis())) {
+//        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, null, newWorkSlot.getStartTimeD(), newWorkSlot.getDurationInMillis())) {
+        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(refWorkSlot.getOwner(), null, newWorkSlot.getStartTimeD(), newWorkSlot.getDurationInMillis())) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             return newWorkSlot;
         } else return null;
@@ -196,20 +209,23 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
     }
 
     private void closeInsertNewWorkSlotContainer() {
-        closeInsertNewWorkSlotContainer(null);
+//        closeInsertNewWorkSlotContainer(null);
+        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(this);
+        if (parent != null)
+            parent.animateLayout(300);
     }
-
-    private void closeInsertNewWorkSlotContainer(MyForm f) {
-        //UI: close the text field
-        Container parent = getParent();
-        if (parent != null) {
-            parent.removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-            if (f != null) {
-                f.animateMyForm();
-            }
-        }
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void closeInsertNewWorkSlotContainer(MyForm f) {
+//        //UI: close the text field
+//        Container parent = getParent();
+//        if (parent != null) {
+//            parent.removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
+//            if (f != null) {
+//                f.animateMyForm();
+//            }
+//        }
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * if the textEntry field is in Form f, then it is set to editOnShow
@@ -231,7 +247,7 @@ public class InlineInsertNewWorkSlotContainer extends Container implements Inser
     @Override
     public InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
         if (element == lastCreatedWorkSlot && element instanceof WorkSlot) {
-            return new InlineInsertNewWorkSlotContainer(null, (WorkSlot) lastCreatedWorkSlot, false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
+            return new InlineInsertNewWorkSlotContainer(myForm, (WorkSlot) lastCreatedWorkSlot, false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
         }
         return null;
     }
