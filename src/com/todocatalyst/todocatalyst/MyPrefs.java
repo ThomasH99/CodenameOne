@@ -93,7 +93,7 @@ public class MyPrefs {
 //    static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
     static PrefEntry dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask
             = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
-                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 10, "**");
+                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 20, "**");
 
 //    static PrefEntry dragDropLeftDropZoneWidth
 //            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)

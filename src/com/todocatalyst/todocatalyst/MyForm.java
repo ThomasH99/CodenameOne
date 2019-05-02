@@ -1721,19 +1721,30 @@ public class MyForm extends Form {
      * @param itemListOrg
      */
 //    private static void addNewTaskSetTemplateAddToListAndSave(Item item, int pos, ItemList itemListOrg) {
-    static void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
-//        item.setTemplate(itemListOrg.isTemplate()); //template or not
-        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-            itemListOrg.addToList(pos, item); //UI: add to top of list
-        }
-        DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
-        if (addToList) {
-            DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-        }
-    }
+//    static void addNewTaskToListAndSave(Item item, Item refItem, ItemAndListCommonInterface itemListOrg, boolean insertAfterRefItemOrEndOfList) {
+////        item.setTemplate(itemListOrg.isTemplate()); //template or not
+//        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+//        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+//            itemListOrg.addToList(pos, item); //UI: add to top of list
+//        }
+//        DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
+//        if (addToList) {
+//            DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//        }
+//    }
+//    
+//    static void addNewTaskToListAndSaveOLD(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
+////        item.setTemplate(itemListOrg.isTemplate()); //template or not
+//        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+//        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+//            itemListOrg.addToList(pos, item); //UI: add to top of list
+//        }
+//        DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
+//        if (addToList) {
+//            DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//        }
+//    }
 //    static void addNewTaskSetTemplateAddToListAndSave(Item item, ItemList itemListOrg) {
-
     /**
      * adds new item to itemListOrg at the default position (as given by the
      * settings) and saves both list and item
@@ -1741,14 +1752,12 @@ public class MyForm extends Form {
      * @param item
      * @param pos
      */
-    private static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
-        addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.getSize(), itemListOrg);
-    }
-
-    static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg) {
-        addNewTaskToListAndSaveXXX(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-    }
-
+//    private static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
+//        addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.getSize(), itemListOrg);
+//    }
+//    static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg) {
+//        addNewTaskToListAndSaveXXX(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
 ////        item.setTemplate(optionTemplateEditMode); //template or not
@@ -1781,7 +1790,10 @@ public class MyForm extends Form {
                         //TODO!!! save directly to Inbox
 //                            addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                     }
-                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+//                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+                    itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+                    DAO.getInstance().saveInBackground((ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                    }
@@ -2825,7 +2837,7 @@ public class MyForm extends Form {
         }
 
         //set edited value on exit 
-        if (putOrg != null && getField != null && parseIdMap2!=null) {
+        if (putOrg != null && getField != null && parseIdMap2 != null) {
             //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
             parseIdMap2.put(fieldIdentifier, () -> {
 //        if (effortEstimate.getDuration() != item.getEffortEstimate()) {

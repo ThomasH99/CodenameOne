@@ -186,9 +186,10 @@ public class ScreenListOfItemLists extends MyForm {
 //                    itemList.setOwner(itemListList); //NB cannot set an owner which is not saved in parse
 //                    DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    itemListList.addItemAtIndex(itemList, 0);
-                    itemListList.addToList(0, itemList);
-                    DAO.getInstance().saveInBackground((ParseObject)itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                    itemListList.addToList(0, itemList);
+                    itemListList.addToList( itemList, false); //TODO: why always add to start of list?! Make it a setting like elsewhere?
+                    DAO.getInstance().saveInBackground((ParseObject)itemList,(ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
                     refreshAfterEdit();//refresh list to show new items(??)

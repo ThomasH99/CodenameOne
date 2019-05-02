@@ -5186,7 +5186,8 @@ public class DAO {
         if (executeCleanup && lostItems.size() > 0) {
             saveInBackground((ParseObject) lostItems); //first save new list to have a valid objectId!!
             saveInBackground(lostItems.getListFull()); //THEN save all updated items
-            ItemListList.getInstance().addToList(0, lostItems); //add to beginning of lists
+//            ItemListList.getInstance().addToList(0, lostItems); //add to beginning of lists
+            ItemListList.getInstance().addToList(lostItems,false); //add to beginning of lists
             saveInBackground((ParseObject) ItemListList.getInstance());
         }
         return issuesFound;

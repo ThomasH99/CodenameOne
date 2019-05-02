@@ -180,20 +180,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    public List getChildrenListOLD(Object parent) {
-        if (parent == null) {
-            List list = new ArrayList();
-            list.add(this);
-            return list;
-        } else {
-            List itemList = ((Item) parent).getList();
-//            DAO.getInstance().fetchAllElementsInSublist(itemList, false);
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(itemList);
-//            return new Vector(itemList);
-            return itemList;
-        }
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List getChildrenListOLD(Object parent) {
+//        if (parent == null) {
+//            List list = new ArrayList();
+//            list.add(this);
+//            return list;
+//        } else {
+//            List itemList = ((Item) parent).getList();
+////            DAO.getInstance().fetchAllElementsInSublist(itemList, false);
+//            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(itemList);
+////            return new Vector(itemList);
+//            return itemList;
+//        }
+//    }
 //    @Override
 //    public Vector getChildren(Object parent) {
 //        if (parent == null) {
@@ -206,6 +206,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return new Vector(itemList);
 //        }
 //    }
+//</editor-fold>
     @Override
     public boolean isLeaf(Object node) {
 //        return getItemList() == null || getItemList().size() == 0;
@@ -215,6 +216,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return itemList == null || itemList.size() == 0;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public Object removeFromOwnerXXX() {
 ////        ItemAndListCommonInterface owner = getOwner(); //TODO simplify code by adding getOwner to ItemAndListCommonInterface
@@ -235,6 +237,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        return null;
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public List getInsertNewRepeatInstancesIntoListXXX() {
 //        Object owner = getOwner();
@@ -258,73 +261,74 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
 //</editor-fold>
-    public void insertIntoListAndSaveListAndInstanceOLD(RepeatRuleObjectInterface newRepeatRuleInstance) {
-//        DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save first to be able to reference from other objects
-//        RepeatRuleObjectInterface orgInstance = this;
-        Object owner = getOwner();
-//        int index;
-        if (owner instanceof ItemList) {
-            ItemList ownerList = (ItemList) owner;
-//            assert orgInstance != null;
-            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()
-                    //                    && (index = ownerList.indexOf(this)) != -1) {
-                    && (ownerList.indexOf(this)) != -1) {
-//                ownerList.add(index + 1, newRepeatRuleInstance); //+1: insert *after* orgInstance
-//                ownerList.addToList(index + 1, (ItemAndListCommonInterface) newRepeatRuleInstance); //+1: insert *after* orgInstance
-                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); //+1: insert *after* orgInstance
-            } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                ownerList.addToList(MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : ownerList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
-//                ownerList.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : ownerList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
-//                if (MyPrefs.insertNewItemsInStartOfLists.getBoolean())
-//                    ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, ownerList.getItemAt(0), false);
-//                else
-//                    ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, ownerList.getItemAt(ownerList.size()), true);
-//</editor-fold>
-                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance);
-            }
-//            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-//            DAO.getInstance().save(ownerList); //TODO!!!! optimization: when generating multiple repeat instances, do the save of the list at the end
-            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, ownerList); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-        } else if (owner instanceof Item) {
-            Item itemOwner = (Item) owner;
-            List subtaskList = itemOwner.getList();
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (subtaskList != null && (index = subtaskList.indexOf(newRepeatRuleInstance)) != -1) {
-//                subtaskList.add(index + 1, newRepeatRuleInstance);
+//    public void insertIntoListAndSaveListAndInstanceOLD(RepeatRuleObjectInterface newRepeatRuleInstance) {
+////        DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save first to be able to reference from other objects
+////        RepeatRuleObjectInterface orgInstance = this;
+//        Object owner = getOwner();
+////        int index;
+//        if (owner instanceof ItemList) {
+//            ItemList ownerList = (ItemList) owner;
+////            assert orgInstance != null;
+//            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()
+//                    //                    && (index = ownerList.indexOf(this)) != -1) {
+//                    && (ownerList.indexOf(this)) != -1) {
+////                ownerList.add(index + 1, newRepeatRuleInstance); //+1: insert *after* orgInstance
+////                ownerList.addToList(index + 1, (ItemAndListCommonInterface) newRepeatRuleInstance); //+1: insert *after* orgInstance
+//                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); //+1: insert *after* orgInstance
 //            } else {
-//                subtaskList.add(MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : subtaskList.size(), newRepeatRuleInstance);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                ownerList.addToList(MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : ownerList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
+////                ownerList.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : ownerList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
+////                if (MyPrefs.insertNewItemsInStartOfLists.getBoolean())
+////                    ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, ownerList.getItemAt(0), false);
+////                else
+////                    ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, ownerList.getItemAt(ownerList.size()), true);
+////</editor-fold>
+//                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance);
 //            }
+////            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+////            DAO.getInstance().save(ownerList); //TODO!!!! optimization: when generating multiple repeat instances, do the save of the list at the end
+//            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, ownerList); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//        } else if (owner instanceof Item) {
+//            Item itemOwner = (Item) owner;
+//            List subtaskList = itemOwner.getList();
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (subtaskList != null && (index = subtaskList.indexOf(newRepeatRuleInstance)) != -1) {
+////                subtaskList.add(index + 1, newRepeatRuleInstance);
+////            } else {
+////                subtaskList.add(MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : subtaskList.size(), newRepeatRuleInstance);
+////            }
+////</editor-fold>
+//            assert subtaskList != null; //should never get null
+//            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()
+//                    //                    && (index = subtaskList.indexOf(newRepeatRuleInstance)) != -1) {
+//                    //                    && (index = subtaskList.indexOf(this)) != -1) {
+//                    && (subtaskList.indexOf(this)) != -1) {
+////                itemOwner.addToList(index + 1, (ItemAndListCommonInterface) newRepeatRuleInstance); //add just after
+//                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); //add just after
+//            } else {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                itemOwner.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : subtaskList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
+////                if (MyPrefs.insertNewItemsInStartOfLists.getBoolean())
+////                    itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, (ItemAndListCommonInterface) itemOwner.get(0), false);
+////                else
+////                    itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, (ItemAndListCommonInterface) itemOwner.get(itemOwner.size()), true);
+////</editor-fold>
+//                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance);
+//            }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            item.setList(subtaskList); //done in addToList
+////            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+////            DAO.getInstance().save(itemOwner);
+////</editor-fold>
+//            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, itemOwner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//        } else { //no owner, save for 'Inbox'
+////            assert false;
+//            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//        }
+//    }
 //</editor-fold>
-            assert subtaskList != null; //should never get null
-            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()
-                    //                    && (index = subtaskList.indexOf(newRepeatRuleInstance)) != -1) {
-                    //                    && (index = subtaskList.indexOf(this)) != -1) {
-                    && (subtaskList.indexOf(this)) != -1) {
-//                itemOwner.addToList(index + 1, (ItemAndListCommonInterface) newRepeatRuleInstance); //add just after 
-                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); //add just after 
-            } else {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                itemOwner.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : subtaskList.size(), (ItemAndListCommonInterface) newRepeatRuleInstance);
-//                if (MyPrefs.insertNewItemsInStartOfLists.getBoolean())
-//                    itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, (ItemAndListCommonInterface) itemOwner.get(0), false);
-//                else
-//                    itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, (ItemAndListCommonInterface) itemOwner.get(itemOwner.size()), true);
-//</editor-fold>
-                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance);
-            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            item.setList(subtaskList); //done in addToList
-//            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-//            DAO.getInstance().save(itemOwner);
-//</editor-fold>
-            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, itemOwner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-        } else { //no owner, save for 'Inbox'
-//            assert false;
-            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-        }
-    }
-
     @Override
     public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1579,13 +1583,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
     }
 
-    @Override
-    public boolean isExpandable() {
-//        return getItemListSize() > 0;
-        return getList().size() > 0; //use getList, and not getListFull, since we don't want to show expand button if all subtasks are filtered
-
-    }
-
+//    @Override
+//    public boolean isExpandable() {
+////        return getItemListSize() > 0;
+//        return getList().size() > 0; //use getList, and not getListFull, since we don't want to show expand button if all subtasks are filtered
+//    }
     public enum CopyMode {
         /**
          * full copy
@@ -2298,20 +2300,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
 //    @Override
-    public boolean addToList(int index, ItemAndListCommonInterface subtask) {
+    private boolean addToList(int index, ItemAndListCommonInterface subtask) {
         boolean status = true;
         List listFull = getListFull();
-        List list = getList();
-        if (listFull.size() == 0)
-            listFull.add(subtask);
-        else {
-            if (index >= list.size())
-                listFull.add(subtask);
-            else {
-                int indexFull = listFull.indexOf(list.get(index)); //Math.min: if adding to end of list; convert index in filtered list to index in full list NB! doesn't work if there should be multiple instances one day/somewhere!!
-                listFull.add(indexFull, subtask);
-            }
-        }
+//        List list = getList();
+//        if (listFull.size() == 0)
+//            listFull.add(subtask);
+//        else {
+//            if (index >= list.size())
+//                listFull.add(subtask);
+//            else {
+//                int indexFull = listFull.indexOf(list.get(index)); //Math.min: if adding to end of list; convert index in filtered list to index in full list NB! doesn't work if there should be multiple instances one day/somewhere!!
+//                listFull.add(indexFull, subtask);
+//            }
+//        }
+        listFull.add(index, subtask);
         ASSERT.that(subtask.getOwner() == null || this == subtask.getOwner(), "subItemOrList owner not null when adding to list, SUBTASK=" + subtask + ", OLD OWNER=" + subtask.getOwner() + ", NEW OWNER=" + this);
         subtask.setOwner(this);
         ((Item) subtask).updateValuesInheritedFromOwner();
@@ -2322,8 +2325,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList) {
         List listFull = getListFull();
-        listFull.add(addToEndOfList ? listFull.size() : 0, subItemOrList);
-        setList(listFull);
+//        listFull.add(addToEndOfList ? listFull.size() : 0, subItemOrList);
+//        setList(listFull);
+        addToList(addToEndOfList?listFull.size():0,subItemOrList);
         return true;
     }
 
@@ -2345,7 +2349,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface newItem, ItemAndListCommonInterface referenceItem, boolean addAfterItem) {
+    public boolean addToList(ItemAndListCommonInterface newItem, ItemAndListCommonInterface referenceItem, boolean addAfterItemOrEndOfList) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        List subtasks = getListFull();
 //        boolean status = true;
@@ -2361,12 +2365,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return status;
 //        int index = subtasks.indexOf(item);
 //</editor-fold>
-        int indexFull = getListFull().indexOf(referenceItem);
-        if (indexFull < 0) {
-            ASSERT.that(false, "REFERENCE item not found in addToList(newItem,refItem), refItem=" + referenceItem + ", newItem=" + newItem);
-            return addToList(newItem); //UI: else add to end of list //TODO! should this depend on a setting?
-        } else
-            return addToList(indexFull + (addAfterItem ? 1 : 0), newItem);
+        List listFull = getListFull();
+        int indexFull = referenceItem == null ? (addAfterItemOrEndOfList ? listFull.size() : 0) : listFull.indexOf(referenceItem);
+//        if (indexFull < 0) {
+//            ASSERT.that(false, "REFERENCE item not found in addToList(newItem,refItem), refItem=" + referenceItem + ", newItem=" + newItem);
+//            return addToList(newItem); //UI: else add to end of list //TODO! should this depend on a setting?
+//        } else
+//            return addToList(indexFull + (addAfterItemOrEndOfList ? 1 : 0), newItem);
+            return addToList(indexFull , newItem);
     }
 
 //    @Override

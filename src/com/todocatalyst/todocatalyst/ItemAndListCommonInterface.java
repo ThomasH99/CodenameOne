@@ -154,8 +154,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     public void setText(String text);
 
-    public boolean isExpandable();
-
+//    public boolean isExpandable();
 //    public ParseObject getOwner();
 //    public java.util.List getItemList();
 //    public ItemAndListCommonInterface setOwner(ItemAndListCommonInterface owner);
@@ -284,7 +283,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList);
 
     /**
-     * add subItemOrList to the list of subtasks at position index and setsubItemOrList's owner to this.
+     * add subItemOrList to the list (for an ItemList or Category) or the list of subtasks (for a project Item) at position index and setsubItemOrList's owner to 'this'.
+    Index is for the full, unfiltered and unsorted, list as it is stored in Parse Server. 
      * adds subitem to the list (gets the list from Parse, adds the element,
      * sets the list). Makes this Item/ItemList the owner of the inserted
      * element. Owner must be null before insert!
@@ -292,9 +292,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param index
      * @param subItemOrList
      * @return 
-    @deprecated TOO dangerous to use since index may come from filtered or unfiltered list!
+    @ deprecated TOO dangerous to use since index may come from filtered or unfiltered list!
      */
-    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
+//    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
 
     /**
      * 
@@ -314,14 +314,19 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default public void moveToPositionOf(E item, E itemRef, boolean insertAfterRefOrEndOfList) {
         //NB. Since just reshuffling the list, no impact on any bags
         List listFull = getListFull();
+        int oldPos = listFull.indexOf(item);
+        ASSERT.that(oldPos >= 0, "error: item=" + item + " moved within list/proj=" + this + ", but not found in list");
+        ASSERT.that(item != itemRef, "error: item=" + item + " and itemRef=" + itemRef + " are the same, when moving within list/proj=" + this);
 
-        int newPos = itemRef == null ? (insertAfterRefOrEndOfList?listFull.size():0) : (listFull.indexOf(itemRef) + (insertAfterRefOrEndOfList ? 1 : 0));
+        int newPos = itemRef == null ? (insertAfterRefOrEndOfList ? listFull.size() : 0) : (listFull.indexOf(itemRef) + (insertAfterRefOrEndOfList ? 1 : 0));
+        listFull.remove(oldPos); //must remove *before* adding (and remove(item) won't work if added (again) first)
+        if (oldPos < newPos)
+            newPos--;
 //        int oldPos = listFull.indexOf(item);
         if (newPos >= 0)
             listFull.add(newPos, item); //insert *before* remove so that removing the item doesn't impact the insert index
         else
             listFull.add(item); //insert *before* remove so that removing the item doesn't impact the insert index
-        listFull.remove(item);
 
         setList(listFull);
 //        fireDataChangedEvent(DataChangedListener.CHANGED, newPos);

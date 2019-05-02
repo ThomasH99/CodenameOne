@@ -676,15 +676,18 @@ public class ScreenListOfItems extends MyForm {
 
             if (optionTemplateEditMode) {
                 Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "New Template", Icons.iconNewToolbarStyle(), (e) -> {
-                    Item template = new Item();
-                    template.setTemplate(true); //always template here
-                    template.setOwner(itemListOrg);
+                    Item newTemplate = new Item();
+                    newTemplate.setTemplate(true); //always template here
+                    newTemplate.setOwner(itemListOrg);
 //                    addNewTaskToListAndSave(template, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
                     setKeepPos(new KeepInSameScreenPosition());
-                    new ScreenItem2(template, ScreenListOfItems.this, () -> {
+                    new ScreenItem2(newTemplate, ScreenListOfItems.this, () -> {
 //                        if (template.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
                         //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
-                        addNewTaskToListAndSave(template, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
+//                        addNewTaskToListAndSave(template, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
+//                        addNewTaskToListAndSave(newTemplate, null, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
+                        itemListOrg.addToList(newTemplate, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+                        DAO.getInstance().saveInBackground((ParseObject) newTemplate, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                            DAO.getInstance().saveInBackground(template); //must save item since adding it to itemListOrg changes its owner
                         refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                        } 
@@ -778,14 +781,18 @@ public class ScreenListOfItems extends MyForm {
                             DAO.getInstance().saveInBackground(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner
                             if (itemListOrg != null && itemListOrg.getObjectIdP() != null && !optionTemplateEditMode) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
                                 //if creating new template instances within the TemplateList, then don't save it into template list
-                                itemListOrg.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), newTemplateInstantiation); //UI: add to top of list
+//                                itemListOrg.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), newTemplateInstantiation); //UI: add to top of list
+                                itemListOrg.addToList( newTemplateInstantiation,MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
                                 DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
                             } else {
                                 assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
                             }
                         }
-                        newTemplateInstantiation.setTemplate(optionTemplateEditMode);
-                        addNewTaskToListAndSave(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), itemListOrg);
+                        newTemplateInstantiation.setTemplate(false);
+//                        addNewTaskToListAndSave(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), itemListOrg);
+                        itemListOrg.addToList(newTemplateInstantiation, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+                        DAO.getInstance().saveInBackground((ParseObject) newTemplateInstantiation, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+
                         setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation)); //scroll to position of new item, whereever it is inserted
                         refreshAfterEdit();
                     }).show();
@@ -862,7 +869,7 @@ public class ScreenListOfItems extends MyForm {
 //                            filterSortDef = new FilterSortDef();
 //                        }
 //                    }
-                FilterSortDef filterSortDef = itemListOrg.getFilterSortDef()==null?new FilterSortDef():itemListOrg.getFilterSortDef();
+                FilterSortDef filterSortDef = itemListOrg.getFilterSortDef() == null ? new FilterSortDef() : itemListOrg.getFilterSortDef();
 //                if (filterSortDef == null) {
 //                    filterSortDef = new FilterSortDef();
 //                }
@@ -1115,14 +1122,14 @@ public class ScreenListOfItems extends MyForm {
                 Command showIssuesInList = new CommandTracked("Show list issues", (Image) null) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, false,true);
+                        DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, false, true);
                     }
                 };
                 toolbar.addCommandToOverflowMenu(showIssuesInList);
                 Command cleanUpList = new CommandTracked("Repair list issues", (Image) null) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true,true);
+                        DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
                     }
                 };
                 toolbar.addCommandToOverflowMenu(cleanUpList);
@@ -2708,7 +2715,7 @@ refreshAfterEdit();
         }
 
         //UPDATE DUE DATE
-        if (!item.isTemplate() && !isDone && myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE)||myForm.getTitle().equals(MyForm.SCREEN_OVERDUE_TITLE)) { //UI: only show in Today view
+        if (!item.isTemplate() && !isDone && myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE) || myForm.getTitle().equals(MyForm.SCREEN_OVERDUE_TITLE)) { //UI: only show in Today view
 //            setDueDateToToday = new Button(null, Icons.iconSetDueDateToToday());
             setDueDateToToday = new Button();
             setDueDateToToday.setMaterialIcon(Icons.iconSetDueDateToTodayMaterial);

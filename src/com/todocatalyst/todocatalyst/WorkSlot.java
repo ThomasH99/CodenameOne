@@ -1746,10 +1746,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public boolean isExpandable() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+//    @Override
+//    public boolean isExpandable() {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
 
     @Override
     public String toString(ToStringFormat format) {
@@ -1786,10 +1786,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+//    @Override
+//    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
 
     @Override
     public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {

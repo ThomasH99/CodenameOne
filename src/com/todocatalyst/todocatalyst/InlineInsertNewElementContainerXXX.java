@@ -429,39 +429,39 @@ public class InlineInsertNewElementContainerXXX extends Container {
      * @return true if a task was created
      */
     private Item insertNewTask() {
-        String taskText = taskTextEntryField2.getText();
-        Item newItem;
-        if (taskText != null && taskText.length() > 0) {
-            taskTextEntryField2.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
-            newItem = new Item(taskText, true); //true: interpret textual values
-            if (insertAsSubtask) { //add as subtask to previous task, and keep the subtask level
-                if (item != null) {
-                    item.addToList(newItem); //add to end of subtask list (depending on setting for add to beginning/end of lists)
-                    DAO.getInstance().saveAndWait(newItem);
-                    DAO.getInstance().saveAndWait(item);
-                    insertAsSubtask = false; //remove the subtask property so next task does not become a subtask to the subtask
-//                    myForm.expandedObjects.add(item); //UI: expand the item to show its newly added subtask
-//                    ((MyForm) getComponentForm()).expandedObjects.add(item); //UI: expand the item to show newly added subtask
-                    myForm.expandedObjects.add(item); //UI: expand the item to show newly added subtask
-                }
-            } else if (itemOrItemListForNewTasks != null && !itemOrItemListForNewTasks.isNoSave()) {
-                //make a sistertask (insert in same list as item, after item)
-                //TODO!!!! if list is sorted used sortOn value and value in previous (rather the next!) item to detect the values of newItem to keep it in (roughly) the same place
-                int index = itemOrItemListForNewTasks.getItemIndex(item);
-                if (item != null && index != -1) {
-//                        int index = itemOrItemList.getItemIndex(item);
-                    itemOrItemListForNewTasks.addToList(index + 1, newItem); //add after item
-                } else {
-                    itemOrItemListForNewTasks.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
-                }
-                DAO.getInstance().saveAndWait(newItem); //need to save again since itemOrItemList is added as owner
-                DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewTasks);
-//                } //else: task only inserted into inbox
-            } else {
-                DAO.getInstance().saveAndWait(newItem);
-            }
-            return newItem;
-        }
+//        String taskText = taskTextEntryField2.getText();
+//        Item newItem;
+//        if (taskText != null && taskText.length() > 0) {
+//            taskTextEntryField2.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
+//            newItem = new Item(taskText, true); //true: interpret textual values
+//            if (insertAsSubtask) { //add as subtask to previous task, and keep the subtask level
+//                if (item != null) {
+//                    item.addToList(newItem); //add to end of subtask list (depending on setting for add to beginning/end of lists)
+//                    DAO.getInstance().saveAndWait(newItem);
+//                    DAO.getInstance().saveAndWait(item);
+//                    insertAsSubtask = false; //remove the subtask property so next task does not become a subtask to the subtask
+////                    myForm.expandedObjects.add(item); //UI: expand the item to show its newly added subtask
+////                    ((MyForm) getComponentForm()).expandedObjects.add(item); //UI: expand the item to show newly added subtask
+//                    myForm.expandedObjects.add(item); //UI: expand the item to show newly added subtask
+//                }
+//            } else if (itemOrItemListForNewTasks != null && !itemOrItemListForNewTasks.isNoSave()) {
+//                //make a sistertask (insert in same list as item, after item)
+//                //TODO!!!! if list is sorted used sortOn value and value in previous (rather the next!) item to detect the values of newItem to keep it in (roughly) the same place
+//                int index = itemOrItemListForNewTasks.getItemIndex(item);
+//                if (item != null && index != -1) {
+////                        int index = itemOrItemList.getItemIndex(item);
+//                    itemOrItemListForNewTasks.addToList(index + 1, newItem); //add after item
+//                } else {
+//                    itemOrItemListForNewTasks.addToList(newItem); //if item is null or not in orgList, insert at beginning of (potentially empty) list
+//                }
+//                DAO.getInstance().saveAndWait(newItem); //need to save again since itemOrItemList is added as owner
+//                DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewTasks);
+////                } //else: task only inserted into inbox
+//            } else {
+//                DAO.getInstance().saveAndWait(newItem);
+//            }
+//            return newItem;
+//        }
         return null;
     }
 

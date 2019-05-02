@@ -173,7 +173,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            }
 //        }
 //</editor-fold>
-        if (oldOwner == newOwner || newOwner == null) {
+        if (oldOwner == newOwner && oldOwner != null) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (newPos > oldOwner.getItemIndex(itemOrItemList)) {
 //                oldOwner.removeFromList(itemOrItemList);
 //                newOwner.addToList(newPos - 1, itemOrItemList);
@@ -181,6 +182,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                oldOwner.removeFromList(itemOrItemList);
 //                newOwner.addToList(newPos, itemOrItemList);
 //            }
+//</editor-fold>
             oldOwner.moveToPositionOf(itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
 //            DAO.getInstance().saveInBackground((ParseObject) oldList, (ParseObject) itemOrItemList);
             DAO.getInstance().saveInBackground((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
@@ -199,36 +201,36 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList, boolean insertEnfOfList) {
         moveItemOrItemListAndSave(itemOrItemList.getOwner(), newOwner, itemOrItemList, null, insertEnfOfList);
     }
-
-    private void moveItemOrItemListAndSave(ItemAndListCommonInterface oldOwner, ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList, int newPos) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//Container draggedParent;
-//        MyDragAndDropSwipeableContainer dragged = null;
-//        int indexAdjustment = 0;
-//        if (dragged != null && dragged.getParent() == newList) {
-//            int draggedIndex = dragged.getParent().getComponentIndex(dragged);
-//            if (newPos > draggedIndex) {
-//                indexAdjustment = 1; //need to
+//    private void moveItemOrItemListAndSave(ItemAndListCommonInterface oldOwner, ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList, int newPos) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////Container draggedParent;
+////        MyDragAndDropSwipeableContainer dragged = null;
+////        int indexAdjustment = 0;
+////        if (dragged != null && dragged.getParent() == newList) {
+////            int draggedIndex = dragged.getParent().getComponentIndex(dragged);
+////            if (newPos > draggedIndex) {
+////                indexAdjustment = 1; //need to
+////            }
+////        }
+////</editor-fold>
+//        if (oldOwner == newOwner) {
+//            if (newPos > oldOwner.getItemIndex(itemOrItemList)) {
+//                oldOwner.removeFromList(itemOrItemList);
+//                newOwner.addToList(newPos - 1, itemOrItemList);
+//            } else { //newPos <= oldList.getItemIndex(itemOrItemList)
+//                oldOwner.removeFromList(itemOrItemList);
+//                newOwner.addToList(newPos, itemOrItemList);
 //            }
+//            oldOwner.moveToPositionOf(oldnewOwner, formNeedRefresh);
+////            DAO.getInstance().saveInBackground((ParseObject) oldList, (ParseObject) itemOrItemList);
+//            DAO.getInstance().saveInBackground((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
+//        } else {
+//            oldOwner.removeFromList(itemOrItemList);
+//            newOwner.addToList(newPos, itemOrItemList);
+//            DAO.getInstance().saveInBackground((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList);
 //        }
-//</editor-fold>
-        if (oldOwner == newOwner) {
-            if (newPos > oldOwner.getItemIndex(itemOrItemList)) {
-                oldOwner.removeFromList(itemOrItemList);
-                newOwner.addToList(newPos - 1, itemOrItemList);
-            } else { //newPos <= oldList.getItemIndex(itemOrItemList)
-                oldOwner.removeFromList(itemOrItemList);
-                newOwner.addToList(newPos, itemOrItemList);
-            }
-            oldOwner.moveToPositionOf(oldnewOwner, formNeedRefresh);
-//            DAO.getInstance().saveInBackground((ParseObject) oldList, (ParseObject) itemOrItemList);
-            DAO.getInstance().saveInBackground((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
-        } else {
-            oldOwner.removeFromList(itemOrItemList);
-            newOwner.addToList(newPos, itemOrItemList);
-            DAO.getInstance().saveInBackground((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList);
-        }
-    }
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void moveItemOrItemListAndSave(ItemAndListCommonInterface draggedElement, ItemAndListCommonInterface refElement, boolean insertAfterRefElement) {
 //
@@ -256,10 +258,10 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //    }
 //</editor-fold>
 
-    private void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList, int newPos) {
-        moveItemOrItemListAndSave(itemOrItemList.getOwner(), newOwner, itemOrItemList, newPos);
-    }
-
+//    private void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList, int newPos) {
+//        moveItemOrItemListAndSave(itemOrItemList.getOwner(), newOwner, itemOrItemList, newPos);
+//    }
+//</editor-fold>
     /**
      * insert at *end of* newList
      *
@@ -277,16 +279,16 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param category
      * @param newPos
      */
-    private void moveCategoryAndSave(ItemAndListCommonInterface categoryList, Category category, int newPos) {
-        if (newPos > categoryList.getItemIndex(category)) {
-            categoryList.removeFromList(category);
-            categoryList.addToList(newPos - 1, category);
-        } else {
-            categoryList.removeFromList(category);
-            categoryList.addToList(newPos, category);
-        }
-        DAO.getInstance().saveInBackground((ParseObject) categoryList, (ParseObject) category);
-    }
+//    private void moveCategoryAndSave(ItemAndListCommonInterface categoryList, Category category, int newPos) {
+//        if (newPos > categoryList.getItemIndex(category)) {
+//            categoryList.removeFromList(category);
+//            categoryList.addToList(newPos - 1, category);
+//        } else {
+//            categoryList.removeFromList(category);
+//            categoryList.addToList(newPos, category);
+//        }
+//        DAO.getInstance().saveInBackground((ParseObject) categoryList, (ParseObject) category);
+//    }
 
     /**
     will update the categories for item, and either move item within the same category, move it from old to new, only insert it into new (if old is null) or only remove it from old (if new is null). Does nothing if both categories are null.
@@ -295,23 +297,28 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     @param item
     @param newPos 
      */
-    private void moveItemBetweenCategoriesAndSave(Category oldCategory, Category newCategory, Item item, int newPos) {
+    private void moveItemBetweenCategoriesAndSave(Category oldCategory, Category newCategory, Item item, Item refItem, boolean insertAfterOrEndOfList) {
         if (oldCategory == newCategory && oldCategory != null) { //if within same Category (and categories not null)
-            if (newPos > oldCategory.getItemIndex(item)) {
-                oldCategory.removeItemFromCategory(item, false); //false: keep the position of the category in the item's list of categories
-                newCategory.addItemToCategory(item, newPos - 1, false); //false: keep the position of the category in the item's list of categories
-            } else {
-                oldCategory.removeItemFromCategory(item, true);
-                newCategory.addItemToCategory(item, newPos, true);
-            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (newPos > oldCategory.getItemIndex(item)) {
+//                oldCategory.removeItemFromCategory(item, false); //false: keep the position of the category in the item's list of categories
+//                newCategory.addItemToCategory(item, newPos - 1, false); //false: keep the position of the category in the item's list of categories
+//            } else {
+//                oldCategory.removeItemFromCategory(item, true);
+//                newCategory.addItemToCategory(item, newPos, true);
+//            }
+//</editor-fold>
+            oldCategory.moveToPositionOf(item, refItem, insertAfterOrEndOfList);
             DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) item); //only save list once
         } else { //oldCategory != newCategory || oldCategory == null
             if (oldCategory != null && newCategory != null) { //different categories, but both non-null: remove from old and add to new at newPos (~'normal' case)
                 oldCategory.removeItemFromCategory(item, true);
-                newCategory.addItemToCategory(item, newPos, true);
+//                newCategory.addItemToCategory(item, newPos, true);
+                newCategory.addItemToCategory(item, refItem, true, true);
                 DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
             } else if (newCategory != null) { //item was dragged into a category, but not from another category (e.g. a subtask of a project) (~not very intuitive since the dragged item will be added to the category, but also stay in place where it was before, but I guess OK - "what you do is what you get")
-                newCategory.addItemToCategory(item, newPos, true);
+//                newCategory.addItemToCategory(item, newPos, true);
+                newCategory.addItemToCategory(item, refItem, true, true);
                 DAO.getInstance().saveInBackground((ParseObject) newCategory, (ParseObject) item);
             } else if (false && oldCategory != null) { //item was eg dragged from category into a subtask of an expanded project (in an expanded category)
                 //should this case even be supported? Visible effect: drag from an expanded Category into a subtask, and it disappears from the Category
@@ -320,29 +327,56 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             }
         }
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void moveItemBetweenCategoriesAndSaveOLD(Category oldCategory, Category newCategory, Item item, int newPos) {
+//        if (oldCategory == newCategory && oldCategory != null) { //if within same Category (and categories not null)
+//            if (newPos > oldCategory.getItemIndex(item)) {
+//                oldCategory.removeItemFromCategory(item, false); //false: keep the position of the category in the item's list of categories
+//                newCategory.addItemToCategory(item, newPos - 1, false); //false: keep the position of the category in the item's list of categories
+//            } else {
+//                oldCategory.removeItemFromCategory(item, true);
+//                newCategory.addItemToCategory(item, newPos, true);
+//            }
+//            DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) item); //only save list once
+//        } else { //oldCategory != newCategory || oldCategory == null
+//            if (oldCategory != null && newCategory != null) { //different categories, but both non-null: remove from old and add to new at newPos (~'normal' case)
+//                oldCategory.removeItemFromCategory(item, true);
+//                newCategory.addItemToCategory(item, newPos, true);
+//                DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
+//            } else if (newCategory != null) { //item was dragged into a category, but not from another category (e.g. a subtask of a project) (~not very intuitive since the dragged item will be added to the category, but also stay in place where it was before, but I guess OK - "what you do is what you get")
+//                newCategory.addItemToCategory(item, newPos, true);
+//                DAO.getInstance().saveInBackground((ParseObject) newCategory, (ParseObject) item);
+//            } else if (false && oldCategory != null) { //item was eg dragged from category into a subtask of an expanded project (in an expanded category)
+//                //should this case even be supported? Visible effect: drag from an expanded Category into a subtask, and it disappears from the Category
+//                oldCategory.removeItemFromCategory(item, true);
+//                DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) item);
+//            }
+//        }
+//    }
+//</editor-fold>
 
     /**
+    only used for the case where an Item is dropped as a supertask (next to a higher-level mother project) which comes from an expanded category, meaning the 
     does the extraction of element and categories and index calculation before calling moveItemBetweenCategoriesAndSave, can/should(?) be called from everywhere in case a category update is needed
     @param newSiblingMyDDCont the new sibling container which may have a category to which dragged should be added
     @param draggedMyDDCont 
      */
-    private void insertIntoCategoryOfSiblingItemAndSave(MyDragAndDropSwipeableContainer newSiblingMyDDCont, MyDragAndDropSwipeableContainer draggedMyDDCont) {
-        if (newSiblingMyDDCont.getDragAndDropCategory() != null) { //only update if moving next to an Item already in an expanded Category
-            Item siblingItem = (Item) newSiblingMyDDCont.getDragAndDropObject();
-            Category newSiblingCategoryN = newSiblingMyDDCont.getDragAndDropCategory();
-            Item draggedItem = (Item) draggedMyDDCont.getDragAndDropObject();
-            int catIndex = newSiblingCategoryN.getItemIndex(siblingItem) + 1; //+1 drop at position *after* beforeItem
-            Category oldCategoryN = draggedMyDDCont.getDragAndDropCategory();
-            moveItemBetweenCategoriesAndSave(oldCategoryN, newSiblingCategoryN, draggedItem, catIndex);
-        }
-    }
-
+//    private void insertIntoCategoryOfSiblingItemAndSave(MyDragAndDropSwipeableContainer newSiblingMyDDCont, MyDragAndDropSwipeableContainer draggedMyDDCont) {
+//        if (newSiblingMyDDCont.getDragAndDropCategory() != null) { //only update if moving next to an Item already in an expanded Category
+//            Item siblingItem = (Item) newSiblingMyDDCont.getDragAndDropObject();
+//            Category newSiblingCategoryN = newSiblingMyDDCont.getDragAndDropCategory();
+//            Item draggedItem = (Item) draggedMyDDCont.getDragAndDropObject();
+//            int catIndex = newSiblingCategoryN.getItemIndex(siblingItem) + 1; //+1 drop at position *after* beforeItem
+//            Category oldCategoryN = draggedMyDDCont.getDragAndDropCategory();
+//            moveItemBetweenCategoriesAndSave(oldCategoryN, newSiblingCategoryN, draggedItem, catIndex);
+//        }
+//    }
     /**
      * insert the dropPlaceholder into the parent container of refComp at the
      * right relative position wrt refComp
      *
      * @param refComp the component relative to which the dropPlaceholder should
-     * be inserted
+     * be inserted (dropPh is inserted either before or after refComp)
      * @param dropPh dropPlaceholder component
      * @param relativeIndex relative position where to insert dropPh, +1: after
      * refComp, 0: at refComp's position, Integer.MAX_VALUE: at the end of the
@@ -2214,12 +2248,13 @@ T3
                     if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT01 Cat \"" + draggedElement.getText() + "\" after Cat \"" + beforeElement + "\"", Log.DEBUG);
 
                     dropActionCall = () -> {
-//                        ItemAndListCommonInterface categoryOwnerList = (ItemAndListCommonInterface) ((Category) getDragAndDropObject()).getOwner();
+////                        ItemAndListCommonInterface categoryOwnerList = (ItemAndListCommonInterface) ((Category) getDragAndDropObject()).getOwner();
                         ItemAndListCommonInterface categoryOwnerList = (ItemAndListCommonInterface) ((Category) draggedElement).getOwner();
-//                        int indexCatList = categoryOwnerList.getItemIndex((ItemAndListCommonInterface) beforeMyDDCont.getDragAndDropObject()) + 1;
-                        int insertIndex = categoryOwnerList.getItemIndex(beforeElement) + 1;
-//                        moveCategoryAndSave(categoryOwnerList, (Category) getDragAndDropObject(), indexCatList); //+ addOneOnDownwardsDrag
-                        moveCategoryAndSave(categoryOwnerList, (Category) draggedElement, insertIndex); //+ addOneOnDownwardsDrag
+////                        int indexCatList = categoryOwnerList.getItemIndex((ItemAndListCommonInterface) beforeMyDDCont.getDragAndDropObject()) + 1;
+//                        int insertIndex = categoryOwnerList.getItemIndex(beforeElement) + 1;
+////                        moveCategoryAndSave(categoryOwnerList, (Category) getDragAndDropObject(), indexCatList); //+ addOneOnDownwardsDrag
+//                        moveCategoryAndSave(categoryOwnerList, (Category) draggedElement, insertIndex); //+ addOneOnDownwardsDrag
+                        moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, beforeElement,true); //+ addOneOnDownwardsDrag
                     };
                     insertDropPlaceholder = (dropPh) -> {
 //                            afterCont.getParent().addComponent(afterCont.getParent().getComponentIndex(afterCont), dropPh);
@@ -2231,12 +2266,13 @@ T3
                 } else if (afterElement instanceof Category) { //drop *before* an Category (eg if previous category shows expanded subtasks
                     if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT02 Cat \"" + draggedElement.getText() + "\" before Cat \"" + afterElement + "\"", Log.DEBUG);
                     dropActionCall = () -> {
-//                        ItemAndListCommonInterface categoryOwnerList = (ItemAndListCommonInterface) ((Category) getDragAndDropObject()).getOwner();
+////                        ItemAndListCommonInterface categoryOwnerList = (ItemAndListCommonInterface) ((Category) getDragAndDropObject()).getOwner();
                         ItemAndListCommonInterface categoryOwnerList = ((Category) draggedElement).getOwner();
-//                        int indexCatList = categoryOwnerList.getItemIndex(((ItemList) afterMyDDCont.getDragAndDropObject()));
-                        int insertIndex = categoryOwnerList.getItemIndex(afterElement);
-//                        moveCategoryAndSave(categoryOwnerList, (Category) getDragAndDropObject(), indexCatList); //+ addOneOnDownwardsDrag
-                        moveCategoryAndSave(categoryOwnerList, (Category) draggedElement, insertIndex); //+ addOneOnDownwardsDrag
+////                        int indexCatList = categoryOwnerList.getItemIndex(((ItemList) afterMyDDCont.getDragAndDropObject()));
+//                        int insertIndex = categoryOwnerList.getItemIndex(afterElement);
+////                        moveCategoryAndSave(categoryOwnerList, (Category) getDragAndDropObject(), indexCatList); //+ addOneOnDownwardsDrag
+//                        moveCategoryAndSave(categoryOwnerList, (Category) draggedElement, insertIndex); //+ addOneOnDownwardsDrag
+                         moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, beforeElement,true); 
                     };
                     insertDropPlaceholder = (dropPh) -> {
 //                            this.getParent().addComponent(this.getParent().getComponentCount(), dropPh); //add at the end of the container with the list of categories
@@ -2328,10 +2364,19 @@ T3
 //</editor-fold>
 //            } else if (getDragAndDropObject() instanceof Item) {
             } else if (draggedElement instanceof Item) { //************************ dragging an *Item* *****************************
-                if (beforeElement instanceof Category || beforeElement instanceof ItemList) {
-///<editor-fold defaultstate="collapsed" desc="dropping item right after a Category/ItemList => move to that category/itemList">
+                if (beforeElement instanceof Category && !(afterElement instanceof Item)) {
+///<editor-fold defaultstate="collapsed" desc="moving category: dropping item right after a Category (either not expanded (next is not an Item) or last in list => move to that category">
 //<editor-fold defaultstate="collapsed" desc="documentation">
                     /**
+
+        -----
+        Cat1
+            X
+        Cat2
+            T1
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 
+            T2
+        -----
         Cat1
             X
         Cat2
@@ -2372,12 +2417,145 @@ T3
              <- S1 - Normal: Add into Cat2, and add Cat2 to S1's categories. But S1 is NOT removed from Cat1 since it is not in Cat1 but unly a subtask to T1 which is in Cat1
         [anything]
         -----
+        Moving an item within the same Category, but possible dropping as subtask (meaning just add
+        Cat1
+        Cat2
+            ...
+            X
+            ...
+            T1
+                S1
+                 <- X - Normal: Add after sibling T1, stay in Cat2. Sup: not possible (no ??). Sub: make a subtask of S1, no change to X's existing category. 
+            T2
+            ...
+            X
+            ...
+        Cat3
+[anything]
+        -----
+        Cat1
+            X
+            T1
+                X
+        Cat2
+            T1
+                S1
+                 <- X - Normal: Move from previous owner to T1 subatsk after S1, no chg for categories. Sup: add to Cat2 (insert after beforeElt's owner T1) and remove from any previous category. Sub: make a subtask of S1, no change to X's existing category. 
+        Cat3
+[anything]
+        -----
 
                      */
 //</editor-fold>
-                    if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT06 Item \"" + draggedElement.getText() + "\" in Cat \"" + beforeElement
+                    if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT06a Item \"" + draggedElement.getText() + "\" in Cat \"" + beforeElement
                                 + "\", remove from Cat \"" + getDragAndDropCategory() + "\"", Log.DEBUG);
                     //dropping item right after a Category => move to that category
+                    dropActionCall = () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//DONE!! //UI: if category is NOT expanded, should an item be inserted at the beginning of the subtask list or at the end?? At the beginning like if it was expanded? Create an setting
+//insert item at beginning of category's list of items (or at the end if setting is false
+//                            boolean insertAtHeadOfSubitemList = afterMyDDCont.getDragAndDropObject() instanceof Item //<=> category is expanded and afterCont is an Item
+//                        boolean insertAtHeadOfSubitemList = afterElement instanceof Item //<=> category is expanded and afterCont is an Item
+//                                || MyPrefs.dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList.getBoolean();
+//                        boolean insertAtEndOfCategory                                 = afterElement instanceof Item //<=> category is expanded and afterCont is an Item
+//                                || MyPrefs.dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList.getBoolean();
+//                        //                            int indexItem = insertAtHeadOfSubitemList ? 0 : ((Category) beforeMyDDCont.getDragAndDropObject()).getList().size() + 1;
+//                        int insertIndex = insertAtHeadOfSubitemList ? 0 : ((ItemAndListCommonInterface) beforeElement).getList().size();
+//                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), (Category) beforeMyDDCont.getDragAndDropObject(), (Item) getDragAndDropObject(), indexItem);
+//                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), (Category) beforeElement, (Item) draggedElement, insertAtHeadOfSubitemList);
+//</editor-fold>
+                        moveItemBetweenCategoriesAndSave(draggedCategory, beforeCategory, (Item) draggedElement, null, MyPrefs.dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList.getBoolean());
+                    };
+                    insertDropPlaceholder = (dropPh) -> {
+                        addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
+                    };
+//</editor-fold>
+                } else if (beforeElement instanceof Item && beforeCategory != null && (!(afterElement instanceof Item) || afterElement.getOwner() != beforeElement)) {
+///<editor-fold defaultstate="collapsed" desc="moving an Item after another Item in a category (UNLESS the next element is subtask of that Item in which case the item is inserted as a subtask see below) => insert into that category (and remove from a possible precvious category)">
+//<editor-fold defaultstate="collapsed" desc="documentation">
+                    /**
+
+        -----
+        Cat1
+            X
+        Cat2
+            T1
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 
+            T2
+        -----
+        Cat1
+            X
+        Cat2
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 and add to Cat2
+            T1
+        -----
+        Cat1
+            X
+        Cat2
+            T1
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 
+            T2
+        -----
+        Cat1
+            X
+        Cat2
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 
+        Cat3
+        -----
+        Cat1
+            X
+        Cat2
+            T1
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 
+        Cat3
+        -----
+        Cat1
+            X
+            A
+             <- X - Normal: move/reorder X within Cat1
+            B
+        -----
+        Cat1
+            T1
+                S1
+        Cat2
+            T1
+             <- S1 - Normal: Add into Cat2, and add Cat2 to S1's categories. But S1 is NOT removed from Cat1 since it is not in Cat1 but unly a subtask to T1 which is in Cat1
+        [anything]
+        -----
+        Moving an item within the same Category, but possible dropping as subtask (meaning just add
+        Cat1
+        Cat2
+            ...
+            X
+            ...
+            T1
+                S1
+                 <- X - Normal: Add after sibling T1, stay in Cat2. Sup: not possible (no ??). Sub: make a subtask of S1, no change to X's existing category. 
+            T2
+            ...
+            X
+            ...
+        Cat3
+[anything]
+        -----
+        Cat1
+            X
+            T1
+                X
+        Cat2
+            T1
+                S1
+                 <- X - Normal: Move from previous owner to T1 subatsk after S1, no chg for categories. Sup: add to Cat2 (insert after beforeElt's owner T1) and remove from any previous category. Sub: make a subtask of S1, no change to X's existing category. 
+        Cat3
+[anything]
+        -----
+
+                     */
+//</editor-fold>
+                    if (Config.TEST_DRAG_AND_DROP) ASSERT.that(!(afterElement instanceof Item) || afterCategory == beforeCategory); //if next Item (afterElt) is NOT an expanded subtask, it should have the same category as the beforeElt
+                    if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT06b Item \"" + draggedElement.getText() + "\" in Cat \"" + beforeElement
+                                + "\", remove from Cat \"" + getDragAndDropCategory() + "\"", Log.DEBUG);
                     dropActionCall = () -> {
                         //<editor-fold defaultstate="collapsed" desc="comment">
                         //                                    boolean sameCategory = getDragAndDropCategory() == beforeCont.getDragAndDropCategory();
@@ -2388,85 +2566,189 @@ T3
                         //DONE!! //UI: if category is NOT expanded, should an item be inserted at the beginning of the subtask list or at the end?? At the beginning like if it was expanded? Create an setting
                         //insert item at beginning of category's list of items (or at the end if setting is false
                         //                            boolean insertAtHeadOfSubitemList = afterMyDDCont.getDragAndDropObject() instanceof Item //<=> category is expanded and afterCont is an Item
-                        boolean insertAtHeadOfSubitemList = afterElement instanceof Item //<=> category is expanded and afterCont is an Item
-                                || MyPrefs.dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList.getBoolean();
-                        //                            int indexItem = insertAtHeadOfSubitemList ? 0 : ((Category) beforeMyDDCont.getDragAndDropObject()).getList().size() + 1;
-                        int insertIndex = insertAtHeadOfSubitemList ? 0 : ((ItemAndListCommonInterface) beforeElement).getList().size();
-                        //                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), (Category) beforeMyDDCont.getDragAndDropObject(), (Item) getDragAndDropObject(), indexItem);
-                        if (beforeElement instanceof Category)
-                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), (Category) beforeElement, (Item) draggedElement, insertIndex);xx;
-                        else
-                            moveItemOrItemListAndSave((ItemList) beforeElement, (Item) draggedElement, insertIndex);xx;
+                        moveItemBetweenCategoriesAndSave(draggedCategory, beforeCategory, (Item) draggedElement, (Item) beforeElement, true); //true=insert *after* beforeElt
                     };
-                    if (afterElement instanceof Item) { //Category is already expanded and shows its tasks
+                    insertDropPlaceholder = (dropPh) -> {
+                        addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                    };
+
+                    //insert as subtask
+                    dropAsSubtaskActionCall = () -> {
+                        ItemAndListCommonInterface newOwnerPrj = beforeElement;
+                        moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
+                        expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears'
+                    };
+                    insertDropPlaceholderForSubtask = (dropPh) -> {
+                        addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
+                    };
+
+//                    } else if (afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Item && afterMyDDCont.getDragAndDropCategory() != null) {
+//</editor-fold>
+                } else if (beforeElement instanceof ItemList) {
+///<editor-fold defaultstate="collapsed" desc="dropping item right after a ItemList => move to that category/itemList">
+//<editor-fold defaultstate="collapsed" desc="documentation">
+                    /**
+
+        -----
+        Cat1
+            X
+        Cat2
+            T1
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 
+            T2
+        -----
+        Cat1
+            X
+        Cat2
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 and add to Cat2
+            T1
+        -----
+        Cat1
+            X
+        Cat2
+            T1
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 
+            T2
+        -----
+        Cat1
+            X
+        Cat2
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 
+        Cat3
+        -----
+        Cat1
+            X
+        Cat2
+            T1
+             <- X - Normal: Add into Cat2, and add Cat2 to T1's categories. Remove X from Cat1 
+        Cat3
+        -----
+        Cat1
+            X
+            A
+             <- X - Normal: move/reorder X within Cat1
+            B
+        -----
+        Cat1
+            T1
+                S1
+        Cat2
+            T1
+             <- S1 - Normal: Add into Cat2, and add Cat2 to S1's categories. But S1 is NOT removed from Cat1 since it is not in Cat1 but unly a subtask to T1 which is in Cat1
+        [anything]
+        -----
+        Moving an item within the same Category, but possible dropping as subtask (meaning just add
+        Cat1
+        Cat2
+            ...
+            X
+            ...
+            T1
+                S1
+                 <- X - Normal: Add after sibling T1, stay in Cat2. Sup: not possible (no ??). Sub: make a subtask of S1, no change to X's existing category. 
+            T2
+            ...
+            X
+            ...
+        Cat3
+[anything]
+        -----
+        Cat1
+            X
+            T1
+                X
+        Cat2
+            T1
+                S1
+                 <- X - Normal: Move from previous owner to T1 subatsk after S1, no chg for categories. Sup: add to Cat2 (insert after beforeElt's owner T1) and remove from any previous category. Sub: make a subtask of S1, no change to X's existing category. 
+        Cat3
+[anything]
+        -----
+
+                     */
+//</editor-fold>
+                    if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT06c Item \"" + draggedElement.getText() + "\" in Cat \"" + beforeElement
+                                + "\", remove from Cat \"" + getDragAndDropCategory() + "\"", Log.DEBUG);
+                    //dropping item right after a ItemList => move to that ItemList
+                    if (afterElement instanceof Item) { //ItemList is expanded
+                        dropActionCall = () -> {
+                            moveItemOrItemListAndSave((ItemList) beforeElement, (Item) draggedElement, afterElement, false); //false: insert before afterElement
+                        };
                         insertDropPlaceholder = (dropPh) -> {
                             addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
                         };
-                    } else { //Category not expanded
+                    } else {//ItemList is NOT expanded
+                        dropActionCall = () -> {
+                            moveItemOrItemListAndSave((ItemList) beforeElement, (Item) draggedElement, null, MyPrefs.dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList.getBoolean());
+                            expandSubtasks(beforeElement); //expand list to show new element
+                        };
                         insertDropPlaceholder = (dropPh) -> {
                             addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
                         };
                     }
-//                    } else if (afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Item && afterMyDDCont.getDragAndDropCategory() != null) {
+
+                    dropAsSuperTaskActionCall = null; //does not make sense
 //</editor-fold>
-                } else if (false && getDragAndDropCategory() != null) { //dragged object belongs to a category, so drag may move it to another category, but can also only reposition it within the same category
-//<editor-fold defaultstate="collapsed" desc="DISABLED ---if dragging an Item inside a Category list">
-                    //we can always drop *after* another 'before' Item which also has a Category (isn't triggered for expanded subtasks since they return null for getDragAndDropCategory())
-//                    if (beforeMyDDCont != null && beforeMyDDCont.getDragAndDropObject() instanceof Item && beforeMyDDCont.getDragAndDropCategory() != null) {
-                    if (beforeElement instanceof Item && beforeMyDDCont.getDragAndDropCategory() != null) {
-                        if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT07 Item \"" + draggedElement.getText() + "\" in Cat \"" + beforeMyDDCont.getDragAndDropCategory()
-                                    + "\", remove from Cat \"" + getDragAndDropCategory() + "\"", Log.DEBUG);
-                        dropActionCall = () -> {
-                            Category beforeCategory = beforeMyDDCont.getDragAndDropCategory();
-                            int insertIndex = beforeCategory.getItemIndex(beforeElement) + 1; //+1 drop at position *after* beforeItem
-                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), beforeCategory, (Item) draggedElement, insertIndex); //+ addOneOnDownwardsDrag
-                        };
-                        insertDropPlaceholder = (dropPh) -> {
-                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
-                        };
-                    } else if (beforeElement instanceof Category) {
-                        if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT08 Item \"" + draggedElement.getText() + "\" in Cat \"" + beforeElement
-                                    + "\", remove from Cat \"" + getDragAndDropCategory() + "\"", Log.DEBUG);
-                        //dropping item right after a Category => move to that category
-                        dropActionCall = () -> {
-                            //insert item at beginning of category's list of items (or at the end if setting is false
-                            boolean insertAtHeadOfSubitemList = afterElement instanceof Item //<=> category is expanded and afterCont is an Item
-                                    || MyPrefs.dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList.getBoolean();
-                            int insertIndex = insertAtHeadOfSubitemList ? 0 : ((Category) beforeElement).getList().size();
-                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), (Category) beforeElement, (Item) draggedElement, insertIndex);
-                        };
-                        if (afterElement instanceof Item) { //Category is already expanded and shows its tasks
-                            insertDropPlaceholder = (dropPh) -> {
-                                addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
-                            };
-                        } else { //Category not expanded
-                            insertDropPlaceholder = (dropPh) -> {
-                                addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
-                            };
-                        }
-//                    } else if (afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Item && afterMyDDCont.getDragAndDropCategory() != null) {
-                    } else if (afterElement instanceof Item && afterMyDDCont.getDragAndDropCategory() != null) {
-                        //we drop *before* another Item in a Category (eg when the subtasks of the previous item in the cateogry are expanded)
-                        if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT09 Item \"" + draggedElement.getText() + "\" in Cat \"" + afterMyDDCont.getDragAndDropCategory()
-                                    + "\", remove from Cat \"" + getDragAndDropCategory() + "\"", Log.DEBUG);
-                        dropActionCall = () -> {
+//                } else if (false && getDragAndDropCategory() != null) { //dragged object belongs to a category, so drag may move it to another category, but can also only reposition it within the same category
+////<editor-fold defaultstate="collapsed" desc="DISABLED ---if dragging an Item inside a Category list">
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                                    boolean sameCategory = getDragAndDropCategory() == afterCont.getDragAndDropCategory();
-//                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
-//                                    afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the
-//                                    DAO.getInstance().saveInBackground((ParseObject) getDragAndDropCategory(), (ParseObject) afterCont.getDragAndDropCategory(), (ParseObject) getDragAndDropObject());
+//                    //we can always drop *after* another 'before' Item which also has a Category (isn't triggered for expanded subtasks since they return null for getDragAndDropCategory())
+////                    if (beforeMyDDCont != null && beforeMyDDCont.getDragAndDropObject() instanceof Item && beforeMyDDCont.getDragAndDropCategory() != null) {
+//                    if (beforeElement instanceof Item && beforeMyDDCont.getDragAndDropCategory() != null) {
+//                        if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT07 Item \"" + draggedElement.getText() + "\" in Cat \"" + beforeMyDDCont.getDragAndDropCategory()
+//                                    + "\", remove from Cat \"" + getDragAndDropCategory() + "\"", Log.DEBUG);
+//                        dropActionCall = () -> {
+////                            Category beforeCategory = beforeMyDDCont.getDragAndDropCategory();
+//                            int insertIndex = beforeCategory.getItemIndex(beforeElement) + 1; //+1 drop at position *after* beforeItem
+//                            moveItemBetweenCategoriesAndSave(draggedCategory, beforeCategory, (Item) draggedElement, insertIndex); //+ addOneOnDownwardsDrag
+//                        };
+//                        insertDropPlaceholder = (dropPh) -> {
+//                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+//                        };
+//                    } else if (beforeElement instanceof Category) {
+//                        if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT08 Item \"" + draggedElement.getText() + "\" in Cat \"" + beforeElement
+//                                    + "\", remove from Cat \"" + getDragAndDropCategory() + "\"", Log.DEBUG);
+//                        //dropping item right after a Category => move to that category
+//                        dropActionCall = () -> {
+//                            //insert item at beginning of category's list of items (or at the end if setting is false
+//                            boolean insertAtHeadOfSubitemList = afterElement instanceof Item //<=> category is expanded and afterCont is an Item
+//                                    || MyPrefs.dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList.getBoolean();
+//                            int insertIndex = insertAtHeadOfSubitemList ? 0 : ((Category) beforeElement).getList().size();
+//                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), (Category) beforeElement, (Item) draggedElement, insertIndex);
+//                        };
+//                        if (afterElement instanceof Item) { //Category is already expanded and shows its tasks
+//                            insertDropPlaceholder = (dropPh) -> {
+//                                addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+//                            };
+//                        } else { //Category not expanded
+//                            insertDropPlaceholder = (dropPh) -> {
+//                                addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
+//                            };
+//                        }
+////                    } else if (afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Item && afterMyDDCont.getDragAndDropCategory() != null) {
+//                    } else if (afterElement instanceof Item && afterMyDDCont.getDragAndDropCategory() != null) {
+//                        //we drop *before* another Item in a Category (eg when the subtasks of the previous item in the cateogry are expanded)
+//                        if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT09 Item \"" + draggedElement.getText() + "\" in Cat \"" + afterMyDDCont.getDragAndDropCategory()
+//                                    + "\", remove from Cat \"" + getDragAndDropCategory() + "\"", Log.DEBUG);
+//                        dropActionCall = () -> {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                                    boolean sameCategory = getDragAndDropCategory() == afterCont.getDragAndDropCategory();
+////                                    getDragAndDropCategory().removeItemFromCategory((Item) getDragAndDropObject(), !sameCategory); //remove item from old (possibly same) Category, but if move within same category then don't remove the category from the item's list of categories
+////                                    afterCont.getDragAndDropCategory().addToList((Item) afterCont.getDragAndDropObject(), (Item) getDragAndDropObject(), false); //insert *before* the
+////                                    DAO.getInstance().saveInBackground((ParseObject) getDragAndDropCategory(), (ParseObject) afterCont.getDragAndDropCategory(), (ParseObject) getDragAndDropObject());
+////</editor-fold>
+////                            int insertIndex = ((ItemAndListCommonInterface) afterMyDDCont.getDragAndDropCategory()).getItemIndex((Item) afterMyDDCont.getDragAndDropObject());
+//                            Category draggedCategory = getDragAndDropCategory();
+//                            Category afterCategory = afterMyDDCont.getDragAndDropCategory();
+//                            int insertIndex = afterCategory.getItemIndex(afterElement);
+////                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), afterMyDDCont.getDragAndDropCategory(), (Item) getDragAndDropObject(), insertIndex);
+//                            moveItemBetweenCategoriesAndSave(draggedCategory, afterCategory, (Item) draggedElement, insertIndex);
+//                        };
+//                        insertDropPlaceholder = (dropPh) -> {
+//                            addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+//                        };
+//                    }
 //</editor-fold>
-//                            int insertIndex = ((ItemAndListCommonInterface) afterMyDDCont.getDragAndDropCategory()).getItemIndex((Item) afterMyDDCont.getDragAndDropObject());
-                            Category draggedCategory = getDragAndDropCategory();
-                            Category afterCategory = afterMyDDCont.getDragAndDropCategory();
-                            int insertIndex = afterCategory.getItemIndex(afterElement);
-//                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), afterMyDDCont.getDragAndDropCategory(), (Item) getDragAndDropObject(), insertIndex);
-                            moveItemBetweenCategoriesAndSave(draggedCategory, afterCategory, (Item) draggedElement, insertIndex);
-                        };
-                        insertDropPlaceholder = (dropPh) -> {
-                            addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
-                        };
-                    }
 //</editor-fold>
                 } else if (beforeElement == null && afterElement instanceof Item) {
 //<editor-fold defaultstate="collapsed" desc="dropping *before* the first item">
@@ -2523,7 +2805,7 @@ T3
                 } else if (beforeElement instanceof Item) { //dropping an item *after* another item
                     //dropping either between two siblings or between an expanded subtask (any level of depth) and a following task at a lower level of depth, e.g. T1; S1; > T2;
 //                            if (beforeMyDDCont.getDragAndDropObject().getList().size() == 1 && beforeMyDDCont.getDragAndDropObject().getList().contains(dragged.getDragAndDropObject())) {
-                    if (beforeElement.getList().size() == 1 && beforeElement.getList().contains(draggedMyDDCont.getDragAndDropObject())) {
+                    if (beforeElement.getList().size() == 1 && beforeElement.getList().contains(draggedElement)) {
 //<editor-fold defaultstate="collapsed" desc="dropping a *single* subtask back under the task it belonged to before -> put in same position">
 //<editor-fold defaultstate="collapsed" desc="comment">
                         /**
@@ -2557,16 +2839,35 @@ E
                         dropAsSubtaskActionCall = null; // doesn't make sense here since after is already a subtask => attempting to drop as a subtask will just make a normal drop
                         insertDropPlaceholderForSubtask = null;
 
-                        dropAsSuperTaskActionCall = () -> {
-                            // can drop left to insert as a sibling task instead of a subtask
-                            ItemAndListCommonInterface newOwnerPrj = beforeElement.getOwner();
-//                            int insertIndex = newOwnerPrj.getItemIndex(beforeElement) + 1;
-//                            moveItemOrItemListAndSave(newOwnerPrj, draggedElement, insertIndex);
-                            moveItemOrItemListAndSave(newOwnerPrj, draggedElement, beforeElement, true);
-                        };
-                        insertDropPlaceholderForSupertask = (dropPh) -> {
-                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
-                        };
+//                        dropAsSuperTaskActionCall = () -> {
+//                            // can drop left to insert as a sibling task instead of a subtask
+//                            ItemAndListCommonInterface newOwnerPrj = beforeElement.getOwner();
+////                            int insertIndex = newOwnerPrj.getItemIndex(beforeElement) + 1;
+////                            moveItemOrItemListAndSave(newOwnerPrj, draggedElement, insertIndex);
+//                            moveItemOrItemListAndSave(newOwnerPrj, draggedElement, beforeElement, true);
+//                        };
+//                        insertDropPlaceholderForSupertask = (dropPh) -> {
+//                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+//                        };
+
+                        if (draggedElement.getOwner() == beforeElement) {
+                            MyDragAndDropSwipeableContainer beforeOwnerDD = getParentMyDDCont(beforeMyDDCont);
+                            if (beforeOwnerDD != null) {
+                                // insert a subtask to A, as a sibling task between A and B to give A; S1; B
+                                ItemAndListCommonInterface beforeOwner = beforeOwnerDD.getDragAndDropObject();
+                                ASSERT.that(draggedElement.getOwner() == beforeOwner);
+                                if (beforeOwner instanceof Item) {
+
+                                    dropAsSuperTaskActionCall = () -> {
+                                        moveItemOrItemListAndSave(beforeOwner, draggedElement, beforeElement, true);
+                                    };
+                                    insertDropPlaceholderForSupertask = (dropPh) -> {
+//                                        addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
+                                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                                    };
+                                }
+                            }
+                        }
 //</editor-fold>
                     } else if (afterElement instanceof Item && beforeElement == afterElement.getOwner()) {
 //<editor-fold defaultstate="collapsed" desc="inserting between a task and its expanded subtask">
@@ -2583,7 +2884,7 @@ E
                         dropAsSuperTaskActionCall = null; //does not make sense
 //</editor-fold>
                     } else if (afterElement instanceof Item && afterElement.getOwner() == beforeElement.getOwner()) {
-//<editor-fold defaultstate="collapsed" desc="insert between two siblings">
+//<editor-fold defaultstate="collapsed" desc="insert between two siblings (other than if the two siblings are expanded below a Category, handled above)">
 //<editor-fold defaultstate="collapsed" desc="documentation">
                         /**
 A
@@ -2599,9 +2900,9 @@ A
                         dropActionCall = () -> {
 //                            int insertIndex = beforeElement.getOwner().getItemIndex(beforeElement) + 1; //+1: insert after 'before'
 //                            moveItemOrItemListAndSave(beforeElement.getOwner(), draggedElement, insertIndex); //+1 after beforeElement
-                            moveItemOrItemListAndSave(beforeElement.getOwner(), draggedElement, beforeElement, true); //+1 after beforeElement
+                            moveItemOrItemListAndSave(beforeElement.getOwner(), draggedElement, beforeElement, true); //true: after beforeElement
 //                            moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), beforeMyDDCont.getDragAndDropCategory(), (Item) draggedElement, insertIndex); //Optimization: updating Category separately may lead to a double save of dragged Item
-                            insertIntoCategoryOfSiblingItemAndSave(beforeMyDDCont, draggedMyDDCont);xx;
+//                            insertIntoCategoryOfSiblingItemAndSave(beforeMyDDCont, draggedMyDDCont); //if we get to this if branch, then neither before or after Items are in a Category
                         };
                         insertDropPlaceholder = (dropPh) -> {
                             addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
@@ -2609,29 +2910,43 @@ A
 
                         //insert as subtask
                         dropAsSubtaskActionCall = () -> {
-                            ItemAndListCommonInterface newOwnerPrj = beforeElement;
+//                            ItemAndListCommonInterface newOwnerPrj = beforeElement;
                             //                                int insertIndex = newOwnerPrj.getItemIndex(beforeElement);
 //                            int index = MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean() ? beforeElement.getList().size() : 0;//UI: 0 means insert at head of subtask list
 //                            moveItemOrItemListAndSave(newOwnerPrj, draggedElement, index);
-                            moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
-                            expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears'
+//                            moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
+                            moveItemOrItemListAndSave(beforeElement, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
+//                            expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears'
+                            expandSubtasks(beforeElement); //expand to show list of subtasks to avoid that just dropped element 'disappears'
 
                         };
                         insertDropPlaceholderForSubtask = (dropPh) -> {
                             addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
                         };
 
-                        dropAsSuperTaskActionCall = null; // doesn't make sense
-                        insertDropPlaceholderForSupertask = null;
-//</editor-fold>
+                        if (draggedElement.getOwner() == beforeElement) {
+                            MyDragAndDropSwipeableContainer beforeOwnerDD = getParentMyDDCont(beforeMyDDCont);
+                            if (beforeOwnerDD != null) {
+                                // insert a subtask to A, as a sibling task between A and B to give A; S1; B
+                                ItemAndListCommonInterface beforeOwner = beforeOwnerDD.getDragAndDropObject();
+                                ASSERT.that(draggedElement.getOwner() == beforeOwner);
+                                if (beforeOwner instanceof Item) {
+
+                                    dropAsSuperTaskActionCall = () -> {
+                                        moveItemOrItemListAndSave(beforeOwner, draggedElement, beforeElement, true);
+                                    };
+                                    insertDropPlaceholderForSupertask = (dropPh) -> {
+//                                        addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
+                                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                                    };
+                                }
+                            }
+                        }
 //                    } else if (afterElement == null || afterElement instanceof ItemList) {
-
 //                    } else if (afterElement instanceof Item && afterElement.getOwner() == beforeElement.getOwner()) {
+//</editor-fold>
                     } else { //afterElement is null, or a Category or ItemList, or an Item at a higher level (a sibling to a mother-task of beforeElement). In all cases, we only look at beforeElement to determine what to do
-
-                        ASSERT.that(afterElement == null || afterElement instanceof ItemList
-                                || afterElement instanceof Item, "afterElement=" + afterElement + ", should normally be null here?!");
-                        //if 'before' is last in a list AND there is a sibling up the hierarchy, then insert after that sibling (and not after the last expanded subtask)
+                        ASSERT.that(afterElement == null || afterElement instanceof ItemList || afterElement instanceof Item, "afterElement=" + afterElement + ", should normally be null here?!");
 //<editor-fold defaultstate="collapsed" desc="documentation of cases">
 /*
 before getting to here, we've already covered the following cases where both before and after are Items:
@@ -2694,15 +3009,17 @@ before getting to here, we've already covered the following cases where both bef
 //</editor-fold>
                         //if dragged is actual last element (although hidden) then before should be second-last
                         MyDragAndDropSwipeableContainer siblingContainer = findSiblingUpwardsInHierarchyN(draggedMyDDCont, beforeMyDDCont);
-//                        if (beforeEltIsLastInList && siblingContainer != null) {
                         if (siblingContainer != null) {
 //<editor-fold defaultstate="collapsed" desc="moving sibling (from above or below) to after other sibling which may have expanded subtasks (insert visually after last expanded/shown subtask, but after the sibling in the parent's list)">
+//if 'before' is last in a list AND there is a sibling up the hierarchy, then insert after that sibling (and not after the last expanded subtask)
 //defaultstate="collapsed" desc="CASE 1: inserting a sibling to beforeElt or one of it's parents. Normal: insert after the sibling, Sub: insert as subtask (=indent), Super: insert after the beforeElt's owner (=extent)">
 //NNB. If there is no sibling, it means that we're moving between lists or between different projects, 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                                Log.p("-INSERT \"" + draggedElement.getText() + "\" after sibling \"" + sibling.getDragAndDropObject().getText() + "\"", Log.DEBUG);
 //                            if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT +NOR+SUB"+" \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
 //                                        + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
 //                                        + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
+//</editor-fold>
                             ASSERT.that(siblingContainer.getDragAndDropObject().getOwner() == draggedElement.getOwner(), "sibling does not have same owner as draggedItem");
                             ItemAndListCommonInterface siblingElement = siblingContainer.getDragAndDropObject();
                             MyDragAndDropSwipeableContainer siblingOwnerDD = getParentMyDDCont(siblingContainer);
@@ -2714,9 +3031,9 @@ before getting to here, we've already covered the following cases where both bef
 //                                moveItemOrItemListAndSave(siblingOwner, draggedElement, insertIndex);
                                 moveItemOrItemListAndSave(siblingOwner, draggedElement, siblingElement, true);
 //<editor-fold defaultstate="collapsed" desc="comment">
-                                if (false) { //doesn't make sense since we're moving siblings (so already in same category)
-                                    moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), beforeMyDDCont.getDragAndDropCategory(), (Item) draggedElement, insertIndex); //Optimization: updating Category separately may lead to a double save of dragged Item
-                                }
+//                                if (false) { //doesn't make sense since we're moving siblings (so already in same category)
+//                                    moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), beforeMyDDCont.getDragAndDropCategory(), (Item) draggedElement, insertIndex); //Optimization: updating Category separately may lead to a double save of dragged Item
+//                                }
 //</editor-fold>
                             };
                             insertDropPlaceholder = (dropPh) -> { //insert after sibling
@@ -2725,12 +3042,15 @@ before getting to here, we've already covered the following cases where both bef
                             // dropAsSubtaskActionCall and dropAsSuperTaskActionCall are both defined below
                             //inserting as 'subtask' below a last subtask of sibling should not create a subtask, but simply insert after the last subtask
                             dropAsSubtaskActionCall = () -> {
-//                                ItemAndListCommonInterface newOwnerPrj = beforeElement.getOwner();
-//                                int insertIndex = newOwnerPrj.getItemIndex(beforeElement) + 1;
-//                                moveItemOrItemListAndSave(newOwnerPrj, draggedElement, insertIndex);
+//<editor-fold defaultstate="collapsed" desc="comment">
+////                                ItemAndListCommonInterface newOwnerPrj = beforeElement.getOwner();
+////                                int insertIndex = newOwnerPrj.getItemIndex(beforeElement) + 1;
+////                                moveItemOrItemListAndSave(newOwnerPrj, draggedElement, insertIndex);
+//                                ItemAndListCommonInterface newOwnerPrj = beforeElement;
+////                                int index = MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean() ? beforeElement.getList().size() : 0;//UI: 0 means insert at head of subtask list
+////                                moveItemOrItemListAndSave(newOwnerPrj, draggedElement, index);
+//</editor-fold>
                                 ItemAndListCommonInterface newOwnerPrj = beforeElement;
-//                                int index = MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean() ? beforeElement.getList().size() : 0;//UI: 0 means insert at head of subtask list
-//                                moveItemOrItemListAndSave(newOwnerPrj, draggedElement, index);
                                 moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
                                 expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears'
                             };
@@ -2753,12 +3073,18 @@ before getting to here, we've already covered the following cases where both bef
                                             + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
 
                                 dropAsSuperTaskActionCall = () -> {//shouldn't be allowed to super-drop a task in ScreenListOfItemLists where lists are top-level
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                                    ItemAndListCommonInterface topLevelElt = siblingOwnerDD.getDragAndDropObject();
 //                                    ItemAndListCommonInterface newOwnerPrj = topLevelElt.getOwner();
 //                                    int insertIndex = newOwnerPrj.getItemIndex(topLevelElt) + 1; //insert just after the topLevelElt
 //                                    int insertIndex = siblingOwnerOwner.getItemIndex(siblingOwner) + 1; //insert just after the si
 //                                    moveItemOrItemListAndSave(siblingOwnerOwner, draggedElement, insertIndex);
-                                    moveItemOrItemListAndSave(siblingOwnerOwner, draggedElement, siblingOwner, true);
+//</editor-fold>
+                                    Category siblingOwnerCategory = siblingOwnerDD.getDragAndDropCategory();
+                                    if (siblingContainer != null && siblingElement instanceof Item && siblingOwnerCategory != null)
+                                        moveItemBetweenCategoriesAndSave(draggedCategory, siblingOwnerCategory, (Item) draggedElement, (Item) siblingElement, true);
+                                    else
+                                        moveItemOrItemListAndSave(siblingOwnerOwner, draggedElement, siblingOwner, true);
                                 };
                                 insertDropPlaceholderForSupertask = (dropPh) -> {
                                     addDropPlaceholderToAppropriateParentCont(siblingOwnerOwnerDD, dropPh, 1);
@@ -2769,8 +3095,8 @@ before getting to here, we've already covered the following cases where both bef
                                         + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
 
 //</editor-fold>
-                        } else {
-//<editor-fold defaultstate="collapsed" desc="CASE2; last option: dragged i NOT a sibling to beforeElt or a higher-level parent, so no 'smart' drop, simply insert after 'before' Item">
+                        } else { //siblingContainer == null
+//<editor-fold defaultstate="collapsed" desc="CASE2; last option: dragged is NOT a sibling to beforeElt or a higher-level parent, so no 'smart' drop, simply insert after 'before' Item (or SUP: before">
                             //no sibling found, so simply insert after 'before' (after the subtask)
                             if (false && Config.TEST_DRAG_AND_DROP) Log.p("-INSERT16 +NOR+SUB\"" + draggedElement.getText() + "\" after \"" + beforeElement.getText() + "\""
                                         + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
@@ -2781,13 +3107,13 @@ before getting to here, we've already covered the following cases where both bef
 //                                moveItemOrItemListAndSave(newOwner, draggedElement, insertIndex);
                                 moveItemOrItemListAndSave(newOwner, draggedElement, beforeElement, true);
 //<editor-fold defaultstate="collapsed" desc="comment">
-                                if (false && beforeMyDDCont.getDragAndDropCategory() != null) { //case of moving within a category is being checked above
-                                    Category beforeCategory = beforeMyDDCont.getDragAndDropCategory();
-                                    int catIndex = beforeCategory.getItemIndex(beforeElement) + 1; //+1 drop at position *after* beforeItem
-                                    moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), beforeMyDDCont.getDragAndDropCategory(), (Item) draggedElement, catIndex);
-                                }
+//                                if (false && beforeMyDDCont.getDragAndDropCategory() != null) { //case of moving within a category is being checked above
+//                                    Category beforeCategory = beforeMyDDCont.getDragAndDropCategory();
+//                                    int catIndex = beforeCategory.getItemIndex(beforeElement) + 1; //+1 drop at position *after* beforeItem
+//                                    moveItemBetweenCategoriesAndSave(getDragAndDropCategory(), beforeMyDDCont.getDragAndDropCategory(), (Item) draggedElement, catIndex);
+//                                }
 //</editor-fold>
-                                insertIntoCategoryOfSiblingItemAndSave(beforeMyDDCont, draggedMyDDCont);
+//                                insertIntoCategoryOfSiblingItemAndSave(beforeMyDDCont, draggedMyDDCont); //NOT necessary here, handled above if inserting after an Item which is expanded under a Category
                             };
                             insertDropPlaceholder = (dropPh) -> {
                                 addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
@@ -2795,12 +3121,9 @@ before getting to here, we've already covered the following cases where both bef
 
                             dropAsSubtaskActionCall = () -> {
                                 ItemAndListCommonInterface newOwnerPrj = beforeElement;
-                                //                                int insertIndex = newOwnerPrj.getItemIndex(beforeElement);
-//                                int index = MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean() ? beforeElement.getList().size() : 0;//UI: 0 means insert at head of subtask list
-//                                moveItemOrItemListAndSave(newOwnerPrj, draggedElement, index);
-                                moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean() );
+                                moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
                                 expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears'
-                                insertIntoCategoryOfSiblingItemAndSave(beforeMyDDCont, draggedMyDDCont);
+//                                insertIntoCategoryOfSiblingItemAndSave(beforeMyDDCont, draggedMyDDCont); //CAN NEVER belong to a Category
                             };
                             insertDropPlaceholderForSubtask = (dropPh) -> {
                                 //  addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
@@ -2808,46 +3131,52 @@ before getting to here, we've already covered the following cases where both bef
                             };
 
                             //insert at level above beforeElt (if exists) == exdent the dropped task
-                            MyDragAndDropSwipeableContainer siblingOwnerDD = getParentMyDDCont(beforeMyDDCont);
-                            if (false && siblingOwnerDD != null) {
-                                dropAsSuperTaskActionCall = () -> {
-                                    ItemAndListCommonInterface newOwner = beforeElement.getOwner();
-                                    ItemAndListCommonInterface newOwnerFromDD = siblingOwnerDD.getDragAndDropObject();
-                                    ASSERT.that(newOwnerFromDD == newOwner, "inconsistent owners");
-//                                    ItemAndListCommonInterface topLevelElt = topLevelOwnerDD.getDragAndDropObject();
-//                                    ItemAndListCommonInterface newOwnerPrj = topLevelElt.getOwner();
-//                                    int insertIndex = newOwner.getItemIndex(beforeElement) + 1; //insert just after the topLevelElt
-//                                    moveItemOrItemListAndSave(newOwner, draggedElement, insertIndex);
-                                    moveItemOrItemListAndSave(newOwner, draggedElement, beforeElement, true);
-                                    insertIntoCategoryOfSiblingItemAndSave(siblingOwnerDD, draggedMyDDCont);
-                                };
-                                insertDropPlaceholderForSupertask = (dropPh) -> {
-                                    addDropPlaceholderToAppropriateParentCont(siblingOwnerDD, dropPh, 1);
-                                };
-                            }
-
-                            MyDragAndDropSwipeableContainer siblingOwnerOwnerDD = getParentMyDDCont(siblingOwnerDD);
-                            if (siblingOwnerOwnerDD != null) {
-                                ItemAndListCommonInterface siblingOwnerOwner = siblingOwnerDD.getDragAndDropObject().getOwner();
+                            MyDragAndDropSwipeableContainer beforeOwnerDD = getParentMyDDCont(beforeMyDDCont);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                            if (false && siblingOwnerDD != null) {
+//                                dropAsSuperTaskActionCall = () -> {
+//                                    ItemAndListCommonInterface newOwner = beforeElement.getOwner();
+//                                    ItemAndListCommonInterface newOwnerFromDD = siblingOwnerDD.getDragAndDropObject();
+//                                    ASSERT.that(newOwnerFromDD == newOwner, "inconsistent owners");
+////                                    ItemAndListCommonInterface topLevelElt = topLevelOwnerDD.getDragAndDropObject();
+////                                    ItemAndListCommonInterface newOwnerPrj = topLevelElt.getOwner();
+////                                    int insertIndex = newOwner.getItemIndex(beforeElement) + 1; //insert just after the topLevelElt
+////                                    moveItemOrItemListAndSave(newOwner, draggedElement, insertIndex);
+//                                    moveItemOrItemListAndSave(newOwner, draggedElement, beforeElement, true);
+//                                    insertIntoCategoryOfSiblingItemAndSave(siblingOwnerDD, draggedMyDDCont);
+//                                };
+//                                insertDropPlaceholderForSupertask = (dropPh) -> {
+//                                    addDropPlaceholderToAppropriateParentCont(siblingOwnerDD, dropPh, 1);
+//                                };
+//                            }
+//</editor-fold>
+//                            MyDragAndDropSwipeableContainer siblingOwnerOwnerDD = getParentMyDDCont(siblingOwnerDD);
+                            if (beforeOwnerDD != null) {
+                                ItemAndListCommonInterface beforeOwner = beforeOwnerDD.getDragAndDropObject();
+                                if (beforeOwner instanceof Item) {
+                                    Category beforeOwnerCategory = beforeOwnerDD.getDragAndDropCategory();
+                                    if (beforeOwnerCategory != null) { //adding to a category
+                                        dropAsSuperTaskActionCall = () -> {//shouldn't be allowed to super-drop a task in ScreenListOfItemLists where lists are top-level
+                                            moveItemBetweenCategoriesAndSave(draggedCategory, beforeOwnerCategory, (Item) draggedElement, (Item) beforeOwner, true); //true: insert after 
+                                        };
+                                        insertDropPlaceholderForSupertask = (dropPh) -> {
+                                            addDropPlaceholderToAppropriateParentCont(beforeOwnerDD, dropPh, 1);
+                                        };
+                                    } else {
+                                        dropAsSuperTaskActionCall = () -> {//shouldn't be allowed to super-drop a task in ScreenListOfItemLists where lists are top-level
+                                            moveItemOrItemListAndSave(beforeOwner, draggedElement, beforeElement, true);
+                                        };
+                                        insertDropPlaceholderForSupertask = (dropPh) -> {
+                                            addDropPlaceholderToAppropriateParentCont(beforeOwnerDD, dropPh, 1);
+                                        };
+                                        moveItemOrItemListAndSave(beforeOwner, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
+                                    }
+                                }
 //                                if (siblingOwner != ownerOfBeforeElement) {//if top-level is the same as the sibling's owner, don't allow dropping as super-task
-                                if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT16 +NOR+SUB+SUP" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
+                                if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT17 +NOR+SUB+SUP" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
                                             + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
                                             + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
-
-                                dropAsSuperTaskActionCall = () -> {//shouldn't be allowed to super-drop a task in ScreenListOfItemLists where lists are top-level
-//                                    ItemAndListCommonInterface topLevelElt = siblingOwnerDD.getDragAndDropObject();
-//                                    ItemAndListCommonInterface newOwnerPrj = topLevelElt.getOwner();
-//                                    int insertIndex = newOwnerPrj.getItemIndex(topLevelElt) + 1; //insert just after the topLevelElt
-//                                    int insertIndex = siblingOwnerOwner.getItemIndex(siblingOwner) + 1; //insert just after the si
-//                                    int insertIndex = siblingOwnerOwner.getItemIndex(siblingOwnerDD.getDragAndDropObject()) + 1; //insert just after the si
-//                                    moveItemOrItemListAndSave(siblingOwnerOwner, draggedElement, insertIndex);
-                                    moveItemOrItemListAndSave(siblingOwnerOwner, draggedElement, siblingOwnerDD.getDragAndDropObject(), true);
-                                };
-                                insertDropPlaceholderForSupertask = (dropPh) -> {
-                                    addDropPlaceholderToAppropriateParentCont(siblingOwnerOwnerDD, dropPh, 1);
-                                };
-//                                }
-                            } else if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT17 +NOR+SUB-sup" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
+                            } else if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT18 +NOR+SUB-sup" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
                                         + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
                                         + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
 
@@ -3105,8 +3434,8 @@ before getting to here, we've already covered the following cases where both bef
                     form.revalidateWithAnimationSafety();
                 }
                 formNeedRefresh = false;
-                e.consume();
             }
+                e.consume();
             //<editor-fold defaultstate="collapsed" desc="comment">
 //            }
             //                } else {
@@ -3153,6 +3482,7 @@ before getting to here, we've already covered the following cases where both bef
 //    }
 //</editor-fold>
     @Override
+
     public Category getDragAndDropCategory() {
 //        Container parent = getParent();
 //        //iterate up the container hierarchy for an Item to see if the above object is a category

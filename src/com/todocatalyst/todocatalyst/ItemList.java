@@ -900,10 +900,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return remainingEffortSumVector.getIndexAtSum(sum);
 //    }
 //</editor-fold>
-    public boolean isExpandable() {
-        return getSize() > 0;
-    }
-
+//    public boolean isExpandable() {
+//        return getSize() > 0;
+//    }
     /**
      * returns the item that matches (exactly) Text. Used to check for duplicate
      * definition of e.g. Categories (to avoid that two different categories
@@ -1069,7 +1068,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
 //    @Override
-    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
+    private boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
         addItemAtIndex((E) subItemOrList, index);
         if (Config.TEST) {
             ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this),
@@ -1081,12 +1080,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefElement) {
-        int index = indexOf(refElement);
-        if (index < 0)
-            addToList(newElement);
-        else
-            addToList(index + (addAfterRefElement ? 1 : 0), newElement);
+    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefEltOrEndOfList) {
+//        int index = indexOf(refElement);
+        List listFull = getListFull();
+        int index = refElement == null ? (addAfterRefEltOrEndOfList ? listFull.size() : 0) : listFull.indexOf(refElement);
+//        if (index < 0)
+//            addToList(newElement);
+//        else
+//            addToList(index + (addAfterRefEltOrEndOfList ? 1 : 0), newElement);
+        addToList(index, newElement);
 //        addItemAtIndex((E) subItemOrList, index + (addAfterItem ? 1 : 0));
 //        if (Config.TEST) {
 //            ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this), 
@@ -1860,7 +1862,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        setList(listFull);
 //        fireDataChangedEvent(DataChangedListener.CHANGED, newPos);
 //    }
-
     public ItemAndListCommonInterface setItemAtIndex(E item, int index) {
 //        List<? extends ItemAndListCommonInterface> editedList = getListFull();
         List<E> listFull = getListFull();

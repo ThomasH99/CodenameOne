@@ -858,12 +858,12 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
 //    public String toString() {
 //        return getText();
 //    }
-        public boolean softDelete(boolean removeReferences) { //throws ParseException {
+    public boolean softDelete(boolean removeReferences) { //throws ParseException {
         if (Config.TEST) ASSERT.that(!isDeleted());
 
         // remove category from all items 
         List<ParseObject> updatedElements = new ArrayList<>();
-        for (Item item : (List<Item>)getListFull()) {
+        for (Item item : (List<Item>) getListFull()) {
             if (Config.TEST) ASSERT.that(item.getCategories().contains(this));
             item.removeCategoryFromItem(this, removeReferences); //remove references to this item from the category before deleting it (false: but keep the item's categories)
             updatedElements.add(item);
@@ -873,7 +873,7 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
         //remove category from meta-categories (all categories to which it is a subcategory)
         updatedElements.clear();
 //        for (Category category : (List<Category>)CategoryList.getInstance()) {
-        for (Category category : (List<Category>)getMetaList()) {
+        for (Category category : (List<Category>) getMetaList()) {
             //remove this category as a subCategory (as well as any items added to the meta-lists)
             if (category.removeSubList(this)) {
                 updatedElements.add(category);
@@ -884,12 +884,12 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
         //remove category from categorylist ==owner)
         CategoryList categoriesList = CategoryList.getInstance();
         if (Config.TEST) ASSERT.that(categoriesList.getListFull().contains(this));
-        categoriesList.removeFromList(this,removeReferences);
+        categoriesList.removeFromList(this, removeReferences);
 //        DAO.getInstance().saveInBackground((ParseObject)categoriesList);
-        
+
         put(Item.PARSE_DELETED_DATE, new Date());
 //        DAO.getInstance().saveInBackground((ParseObject)this);
-        DAO.getInstance().saveInBackground(categoriesList,this); //group the two saves together
+        DAO.getInstance().saveInBackground(categoriesList, this); //group the two saves together
         return true;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        deleteAllItemsInList(true); //by default, delete only items owned by this list
@@ -913,6 +913,21 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
      * category list)
      * @param addCategoryToItem if true, also add the category to the item
      */
+    public void addItemToCategory(Item item, Item refItem, boolean addCategoryToItem, boolean insertAfterOrEndOfList) {
+        if (item != null) {
+            int insertIndex;
+            if (refItem != null) {
+                insertIndex = getListFull().indexOf(refItem) + (insertAfterOrEndOfList ? 1 : 0);
+            } else
+                insertIndex = insertAfterOrEndOfList ? getListFull().size() : 0;
+//            addItemToCategory(item, insertIndex,addCategoryToItem);
+            addItemAtIndex(item, insertIndex);
+            if (addCategoryToItem) {
+                item.addCategoryToItem(this, false);
+            }
+        }
+    }
+
     public void addItemToCategory(Item item, int index, boolean addCategoryToItem) {
         if (item != null) {
 //            addItem(item);
