@@ -28,12 +28,6 @@ public enum ItemStatus {
     DONE("Done", "Task is completed, no more work"),
     CANCELLED("Cancelled", "Task has been cancelled (similar to deleted, but is kept to maintain history)");
     
-    final static char iconCheckboxCreatedChar = FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED; 
-    final static char iconCheckboxCancelledChar = FontImage.MATERIAL_REMOVE_CIRCLE; //dark circle to illustrate 'done with'
-    final static char iconCheckboxOngoingChar = FontImage.MATERIAL_TIMELAPSE;
-    final static char iconCheckboxDoneChar = FontImage.MATERIAL_CHECK_CIRCLE;
-    final static char iconCheckboxWaitingChar = FontImage.MATERIAL_PAUSE_CIRCLE_OUTLINE;
-
 //String[] descriptionList = new String[]{CREATED.description, ONGOING.getDescription(), WAITING.getDescription(), DONE.getDescription(), CANCELLED.getDescription()};
     final static String[] descriptionList = new String[]{values()[0].fullDescription, values()[1].fullDescription, values()[2].fullDescription, values()[3].fullDescription, values()[4].fullDescription};
     final static String[] nameList = new String[]{values()[0].description, values()[1].description, values()[2].description, values()[3].description, values()[4].description};

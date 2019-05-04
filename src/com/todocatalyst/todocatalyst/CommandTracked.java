@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.ui.Command;
 import com.codename1.ui.Image;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
@@ -13,7 +14,7 @@ import com.codename1.ui.events.ActionListener;
  * overrides CN1 command to intercept action event and track them via Analytics
  * @author thomashjelm
  */
-public class CommandTracked extends com.codename1.ui.Command {
+public class CommandTracked extends Command {
 
     private String actionId = null;
 
@@ -39,8 +40,22 @@ public class CommandTracked extends com.codename1.ui.Command {
 //        actionId=analyticsActionId;
     }
 
+    CommandTracked(String command, char icon) {
+//        super(command, icon);
+        super(command);
+        setMaterialIcon(icon);
+//        actionId=analyticsActionId;
+    }
+
     CommandTracked(String command, Image icon, String analyticsActionId) {
         super(command, icon);
+        setAnalyticsActionId(analyticsActionId);
+    }
+
+    CommandTracked(String command, char icon, String analyticsActionId) {
+//        super(command, icon);
+        super(command);
+        setMaterialIcon(icon);
         setAnalyticsActionId(analyticsActionId);
     }
 
@@ -58,6 +73,20 @@ public class CommandTracked extends com.codename1.ui.Command {
 
 //      public static com.codename1.ui.CommandTracked create(String name, Image icon, final ActionListener ev) {
     public static CommandTracked create(String name, Image icon, final ActionListener ev, String analyticsActionId) {
+//        com.codename1.ui.CommandTracked cmd = new com.codename1.ui.CommandTracked(name) {
+        CommandTracked cmd = new CommandTracked(name, icon) {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+//                MyAnalyticsService.event(name);
+                super.actionPerformed(evt);
+                ev.actionPerformed(evt);
+            }
+        };
+        cmd.setAnalyticsActionId(analyticsActionId);
+        return cmd;
+    }
+    
+    public static CommandTracked create(String name, char icon, final ActionListener ev, String analyticsActionId) {
 //        com.codename1.ui.CommandTracked cmd = new com.codename1.ui.CommandTracked(name) {
         CommandTracked cmd = new CommandTracked(name, icon) {
             @Override

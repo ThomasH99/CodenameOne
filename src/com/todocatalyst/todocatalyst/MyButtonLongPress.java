@@ -117,7 +117,7 @@ public class MyButtonLongPress extends Button {
         /*
         dragInitiated is called in Form.autoRelease(int x, int y) eg Picker is shown. 
         In that case, Button.pointerRelased(xy) is NOT called, 
-        which leaves the longPointerPress handing as true
+        which leaves the longPointerPress hanging as true
         Seems to work as expected with this change!!
          */
         if (longPointerPress) { //ignore fireActionEvent after longPress

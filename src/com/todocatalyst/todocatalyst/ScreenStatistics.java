@@ -25,13 +25,12 @@ import java.util.Date;
 public class ScreenStatistics extends MyForm {
     //TODO 
 
-    private static final String screenTitle = "Lists";
+//    private static final String screenTitle = "Lists";
 // protected static String FORM_UNIQUE_ID = "ScreenStatistics"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private ItemList itemListList;
 //    private boolean draggableMode = false;
 //    Command sortOnOff = null;
 //    Command draggableOnOff = null;
-
     List<Item> itemsSortedOnDate;
     ItemList itemListStats;
     WorkSlotList workSlots;
@@ -55,7 +54,7 @@ public class ScreenStatistics extends MyForm {
 //        this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
 //    }
 //    ScreenStatistics(String title, ItemList itemListList, MyForm previousForm, GetItemList updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
-    ScreenStatistics(MyForm previousForm, UpdateField updateActionOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenStatistics(String screenTitle, MyForm previousForm, UpdateField updateActionOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(screenTitle, previousForm, updateActionOnDone);
 //        this.itemListList = itemListList;
         setUniqueFormId("ScreenStatistics");
@@ -66,25 +65,12 @@ public class ScreenStatistics extends MyForm {
 //        expandedObjects = new HashSet();
         expandedObjects = new ExpandedObjects(getUniqueFormId()); //,null);
         addCommandsToToolbar(getToolbar());
-        if (false) {
-            getToolbar().addSearchCommand((e) -> {
-                String text = (String) e.getSource();
-                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-                boolean showAll = text == null || text.length() == 0;
-                for (int i = 0, size = this.itemsSortedOnDate.size(); i < size; i++) {
-                    //TODO!!! compare same case (upper/lower)
-                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                    compList.getComponentAt(i).setHidden(((Item) itemsSortedOnDate.get(i)).getText().toLowerCase().indexOf(text) < 0);
-                }
-                compList.animateLayout(150);
-            });
-        }
-        getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats));
+
         reloadData();
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.itemListList));
         refreshAfterEdit();
     }
-    
+
     @Override
     public void refreshAfterEdit() {
         getContentPane().removeAll();
@@ -96,11 +82,11 @@ public class ScreenStatistics extends MyForm {
         restoreKeepPos();
         super.refreshAfterEdit();
     }
-    
+
     private void sortItems() {
         sortItems(itemsSortedOnDate, SortStatsOn.dateAndTime);
     }
-    
+
     private static void sortItems(List<Item> itemList, SortStatsOn sortOn) {
 //        Comparator comparator;
         switch (sortOn) {
@@ -122,7 +108,7 @@ public class ScreenStatistics extends MyForm {
                 break;
         }
     }
-    
+
     private void reloadData() {
         Date startDate = new Date(MyDate.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
         Date endDate = new Date();
@@ -131,10 +117,26 @@ public class ScreenStatistics extends MyForm {
         itemsSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate);
 //        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
     }
-    
-    public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
-        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("Settings", null, Icons.iconSettingsLabelStyle, (e) -> {
+    public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
+        if (false) {
+            getToolbar().addSearchCommand((e) -> {
+                String text = (String) e.getSource();
+                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+                boolean showAll = text == null || text.length() == 0;
+                for (int i = 0, size = this.itemsSortedOnDate.size(); i < size; i++) {
+                    //TODO!!! compare same case (upper/lower)
+                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
+                    compList.getComponentAt(i).setHidden(((Item) itemsSortedOnDate.get(i)).getText().toLowerCase().indexOf(text) < 0);
+                }
+                compList.animateLayout(150);
+            });
+        }
+        //SEARCH
+        if(false) //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
+            getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats));
+        
+        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("Settings", null, Icons.iconSettings, (e) -> {
             int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
             new ScreenSettingsStatistics(ScreenStatistics.this, () -> {
                 if (daysInThePast != MyPrefs.statisticsScreenNumberPastDaysToShow.getInt()) {
@@ -166,15 +168,15 @@ public class ScreenStatistics extends MyForm {
         //        categoriesThenDate("Categories-Dates"); //categoriesThenDate Cat_Date
         categoriesThenDate("CatD"); //categoriesThenDate Cat_Date
         String str;
-        
+
         SortStatsOn(String stri) {
             this.str = stri;
         }
-        
+
         public String toString() {
             return str;
         }
-        
+
         public static SortStatsOn valueOfDefault(String s) {
             SortStatsOn v = null;
             try {
@@ -197,7 +199,7 @@ public class ScreenStatistics extends MyForm {
         week,
         month
     }
-    
+
     private static boolean newDateGroup(ShowGroupedBy groupBy, Date day, Date prevDate) {
         if (day == null || prevDate == null) {
             return true;
@@ -233,7 +235,7 @@ public class ScreenStatistics extends MyForm {
                 return getEndDate ? MyDate.getEndOfMonth(day) : MyDate.getStartOfMonth(day);
         }
     }
-    
+
     private static String getDateString(ShowGroupedBy groupBy, Date day) {
         switch (groupBy) {
             case day:
@@ -276,11 +278,11 @@ public class ScreenStatistics extends MyForm {
                 SortStatsOn.valueOfDefault(MyPrefs.statisticsSortBy.getString()),
                 ShowGroupedBy.valueOf(MyPrefs.statisticsGroupBy.getString()));
     }
-    
+
     private static void addWorkSlotsToItemList(ItemList itemList, WorkSlotList workSlotsSortedByStartDate, Date startDate, Date endDate) {
         itemList.setWorkSlotList(workSlotsSortedByStartDate.getWorkSlotsInInterval(startDate, endDate, true, true));
     }
-    
+
     private static ItemList buildStatisticsSortedByTime(List<Item> itemsSortedOnDate, WorkSlotList workSlots, SortStatsOn sortOn, ShowGroupedBy groupBy) {
 //        boolean groupByDate = true || groupBy == ShowGroupedBy.day;
 //        boolean groupByDate = true || groupBy == ShowGroupedBy.day;
@@ -288,7 +290,7 @@ public class ScreenStatistics extends MyForm {
         boolean groupByList = sortOn == SortStatsOn.dateThenLists || sortOn == SortStatsOn.listsThenDates;
         boolean groupByCategory = sortOn == SortStatsOn.dateThenCategories || sortOn == SortStatsOn.categoriesThenDate;
         boolean groupByProject = MyPrefs.statisticsGroupTasksUnderTheirProject.getBoolean();
-        
+
         ItemList<ItemList> mainList = new ItemList();
         ItemList dayList = null; //list of days
         ItemList ownerList = null; //list of lists (to group tasks by their ItemList)
@@ -301,7 +303,7 @@ public class ScreenStatistics extends MyForm {
         ItemList prevOwnerList = null;
         Category prevCategory = null;
         Item prevTopLevelProject = null;
-        
+
         assert !groupByList || !groupByCategory; //cannot group by both Owner and Category, either (or both) must be false
 
         for (Item item : itemsSortedOnDate) {
@@ -320,7 +322,7 @@ public class ScreenStatistics extends MyForm {
                     prevCompletedDate = completedDate; //update prevCompletedDate
                 }
             }
-            
+
             if (groupByList) {
                 ItemAndListCommonInterface owner = item.getOwner();
                 if (owner == null || !(owner instanceof ItemList)) {
@@ -344,7 +346,7 @@ public class ScreenStatistics extends MyForm {
                 prevTopLevelProject = null; //will ensure that we recalc topLevelProject
 
             }
-            
+
             if (groupByCategory) { //prevItem==null => first time round
                 Category category = item.getFirstCategory();
                 if (category == null) {
@@ -777,7 +779,7 @@ public class ScreenStatistics extends MyForm {
                 setIndent(cmp, depth);
                 return cmp;
             }
-            
+
         };
         return cl;
     }

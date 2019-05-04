@@ -55,7 +55,8 @@ public class ScreenWorkSlot extends MyForm {
 //            this.previousValues = previousValues;
 //        } else {
 //        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId("-" + this.workSlot.getObjectIdP()));
-        initLocalSaveOfEditedValues(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
+//        initLocalSaveOfEditedValues(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
+        previousValues = new SaveEditedValuesLocally( getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
 //        }
         setLayout(BoxLayout.y());
         getContentPane().setScrollableY(true);
@@ -488,7 +489,7 @@ public class ScreenWorkSlot extends MyForm {
             content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
         }
 
-        setCheckOnExit(() -> checkWorkSlotIsValidForSaving(ownerObj, workSlot, startByDate.getDate(), duration.getDuration())); //TODO: when owner can be edited, use new/edited one
+        setCheckIfSaveOnExit(() -> checkWorkSlotIsValidForSaving(ownerObj, workSlot, startByDate.getDate(), duration.getDuration())); //TODO: when owner can be edited, use new/edited one
         return content;
     }
 

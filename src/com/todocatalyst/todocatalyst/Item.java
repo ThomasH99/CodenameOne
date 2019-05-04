@@ -2288,10 +2288,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return getListFull().indexOf(subtask) >= 0;
     }
 
-    @Override
-    public int getSize() { //
-        return getList().size();
-    }
+//    @Override
+//    public int getSize() { //
+//        return getList().size();
+//    }
 
     /**
     NB. The index must be in the full (unfiltered) list! Hence recommended to use addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subtask, boolean addAfterItem) which calculates right index for subtask

@@ -269,6 +269,21 @@ ObjectSelectorRadioButton{
     color: blue;
 }*/
 
+/*************** main menu **************/
+MainMenuCommand {
+    cn1-derive: Label;
+    font-family :  "native:MainLight";
+    font-size: 120%;
+    text-align: left;
+    color: dimgray;
+    /*background: linear-gradient(0deg, #ccc, #666);*/
+    background: linear-gradient(0deg, whitesmoke, lightgray);
+    /*background-color: #3399ff;*/
+    margin:0px 0mm;/*1px 1mm;*/
+    padding:1.5mm 3mm; /*top+bottom right+left*/
+    /*padding-left:0.5mm;
+    padding-right:0.5mm;*/
+}
 /*************** list of items **************/
 
 ListOfItemsTextCont { /*style for task container (WrapButton) in lists*/
@@ -319,7 +334,7 @@ ItemDetailsLabel { /*style for task details labels */
 
 ListOfItemsPrio {
     cn1-derive: ItemListSmall;
-    color:violet;
+    color:darkgray;
 }
 
 ListOfItemsImpUrg {
@@ -330,7 +345,7 @@ ListOfItemsImpUrg {
 ListOfItemsActualEffort {
     cn1-derive: ItemListSmall;
     /*text-align: center;*/
-    color:green;
+    color:grey;
 }
 ItemEffortEstimateLabel {
     cn1-derive: ItemListSmall;
@@ -341,13 +356,13 @@ ItemEffortEstimateLabel {
 ListOfItemsRemaining {
     cn1-derive: ItemListSmall;
     /*text-align: center;*/
-    color:blue;
+    color:black;
 }
 
 ListOfItemsCompletedDate {
     cn1-derive: ItemListSmall;
     /*text-align: center;*/
-    color:green;
+    color:grey;
     /*background-color: #3399ff;
     /*foreground-color: #268b04;*/
 }
@@ -372,7 +387,7 @@ ListOfItemsDueDateInherited {
 ListOfItemsDueDateOverdue {
     cn1-derive: ItemListSmall;
     text-align: center;
-    color:orange;
+    color:darksalmon;
     /*background-color: #3399ff;
     /*foreground-color: #268b04;*/
 }
@@ -397,7 +412,7 @@ ListOfItemsShowSubtasks { /*expand subtasks*/
     text-decoration: none;
     color:white;
     /*border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
-    border-radius: 8px;
+    /*border-radius: 8px; //TODO: this seems to make it crash - need to update CN1 source?! */
 }
 
 MyCheckBox {
@@ -483,11 +498,11 @@ ListOfItemsMyCheckBox {
 
 ListOfItemsSelected {
     cn1-derive: FinishTime;
-    font-size: 180%;
-    margin: 0;
-    padding: 0;
+    font-size: 80%;
+    margin: 0 1 0 1mm;
+    padding: 0 0 0 0mm;
     text-align: left;
-    color:red;
+    color:grey;
 }
 
 ListOfItemsEditItemIcon {
@@ -495,7 +510,7 @@ ListOfItemsEditItemIcon {
     margin: 0 0 0 2mm;
     padding: 0 0 0 2mm;
     text-align: right;
-    color:brown;
+    color:grey;
 }
 
 ItemStatusPopup {
@@ -507,11 +522,11 @@ ItemStatusPopup {
 }
 
 ItemStatusIcon {
-    font-size: 120%;
+    font-size: 100%;
     margin: 0 0 0 2mm;
     padding: 0 0 0 2mm;
     text-align: right;
-    color:green;
+    color: #999999;
 }
 
 ItemCommentIcon {
@@ -523,7 +538,7 @@ ItemStatusPopupIcon {
     margin: 0 0 0 2mm;
     padding: 0 0 0 2mm;
     text-align: left;
-    color:violet;
+    color:#666666;
 }
 
 SwipeButton{
@@ -568,6 +583,7 @@ StickyHeader {
     background-color:darkgrey;
     /*foreground-color: #268b04;*/
 }
+
 
 
 ToggleButton {
@@ -619,21 +635,24 @@ ComponentGroup {
 
 ButtonGroup {
     font-family :  "native:MainRegular";
-    font-size: 80%;
-    color: red;
-    background: green;
+    font-size: 100%;
+    color: grey;
+    /*background: green;*/
 }
 
 ButtonGroupFirst {
-    color: yellow;
+    cn1-derive: ButtonGroup;
+    /*color: yellow;*/
 }
 
 ButtonGroupLast {
-    color: blue;
+    cn1-derive: ButtonGroup;
+    /*color: blue;*/
 }
 
 ButtonGroupOnly {
-    color: violet;
+    cn1-derive: ButtonGroup;
+    /*color: violet;*/
 }
 
 /******* TIMER ****************/

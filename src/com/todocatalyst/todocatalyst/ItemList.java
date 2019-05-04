@@ -1734,13 +1734,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     /**
      * @inheritDoc
      */
-    public int getSize() {
-//        return (itemList == null) ? 0 : itemList.size();
-//return (getListFull() == null) ? 0 : getListFull().size();
-//        List l = getListFull();
-//        return (l == null) ? 0 : l.size();
-        return getList().size();
-    }
+//    public int getSize() {
+////        return (itemList == null) ? 0 : itemList.size();
+////return (getListFull() == null) ? 0 : getListFull().size();
+////        List l = getListFull();
+////        return (l == null) ? 0 : l.size();
+////        return getList().size();
+//        return getListFull().size();
+//    }
 
     /**
      * @inheritDoc
@@ -1790,15 +1791,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public void addItemAtIndex(E item, int index) {
 
         List listFull = getListFull();
-        List list = getList();
+//        List list = getList();
 
         int indexFull;
-        if (list != listFull) { //optimize for the case where list is not filtered
-            if (index >= 0 && index < list.size())
-                indexFull = listFull.indexOf(list.get(index));
-            else indexFull = 0;
-        } else
-            indexFull = index;
+//        if (list != listFull) { //optimize for the case where list is not filtered
+//            if (index >= 0 && index < list.size())
+//                indexFull = listFull.indexOf(list.get(index));
+//            else indexFull = 0;
+//        } else
+        indexFull = index;
 
         Bag updatedBag = getItemBag(); //TODO: 
 //        if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
@@ -1971,12 +1972,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param itemList list of items to add (or null)
      */
     public void addAllItems(ItemList<E> itemList) {
-        if (itemList == null) {
-            return;
-        }
-        for (int i = 0, size = itemList.getSize(); i < size; i++) {
-            addItem(itemList.getItemAt(i));
-        }
+//        if (itemList == null) {
+//            return;
+//        }
+        if (itemList != null)
+            for (int i = 0, size = itemList.getSize(); i < size; i++) {
+                addItem(itemList.getItemAt(i));
+            }
     }
 
     /**
@@ -2101,20 +2103,21 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return null;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * returns and removes item at position index. Returns null if no item.
      *
      * @param index
      * @return
      */
-    public E getAndRemoveItemAtXXX(int index) {
-        E item = getItemAt(index);
-        if (item != null) {
-            removeItem(index);
-        }
-        return item;
-    }
-
+//    public E getAndRemoveItemAtXXX(int index) {
+//        E item = getItemAt(index);
+//        if (item != null) {
+//            removeItem(index);
+//        }
+//        return item;
+//    }
+//</editor-fold>
     /**
      * @inheritDoc
      */
@@ -2137,7 +2140,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                itemList.remove(index);
 //                List<E> list = getListFull();
                 List<E> listFull = getListFull();
-                List<E> list = getList();
+//                List<E> list = getList();
                 int indexFull = listFull.indexOf(item);
                 listFull.remove(indexFull);
                 setList(listFull);
@@ -2426,16 +2429,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * list Done
      */
     public void setAllItemsDone(boolean done, boolean recurse) {
-        for (int i = 0, size = getSize(); i < size; i++) {
-            Object obj = getItemAt(i);
-            if (obj instanceof ItemAndListCommonInterface) {
-                ItemAndListCommonInterface item = (ItemAndListCommonInterface) obj;
-                if (item.isDone() != done) {
-                    item.setDone(done);
-                }
-            } else if (obj instanceof ItemList && recurse) {
-                ((ItemList) obj).setAllItemsDone(done, recurse);
+//        for (int i = 0, size = getSize(); i < size; i++) {
+//            Object obj = getItemAt(i);
+//        for (int i = 0, size = getSize(); i < size; i++) {
+        for (ItemAndListCommonInterface item : getListFull()) {
+//                ItemAndListCommonInterface item = (ItemAndListCommonInterface) obj;
+            if (item instanceof ItemList && recurse) {
+                ((ItemList) item).setAllItemsDone(done, recurse);
+            } else if (item.isDone() != done) {
+                item.setDone(done);
             }
+//            } else if (obj instanceof ItemList && recurse) {
+//                ((ItemList) obj).setAllItemsDone(done, recurse);
+//            }
         }
     }
 
@@ -2854,8 +2860,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         ItemStatus projectStatus;
         Bag<ItemStatus> statusCount = new Bag<ItemStatus>();
         int listSize = getSize();
-        for (int i = 0, size = listSize; i < size; i++) {
-            statusCount.add(getItemAt(i).getStatus());
+//        for (int i = 0, size = listSize; i < size; i++) {
+//            statusCount.add(getItemAt(i).getStatus());
+//        }
+        for (E item:getListFull()) {
+            statusCount.add(item.getStatus());
         }
         if (statusCount.getCount(ItemStatus.CANCELLED) == listSize) {//all subtasks are cancelled
             projectStatus = ItemStatus.CANCELLED;
@@ -2939,9 +2948,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             if (contains(obj)) {
                 return true;
             } else {
-                Object temp;
-                for (int i = 0, size = getSize(); i < size; i++) {
-                    temp = getItemAt(i);
+//                Object temp;
+//                for (int i = 0, size = getSize(); i < size; i++) {
+//                    temp = getItemAt(i);
+                for (E temp:getListFull()) {
+//                    temp = getItemAt(i);
                     if (temp instanceof ItemList) {
                         if (((ItemList) temp).containsRecurse(obj)) {
                             return true;
@@ -2986,12 +2997,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
             public boolean hasNext() {
                 //implement...
-                return index < getSize();
+//                return index < getSize();
+                return index < size();
             }
 
             public ItemAndListCommonInterface next() {
                 //implement...;
-                return (ItemAndListCommonInterface) getItemAt(index++);
+//                return (ItemAndListCommonInterface) getItemAt(index++);
+                return (ItemAndListCommonInterface) get(index++);
             }
 
             public void remove() {
@@ -3302,11 +3315,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public long getRemaining() {
         long sum = 0;
-        for (int i = 0, size = getSize(); i < size; i++) {
-            Object o = getItemAt(i);
-            if (o instanceof ItemAndListCommonInterface) {
-                sum += ((ItemAndListCommonInterface) o).getRemaining();
-            }
+//        for (int i = 0, size = getSize(); i < size; i++) {
+//            Object o = getItemAt(i);
+//            if (o instanceof ItemAndListCommonInterface) {
+//                sum += ((ItemAndListCommonInterface) o).getRemaining();
+//            }
+//        }
+        for (ItemAndListCommonInterface o : getListFull()) {//use full list to include any hidden elements which still have remaining (eg Waiting)
+            sum += o.getRemaining();
         }
         return sum;
     }
@@ -3314,11 +3330,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public long getEstimate() {
         long sum = 0;
-        for (int i = 0, size = getSize(); i < size; i++) {
-            Object o = getItemAt(i);
-            if (o instanceof ItemAndListCommonInterface) {
-                sum += ((ItemAndListCommonInterface) o).getEstimate();
-            }
+//        for (int i = 0, size = getSize(); i < size; i++) {
+//            Object o = getItemAt(i);
+//            if (o instanceof ItemAndListCommonInterface) {
+//                sum += ((ItemAndListCommonInterface) o).getEstimate();
+//            }
+//        }
+        for (ItemAndListCommonInterface o : getListFull()) {
+            sum += o.getEstimate();
         }
         return sum;
     }
@@ -3326,11 +3345,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public long getActual() {
         long sum = 0;
-        for (int i = 0, size = getSize(); i < size; i++) {
-            Object o = getItemAt(i);
-            if (o instanceof ItemAndListCommonInterface) {
-                sum += ((ItemAndListCommonInterface) o).getActual();
-            }
+//        for (int i = 0, size = getSize(); i < size; i++) {
+//            Object o = getItemAt(i);
+//            if (o instanceof ItemAndListCommonInterface) {
+//                sum += ((ItemAndListCommonInterface) o).getActual();
+//            }
+//        }
+        for (ItemAndListCommonInterface o : getListFull()) {
+            sum += o.getActual();
         }
         return sum;
     }
@@ -3347,20 +3369,22 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return sum;
 //    }
 //</editor-fold>
-    public long getRemainingEffortOLD() {
-        long sum = 0;
-        for (int i = 0, size = getSize(); i < size; i++) {
-            Object o = getItemAt(i);
-            if (o instanceof ItemAndListCommonInterface) {
-                if (o instanceof Item && !((Item) o).isDone()) { //replace Item  with general type
-                    sum += ((Item) o).getRemaining(); //only count not done Items
-                } else {
-                    sum += ((ItemAndListCommonInterface) o).getRemaining();
-                }
-            }
-        }
-        return sum;
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public long getRemainingEffortOLD() {
+//        long sum = 0;
+//        for (int i = 0, size = getSize(); i < size; i++) {
+//            Object o = getItemAt(i);
+//            if (o instanceof ItemAndListCommonInterface) {
+//                if (o instanceof Item && !((Item) o).isDone()) { //replace Item  with general type
+//                    sum += ((Item) o).getRemaining(); //only count not done Items
+//                } else {
+//                    sum += ((ItemAndListCommonInterface) o).getRemaining();
+//                }
+//            }
+//        }
+//        return sum;
+//    }
+//</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override

@@ -88,14 +88,15 @@ public class ScreenTimer6 extends MyForm {
 //        addComponent(CN.CENTER, timerInstance.getTimerContainer());
 //        addComponent(CN.CENTER, timerContentainer);
 
-        if (previousValues != null) {
-            this.previousValues = previousValues;
-        } else {
-//            this.previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
-//            this.previousValues = new SaveEditedValuesLocally("Timer-" + TimerStack.getInstance().getTimedItemN().getObjectIdP());
-//            this.previousValues = new SaveEditedValuesLocally("Timer");
-            initLocalSaveOfEditedValues("Timer");
-        }
+//        if (previousValues != null) {
+//            this.previousValues = previousValues;
+//        } else {
+////            this.previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
+////            this.previousValues = new SaveEditedValuesLocally("Timer-" + TimerStack.getInstance().getTimedItemN().getObjectIdP());
+////            this.previousValues = new SaveEditedValuesLocally("Timer");
+////            initLocalSaveOfEditedValues("Timer");
+//            this.previousValues=new SaveEditedValuesLocally(getUniqueFormId() + "-" + timedItem.getObjectIdP());
+//        }
 
 //        setScrollable(false);
         //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
@@ -154,7 +155,8 @@ public class ScreenTimer6 extends MyForm {
 //            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
 //            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
 //            previousValues = new SaveEditedValuesLocally("Timer-" + timedItem.getObjectIdP());
-            initLocalSaveOfEditedValues("Timer-" + timedItem.getObjectIdP());
+//            initLocalSaveOfEditedValues("Timer-" + timedItem.getObjectIdP());
+            this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + timedItem.getObjectIdP());
 //        TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, timerContentainer,  previousValues); //also removes previous content of contentPane
             Container contentPane = getContentPane();
             contentPane.removeAll();

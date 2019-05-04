@@ -301,7 +301,7 @@ public class ScreenCategoryProperties extends MyForm {
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
-        setCheckOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText(), category));
+        setCheckIfSaveOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText(), category));
 
         return content;
     }

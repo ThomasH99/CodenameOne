@@ -30,7 +30,6 @@ import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.ui.util.UITimer;
-//import com.codename1.ui.util.UITimer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1907,7 +1906,6 @@ class TimerStack {
 //                    }
 //                        Display.getInstance().vibrate(BUZZER_DURATION);
 //</editor-fold>
-
         });
 
         ActionListener stopUITimers
@@ -2063,7 +2061,7 @@ class TimerStack {
             }
         };
 
-        Command cmdSetCompletedAndGotoNextTaskOrExit = new Command("Completed", Icons.iconCheckboxDone) {
+        Command cmdSetCompletedAndGotoNextTaskOrExit = new Command("Completed", Icons.iconCheckboxDoneLabelStyle) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -2091,7 +2089,7 @@ class TimerStack {
             }
         };
 
-        Command cmdSetTaskWaitingAndGotoNextTaskOrExit = new Command("Wait", Icons.iconCheckboxWaiting) {
+        Command cmdSetTaskWaitingAndGotoNextTaskOrExit = new Command("Wait", Icons.iconCheckboxWaitingLabelStyle) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -2119,7 +2117,7 @@ class TimerStack {
             }
         };
 
-        Command cmdSetTaskCancelledAndGotoNextTaskOrExit = new Command("Cancel", Icons.iconCheckboxCancelled) {
+        Command cmdSetTaskCancelledAndGotoNextTaskOrExit = new Command("Cancel", Icons.iconCheckboxCancelledLabelStyle) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -2146,7 +2144,7 @@ class TimerStack {
             }
         };
 
-        Command cmdSetTaskOngoingAndGotoNextTaskOrExit = new Command("Ongoing**", Icons.iconCheckboxCancelled) {
+        Command cmdSetTaskOngoingAndGotoNextTaskOrExit = new Command("Ongoing**", Icons.iconCheckboxCancelledLabelStyle) {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                timerTimer.cancel();

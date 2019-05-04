@@ -378,7 +378,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        startTimeStr += "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
 //                + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
         String startTimeStr = MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
-        Label startTimeLabel = new Label(startTimeStr, Icons.iconWorkSlot,
+        Label startTimeLabel = new Label(startTimeStr, Icons.iconWorkSlotLabelStyle,
                 workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime");
 
 //        String endTimeStr = "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))

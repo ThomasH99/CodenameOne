@@ -228,7 +228,7 @@ public class ScreenRepeatRule extends MyForm {
 //        cmd.putClientProperty("android:showAsAction", "withText");
 //        toolbar.addCommandToLeftBar(cmd);
 //</editor-fold>
-        setCheckOnExit(() -> checkRepeatRuleIsValid(restoreEditedFieldsToRepeatRule(repeatRuleEdited)));
+        setCheckIfSaveOnExit(() -> checkRepeatRuleIsValid(restoreEditedFieldsToRepeatRule(repeatRuleEdited)));
         Command cmd = makeDoneUpdateWithParseIdMapCommand(true);
         cmd.putClientProperty("android:showAsAction", "withText");
         toolbar.addCommandToLeftBar(cmd);

@@ -156,7 +156,8 @@ public class ScreenItem2 extends MyForm {
         getTitleComponent().setEndsWith3Points(true);
 //        ScreenItemP.item = item;
         this.item = item;
-        initLocalSaveOfEditedValues(getUniqueFormId() + item.getObjectIdP());
+//        initLocalSaveOfEditedValues(getUniqueFormId() + item.getObjectIdP());
+//        previousValues = new SaveEditedValuesLocally( getUniqueFormId() + item.getObjectIdP());
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(FORM_UNIQUE_ID,this.item);
         expandedObjects = new ExpandedObjects(getUniqueFormId() + this.item.getObjectIdP());
@@ -258,12 +259,12 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(() -> item.hasSaveableData()));
 
-        setCheckOnExit(() -> item.hasSaveableData());
+        setCheckIfSaveOnExit(() -> item.hasSaveableData());
 
         Command exitScreenItemAndUpdateAndSave = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                if (getCheckOnExit() == null || getCheckOnExit().check()) {
+                if (getCheckIfSaveOnExit() == null || getCheckIfSaveOnExit().check()) {
 
                     UpdateField repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
 
@@ -305,7 +306,7 @@ public class ScreenItem2 extends MyForm {
 
         //EDIT WORKSLOTS
 //        if (!optionTemplateEditMode && !optionNoWorkTime) {
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditWorkTime", "Work time", Icons.iconWorkSlot, (e) -> {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
 //                new ScreenListOfWorkSlots(item.getText(), item.getWorkSlotListN(), item, ScreenItem2.this, null, //(iList) -> {
@@ -319,7 +320,7 @@ public class ScreenItem2 extends MyForm {
 
         //TEMPLATE
         if (!templateEditMode) {
-            toolbar.addCommandToOverflowMenu("Save as template", null, (e) -> {
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Save as template", Icons.iconSaveAsTemplate, (e) -> {
                 Dialog ip = new InfiniteProgress().showInfiniteBlocking();
                 //TODO add option to let user edit template after creation
                 //TODO enable user to select which fields to exclude
@@ -346,11 +347,11 @@ public class ScreenItem2 extends MyForm {
                 new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, () -> TemplateList.getInstance(), ScreenItem2.this, (i) -> {
                 }, ScreenListOfItems.OPTION_TEMPLATE_EDIT// | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                 ).show();
-            });
+            },"SaveAsTemplate"));
         }
 
         if (true || !templateEditMode) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
-            toolbar.addCommandToOverflowMenu("Insert template", null, (e) -> {
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Insert template", Icons.iconAddFromTemplate, (e) -> {
                 //TODO!! Add "don't show again + setting to all these info popups
                 if (!MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem.getBoolean()
                         || Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
@@ -389,11 +390,11 @@ public class ScreenItem2 extends MyForm {
                     }, 1, true, false, false).show();
 //                    if (template != null) {
                 };
-            });
+            },"CreateFromTemplate"));
         }
 
         //DELETE
-        toolbar.addCommandToOverflowMenu(CommandTracked.create("Delete", null, (e) -> {
+        toolbar.addCommandToOverflowMenu(CommandTracked.create("Delete", Icons.iconDelete, (e) -> {
 //            Log.p("Clicked");
 //            item.revert(); //forgetChanges***/refresh
 //            previousForm.showBack(); //drop any changes
@@ -407,12 +408,17 @@ public class ScreenItem2 extends MyForm {
             showPreviousScreenOrDefault(true);
         }, "DeleteItem"));
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", "Settings", Icons.iconSettingsLabelStyle, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", "Task settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsItem(ScreenItem2.this, () -> {
                 refreshAfterEdit();
             }).show();
         }
         ));
+        
+        toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { 
+            //TODO!!! popup to say Cancel is not implemented yet
+            showPreviousScreenOrDefault(true);
+        }, "Cancel"));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //TASK STATUS
@@ -811,7 +817,9 @@ public class ScreenItem2 extends MyForm {
 //        if (false) {
 //            mainCont.add(ScreenListOfItems.makeMyTree2ForSubTasks(ScreenItem.this, item, expandedObjects));
 //        }
-        tabs.addTab("Main", null, mainTabCont);
+
+        tabs.addTab("Main", Icons.iconMainTab, 3, mainTabCont);
+        tabs.setTabTextPosition(Tabs.RIGHT);
 //        tabs.addTab("Main", null, mainTabCont);
 
 //        MyTextField(String title, String hint, int columns, int constraint, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
@@ -1543,7 +1551,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         Container timeCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         if (Config.TEST) timeCont.setName("TimeTab");
         timeCont.setScrollableY(true);
-        tabs.addTab("Time", null, timeCont);
+        tabs.addTab("Time", Icons.iconTimeTab, 3, timeCont);
 
         boolean isProject = itemLS.isProject();
 
@@ -1733,7 +1741,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
         prioCont.setScrollableY(true);
         if (Config.TEST) prioCont.setName("PrioTab");
-        tabs.addTab("Prio", null, prioCont);
+        tabs.addTab("Prio", Icons.iconPrioTab, 3, prioCont);
 
 //        MyStringPicker priority = new MyStringPicker(new String[]{"None", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, parseIdMap2, () -> item.getPriority(), (i) -> item.setPriority(i));
 //        cont.add(new Label("Priority")).add(priority);
@@ -2092,7 +2100,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         Container statusCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         if (Config.TEST) statusCont.setName("StatusTab");
         statusCont.setScrollableY(true);
-        tabs.addTab("Status", null, statusCont);
+        tabs.addTab("Status", Icons.iconStatusTab, 3, statusCont);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Label createdDate = new Label(item.getCreatedDate() == 0 ? "<date set when saved>" : L10NManager.getInstance().formatDateShortStyle(new Date(item.getCreatedDate())));
 //        Label createdDate = new Label(item.getCreatedDate() == 0 ? "<date set when saved>" : L10NManager.getInstance().formatDateTimeShort(new Date(item.getCreatedDate())));
@@ -2915,7 +2923,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             tabs.setSelectedIndex((int) previousValues.get(LAST_TAB_SELECTED)); //keep same tab selected even if regenerating the screen
         }
 
-        setCheckOnExit(() -> checkItemIsValidForSaving(description.getText(), comment.getText(), dueDate.getDate(), actualEffort.getDuration(),
+        setCheckIfSaveOnExit(() -> checkItemIsValidForSaving(description.getText(), comment.getText(), dueDate.getDate(), actualEffort.getDuration(),
                 remainingEffort.getDuration(), (((List) previousValues.get(Item.PARSE_CATEGORIES))!=null?((List) previousValues.get(Item.PARSE_CATEGORIES)).size():0), item.getListFull().size())); //item.getListFull().size() sinze subtasks are stored 
 //TODO: when owner can be edited, use new/edited one
 

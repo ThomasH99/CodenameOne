@@ -43,7 +43,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
     interface Call {
 
-        void insertDropCont();
+        void doDropAction();
     }
     private Call dropActionCall = null; //function containing the drop action to execute on a normal drop
     private Call dropAsSubtaskActionCall = null; //function containing the drop action to execute when dropping as a subtask (right-hand side of screen)
@@ -52,7 +52,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     interface InsertComp {
 
 //        void insert(Component dropPlaceholder);//, int index);
-        void insert(Component dropPlaceholder);
+        void insertDropPlaceholder(Component dropPlaceholder);
 //        void insert(Component dropPlaceholder, boolean asSubtask);
     }
     private InsertComp insertDropPlaceholder = null; //function containing the drop action to execute on a normal drop
@@ -136,16 +136,16 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                dropPlaceholder.getParent().removeComponent(dropPlaceholder);
                 dropPlaceholder.remove();
                 Log.p("InsertPosition = " + newInsertType + ", inserting normal dropPlaceholder", Log.DEBUG);
-                insertDropPlaceholder.insert(dropPlaceholder);
+                insertDropPlaceholder.insertDropPlaceholder(dropPlaceholder);
             } else if (newInsertType == InsertPositionType.SUBTASK && insertDropPlaceholderForSubtask != null) {
                 dropPlaceholder.remove();
                 Log.p("InsertPosition = " + newInsertType + ", inserting SUBtask dropPlaceholder", Log.DEBUG);
-                insertDropPlaceholderForSubtask.insert(dropPlaceholder);
+                insertDropPlaceholderForSubtask.insertDropPlaceholder(dropPlaceholder);
             } else if (newInsertType == InsertPositionType.SUPERTASK && insertDropPlaceholderForSupertask != null) {
 //                dropPlaceholder.getParent().removeComponent(dropPlaceholder);
                 dropPlaceholder.remove();
                 Log.p("InsertPosition = " + newInsertType + ", inserting SUPERtask dropPlaceholder", Log.DEBUG);
-                insertDropPlaceholderForSupertask.insert(dropPlaceholder);
+                insertDropPlaceholderForSupertask.insertDropPlaceholder(dropPlaceholder);
             } else {
                 Log.p("InsertPosition = NONE??!!", Log.DEBUG);
             }
@@ -289,7 +289,6 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        }
 //        DAO.getInstance().saveInBackground((ParseObject) categoryList, (ParseObject) category);
 //    }
-
     /**
     will update the categories for item, and either move item within the same category, move it from old to new, only insert it into new (if old is null) or only remove it from old (if new is null). Does nothing if both categories are null.
     @param oldCategory
@@ -1752,6 +1751,28 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         setDropTarget(true); //containers are both dropTargets and draggable
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
+
+        addPointerDraggedListener((e) -> {
+            Component drag = (Component) e.getSource();
+            Component dropTarget = e.getDropTarget(); //may be null (in Component.dragFinishedImpl(int x, int y))
+            int x = e.getX();
+            int y = e.getY();
+            //update drop position (NORMAL, SUBTASK, SUPERTASK):
+            InsertPositionType newInsertPosition = insertPosition(x);
+            if (insertPosition != newInsertPosition) {
+//                refreshDropPlaceholderContainer(insertPosition, newInsertAsType);
+                refreshDropPlaceholderContainer(newInsertPosition);
+//                formNeedRefresh = true;
+//                Log.p("InsertPositionType now = " + newInsertAsType+" (before="+(insertPosition!=null?insertPosition.toString().toLowerCase():"<null>")+")", Log.DEBUG);
+                insertPosition = newInsertPosition;
+                Form form = Display.getInstance().getCurrent();
+                if (form != null) {
+                    form.revalidateWithAnimationSafety();
+                }
+                return; //changed the dropContainer, no need to do anything more
+            }
+        });
+        
         //NB!!! dragOverListener is called on the **DRAGGED** object (not the dropTarget as I originally assumed)
         addDragOverListener((e) -> {
 //            Component drag = e.getDraggedComponent();
@@ -2254,7 +2275,7 @@ T3
 //                        int insertIndex = categoryOwnerList.getItemIndex(beforeElement) + 1;
 ////                        moveCategoryAndSave(categoryOwnerList, (Category) getDragAndDropObject(), indexCatList); //+ addOneOnDownwardsDrag
 //                        moveCategoryAndSave(categoryOwnerList, (Category) draggedElement, insertIndex); //+ addOneOnDownwardsDrag
-                        moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, beforeElement,true); //+ addOneOnDownwardsDrag
+                        moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, beforeElement, true); //+ addOneOnDownwardsDrag
                     };
                     insertDropPlaceholder = (dropPh) -> {
 //                            afterCont.getParent().addComponent(afterCont.getParent().getComponentIndex(afterCont), dropPh);
@@ -2272,7 +2293,7 @@ T3
 //                        int insertIndex = categoryOwnerList.getItemIndex(afterElement);
 ////                        moveCategoryAndSave(categoryOwnerList, (Category) getDragAndDropObject(), indexCatList); //+ addOneOnDownwardsDrag
 //                        moveCategoryAndSave(categoryOwnerList, (Category) draggedElement, insertIndex); //+ addOneOnDownwardsDrag
-                         moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, beforeElement,true); 
+                        moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, beforeElement, true);
                     };
                     insertDropPlaceholder = (dropPh) -> {
 //                            this.getParent().addComponent(this.getParent().getComponentCount(), dropPh); //add at the end of the container with the list of categories
@@ -2838,7 +2859,7 @@ E
 
                         dropAsSubtaskActionCall = null; // doesn't make sense here since after is already a subtask => attempting to drop as a subtask will just make a normal drop
                         insertDropPlaceholderForSubtask = null;
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        dropAsSuperTaskActionCall = () -> {
 //                            // can drop left to insert as a sibling task instead of a subtask
 //                            ItemAndListCommonInterface newOwnerPrj = beforeElement.getOwner();
@@ -2849,13 +2870,13 @@ E
 //                        insertDropPlaceholderForSupertask = (dropPh) -> {
 //                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
 //                        };
-
+//</editor-fold>
                         if (draggedElement.getOwner() == beforeElement) {
                             MyDragAndDropSwipeableContainer beforeOwnerDD = getParentMyDDCont(beforeMyDDCont);
                             if (beforeOwnerDD != null) {
                                 // insert a subtask to A, as a sibling task between A and B to give A; S1; B
                                 ItemAndListCommonInterface beforeOwner = beforeOwnerDD.getDragAndDropObject();
-                                ASSERT.that(draggedElement.getOwner() == beforeOwner);
+                                ASSERT.that(beforeElement.getOwner() == beforeOwner);
                                 if (beforeOwner instanceof Item) {
 
                                     dropAsSuperTaskActionCall = () -> {
@@ -3087,7 +3108,8 @@ before getting to here, we've already covered the following cases where both bef
                                         moveItemOrItemListAndSave(siblingOwnerOwner, draggedElement, siblingOwner, true);
                                 };
                                 insertDropPlaceholderForSupertask = (dropPh) -> {
-                                    addDropPlaceholderToAppropriateParentCont(siblingOwnerOwnerDD, dropPh, 1);
+//                                    addDropPlaceholderToAppropriateParentCont(siblingOwnerOwnerDD, dropPh, 1);
+                                    addDropPlaceholderToAppropriateParentCont(siblingOwnerDD, dropPh, 1);
                                 };
 //                                }
                             } else if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT15 +NOR+SUB-sup" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
@@ -3242,15 +3264,15 @@ before getting to here, we've already covered the following cases where both bef
 //                        }
 //</editor-fold>
                         if (MyPrefs.dragDropAsSubtaskEnabled.getBoolean() && insertPosition == InsertPositionType.SUBTASK && dropAsSubtaskActionCall != null && insertDropPlaceholderForSubtask != null) {
-                            dropAsSubtaskActionCall.insertDropCont();
+                            dropAsSubtaskActionCall.doDropAction();
                             Log.p("**********Comp.drop , SUBTASK dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
                         } else if (MyPrefs.dragDropAsSupertaskEnabled.getBoolean() && insertPosition == InsertPositionType.SUPERTASK && dropAsSuperTaskActionCall != null && insertDropPlaceholderForSupertask != null) {
-                            dropAsSuperTaskActionCall.insertDropCont();
+                            dropAsSuperTaskActionCall.doDropAction();
                             Log.p("**********Comp.drop , SUPER dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
 //                        } else if (insertPosition == InsertPositionType.NORMAL && dropActionCall != null && insertDropPlaceholder != null) {
                         } else if (dropActionCall != null && insertDropPlaceholder != null) {
                             Log.p("**********Comp.drop , NORMAL dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
-                            dropActionCall.insertDropCont();
+                            dropActionCall.doDropAction();
                         } else {
                             Log.p("**********Comp.drop , NO ACTION!!! dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
                         }
@@ -3364,20 +3386,20 @@ before getting to here, we've already covered the following cases where both bef
 //</editor-fold>
                 newDropPlaceholder.setUIID("DropTargetPlaceholder");
                 newDropPlaceholder.setDropTarget(true);
-                if (Config.TEST_DRAG_AND_DROP) newDropPlaceholder.setText(insertPosition + " PlcHldr:" + dropTarget.getName());
+                if (Config.TEST_DRAG_AND_DROP) newDropPlaceholder.setText(insertPosition.toString() + " PlcHldr:" + dropTarget.getName());
                 if (false && Config.TEST_DRAG_AND_DROP) newDropPlaceholder.setName("DropPlaceholder for " + dropTarget.getName() + ", w=" + newDropPlaceholder.getWidth() + ", h=" + newDropPlaceholder.getHeight());
 
                 //insert new dropPlaceholder
 //                    treeList.addComponent(dropPlaceholderInsertionIndex, newDropPlaceholder); //insert dropPlaceholder at pos of dropTarget (should correctly will 'push down' the target one position)
 //                insertDropPlaceholder.insert(newDropPlaceholder, false && dropAsSubtaskActionCall != null && insertBelow(x));
                 if (MyPrefs.dragDropAsSubtaskEnabled.getBoolean() && insertPosition == InsertPositionType.SUBTASK && insertDropPlaceholderForSubtask != null) {
-                    insertDropPlaceholderForSubtask.insert(newDropPlaceholder);
+                    insertDropPlaceholderForSubtask.insertDropPlaceholder(newDropPlaceholder);
                     if (Config.TEST_DRAG_AND_DROP) Log.p("insertDropPlaceholderForSubtask");
                 } else if (MyPrefs.dragDropAsSupertaskEnabled.getBoolean() && insertPosition == InsertPositionType.SUPERTASK && insertDropPlaceholderForSupertask != null) {
-                    insertDropPlaceholderForSupertask.insert(newDropPlaceholder);
+                    insertDropPlaceholderForSupertask.insertDropPlaceholder(newDropPlaceholder);
                     if (Config.TEST_DRAG_AND_DROP) Log.p("insertDropPlaceholderForSupertask");
                 } else if (insertDropPlaceholder != null) { //don't test on InsertPositionType since if NORMAL and do drop as sub/super is defined, we'll always drop normally
-                    insertDropPlaceholder.insert(newDropPlaceholder);
+                    insertDropPlaceholder.insertDropPlaceholder(newDropPlaceholder);
                     if (Config.TEST_DRAG_AND_DROP) Log.p("insertDropPlaceholder");
                 } else {
                     newDropPlaceholder = null; //set null to avoid null pointer exceptions
@@ -3435,7 +3457,7 @@ before getting to here, we've already covered the following cases where both bef
                 }
                 formNeedRefresh = false;
             }
-                e.consume();
+            e.consume();
             //<editor-fold defaultstate="collapsed" desc="comment">
 //            }
             //                } else {

@@ -113,11 +113,11 @@ public class MyCheckBox extends Button {
             }
 
             iconsPopup = new Image[ItemStatus.values().length];
-            iconsPopup[0] = FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, popupIconStyle);
-            iconsPopup[1] = FontImage.createMaterial(ItemStatus.iconCheckboxOngoingChar, popupIconStyle);
-            iconsPopup[2] = FontImage.createMaterial(ItemStatus.iconCheckboxWaitingChar, popupIconStyle);
-            iconsPopup[3] = FontImage.createMaterial(ItemStatus.iconCheckboxDoneChar, popupIconStyle);
-            iconsPopup[4] = FontImage.createMaterial(ItemStatus.iconCheckboxCancelledChar, popupIconStyle);
+            iconsPopup[0] = FontImage.createMaterial(Icons.iconItemStatusCreated, popupIconStyle);
+            iconsPopup[1] = FontImage.createMaterial(Icons.iconItemStatusOngoing, popupIconStyle);
+            iconsPopup[2] = FontImage.createMaterial(Icons.iconItemStatusWaiting, popupIconStyle);
+            iconsPopup[3] = FontImage.createMaterial(Icons.iconItemStatusDone, popupIconStyle);
+            iconsPopup[4] = FontImage.createMaterial(Icons.iconItemStatusCancelled, popupIconStyle);
         }
 //        if (groupStyle != null && !groupStyle.equals(this.groupStyleName)) {
 //        } else {
@@ -152,11 +152,11 @@ public class MyCheckBox extends Button {
                 this.singleIconStyle = new Style(s); //keep a *copy* of the style (to ensure that CSS refresh works?!
             }
             iconsSingleStatus = new Image[ItemStatus.values().length];
-            iconsSingleStatus[0] = FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, singleIconStyle);
-            iconsSingleStatus[1] = FontImage.createMaterial(ItemStatus.iconCheckboxOngoingChar, singleIconStyle);
-            iconsSingleStatus[2] = FontImage.createMaterial(ItemStatus.iconCheckboxWaitingChar, singleIconStyle);
-            iconsSingleStatus[3] = FontImage.createMaterial(ItemStatus.iconCheckboxDoneChar, singleIconStyle);
-            iconsSingleStatus[4] = FontImage.createMaterial(ItemStatus.iconCheckboxCancelledChar, singleIconStyle);
+            iconsSingleStatus[0] = FontImage.createMaterial(Icons.iconItemStatusCreated, singleIconStyle);
+            iconsSingleStatus[1] = FontImage.createMaterial(Icons.iconItemStatusOngoing, singleIconStyle);
+            iconsSingleStatus[2] = FontImage.createMaterial(Icons.iconItemStatusWaiting, singleIconStyle);
+            iconsSingleStatus[3] = FontImage.createMaterial(Icons.iconItemStatusDone, singleIconStyle);
+            iconsSingleStatus[4] = FontImage.createMaterial(Icons.iconItemStatusCancelled, singleIconStyle);
         }
 
         setStatus(initialItemStatus); //NB! Do this *after* initializing the icons above, but *before* setting statusChangeHandler to avoid infinite loop
@@ -273,6 +273,19 @@ public class MyCheckBox extends Button {
         });
 //        b.setUIID();
         b.setIcon(materialIcon);
+//        return c;
+        return b;
+    }
+    private Button create(String cmdName, char materialIcon, final ActionListener ev) {
+        Button b = new Button(new Command(cmdName) {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                ev.actionPerformed(evt);
+            }
+        });
+//        b.setUIID();
+//        b.setIcon(materialIcon);
+        b.setMaterialIcon(materialIcon);
 //        return c;
         return b;
     }

@@ -524,7 +524,8 @@ public class FilterSortDef extends ParseObject {
     public boolean test(Object t) {
         Item item = (Item) t;
         ItemStatus status = item.getStatus();
-        return (status != ItemStatus.CREATED || showNewTasks)
+        return showAll
+        ||((status != ItemStatus.CREATED || showNewTasks)
                 && (status != ItemStatus.ONGOING || showOngoingTasks)
                 && (status != ItemStatus.WAITING || showWaitingTasks)
                 && (status != ItemStatus.DONE || showDoneTasks)
@@ -538,7 +539,7 @@ public class FilterSortDef extends ParseObject {
                 && (!showInterruptTasksOnly || item.isInteruptOrInstantTask()) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithoutEstimatesOnly || !item.has(Item.PARSE_EFFORT_ESTIMATE)) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithActualsOnly || item.has(Item.PARSE_ACTUAL_EFFORT)) //before now <=> hideUntil date is already passed so show the item
-                ;
+                );
 
 //            return false;
     }

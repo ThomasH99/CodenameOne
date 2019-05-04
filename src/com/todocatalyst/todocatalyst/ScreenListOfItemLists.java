@@ -156,9 +156,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                previousForm.showBack();
 //            }
 //        });
-
 //        addCommandsToToolbar(getToolbar());
-
         //SEARCH
         if (false) getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
@@ -187,8 +185,8 @@ public class ScreenListOfItemLists extends MyForm {
 //                    DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    itemListList.addItemAtIndex(itemList, 0);
 //                    itemListList.addToList(0, itemList);
-                    itemListList.addToList( itemList, false); //TODO: why always add to start of list?! Make it a setting like elsewhere?
-                    DAO.getInstance().saveInBackground((ParseObject)itemList,(ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    itemListList.addToList(itemList, false); //TODO: why always add to start of list?! Make it a setting like elsewhere?
+                    DAO.getInstance().saveInBackground((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
@@ -197,6 +195,9 @@ public class ScreenListOfItemLists extends MyForm {
             }).show();
         }
         ));
+
+        //INTERRUPT TASK
+        toolbar.addCommandToLeftBar(makeInterruptCommand());
 
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
@@ -410,7 +411,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
                         f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
                         itemList.setList(iList.getListFull());
-                        DAO.getInstance().saveInBackground((ParseObject)itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
                         swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
                     } else {
@@ -567,7 +568,7 @@ public class ScreenListOfItemLists extends MyForm {
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, "SwipeLaunchTimerOnItemList", Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(CommandTracked.create("",Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(CommandTracked.create("", Icons.iconNewItemFromTemplate, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    Item newTemplateInstantiation = new Item();
 //                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
@@ -693,7 +694,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
                 TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
 //            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
-            }, "InterruptSwipeInScreen"+((MyForm) mainCont.getComponentForm()).getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+            }, "InterruptSwipeInScreen" + ((MyForm) mainCont.getComponentForm()).getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             )));
         }
 

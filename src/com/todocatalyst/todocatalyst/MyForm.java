@@ -104,7 +104,7 @@ public class MyForm extends Form {
 
     private String showIfEmptyList = null; //holds Container with actual content, typically MyTree2
 
-    public CheckDataIsComplete getCheckOnExit() {
+    public CheckDataIsComplete getCheckIfSaveOnExit() {
         return checkDataIsCompleteBeforeExit;
     }
 
@@ -112,7 +112,7 @@ public class MyForm extends Form {
     check if data is complete (or otherwise not fit for saving and return the appropriate error message, used to prevent quitting a screen
     @param showIfEmptyList 
      */
-    public void setCheckOnExit(CheckDataIsComplete errorMsgIfDataIncomplete) {
+    public void setCheckIfSaveOnExit(CheckDataIsComplete errorMsgIfDataIncomplete) {
         this.checkDataIsCompleteBeforeExit = errorMsgIfDataIncomplete;
     }
 
@@ -1273,7 +1273,8 @@ public class MyForm extends Form {
         if (Config.TEST) {
             Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
         }
-
+        if (previousValues!=null&&previousValues.getScrollY()!=null)
+            previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -1434,7 +1435,7 @@ public class MyForm extends Form {
     void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
         if (previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
             previousValues.deleteFile();
-            previousValues.clear(); //if still accessed
+//            previousValues.clear(); //if still accessed
         }
         if (callRefreshAfterEdit) {
             previousForm.refreshAfterEdit();
@@ -1585,12 +1586,12 @@ public class MyForm extends Form {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 //use checkOnExit from parameters if defined, otherwise use the one set for the form if defined
-                if ((getCheckOnExit == null || getCheckOnExit.check()) && (getCheckOnExit() == null || getCheckOnExit().check())) {
+                if ((getCheckOnExit == null || getCheckOnExit.check()) && (getCheckIfSaveOnExit() == null || getCheckIfSaveOnExit().check())) {
                     putEditedValues2(parseIdMap2);
                     if (getUpdateActionOnDone() != null)
                         getUpdateActionOnDone().update();
-                    showPreviousScreenOrDefault(callRefreshAfterEdit);
                 }
+                showPreviousScreenOrDefault(callRefreshAfterEdit);
             }
         };
         cmd.putClientProperty("android:showAsAction", "withText");
@@ -1635,7 +1636,7 @@ public class MyForm extends Form {
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit) {
-        return makeDoneUpdateWithParseIdMapCommand(title, icon, callRefreshAfterEdit, getCheckOnExit());
+        return makeDoneUpdateWithParseIdMapCommand(title, icon, callRefreshAfterEdit, getCheckIfSaveOnExit());
     }
 
 //    public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetString canGoBack) {
@@ -1676,7 +1677,8 @@ public class MyForm extends Form {
 //super.actionPerformed(evt);
 //            }
 //        };
-        Command cmd = CommandTracked.create(title, icon, (e) -> showPreviousScreenOrDefault(false), "Cancel");
+//        Command cmd = CommandTracked.create(title, icon, (e) -> showPreviousScreenOrDefault(false), "Cancel");
+        Command cmd = MyReplayCommand.createKeep("Cancel", title, Icons.iconCancel, (e) -> showPreviousScreenOrDefault(false));
         cmd.putClientProperty("android:showAsAction", "withText");
         return cmd;
     }
@@ -1778,7 +1780,38 @@ public class MyForm extends Form {
 
     public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, Image icon) {
 
-        Command cmd = MyReplayCommand.create("CreateNewItem", cmdText, icon, (e) -> {
+        Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
+            Item item = new Item();
+            item.setOwner(itemListOrg);
+            setKeepPos(new KeepInSameScreenPosition());
+            new ScreenItem2(item, (MyForm) getComponentForm(), () -> {
+                if (true || item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
+                    //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
+                    //only save if data (don't save if no relevant data)
+                    if (true) {
+                        //TODO!!! save directly to Inbox
+//                            addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+                    }
+//                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+                    itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+                    DAO.getInstance().saveInBackground((ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+
+//                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+//                    }
+                } else {
+                    //if no saveable data, do nothing
+//                        itemListOrg.removeFromList(item); //if no saveable data, undo the 
+                    //TODO!!!! how to remove from eg Categories if finally the task is not saved??
+                }
+            }, false).show(); //false=optionTemplateEditMode
+        });
+        return cmd;
+    }
+
+    public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, char icon) {
+
+        Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
             Item item = new Item();
             item.setOwner(itemListOrg);
             setKeepPos(new KeepInSameScreenPosition());
@@ -1823,7 +1856,8 @@ public class MyForm extends Form {
         }, "AddTimeStampToComment"));
 
 //         button..
-        button.setIcon(FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, UIManager.getInstance().getComponentStyle("ItemCommentIcon")));
+//        button.setIcon(FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, UIManager.getInstance().getComponentStyle("ItemCommentIcon")));
+        button.setMaterialIcon(Icons.iconCommentTimeStamp);
         return button;
     }
 
@@ -2630,36 +2664,36 @@ public class MyForm extends Form {
     protected SaveEditedValuesLocally previousValues;
 //    Map<Object, Object> previousValues;
 
-    protected void initLocalSaveOfEditedValues(String filename) {
-//        previousValuesFilename = filename;
-        if (Config.TEST) ASSERT.that(filename != null && filename.length() > 0, "empty filename");
-        previousValues = new SaveEditedValuesLocally(filename);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        previousValues = new HashMap<Object, Object>() {
-//            void saveFile() {
-////            Storage.getInstance().writeObject("ScreenItem-" + item.getObjectIdP(), this); //save
-//                Storage.getInstance().writeObject(previousValuesFilename, this); //save
-//            }
-//
-//            public Object put(Object key, Object value) {
-//                Object previousValue = super.put(key, value);
-//                saveFile();
-//                return previousValue;
-//            }
-//
-//            public Object remove(Object key) {
-//                Object previousValue = super.remove(key);
-//                saveFile();
-//                return previousValue;
-//            }
-//
-//        };
-//        if (Storage.getInstance().exists(previousValuesFilename)) {
-//            previousValues.putAll((Map) Storage.getInstance().readObject(previousValuesFilename));
-//        }
-//</editor-fold>
-    }
-
+//    protected void initLocalSaveOfEditedValues(String filename) {
+////        previousValuesFilename = filename;
+//        if (Config.TEST) ASSERT.that(filename != null && filename.length() > 0, "empty filename");
+//        previousValues = new SaveEditedValuesLocally(this, filename,true);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        previousValues = new HashMap<Object, Object>() {
+////            void saveFile() {
+//////            Storage.getInstance().writeObject("ScreenItem-" + item.getObjectIdP(), this); //save
+////                Storage.getInstance().writeObject(previousValuesFilename, this); //save
+////            }
+////
+////            public Object put(Object key, Object value) {
+////                Object previousValue = super.put(key, value);
+////                saveFile();
+////                return previousValue;
+////            }
+////
+////            public Object remove(Object key) {
+////                Object previousValue = super.remove(key);
+////                saveFile();
+////                return previousValue;
+////            }
+////
+////        };
+////        if (Storage.getInstance().exists(previousValuesFilename)) {
+////            previousValues.putAll((Map) Storage.getInstance().readObject(previousValuesFilename));
+////        }
+////</editor-fold>
+//    }
+    
 //    public void deleteLocallyEditedValues() {
 ////            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
 //        if (previousValuesFilename != null && !previousValuesFilename.isEmpty()) {
@@ -2872,7 +2906,8 @@ public class MyForm extends Form {
 
     protected void animateMyForm() {
 //        ASSERT.that(false, "not implemented!!!");
-        getContentPane().animateLayoutAndWait(300); //need AndWait to ensure that form is animited into place before setting InlineAddTask text field in focus??! 
+//        getContentPane().animateLayoutAndWait(300); //need AndWait to ensure that form is animited into place before setting InlineAddTask text field in focus??! 
+        getContentPane().animateLayout(150); //need AndWait to ensure that form is animited into place before setting InlineAddTask text field in focus??! 
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private Component layout(String label, Component setting, String help) {
@@ -2947,23 +2982,13 @@ public class MyForm extends Form {
         if (Config.DEBUG_LOGGING) {
             Log.p("Show MyForm: " + getTitle());
         }
-        //restore scroll position on replay
-        if (false && previousValues != null) {
-            int scrollY = previousValues.getScrollY();
-            if (scrollY > 0) {
-                Form f = getComponentForm();
-                if (f instanceof MyForm) {
-                    ContainerScrollY scrollYCont = findScrollableContYChild(f);
-                    if (scrollYCont != null) {
-                        scrollYCont.setScrollYPublic(scrollY);
-                    }
-                }
-            }
-        }
         if (!ReplayLog.getInstance().replayCmd(new ActionEvent(this))) { //only show screen is there was no command to replay
             Form prevForm = Display.getInstance().getCurrent();
 //            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
             MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
+            //restore scroll position on replay
+            if (previousValues!=null)
+                previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
             super.show();
             if (ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
                 //if bigTimer was actime, and we're not replaying, then show big timer again
@@ -3808,7 +3833,7 @@ public class MyForm extends Form {
      * @param c
      * @return
      */
-    static Component findScrollableChild(Container c) {
+    public static Component findScrollableChild(Container c) {
         if (c.isScrollableY()) {
             return c;
         }
@@ -3828,7 +3853,7 @@ public class MyForm extends Form {
         return null;
     }
 
-    static ContainerScrollY findScrollableContYChild(Container c) {
+    public static ContainerScrollY findScrollableContYChild(Container c) {
         if (c instanceof ContainerScrollY) {
             return (ContainerScrollY) c;
         }
@@ -3847,6 +3872,10 @@ public class MyForm extends Form {
         }
         return null;
     }
+     public ContainerScrollY findScrollableContYChild() {
+         return findScrollableContYChild(getContentPane());
+     }
+     
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void pointerDraggedADVANCED(int[] x, int[] y) {

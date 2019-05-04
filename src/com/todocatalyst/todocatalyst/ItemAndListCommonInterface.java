@@ -269,7 +269,13 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      *
      * @return
      */
-    public int getSize();
+    default public int getSize() {
+        return getListFull().size();
+    }
+
+    default public int size() {
+        return getList().size();
+    }
 
     /**
      * adds subitem to the beginning or end of the list according to the setting . Makes this Item/ItemList the owner of the inserted
@@ -295,7 +301,6 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     @ deprecated TOO dangerous to use since index may come from filtered or unfiltered list!
      */
 //    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
-
     /**
      * 
      * @param newElement new item

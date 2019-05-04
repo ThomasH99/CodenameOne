@@ -103,7 +103,7 @@ public class ScreenListOfItems extends MyForm {
 //    private ItemList itemListFilteredSorted;
 //    private java.util.List workSlotList;
 //    private WorkTimeDefinition wtd;
-    private FilterSortDef filterSortDef;
+//    private FilterSortDef filterSortDef;
 //    private Container dragAndDropContainer;
 //    private boolean draggableMode = false;
 //    private Command sortOnOff = null;
@@ -302,7 +302,10 @@ public class ScreenListOfItems extends MyForm {
 //        this.itemListOrg = itemList;
         getItemListFct = itemListFct;
         itemListOrg = itemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!!
-        initLocalSaveOfEditedValues(getUniqueFormId() + itemListOrg.getObjectIdP());
+//        initLocalSaveOfEditedValues(getUniqueFormId() + itemListOrg.getObjectIdP());
+//        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + itemListOrg.getObjectIdP());
+//        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + itemListOrg.getObjectIdP(), true);
+
 //        this.updateActionOnDone = () -> {
         setUpdateActionOnDone(() -> {
 //            this.itemListOrg = itemListFct.getUpdatedItemList(); //NO - WHY? Must set with edited subtask list
@@ -335,6 +338,8 @@ public class ScreenListOfItems extends MyForm {
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
 //</editor-fold>
+        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-" + itemListOrg.getObjectIdP(), true);
+
         String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId() + (itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         expandedObjects = new ExpandedObjects(expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         this.stickyHeaderGen = stickyHeaderGen;
@@ -459,11 +464,11 @@ public class ScreenListOfItems extends MyForm {
         return !itemListOrg.isNoSave() && !isSortOn(); //not saved lists like Today etc should not allow pinch insert, sorted lists should not allow (//TODO!!!! find the clever way to insert and keep place in sorted list, e.g. workslots where new starts after previous ends)
     }
 
-    @Override
-    protected void animateMyForm() {
-//        myTree.animateLayout(150);
-        ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(150); //fragile!!
-    }
+//    @Override
+//    protected void animateMyForm() {
+////        myTree.animateLayout(150);
+//        ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(150); //fragile!!
+//    }
 
     /**
      * (only!) call when itemListOrg has changed, or filter has been changed
@@ -498,8 +503,9 @@ public class ScreenListOfItems extends MyForm {
         this.itemListOrg = getItemListFct.getUpdatedItemList();
         itemListOrg.resetWorkTimeDefinition(); //TODO!!!!! find a way to automatically reset wtd each time a list or its elements have been modified -> itemList.save(), or items call update/refresh on owner (and categories!)
 //        getContentPane().scrollComponentToVisible(this);
+
 //        refreshItemListFilterSort();
-        filterSortDef = itemListOrg.getFilterSortDef();
+//        filterSortDef = itemListOrg.getFilterSortDef();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null && !filterSortDef.isNeutral()) {
 //            this.itemListFilteredSorted = filterSortDef.filterAndSortItemList(itemListOrg);
@@ -510,7 +516,6 @@ public class ScreenListOfItems extends MyForm {
 //
 //        wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(true), itemListFilteredSorted);
 //        itemListOrg.refreshWorkTimeDefinition();
-
 //        getContentPane().add(CENTER, buildContentPaneForListOfItems(this.itemListFilteredSorted));
 //</editor-fold>
         Container contentContainer = buildContentPaneForListOfItems(itemListOrg);
@@ -518,7 +523,13 @@ public class ScreenListOfItems extends MyForm {
 //        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
         getContentPane().add(BorderLayout.CENTER, contentContainer);
-
+        if (contentContainer != null) {
+            ContainerScrollY scrollable = findScrollableContYChild(contentContainer);
+            if (scrollable != null)
+                scrollable.setScrollVisible(true);
+        }
+        if (previousValues != null)
+            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
         setTitleAnimation(contentContainer); //MUST do this here since we create a new container on each refresh
         if (false) { //TODO!!! re-activate (currently clashes with drag&drop: when trying to drag an element at the top of the list, it also activates pullToRefresh) -> consume the dragged event?!
             contentContainer.addPullToRefresh(() -> {
@@ -618,7 +629,7 @@ public class ScreenListOfItems extends MyForm {
             toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
 
             if (itemListOrg instanceof ItemList && !itemListOrg.isNoSave())
-                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrg, "Add task", Icons.iconNewToolbarStyle()));
+                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrg, "Add task", Icons.iconNew));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            } else {
 ////            Command newCmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle(), (e) -> {
@@ -675,7 +686,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
 
             if (optionTemplateEditMode) {
-                Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "New Template", Icons.iconNewToolbarStyle(), (e) -> {
+                Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "Add template", Icons.iconNew, (e) -> {
                     Item newTemplate = new Item();
                     newTemplate.setTemplate(true); //always template here
                     newTemplate.setOwner(itemListOrg);
@@ -737,7 +748,7 @@ public class ScreenListOfItems extends MyForm {
         //NEW ITEM from TEMPLATE
         //TODO!!! create template by longpress on (+)
         if (!optionTemplateEditMode) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "New from template", null, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add from template", Icons.iconAddFromTemplate, (e) -> {
                 //select appropriate template
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                List<Item> templateList = DAO.getInstance().getAllTemplates();
@@ -782,7 +793,7 @@ public class ScreenListOfItems extends MyForm {
                             if (itemListOrg != null && itemListOrg.getObjectIdP() != null && !optionTemplateEditMode) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
                                 //if creating new template instances within the TemplateList, then don't save it into template list
 //                                itemListOrg.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), newTemplateInstantiation); //UI: add to top of list
-                                itemListOrg.addToList( newTemplateInstantiation,MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+                                itemListOrg.addToList(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
                                 DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
                             } else {
                                 assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
@@ -803,8 +814,8 @@ public class ScreenListOfItems extends MyForm {
 
         //EDIT PROPERTIES OF LIST
         if (!optionTemplateEditMode && !optionNoEditListProperties && itemListOrg instanceof ItemList) {
-            String txt = itemListOrg instanceof Category ? "Category Properties" : "List Properties";
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditCatListProps", txt, null, (e) -> {
+            String txt = itemListOrg instanceof Category ? "Category Properties" : "List properties";
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditCatListProps", txt, Icons.iconEditProperties, (e) -> {
 //                ItemList itemList = new ItemList();
 //                    setKeepPos(new KeepInSameScreenPosition()); //not needed
                 if (itemListOrg instanceof Category)
@@ -825,7 +836,7 @@ public class ScreenListOfItems extends MyForm {
 
         //EDIT WORKSLOTS
         if (!optionTemplateEditMode && !optionNoWorkTime) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditWorkTime", "Work time", Icons.iconSettingsApplicationLabelStyle, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditWorkTime", "Work time", Icons.iconWorkSlot, (e) -> {
                 setKeepPos(new KeepInSameScreenPosition());
 //                new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotListN(),
                 new ScreenListOfWorkSlots(itemListOrg, ScreenListOfItems.this, () -> {
@@ -841,7 +852,7 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //SHOW DETAILS
-        toolbar.addCommandToOverflowMenu(new CommandTracked("Task detailsXXX", Icons.iconCmdShowTaskDetails, "ShowAllTaskDetails") {
+        toolbar.addCommandToOverflowMenu(new CommandTracked("Show task detailsXXX", Icons.iconCmdShowTaskDetails, "ShowAllTaskDetails") {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                showDetailsForAllTasks = !showDetailsForAllTasks;
@@ -854,14 +865,15 @@ public class ScreenListOfItems extends MyForm {
 
             @Override
             public String getCommandName() {
-                return "Task details " + (MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) ? "OFF" : "ON"); //if its already on, show OFF
+//                return "Task details " + (MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) ? "OFF" : "ON"); //if its already on, show OFF
+                return MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) ? "Hide task details" : "Show task details"; //if its already on, show OFF
             }
         }
         );
 
         //FILTER / SORT
         if (!optionTemplateEditMode && !optionUnmodifiableFilter) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "", Icons.iconSettingsLabelStyle, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "Edit filter", Icons.iconFilterSettings, (e) -> {
 //                    if (filterSortDef == null) {
 ////                        filterSortDef = FilterSortDef.fetchFilterSortDef(SCREEN_ID, itemListOrg, new FilterSortDef(SCREEN_ID, itemListOrg));
 //                        filterSortDef = itemListOrg.getFilterSortDef();
@@ -888,7 +900,7 @@ public class ScreenListOfItems extends MyForm {
             ));
 
 //            toolbar.addCommandToOverflowMenu(sortOnOff = new Command("Sort ON/OFF", Icons.iconCmdSortOnOff) { //this title never shown
-            Command sortOnOff = new CommandTracked("Sort XXX", Icons.iconCmdSortOnOff, "SortOnOff") {
+            Command sortOnOff = new CommandTracked("Sort XXX", Icons.iconFilter, "SortOnOff") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -920,7 +932,8 @@ public class ScreenListOfItems extends MyForm {
                 @Override
                 public String getCommandName() {
 //                    return "Sort " + ((filterSortDef == null || !filterSortDef.isSortOn()) ? "ON" : "OFF");
-                    return "Sort " + ((itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "ON" : "OFF");
+//                    return "Sort " + ((itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "ON" : "OFF");
+                    return (itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "Show sorted" : "Show manual sort";
                 }
             };
             toolbar.addCommandToOverflowMenu(sortOnOff);
@@ -929,7 +942,7 @@ public class ScreenListOfItems extends MyForm {
         //SELECTION MODE
         if (!optionTemplateEditMode && !optionNoMultipleSelectionMode) {
 
-            Command cmdInvertSelection = new CommandTracked("Invert selection", Icons.iconSelectedLabelStyle) {
+            Command cmdInvertSelection = new CommandTracked("Invert selection", Icons.iconInvertSelection) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
@@ -954,7 +967,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdSelectAll = new CommandTracked("Select All", Icons.iconSelectedLabelStyle) {
+            Command cmdSelectAll = new CommandTracked("Select All", Icons.iconSelectAll) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
@@ -985,7 +998,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdSetAnything = new CommandTracked("Set multiple fields", Icons.iconSelectedLabelStyle) {
+            Command cmdSetAnything = new CommandTracked("Set multiple fields", Icons.iconSetMultiple) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
@@ -1000,7 +1013,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdDeleteSelected = new CommandTracked("Delete selected", Icons.iconSelectedLabelStyle) {
+            Command cmdDeleteSelected = new CommandTracked("Delete selected", Icons.iconSetDeleteAll) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     //TODO!!! warning that this cannot be undone!!
@@ -1014,7 +1027,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdMoveSelectedToTopOfList = new CommandTracked("Move to top", Icons.iconSelectedLabelStyle) {
+            Command cmdMoveSelectedToTopOfList = new CommandTracked("Move to top", Icons.iconMoveAllToTop) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     //TODO!!! warning that this cannot be undone!!
@@ -1052,10 +1065,10 @@ public class ScreenListOfItems extends MyForm {
                         setCommandName(getCommandName().equals("Move ON") ? "Move OFF" : "Move ON");
                     }
                 };
-                toolbar.addCommandToOverflowMenu(draggableOnOff);
+                if (false) toolbar.addCommandToOverflowMenu(draggableOnOff); //TODO disactivated until implemented
 
 //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
-                toolbar.addCommandToOverflowMenu(CommandTracked.create("Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
+                toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
                     if (!isSelectionMode()) {
 //                    isSelectionMode() = true;
 //                    selectedObjects = new HashSet(); //TODO keep a previous selection?
@@ -1063,9 +1076,9 @@ public class ScreenListOfItems extends MyForm {
 //                            MyReplayCommand.this.setCommandName("Selection mode OFF");
                         Object source = e.getSource();
                         if (source instanceof Command)
-                            ((Command) source).setCommandName("Selection OFF**");
+                            ((Command) source).setCommandName("Select");
                         else if (source instanceof Button)
-                            ((Button) source).setText("Selection OFF");
+                            ((Button) source).setText("Exit Select");
                         //TODO!! put the selectionCommands into a separate menu (like overflow menu, with same icon as the selection symbol?)
                         toolbar.addCommandToOverflowMenu(cmdSetAnything);
                         toolbar.addCommandToOverflowMenu(cmdMoveSelectedToTopOfList);
@@ -1086,9 +1099,9 @@ public class ScreenListOfItems extends MyForm {
                         setSelectionMode(false, null);
                         Object source = e.getSource();
                         if (source instanceof Command)
-                            ((Command) source).setCommandName("Selection ON**");
+                            ((Command) source).setCommandName("Select");
                         else if (source instanceof Button)
-                            ((Button) source).setText("Selection ON");
+                            ((Button) source).setText("Exit Select");
                         //TODO!!!! use Toolbar.removeOverflowCommand(Command) once added (see http://stackoverflow.com/questions/39200432/how-to-remove-commands-added-to-overflow-menu)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    ToolbarSideMenu  menuBar = (ToolbarSideMenu )getToolbar().getMenuBar();
@@ -1115,7 +1128,7 @@ public class ScreenListOfItems extends MyForm {
                         refreshAfterEdit();
                     }
 //                }, true));
-                }));
+                }, "SelectionOnOff"));
             }
 
             if (Config.TEST && itemListOrg instanceof ItemList) {
@@ -1126,7 +1139,7 @@ public class ScreenListOfItems extends MyForm {
                     }
                 };
                 toolbar.addCommandToOverflowMenu(showIssuesInList);
-                Command cleanUpList = new CommandTracked("Repair list issues", (Image) null) {
+                Command cleanUpList = new CommandTracked("Repair list issues", Icons.iconRepair) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
@@ -1144,7 +1157,8 @@ public class ScreenListOfItems extends MyForm {
         if (!optionTemplateEditMode && !optionNoTimer) {
 //            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
 //            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
-            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+//            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+            toolbar.addCommandToLeftBar(CommandTracked.create("", Icons.iconLaunchTimer, (e) -> {
 //            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
@@ -1166,21 +1180,24 @@ public class ScreenListOfItems extends MyForm {
             toolbar.addCommandToLeftBar(makeInterruptCommand());
         }
 
-        toolbar.addCommandToOverflowMenu("Delete", null, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-//            DAO.getInstance().delete(itemList);
-            itemListOrg.softDelete();
-//            previousForm.revalidate();
-//            previousForm.show(); //drop any changes
-            showPreviousScreenOrDefault(true);
-        });
-
         if (!optionTemplateEditMode)
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemsSettings", "Settings", Icons.iconSettingsLabelStyle, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemsSettings", "Settings", Icons.iconSettings, (e) -> {
                 new ScreenSettingsListOfItems(ScreenListOfItems.this, () -> {
                     refreshAfterEdit();
                 }).show();
             }
             ));
+
+        toolbar.addCommandToOverflowMenu(CommandTracked.create("Help", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+            showPreviousScreenOrDefault(true);
+        }, "Help"));
+        toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+            showPreviousScreenOrDefault(true);
+        }, "ReportIssue"));
+        if (false) //doesn't make sense for a list!
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+                showPreviousScreenOrDefault(true);
+            }, "Cancel"));
 
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
@@ -1841,6 +1858,14 @@ public class ScreenListOfItems extends MyForm {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 southDetailsContainer.setHidden(!southDetailsContainer.isHidden()); //toggle hidden details
+//                southDetailsContainer.revalidateWithAnimationSafety();
+                Container parent = southDetailsContainer.getParent();
+                while (parent!=null && !(parent instanceof MyDragAndDropSwipeableContainer)) //find top-level MyDragAndDropSwipeableContainer
+                    parent=parent.getParent();
+                if (parent!=null && parent.getParent()!=null) //the top-level Container is the parent of the top-level MyDragAndDropSwipeableContainer
+//                    parent.getParent().getParent().getParent().revalidateWithAnimationSafety();
+                    parent.getParent().getParent().getParent().animateLayout(150);
+//                parent.animateLayout(150);
 //                if (!south.isHidden()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (tasksWithDetailsShown == null) {
@@ -2019,21 +2044,23 @@ public class ScreenListOfItems extends MyForm {
 //        Label remainingEffortLabel = null;
 
         long actualEffort = item.getActual();
-        if (isDone || (actualEffort != 0 && MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean())) {
+        if (isDone && (actualEffort != 0 || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean())) {
 //            if (actualEffort != 0||MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean()) {
 //                east.addComponent(actualEffortLabel = new Label(MyDate.formatTimeDuration(actualEffort)));
 //                actualEffortLabel = new Label();
 //                actualEffortLabel.setText("A:" + MyDate.formatTimeDuration(actualEffort));
 //                actualEffortLabel.setText(MyDate.formatDurationShort(actualEffort));
             actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
-            actualEffortLabel.setMaterialIcon(Icons.iconActualEffortMaterial);
+            actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
             actualEffortLabel.setUIID("ListOfItemsActualEffort");
             if (Config.TEST) status.setName("ActualEffort");
             if (oldFormat) east.addComponent(actualEffortLabel);
         }
 
         if (isDone) {
-            completedDateLabel = new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
+//            completedDateLabel = new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
+            completedDateLabel = new Label(MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
+            completedDateLabel.setMaterialIcon(Icons.iconCompletedDate);
 //            completedDateLabel.setMaterialIcon(0);
             if (oldFormat) {
                 east.addComponent(completedDateLabel);
@@ -2070,7 +2097,7 @@ public class ScreenListOfItems extends MyForm {
             if (remainingEffort != 0 || MyPrefs.itemListShowRemainingEvenIfZero.getBoolean()) {
 //                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
                 remainingEffortLabel = new Label(MyDate.formatDurationShort(remainingEffort), "ListOfItemsRemaining");
-                remainingEffortLabel.setMaterialIcon(Icons.iconRemainingEffortMaterial);
+                remainingEffortLabel.setMaterialIcon(Icons.iconRemainingEffort);
                 if (Config.TEST) remainingEffortLabel.setName("Remaining");
                 if (oldFormat) east.addComponent(remainingEffortLabel);
             }
@@ -2666,7 +2693,7 @@ refreshAfterEdit();
                 swipCont.close(); //close before save 
 
             }));
-            startTimer.setMaterialIcon(Icons.iconTimerSymbolMaterial);
+            startTimer.setMaterialIcon(Icons.iconLaunchTimer);
             startTimer.setUIID("SwipeButtonTimer");
             buttonSwipeContainer.add(startTimer);
         } else { // item.isTemplate()
@@ -3824,7 +3851,7 @@ refreshAfterEdit();
 ////        dt.setDropTarget(true);
 //        return cont;
 //</editor-fold>
-        if (listOfItems != null && listOfItems.getSize() > 0) {
+        if (listOfItems != null && listOfItems.size() > 0) {
             MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        myTree = new MyTree2(listOfItems, expandedObjects, filterSortDef) {

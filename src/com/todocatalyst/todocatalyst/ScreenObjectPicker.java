@@ -240,7 +240,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 
         //if (objectCreator!=null)
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllObjects, ScreenObjectPicker.this)); //TODO!!!! enable adding new elements to picker screen
-        setCheckOnExit(() -> checkObjectChoiceIsValid(selectedObjects.size()));
+        setCheckIfSaveOnExit(() -> checkObjectChoiceIsValid(selectedObjects.size()));
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
 
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //UI: always enable Cancel to make it easy to regret any changes
