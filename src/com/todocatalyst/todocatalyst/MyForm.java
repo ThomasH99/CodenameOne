@@ -239,6 +239,7 @@ public class MyForm extends Form {
     static final String SCREEN_STATISTICS = "Achievements"; //"Statistics", "History"
 
     protected static final String REPEAT_RULE_KEY = "$REPEAT_RULE$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
+    protected static final String SUBTASK_KEY = "$SUBTASK$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
 
     public void setAutoSizeMode(boolean on) {
         if (getToolbar() != null && getToolbar().getTitleComponent() instanceof Label) {
@@ -389,7 +390,8 @@ public class MyForm extends Form {
 //        if (true || !(this instanceof ScreenTimer6)) {
 //            TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
 //        }
-
+        getToolbar().setTitleComponent(new SpanLabel(title, "FormTitle"));
+        setTitle("");
         //<editor-fold defaultstate="collapsed" desc="comment">
         //************** CORRECT WAY TO MAKE SCROLLABLE
 //        form.setScrollable(false);
@@ -1273,7 +1275,7 @@ public class MyForm extends Form {
         if (Config.TEST) {
             Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
         }
-        if (previousValues!=null&&previousValues.getScrollY()!=null)
+        if (previousValues != null && previousValues.getScrollY() != null)
             previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
     }
 
@@ -1847,14 +1849,15 @@ public class MyForm extends Form {
     public static Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
-        Button button = new Button(CommandTracked.create(null, Icons.iconAddTimeStampToCommentLabelStyle, (e) -> {
+//        Button button = new Button(CommandTracked.create(null, Icons.iconAddTimeStampToCommentLabelStyle, (e) -> {
+        Button button = new Button(CommandTracked.create(null, Icons.iconAddTimeStampToComment, (e) -> {
             comment.setText(Item.addTimeToComment(comment.getText()));
 //                    comment.setstartEditing(); //TODO how to position cursor at end of text (if not done automatically)?
 //comment.setCursor //only on TextField, not TextArea
 //            comment.startEditing(); //TODO in CN bug db #1827: start using startEditAsync() is a better approach
             comment.startEditingAsync();//TODO in CN bug db #1827: start using startEditAsync() is a better approach
         }, "AddTimeStampToComment"));
-
+button.setUIID("ScreenItemCommentDateStamp");
 //         button..
 //        button.setIcon(FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, UIManager.getInstance().getComponentStyle("ItemCommentIcon")));
         button.setMaterialIcon(Icons.iconCommentTimeStamp);
@@ -2197,7 +2200,9 @@ public class MyForm extends Form {
         if (hideEditButton) {
             visibleField = field;
         } else { //place a visible or invisible button
-            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
+//            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
+            Label editFieldButton = new Label("", "IconEdit"); // [>]
+            editFieldButton.setMaterialIcon(Icons.iconEdit);
             boolean editButtonHidden = makeFieldUneditable || hideEditButton; //invisible if uneditable or if explicitly make invisible
 //            editFieldButton.setVisible(!editButtonInvisible);
             editFieldButton.setVisible(!(makeFieldUneditable || hideEditButton) || forceVisibleEditButton); //Visible, but still using space
@@ -2224,6 +2229,7 @@ public class MyForm extends Form {
             SwipeableContainer swipeCont;
             assert !makeFieldUneditable : "showAsUneditableField should never be true if we also define a swipeClear fucntion";
             Button swipeDeleteFieldButton = new Button();
+            swipeDeleteFieldButton.setUIID("ClearFieldButton");
             swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
             ActionListener l = (ev) -> {
                 swipeClear.clearFieldValue();
@@ -2693,7 +2699,6 @@ public class MyForm extends Form {
 ////        }
 ////</editor-fold>
 //    }
-    
 //    public void deleteLocallyEditedValues() {
 ////            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
 //        if (previousValuesFilename != null && !previousValuesFilename.isEmpty()) {
@@ -2987,7 +2992,7 @@ public class MyForm extends Form {
 //            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
             MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
             //restore scroll position on replay
-            if (previousValues!=null)
+            if (previousValues != null)
                 previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
             super.show();
             if (ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
@@ -3872,10 +3877,10 @@ public class MyForm extends Form {
         }
         return null;
     }
-     public ContainerScrollY findScrollableContYChild() {
-         return findScrollableContYChild(getContentPane());
-     }
-     
+
+    public ContainerScrollY findScrollableContYChild() {
+        return findScrollableContYChild(getContentPane());
+    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void pointerDraggedADVANCED(int[] x, int[] y) {

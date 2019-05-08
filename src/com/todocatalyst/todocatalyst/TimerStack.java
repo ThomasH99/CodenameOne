@@ -1719,6 +1719,7 @@ class TimerStack {
         MyTextField description;
 
         MyCheckBox status = new MyCheckBox(timedItem.getStatus());
+
 //    private Button status;
 //        MyTextArea comment = new MyTextArea(Item.COMMENT, 20, 2, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
         MyTextField comment = new MyTextField(Item.COMMENT, 20, 2, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
@@ -2330,7 +2331,7 @@ class TimerStack {
             description.setColumns(100);
             description.setActAsLabel(true);
 //            description.setUIID("Label");
-            description.setUIID("ScreenItemTaskText");
+            description.setUIID("SmallTimerItemText");
             description.setCommitTimeout(300);
             description.setEditable(true); //true=editable (but will look like a label until clicked), false=not editable in small container
             description.setText(timedItem.getText());
@@ -2620,7 +2621,8 @@ class TimerStack {
             contentPane.add(GridLayout.encloseIn(3, c10, c11, c12));
             contentPane.add(GridLayout.encloseIn(1, c13));
 //                        nextTaskCont.add(gotoNextTaskButtonWithItemText);
-            contentPane.add(gotoNextTaskButtonWithItemText);
+            if (gotoNextTaskButtonWithItemText != null)
+                contentPane.add(gotoNextTaskButtonWithItemText);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (false) {
 //                if (timedItem.isInteruptOrInstantTask()) {
@@ -2696,9 +2698,12 @@ class TimerStack {
         } else {
             //SMALL TIMER container
 //                Container swipeSmallContainer = new SwipeableContainer(nextTask, null, contentPane);
+            status.setUIID("SmallTimerItemStatus");
             boolean interruptTask = timedItem.isInteruptOrInstantTask();
             Button nextTask = new Button(cmdStopTimerAndGotoNextTaskOrExit); //, Icons.iconTimerNextTask);
+            nextTask.setUIID("SmallTimerSwipeNext");
             Button exitTimer = new Button(cmdSaveAndExitSmallTimer); //, Icons.iconTimerNextTask);
+            exitTimer.setUIID("SmallTimerSwipeExit");
             exitTimer.setText(""); //remove text in small timer
             nextTask.setText("");
 //                Container swipeable = new SwipeableContainer(BoxLayout.encloseX(nextTask,exitTimer), null, contentPane);
@@ -2715,6 +2720,7 @@ class TimerStack {
             swipeable.setUIID("SmallTimerContainer");
 //                nextTask.setTextPosition(CN.BOTTOM);
             Button fullScreenTimerButton = new Button(cmdGotoFullScreenTimer);
+            fullScreenTimerButton.setUIID("SmallTimerEditItem");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                Container timerContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //                timerContainer.addAll(elapsedTimeButton, timerStartStopButton);
@@ -2739,7 +2745,10 @@ class TimerStack {
             Container west = BoxLayout.encloseXNoGrow(status);
 
             if (interruptTask) {
-                west.add(new Label(Icons.iconInterruptToolbarStyle));
+                Label interruptIcon = new Label();
+                interruptIcon.setMaterialIcon(Icons.iconInterrupt);
+                interruptIcon.setUIID("SmallTimerInterruptIcon");
+                west.add(interruptIcon);
             }
 //            if (timedItem.isInteruptOrInstantTask() && (timedItem.getText() == null || timedItem.getText().isEmpty())) {
             if (interruptTask || (timedItem.getText() == null || timedItem.getText().isEmpty())) {

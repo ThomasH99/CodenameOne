@@ -85,6 +85,7 @@ public class ScreenMain extends MyForm {
         Button titleButton = new MyButtonLongPress(cmd, Command.create(null, null, (e) -> {
             showToastBar(helpText);
         }));
+        titleButton.setGap(Display.getInstance().convertToPixels((float)1.5));
         titleButton.setUIID("MainMenuCommand"); //avoid any style
 //        titleButton.setTextPosition(Button.RIGHT);
 //        Button editButton = new Button(cmd) {
@@ -114,7 +115,7 @@ public class ScreenMain extends MyForm {
         Button editButton = new Button(cmd);
         editButton.setCommand(cmd);
 //        editButton.setIcon(Icons.iconEditPropertiesLabelStyle);
-        editButton.setMaterialIcon(Icons.iconEditSymbol);
+        editButton.setMaterialIcon(Icons.iconEdit);
         editButton.setText("");
         editButton.setUIID("Container");
         Container c = BorderLayout.centerEastWest(null, editButton, titleButton);

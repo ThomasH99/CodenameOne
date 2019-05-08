@@ -347,7 +347,7 @@ public class ScreenItem2 extends MyForm {
                 new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, () -> TemplateList.getInstance(), ScreenItem2.this, (i) -> {
                 }, ScreenListOfItems.OPTION_TEMPLATE_EDIT// | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                 ).show();
-            },"SaveAsTemplate"));
+            }, "SaveAsTemplate"));
         }
 
         if (true || !templateEditMode) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
@@ -390,7 +390,7 @@ public class ScreenItem2 extends MyForm {
                     }, 1, true, false, false).show();
 //                    if (template != null) {
                 };
-            },"CreateFromTemplate"));
+            }, "CreateFromTemplate"));
         }
 
         //DELETE
@@ -414,8 +414,8 @@ public class ScreenItem2 extends MyForm {
             }).show();
         }
         ));
-        
-        toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { 
+
+        toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> {
             //TODO!!! popup to say Cancel is not implemented yet
             showPreviousScreenOrDefault(true);
         }, "Cancel"));
@@ -817,7 +817,6 @@ public class ScreenItem2 extends MyForm {
 //        if (false) {
 //            mainCont.add(ScreenListOfItems.makeMyTree2ForSubTasks(ScreenItem.this, item, expandedObjects));
 //        }
-
         tabs.addTab("Main", Icons.iconMainTab, 3, mainTabCont);
         tabs.setTabTextPosition(Tabs.RIGHT);
 //        tabs.addTab("Main", null, mainTabCont);
@@ -911,6 +910,7 @@ public class ScreenItem2 extends MyForm {
 //        initField(Item.STATUS, Item.STATUS_HELP, status, Item.PARSE_STATUS, () -> item.getStatus(), (t) -> item.setStatus((ItemStatus) t),
 //                () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t), null);
 //</editor-fold>
+
         MyCheckBox status = new MyCheckBox(itemLS.getStatus()); //, null);
         initField(Item.PARSE_STATUS, status,
                 () -> item.getStatus().toString(),
@@ -960,9 +960,10 @@ public class ScreenItem2 extends MyForm {
         //                (b) -> starred.setIcon((boolean) b ?  Icons.iconStarUnselectedLabelStyle:Icons.iconStarSelectedLabelStyle )
         //                    starred.repaint();
         ); //add taskCont just to avoid creating an unnecessary field container
-
+        starred.setUIID("ScreenItemStarred");
 //        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
-        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
+//        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
+        taskCont.add(BorderLayout.CENTER, description);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Button helpTextButton = new Button(Item.TASK);
 //        helpTextButton.setUIID("Label"); //show as Label
@@ -993,7 +994,7 @@ public class ScreenItem2 extends MyForm {
         MyTextField comment = new MyTextField(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
         comment.setSingleLineTextArea(false);
         Container commentField = makeCommentContainer(comment);
-         AutoSaveTimer commentSaveTimer = new AutoSaveTimer(this, comment, item, 5000, () -> item.setComment(comment.getText()));
+        AutoSaveTimer commentSaveTimer = new AutoSaveTimer(this, comment, item, 5000, () -> item.setComment(comment.getText()));
 
 //        mainCont.add(initField(Item.COMMENT, Item.COMMENT_HELP, comment, Item.PARSE_COMMENT, () -> item.getComment(), (t) -> item.setComment((String) t),
         initField(Item.PARSE_COMMENT, comment, () -> item.getComment(), (t) -> item.setComment((String) t), () -> comment.getText(), (t) -> comment.setText((String) t));
@@ -1038,6 +1039,9 @@ public class ScreenItem2 extends MyForm {
 ////            }
 //        }); //"<click to set a due date>"
 //</editor-fold>
+        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP,null,false,false,false,true));
+        mainCont.add(layoutN(Item.STARRED, starred, Item.STARRED_HELP,null, false,false,false,true));
+        
         MyDateAndTimePicker dueDate = new MyDateAndTimePicker();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont.add(new Label("Due")).add(dueDate);
@@ -1476,7 +1480,39 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        if (false) {
 //            mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2));
 //        }
-        mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2)); //edit subtasks
+        int numberUndoneSubtasks = item.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
+        int totalNumberSubtasks = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
+//        int numberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks;
+
+        //HEADER - EDIT LIST IN FULL SCREEN MODE
+        Button editSubtasksFullScreen = new Button();
+//        String subtaskStr = (totalNumberSubtasks == 0
+//                ? "Add subtasks" : ("" + totalNumberSubtasks + " subtasks" + (numberUndoneSubtasks == 0 ? "" : (", " + numberUndoneSubtasks + " remaining"))));
+        String subtaskStr = totalNumberSubtasks == 0 ? "" : "" + numberUndoneSubtasks + "/" + totalNumberSubtasks;
+        editSubtasksFullScreen.setCommand(MyReplayCommand.create("EditSubtasks", subtaskStr, null, (e) -> {
+//            ItemList subtaskList = item.getItemList();
+//            List<Item> subtaskList = item.getListFull();
+//            new ScreenListOfItems("Subtasks of " + item.getText(), () -> new ItemList(item.getListFull(),true), previousForm, (iList) -> {
+            new ScreenListOfItems("Subtasks of " + item.getText(), () -> item, previousForm, (item) -> {
+//                item.setItemList(subtaskList);
+//                item.setList(subtaskList);
+//                item.setList(iList.getListFull());
+//                if (false) 
+//                    item.setList((iList); //probably not necessary since all operations on the list (insert, D&D, ...) should update the list on each change
+//                DAO.getInstance().saveInBackground(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                int numberUndoneSubtasks2 = item.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
+                int totalNumberSubtasks2 = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
+
+                editSubtasksFullScreen.setText(totalNumberSubtasks2 == 0 ? "" : "" + numberUndoneSubtasks2 + "/" + totalNumberSubtasks2);
+                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveTemplateCopyWithSubtasksInBackground((Item)item));
+                previousForm.refreshAfterEdit(); //necessary to update sum of subtask effort
+            }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+            ).show();
+        }
+        ));
+        mainCont.add(layoutN(Item.SUBTASKS, editSubtasksFullScreen, Item.SUBTASKS_HELP));
+
+        if (false)mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2)); //edit subtasks
         //TODO!!!!! editing of subtasks should be local (and saved locally on app exit)
 //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, item, templateEditMode));
 
@@ -2924,7 +2960,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         }
 
         setCheckIfSaveOnExit(() -> checkItemIsValidForSaving(description.getText(), comment.getText(), dueDate.getDate(), actualEffort.getDuration(),
-                remainingEffort.getDuration(), (((List) previousValues.get(Item.PARSE_CATEGORIES))!=null?((List) previousValues.get(Item.PARSE_CATEGORIES)).size():0), item.getListFull().size())); //item.getListFull().size() sinze subtasks are stored 
+                remainingEffort.getDuration(), (((List) previousValues.get(Item.PARSE_CATEGORIES)) != null ? ((List) previousValues.get(Item.PARSE_CATEGORIES)).size() : 0), item.getListFull().size())); //item.getListFull().size() sinze subtasks are stored 
 //TODO: when owner can be edited, use new/edited one
 
         return cont;

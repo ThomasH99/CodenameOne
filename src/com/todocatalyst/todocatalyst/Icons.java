@@ -66,9 +66,6 @@ public class Icons {
     final static char iconShowLess = FontImage.MATERIAL_EXPAND_LESS;
     final static Image iconShowLessLabelStyle = FontImage.createMaterial(iconShowLess, labelStyle);
     
-    final static char iconEditSymbol = FontImage.MATERIAL_CHEVRON_RIGHT;
-    final static Image iconEditSymbolLabelStyle = FontImage.createMaterial(iconEditSymbol, labelStyle);
-    
     final static char iconAddTimeStampToComment = FontImage.MATERIAL_ACCESS_TIME;
     final static Image iconAddTimeStampToCommentLabelStyle = FontImage.createMaterial(iconAddTimeStampToComment, labelStyle);
     //drag and drop handle icon
@@ -111,7 +108,7 @@ public class Icons {
     //ITEM
 //    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, labelStyle);
     final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_NOTIFICATIONS, labelStyle);
-    final static char iconAlarmSetLabelStyleMaterial = FontImage.MATERIAL_NOTIFICATIONS;
+    final static char iconAlarmDate = FontImage.MATERIAL_NOTIFICATIONS;
     
     final static char iconFilterSettings = FontImage.MATERIAL_LOW_PRIORITY;
     final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
@@ -265,10 +262,10 @@ public class Icons {
     final static char iconEstimateMaterial = FontImage.MATERIAL_HOURGLASS_FULL;
 //    final static char iconEstimateMaterial = FontImage.MATERIAL_RESTORE;
 //    final static Image iconActualEffort = FontImage.createMaterial(FontImage.MATERIAL_TIMELAPSE, labelStyle);
-    final static char iconActualEffort = FontImage.MATERIAL_HOURGLASS_EMPTY; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
+    final static char iconActualEffort = FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
     final static Image iconActualEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_HOURGLASS_FULL, labelStyle);
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_TIMELAPSE;
-    final static char iconRemainingEffort = FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_EVENT_AVAILABLE;
+    final static char iconRemainingEffort = FontImage.MATERIAL_HOURGLASS_EMPTY; //MATERIAL_EVENT_AVAILABLE;
     final static Image iconRemainingEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_EVENT_AVAILABLE;
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_RESTORE;
@@ -282,12 +279,16 @@ public class Icons {
     }
     final static Image iconBackToPrevFormToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolBarStyle);
 
+    final static char iconEdit = FontImage.MATERIAL_CHEVRON_RIGHT;
     static Image iconEditPropertiesToolbarStyle() {
-        return makeT(FontImage.MATERIAL_CHEVRON_RIGHT);
+        return makeT(iconEdit);
     }
-    final static Image iconEditPropertiesToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, toolBarStyle);
-    final static Image iconEditPropertiesLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, labelStyle);
+    final static Image iconEditPropertiesToolbarStyle = FontImage.createMaterial(iconEdit, toolBarStyle);
+    final static Image iconEditPropertiesLabelStyle = FontImage.createMaterial(iconEdit, labelStyle);
 //    static Image iconNewTaskToolbarStyle(){return makeT(FontImage.MATERIAL_ADD_CIRCLE);}
+//    final static char iconEditSymbol = FontImage.MATERIAL_CHEVRON_RIGHT;
+    final static Image iconEditSymbolLabelStyle = FontImage.createMaterial(iconEdit, labelStyle);
+    
 
     static Image iconNewTaskToolbarStyle() {
         return makeT(FontImage.MATERIAL_ADD_CIRCLE_OUTLINE);
@@ -302,8 +303,9 @@ public class Icons {
     static Image iconInterruptToolbarStyle() {
         return makeT(FontImage.MATERIAL_FLASH_ON);
     }
-    final static Image iconInterruptToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_FLASH_ON, toolBarStyle);
-    final static Image iconEditSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, toolBarStyle);
+    final static char iconInterrupt = FontImage.MATERIAL_FLASH_ON;
+    final static Image iconInterruptToolbarStyle = FontImage.createMaterial(iconInterrupt, toolBarStyle);
+    final static Image iconEditSymbolToolbarStyle = FontImage.createMaterial(iconEdit, toolBarStyle);
     //TASK STATUS
 //    final static Image iconCheckedTaskToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_CIRCLE, toolBarStyle);
 //    final static Image iconUncheckedTaskToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_CIRCLE, toolBarStyle);

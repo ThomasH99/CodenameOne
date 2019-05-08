@@ -987,6 +987,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String STARRED = "Starred"; //"Unique id"
     final static String STARRED_HELP = "Tasks can be marked with a Star to emphasize them**"; //"Unique id"
     final static String TEMPLATE = "Template";
+    final static String SUBTASKS = "Subtasks";
+    final static String SUBTASKS_HELP = "**";
 
     final static int ITEM_CHANGED_ALARM_DATE = 0;
 

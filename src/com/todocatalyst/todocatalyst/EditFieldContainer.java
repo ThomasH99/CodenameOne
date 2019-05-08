@@ -72,6 +72,7 @@ public class EditFieldContainer extends Container {
             SwipeableContainer swipeCont;
             assert !showAsFieldUneditable : "showAsUneditableField should never be true if we also define a swipeClear function";
             Button swipeDeleteFieldButton = new Button();
+             swipeDeleteFieldButton.setUIID("ClearFieldButton");
             swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
             ActionListener l = (ev) -> {
                 swipeClearFct.clearFieldValue();

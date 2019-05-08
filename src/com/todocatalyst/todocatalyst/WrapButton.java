@@ -59,7 +59,7 @@ public class WrapButton extends Container {
         text.setFocusable(false);
         text.setActAsLabel(true);
         actualButton = new Button();
-        actualButton.setUIID("IconInList");
+        actualButton.setUIID("WrapButtonIcon");
         addComponent(BorderLayout.WEST, actualButton);
         addComponent(BorderLayout.CENTER, BoxLayout.encloseX(text));
         setLeadComponent(actualButton);
