@@ -4,9 +4,8 @@ import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.Toolbar;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 //import java.util.function.*;
-
 /**
  * Shows a timer. UI:
  *
@@ -81,9 +80,10 @@ public class ScreenTimer6 extends MyForm {
         super(SCREEN_TITLE, previousScreen, () -> {
         });
         setUniqueFormId("ScreenTimer");
+        setUIID("BigTimerForm");
         this.timerInstance = timerInstance;
-        if (!(getLayout() instanceof BorderLayout)) {
-            setLayout(new BorderLayout());
+        if (!(getLayout() instanceof MyBorderLayout)) {
+            setLayout(new MyBorderLayout());
         }
 //        addComponent(CN.CENTER, timerInstance.getTimerContainer());
 //        addComponent(CN.CENTER, timerContentainer);
@@ -160,7 +160,7 @@ public class ScreenTimer6 extends MyForm {
 //        TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, timerContentainer,  previousValues); //also removes previous content of contentPane
             Container contentPane = getContentPane();
             contentPane.removeAll();
-            contentPane.add(BorderLayout.CENTER, TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, previousValues)); //also removes previous content of contentPane
+            contentPane.add(MyBorderLayout.CENTER, TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, previousValues)); //also removes previous content of contentPane
             if (false) super.refreshAfterEdit(); //WILL cause infinite loop when updating ScreenTimer6 via refreshOrShowTimerUI
             revalidateWithAnimationSafety();
 //            revalidate();

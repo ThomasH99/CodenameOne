@@ -14,7 +14,7 @@ import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.animations.MorphTransition;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import com.todocatalyst.todocatalyst.MyForm.Action;
@@ -99,7 +99,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         if (Config.TEST) {
             setName("InlineInsertNewItemContainer2"); //for debugging
         }
-        Container contForTextEntry = new Container(new BorderLayout());
+        Container contForTextEntry = new Container(new MyBorderLayout());
 
         SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
         add(swipC);
@@ -195,14 +195,14 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                     }
                 }
         );
-        contForTextEntry.add(BorderLayout.CENTER, textEntryField2);
+        contForTextEntry.add(MyBorderLayout.CENTER, textEntryField2);
 
         Container westCont = new Container(BoxLayout.x());
-        contForTextEntry.add(BorderLayout.WEST, westCont);
+        contForTextEntry.add(MyBorderLayout.WEST, westCont);
 
         //CLOSE button, only add if in a non-empty list
         if (itemOrItemListForNewElements != null && itemOrItemListForNewElements.getSize() > 0) {
-            westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
+            westCont.add(new Button(Command.createMaterial(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                myForm.lastInsertNewTaskContainer = null;
@@ -237,7 +237,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         }
 
         //Full screen edit of the new task:
-        contForTextEntry.add(BorderLayout.EAST,
+        contForTextEntry.add(MyBorderLayout.EAST,
                 new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
                     Item newItem = createNewTask(true);
 //                    Item newItem = newTaskTemp != null ? newTaskTemp : new Item();

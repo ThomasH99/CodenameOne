@@ -11,9 +11,10 @@ import com.codename1.ui.Button;
 import com.codename1.ui.Label;
 import com.codename1.ui.Component;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.FontImage;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.parse4cn1.ParseObject;
@@ -92,8 +93,8 @@ public class ScreenListOfItemLists extends MyForm {
         setUniqueFormId("ScreenListOfItemLists");
         this.itemListList = itemListList;
         setScrollable(false);
-        if (!(getLayout() instanceof BorderLayout)) {
-            setLayout(new BorderLayout());
+        if (!(getLayout() instanceof MyBorderLayout)) {
+            setLayout(new MyBorderLayout());
         }
         setPinchInsertEnabled(true);
 //        expandedObjects = new HashSet();
@@ -104,7 +105,7 @@ public class ScreenListOfItemLists extends MyForm {
     }
 
     protected void animateMyForm() {
-        ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(150);
+        ((Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(150);
     }
 
     @Override
@@ -113,7 +114,7 @@ public class ScreenListOfItemLists extends MyForm {
         if (false) getContentPane().removeAll(); //NOT necessary since getContentPane().add() will remove the previous content. AND it will remove components that are added later...
 
         Container cont = buildContentPaneForItemList(itemListList);
-        getContentPane().add(BorderLayout.CENTER, cont);
+        getContentPane().add(MyBorderLayout.CENTER, cont);
         if (cont instanceof MyTree2) {
 //            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
             InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
@@ -160,7 +161,7 @@ public class ScreenListOfItemLists extends MyForm {
         //SEARCH
         if (false) getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
-                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+                Container compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
                 boolean showAll = text == null || text.length() == 0;
                 for (int i = 0, size = this.itemListList.getSize(); i < size; i++) {
                     //TODO!!! compare same case (upper/lower)
@@ -199,6 +200,13 @@ public class ScreenListOfItemLists extends MyForm {
         //INTERRUPT TASK
         toolbar.addCommandToLeftBar(makeInterruptCommand());
 
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemListsSettings", "Settings", Icons.iconSettings, (e) -> {
+            new ScreenSettingsListOfItemLists(ScreenListOfItemLists.this, () -> {
+                refreshAfterEdit();
+            }).show();
+        }
+        ));
+
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
 
@@ -228,12 +236,13 @@ public class ScreenListOfItemLists extends MyForm {
      * @return
      */
     protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode) {
-        Container mainCont = new Container(new BorderLayout());
+        Container mainCont = new Container(new MyBorderLayout());
         mainCont.setUIID("ItemListContainer");
         Container leftSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+        Container rightSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 
 //        MyDropContainer swipCont = new MyDropContainer(itemList, itemListList, null, bottomLeft, null, cont, () -> {return draggableMode;}); //use filtered/sorted ItemList for Timer
-        MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(leftSwipeContainer, null, mainCont) {
+        MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(leftSwipeContainer, rightSwipeContainer, mainCont) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            public void drop(Component dragged, int x, int y) {
@@ -393,15 +402,18 @@ public class ScreenListOfItemLists extends MyForm {
                     }
                     return enabled;
                 }); //D&D
-
-        mainCont.addComponent(BorderLayout.CENTER, itemListLabel);
+        itemListLabel.setMaterialIcon(' '); //FontImage.MATERIAL_LIST); //UI: ' '==blank icon?! Add white space to allow to customize list icons later
+        itemListLabel.setUIID("ListOfItemListsTextCont");
+        itemListLabel.setTextUIID("ListOfItemListsText");
+        itemListLabel.setIconUIID("ListOfItemListsIcon");
 
         Button editItemListPropertiesButton = null;
         if (!statisticsMode) { //don't edit properties of the (temporary) ItemLists generated to display the results
-            editItemListPropertiesButton = new Button();
+            editItemListPropertiesButton = new Button("","IconEdit");
             //SHOW/EDIT SUBTASKS OF LIST
 //        editItemPropertiesButton.setIcon(iconEdit);
-            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-", itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
+//            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-", itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
+            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-" + itemList.getObjectIdP(), "", Icons.iconEdit, (e) -> {
                 MyForm f = ((MyForm) mainCont.getComponentForm());
                 f.setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllElementsInSublist((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
@@ -459,21 +471,37 @@ public class ScreenListOfItemLists extends MyForm {
 //        east.add(new Label("R"+MyDate.formatTimeDuration(remaining)+"W"+MyDate.formatTimeDuration(workTime)));
 //</editor-fold>
         //EXPAND list
-        int numberItems;
         WorkSlotList workSlots = itemList.getWorkSlotListN();
-        long workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;
-        if (true || !statisticsMode) {
-            numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
-            assert !statisticsMode || numberItems > 0; // the list should only exist in statistics mode if it is not empty
-            if (numberItems > 0) {
+        long workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
+        if (MyPrefs.listOfItemListsShowNumberUndoneTasks.getBoolean()) {
+            int numberItems;
+//            WorkSlotList workSlots = itemList.getWorkSlotListN();
+//         workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;
+            if (true || !statisticsMode) {
+                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
+                assert !statisticsMode || numberItems > 0; // the list should only exist in statistics mode if it is not empty
+                if (true || numberItems > 0) { //UI: show '0' number of subtasks for empty lists
 //                Button subTasksButton = new Button();
-                Command expandSubTasks = new CommandTracked("[" + numberItems + "]", "ExpandSubtasks");// {
-                subTasksButton.setCommand(expandSubTasks);
+//                Command expandSubTasks = new CommandTracked("[" + numberItems + "]", "ExpandSubtasks");// {
+//                    Command expandSubTasks = new CommandTracked("", "ExpandSubtasks");// {
+                    Command expandSubTasks = CommandTracked.create("", null,
+                            (e) -> {
+                                subTasksButton.setUIID(subTasksButton.getUIID().equals("ListOfItemListsShowItems") ? "ListOfItemListsShowItemsExpanded" : "ListOfItemListsShowItems");
+                            },
+                            "ListOfItemListsExpandSubtasks");// {
+                    subTasksButton.setCommand(expandSubTasks);
+                    String subTaskStr = numberItems + "";
+                    if (MyPrefs.listOfItemListsShowNumberDoneTasks.getBoolean()) {
+                        int totalNbTasks = itemList.getNumberOfItems(false, MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean());
+                        if (totalNbTasks != 0)
+                            subTaskStr += "/" + totalNbTasks;
+                    }
+                    subTasksButton.setText(subTaskStr);
 //            subTasksButton.setIcon(Icons.get().iconShowMoreLabelStyle);
-                subTasksButton.setUIID("Label");
+                    subTasksButton.setUIID("ListOfItemListsShowItems");
 //            swipCont.putClientProperty("subTasksButton", subTasksButton);
-                swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
-                east.addComponent(subTasksButton);
+                    swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
+                    if (false)east.addComponent(subTasksButton);
 //            cont.setLeadComponent(subTasksButton); //ensure events generated by button arrives at main container??? WORKS! Makes the button receive every action from the container
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            subTasksButton.setCommand(new Command("[" + itemList.getSize() + "]") {
@@ -485,11 +513,15 @@ public class ScreenListOfItemLists extends MyForm {
 //            );
 //            subTasksButton.setCommand(new Command("[" + itemList.getSize() + "]")); //the Command doesn't have to do anything since Tree binds a listener to the button
 //</editor-fold>
+                }
             }
         }
 
         if (!statisticsMode) {
-            long remainingEffort = itemList.getRemaining();
+            if (MyPrefs.listOfItemListsShowRemainingEstimate.getBoolean()) {
+
+                long remainingEffort = itemList.getRemaining();
+                long totalEffort = MyPrefs.listOfItemListsShowTotalTime.getBoolean() ? itemList.getEstimate() : 0;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long workTime = itemList.getWorkSlotListN().getWorkTimeSum();
 //        if (remainingEffort != 0) {
@@ -499,9 +531,19 @@ public class ScreenListOfItemLists extends MyForm {
 //        List<WorkSlot> workslots = itemList.getWorkSlotListN();
 //        long workTimeSumMillis = WorkSlot.sumWorkSlotList(workslots);
 //</editor-fold>
-            east.addComponent(new Label((remainingEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
-                    + (workTimeSumMillis != 0 ? ((remainingEffort != 0 ? "/" : "") + MyDate.formatDurationStd(workTimeSumMillis)) : ""))); //format: "remaining/workTime"
-            east.addComponent(editItemListPropertiesButton);
+                String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
+                        + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
+                if (workTimeSumMillis != 0)
+                    effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
+//                east.addComponent(new Label((remainingEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
+//                        + (workTimeSumMillis != 0 ? ((remainingEffort != 0 ? "/" : "") + MyDate.formatDurationStd(workTimeSumMillis)) : ""),"ListOfItemListsRemainingTime")); //format: "remaining/workTime"
+                east.addComponent(new Label(effortStr, "ListOfItemListsRemainingTime")); //format: "remaining/workTime"
+                east.addComponent(subTasksButton); //format: "remaining/workTime"
+                east.addComponent(editItemListPropertiesButton);
+            } else {
+                east.addComponent(subTasksButton); //format: "remaining/workTime"
+                east.addComponent(editItemListPropertiesButton);
+            }
         } else { //statisticsMode
             long actualEffort = itemList.getActual();
 //            long estimatedEffort = itemList.getEffortEstimate();
@@ -509,7 +551,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                    + "/E" + MyDate.formatTimeDuration(estimatedEffort)
 //                    + "/W" + MyDate.formatTimeDuration(workTimeSumMillis)));
         }
-
+        
         //DETAILS
         if (statisticsMode) {
 //        Container southDetailsContainer=null;
@@ -517,7 +559,7 @@ public class ScreenListOfItemLists extends MyForm {
 //            itemLabel.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
                 @Override
                 public void actionPerformed(ActionEvent evt) {
-                    Container southCont = (Container) ((BorderLayout) mainCont.getLayout()).getSouth();
+                    Container southCont = (Container) ((MyBorderLayout) mainCont.getLayout()).getSouth();
                     if (southCont == null) {
                         //lazy create of details container
                         Container southDetailsContainer = new Container(new FlowLayout());
@@ -527,7 +569,7 @@ public class ScreenListOfItemLists extends MyForm {
                         southDetailsContainer.addComponent(new Label("Estimate:" + MyDate.formatDurationStd(estimatedEffort)
                                 + " Work time" + MyDate.formatDurationStd(workTimeSumMillis)));
 //                        southDetailsContainer.setHidden(!showDetails); //hide details by default
-                        mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
+                        mainCont.addComponent(MyBorderLayout.SOUTH, southDetailsContainer);
                         southCont = southDetailsContainer; //update for use below
                     } else {
 //                southDetailsContainer.setHidden(!southDetailsContainer.isHidden()); //toggle hidden details
@@ -558,17 +600,20 @@ public class ScreenListOfItemLists extends MyForm {
                 detailActionListener.actionPerformed(null);
             }
         } //        east.addComponent(new Label(new SimpleDateFormat().format(new Date(itemList.getFinishTime(item, 0)))));
-        mainCont.addComponent(BorderLayout.EAST, east);
+
+        mainCont.addComponent(MyBorderLayout.CENTER, itemListLabel);
+
+        mainCont.addComponent(MyBorderLayout.EAST, east);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont.setDraggable(true);
 //        cont.setDropTarget(true);
 
 //        return cont;
 //</editor-fold>
-        if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
+        if (false) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, "SwipeLaunchTimerOnItemList", Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(CommandTracked.create("", Icons.iconNewItemFromTemplate, (e) -> {
+            leftSwipeContainer.add(new Button(CommandTracked.create("", Icons.iconNewItemFromTemplateMaterial, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    Item newTemplateInstantiation = new Item();
 //                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
@@ -584,12 +629,12 @@ public class ScreenListOfItemLists extends MyForm {
             }, "InterruptInScreenListOfItemLists" //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             )));
         }
-
+        rightSwipeContainer.add(makeTimerSwipeButton(swipCont, itemList, "InterruptInScreenListOfItemLists"));
         return swipCont;
     }
 
     protected static Container buildItemListContainerStatistics(ItemList itemList, KeepInSameScreenPosition keepPos) {
-        Container mainCont = new Container(new BorderLayout());
+        Container mainCont = new Container(new MyBorderLayout());
         mainCont.setUIID("ItemListContainer");
         Container leftSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 
@@ -629,7 +674,7 @@ public class ScreenListOfItemLists extends MyForm {
         MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotListN(false).size() > 0 ? "%" : ""),
                 swipCont, () -> true); //D&D
 
-        mainCont.addComponent(BorderLayout.CENTER, itemListLabel);
+        mainCont.addComponent(MyBorderLayout.CENTER, itemListLabel);
 
         Button editItemListPropertiesButton = null;
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -652,7 +697,7 @@ public class ScreenListOfItemLists extends MyForm {
         ActionListener detailActionListener = new ActionListener() { //UI: touch task name to show/hide details
             @Override
             public void actionPerformed(ActionEvent evt) {
-                Container southCont = (Container) ((BorderLayout) mainCont.getLayout()).getSouth();
+                Container southCont = (Container) ((MyBorderLayout) mainCont.getLayout()).getSouth();
                 if (southCont == null) {
                     //lazy create of details container
                     Container southDetailsContainer = new Container(new FlowLayout());
@@ -660,7 +705,7 @@ public class ScreenListOfItemLists extends MyForm {
                     long estimatedEffort = itemList.getEstimate();
                     southDetailsContainer.addComponent(new Label("Estimate:" + MyDate.formatDurationStd(estimatedEffort)
                             + " Work time" + MyDate.formatDurationStd(workTimeSumMillis)));
-                    mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
+                    mainCont.addComponent(MyBorderLayout.SOUTH, southDetailsContainer);
                     southCont = southDetailsContainer; //update for use below
                 } else {
                     southCont.setHidden(!southCont.isHidden()); //toggle hidden details
@@ -686,7 +731,7 @@ public class ScreenListOfItemLists extends MyForm {
         if (showDetails) {
             detailActionListener.actionPerformed(null);
         }
-        mainCont.addComponent(BorderLayout.EAST, east);
+        mainCont.addComponent(MyBorderLayout.EAST, east);
         if (true) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconNewItemFromTemplate, (e) -> {

@@ -13,7 +13,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 
@@ -70,7 +70,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
         ASSERT.that(categoryList != null, "why itemOrItemListForNewTasks2==null here?");
         this.categoryList = categoryList;
         this.insertBeforeElement = insertBeforeElement;
-        Container contForTextEntry = new Container(new BorderLayout());
+        Container contForTextEntry = new Container(new MyBorderLayout());
 
 //        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
 //        add(swipC);
@@ -96,12 +96,13 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
             }
         });
 
-        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
+        contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
 
         //close insert container
-        contForTextEntry.add(BorderLayout.WEST, westCont);
+        contForTextEntry.add(MyBorderLayout.WEST, westCont);
         if (categoryList != null && categoryList.getSize() > 0) { //only add close button if in a non-empty list
-            westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
+//            westCont.add(new Button(Command.create(null, Icons.iconCloseCircleLabelSty, (ev) -> {
+            westCont.add(new Button(Command.createMaterial(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer. NO, too detailed...
 //                myForm.lastInsertNewElementContainer = null;
                 //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
@@ -110,7 +111,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
         }
 
         //Enter full screen edit of the new Category:
-        contForTextEntry.add(BorderLayout.EAST,
+        contForTextEntry.add(MyBorderLayout.EAST,
                 new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
                     if ((newCategory = createNewCategory()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                         myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this, -1)); //if editing the new task in separate screen, 

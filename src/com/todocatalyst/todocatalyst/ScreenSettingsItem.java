@@ -22,10 +22,11 @@ import com.codename1.ui.Container;
 public class ScreenSettingsItem extends ScreenSettingsCommon {
 
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-    ScreenSettingsItem(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
+    ScreenSettingsItem(String title, MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
         super(mainScreen, doneAction);
         setUniqueFormId("ScreenItemSettings");
+        setTitle(title);
     }
 
     /**
@@ -38,6 +39,7 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
 //        addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 60, 1);
         addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 120, 1);
 
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemEditEnableSwipeBetweenTabs);
         addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime);
         addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);
 

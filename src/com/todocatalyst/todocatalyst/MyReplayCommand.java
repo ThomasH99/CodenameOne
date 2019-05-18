@@ -174,6 +174,7 @@ public class MyReplayCommand extends CommandTracked {
     public static MyReplayCommand create(String cmdUniqueID, String commandName, char icon, final ActionListener ev) {
         return create(cmdUniqueID, "", commandName, icon, ev, false, () -> true);
     }
+
     public static MyReplayCommand create(String commandName, char icon, final ActionListener ev) {
         return create(commandName, "", commandName, icon, ev, false, () -> true);
     }

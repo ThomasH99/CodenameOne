@@ -16,7 +16,7 @@ import com.codename1.ui.InfiniteContainer;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.animations.CommonTransitions;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
 import com.parse4cn1.ParseObject;
@@ -70,8 +70,8 @@ public class ScreenListOfAlarms extends MyForm {
 
 //        this.notificationList=notificationList;
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-        if (!(getLayout() instanceof BorderLayout)) {
-            setLayout(new BorderLayout());
+        if (!(getLayout() instanceof MyBorderLayout)) {
+            setLayout(new MyBorderLayout());
         }
 
         addCommandsToToolbar(getToolbar());
@@ -109,16 +109,16 @@ public class ScreenListOfAlarms extends MyForm {
         getContentPane().removeAll();
         expiredAlarms = new ArrayList(AlarmHandler.getInstance().getExpiredAlarms()); //need a copy of the list to avoid java.util.ConcurrentModificationException in CancellAll/SnoozeAll loops below
         Container alarmCont = buildContentPaneForAlarmList(expiredAlarms, previousForm);
-        getContentPane().add(BorderLayout.CENTER, alarmCont);
+        getContentPane().add(MyBorderLayout.CENTER, alarmCont);
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
 //        }
 
 //        if (expiredAlarms.size() > 1) {
         if (expiredAlarms.size() > 0) { //keep snooze all even if only a single item
-            Container cancelAllButtonsCont = new Container(new BorderLayout());
+            Container cancelAllButtonsCont = new Container(new MyBorderLayout());
             //add Cancel All and Snooze All buttons
-            cancelAllButtonsCont.add(BorderLayout.WEST, new Button(CommandTracked.create("Cancel All", Icons.iconAlarmOffLabelStyle, (evt) -> {
+            cancelAllButtonsCont.add(MyBorderLayout.WEST, new Button(CommandTracked.create("Cancel All", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                while (!notificationList.isEmpty()) { //exit screen if all alarms are dealt with
 //                for (int i = 0, size = expiredAlarms.size(); i < size; i++) { //exit screen if all alarms are dealt with
@@ -142,7 +142,7 @@ public class ScreenListOfAlarms extends MyForm {
 
             MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt()*MyDate.MINUTE_IN_MILLISECONDS);
 
-            cancelAllButtonsCont.add(BorderLayout.EAST, Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(CommandTracked.create("Snooze All", Icons.iconAlarmOffLabelStyle, (evt) -> {
+            cancelAllButtonsCont.add(MyBorderLayout.EAST, Container.encloseIn(BoxLayout.x(), snoozeTimePicker, new Button(CommandTracked.create("Snooze All", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //                Date snoozeExpireTimeInMillis = new Date(System.currentTimeMillis() + MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: snooze interval always from the moment you activate snooze
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                while (!notificationList.isEmpty()) { //exit screen if all alarms are dealt with
@@ -171,7 +171,7 @@ public class ScreenListOfAlarms extends MyForm {
                 showPreviousScreenOrDefault(true); //false);
             },"SnoozeAllAlarms"))));
 
-            getContentPane().add(BorderLayout.SOUTH, cancelAllButtonsCont);
+            getContentPane().add(MyBorderLayout.SOUTH, cancelAllButtonsCont);
 //            alarmCont.animateHierarchy(300); //works??
             alarmCont.animateLayout(300); //works??
         }
@@ -244,15 +244,15 @@ public class ScreenListOfAlarms extends MyForm {
         Container itemCont = ScreenListOfItems.buildItemContainer(myForm, item, null, null);
 
 //        Container alarmCont = BorderLayout.north(itemCont);
-        Container alarmCont = BorderLayout.north(itemCont);
+        Container alarmCont = MyBorderLayout.north(itemCont);
 
         String header = ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)
                 ? "Waiting reminder at " : "Reminder at ") + MyDate.formatDateTimeNew(expiredAlarm.alarmTime);
-        alarmCont.add(BorderLayout.CENTER, new SpanLabel(header));
+        alarmCont.add(MyBorderLayout.CENTER, new SpanLabel(header));
 
         MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt());
 
-        alarmCont.add(BorderLayout.SOUTH, TableLayout.encloseIn(2,
+        alarmCont.add(MyBorderLayout.SOUTH, TableLayout.encloseIn(2,
                 //        alarmCont.add(BorderLayout.west(new Button(Command.create("Cancel", Icons.iconAlarmOffLabelStyle, (evt) -> {
                 new Button(CommandTracked.create("Cancel", Icons.iconAlarmOffLabelStyle, (evt) -> {
 //            expiredAlarms.removeAlarmAndRepeatAlarm(notif.notificationId); //update

@@ -4,7 +4,7 @@ import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Graphics;
 import com.codename1.ui.events.ScrollListener;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import java.util.ArrayList;
 
 /**
@@ -109,7 +109,7 @@ public class StickyHeaderMod extends Container implements ScrollListener {
 
         comp = getComponentAt(0);
         removeComponent(comp);
-        getComponentForm().getLayeredPane().addComponent(BorderLayout.NORTH, comp);
+        getComponentForm().getLayeredPane().addComponent(MyBorderLayout.NORTH, comp);
     }
 }
 

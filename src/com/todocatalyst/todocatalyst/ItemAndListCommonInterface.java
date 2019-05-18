@@ -8,6 +8,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.io.Log;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.MyUtil.eql;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1106,6 +1107,16 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
                 }
             }
         }
+    }
+    
+    /**
+    returns true if inheritance the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
+    @return 
+     */
+    default public boolean isInherited(Object ownValue, Object potentiallyInheritedValue, boolean inheritanceEnabledForField) {
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
+        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && inheritanceEnabledForField
+                && eql(ownValue , potentiallyInheritedValue);
     }
 
 }

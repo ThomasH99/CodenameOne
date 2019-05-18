@@ -20,7 +20,7 @@ import com.codename1.ui.TextArea;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.geom.Dimension;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.table.TableLayout;
@@ -717,7 +717,7 @@ public class ScreenRepair extends MyForm {
                         labelInfo.repaint();
                     }
                 };
-                pinchForm.setLayout(BorderLayout.center());
+                pinchForm.setLayout(MyBorderLayout.center());
                 pinchForm.setPinchInsertEnabled(false);
                 pinchForm.getContentPane().setName("ContentPane");
                 pinchForm.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
@@ -729,17 +729,17 @@ public class ScreenRepair extends MyForm {
                     new Item("item4 3h", true), new Item("item5 5min", true)}) {
                     Component itemCont = ScreenListOfItems.buildItemContainer(ScreenRepair.this, item, null, null);
                     itemCont.setName("itemCont:" + item.getText());
-                    Container contCont = new Container(BorderLayout.center());
+                    Container contCont = new Container(MyBorderLayout.center());
                     contCont.setName("WrapContNorth (" + item.getText() + ")");
-                    contCont.addComponent(BorderLayout.NORTH, itemCont);
+                    contCont.addComponent(MyBorderLayout.NORTH, itemCont);
                     cont.addComponent(contCont);
                 }
-                pinchForm.addComponent(BorderLayout.CENTER, cont);
+                pinchForm.addComponent(MyBorderLayout.CENTER, cont);
 
                 Container south = new Container(BoxLayout.y());
                 south.setName("SouthCont");
                 south.addAll(labelCoord, labelInfo);
-                pinchForm.addComponent(BorderLayout.SOUTH, south);
+                pinchForm.addComponent(MyBorderLayout.SOUTH, south);
                 labelCoord.setName("LabelCoord");
                 labelInfo.setName("LabelInfo");
                 pinchForm.show();

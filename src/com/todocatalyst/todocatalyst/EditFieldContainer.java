@@ -17,6 +17,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.table.TableLayout;
 import static com.todocatalyst.todocatalyst.MyForm.makeHelpButton;
@@ -34,19 +35,25 @@ public class EditFieldContainer extends Container {
 
     EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Image fieldIcon) {
-        super(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+        super(new MyBorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
         setUIID("EditFieldContainer");
         Container fieldContainer = this;
+        MyBorderLayout layout = MyBorderLayout.center();
+        layout.setSizeEastWestMode(MyBorderLayout.SIZE_WEST_BEFORE_EAST);
+        fieldContainer.setLayout(layout);
 
 //        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
-        if ( field instanceof MyOnOffSwitch) {
+        if (field instanceof MyOnOffSwitch) {
         } else {
             if (field instanceof WrapButton) {
-                ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
+//                ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
+                ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "ScreenItemField" : "ScreenItemValue");
                 ((WrapButton) field).setUIID("Container");
+                ((WrapButton) field).getTextComponent().setRTL(true);
             } else if (field instanceof ComponentGroup) {
             } else {
-                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
+//                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
+                field.setUIID(showAsFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemValue");
             }
         }
 
@@ -55,13 +62,18 @@ public class EditFieldContainer extends Container {
         if (!visibleEditButton && hiddenEditButton) {
             visibleField = field;
         } else { //place a visible or invisible button
-            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
+//            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
+            Label editFieldButton = new Label("","IconEdit"); // [>]
+            editFieldButton.setMaterialIcon(Icons.iconEdit);
             editFieldButton.setVisible(!showAsFieldUneditable || visibleEditButton); //Visible, but still using space
             editFieldButton.setHidden(hiddenEditButton); //hidden, not taking any space
 //            visibleField = BorderLayout.centerEastWest(field, editFieldButton, null);
-            visibleField = FlowLayout.encloseRight(field, editFieldButton);
+//            visibleField = FlowLayout.encloseRight(field, editFieldButton);
+            visibleField = BorderLayout.centerCenterEastWest(field, editFieldButton,null);
             if (field instanceof WrapButton) {
                 ((Container) visibleField).setLeadComponent(((WrapButton) field).getActualButton());
+//                ((Container) visibleField).setLeadComponent(((WrapButton) field).setLeadComponent(field));
+//                ((Container) visibleField).setLeadComponent(field.getALeadComponent());
             } else {
                 ((Container) visibleField).setLeadComponent(field);
             }
@@ -72,7 +84,7 @@ public class EditFieldContainer extends Container {
             SwipeableContainer swipeCont;
             assert !showAsFieldUneditable : "showAsUneditableField should never be true if we also define a swipeClear function";
             Button swipeDeleteFieldButton = new Button();
-             swipeDeleteFieldButton.setUIID("ClearFieldButton");
+            swipeDeleteFieldButton.setUIID("ClearFieldButton");
             swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
             ActionListener l = (ev) -> {
                 swipeClearFct.clearFieldValue();
@@ -80,21 +92,25 @@ public class EditFieldContainer extends Container {
                 swipeCont.close();
             };
             swipeCont.addSwipeOpenListener(l);
-            swipeDeleteFieldButton.setCommand(Command.create("", Icons.iconCloseCircleLabelStyle, l));
+//            swipeDeleteFieldButton.setCommand(Command.create("", Icons.iconCloseCircleLabelStyle, l));
+            swipeDeleteFieldButton.setCommand(Command.createMaterial("", Icons.iconCloseCircle, l));
             visibleField = swipeCont;
         }
 
         //FIELD LABEL
         Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText);
-        if (wrapText) {
+        if (true) {
+            fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
+            fieldContainer.add(MyBorderLayout.EAST, visibleField);
+        } else if (wrapText) {
             int availDisplWidth = (Display.getInstance().getDisplayWidth() * 90) / 100; //asumme roughly 90% of width is available after margins
 //            int availDisplWidthParent = getPaDisplay.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
             int labelPreferredW = fieldLabel.getPreferredW();
             int fieldPreferredW = visibleField.getPreferredW();
             if (labelPreferredW + fieldPreferredW > availDisplWidth) { //if too wide
                 if (field instanceof MyComponentGroup) { //MyComponentGroups cannot wrap and must be shown fully so split on *two* lines
-                    fieldContainer.add(BorderLayout.NORTH, fieldLabel);
-                    fieldContainer.add(BorderLayout.EAST, visibleField);
+                    fieldContainer.add(MyBorderLayout.NORTH, fieldLabel);
+                    fieldContainer.add(MyBorderLayout.EAST, visibleField);
                 } else {
                     int widthFirstColumn = 0;
                     int labelRelativeWidthPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
@@ -133,14 +149,14 @@ public class EditFieldContainer extends Container {
                             add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.RIGHT), visibleField); //align center right
                 }
             } else {
-                fieldContainer.add(BorderLayout.WEST, fieldLabel);
-                fieldContainer.add(BorderLayout.EAST, visibleField);
+                fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
+                fieldContainer.add(MyBorderLayout.EAST, visibleField);
             }
         } else {
-            fieldContainer.add(BorderLayout.WEST, fieldLabel);
-            fieldContainer.add(BorderLayout.EAST, visibleField);
+            fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
+            fieldContainer.add(MyBorderLayout.EAST, visibleField);
         }
-        fieldContainer.revalidate(); //right way to get the full text to size up?
+//        fieldContainer.revalidate(); //right way to get the full text to size up?
 //        return fieldContainer;
     }
 

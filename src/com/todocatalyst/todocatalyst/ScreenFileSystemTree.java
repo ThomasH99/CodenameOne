@@ -9,7 +9,7 @@ import com.codename1.io.FileSystemStorage;
 import com.codename1.io.Log;
 import com.codename1.ui.Form;
 import com.codename1.ui.Toolbar;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.tree.Tree;
 import com.codename1.ui.tree.TreeModel;
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class ScreenFileSystemTree extends MyForm {
     ScreenFileSystemTree() {
         super("FileSystemTree", getCurrentFormAfterClosingDialogOrMenu(), () -> {
         });
-        setLayout(new BorderLayout());
+        setLayout(new MyBorderLayout());
         TreeModel tm = new TreeModel() {
             @Override
             public Vector getChildren(Object parent) {
@@ -68,7 +68,7 @@ public class ScreenFileSystemTree extends MyForm {
             }
         };
 
-        add(BorderLayout.CENTER, t);
+        add(MyBorderLayout.CENTER, t);
         addCommandsToToolbar();
     }
 

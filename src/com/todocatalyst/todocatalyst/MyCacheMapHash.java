@@ -269,8 +269,16 @@ public class MyCacheMapHash {
     /**
      * Clears the caches for this cache object
      */
-    public void clearAllCache() {
+    private void clearAllCache() {
         clearMemoryCache();
+//        clearStorageCache();
+    }
+
+    public void clearAllCache(String[] reservedNames) {
+        clearMemoryCache();
+        for (String name:reservedNames) {
+            delete(name);
+        }
 //        clearStorageCache();
     }
 

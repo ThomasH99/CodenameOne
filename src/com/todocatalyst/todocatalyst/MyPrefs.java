@@ -101,7 +101,11 @@ public class MyPrefs {
 //    static PrefEntry dragDropRightDropZoneWidth
 //            = new PrefEntry("Width of the right-hand drop zone (%)", "dragDropRightDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
     
-    //TIMER
+    //Edit ITEM screen - Screenitem2
+    static PrefEntry itemEditEnableSwipeBetweenTabs
+            = new PrefEntry("Enable swiping between task details", "itemEditEnableSwipeBetweenTabs", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+    
+    //TIMER - ScreenTimer6
     static PrefEntry timerAutomaticallyStartTimer
             = new PrefEntry("Automatically start timer for a task", "automaticallyStartTimer", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
 
@@ -252,7 +256,7 @@ public class MyPrefs {
     static PrefEntry changeSubtasksStatusWithoutConfirmationXXX
             = new PrefEntry("**", "changeSubtasksStatusWithoutConfirmation", false, "**");
 
-    static PrefEntry alwaysShowSubtasksExpandedInScreenItem
+    static PrefEntry alwaysShowSubtasksExpandedInScreenItemXXX
             = new PrefEntry("**", "alwaysShowSubtasksExpandedInScreenItem", false, "**");
 
     static PrefEntry neverChangeProjectsSubtasksWhenChangingProjectStatusXXX
@@ -403,6 +407,8 @@ public class MyPrefs {
     //LOOK AND FEEL
     static PrefEntry themeNameWithoutBackslash
             = new PrefEntry("**", "themeNameWithoutBackslash", "theme", "name of the graphical theme");
+    static PrefEntry titleAutoSize
+            = new PrefEntry("Reduce Screen title font size for long texts", "titleAutoSize", true, "name of the graphical theme");
 
     //OTHER / SYSTEM-LEVEL
     static PrefEntry enableCancelInAllScreens
@@ -441,6 +447,9 @@ public class MyPrefs {
     static PrefEntry completionLogInterval = new PrefEntry("rrr", "completionLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_COMPLETION_LOG_TITLE);
     static PrefEntry overdueLogInterval = new PrefEntry("Past days in " + ScreenMain.SCREEN_OVERDUE_TITLE, "overdueLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_OVERDUE_TITLE);
     static PrefEntry touchedLogInterval = new PrefEntry("eee", "touchedLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED);
+    
+    static PrefEntry useSmartdatesForThisManyDaysOverdueDueOrFinishDates = new PrefEntry("Use Smart format for past "+Item.DUE_DATE+" or "+Item.FINISH_WORK_TIME+" when overdue by less than this many days", 
+            "useSmartdatesForThisManyDaysOverdueDueOrFinishDates", 30, "**Show overdue dates in Smart format, e.g. Wed17h30. This is useful for overdue dates in the near past, but can get confusing for" );
 
     //STATISTICS SCREEN
     static PrefEntry statisticsScreenNumberPastDaysToShow = new PrefEntry("Past days to include", "statisticsScreenNumberPastDaysToShow", 30, "How many past days to include");
@@ -455,6 +464,18 @@ public class MyPrefs {
     static PrefEntry statisticsGroupTasksUnderTheirProject = new PrefEntry("Show subtasks grouped under their project", "statisticsGroupTasksUnderTheirProject", true, "Show completed subtasks grouped under their top-level project");
     static PrefEntry statisticsShowDetailsForAllLists = new PrefEntry("Always show details for statistics", "statisticsShowDetailsForAllLists", false, "**");
     static PrefEntry statisticsShowMostRecentFirst = new PrefEntry("Show most recent first", "statisticsShowMostRecentFirst", true, "**");
+    
+    //LIST OF ITEMLISTS
+    static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry(Format.f("Show number of tasks",""), "listOfItemListsShowNumberUndoneTasks", true, "**");
+    static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry(Format.f("Show number of completed tasks, e.g. 7/23",""), "listOfItemListsShowNumberDoneTasks", true, "**");
+    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry(Format.f("Show sum of Remaining estimates for tasks",""), 
+            "listOfItemListsShowRemainingEstimate", true, "**"); //, "e.g. 3h20", Only shown if not-zero. NB. May make displaying the list slower for very large lists or slow devices
+    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry("Show sum of Total time for tasks", 
+            "listOfItemListsShowTotalTime", true, "**");
+    static PrefEntry listOfItemListsShowWorkTime = new PrefEntry("Show sum of defined work time for the list", 
+            "listOfItemListsShowWorkTime", true, "**"); //"e.g. 1h10/23h12/[4h00]
+    static PrefEntry listOfItemListsShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects", 
+            "listOfItemListsShowTotalNumberOfLeafTasks", true, "**"); 
 
     //GLOBAL
     //localization
@@ -481,6 +502,8 @@ public class MyPrefs {
                     "workSlotDurationStepIntervalInMinutes", 5, "**");
     static PrefEntry workSlotContinueAddingInlineWorkslots = new PrefEntry("Continue adding a new workslot below one inserted with pinch",
                     "workSlotContinueAddingInlineWorkslots", true, "**");
+    static PrefEntry workSlotUseSmartDates = new PrefEntry("Use smart dates",
+                    "workSlotUseSmartDates", true, "**");
 
     MyPrefs() {
 //         int x=7:

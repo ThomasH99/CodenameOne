@@ -9,6 +9,7 @@ import com.codename1.io.Externalizable;
 import com.codename1.io.Storage;
 import static com.codename1.io.Util.readObject;
 import static com.codename1.io.Util.writeObject;
+import com.codename1.ui.Component;
 import com.parse4cn1.ParseObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -95,6 +96,7 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 //        boolean result = false;
 //        if (!expandedObjects.contains(element)) { //don't add if already there (to avoid having to 
         boolean result = false;
+        if (Config.TEST) ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null);
         if (element instanceof ItemAndListCommonInterface) //a hashset so no need to check if already added
             result = expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP()); //a hashset so no need to check if already added
         else if (element instanceof WorkSlotList)
@@ -128,6 +130,14 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     public boolean contains(Object element) {
 //            return super.contains(((ItemAndListCommonInterface) element).getObjectIdP());
         return expandedObjects.contains(((ItemAndListCommonInterface) element).getObjectIdP());
+    }
+
+    public void updateExpandedUIID(Component comp, Object element, String normalUIId, String expandedUIID) {
+//            return super.contains(((ItemAndListCommonInterface) element).getObjectIdP());
+        if (expandedObjects.contains(((ItemAndListCommonInterface) element).getObjectIdP())) {
+            comp.setUIID(expandedUIID);
+        } else
+            comp.setUIID(normalUIId);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //

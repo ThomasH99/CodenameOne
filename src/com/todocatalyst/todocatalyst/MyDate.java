@@ -1429,6 +1429,9 @@ public class MyDate extends Date {
             return "No date"; //"NONE"
         }
         java.util.Calendar cal = java.util.Calendar.getInstance();
+//        java.util.Calendar cal = java.util.Calendar.getInstance(TimeZone.getDefault());
+//        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+//        calendar.setTime(source);
 //        TimeZone tz = cal.getTimeZone();
 //        cal.setTime(new Date(System.currentTimeMillis() - tz.getRawOffset()));
 //        cal.setTime(new Date(date.getTime() - tz.getRawOffset()));
@@ -1618,14 +1621,18 @@ public class MyDate extends Date {
 
 //    static String formatTime(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour) {
     static String formatTimeOfDay(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean showLeadingZeroForHour, boolean useUSFormat) {
-        return MyDate.formatTimeOfDay(hoursMinutesInMilliSeconds, showSeconds, showLeadingZeroForHour, useUSFormat, false);
+//        return MyDate.formatTimeOfDay(hoursMinutesInMilliSeconds, showSeconds, showLeadingZeroForHour, useUSFormat, false);
+        return MyDate.formatTimeOfDay(hoursMinutesInMilliSeconds, showSeconds, showLeadingZeroForHour, useUSFormat, true);
     }
 
     static String formatTimeOfDay(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean showLeadingZeroForHour, boolean useUSFormat, boolean noTimeZoneCorrection) {
         java.util.Calendar cal = java.util.Calendar.getInstance();
         TimeZone tz = cal.getTimeZone();
 //        cal.setTime(new Date(System.currentTimeMillis() - tz.getRawOffset()));
-        cal.setTime(new Date(hoursMinutesInMilliSeconds - (noTimeZoneCorrection ? 0 : tz.getRawOffset())));
+        if (false) 
+            cal.setTime(new Date(hoursMinutesInMilliSeconds - (noTimeZoneCorrection ? 0 : tz.getRawOffset())));
+        else
+            cal.setTime(new Date(hoursMinutesInMilliSeconds ));
         DateFormat dtfmt;
         if (useUSFormat) {
             dtfmt = new SimpleDateFormat((showLeadingZeroForHour ? "KK" : "K") + (showSeconds ? "mm:ss a" : "mm a"));
@@ -1856,7 +1863,7 @@ public class MyDate extends Date {
 
     /**
      * returns time adjusted to 'midnight' to today's date with
-     * hour/minute/second/millesecond set to zero
+     * hour/minute/second/millisecond set to zero
      */
     static Date setDateToDefaultTimeOfDay(Date time) {
         Calendar cal = Calendar.getInstance();

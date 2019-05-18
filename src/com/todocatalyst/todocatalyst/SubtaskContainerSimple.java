@@ -8,7 +8,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.ui.Button;
 import com.codename1.ui.Container;
 import com.codename1.ui.Label;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.todocatalyst.todocatalyst.MyForm.UpdateField;
 import java.util.List;
@@ -38,7 +38,7 @@ public class SubtaskContainerSimple extends Container {
      */
     SubtaskContainerSimple(Item item, MyForm previousForm, boolean templateEditMode,  Map<Object, UpdateField> parseIdMap2) { //    HashSet<ItemAndListCommonInterface> expandedObjects
 //        ItemList<Item> subtasksItemList = item.getItemList();
-        setLayout(new BorderLayout()); //main container
+        setLayout(new MyBorderLayout()); //main container
 
 //        Container subtaskSummary = new Container(new BorderLayout());
 //        subtaskSummary.add(BorderLayout.WEST, "Subtasks");
@@ -70,7 +70,7 @@ public class SubtaskContainerSimple extends Container {
         ));
 
         //HEADER - count + expand button
-        add(BorderLayout.CENTER_BEHAVIOR_SCALE, editSubtasksFullScreen);
+        add(MyBorderLayout.CENTER_BEHAVIOR_SCALE, editSubtasksFullScreen);
 //        add(BorderLayout.NORTH, subtaskSummary);
     }
 

@@ -154,6 +154,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public ItemList(String listName, List<E> list, boolean temporaryNoSaveList) {
         this(listName, list, null, temporaryNoSaveList);
     }
+    public ItemList(String listName, List<E> list) {
+        this(listName, list, null, false);
+    }
 
     public ItemList(List<E> list, boolean temporaryNoSaveList) {
         this("", list, temporaryNoSaveList);

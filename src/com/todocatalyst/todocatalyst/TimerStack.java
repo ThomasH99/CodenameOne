@@ -22,7 +22,7 @@ import com.codename1.ui.TextArea;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.GridLayout;
@@ -1185,6 +1185,13 @@ class TimerStack {
         //TODO set autostart!
     }
 
+    public void startTimerOnItemOrItemList(ItemAndListCommonInterface itemOrItemList, MyForm previousForm) {
+        if (itemOrItemList instanceof Item)
+            startTimerOnItem((Item) itemOrItemList, previousForm);
+        else if (itemOrItemList instanceof ItemList)
+            startTimerOnItemList((ItemList) itemOrItemList, previousForm);
+    }
+
     public void startInterruptOrInstantTask(Item interruptOrInstantTask, MyForm previousForm) {
         ASSERT.that(interruptOrInstantTask.isInteruptOrInstantTask());
         startTimer(interruptOrInstantTask, null, previousForm, true, false);
@@ -1263,8 +1270,8 @@ class TimerStack {
             Container formContentPane = form.getContentPane();
             if (!(form instanceof ScreenTimer6)) {
                 Layout contentPaneLayout = formContentPane.getLayout();
-                if (contentPaneLayout instanceof BorderLayout) {
-                    Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                if (contentPaneLayout instanceof MyBorderLayout) {
+                    Component southComponent = ((MyBorderLayout) contentPaneLayout).getSouth();
                     if (southComponent instanceof Container) {
                         return (Container) southComponent;
                     }
@@ -1296,14 +1303,14 @@ class TimerStack {
 //        }else {
             Container formContentPane = form.getContentPane();
             Layout contentPaneLayout = formContentPane.getLayout();
-            if (contentPaneLayout instanceof BorderLayout) {
+            if (contentPaneLayout instanceof MyBorderLayout) {
 //                timerContainer = getContentPaneSouth(form);
-                Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                Component southComponent = ((MyBorderLayout) contentPaneLayout).getSouth();
                 if (southComponent instanceof Container) {
                     timerContainer = (Container) southComponent;
                 } else if (southComponent == null) {
                     Container newCont = new Container(BoxLayout.y());
-                    formContentPane.add(BorderLayout.SOUTH, newCont);
+                    formContentPane.add(MyBorderLayout.SOUTH, newCont);
                     timerContainer = newCont;
                 }
             }
@@ -1715,18 +1722,23 @@ class TimerStack {
 
         ItemList itemList = timerInstance.getItemList();
 
-        Button elapsedTimeButton = new Button("", "TimerTimer" + (fullScreenTimer ? "" : "Small"));
+        Button elapsedTimeButton = new Button("", (fullScreenTimer ? "BigTimerTimer" : "SmallTimerTimer"));
         MyTextField description;
 
         MyCheckBox status = new MyCheckBox(timedItem.getStatus());
+        status.setUIID("BigTimerItemStatus");
 
 //    private Button status;
 //        MyTextArea comment = new MyTextArea(Item.COMMENT, 20, 2, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
         MyTextField comment = new MyTextField(Item.COMMENT, 20, 2, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
+        comment.setUIID("BigTimerComment");
 //    private Container commentCont;
         MyDurationPicker effort = new MyDurationPicker();
+        effort.setUIID("BigTimerEffort");
         MyDurationPicker estimate = new MyDurationPicker();
+        estimate.setUIID("BigTimerEstimate");
         Label totalActualEffort = new Label();
+        totalActualEffort.setUIID("BigTimerTotalActual");
         Button editItemButton;
         Picker hiddenElapsedTimePicker = new MyDurationPicker();
         hiddenElapsedTimePicker.setHidden(true); //hiddenElapsedTimePicker must be added to a Form, but we don't want to show it, only activate it via a longpress on the timer button
@@ -1955,7 +1967,7 @@ class TimerStack {
 
         // ********************************* COMMANDS **************************
         //Cmd used to show next task and go to it when clicked
-        Command cmdStartNextTask = new Command("", null) { //"StartNextTask" - stop and save current task and move to next (autostart if set)
+        Command cmdStartNextTask = new CommandTracked("", null, "TimerCmdStartNextTask") { //"StartNextTask" - stop and save current task and move to next (autostart if set)
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -1991,7 +2003,7 @@ class TimerStack {
          */
 //        Command cmdStopTimerAndGotoNextTaskOrExit = new Command("Next", Icons.iconCheckboxOngoing) {
 //        Command cmdStopTimerAndGotoNextTaskOrExit = new Command("Next", Icons.iconCheckboxOngoing) {
-        Command cmdStopTimerAndGotoNextTaskOrExit = new Command("Next", Icons.iconTimerNextTask) {
+        Command cmdStopTimerAndGotoNextTaskOrExit = new CommandTracked("Next", Icons.iconTimerNextTask, "TimerCmdStopTimerAndGotoNextTaskOrExit") {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -2022,7 +2034,7 @@ class TimerStack {
         /**
         exist large Timer
          */
-        Command cmdSaveAndExitTimerScreen = new Command("Exit", Icons.iconTimerStopExitTimer) { //"Stop/Exit" "Close/Exit" //TODO select icon for Exit from timer
+        Command cmdSaveAndExitTimerScreen = new CommandTracked("Exit", Icons.iconTimerStopExitTimer, "TimerCmdSaveAndExitTimerScreen") { //"Stop/Exit" "Close/Exit" //TODO select icon for Exit from timer
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -2045,7 +2057,7 @@ class TimerStack {
         /**
         exist large Timer
          */
-        Command cmdSaveAndExitSmallTimer = new Command("Exit", Icons.iconTimerStopExitTimer) { //"Stop/Exit" "Close/Exit" //TODO select icon for Exit from timer
+        Command cmdSaveAndExitSmallTimer = new CommandTracked("Exit", Icons.iconTimerStopExitTimer, "TimerCmdSaveAndExitSmallTimer") { //"Stop/Exit" "Close/Exit" //TODO select icon for Exit from timer
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -2062,7 +2074,7 @@ class TimerStack {
             }
         };
 
-        Command cmdSetCompletedAndGotoNextTaskOrExit = new Command("Completed", Icons.iconCheckboxDoneLabelStyle) {
+        Command cmdSetCompletedAndGotoNextTaskOrExit = new CommandTracked("Completed", Icons.iconItemStatusDone, "TimerCmdCompletedAndGotoNextTaskOrExit") {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -2090,7 +2102,7 @@ class TimerStack {
             }
         };
 
-        Command cmdSetTaskWaitingAndGotoNextTaskOrExit = new Command("Wait", Icons.iconCheckboxWaitingLabelStyle) {
+        Command cmdSetTaskWaitingAndGotoNextTaskOrExit = new CommandTracked("Wait", Icons.iconItemStatusWaiting, "TimerCmdSetTaskWaitingAndGotoNextTaskOrExit") {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -2118,7 +2130,7 @@ class TimerStack {
             }
         };
 
-        Command cmdSetTaskCancelledAndGotoNextTaskOrExit = new Command("Cancel", Icons.iconCheckboxCancelledLabelStyle) {
+        Command cmdSetTaskCancelledAndGotoNextTaskOrExit = new CommandTracked("Cancel", Icons.iconItemStatusCancelled, "TimerCmdTaskCancelledAndGotoNextTaskOrExit") {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
@@ -2145,7 +2157,7 @@ class TimerStack {
             }
         };
 
-        Command cmdSetTaskOngoingAndGotoNextTaskOrExit = new Command("Ongoing**", Icons.iconCheckboxCancelledLabelStyle) {
+        Command cmdSetTaskOngoingAndGotoNextTaskOrExit = new CommandTracked("Ongoing**", Icons.iconItemStatusOngoing, "TimerCmdSetTaskOngoingAndGotoNextTaskOrExit") {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                timerTimer.cancel();
@@ -2189,7 +2201,7 @@ class TimerStack {
             gotoNextTaskButtonWithItemText.setCommand(cmdStartNextTask);
             if (MyPrefs.getBoolean(MyPrefs.timerAutomaticallyGotoNextTask)) {
 //                gotoNextTaskButtonWithItemText.setUIID("Label");
-                gotoNextTaskButtonWithItemText.setTextUIID("Label");
+                gotoNextTaskButtonWithItemText.setTextUIID("BigTimerNextItemWithText");
             }
             gotoNextTaskButtonWithItemText.setHidden(!MyPrefs.timerShowNextTask.getBoolean());
         }
@@ -2238,7 +2250,7 @@ class TimerStack {
         });
 
 //            Container contentPane = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
-        Container contentPane = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+        Container contentPane = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new MyBorderLayout(MyBorderLayout.CENTER_BEHAVIOR_CENTER));
 
 //            contentPane.removeAll(); //clear before rebuilding
 //            Container cont = new Container(BoxLayout.y());
@@ -2283,7 +2295,7 @@ class TimerStack {
             }
 
             if (hierarchyStr != null) {
-                SpanLabel itemHierarchyContainer = new SpanLabel("Project: " + hierarchyStr);
+                SpanLabel itemHierarchyContainer = new SpanLabel("Project: " + hierarchyStr, "BigTimerListTitle");
                 itemHierarchyContainer.setHidden(!MyPrefs.getBoolean((MyPrefs.timerAlwaysExpandListHierarchy))); //initial state of visibility
                 Button buttonShowItemHierarchy = new Button(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle);
                 buttonShowItemHierarchy.addActionListener((e) -> {
@@ -2292,11 +2304,11 @@ class TimerStack {
                     buttonShowItemHierarchy.getParent().getParent().animateLayout(300);
                 });
 
-                contentPane.add(BorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName)))
-                        .add(BorderLayout.EAST, buttonShowItemHierarchy).add(BorderLayout.SOUTH, itemHierarchyContainer));
+                contentPane.add(MyBorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName)))
+                        .add(MyBorderLayout.EAST, buttonShowItemHierarchy).add(MyBorderLayout.SOUTH, itemHierarchyContainer));
 
             } else if (listName != null) {
-                contentPane.add(BorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName))));
+                contentPane.add(MyBorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName))));
             } //else: no context to show, show nothing
 //        }
 //
@@ -2309,7 +2321,7 @@ class TimerStack {
                     //TODO!!! call "Regular tasks"
                 }
             };
-            description.setUIID("ScreenItemTaskText");
+            description.setUIID("BigTimerItemText");
             description.setColumns(100);
             description.setGrowByContent(true);
             description.setActAsLabel(true);
@@ -2412,7 +2424,7 @@ class TimerStack {
                 }
         ));
         if (fullScreenTimer) {
-            contentPane.add(BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton));
+            contentPane.add(MyBorderLayout.west(status).add(MyBorderLayout.CENTER, description).add(MyBorderLayout.EAST, editItemButton));
         }
 
         ActionListener startFormUpdateTimers = (e) -> {
@@ -2472,10 +2484,12 @@ class TimerStack {
 //                    timerStartStopButton.getParent().revalidate();
                 timerStartStopButton.getParent().revalidateWithAnimationSafety();
             }
-            timerStartStopButton.setUIID("TimerTimer" + (fullScreenTimer ? "" : "Small") + (timerInstance.isRunning() ? "" : "Paused")); //update uiid to display running/paused timer appropriately
+//            timerStartStopButton.setUIID((fullScreenTimer ? "BigTimerTimer" : "SmallTimerTimer"));
+            timerStartStopButton.setUIID(fullScreenTimer ? (timerInstance.isRunning() ? "BigTimerTimer" : "BigTimerTimerPaused") : (timerInstance.isRunning() ? "SmallTimerTimer" : "SmallTimerTimerPaused")); //update uiid to display running/paused timer appropriately
         });
         timerStartStopButton.setCommand(timerStartStopCmd);
-        timerStartStopButton.setUIID("TimerTimer" + (fullScreenTimer ? "" : "Small") + (timerInstance.isRunning() ? "" : "Paused")); //iconTimerStartTimer);
+//        timerStartStopButton.setUIID("TimerTimer" + (fullScreenTimer ? "" : "Small") + (timerInstance.isRunning() ? "" : "Paused")); //iconTimerStartTimer);
+        timerStartStopButton.setUIID(fullScreenTimer ? (timerInstance.isRunning() ? "BigTimerTimer" : "BigTimerTimerPaused") : (timerInstance.isRunning() ? "SmallTimerTimer" : "SmallTimerTimerPaused")); //update uiid to display running/paused timer appropriately
 //            timerStartStopButton.set(); //iconTimerStartTimer);
         refreshElapsedTime.actionPerformed(null); //update timerStartStopButton with initial time
 
@@ -2582,7 +2596,7 @@ class TimerStack {
 //                    GridLayout.encloseIn(3, new Label(""), timerStartStopButton)
 //            );
             Container effortDetailsCont
-                    = BorderLayout.centerAbsoluteEastWest(timerStartStopButton, showEffortDetailsButton, new Label());
+                    = MyBorderLayout.centerAbsoluteEastWest(timerStartStopButton, showEffortDetailsButton, new Label());
             contentPane.add(effortDetailsCont);
 
             estimateTable.add(tl.createConstraint().widthPercentage(33).horizontalAlign(Component.CENTER), new Label(Item.EFFORT_ESTIMATE_SHORT)); //"Estimate")); //leftalign labels (like the Tickers)
@@ -2592,7 +2606,7 @@ class TimerStack {
             estimateTable.add(estimate).add(totalActualEffort).add(effort);  //!!: reuse same strings as from ScreenItem!
             estimateTable
                     .setHidden(!MyPrefs.getBoolean(MyPrefs.timerShowEffortEstimateDetails)); //hide initially
-            contentPane.add(BorderLayout.center(estimateTable));
+            contentPane.add(MyBorderLayout.center(estimateTable));
 
             MyForm.initField(Item.PARSE_COMMENT, comment,
                     () -> timedItem.getComment(), (t) -> timedItem.setComment((String) t),
@@ -2600,7 +2614,7 @@ class TimerStack {
                     () -> comment.getText(), (t) -> comment.setText((String) t), null, null //parseIdMap2=null, since everything is saved to ParseServer on edit, so no point in saving on exit as well
             );
             Container commentContainer = ScreenItem2.makeCommentContainer(comment);
-            contentPane.add(BorderLayout.center(commentContainer)); //TODO add full screen edit for Notes
+            contentPane.add(MyBorderLayout.center(commentContainer)); //TODO add full screen edit for Notes
 
             //Action buttons
             //Show interrupted tasks
@@ -2611,15 +2625,25 @@ class TimerStack {
             contentPane.setScrollableY(true); //since the size of the timer may overflow
 
             Button c10 = new Button(cmdSaveAndExitTimerScreen); //"Exit"),
+            c10.setUIID("BigTimerExit");
             c10.setTextPosition(textPos);
             Button c11 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"), 
+            c11.setUIID("BigTimerWaiting");
             c11.setTextPosition(textPos);
-            Button c12 = new Button(cmdStopTimerAndGotoNextTaskOrExit); //"Stop", "Next", 
-            c12.setTextPosition(textPos);
-            Button c13 = new Button(cmdSetCompletedAndGotoNextTaskOrExit);
+            Button c12 = null;
+            if (cmdStopTimerAndGotoNextTaskOrExit != null) {
+                c12 = new Button(cmdStopTimerAndGotoNextTaskOrExit); //"Stop", "Next", 
+                c12.setUIID("BigTimerNext");
+                c12.setTextPosition(textPos);
+            }
+            Button c13 = null;
+            c13 = new Button(cmdSetCompletedAndGotoNextTaskOrExit);
+            c13.setUIID("BigTimerCompleted");
             c13.setTextPosition(textPos);
-            contentPane.add(GridLayout.encloseIn(3, c10, c11, c12));
             contentPane.add(GridLayout.encloseIn(1, c13));
+            if (c12 != null)
+                contentPane.add(GridLayout.encloseIn(3, c10, c11, c12));
+            else contentPane.add(GridLayout.encloseIn(2, c10, c11));
 //                        nextTaskCont.add(gotoNextTaskButtonWithItemText);
             if (gotoNextTaskButtonWithItemText != null)
                 contentPane.add(gotoNextTaskButtonWithItemText);
@@ -2734,7 +2758,7 @@ class TimerStack {
 //                        BorderLayout.west(status).add(BorderLayout.CENTER, interruptTask ? BoxLayout.encloseXNoGrow(new Label(Icons.iconInterruptToolbarStyle), description) : description).add(BorderLayout.EAST, editItemButton),
 //</editor-fold>
             /*East*/
-            contentPane.add(BorderLayout.EAST,
+            contentPane.add(MyBorderLayout.EAST,
                     BoxLayout.encloseXNoGrow(timerStartStopButton, fullScreenTimerButton));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                : description).add(BorderLayout.EAST, editItemButton),
@@ -2765,7 +2789,7 @@ class TimerStack {
             }
             west.add(hiddenElapsedTimePicker);
 //                contentPane.add(BorderLayout.WEST, status);
-            contentPane.add(BorderLayout.WEST, west);
+            contentPane.add(MyBorderLayout.WEST, west);
             return swipeable;
         }
 //        return contentPane;

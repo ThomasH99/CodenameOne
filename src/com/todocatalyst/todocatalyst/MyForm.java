@@ -14,6 +14,8 @@ import com.codename1.io.Log;
 import com.codename1.l10n.L10NManager;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
+import static com.codename1.ui.CN.EAST;
+import static com.codename1.ui.CN.WEST;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 //import com.codename1.ui.*;
@@ -36,7 +38,7 @@ import com.codename1.ui.animations.ComponentAnimation;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.Layout;
@@ -241,7 +243,7 @@ public class MyForm extends Form {
     protected static final String REPEAT_RULE_KEY = "$REPEAT_RULE$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
     protected static final String SUBTASK_KEY = "$SUBTASK$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
 
-    public void setAutoSizeMode(boolean on) {
+    public void setAutoSizeModeXXX(boolean on) { //now done when creating dedicated title component
         if (getToolbar() != null && getToolbar().getTitleComponent() instanceof Label) {
             ((Label) getToolbar().getTitleComponent()).setAutoSizeMode(true);
         } else {
@@ -306,64 +308,31 @@ public class MyForm extends Form {
 
     MyForm(String title, MyForm previousForm, UpdateField updateActionOnDone) { //throws ParseException, IOException {
 //    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
-        super(title);
+//        super(title);
+        super();
+        setTitle(title); //must do here to use overridden version of setTitle()
         this.previousForm = previousForm;
         setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
 
 //        ReplayLog.getInstance().deleteAllReplayCommandsFromPreviousScreen(title);
         SCREEN_TITLE = title;
-        getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
-        setTitle(title); //do again since super(title)
+//        if (false) {
+//            getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
+//            setTitle(title); //do again since super(title)
+//        }
         setScrollVisible(true); //show scroll bar(?)
-        getToolbar().setTitleComponent(new Label(getTitle()) {
-            public void pointerReleased(int x, int y) {
-                super.pointerReleased(x, y);
-                if (doubleTapTitleTimer == null) {
-                    doubleTapTitleTimer = UITimer.timer(TIME_FOR_DOUBLE_TAP, false, getComponentForm(), () -> {
-                        // singleTapEvent();
-                        //scroll list to top
-                        ContainerScrollY cont = findScrollableContYChild(getComponentForm());
-                        if (cont != null) {
-                            Component lastComp = cont.getComponentAt(0); //scroll list to bottom
-                            if (lastComp != null) {
-                                cont.scrollComponentToVisible(lastComp);
-                            }
-                        }
-                        doubleTapTitleTimer = null;
-                    });
-                } else {
-                    doubleTapTitleTimer.cancel();
-                    doubleTapTitleTimer = null;
-                    //doubleTapEvent(); 
-                    //scroll list to bottom //TODO!!! improve so that doubletap scrolls back and forth between top of list and the scroll point
-                    Form f = getComponentForm();
-                    if (f != null) {
-                        ContainerScrollY cont = findScrollableContYChild(getComponentForm());
-                        if (cont != null) {
-                            int idx = cont.getComponentCount() - 1;
-                            if (idx >= 0) {
-                                Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
-                                if (lastComp != null) {
-                                    cont.scrollComponentToVisible(lastComp);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-//        getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
 
-        if (false) {
+//        getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
+        if (false) { //NOT good UI since we have commands in the toolbar
             getToolbar().setScrollOffUponContentPane(true);
             //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One:
             ComponentAnimation title2 = getToolbar().getTitleComponent().createStyleAnimation("Title", 200);
             getAnimationManager().onTitleScrollAnimation(title2);
         }
 
-        if (false) {
-            setAutoSizeMode(true); //ensure title is centered even when icons are added
-        }
+//        if (false) {
+//            setAutoSizeMode(true); //ensure title is centered even when icons are added
+//        }
 //        this.previousForm = previousForm;
 //        this.previousForm = getComponentForm();
         setUpdateActionOnDone(updateActionOnDone);
@@ -376,7 +345,7 @@ public class MyForm extends Form {
 //            void setup() {
 //        setTactileTouch(true); //enables opening contextmenu on touching a list element??
         setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-        setLayout(new BorderLayout()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
+        setLayout(new MyBorderLayout()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
 //        setLayout(BoxLayout.y()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
         if (false) {
             setLayout(BoxLayout.y());
@@ -390,8 +359,7 @@ public class MyForm extends Form {
 //        if (true || !(this instanceof ScreenTimer6)) {
 //            TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
 //        }
-        getToolbar().setTitleComponent(new SpanLabel(title, "FormTitle"));
-        setTitle("");
+        //getToolbar().setTitleComponent(new SpanLabel(title, "FormTitle"));
         //<editor-fold defaultstate="collapsed" desc="comment">
         //************** CORRECT WAY TO MAKE SCROLLABLE
 //        form.setScrollable(false);
@@ -436,6 +404,60 @@ public class MyForm extends Form {
 //</editor-fold>
     }
 
+    @Override
+    public void setTitle(String title) {
+//        Label titleComponent = new Label(getTitle(),"FormTitle") {
+        Label titleComponent = new Label(title, "FormTitle") {
+            public void pointerReleased(int x, int y) {
+                super.pointerReleased(x, y);
+                if (doubleTapTitleTimer == null) {
+                    doubleTapTitleTimer = UITimer.timer(TIME_FOR_DOUBLE_TAP, false, getComponentForm(), () -> {
+                        // singleTapEvent();
+                        //scroll list to top
+                        ContainerScrollY cont = findScrollableContYChild(getComponentForm());
+                        if (cont != null) {
+                            Component lastComp = cont.getComponentAt(0); //scroll list to bottom
+                            if (lastComp != null) {
+                                cont.scrollComponentToVisible(lastComp);
+                            }
+                        }
+                        doubleTapTitleTimer = null;
+                    });
+                } else {
+                    doubleTapTitleTimer.cancel();
+                    doubleTapTitleTimer = null;
+                    //doubleTapEvent(); 
+                    //scroll list to bottom //TODO!!! improve so that doubletap scrolls back and forth between top of list and the scroll point
+                    Form f = getComponentForm();
+                    if (f != null) {
+                        ContainerScrollY cont = findScrollableContYChild(getComponentForm());
+                        if (cont != null) {
+                            int idx = cont.getComponentCount() - 1;
+                            if (idx >= 0) {
+                                Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
+                                if (lastComp != null) {
+                                    cont.scrollComponentToVisible(lastComp);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        titleComponent.setAutoSizeMode(MyPrefs.titleAutoSize.getBoolean());
+//        titleComponent.setMinAutoSize(2); //TODO!!!!! pull request to add this to CN1
+        titleComponent.setVerticalAlignment(Component.CENTER);
+        getToolbar().setTitleComponent(titleComponent);
+        getToolbar().setTitleCentered(true);
+    }
+
+    @Override
+    public String getTitle() {
+        if (getToolbar() != null && getToolbar().getTitleComponent() instanceof Label)
+            return ((Label) getToolbar().getTitleComponent()).getText();
+        else return "";
+    }
+
     protected void setTitleAnimation(Container scrollableComponent) {
         //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One:
         ComponentAnimation title2 = getToolbar().getTitleComponent().createStyleAnimation("TitleSmall", 200);
@@ -475,14 +497,14 @@ public class MyForm extends Form {
         } else {
             Container formContentPane = form.getContentPane();
             Layout contentPaneLayout = formContentPane.getLayout();
-            if (contentPaneLayout instanceof BorderLayout) {
+            if (contentPaneLayout instanceof MyBorderLayout) {
 //                timerContainer = getContentPaneSouth(form);
-                Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                Component southComponent = ((MyBorderLayout) contentPaneLayout).getSouth();
                 if (southComponent instanceof Container) {
                     containerForSmallTimer = (Container) southComponent;
                 } else if (southComponent == null) {
                     Container newCont = new Container(BoxLayout.y());
-                    formContentPane.add(BorderLayout.SOUTH, newCont);
+                    formContentPane.add(MyBorderLayout.SOUTH, newCont);
                     containerForSmallTimer = newCont;
                 }
             }
@@ -707,7 +729,7 @@ public class MyForm extends Form {
      * @return
      */
     static Container createLeftRightAdjustedContainer(Component left, Component right) {
-        return BorderLayout.west(left).add(BorderLayout.EAST, right);
+        return MyBorderLayout.west(left).add(MyBorderLayout.EAST, right);
     }
 
     /**
@@ -1537,7 +1559,7 @@ public class MyForm extends Form {
 
 //    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemList itemListOrg) {
     protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemAndListCommonInterface itemListOrg) {
-        return makeSearchFunctionUpperLowerStickyHeaders(itemListOrg, () -> (Container) ((BorderLayout) getContentPane().getLayout()).getCenter());
+        return makeSearchFunctionUpperLowerStickyHeaders(itemListOrg, () -> (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter());
     }
 
     protected ActionListener makeSearchFunctionSimple(ItemList itemListList, ComponentListForSearch getCompList) {
@@ -1570,7 +1592,7 @@ public class MyForm extends Form {
     }
 
     protected ActionListener makeSearchFunctionSimple(ItemList itemListList) {
-        return makeSearchFunctionUpperLowerStickyHeaders(itemListList, () -> (Container) ((BorderLayout) getContentPane().getLayout()).getCenter());
+        return makeSearchFunctionUpperLowerStickyHeaders(itemListList, () -> (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter());
     }
 
     /**
@@ -1690,12 +1712,13 @@ public class MyForm extends Form {
 //    }
 //
 //    private Command makeInterruptCommand(String title, Image icon) {
-        String title = "";
-        Image icon = Icons.iconInterruptToolbarStyle();
+//        String title = "";
+//        Image icon = Icons.iconInterruptToolbarStyle();
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
 //        return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
-        return CommandTracked.create("", icon, (e) -> {
+//        return CommandTracked.create("", icon, (e) -> {
+        return CommandTracked.create("", Icons.iconInterrupt, (e) -> {
             Item interruptItem = new Item();
             interruptItem.setInteruptOrInstantTask(true);
             DAO.getInstance().saveInBackground(interruptItem);
@@ -1716,6 +1739,28 @@ public class MyForm extends Form {
     }
 
     /**
+    neither swipCont must NOT be null and must be added to a form
+    @param swipCont
+    @param itemOrItemList
+    @param commandTrackId
+    @return 
+     */
+    public static Button makeTimerSwipeButton(SwipeableContainer swipCont, ItemAndListCommonInterface itemOrItemList, String commandTrackId) {
+        Button startTimer = new Button(CommandTracked.create(null, Icons.iconLaunchTimer, (ev) -> {
+//            if (swipCont != null) {
+            MyForm myForm = (MyForm) swipCont.getComponentForm();
+            if (myForm != null)
+                myForm.setKeepPos(new KeepInSameScreenPosition(itemOrItemList, swipCont));
+            TimerStack.getInstance().startTimerOnItemOrItemList(itemOrItemList, myForm);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+            swipCont.close(); //close before save 
+        }, commandTrackId
+        ));
+//            startTimer.setMaterialIcon(Icons.iconLaunchTimer);
+        startTimer.setUIID("SwipeButtonTimer");
+        return startTimer;
+    }
+
+    /**
      * adds new item to itemListOrg at the given position and saves both list
      * and item. Nothing is done if itemListOrg is null or not already saved
      * (temporary list) or not a Category.
@@ -1724,31 +1769,31 @@ public class MyForm extends Form {
      * @param pos
      * @param itemListOrg
      */
-//    private static void addNewTaskSetTemplateAddToListAndSave(Item item, int pos, ItemList itemListOrg) {
-//    static void addNewTaskToListAndSave(Item item, Item refItem, ItemAndListCommonInterface itemListOrg, boolean insertAfterRefItemOrEndOfList) {
-////        item.setTemplate(itemListOrg.isTemplate()); //template or not
-//        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-//        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-//            itemListOrg.addToList(pos, item); //UI: add to top of list
-//        }
-//        DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
-//        if (addToList) {
-//            DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//        }
-//    }
-//    
-//    static void addNewTaskToListAndSaveOLD(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
-////        item.setTemplate(itemListOrg.isTemplate()); //template or not
-//        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-//        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-//            itemListOrg.addToList(pos, item); //UI: add to top of list
-//        }
-//        DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
-//        if (addToList) {
-//            DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//        }
-//    }
-//    static void addNewTaskSetTemplateAddToListAndSave(Item item, ItemList itemListOrg) {
+    //    private static void addNewTaskSetTemplateAddToListAndSave(Item item, int pos, ItemList itemListOrg) {
+    //    static void addNewTaskToListAndSave(Item item, Item refItem, ItemAndListCommonInterface itemListOrg, boolean insertAfterRefItemOrEndOfList) {
+    ////        item.setTemplate(itemListOrg.isTemplate()); //template or not
+    //        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+    //        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+    //            itemListOrg.addToList(pos, item); //UI: add to top of list
+    //        }
+    //        DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
+    //        if (addToList) {
+    //            DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+    //        }
+    //    }
+    //    
+    //    static void addNewTaskToListAndSaveOLD(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
+    ////        item.setTemplate(itemListOrg.isTemplate()); //template or not
+    //        boolean addToList = (itemListOrg != null && ((ParseObject) itemListOrg).getObjectIdP() != null && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+    //        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+    //            itemListOrg.addToList(pos, item); //UI: add to top of list
+    //        }
+    //        DAO.getInstance().saveInBackground(item); //must save item since adding it to itemListOrg changes its owner
+    //        if (addToList) {
+    //            DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+    //        }
+    //    }
+    //    static void addNewTaskSetTemplateAddToListAndSave(Item item, ItemList itemListOrg) {
     /**
      * adds new item to itemListOrg at the default position (as given by the
      * settings) and saves both list and item
@@ -1756,28 +1801,30 @@ public class MyForm extends Form {
      * @param item
      * @param pos
      */
-//    private static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
-//        addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.getSize(), itemListOrg);
-//    }
-//    static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg) {
-//        addNewTaskToListAndSaveXXX(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-//    }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    private void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
-////        item.setTemplate(optionTemplateEditMode); //template or not
-//        boolean addToList = (itemListOrg != null && itemListOrg.getObjectIdP() != null
-//                && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-//        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-//            itemListOrg.addToList(pos, item); //UI: add to top of list
-//        }
-//        DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
-//        if (addToList) {
-//            DAO.getInstance().save((ParseObject)itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//        }
-//    }
-//</editor-fold>
+    //    private static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg, boolean insertInStartOfLists) {
+    //        addNewTaskToListAndSave(item, insertInStartOfLists ? 0 : itemListOrg.getSize(), itemListOrg);
+    //    }
+    //    static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg) {
+    //        addNewTaskToListAndSaveXXX(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+    //    }
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    private void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
+    ////        item.setTemplate(optionTemplateEditMode); //template or not
+    //        boolean addToList = (itemListOrg != null && itemListOrg.getObjectIdP() != null
+    //                && !(itemListOrg instanceof Category)); //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+    //        if (addToList) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+    //            itemListOrg.addToList(pos, item); //UI: add to top of list
+    //        }
+    //        DAO.getInstance().save(item); //must save item since adding it to itemListOrg changes its owner
+    //        if (addToList) {
+    //            DAO.getInstance().save((ParseObject)itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+    //        }
+    //    }
+    //</editor-fold>
     public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText) {
-        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTaskToolbarStyle());
+//        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTaskToolbarStyle());
+//        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTaskToolbarStyle());
+        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTask);
     }
 
     public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, Image icon) {
@@ -1857,11 +1904,17 @@ public class MyForm extends Form {
 //            comment.startEditing(); //TODO in CN bug db #1827: start using startEditAsync() is a better approach
             comment.startEditingAsync();//TODO in CN bug db #1827: start using startEditAsync() is a better approach
         }, "AddTimeStampToComment"));
-button.setUIID("ScreenItemCommentDateStamp");
+        button.setUIID("ScreenItemCommentDateStamp");
 //         button..
 //        button.setIcon(FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, UIManager.getInstance().getComponentStyle("ItemCommentIcon")));
         button.setMaterialIcon(Icons.iconCommentTimeStamp);
         return button;
+    }
+
+    public Component makeSpacer() {
+        Label l = new Label("", "Spacer");
+        l.setShowEvenIfBlank(true);
+        return l;
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -2214,15 +2267,16 @@ button.setUIID("ScreenItemCommentDateStamp");
 //            visibleField = BoxLayout.encloseX(field, editFieldButton);
 //            visibleField = BorderLayout.centerEastWest(null, field, editFieldButton);
 //</editor-fold>
-            visibleField = BorderLayout.centerEastWest(field, editFieldButton, null);
+            visibleField = MyBorderLayout.centerEastWest(field, editFieldButton, null);
             if (field instanceof WrapButton) {
-                ((Container) visibleField).setLeadComponent(((WrapButton) field).getActualButton());
+//                ((Container) visibleField).setLeadComponent(((WrapButton) field).getActualButton());
+                ((Container) visibleField).setLeadComponent(field);
             } else {
                 ((Container) visibleField).setLeadComponent(field);
             }
         }
 
-        Container fieldContainer = new Container(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+        Container fieldContainer = new Container(new MyBorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
 
         //SWIPE CLEAR
         if (swipeClear != null) { //ADD SWIPE to delete
@@ -2237,7 +2291,8 @@ button.setUIID("ScreenItemCommentDateStamp");
                 swipeCont.close();
             };
             swipeCont.addSwipeOpenListener(l);
-            swipeDeleteFieldButton.setCommand(CommandTracked.create("", Icons.iconCloseCircleLabelStyle, l, "SwipeDeleteField"));
+//            swipeDeleteFieldButton.setCommand(CommandTracked.create("", Icons.iconCloseCircleLabelStyle, l, "SwipeDeleteField"));
+            swipeDeleteFieldButton.setCommand(CommandTracked.create("", Icons.iconCloseCircle, l, "SwipeDeleteField"));
             visibleField = swipeCont;
         }
 
@@ -2250,8 +2305,8 @@ button.setUIID("ScreenItemCommentDateStamp");
             int fieldPreferredW = visibleField.getPreferredW();
             if (labelPreferredW + fieldPreferredW > availDisplWidth) { //if too wide
                 if (field instanceof MyComponentGroup) { //MyComponentGroups cannot wrap and must be shown fully so split on *two* lines
-                    fieldContainer.add(BorderLayout.NORTH, fieldLabel);
-                    fieldContainer.add(BorderLayout.EAST, visibleField);
+                    fieldContainer.add(MyBorderLayout.NORTH, fieldLabel);
+                    fieldContainer.add(MyBorderLayout.EAST, visibleField);
                 } else {
                     int widthFirstColumn = 0;
                     int relativeWidthFieldPercent = fieldPreferredW * 100 / availDisplWidth;
@@ -2285,13 +2340,35 @@ button.setUIID("ScreenItemCommentDateStamp");
 //</editor-fold>
                 }
             } else {
-                fieldContainer.add(BorderLayout.WEST, fieldLabel);
-                fieldContainer.add(BorderLayout.EAST, visibleField);  //label WEST
+                fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
+                fieldContainer.add(MyBorderLayout.EAST, visibleField);  //label WEST
             }
         } else {
-            fieldContainer.add(BorderLayout.WEST, fieldLabel);
-            fieldContainer.add(BorderLayout.EAST, visibleField);
+            fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
+            fieldContainer.add(MyBorderLayout.EAST, visibleField);
         }
+
+        return fieldContainer;
+    }
+
+    protected static Component layoutSetting(String fieldLabelTxt, Component field, String help) {
+
+        if (!(field instanceof MyOnOffSwitch)) {
+            field.setUIID("LabelValue");
+        }
+
+        MyBorderLayout layout = MyBorderLayout.center();
+//        layout.setScaleEdges(false);
+        layout.setSizeEastWestMode(MyBorderLayout.SIZE_EAST_BEFORE_WEST);
+        Container fieldContainer = new Container(layout, "SettingContainer");
+
+//        Component fieldLabel = makeHelpButton(fieldLabelTxt, help, true);
+        SpanButton fieldLabel = (SpanButton) makeHelpButton(fieldLabelTxt, help, true);
+//        fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
+        fieldContainer.add(WEST, fieldLabel);
+//        fieldContainer.add(WEST, fieldLabel);
+//        fieldContainer.add(MyBorderLayout.EAST, field);  //label WEST
+        fieldContainer.add(EAST, field);  //label WEST
 
         return fieldContainer;
     }
@@ -2727,6 +2804,12 @@ button.setUIID("ScreenItemCommentDateStamp");
         initField(identifier, field, getVal, putVal, getField, putField, null, null, null, previousValues, parseIdMap2);
     }
 
+    void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
+//        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
+//        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
+        initField(identifier, field, getVal, putVal, getField, putField, null, null, isInherited, previousValues, parseIdMap2);
+    }
+
     void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, Object undefinedValue, Object defaultValue) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
@@ -2753,6 +2836,28 @@ button.setUIID("ScreenItemCommentDateStamp");
             SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
 //        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
         initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, null, previousValues, parseIdMap2);
+    }
+
+    private static String INHERITED = "Inherited";
+    private static int INHERITED_LEN = INHERITED.length();
+
+    public static void updateUIIDForInherited(boolean isInherited, Component field) {
+//        if (isInherited.getVal()) {
+        String fieldUIID = field.getUIID();
+        if (isInherited) {
+//            if (field.getUIID().equals("LabelValue"))
+//                field.setUIID("LabelValueInherited");
+//        } else if (field.getUIID().equals("LabelValueInherited"))
+//            field.setUIID("LabelValue");
+            if (!fieldUIID.contains(INHERITED))
+                field.setUIID(fieldUIID + INHERITED);
+        } else if (fieldUIID.contains(INHERITED)) {
+            StringBuilder oldUIID = new StringBuilder(fieldUIID);
+            int start = fieldUIID.lastIndexOf(INHERITED);
+            int end = start + INHERITED_LEN; //INHERITED.length();
+            oldUIID.delete(start, end);
+            field.setUIID(oldUIID.toString());
+        }
     }
 
     /**
@@ -2828,7 +2933,14 @@ button.setUIID("ScreenItemCommentDateStamp");
                     } else { //value's been edited
                         previousValues.put(fieldIdentifier, getField.getVal());
                     }
+//                    if (isInherited.getVal()) {
+//                        if (((Component) field).getUIID().equals("LabelValue"))
+//                            ((Component) field).setUIID("LabelValueInherited");
+//                    } else if (((Component) field).getUIID().equals("LabelValueInherited"))
+//                        ((Component) field).setUIID("LabelValue");
                 }
+                if (isInherited != null)
+                    updateUIIDForInherited(isInherited.getVal(), (Component) field);
             };
 
             //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
@@ -2922,7 +3034,7 @@ button.setUIID("ScreenItemCommentDateStamp");
 
     static Component makeContainerWithClearButton(Component comp, Action clearFct) {
         Button clearButton = new Button();
-        clearButton.setCommand(Command.create(null, Icons.iconCloseCircleLabelStyle, (e) -> {
+        clearButton.setCommand(Command.createMaterial(null, Icons.iconCloseCircle, (e) -> {
             clearFct.launchAction();
             clearButton.setHidden(true); //hide on clear action
         }));
@@ -3381,7 +3493,7 @@ button.setUIID("ScreenItemCommentDateStamp");
         //TODO!! make more fancy animation for container (eg fold like Clear)
 //        Container pinchCont;
         if (pinchComponent != null) { //pinchOut makes sense here, a new pinchInsert container with the right type of element is created and inserted
-            Container pinchCont = new Container(BorderLayout.center()) {
+            Container pinchCont = new Container(MyBorderLayout.center()) {
 //                public Dimension calcPreferredSize() {
                 public Dimension getPreferredSize() {
                     Dimension orgPrefSize = ((Component) pinchComponent).getPreferredSize();
@@ -3406,7 +3518,7 @@ button.setUIID("ScreenItemCommentDateStamp");
 //                    return null;
                 }
             };
-            pinchCont.add(BorderLayout.CENTER, (Component) pinchComponent);
+            pinchCont.add(MyBorderLayout.CENTER, (Component) pinchComponent);
 
             if (Config.TEST_PINCH) pinchCont.setName("wrapPinchContainer");
             return pinchCont;

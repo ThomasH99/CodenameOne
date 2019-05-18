@@ -38,7 +38,7 @@ import com.codename1.ui.animations.Transition;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.util.EventDispatcher;
@@ -419,7 +419,7 @@ public class MyTree2 extends ContainerScrollY {
     static ContainerScrollY insertSubtaskContainer(Container parent) {
         ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
         dest.setUIID("ExpandedList");
-        parent.addComponent(BorderLayout.CENTER, dest);
+        parent.addComponent(MyBorderLayout.CENTER, dest);
         return dest;
     }
 
@@ -470,7 +470,7 @@ public class MyTree2 extends ContainerScrollY {
         for (int iter = 0; iter < cc; iter++) {
             Component current = parent.getComponentAt(iter);
             if (current instanceof Container) {
-                BorderLayout bl = (BorderLayout) ((Container) current).getLayout();
+                MyBorderLayout bl = (MyBorderLayout) ((Container) current).getLayout();
 
                 // the tree component is always at north expanded or otherwise
                 current = bl.getNorth();
@@ -494,7 +494,7 @@ public class MyTree2 extends ContainerScrollY {
         for (int iter = 0; iter < cc; iter++) {
             Component current = parent.getComponentAt(iter);
             if (isExpanded(current)) {
-                BorderLayout bl = (BorderLayout) ((Container) current).getLayout();
+                MyBorderLayout bl = (MyBorderLayout) ((Container) current).getLayout();
 
                 // the tree component is always at north expanded or otherwise
                 current = bl.getNorth();
@@ -684,10 +684,10 @@ public class MyTree2 extends ContainerScrollY {
 ////                bindNodeListener(new Handler(current), nodeComponent);
 //            } else {
 //</editor-fold>
-            Container componentArea = new Container(new BorderLayout());
+            Container componentArea = new Container(new MyBorderLayout());
             componentArea.setUIID("ContainerListElement"); //wraps a possibly expanded task
 
-            componentArea.addComponent(BorderLayout.NORTH, nodeComponent);
+            componentArea.addComponent(MyBorderLayout.NORTH, nodeComponent);
             if (Config.TEST) componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 
             destination.addComponent(componentArea);
 
@@ -705,7 +705,7 @@ public class MyTree2 extends ContainerScrollY {
 //</editor-fold>
             nodeComponent.putClientProperty(KEY_DEPTH, depthVal);
             if (expandedObjects != null && expandedObjects.contains(current) || expandAllLevels) {
-                expandedObjects.add(current);
+                if (expandAllLevels) expandedObjects.add(current);
                 expandNode(true, nodeComponent, expandAllLevels);
 //                    nodeComponent.putClientProperty(KEY_EXPANDED, "true"); //done in expandNode()
             }
@@ -960,6 +960,7 @@ public class MyTree2 extends ContainerScrollY {
             this.current = current;
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Component c = (Component) evt.getComponent(); //THJ: fix for type cast error when source is a command
             if (c.getClientProperty(KEY_LONG_PRESS) != null) {

@@ -52,7 +52,17 @@ font(Usage on Fonts wiki page):
 PlainText0p5mm {
 font-size: 0.5mm;
 }
-font-family (Usage on Fonts wiki page):  "native:MainThin" / native:MainLight / native:MainRegular / native:MainBold / native:MainBlack / native:ItalicThin / native:ItalicLight / native:ItalicRegular / native:ItalicBold / native:ItalicBlack 
+font-family (Usage on Fonts wiki page):  
+"native:MainThin" / 
+native:MainLight / 
+native:MainRegular / 
+native:MainBold / 
+native:MainBlack / 
+native:ItalicThin / 
+native:ItalicLight / 
+native:ItalicRegular / 
+native:ItalicBold / 
+native:ItalicBlack 
 https://www.codenameone.com/javadoc/com/codename1/ui/Font.html
 
 links to official syntax: https://developer.mozilla.org/en-US/docs/Web/CSS/font-family
@@ -147,14 +157,15 @@ height (only used for generating background-images and borders)
 
 #Constants {
     includeNativeBool: true; 
+    ComponentGroupBool: true;
 }
 
 Default {
     background-color: transparent;
     font-family:  "native:MainLight";
-    font-size: 80%; /*100%;*/
+    font-size: 100%; /*100%;*/
     text-align: left;
-    color:black;
+    color: coral;
 }
 
 Label {
@@ -188,23 +199,43 @@ Toolbar {
     background-color: whitesmoke;
 }
 
-TitleSmall {
+TitleXX {
     cn1-derive: Button;
-    color: red;
+    color: green;
     background-color: red;
 }
+FormTitle {
+    cn1-derive: Default;
+    font-size: 120%;
+    /*color: green;
+    /*background-color: red;*/
+}
+TitleSmall {
+    cn1-derive: FormTitle;
+    font-size: 80%;
+    color: blueviolet;
+    /*background-color: red;*/
+}
+TitleCommand {
+    cn1-derive: Default;
+    margin-top: 0.5mm;
+    font-size: 120%;
+    /*color: green;
+    /*background-color: red;*/
+}
 
-/*************** EDIT ITEM ***********/
+/*************** EDIT ITEM - ScreenItem2 ***********/
 
 ScreenItemTaskText {
-    cn1-derive: TextArea;
+    font-family :  "native:MainRegular";
+    cn1-derive: Default;
     padding: 3mm;
     margin: 2mm 0 0 0;
     background: white;
     /*    border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     /*border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     color: black;
-    font-size: 100%;
+    /*font-size: 100%;*/
     text-align: left;
 }
 /*
@@ -222,7 +253,8 @@ Text { /*old UIID for task text*/
 Comment { 
     cn1-derive: ScreenItemTaskText;
     color: darkgrey;
-    font-size: 80%;
+    font-family :  "native:MainLight";
+    font-size: 90%;
 }
 EditFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/right margins*/
     /* cn1-derive: Label;
@@ -233,25 +265,28 @@ EditFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/
      padding:0 ; /*top+bottom right+left*/
     border-bottom: 4px black;
     padding: 0 0 ;
-    margin: 2mm 3mm 0 3mm;
+    margin: 2mm 2mm 0 3mm;
 }
 LabelField {
     cn1-derive: Default;
-        font-family :  "native:MainLight";
-        
-        text-align: left;/**/
+    font-family :  "native:MainLight";
+
+    text-align: left;/**/
     /* font-size: 80%;*/
     color: black;
     /*background-color: #3399ff;*/
-    padding:0mm 0 0 0mm; /*top+bottom right+left*/
+    padding:0mm 3mm 0 0mm; /*top+bottom right+left*/
     margin:0mm 0mm;
     /*padding-left:0.5mm;
     padding-right:0.5mm;*/
 }
-
+ScreenItemFieldLabel {
+    cn1-derive: LabelField;
+}
 LabelValue {
     cn1-derive: LabelField;
     color: darkblue;
+    padding:0mm 0mm 0 0mm; 
     /*    font-family :  "native:MainLight";
         font-size: 100%;
         text-align: left;
@@ -263,11 +298,51 @@ LabelValue {
     padding-right:0.5mm;*/
     /*padding:0 0mm; /*top+bottom right+left*/
 }
+ScreenItemValue {
+    cn1-derive: LabelField;
+     padding:0mm 0mm 0 0mm; /*top+bottom right+left*/
+    margin:0mm 0mm;
+}
+ScreenItemValueInherited {
+    cn1-derive: ScreenItemValue;
+    color: green;
+}
+ScreenItemValue {
+    cn1-derive: LabelField;
+}
 LabelFixed {
     cn1-derive: LabelValue;
     color: darkgrey;
 }
+ScreenItemValueUneditable {
+    cn1-derive: LabelFixed;
+    color: darkgrey;
+}
 
+ScreenItemTab {
+    /* cn1-derive: Tab;/**/
+    cn1-derive: Container; /*RadioButton;*/
+    color: darkgray;
+    text-align: center;
+    padding:  2.5mm 0mm 2.5mm 0mm;/**/
+    /*margin: 2mm 1mm 2mm 1mm; /**/
+}
+Tab { /*currently hard-coded in CN1 Tabs.addTab() */
+    cn1-derive: ScreenItemTab; /*RadioButton;*/
+}
+ScreenItemTab.selected {
+    color: white;
+    background: grey;
+}
+ScreenItemTab.pressed {
+    color: white;
+    background: grey;
+}
+ScreenItemTabsContainer {
+    cn1-derive: Container; 
+    padding: 0mm;/**/
+    margin: 0mm; /*2mm 1mm 2mm 1mm; /**/
+}
 ClearFieldButton {
     cn1-derive: LabelValue;
     padding:0mm 0 0 2mm; /*top+bottom right+left*/
@@ -283,10 +358,10 @@ IconEdit {
     /*    border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     /*  border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     /*color: black;*/
-/*    font-size: 100%;*/
-    padding: 0 0mm 0mm 1.5mm;
+    /*    font-size: 100%;*/
+    padding: 0 0mm 0mm 1mm;
     margin: 0 0;
-    color: red;
+    color: grey;
     /*background: green;*/
     text-align: right;
 }
@@ -300,7 +375,7 @@ ScreenItemCommentDateStamp {
     /*    border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     /*  border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     /*color: black;*/
-/*    font-size: 100%;*/
+    /*    font-size: 100%;*/
     padding: 0 0mm 0mm 1.5mm;
     margin: 0 0;
     color: blue;
@@ -310,84 +385,137 @@ ScreenItemCommentDateStamp {
 
 Spacer {
     cn1-derive: LabelField;
-
     /*color: darkslategray;*/
-    background-color: darkslategray;
-    margin:3mm;
+    background-color: lightgray;
+    margin:3mm 3mm 0 3mm;
     padding:0 ; /*top+bottom right+left*/
-    border-bottom: 1px darkgray;
-    border-top: 1px darkgray;
+    /*border-bottom: 0.2mm solid black;
+    /*border-top: 1px darkgray;
     /*padding-left:0.5mm;
     padding-right:0.5mm;*/
+}
+
+/*************** SETTINGS **************/
+
+SettingContainer { /*container for each Setting */
+    cn1-derive: Container;
+    margin: 3mm 3mm 1mm 3mm;
+    /*padding: 3mm;*/
 }
 
 /*************** smallTimer **************/
 
 SmallTimerBase {
     cn1-derive: Button;
-    color: blue;
-}
-SmallTimerContainer {
-    /*cn1-derive: TimerTimerSmall;*/
+    padding: 0;
+    margin: 0;
     background: lightblue;
+    color: white;
+}
+
+SmallTimerContainer {
+    cn1-derive: SmallTimerBase;
+    background: lightblue;
+    color: white;
+    /*padding: 2mm 2mm 2mm 2mm;*/
+    padding: 2mm ;
+    margin: 0mm ;
 }
 
 SmallTimerItemStatus {
     cn1-derive: SmallTimerBase;
-    background: blue;
-    color: white;
+    padding-right: 1.5mm;
     text-align: right;
 }
 
 SmallTimerItemText {
-    cn1-derive: ScreenItemTaskText;
-    background: blue;
-    color: white;
-    text-align: right;
+    cn1-derive: SmallTimerBase;
+    text-align: left;
 }
 
 SmallTimerSwipeNext {
     cn1-derive: SmallTimerBase;
     background: blue;
     color: white;
-    text-align: right;
+    /*text-align: right;*/
 }
 
 SmallTimerSwipeExit {
     cn1-derive: SmallTimerBase;
-    background: blue;
+    background: violet;
     color: white;
-    text-align: right;
-}
-
-SmallTimerEditItem {
-    cn1-derive: SmallTimerBase;
-    background: blue;
-    color: white;
-    text-align: right;
+    /*text-align: right;*/
 }
 
 SmallTimerInterruptIcon{
     cn1-derive: SmallTimerBase;
-    background: blue;
-    color: white;
     text-align: right;
 }
 
-TimerTimerSmall {
-    cn1-derive: TimerTimer;
+SmallTimerTimer {
+    cn1-derive: BigTimerTimer;
     border: 0.5mm solid gray;
     font-size: 100%;
 }
-TimerTimerSmallPaused {
+SmallTimerTimerPaused {
     cn1-derive: TimerTimerSmall;
     background: grey;
+}
+SmallTimerEditItem {
+    cn1-derive: SmallTimerBase;
+    color: darkgrey;
+    text-align: right;
 }
 
 
 /******* TIMER ****************/
 
-TimerTimer {
+BigTimerBase {
+    cn1-derive: Button;
+    padding: 0;
+    margin: 0;
+    background: lightblue;
+    color: white;
+}
+
+BigTimerForm {
+    cn1-derive: Form;
+    background: lightblue;
+}
+
+BigTimerListTitle {
+    cn1-derive: BigTimerBase;
+    color: red;
+    background: grey;
+}
+BigTimerItemStatus {
+    cn1-derive: BigTimerBase;
+    color: red;
+}
+BigTimerItemText{
+    cn1-derive: BigTimerBase;
+    color: violet;
+    background: grey;
+}
+BigTimerComment {
+    cn1-derive: BigTimerBase;
+    color: violet;
+    background: grey;
+}
+BigTimerEffort {
+    cn1-derive: BigTimerBase;
+    color: green;
+}
+BigTimerEstimate {
+    cn1-derive: BigTimerBase;
+    color: limegreen;
+}
+BigTimerTotalActual {
+    cn1-derive: BigTimerBase;
+    color: lime;
+}
+
+BigTimerTimer {
     /*font-family :  "native:MainBold";*/
     /* font-family :  "System-Monospace"; doesn't seem to be monospace on iOS, but OK on simulator'*/
     font-family :  "largeBoldMonospaceFont";
@@ -399,10 +527,39 @@ TimerTimer {
     text-align: center;
     color:white;
 }
-
-TimerTimerPaused {
-    cn1-derive: TimerTimer;
+BigTimerTimerPaused {
+    cn1-derive: BigTimerTimer;
     background: grey;
+}
+
+BigTimerInterruptIcon{
+    cn1-derive: BigTimerBase;
+    text-align: center;
+}
+BigTimerCmdButton{
+    cn1-derive: BigTimerBase;
+    text-align: center;
+}
+BigTimerExit {
+    cn1-derive: BigTimerCmdButton;
+    color: limegreen;
+}
+BigTimerWaiting {
+    cn1-derive: BigTimerCmdButton;
+    color: limegreen;
+}
+BigTimerNext {
+    cn1-derive: BigTimerCmdButton;
+    color: limegreen;
+}
+BigTimerCompleted {
+    cn1-derive: BigTimerCmdButton;
+    color: limegreen;
+}
+BigTimerNextItemWithText {
+    cn1-derive: BigTimerCmdButton;
+    color: limegreen;
+    text-align: left;
 }
 
 /******* TIMER ****************/
@@ -414,16 +571,20 @@ ObjectSelectorRadioButton{
     cn1-derive: Button;
     color: blue;
 }
-/*ObjectSelectorRadioButton.selected {
-    cn1-derive: Button;
-    color: blue;
-}*/
+ObjectSelectorRadioButton.pressed {
+    color: white;
+    background: blue;
+}
+ObjectSelectorRadioButton.selected {
+    color: white;
+    background: blueviolet;
+}
 
 /*************** main menu **************/
 MainMenuCommand {
     cn1-derive: Label;
     font-family :  "native:MainLight";
-    font-size: 120%;
+    font-size: 140%;
     text-align: left;
     color: dimgray;
     /*background: linear-gradient(0deg, #ccc, #666);*/
@@ -445,7 +606,7 @@ ListOfItemsText { /*style for task text in lists*/
     /*cn1-derive: Label;*/
     /*    font-family :  "native:MainLight";
         color:black;*/
-    font-size: 90%; /*100%;*/
+    /*font-size: 90%; /*100%;*/
     text-align: left;
     /*background-color: #3399ff;*/
     padding:0 0.5mm 0 0; /*top+bottom right+left*/
@@ -480,12 +641,16 @@ ScreenItemStarred { /*style for starred icon task text in lists*/
     padding:0 0.5mm 0 0; /*top+bottom right+left*/
     margin:0mm;
 }
+ScreenItemStarredInherited { /*style for starred icon task text in lists*/
+    cn1-derive: ScreenItemStarred;
+    color:red;
+}
 
 ItemListSmall {
     cn1-derive: LabelValue;
     text-align: left;
     font-family :  "native:MainRegular";
-    font-size: 70%; /*80*/
+    font-size: 90%; /*80*/
     color:darkgray;
     padding:0 0.5mm 0 0; /*top+bottom right+left*/
     margin:0;
@@ -625,11 +790,11 @@ FunDread { /*expand subtasks*/
 
 ListOfItemsMyCheckBox {
     cn1-derive: ListOfItemsText;
-    font-size: 120%;
+    font-size: 150%;
     margin: 0;
     padding: 0;
     text-align: left;
-    color: brown;
+    color: lightgreen;
 }
 
 ListOfItemsItemStatusCont {
@@ -641,32 +806,58 @@ ListOfItemsItemStatusCont {
     color: brown;
 }
 
-ExpandedList {
-    cn1-derive: Label;
-    padding:0;
-    margin: 0 0 0 4mm;
-    color: lightgray;
-    border: 1px solid gray; /*cn1-pill-border */
-    box-shadow: 12px 12px 12px 12px activeborder inset;
-    /*border-radius: 0mm;*/
+/************* list of itemlists ScreenListOfItemLists ************/
+
+ListOfItemListsShowItems { 
+    cn1-derive: Container;
+    margin-left: 2mm;
+}
+ListOfItemListsShowItemsExpanded { 
+    cn1-derive: ListOfItemListsShowItems;
+    background: grey;
+}
+ListOfItemListsTextCont { /*the 'span' container of the wrap button with the icon/text of the itemlist*/
+    cn1-derive: ListOfItemListsShowItems;
+}
+ListOfItemListsText { /*the text/name of the itemlist*/
+    cn1-derive: ListOfItemListsShowItems;
+}
+ListOfItemListsIcon  { /*the icon to the left of the name of the itemlist*/
+    cn1-derive: ListOfItemListsShowItems;
+}
+ListOfItemListsIcon  { /*the icon to the left of the name of the itemlist*/
+    cn1-derive: ListOfItemListsShowItems;
+}
+ListOfItemListsRemainingTime  { /*the icon to the left of the name of the itemlist*/
+    cn1-derive: ListOfItemListsShowItems;
 }
 
-MyDragAndDropSwipeableContainer {
-    /*cn1-derive: Label;*/
-    padding:0;
-    margin: 0;
-    color: white;
-    /*background-color: transparent;
-    /*border: 1px solid gray; /*cn1-pill-border */
-    /*border-radius: 0mm;*/
-}
 
+/************* expanded list of elements ************/
+
+Tree { 
+    cn1-derive: Container;
+}
+StickyHeader {
+    cn1-derive: ItemListSmall;
+    text-align: center;
+    color:black;
+    background-color:darkgrey;
+    padding: 0mm 0;
+    /*foreground-color: #268b04;*/
+}
 
 ContainerListElement {
     /*wraps item in ScreenListOfItems*/
-    /*cn1-derive: Label;*/
+    cn1-derive: Container;
     padding:0mm 0;
+    /*margin-left: 1mm;/*/
     margin: 0mm 0;
+    /*border-left: 1mm solid blueviolet; /* expanded line for subtasks!! */
+
+    /* border-spacing: 2mm; NOT supported */
+
+    /*border-left: 0.3mm solid gray; 
     /*    border-bottom: 1px solid lightgrey;*/
     /*background-color: whitesmoke;
     box-shadow: 12px 12px 12px 12px activeborder inset;
@@ -675,7 +866,38 @@ ContainerListElement {
     /*border-radius: 0mm;*/
 }
 
-ItemContainer {
+MyDragAndDropSwipeableContainer {
+    /*cn1-derive: Label;*/
+    cn1-derive: Container;
+    padding:0;
+    margin: 0;
+    /*background: yellow; /*background for swipeable icons */
+    /*border-left: 1mm solid blueviolet; 
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
+
+ExpandedList { /* the ScrollY container, CENTER, with all expanded subtasks - indents and add line on the left*/
+    cn1-derive: Container;
+    padding:0;
+    /*margin: 0 0 0 4mm;
+    padding: 0 0 0 4mm; */
+    margin-left: 1mm; /*this indents the first indent-line*/
+    background: lightgrey; /*space btw indent-line and itemContainer */
+    padding-left: 2mm; /*this is space between the indent-line and the ItemContainer*/
+    border-left: 1mm solid blueviolet; /* expanded line for subtasks!! */
+
+    /*color: lightgray;*/
+    /*border-left: 0.5mm solid green; 
+    /*border-left: 0.3mm solid gray; /*cn1-pill-border */
+    /*box-shadow: 12px 12px 12px 12px activeborder inset;*/
+    /*box-shadow: 1mm activeborder inset;
+    /*border-radius: 0mm;*/
+}
+
+ItemContainer { /*inside swipeable*/
+    cn1-derive: Container;
     /*wraps item in ScreenListOfItems*/
     /*cn1-derive: Label;*/
     padding:0;
@@ -685,6 +907,50 @@ ItemContainer {
     /*border: 1px solid gray; /*cn1-pill-border */
     /*border-radius: 0mm;*/
 }
+
+ListOfItemsSwipeButtons{
+    margin: 0;
+    padding: 0mm;
+}
+SwipeButton{
+    font-size: 120%;
+    margin: 0;
+    padding: 1.5mm;
+    text-align: right;
+    color:white;
+}
+
+SwipeButtonIcon{
+    font-size: 180%;
+    margin: 0;
+    padding: 1mm;
+    color:white;
+}
+
+SwipeButtonNewFromTemplate {
+    cn1-derive: SwipeButton;
+    background-color:lightblue;
+}
+
+SwipeButtonSetDueToToday {
+    cn1-derive: SwipeButton;
+    background-color:greenyellow;
+}
+
+SwipeButtonStar {
+    cn1-derive: SwipeButton;
+    /*background-color:blue;*/
+    background-color:blue;
+    color:white;
+}
+
+SwipeButtonTimer {
+    cn1-derive: SwipeButton;
+    /*color:cornflowerblue;*/
+    background-color:cornflowerblue;
+}
+
+
 
 /* WORKSLOT */
 WorkSlotContainer {
@@ -749,88 +1015,83 @@ ItemStatusPopupIcon {
     color:#666666;
 }
 
-SwipeButton{
-    font-size: 120%;
-    margin: 0;
-    padding: 1mm;
-    text-align: right;
-    color:white;
-}
+GroupElement{
 
-SwipeButtonIcon{
-    font-size: 180%;
-    margin: 0;
-    padding: 1mm;
-    color:white;
 }
+GroupElementFirst{
 
-SwipeButtonNewFromTemplate {
-    cn1-derive: SwipeButton;
-    background-color:lightblue;
 }
+GroupElementLast{
 
-SwipeButtonSetDueToToday {
-    cn1-derive: SwipeButton;
-    background-color:greenyellow;
 }
+GroupElementOnly{
 
-SwipeButtonStar {
-    cn1-derive: SwipeButton;
-    /*background-color:blue;*/
-    background-color:blue;
-    color:white;
 }
-
-SwipeButtonTimer {
-    cn1-derive: SwipeButton;
-    /*color:cornflowerblue;*/
-    background-color:cornflowerblue;
-}
-
-StickyHeader {
-    cn1-derive: ItemListSmall;
-    text-align: center;
-    color:black;
-    background-color:darkgrey;
-    /*foreground-color: #268b04;*/
-}
-
 ToggleButton {
-    font-size: 100%;
+    cn1-derive: LabelValue; /*RadioButton;*/
+    border-style: solid;
+    border-color: lightgrey;
+    border-width: 0.3mm;/*0.3mm;*/
+    /* font-size: 100%;*/
+    color: grey;
+    /* background: white;
+     /*background: grey;*/
     text-align: center;
-    margin: 0;
+    /*margin: 0mm;*/
+    /*    margin-bottom: 0px;*/
     padding: 1mm;
-    text-align: right;
-    color: #6eaeff; /**dodgerblue;*/
+    /* border-top: 1mm;
+     border-bottom:  1mm;*/
+    /* text-align: right;*/
+    /*color: #6eaeff; /**dodgerblue;*/
 }
-
 ToggleButton.pressed {
-    color: white; /**dodgerblue;*/
+    background: lightgrey;
+    color: blue;
+    /*color: green; /**dodgerblue;*/
 }
-
 ToggleButton.selected {
-    color: white; /**dodgerblue;*/
+    background: lightgrey;
+    color: blue;
+    /*color: brown; /**dodgerblue;*/
 }
 
 ToggleButtonFirst {
+    /*https://stackoverflow.com/questions/52163839/codename-one-componentgroupbool-on-android-by-css*/
     cn1-derive: ToggleButton;
+    /*border-width: 0.3mm;
+    border-color: gray;
+    color: green;
+    background: aqua;
+    /*border-style: solid;*/
+    /*border-style: solid;
+    border-right: 0mm;*/
+    border-top-left-radius: 1mm;
+    border-bottom-left-radius:  1mm;
+    /*   margin: 0mm;
+       margin-bottom: 0px;
+       padding: 1mm;*/
 }
-ToggleButtonFirst.pressed {
-    color: white; /**dodgerblue;*/
-}
-
-ToggleButtonFirst.selected {
-    color: white; /**dodgerblue;*/
+ToggleButtonOnly {
+    /*https://stackoverflow.com/questions/52163839/codename-one-componentgroupbool-on-android-by-css*/
+    cn1-derive: ToggleButton;
+    /*border-width: 0.3mm;
+    border-color: gray;
+    color: green;
+    background: aqua;
+    /*border-style: solid;*/
+    border-top-left-radius: 1mm;
+    border-bottom-left-radius:  1mm;
+    border-top-right-radius: 1mm;
+    border-bottom-right-radius:  1mm;
+    /*   margin: 0mm;
+       margin-bottom: 0px;
+       padding: 1mm;*/
 }
 ToggleButtonLast {
     cn1-derive: ToggleButton;
-}
-ToggleButtonLast.pressed {
-    color: white; /**dodgerblue;*/
-}
-
-ToggleButtonLast.selected {
-    color: white; /**dodgerblue;*/
+    border-top-right-radius: 1mm;
+    border-bottom-right-radius:  1mm;
 }
 
 MyComponentGroupxx {
@@ -844,8 +1105,8 @@ ComponentGroup {
 
 ButtonGroup {
     font-family :  "native:MainRegular";
-    font-size: 100%;
-    color: grey;
+    font-size: 140%;
+    color: yellow;
     /*background: green;*/
 }
 
@@ -872,7 +1133,7 @@ ManualSorting {
 Switch {
     /*color: white;
     background: activeborder;*/
-    padding: 0 2mm 0 0;
+    padding: 0 0mm 0 0;
 }
 
 

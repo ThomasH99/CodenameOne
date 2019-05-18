@@ -42,13 +42,14 @@ public class MyCheckBox extends Button {
     private ProcessItemStatusChange statusChangeHandler;
 //    private IsItemOngoing itemOngoing;
     private ItemStatus itemStatus = null;
-    private static String singleIconStyleUIID; //style for the single status icon shown for example in items in lists
+//    private static String singleIconStyleUIID; //style for the single status icon shown for example in items in lists
     private static String popupIconStyleUIID; //style for icons in popup menu (to select any status)
     private static String groupStyleUIID; //style for popup menu (a ComponentGroup)
-    private static Style singleIconStyle;
-    private static Style popupIconStyle;
-    private static Image[] iconsSingleStatus; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
+//    private static Style singleIconStyle;
+//    private static Style popupIconStyle;
+//    private static Image[] iconsSingleStatus; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
     private static Image[] iconsPopup; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
+    private static char[] iconsPopupChar; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
 
 //    private Dialog d;
     /**
@@ -76,6 +77,7 @@ public class MyCheckBox extends Button {
             String singleIconStyleUIID, String popupIconStyleUIID, String groupStyleUIID) {
         super();
         setUIID("MyCheckBox");
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        String s = ItemStatus.values()[item.getStatus().ordinal()].fullDescription;
 //        this.saveOnChange = saveOnChange;
 //        setStatus(initialItemStatus);
@@ -88,37 +90,45 @@ public class MyCheckBox extends Button {
 //            this.popupIconStyleName = "ItemStatusPopupIcon";
 //        }
 //        this.itemOngoing = itemOngoing;
+//</editor-fold>
         this.popupIconStyleUIID = singleIconStyleUIID;
         if (this.popupIconStyleUIID == null) {
             this.popupIconStyleUIID = "ItemStatusPopupIcon";
         }
         Style s = null;
 //        Style s = UIManager.getInstance().getComponentStyle(singleIconStyle).get; //never returns null
-        if (iconsPopup == null //if no icons defined
-                || (popupIconStyleUIID != null && !popupIconStyleUIID.equals(this.popupIconStyleUIID)) //or if no name defined, or style name has changed
-                || (s = UIManager.getInstance().getComponentStyle(popupIconStyleUIID)).equals(this.popupIconStyle)) { //or if style has dynamically changed via CSS
-//            this.singleIconStyleName = singleIconStyleUIID;
-            if (popupIconStyleUIID != null && !popupIconStyleUIID.equals(this.popupIconStyleUIID)) {
-                this.popupIconStyleUIID = popupIconStyleUIID;
-            }
-            if (this.popupIconStyleUIID == null) {
-                this.popupIconStyleUIID = "ItemStatusIcon";
-            }
-            if (this.popupIconStyle == null) {
-                this.popupIconStyle = UIManager.getInstance().getComponentStyle(this.popupIconStyleUIID);
-            }
-//            ); //never returns null
-            if (s != null && !s.equals(popupIconStyle)) {
-                this.popupIconStyle = new Style(s);//keep a *copy* of the style (to ensure that CSS refresh works?!
-            }
-
-            iconsPopup = new Image[ItemStatus.values().length];
-            iconsPopup[0] = FontImage.createMaterial(Icons.iconItemStatusCreated, popupIconStyle);
-            iconsPopup[1] = FontImage.createMaterial(Icons.iconItemStatusOngoing, popupIconStyle);
-            iconsPopup[2] = FontImage.createMaterial(Icons.iconItemStatusWaiting, popupIconStyle);
-            iconsPopup[3] = FontImage.createMaterial(Icons.iconItemStatusDone, popupIconStyle);
-            iconsPopup[4] = FontImage.createMaterial(Icons.iconItemStatusCancelled, popupIconStyle);
-        }
+//        if (iconsPopup == null //if no icons defined
+//                || (popupIconStyleUIID != null && !popupIconStyleUIID.equals(this.popupIconStyleUIID)) //or if no name defined, or style name has changed
+//                || (s = UIManager.getInstance().getComponentStyle(popupIconStyleUIID)).equals(this.popupIconStyle)) { //or if style has dynamically changed via CSS
+////            this.singleIconStyleName = singleIconStyleUIID;
+//            if (popupIconStyleUIID != null && !popupIconStyleUIID.equals(this.popupIconStyleUIID)) {
+//                this.popupIconStyleUIID = popupIconStyleUIID;
+//            }
+//            if (this.popupIconStyleUIID == null) {
+//                this.popupIconStyleUIID = "ItemStatusIcon";
+//            }
+//            if (this.popupIconStyle == null) {
+//                this.popupIconStyle = UIManager.getInstance().getComponentStyle(this.popupIconStyleUIID);
+//            }
+////            ); //never returns null
+//            if (s != null && !s.equals(popupIconStyle)) {
+//                this.popupIconStyle = new Style(s);//keep a *copy* of the style (to ensure that CSS refresh works?!
+//            }
+//
+//            iconsPopup = new Image[ItemStatus.values().length];
+//            iconsPopup[0] = FontImage.createMaterial(Icons.iconItemStatusCreated, popupIconStyle);
+//            iconsPopup[1] = FontImage.createMaterial(Icons.iconItemStatusOngoing, popupIconStyle);
+//            iconsPopup[2] = FontImage.createMaterial(Icons.iconItemStatusWaiting, popupIconStyle);
+//            iconsPopup[3] = FontImage.createMaterial(Icons.iconItemStatusDone, popupIconStyle);
+//            iconsPopup[4] = FontImage.createMaterial(Icons.iconItemStatusCancelled, popupIconStyle);
+//            
+            iconsPopupChar = new char[ItemStatus.values().length];
+            iconsPopupChar[0] = Icons.iconItemStatusCreated;
+            iconsPopupChar[1] = Icons.iconItemStatusOngoing;
+            iconsPopupChar[2] = Icons.iconItemStatusWaiting;
+            iconsPopupChar[3] = Icons.iconItemStatusDone;
+            iconsPopupChar[4] = Icons.iconItemStatusCancelled;
+//        }
 //        if (groupStyle != null && !groupStyle.equals(this.groupStyleName)) {
 //        } else {
 //        }
@@ -126,38 +136,39 @@ public class MyCheckBox extends Button {
         if (this.groupStyleUIID == null) {
             this.groupStyleUIID = "ItemStatusPopup";
         }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (singleIconStyle != null && !singleIconStyle.equals(this.singleIconStyleName)) {
 //            this.singleIconStyleName = singleIconStyle;
 //        } else {
 //            this.singleIconStyleName = "ItemStatusIcon";
 //        }
+//</editor-fold>
         s = null;
 //        Style s = UIManager.getInstance().getComponentStyle(singleIconStyle).get; //never returns null
-        if (iconsSingleStatus == null //if no icons defined
-                || (singleIconStyleUIID != null && !singleIconStyleUIID.equals(this.singleIconStyleUIID)) //or if no name defined, or style name has changed
-                || (s = UIManager.getInstance().getComponentStyle(singleIconStyleUIID)).equals(this.singleIconStyle)) { //or if style has dynamically changed via CSS
-//            this.singleIconStyleName = singleIconStyleUIID;
-            if (singleIconStyleUIID != null && !singleIconStyleUIID.equals(this.singleIconStyleUIID)) {
-                this.singleIconStyleUIID = singleIconStyleUIID;
-            }
-            if (this.singleIconStyleUIID == null) {
-                this.singleIconStyleUIID = "ItemStatusIcon";
-            }
-            if (this.singleIconStyle == null) {
-                this.singleIconStyle = UIManager.getInstance().getComponentStyle(this.singleIconStyleUIID);
-            }
-//            ); //never returns null
-            if (s != null && !s.equals(singleIconStyle)) {
-                this.singleIconStyle = new Style(s); //keep a *copy* of the style (to ensure that CSS refresh works?!
-            }
-            iconsSingleStatus = new Image[ItemStatus.values().length];
-            iconsSingleStatus[0] = FontImage.createMaterial(Icons.iconItemStatusCreated, singleIconStyle);
-            iconsSingleStatus[1] = FontImage.createMaterial(Icons.iconItemStatusOngoing, singleIconStyle);
-            iconsSingleStatus[2] = FontImage.createMaterial(Icons.iconItemStatusWaiting, singleIconStyle);
-            iconsSingleStatus[3] = FontImage.createMaterial(Icons.iconItemStatusDone, singleIconStyle);
-            iconsSingleStatus[4] = FontImage.createMaterial(Icons.iconItemStatusCancelled, singleIconStyle);
-        }
+//        if (iconsSingleStatus == null //if no icons defined
+//                || (singleIconStyleUIID != null && !singleIconStyleUIID.equals(this.singleIconStyleUIID)) //or if no name defined, or style name has changed
+//                || (s = UIManager.getInstance().getComponentStyle(singleIconStyleUIID)).equals(this.singleIconStyle)) { //or if style has dynamically changed via CSS
+////            this.singleIconStyleName = singleIconStyleUIID;
+//            if (singleIconStyleUIID != null && !singleIconStyleUIID.equals(this.singleIconStyleUIID)) {
+//                this.singleIconStyleUIID = singleIconStyleUIID;
+//            }
+//            if (this.singleIconStyleUIID == null) {
+//                this.singleIconStyleUIID = "ItemStatusIcon";
+//            }
+//            if (this.singleIconStyle == null) {
+//                this.singleIconStyle = UIManager.getInstance().getComponentStyle(this.singleIconStyleUIID);
+//            }
+////            ); //never returns null
+//            if (s != null && !s.equals(singleIconStyle)) {
+//                this.singleIconStyle = new Style(s); //keep a *copy* of the style (to ensure that CSS refresh works?!
+//            }
+//            iconsSingleStatus = new Image[ItemStatus.values().length];
+//            iconsSingleStatus[0] = FontImage.createMaterial(Icons.iconItemStatusCreated, singleIconStyle);
+//            iconsSingleStatus[1] = FontImage.createMaterial(Icons.iconItemStatusOngoing, singleIconStyle);
+//            iconsSingleStatus[2] = FontImage.createMaterial(Icons.iconItemStatusWaiting, singleIconStyle);
+//            iconsSingleStatus[3] = FontImage.createMaterial(Icons.iconItemStatusDone, singleIconStyle);
+//            iconsSingleStatus[4] = FontImage.createMaterial(Icons.iconItemStatusCancelled, singleIconStyle);
+//        }
 
         setStatus(initialItemStatus); //NB! Do this *after* initializing the icons above, but *before* setting statusChangeHandler to avoid infinite loop
         this.activateFullMenuOnSingleClick = activateFullMenuOnSingleClick;
@@ -257,7 +268,8 @@ public class MyCheckBox extends Button {
     void setStatusIcon(ItemStatus itemStatus) {
 //        setIcon(ItemStatus.icons[itemStatus.ordinal()]);
 //        setIcon(ItemStatus.getStatusIcon(itemStatus));
-        setIcon(iconsSingleStatus[itemStatus.ordinal()]);
+//        setIcon(iconsSingleStatus[itemStatus.ordinal()]);
+        setMaterialIcon(iconsPopupChar[itemStatus.ordinal()]);
     }
 
     ItemStatus getStatus() {

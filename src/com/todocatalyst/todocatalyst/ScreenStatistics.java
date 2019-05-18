@@ -7,7 +7,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.Container;
 import com.codename1.ui.Component;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
 import java.util.List;
 import java.util.Collections;
@@ -59,8 +59,8 @@ public class ScreenStatistics extends MyForm {
 //        this.itemListList = itemListList;
         setUniqueFormId("ScreenStatistics");
         setScrollable(false);
-        if (!(getLayout() instanceof BorderLayout)) {
-            setLayout(new BorderLayout());
+        if (!(getLayout() instanceof MyBorderLayout)) {
+            setLayout(new MyBorderLayout());
         }
 //        expandedObjects = new HashSet();
         expandedObjects = new ExpandedObjects(getUniqueFormId()); //,null);
@@ -77,7 +77,7 @@ public class ScreenStatistics extends MyForm {
         SortStatsOn sortOn = SortStatsOn.valueOfDefault(MyPrefs.statisticsSortBy.getString());
         sortItems(itemsSortedOnDate, sortOn);
         itemListStats = buildStatisticsSortedByTime(itemsSortedOnDate, workSlots);
-        getContentPane().add(BorderLayout.CENTER, buildContentPane(itemListStats));
+        getContentPane().add(MyBorderLayout.CENTER, buildContentPane(itemListStats));
         revalidate();
         restoreKeepPos();
         super.refreshAfterEdit();
@@ -122,7 +122,7 @@ public class ScreenStatistics extends MyForm {
         if (false) {
             getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
-                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+                Container compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
                 boolean showAll = text == null || text.length() == 0;
                 for (int i = 0, size = this.itemsSortedOnDate.size(); i < size; i++) {
                     //TODO!!! compare same case (upper/lower)

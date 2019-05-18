@@ -20,7 +20,7 @@ import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.plaf.Style;
@@ -148,7 +148,7 @@ public class ScreenObjectPicker<E> extends MyForm {
         this.scrollToFirstSelected = scrollToFirstSelected;
         this.exitWhenMaxObjectsIsSelected = exitWhenMaxObjectsIsSelected;
 
-        listSelector = new ListSelector(selectedObjects, false, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, (obj, selected) -> {
+        listSelector = new ListSelector(this.selectedObjects, false, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, (obj, selected) -> {
             int idx = -1;
             if (displayedList == this.listOfAllLists) {
                 idx = this.listOfAllLists.indexOf(obj);
@@ -192,7 +192,7 @@ public class ScreenObjectPicker<E> extends MyForm {
         setScrollableY(false); //disable scrolling of form, necessary to let lists handle their own scrolling 
         listCont = new Container(BoxLayout.y());
         listCont.setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
-        getContentPane().add(BorderLayout.CENTER, listCont);
+        getContentPane().add(MyBorderLayout.CENTER, listCont);
         addCommandsToToolbar(getToolbar());
 
         getToolbar().addSearchCommand((e) -> {
@@ -386,7 +386,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 //                }
                 butCont.add(buttonLists);
                 butCont.add(buttonProjects);
-                add(BorderLayout.SOUTH, butCont);
+                add(MyBorderLayout.SOUTH, butCont);
             }
             ItemAndListCommonInterface firstSelectedObj;
             if (selectedObjects.size() > 0) { //if we already have element(s) selected

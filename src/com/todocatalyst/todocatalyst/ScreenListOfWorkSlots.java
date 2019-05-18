@@ -12,7 +12,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
@@ -169,7 +169,7 @@ public class ScreenListOfWorkSlots extends MyForm {
         if (contentContainer instanceof MyTree2)
             setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
 
-        getContentPane().add(BorderLayout.CENTER, contentContainer);
+        getContentPane().add(MyBorderLayout.CENTER, contentContainer);
 //        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
 
@@ -303,7 +303,7 @@ public class ScreenListOfWorkSlots extends MyForm {
         };
         if (Config.TEST) cont.setName("WorkSlotCont:" + workSlot);
         if (Config.TEST) swipCont.setName("WSltMyDD:" + workSlot);
-        cont.setLayout(new BorderLayout());
+        cont.setLayout(new MyBorderLayout());
 //        cont.addComponent(BorderLayout.CENTER, new Button(item.getText()));
         //EDIT items in category
 //        Button editItemButton = new Button(new Command(workSlot.getText()) {
@@ -342,7 +342,7 @@ public class ScreenListOfWorkSlots extends MyForm {
         }
         ));
 //        editItemButton.setUIID("Label");
-        cont.addComponent(BorderLayout.EAST, editWorkSlotButton);
+        cont.addComponent(MyBorderLayout.EAST, editWorkSlotButton);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Button editItemPropertiesButton = new Button();
@@ -397,7 +397,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getText() + (workSlot.getRepeatRule() != null ? "*" : "")));
 //</editor-fold>
         if (showOwner && workSlot.getOwner() != null) {
-            cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getOwner().getText()));
+            cont.addComponent(MyBorderLayout.CENTER, new Label(workSlot.getOwner().getText()));
         }
 //        }
 //        east.addComponent(editItemPropertiesButton);
@@ -411,9 +411,9 @@ public class ScreenListOfWorkSlots extends MyForm {
         }
 
 //        east.addComponent(new Label(new SimpleDateFormat().format(new Date(itemList.getFinishTime(item, 0)))));
-        cont.addComponent(BorderLayout.WEST, west);
+        cont.addComponent(MyBorderLayout.WEST, west);
         Container south = new Container(BoxLayout.y());
-        cont.addComponent(BorderLayout.SOUTH, south);
+        cont.addComponent(MyBorderLayout.SOUTH, south);
 
 //        if (workSlot.getOwner() != null) {
 //            if(showOwner)south.addComponent(new Label("For: " + workSlot.getOwner().getText()));

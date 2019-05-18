@@ -689,7 +689,7 @@ public class FilterSortDef extends ParseObject {
      * @param d2
      * @return
      */
-    private static int compareDreadFunValue(Item.DreadFunValue d1, Item.DreadFunValue d2) {
+    private static int compareDreadFunValue(DreadFunValue d1, DreadFunValue d2) {
         if (d1 == null) {
             if (d2 == null) {
                 return 0;

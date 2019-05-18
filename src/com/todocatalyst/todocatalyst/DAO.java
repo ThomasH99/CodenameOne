@@ -1319,7 +1319,7 @@ public class DAO {
                     fetchListElementsIfNeededReturnCachedIfAvail(categoryList);
                 }
 //                getInstance().save(categoryList); //always save so new lists can be assigned to it
-                saveInBackground((ParseObject)categoryList); //always save so new lists can be assigned to it
+                saveInBackground((ParseObject) categoryList); //always save so new lists can be assigned to it
             }
         } catch (ParseException ex) {
             Log.e(ex);
@@ -1666,15 +1666,125 @@ public class DAO {
 //            return inbox;
 //        } //NO need for caching since this is done in the instance/singleton
         ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
+        if (inbox == null) { //if no Inbox already saved, initialize it with existing motherless tasks
+            inbox = new ItemList();
+            inbox.setText(name);
+            List itemWithoutOwners = getAllItemsWithoutOwners();
+            for (Item item : (List<Item>) itemWithoutOwners) {
+                inbox.addToList(item);
+            }
+            saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
+            saveInBackground(itemWithoutOwners); //save all items who now have their Inbox owner assigned
+//                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
+//            saveInBackground((ParseObject)inbox); //always save so new lists can be assigned to it
+//            saveAndWait((ParseObject)inbox); //always save so new lists can be assigned to it
+        }
+        cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
+        return inbox;
+    }
+
+    public final static String OVERDUE = "Overdue";
+    public final static String TODAY = "Today";
+    public final static String NEXT = "Next";
+    public final static String LOG = "Log";
+    public final static String DIARY = "Diary";
+    public final static String TOUCHED = "Touched";
+    private final static String[] RESERVED_LIST_NAMES = {OVERDUE, TODAY, NEXT, LOG, DIARY, TOUCHED};//new ArrayList
+
+//    public ItemList getNamedItemList(String name) {
+//        return getNamedItemList(name, name); //use fixed name as default
+//    }
+//
+//    public ItemList getNamedItemList(String name, String visibleName) {
+//        return getNamedItemList(name, visibleName, null);
+//    }
+    public ItemList getNamedItemList(String name, String visibleName, FilterSortDef filterSortDef) {
+        ParseObject temp = null;
+        switch (name) {
+            case TODAY:
+//                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
+                if ((temp = cacheGet(name)) != null && (MyDate.isToday(temp.getUpdatedAt()))) {
+//                    return (ItemList) temp;
+                } else {
+                    temp = new ItemList(visibleName, getToday());
+//                    saveInBackground(temp);
+                    //optimization: does this in background:
+                    saveAndWait(temp); //NB! MUST use saveAndWait, so the list is stored in Cache with an updatedAt date to make the check above work correctly!!
+                    cache.put(name, temp);
+//                    return (ItemList) temp;
+                }
+                break; //unreachable statement!!
+            case NEXT:
+//                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
+//                    return (ItemList) temp;
+//                else
+//                    temp = new ItemList(visibleName, getCalendar());
+//                if (temp == null) {
+//                    temp = new ItemList(visibleName, false);
+//                    saveInBackground(temp);
+//                    cache.put(name, temp);
+//                } else {
+//                    cache.put(name, temp);
+//                }
+//                return (ItemList) temp;
+//                
+                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+//                    return (ItemList) temp;
+                } else {
+                    temp = new ItemList(visibleName, getCalendar());
+                    saveInBackground(temp);
+                    cache.put(name, temp);
+//                    return (ItemList) temp;
+                }
+                break; //unreachable statement!!
+            case LOG:
+                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+//                    return (ItemList) temp;
+                } else {
+                    temp = new ItemList(visibleName, getCompletionLog());
+                    saveInBackground(temp);
+                    cache.put(name, temp);
+//                    return (ItemList) temp;
+                }
+                break; //unreachable statement!!
+            case DIARY:
+                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+//                    return (ItemList) temp;
+                } else {
+                    temp = new ItemList(visibleName, getCreationLog());
+                    saveInBackground(temp);
+                    cache.put(name, temp);
+//                    return (ItemList) temp;
+                }
+                break; //unreachable statement!!
+            case TOUCHED:
+                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+//                    return (ItemList) temp;
+                } else {
+                    temp = new ItemList(visibleName, getTouchedLog());
+                    saveInBackground(temp);
+                    cache.put(name, temp);
+//                    return (ItemList) temp;
+                }
+                break; //unreachable statement!!
+            default:
+                break;
+        }
+        if (temp != null) {
+            ((ItemList) temp).setFilterSortDef(filterSortDef);
+            return (ItemList) temp;
+        } else ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
+
+        ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
         if (inbox == null) {
             //if no Inbox already saved, initialize it with existing categories
             inbox = new ItemList();
             inbox.setText(name);
             List itemWithoutOwners = getAllItemsWithoutOwners();
-            for (Item item : (List<Item>)itemWithoutOwners) {
+            for (Item item : (List<Item>) itemWithoutOwners) {
                 inbox.addToList(item);
             }
-            saveAndWait((ParseObject)inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
+            saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
             saveInBackground(itemWithoutOwners); //save all items who now have their Inbox owner assigned
 //                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
 //            saveInBackground((ParseObject)inbox); //always save so new lists can be assigned to it
@@ -1874,7 +1984,6 @@ public class DAO {
 //    public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks) {
 //        return getAllItems(includeTemplates, onlyLeafTasks, false);
 //    }
-
     public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks, boolean onlyWithoutOwner) {
         return getAllItems(includeTemplates, onlyLeafTasks, onlyWithoutOwner, false);
     }
@@ -2685,7 +2794,7 @@ public class DAO {
             while (!vector.isEmpty()) {
                 parseObject = (ParseObject) vector.remove(0);
                 if (parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave())
-                        Log.p("BACKGROUND saving IGNORE: " + parseObject);
+                    Log.p("BACKGROUND saving IGNORE: " + parseObject);
                 else {
                     Log.p("BACKGROUND saving: " + parseObject);
                     saveImpl((ParseObject) parseObject, true);
@@ -4343,18 +4452,18 @@ public class DAO {
 //</editor-fold>
                 if (executeCleanup) {
                     cat.setOwner(categoryList);
-                    saveInBackground((ParseObject)cat);
+                    saveInBackground((ParseObject) cat);
                     categoryList.add(cat);
-                    saveInBackground((ParseObject)categoryList);
+                    saveInBackground((ParseObject) categoryList);
                 }
             } else if (!categoryList.contains(cat)) { //add missing categories to CategoryList
                 Log.p("CLEANUP: CategoryList does not contain in Category \"" + cat.getText(), logLevel);
 
                 if (executeCleanup) {
                     cat.setOwner(categoryList);
-                    saveInBackground((ParseObject)cat);
+                    saveInBackground((ParseObject) cat);
                     categoryList.add(cat);
-                    saveInBackground((ParseObject)categoryList);
+                    saveInBackground((ParseObject) categoryList);
                 }
             }
         }
@@ -4371,7 +4480,7 @@ public class DAO {
                 if (itemListList.contains(itemList)) {
                     if (executeCleanup) {
                         itemList.setOwner(itemListList);
-                        saveInBackground((ParseObject)itemList);
+                        saveInBackground((ParseObject) itemList);
                     }
                 } else if (itemList.getListFull().size() == 0) { //a lost ItemList, empty, not visible to user, so probably safe to delete
                     if (executeCleanup) {
@@ -4381,19 +4490,19 @@ public class DAO {
                 if (executeCleanup) {
                     itemList.setOwner(itemListList);
                     itemListList.add(itemList);
-                    saveInBackground((ParseObject)itemList);
+                    saveInBackground((ParseObject) itemList);
                 }
             } else if (!itemList.getOwner().equals(itemListList)) {
                 Log.p("CLEANUP: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
                 if (itemListList.contains(itemList)) {
                     if (executeCleanup) { //correct to right owner
                         itemList.setOwner(itemListList);
-                        saveInBackground((ParseObject)itemList);
+                        saveInBackground((ParseObject) itemList);
                     }
                 } else if (executeCleanup) { //force owner to ItemListList anyway //TODO may not be the right solution if one day ItemLists of ItemLists is supported
                     Log.p("CLEANUP: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
                     itemList.setOwner(itemListList);
-                    saveInBackground((ParseObject)itemList);
+                    saveInBackground((ParseObject) itemList);
                 }
             } else if (!itemListList.contains(itemList)) {
                 Log.p("CLEANUP: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") has owner ItemListList but ItemListList does not reference it", logLevel);
@@ -4402,7 +4511,7 @@ public class DAO {
                 }
             }
             if (executeCleanup) {
-                saveInBackground((ParseObject)itemListList);
+                saveInBackground((ParseObject) itemListList);
             }
         }
     }
@@ -4919,9 +5028,8 @@ public class DAO {
                 }
 //                i++;
 //            } else if (!subtask.getOwner().equals(item)) {
-            } else
-//            if (false && !subtask.getOwner().equals(item)) { //do not this this for subtasks - incompatible with the check above
-            if (subtask.getOwner()!=item) { //subtask ownership 'wins' over other ownerships (e.g. if subtask is also in a list or a project at a higher level
+            } else //            if (false && !subtask.getOwner().equals(item)) { //do not this this for subtasks - incompatible with the check above
+            if (subtask.getOwner() != item) { //subtask ownership 'wins' over other ownerships (e.g. if subtask is also in a list or a project at a higher level
                 Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has another owner==\"" + subtask.getOwner() + "\"", logLevel);
                 if (executeCleanup) {
 //                    subtasks.remove(subtask); //
@@ -5041,7 +5149,7 @@ public class DAO {
     boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup) {
         return cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
     }
-    
+
     boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup, boolean cleanupItems) {
         boolean issuesFound = false;
         String text = itemListOrCategory.getText();
@@ -5051,7 +5159,7 @@ public class DAO {
         if (itemListOrCategory instanceof Category && itemListOrCategory.getOwner() != CategoryList.getInstance()) {
             Log.p(prefix + " not in CategoryList, but in [" + itemListOrCategory.getOwner().getObjectIdP() + "]");
             if (executeCleanup) itemListOrCategory.setOwner(CategoryList.getInstance());
-        } else if (itemListOrCategory instanceof ItemList && itemListOrCategory.getOwner() != ItemListList.getInstance() && itemListOrCategory!=Inbox.getInstance()) {
+        } else if (itemListOrCategory instanceof ItemList && itemListOrCategory.getOwner() != ItemListList.getInstance() && itemListOrCategory != Inbox.getInstance()) {
             Log.p(prefix + " not in ItemListList, but in [" + itemListOrCategory.getOwner().getObjectIdP() + "]");
             if (executeCleanup) itemListOrCategory.setOwner(ItemListList.getInstance());
         }
@@ -5122,7 +5230,7 @@ public class DAO {
                             }
                         }
                     } // else: if owner is not null, then if the owner is wrong, it will be fixed when fixing the item itself elsewhere
-                    if (cleanupItems) 
+                    if (cleanupItems)
                         cleanUpItem(item, executeCleanup);
                 }
             }
@@ -5162,7 +5270,7 @@ public class DAO {
 
         //TODO calculate all values in the list derived from the elements (currently none in ItemList nor Category)
         if (issuesFound && executeCleanup) {
-            saveInBackground((ParseObject)itemListOrCategory);
+            saveInBackground((ParseObject) itemListOrCategory);
         }
         return issuesFound;
     }
@@ -5187,7 +5295,7 @@ public class DAO {
             saveInBackground((ParseObject) lostItems); //first save new list to have a valid objectId!!
             saveInBackground(lostItems.getListFull()); //THEN save all updated items
 //            ItemListList.getInstance().addToList(0, lostItems); //add to beginning of lists
-            ItemListList.getInstance().addToList(lostItems,false); //add to beginning of lists
+            ItemListList.getInstance().addToList(lostItems, false); //add to beginning of lists
             saveInBackground((ParseObject) ItemListList.getInstance());
         }
         return issuesFound;
@@ -6027,7 +6135,8 @@ public class DAO {
 
         if (cache != null) {
 //            cache.clearStorageCache(); //delete any locally cached data/files
-            cache.clearAllCache(); //clear any cached data (even in memory to make sure we get a completely fresh copy)
+//            cache.clearAllCache(); //clear any cached data (even in memory to make sure we get a completely fresh copy)
+            cache.clearAllCache(RESERVED_LIST_NAMES); //clear any cached data (even in memory to make sure we get a completely fresh copy)
             cache = null;  //force GC and creation of new cache in initAndConfigureCache()
         }
 //        initAndConfigureCache(true);

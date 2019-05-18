@@ -13,7 +13,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 
@@ -70,7 +70,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
         this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
         this.insertBeforeRefElement = insertBeforeRefElement;
 
-        Container contForTextEntry = new Container(new BorderLayout());
+        Container contForTextEntry = new Container(new MyBorderLayout());
 
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField.setHint(ENTER_ITEMLIST);
@@ -93,12 +93,12 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
             }
         });
 
-        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
+        contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
 
         //close insert container
-        contForTextEntry.add(BorderLayout.WEST, westCont);
+        contForTextEntry.add(MyBorderLayout.WEST, westCont);
         if (itemOrItemListForNewItemLists != null && itemOrItemListForNewItemLists.getSize() > 0) { //only add close button if in a non-empty list
-            westCont.add(new Button(Command.create(null, Icons.iconCloseCircle, (ev) -> {
+            westCont.add(new Button(Command.createMaterial(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
 //                myForm.lastInsertNewElementContainer = null;
                 closeInsertNewItemListContainer();
@@ -106,7 +106,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
         }
 
         //Enter full screen edit of the new Category:
-        contForTextEntry.add(BorderLayout.EAST,
+        contForTextEntry.add(MyBorderLayout.EAST,
                 new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
                     if ((newItemList = createNewItemList()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                         myForm.setKeepPos(new KeepInSameScreenPosition(newItemList, this, -1)); //if editing the new task in separate screen, 

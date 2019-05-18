@@ -14,7 +14,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import java.util.Date;
@@ -80,7 +80,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         this.insertBeforeRefElement = insertBeforeRefElement;
         continueAddingNewWorkSlots = MyPrefs.workSlotContinueAddingInlineWorkslots.getBoolean();
 
-        Container contForTextEntry = new Container(new BorderLayout());
+        Container contForTextEntry = new Container(new MyBorderLayout());
 
         SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
         add(swipC);
@@ -105,10 +105,10 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
             }
         });
 
-        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
+        contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
 
         //close insert container
-        contForTextEntry.add(BorderLayout.WEST, westCont);
+        contForTextEntry.add(MyBorderLayout.WEST, westCont);
 //        if (refWorkSlot != null && refWorkSlot.size() > 0) { //only add close button if in a non-empty list
         if (refWorkSlot != null) { //only add close button if in a non-empty list, which is the case if there is a refWorkSlot
             westCont.add(new Button(CommandTracked.create(null, Icons.iconCloseCircle, (ev) -> {
@@ -122,7 +122,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         }
 
         //Enter full screen edit of the new WorkSlot:
-        contForTextEntry.add(BorderLayout.EAST,
+        contForTextEntry.add(MyBorderLayout.EAST,
                 new Button(CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
                     if ((newWorkSlot = createNewWorkSlot()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                         lastCreatedWorkSlot = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)

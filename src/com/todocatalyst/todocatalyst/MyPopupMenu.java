@@ -9,7 +9,7 @@ import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.ComponentGroup;
 import com.codename1.ui.Dialog;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 
 /**
@@ -113,7 +113,7 @@ class MyPopupMenu extends Dialog {
      */
     public void popup() {
 //        Command result = dlg.showStretched(BorderLayout.SOUTH, true);
-        Command choice = showStretched(BorderLayout.SOUTH, true);
+        Command choice = showStretched(MyBorderLayout.SOUTH, true);
 //        if (choice != null && choice != cancelCmd) {
         if (choice != null ) {
             choice.actionPerformed(null);

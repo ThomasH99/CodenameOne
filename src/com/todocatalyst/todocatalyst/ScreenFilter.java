@@ -10,7 +10,7 @@ import com.codename1.ui.Display;
 import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.animations.CommonTransitions;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.util.Resources;
 //import com.codename1.ui.*;
@@ -179,10 +179,10 @@ public class ScreenFilter extends MyForm {
         });
 //        content.add(sortOnSwitch);
 //        sortContainer = Container.encloseIn(BoxLayout.y(), new Label("Manual sorting"), sortOnSwitch);
-        sortContainer = BorderLayout.west(new SpanLabel("Manual sorting")).add(BorderLayout.EAST, sortOnSwitch);
+        sortContainer = MyBorderLayout.west(new SpanLabel("Manual sorting")).add(MyBorderLayout.EAST, sortOnSwitch);
         sortSelectorContainer
                 = Container.encloseIn(BoxLayout.y(),
-                        BorderLayout.west(new SpanLabel("Sort on")).add(BorderLayout.EAST,
+                        MyBorderLayout.west(new SpanLabel("Sort on")).add(MyBorderLayout.EAST,
                                 new MyStringPicker(filterSortDef.getSortOptions(), parseIdMap2, () -> {
                                     String sortId = filterSortDef.getSortFieldId();
                                     for (int i = 0, size = filterSortDef.getSortField().length; i < size; i++) {
@@ -201,11 +201,11 @@ public class ScreenFilter extends MyForm {
 //                            }
 //                    };
                                     filterSortDef.setSortFieldId(filterSortDef.getSortField()[i]);
-                                })), BorderLayout.west(new SpanLabel("Reverse sort order")).add(BorderLayout.EAST, inverseOrder));
+                                })), MyBorderLayout.west(new SpanLabel("Reverse sort order")).add(MyBorderLayout.EAST, inverseOrder));
         if (filterSortDef.isSortOn()) {
-            sortContainer.add(BorderLayout.SOUTH, sortSelectorContainer);
+            sortContainer.add(MyBorderLayout.SOUTH, sortSelectorContainer);
         } else {
-            sortContainer.add(BorderLayout.SOUTH, hideSortSelectorContainerLabel);
+            sortContainer.add(MyBorderLayout.SOUTH, hideSortSelectorContainerLabel);
         }
 //        content.add(tl.createConstraint().horizontalSpan(2), sortContainer);
         content.add(sortContainer);

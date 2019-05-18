@@ -11,7 +11,7 @@ import com.codename1.l10n.L10NManager;
 import com.codename1.ui.CN;
 import com.codename1.ui.*;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.Component;
 import com.codename1.ui.animations.ComponentAnimation;
@@ -297,7 +297,7 @@ public class ScreenListOfItems extends MyForm {
 //        super(title, previousForm, null);
         setOptions(options);
         setPinchInsertEnabled(true);
-        getComponentForm().getLayeredPane().setLayout(new BorderLayout()); //needed for StickyHeaderMod
+        getComponentForm().getLayeredPane().setLayout(new MyBorderLayout()); //needed for StickyHeaderMod
 //        MyDragAndDropSwipeableContainer.dragEnabled = false; //always disable before setting up a new screen
 //        this.itemListOrg = itemList;
         getItemListFct = itemListFct;
@@ -315,8 +315,8 @@ public class ScreenListOfItems extends MyForm {
 //        workSlotList = itemListOrg.getWorkSlotListN(); //expensive operation, only do once for the screen, or after editing WorkSlots
 
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-        if (!(getLayout() instanceof BorderLayout)) {
-            setLayout(new BorderLayout());
+        if (!(getLayout() instanceof MyBorderLayout)) {
+            setLayout(new MyBorderLayout());
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        addShowListener((e) -> { //DOESN'T WORK since animate doesn't trigger onShow
@@ -360,7 +360,7 @@ public class ScreenListOfItems extends MyForm {
             getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
                 Container compList = null;
-                compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+                compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
                 if (compList != null) {
 //            boolean showAll = text == null || text.length() == 0;
                     int labelCount = 0;
@@ -521,10 +521,10 @@ public class ScreenListOfItems extends MyForm {
         if (contentContainer instanceof MyTree2) setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
 //        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
-        getContentPane().add(BorderLayout.CENTER, contentContainer);
+        getContentPane().add(MyBorderLayout.CENTER, contentContainer);
         if (contentContainer != null) {
             ContainerScrollY scrollable = findScrollableContYChild(contentContainer);
-            if (true || scrollable != null )
+            if (scrollable != null)
                 scrollable.setScrollVisible(true);
         }
         if (previousValues != null)
@@ -1642,6 +1642,10 @@ public class ScreenListOfItems extends MyForm {
      * @return
      */
     public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category) { //<editor-fold defaultstate="collapsed" desc="comment">
+        return buildItemContainer(myForm, item, ownerItemOrItemList, category, null);
+    }
+
+    public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category, ExpandedObjects expandedObjects) { //<editor-fold defaultstate="collapsed" desc="comment">
         //            MyForm.GetBoolean isDragAndDropEnabled, MyForm.Action refreshOnItemEdits,
         //            boolean selectionModeAllowed, ArrayList<Item> selectedObjects,
         //            KeepInSameScreenPosition keepPos, HashSet expandedObjects, MyForm.Action animator, boolean projectEditMode, boolean singleSelectionMode
@@ -1654,7 +1658,7 @@ public class ScreenListOfItems extends MyForm {
         boolean showInDetails = true;
         boolean isDone = item.isDone();
 //    public static Container buildItemContainer(Item item, List itemList, MyForm.GetBoolean isDragEnabled, MyForm.Action refreshOnItemEdits, boolean selectionModeAllowed, HashSet<Item> selectedObjects) {
-        Container mainCont = new Container(new BorderLayout());
+        Container mainCont = new Container(new MyBorderLayout());
         mainCont.setUIID("ItemContainer");
 
         Container swipeActionContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -1732,7 +1736,7 @@ public class ScreenListOfItems extends MyForm {
 
         Container west = new Container(BoxLayout.x(), "ListOfItemsStatusCont");
         if (oldFormat) {
-            mainCont.addComponent(BorderLayout.WEST, west);
+            mainCont.addComponent(MyBorderLayout.WEST, west);
         }
 
         Container southDetailsContainer = new Container(new FlowLayout());
@@ -1745,7 +1749,7 @@ public class ScreenListOfItems extends MyForm {
 //        south.setHidden(!showDetailsForAllTasks || (tasksWithDetailsShown!=null && !tasksWithDetailsShown.contains(item))); //hide details by default
         southDetailsContainer.setHidden(!showDetails); //hide details by default
         if (oldFormat) {
-            mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
+            mainCont.addComponent(MyBorderLayout.SOUTH, southDetailsContainer);
         }
 
         Button expandSubTasksButton;// = null;//= new Button(); //null;
@@ -1771,27 +1775,45 @@ public class ScreenListOfItems extends MyForm {
                 MyTree2 myTree = MyTree2.getMyTreeTopLevelContainer(swipCont);
                 if (e != null && e.equals("true")) {
 //                        myTree.collapsePathNode(topContainer, true);
-                    setUIID("ListOfItemsShowSubtasks");
+//                    setUIID("ListOfItemsShowSubtasks");
                     myTree.collapseNode(swipCont, true);
                 } else {
 //                        myTree.expandPathNode(isInitialized(), topContainer, true);
                     myTree.expandNode(false, swipCont, true);
-                    setUIID("ListOfItemsShowSubtasksExpanded");
+//                    setUIID("ListOfItemsShowSubtasksExpanded");
                 }
+                if (expandedObjects != null)
+                    expandedObjects.updateExpandedUIID(this, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
+            }
+
+            @Override
+            protected void fireActionEvent(int x, int y) {
+                super.fireActionEvent(x, y);
+                //enforce update of UIID *after* expansion etc
+                if (expandedObjects != null)
+                    expandedObjects.updateExpandedUIID(this, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
             }
 //        } : new Button();
         } : null;
-        if (expandSubTasksButton != null) {
-
-            expandSubTasksButton.addActionListener((evt) -> {
-                if (expandSubTasksButton.getUIID().equals("ListOfItemsShowSubtasks"))
-                    expandSubTasksButton.setUIID("ListOfItemsShowSubtasksExpanded");
-                else
-                    expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
+        if (Config.TEST && expandSubTasksButton != null) expandSubTasksButton.setName("ExpandSubtasks-" + item.toString(false));
+        if ( expandSubTasksButton != null) {
+            if (false) expandSubTasksButton.addActionListener((evt) -> {
+//                if (expandedObjects!=null && expandedObjects.contains(item))
+////                if (expandSubTasksButton.getUIID().equals("ListOfItemsShowSubtasks"))
+//                    expandSubTasksButton.setUIID("ListOfItemsShowSubtasksExpanded");
+//                else
+//                    expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
+                if (expandedObjects != null)
+                    //                    expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
+                    expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasksExpanded", "ListOfItemsShowSubtasks"); //NB!! hack: the two values are inversted since this actionListener is called 
             });
 
 //            subTasksButton.setUIID("Label");
-            expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
+//            expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
+            if (expandedObjects != null)
+                expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
+            else
+                expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
 //            subTasksButton.setGrabsPointerEvents(true); //TODO!!! does this work to avoid
 //            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberDoneSubtasks + "]");// {
 //            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberSubtasks + "]");// {
@@ -2022,26 +2044,27 @@ public class ScreenListOfItems extends MyForm {
         Container east = new Container(eastLayout, "ListOfItemsEditItemButton");
 
         //STARRED
-        final Button starButton = new Button((Image) null, "ListofItemsStarred");
-        starButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyleMaterial : Icons.iconStarUnselectedLabelStyleMaterial);
+//        if (false) {
+//            final Button starButton = new Button((Image) null, "ListofItemsStarred");
+//            starButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselectedLabelStyleMaterial);
+//            starButton.setHidden(!item.isStarred() || isDone); //UI: hide star if task is done
+//            starButton.addActionListener((e) -> {
+//                item.setStarred(!item.isStarred());
+//                starButton.setHidden(true); //can only hide/unselect star in the line (need Swipe to set)
+//                starButton.repaint();
+////            starredSwipeableButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
+//                starredSwipeableButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselectedLabelStyleMaterial);
+//                DAO.getInstance().saveInBackground(item);
+////            starred.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
+//            });
+//            if (oldFormat) {
+//                east.add(starButton);
+//            }
+//        }
         final Button starredSwipeableButton = new Button();
-        starredSwipeableButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyleMaterial : Icons.iconStarUnselectedLabelStyleMaterial);
+        starredSwipeableButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselected);
 
         final Button setDueDateToToday;// = new Button(null, Icons.iconSetDueDateToToday());
-
-        starButton.setHidden(!item.isStarred() || isDone); //UI: hide star if task is done
-        starButton.addActionListener((e) -> {
-            item.setStarred(!item.isStarred());
-            starButton.setHidden(true); //can only hide/unselect star in the line (need Swipe to set)
-            starButton.repaint();
-//            starredSwipeableButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
-            starredSwipeableButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyleMaterial : Icons.iconStarUnselectedLabelStyleMaterial);
-            DAO.getInstance().saveInBackground(item);
-//            starred.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
-        });
-        if (oldFormat) {
-            east.add(starButton);
-        }
 
         long finishTime = item.getFinishTime();
 //        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
@@ -2192,7 +2215,7 @@ public class ScreenListOfItems extends MyForm {
 //        editItemButton.setGrabsPointerEvents(true);
         if (oldFormat) east.addComponent(editItemButton);
 
-        if (oldFormat) mainCont.addComponent(BorderLayout.EAST, east);
+        if (oldFormat) mainCont.addComponent(MyBorderLayout.EAST, east);
 
         //SOUTH
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2413,24 +2436,24 @@ public class ScreenListOfItems extends MyForm {
 //        Component prioCont = BoxLayout.encloseX(priorityLabel, impUrgLabel);
 //        Component expandSubsCont = expandSubTasksButton != null ? expandSubTasksButton : new Label();
         //BUILD CONTAINER
-        Container itemContent = new Container(new BorderLayout(), "ListOfItemsItemContent");
-        Container bottomContent = new Container(new BorderLayout(), "ListOfItemsBottomContent");
+        Container itemContent = new Container(new MyBorderLayout(), "ListOfItemsItemContent");
+        Container bottomContent = new Container(new MyBorderLayout(), "ListOfItemsBottomContent");
 //        Container mainItemCont = new Container(new BorderLayout())
 
         Container itemStatusCont = BoxLayout.encloseX(selected, status);
         itemStatusCont.setUIID("ListOfItemsItemStatusCont");
-        mainCont.add(BorderLayout.WEST, itemStatusCont);
+        mainCont.add(MyBorderLayout.WEST, itemStatusCont);
 
 //        Container itemTextStarredCont = BoxLayout.encloseX(starButton, editItemButton);
 //        itemTextStarredCont.setUIID("ListOfItemsItemTextStar");
 //        mainCont.add(BorderLayout.EAST, itemTextStarredCont);
-        mainCont.add(BorderLayout.EAST, editItemButton);
+        mainCont.add(MyBorderLayout.EAST, editItemButton);
 //        Container itemTextStar = BorderLayout.centerCenterEastWest(null, starButton, itemLabel);
         Component itemTextStar = itemLabel;
         itemTextStar.setUIID("ListOfItemsItemTextStar");
 
-        mainCont.add(BorderLayout.CENTER, itemContent.add(BorderLayout.CENTER, itemTextStar)); //item text + expand subtasks
-        itemContent.add(BorderLayout.SOUTH, bottomContent);
+        mainCont.add(MyBorderLayout.CENTER, itemContent.add(MyBorderLayout.CENTER, itemTextStar)); //item text + expand subtasks
+        itemContent.add(MyBorderLayout.SOUTH, bottomContent);
         //                                                .add(WEST, BorderLayout.centerEastWest(null, null, BoxLayout.encloseX(prioCont, dateCont,effortCont) ))
 
         Container westCont = new Container(new BoxLayout(BoxLayout.X_AXIS));
@@ -2451,10 +2474,10 @@ public class ScreenListOfItems extends MyForm {
             else if (dueDateLabel != null)
                 westCont.add(dueDateLabel);
         if (isDone && completedDateLabel != null) westCont.add(completedDateLabel);
-        bottomContent.add(BorderLayout.WEST, westCont);
+        bottomContent.add(MyBorderLayout.WEST, westCont);
 //        bottomContent.add(BorderLayout.EAST, expandSubsCont);
-        if (expandSubTasksButton != null) bottomContent.add(BorderLayout.EAST, expandSubTasksButton);
-        bottomContent.add(BorderLayout.SOUTH, southDetailsContainer);
+        if (expandSubTasksButton != null) bottomContent.add(MyBorderLayout.EAST, expandSubTasksButton);
+        bottomContent.add(MyBorderLayout.SOUTH, southDetailsContainer);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container eastCont = new Container(BoxLayout.x())
 //                .add(BorderLayout.east(BoxLayout.encloseX(
@@ -2746,17 +2769,16 @@ refreshAfterEdit();
 
                     //update the starred button
 //                    starButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
-                    if (false) {
-
-                        starButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyleMaterial : Icons.iconStarUnselectedLabelStyleMaterial);
-                        starButton.setHidden(!item.isStarred());
-//                    starredSwipeableButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyleMaterial : Icons.iconStarUnselectedLabelStyleMaterial);
-                        starredSwipeableButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyleMaterial : Icons.iconStarUnselectedLabelStyleMaterial);
-//            starred.getParent().revalidate();
-                        //update and save the item
-                        //update the starredSwipeable button
-//            starredSwipeable.repaint();
-                    }
+//                    if (false) {
+//                        starButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselectedLabelStyleMaterial);
+//                        starButton.setHidden(!item.isStarred());
+////                    starredSwipeableButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyleMaterial : Icons.iconStarUnselectedLabelStyleMaterial);
+//                        starredSwipeableButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselectedLabelStyleMaterial);
+////            starred.getParent().revalidate();
+//                        //update and save the item
+//                        //update the starredSwipeable button
+////            starredSwipeable.repaint();
+//                    }
                     swipCont.close(); //close before save 
 //                        myForm.revalidate();
                     swipCont.revalidate();
@@ -3942,7 +3964,8 @@ refreshAfterEdit();
 //</editor-fold>
 //                    cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemListOrg, category);
 //                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemOrItemList, category);
-                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemOrItemList, category);
+//                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemOrItemList, category);
+                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemOrItemList, category, expandedObjects);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    cmp = ScreenListOfItems.buildItemContainerOLD((Item) node, itemListOrg, () -> isDragAndDropEnabled(), () -> refreshAfterEdit(),
 //                            false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??

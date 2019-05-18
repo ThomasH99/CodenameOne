@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import com.todocatalyst.todocatalyst.MyUtil;
+import static com.todocatalyst.todocatalyst.MyUtil.eql;
 //import sun.security.acl.OwnerImpl;
 //import todo.TodoMidlet43.Categories;
 
@@ -494,86 +495,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return ItemStatus.getDescriptionValues();
 //    }
 //</editor-fold>
-    public enum HighMediumLow {
-        //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
-        HIGH("High"), MEDIUM("Medium"), LOW("Low");
-
-        HighMediumLow(String description) {
-            this.description = description;
-        }
-
-        String getDescription() {
-            return description;
-        }
-
-        static String[] getDescriptionList() {
-            return new String[]{LOW.getDescription(), MEDIUM.getDescription(), HIGH.getDescription()};
-        }
-
-        static int[] getDescriptionOrdinals() {
-            return new int[]{LOW.ordinal(), MEDIUM.ordinal(), HIGH.ordinal()};
-        }
-
-        /**
-         * returns the enum corresponding to the description string
-         *
-         * @param description
-         * @return enum or null if no enum value corresponds to the description
-         * string
-         */
-        static HighMediumLow getValue(String description) {
-            String[] descList = getDescriptionList();
-            for (int i = 0, size = getDescriptionList().length; i < size; i++) {
-                if (descList[i].equals(description)) {
-                    return HighMediumLow.values()[getDescriptionOrdinals()[i]]; //values() return an array of the ordinals
-                }
-            }
-            return null;
-        }
-
-        private final String description;
-    }
-
-    public enum DreadFunValue {
-        //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
-        FUN("Fun"), NEUTRAL("Neutral"), DREAD("Dread");
-
-        private final String description;
-
-        DreadFunValue(String description) {
-            this.description = description;
-        }
-
-        String getDescription() {
-            return description;
-        }
-
-        //returns description strings for the enum in display order (which may be different from the sort order which follows the declaration order
-        static String[] getDescriptionList() {
-            return new String[]{FUN.getDescription(), NEUTRAL.getDescription(), DREAD.getDescription()};
-        }
-
-        static int[] getDescriptionValues() {
-            return new int[]{FUN.ordinal(), NEUTRAL.ordinal(), DREAD.ordinal()};
-        }
-
-        /**
-         * returns the enum corresponding to the description string
-         *
-         * @param description
-         * @return enum or null if no enum value corresponds to the description
-         * string
-         */
-        static DreadFunValue getValue(String description) {
-            String[] descList = getDescriptionList();
-            for (int i = 0, size = getDescriptionList().length; i < size; i++) {
-                if (descList[i].equals(description)) {
-                    return DreadFunValue.values()[getDescriptionValues()[i]]; //values() return an array of the ordinals
-                }
-            }
-            return null;
-        }
-    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
@@ -976,7 +897,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String FUN_DREAD_HELP = "Is this a task you'd love to work on or not? Helps pick tasks on a low-energy day";
     final static String CHALLENGE = "Challenge";
     final static String CHALLENGE_HELP = "Challenge";
-    final static String BELONGS_TO = "Owner List/Project"; //"Belongs to";
+    final static String BELONGS_TO = "List/Project"; //"Owner List/Project" "Belongs to";
     final static String BELONGS_TO_HELP = "Indicates the List or Project this task belongs to. Change to move the task to another List or Project or delete to move to Inbox";
     final static String DEPENDS_ON = "Depends on";
     final static String DEPENDS_ON_HELP = "Indicates that this task depends on another task. Dependent tasks can automatically be hidden until the task they depend on is completed.";
@@ -1433,7 +1354,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
     @Override
     public void setOwner(ItemAndListCommonInterface owner) {
-        ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null), () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
+        if (false) ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null), () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
+        if (Config.TEST && !(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null)))
+            Log.p( "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
 //        if (owner instanceof Category) {
 //            setOwnerCategory((Category) owner);
 //        } else 
@@ -2294,7 +2217,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public int getSize() { //
 //        return getList().size();
 //    }
-
     /**
     NB. The index must be in the full (unfiltered) list! Hence recommended to use addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subtask, boolean addAfterItem) which calculates right index for subtask
     @param index
@@ -2329,7 +2251,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         List listFull = getListFull();
 //        listFull.add(addToEndOfList ? listFull.size() : 0, subItemOrList);
 //        setList(listFull);
-        addToList(addToEndOfList?listFull.size():0,subItemOrList);
+        addToList(addToEndOfList ? listFull.size() : 0, subItemOrList);
         return true;
     }
 
@@ -2374,7 +2296,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return addToList(newItem); //UI: else add to end of list //TODO! should this depend on a setting?
 //        } else
 //            return addToList(indexFull + (addAfterItemOrEndOfList ? 1 : 0), newItem);
-            return addToList(indexFull , newItem);
+        return addToList(indexFull, newItem);
     }
 
 //    @Override
@@ -2540,76 +2462,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        setActualEffort(getActualEffort() + timeSpent); //store new actual effort
 //    }
 //</editor-fold>
-//    private final static String[] challengeNames = new String[]{"Piece of cake", "Easy", "Average", "Tough", "Hard"};
-//    private final static int[] challengeValues = new int[]{0, 1, 2, 3, 4};
-    public enum Challenge {
-        //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
-//        VERY_EASY("Very easy", "V.easy"), EASY("Easy"), AVERAGE("Average", "Avrg"), HARD("Tough"), VERY_HARD("Hard");
-        VERY_EASY("Simple"), EASY("Easy"), AVERAGE("Normal"), HARD("Hard"), VERY_HARD("Tough");
 
-        private final String description;
-        private final String shortDescription;
-
-        Challenge(String description, String shortDescription) {
-            this.description = description;
-            this.shortDescription = shortDescription;
-        }
-
-        Challenge(String description) {
-            this(description, description);
-        }
-
-        String getDescription() {
-            return description;
-        }
-
-        String getDescription(boolean shortLabels) {
-            if (shortLabels) {
-                return shortDescription;
-            } else {
-                return getDescription();
-            }
-        }
-
-        static String[] getDescriptionList() {
-//            return new String[]{VERY_EASY.getDescription(), EASY.getDescription(), AVERAGE.getDescription(), HARD.getDescription(), VERY_HARD.getDescription()};
-            return new String[]{VERY_EASY.description, EASY.description, AVERAGE.description, HARD.description, VERY_HARD.description};
-        }
-
-        static String[] getDescriptionList(boolean shortLabels) {
-            if (shortLabels) {
-                return new String[]{VERY_EASY.shortDescription, EASY.shortDescription, AVERAGE.shortDescription, HARD.shortDescription, VERY_HARD.shortDescription};
-            } else //            return new String[]{VERY_EASY.getDescription(), EASY.getDescription(), AVERAGE.getDescription(), HARD.getDescription(), VERY_HARD.getDescription()};
-            {
-                return getDescriptionList();
-            }
-        }
-
-        static int[] getDescriptionValues() {
-            return new int[]{VERY_EASY.ordinal(), EASY.ordinal(), AVERAGE.ordinal(), HARD.ordinal(), VERY_HARD.ordinal()};
-        }
-
-        /**
-         * returns the enum corresponding to the description string
-         *
-         * @param description
-         * @return enum or null if no enum value corresponds to the description
-         * string
-         */
-        static Challenge getValue(String description) {
-            return getValue(description, false);
-        }
-
-        static Challenge getValue(String description, boolean shortLabels) {
-            String[] descList = getDescriptionList(shortLabels);
-            for (int i = 0, size = getDescriptionList().length; i < size; i++) {
-                if (descList[i].equals(description)) {
-                    return Challenge.values()[getDescriptionValues()[i]]; //values() return an array of the ordinals
-                }
-            }
-            return null;
-        }
-    }
 
     public void setStarred(boolean starred) {
 //        if (starred) {
@@ -2623,16 +2476,31 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    /**
-    returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
-    @return 
-     */
-    public boolean isStarInherited() {
+    public boolean isStarInheritedFrom(Boolean potentiallyInheritedValue) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Boolean starred = getBoolean(PARSE_STARRED);
-        Boolean starred = isStarred();
+//        Boolean starred = isStarred();
 //        return starred == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
-        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().isStarred() == starred;
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
+//                && potentiallyInheritedValue == starred;
+//</editor-fold>
+//        return isInherited(isStarred(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerStarredProperties.getBoolean());
+        if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().isStarred(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerStarredProperties.getBoolean());
+        else
+            return false;
+    }
+
+    public boolean isStarInherited() {
+//<editor-fold defaultstate="collapsed" desc="comment">
+////        Boolean starred = getBoolean(PARSE_STARRED);
+//        Boolean starred = isStarred();
+////        return starred == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().isStarred() == starred;
+//</editor-fold>
+//        return getOwnerItem() != null ? isStarInheritedFrom(getOwnerItem().isStarred()) : false;
+        return isStarInheritedFrom(isStarred());
     }
 
     public boolean isStarred() {
@@ -2669,13 +2537,28 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
-    public boolean isPriorityInherited() {
+    public boolean isPriorityInherited(Integer potentiallyInheritedValue) {
 //        Integer i = getInt(PARSE_PRIORITY);
-        Integer i = getPriority();
+//        Integer i = getPriority();
 //        return i == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()
 //                && getOwnerItem() != null && getOwnerItem().getPriority() != 0;
-        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getPriority() == i;
+//        return isInherited(getPriority(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectPriority.getBoolean());
+        if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().getPriority(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectPriority.getBoolean());
+        else
+            return false;
+
+    }
+
+    public boolean isPriorityInherited() {
+//        Integer i = getInt(PARSE_PRIORITY);
+//        Integer i = getPriority();
+//        return i == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getPriority() != 0;
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getPriority() == i;
+//        return getOwnerItem() != null ? isPriorityInheritedFrom(getOwnerItem().getPriority()) : false;
+        return isPriorityInherited(getPriority());
     }
 
     public Priority getPriorityObject() {
@@ -2746,12 +2629,28 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
+    public boolean isChallengeInherited(Challenge potentiallyInheritedValue) {
+////        String challenge = getString(PARSE_CHALLENGE);
+//        Challenge challenge = getChallengeN();
+////        return challenge == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
+//                && getOwnerItem() != null && MyUtil.eql(getOwnerItem().getChallengeN(), challenge);
+//        return isInherited(getChallengeN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectChallenge.getBoolean());
+           if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().getChallengeN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectChallenge.getBoolean());
+        else
+            return false;
+
+    }
+
     public boolean isChallengeInherited() {
-//        String challenge = getString(PARSE_CHALLENGE);
-        Challenge challenge = getChallengeN();
-//        return challenge == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
-        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
-                && getOwnerItem() != null && MyUtil.eql(getOwnerItem().getChallengeN(), challenge);
+////        String challenge = getString(PARSE_CHALLENGE);
+//        Challenge challenge = getChallengeN();
+////        return challenge == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
+//                && getOwnerItem() != null && MyUtil.eql(getOwnerItem().getChallengeN(), challenge);
+//        return getOwnerItem() != null ? isChallengeInheritedFrom(getOwnerItem().getChallengeN()) : false;
+        return  isChallengeInherited(getChallengeN());
     }
 
     public void setChallenge(Challenge challenge) {
@@ -2843,7 +2742,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return (dreadFunValue == null) ? null : DreadFunValue.valueOf(dreadFunValue); //Created is initial value
     }
 
-    /**
+    /*returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
+    @return 
+     */
+    public boolean isDreadFunInherited(DreadFunValue potentiallyInheritedValue) {
+           if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().getDreadFunValueN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean());
+        else
+            return false;
+    }
+
+    public boolean isDreadFunInherited() {
+        return  isDreadFunInherited(getDreadFunValueN());
+    }    /**
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
@@ -2954,7 +2865,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
         return (imp == null) ? null : HighMediumLow.valueOf(imp); //Created is initial value
+    }
 
+    /*returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
+    @return 
+     */
+    public boolean isImportanceInherited(HighMediumLow potentiallyInheritedValue) {
+           if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().getImportanceN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectImportance.getBoolean());
+        else
+            return false;
+    }
+
+    public boolean isImportanceInherited() {
+        return  isImportanceInherited(getImportanceN());
     }
 
     /**
@@ -3013,6 +2937,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
         return (urgency == null) ? null : HighMediumLow.valueOf(urgency); //Created is initial value
+    }
+    
+        /**
+    returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
+    @return 
+     */
+    public boolean isUrgencyInherited(HighMediumLow potentiallyInheritedValue) {
+           if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().getUrgencyN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectUrgency.getBoolean());
+        else
+            return false;
+    }
+
+    public boolean isUrgencyInherited() {
+        return  isUrgencyInherited(getUrgencyN());
     }
 
     /**
@@ -5311,13 +5250,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
+    public boolean isDueDateInherited(Date potentiallyInheritedValue) {
+////        Date date = getDate(PARSE_DUE_DATE);
+//        Date date = getDueDateD();
+////        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()
+////                && getOwnerItem() != null && getOwnerItem().getDueDateD().getTime() != 0;
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getDueDateD().equals(date); //
+//          return isInherited(getDueDateD(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectDueDate.getBoolean());
+        if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().getDueDateD(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectDueDate.getBoolean());
+        else
+            return false;
+    }
+
     public boolean isDueDateInherited() {
-//        Date date = getDate(PARSE_DUE_DATE);
-        Date date = getDueDateD();
-//        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()
-//                && getOwnerItem() != null && getOwnerItem().getDueDateD().getTime() != 0;
-        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getDueDateD().equals(date); //
+////        Date date = getDate(PARSE_DUE_DATE);
+//        Date date = getDueDateD();
+////        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()
+////                && getOwnerItem() != null && getOwnerItem().getDueDateD().getTime() != 0;
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectDueDate.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getDueDateD().equals(date); //
+//            return getOwnerItem() != null ? isStarInheritedFrom(getOwnerItem().getDueDateD()) : false;
+        return isDueDateInherited(getDueDateD());
+
     }
 //    private void setDueDateInParse(Date dueDate) {
 
@@ -5478,13 +5434,31 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
+    public boolean isStartByDateInherited(Date potentiallyInheritedValue) {
+////        Date date = getDate(PARSE_START_BY_DATE);
+//        Date date = getStartByDateD();
+////        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()
+////                && getOwnerItem() != null && getOwnerItem().getStartByDateD().getTime() != 0;
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getStartByDateD().equals(date);
+//        return isInherited(getStartByDateD(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean());
+        if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().getStartByDateD(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean());
+        else
+            return false;
+
+    }
+
     public boolean isStartByDateInherited() {
-//        Date date = getDate(PARSE_START_BY_DATE);
-        Date date = getStartByDateD();
-//        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()
-//                && getOwnerItem() != null && getOwnerItem().getStartByDateD().getTime() != 0;
-        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getStartByDateD().equals(date);
+////        Date date = getDate(PARSE_START_BY_DATE);
+//        Date date = getStartByDateD();
+////        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()
+////                && getOwnerItem() != null && getOwnerItem().getStartByDateD().getTime() != 0;
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getStartByDateD().equals(date);
+//        return getOwnerItem() != null ? isStartByDateInheritedFrom(getOwnerItem().isStarred()) : false;
+        return isStartByDateInherited(getStartByDateD());
+
     }
 
     public void setStartByDate(long startByDate) {
@@ -5552,13 +5526,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
+    public boolean isWaitingTillInherited(Date potentiallyInheritedValue) {
+////        Date date = getDate(PARSE_WAITING_TILL_DATE);
+//        Date date = getWaitingTillDateD();
+////        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
+////                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().getTime() != 0;
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().equals(date);
+//        return isInherited(getWaitingTillDateD(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean());
+        if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().getWaitingTillDateD(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean());
+        else
+            return false;
+    }
+
     public boolean isWaitingTillInherited() {
-//        Date date = getDate(PARSE_WAITING_TILL_DATE);
-        Date date = getWaitingTillDateD();
-//        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
-//                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().getTime() != 0;
-        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
-                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().equals(date);
+////        Date date = getDate(PARSE_WAITING_TILL_DATE);
+//        Date date = getWaitingTillDateD();
+////        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
+////                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().getTime() != 0;
+//        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
+//                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().equals(date);
+//        return getOwnerItem() != null ? isWaitingTillInherited(getOwnerItem().getWaitingTillDateD()) : false;
+        return isWaitingTillInherited(getWaitingTillDateD());
+
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getWaitingTillDate() {

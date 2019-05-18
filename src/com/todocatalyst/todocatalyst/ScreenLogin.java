@@ -65,7 +65,7 @@ public class ScreenLogin extends MyForm {
         //TODO change login screen to show 2 text/ad screens, swipe them left to get to login fields (like ?? app)
         super("Login", null, () -> {
         });
-        
+
 //        AdMobManager ad;
 //        NTextField n;
     }
@@ -86,7 +86,7 @@ public class ScreenLogin extends MyForm {
 //            boolean refreshDataInBackground = true;
         if (refreshDataInBackground) {
             thread.run((success) -> {
-                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true)) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true)) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
                     success.onSucess(null);
                 }
                 thread.kill();
@@ -109,7 +109,7 @@ public class ScreenLogin extends MyForm {
         } else {
 //            Dialog ip = new InfiniteProgress().showInfiniteBlocking(); //DONE in DAO.cacheLoadDataChangedOnServer
             //TODO!!!! show waiting symbol "loading your tasks..."
-            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            ip.dispose();
         }
         //ALARMS - initialize
@@ -221,13 +221,13 @@ public class ScreenLogin extends MyForm {
 //        getToolbar().setUIID("Container");
 //        getToolbar().hideToolbar();
 //        TextField email = new TextField("", "Email", 20, TextArea.EMAILADDR);
-        NTextField email = new NTextField(TextArea.EMAILADDR);
+        NTextField email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
         if (MyPrefs.loginStoreEmail.getBoolean()) {
             email.setText(MyPrefs.loginEmail.getString());
         }
 
 //        TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
-        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 
 //        BorderLayout b1 = new BorderLayout();
@@ -969,7 +969,7 @@ public class ScreenLogin extends MyForm {
 
         String password = PasswordGenerator.getInstance().generate(12);
         if (validEmail.equals("thomas.hjelm@email.com"))
-                password = "ItsThomas";
+            password = "ItsThomas";
         try {
             ParseUser parseUser = ParseUser.create(validEmail, password);
             parseUser.setEmail(validEmail);

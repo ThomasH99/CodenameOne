@@ -36,6 +36,7 @@ import static com.todocatalyst.todocatalyst.ScreenLogin.getLastUserSessionFromSt
 import static com.todocatalyst.todocatalyst.ScreenLogin.setDefaultACL;
 import java.io.IOException;
 import java.util.Date;
+import java.util.TimeZone;
 import net.informaticalibera.cn1.nativelogreader.NativeLogs;
 //import net.informaticalibera.cn1.nativelogreader.NativeLogs;
 //import net.informaticalibera.cn1.nativelogreader.*;
@@ -334,6 +335,12 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        Resources theme = UIManager.initFirstTheme("/theme");
 //        Resources theme = null;
 //</editor-fold>
+        Log.getInstance().setFileWriteEnabled(true);
+        Log.setLevel(Log.DEBUG);
+        Log.setReportingLevel(Log.REPORTING_DEBUG);
+        //PARSE logging:
+        Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
+
         Log.p("init() starting...");
 
         NativeLogs.initNativeLogs();
@@ -503,7 +510,8 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
             locale = MyPrefs.localeUserSelected.getString();
         }
         UIManager.getInstance().setBundle(localizationTheme.getL10N("LocalizationBundle", locale));
-        Display.getInstance().getLocalizationManager().getLocale();
+        Log.p("Locale (Display.getInstance().getLocalizationManager().getLocale()) = " + Display.getInstance().getLocalizationManager().getLocale());
+        Log.p("TimeZone (TimeZone.getDefault()) = " + TimeZone.getDefault());
 
         Toolbar.setGlobalToolbar(true); //needed, otherwise toolbar null in other screens
 
@@ -588,16 +596,17 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         }
 //</editor-fold>
 
-        Log.getInstance().setFileWriteEnabled(true);
-        Log.setLevel(Log.DEBUG);
-        Log.setReportingLevel(Log.REPORTING_DEBUG);
-        //PARSE logging:
-        Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
+//        Log.getInstance().setFileWriteEnabled(true);
+//        Log.setLevel(Log.DEBUG);
+//        Log.setReportingLevel(Log.REPORTING_DEBUG);
+//        //PARSE logging:
+//        Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
 
 //        NativeLogs.initNativeLogs();
         Log.p("LOCALE = " + locale);
 
-        if (Config.PARSE_OFFLINE) {
+//        if (Config.PARSE_OFFLINE && !getPlatformName().equals("ios") && !getPlatformName().equals("and")) { //never run in local mode on a device !!seems to return "ios" with ios skin on simulator??
+        if (Config.PARSE_OFFLINE && Display.getInstance().isSimulator()) { //never run in local mode on a device
             Parse.initialize(
                     "http://localhost:1337/parse",
                     "l0Gw4hYdg7hJDPEG11Qzxqh59Yj9F2JXDkDdbdCc",

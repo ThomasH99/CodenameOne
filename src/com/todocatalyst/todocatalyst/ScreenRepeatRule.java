@@ -16,7 +16,7 @@ import com.codename1.ui.Toolbar;
 //import com.codename1.ui.*;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.SelectionListener;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.parse4cn1.ParseObject;
@@ -378,10 +378,10 @@ public class ScreenRepeatRule extends MyForm {
 //            motherContainer.add(BorderLayout.center(FlowLayout.encloseCenter(new Label(myRepeatRule.getListOfUndoneRepeatInstances().size() + " tasks")))
 //            repeatRuleDetailsContainer = BorderLayout.center(FlowLayout.encloseCenter(new Label(myRepeatRule.getListOfUndoneRepeatInstances().size() + " tasks")))
 //            repeatRuleDetailsContainer = BorderLayout.center(FlowLayout.encloseCenter(new Label(Format.f("{0 total number repeats generated so far} tasks, {1 } active",
-            repeatRuleDetailsContainer = BorderLayout.center(FlowLayout.encloseCenter(new Label(Format.f("{0 total number repeats generated so far} tasks, {1 tasksCreatedNotDoneYet} active",
+            repeatRuleDetailsContainer = MyBorderLayout.center(FlowLayout.encloseCenter(new Label(Format.f("{0 total number repeats generated so far} tasks, {1 tasksCreatedNotDoneYet} active",
                     "" + repeatRuleEdited.getTotalNumberOfInstancesGeneratedSoFar(),
                     "" + repeatRuleEdited.getListOfUndoneRepeatInstances().size()))))
-                    .add(BorderLayout.EAST, buttonRepeatRuleHistory).add(BorderLayout.SOUTH, repeatRuleHideableDetailsContainer);
+                    .add(MyBorderLayout.EAST, buttonRepeatRuleHistory).add(MyBorderLayout.SOUTH, repeatRuleHideableDetailsContainer);
         }
 
 //        daysInWeekField = new ComboBoxLogicalMultiSelection(new int[]{RepeatRule.MONDAY, RepeatRule.TUESDAY, RepeatRule.WEDNESDAY, RepeatRule.THURSDAY, RepeatRule.FRIDAY, RepeatRule.SATURDAY, RepeatRule.SUNDAY}, new String[]{MyDate.MONDAY, MyDate.TUESDAY, MyDate.WEDNESDAY, MyDate.THURSDAY, MyDate.FRIDAY, MyDate.SATURDAY, MyDate.SUNDAY});

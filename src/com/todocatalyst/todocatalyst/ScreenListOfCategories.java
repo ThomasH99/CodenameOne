@@ -11,7 +11,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.Button;
 import com.codename1.ui.Label;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
@@ -85,15 +85,15 @@ public class ScreenListOfCategories extends MyForm {
 //        getContentPane().setScrollableY(true);
 //</editor-fold>
         setScrollable(false);
-        if (!(getLayout() instanceof BorderLayout)) {
-            setLayout(new BorderLayout());
+        if (!(getLayout() instanceof MyBorderLayout)) {
+            setLayout(new MyBorderLayout());
         }
         setPinchInsertEnabled(true);
         expandedObjects = new ExpandedObjects(getUniqueFormId());
         addCommandsToToolbar(getToolbar());
         if (false) getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
-                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+                Container compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
                 boolean showAll = text == null || text.length() == 0;
                 for (int i = 0, size = this.categoryList.getSize(); i < size; i++) {
                     //TODO!!! compare same case (upper/lower)
@@ -111,7 +111,7 @@ public class ScreenListOfCategories extends MyForm {
     }
 
     protected void animateMyForm() {
-        ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(150);
+        ((Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(150);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class ScreenListOfCategories extends MyForm {
         getContentPane().removeAll();
         categoryList.resetWorkTimeDefinition();
         Container cont = buildContentPaneForItemList(categoryList);
-        getContentPane().add(BorderLayout.CENTER, cont);
+        getContentPane().add(MyBorderLayout.CENTER, cont);
         if (cont instanceof MyTree2) {
 //            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
             InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
@@ -232,7 +232,7 @@ public class ScreenListOfCategories extends MyForm {
 
     static Container buildCategoryContainer(Category category, CategoryList categoryList, KeepInSameScreenPosition keepPos, MyForm.Action refreshOnItemEdits) {
 
-        Container mainCont = new Container(new BorderLayout());
+        Container mainCont = new Container(new MyBorderLayout());
         mainCont.setUIID("CategoryContainer");
         if (Config.TEST) mainCont.setName("CatCont-" + category.getText());
 
@@ -391,7 +391,7 @@ public class ScreenListOfCategories extends MyForm {
             return enabled;
         }); //D&D
         if (Config.TEST) expandCategorySubTasksButton.setName("CatExpand-" + category.getText());
-        mainCont.addComponent(BorderLayout.CENTER, categoryLabel);
+        mainCont.addComponent(MyBorderLayout.CENTER, categoryLabel);
 
         Button editItemPropertiesButton = new Button();
         editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCategory-", category.getObjectIdP(), "", Icons.iconEditPropertiesToolbarStyle, (e) -> {
@@ -420,7 +420,7 @@ public class ScreenListOfCategories extends MyForm {
 
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //        Container east = new Container(BoxLayout.x());
-        mainCont.addComponent(BorderLayout.EAST, east);
+        mainCont.addComponent(MyBorderLayout.EAST, east);
 //        Button subTasksButton = new Button();
         if (category.getSize() != 0) {
 //            east.addComponent(new Label("[" + category.getSize() + "]"));
@@ -439,7 +439,7 @@ public class ScreenListOfCategories extends MyForm {
         east.addComponent(editItemPropertiesButton);
 
         if (MyPrefs.showCategoryDescriptionInCategoryList.getBoolean() && !category.getComment().equals("")) {
-            mainCont.addComponent(BorderLayout.SOUTH,
+            mainCont.addComponent(MyBorderLayout.SOUTH,
                     new Container(BoxLayout.x()).add(
                             new Label("(" + category.getComment() + ")")));
         }

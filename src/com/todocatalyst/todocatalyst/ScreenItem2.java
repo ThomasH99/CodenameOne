@@ -9,6 +9,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.Label;
 import com.codename1.ui.Button;
+import com.codename1.ui.Component;
 import com.codename1.ui.Form;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Image;
@@ -20,7 +21,7 @@ import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.table.TableLayout;
 import com.parse4cn1.ParseException;
@@ -119,6 +120,7 @@ public class ScreenItem2 extends MyForm {
 //    protected static String FORM_UNIQUE_ID = "ScreenEditItem"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
+    private float TAB_ICON_SIZE_IN_MM = 4; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
 
 //    ScreenItem(Item item, MyForm previousForm) { //throws ParseException, IOException {
 //        this(item, previousForm, ()->{});
@@ -138,7 +140,8 @@ public class ScreenItem2 extends MyForm {
     ScreenItem2(Item item, MyForm previousForm, UpdateField doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues) { //throws ParseException, IOException {
 //        super("Task", previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
-        super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
+//        super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
+        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
         setUniqueFormId("ScreenEditItem");
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
         if (false) {
@@ -409,7 +412,7 @@ public class ScreenItem2 extends MyForm {
         }, "DeleteItem"));
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", "Task settings", Icons.iconSettings, (e) -> {
-            new ScreenSettingsItem(ScreenItem2.this, () -> {
+            new ScreenSettingsItem("Settings tasks", ScreenItem2.this, () -> {
                 refreshAfterEdit();
             }).show();
         }
@@ -712,7 +715,7 @@ public class ScreenItem2 extends MyForm {
 //        mainCont.add(new Label(Item.COMMENT)).add(FlowLayout.encloseIn(new Label(Item.COMMENT), addTimeStampToComment));
 //        mainCont.add(FlowLayout.encloseIn(makeHelpButton(Item.COMMENT, "**"), addTimeStampToComment));
         Container ts = FlowLayout.encloseRight(addTimeStampToComment);
-        Container all = BorderLayout.centerEastWest(comment, ts, null);
+        Container all = MyBorderLayout.centerEastWest(comment, ts, null);
         all.setUIID("TextArea");
         return all;
     }
@@ -786,9 +789,12 @@ public class ScreenItem2 extends MyForm {
 
 //        Tabs tabs = new Tabs(Component.BOTTOM);
         Tabs tabs = new Tabs();
+        tabs.setUIID("ScreenItemTabsContainer");
 //       tabs.setTabPlacement(Component.BOTTOM);
 //       tabs.setTabPlacement(Component.BOTTOM);
-        tabs.setSwipeActivated(false);
+        tabs.setSwipeActivated(MyPrefs.itemEditEnableSwipeBetweenTabs.getBoolean());
+        tabs.setTabTextPosition(Tabs.RIGHT); //tabs text to the right of the icons
+        tabs.setTabUIID("ScreenItemTab");
         tabs.addSelectionListener((oldSel, i) -> {
 //            int i = tabs.getSelectedIndex();
             if (i == 0 || i == -1 || i == oldSel) {
@@ -797,7 +803,7 @@ public class ScreenItem2 extends MyForm {
                 previousValues.put(LAST_TAB_SELECTED, i);
             }
         });
-        cont.add(BorderLayout.CENTER, tabs);
+        cont.add(MyBorderLayout.CENTER, tabs);
 
         MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker();
 //        MyTextArea description;
@@ -805,22 +811,23 @@ public class ScreenItem2 extends MyForm {
         MyDurationPicker effortEstimate;
         MyDurationPicker remainingEffort;
         //TAB MAIN
-        Container mainTabCont = new Container(new BorderLayout());
+//        Container mainTabCont = new Container(new MyBorderLayout());
         Container mainCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         if (Config.TEST) mainCont.setName("MainTab");
 
-        mainTabCont.add(BorderLayout.CENTER, mainCont);
-        mainCont.setScrollableY(true);
+//        mainTabCont.add(MyBorderLayout.CENTER, mainCont);
+//        if (false)
+            mainCont.setScrollableY(true);
 
 //        Container mainTabCont = BorderLayout.north(mainCont);
 //        Container mainTabCont = BorderLayout.north(new Container(BoxLayout.y()));
 //        if (false) {
 //            mainCont.add(ScreenListOfItems.makeMyTree2ForSubTasks(ScreenItem.this, item, expandedObjects));
 //        }
-        tabs.addTab("Main", Icons.iconMainTab, 3, mainTabCont);
-        tabs.setTabTextPosition(Tabs.RIGHT);
-//        tabs.addTab("Main", null, mainTabCont);
+//        tabs.addTab("Main", Icons.iconMainTab, TAB_ICON_SIZE_IN_MM, mainTabCont);
+        tabs.addTab("Main", Icons.iconMainTab, TAB_ICON_SIZE_IN_MM, mainCont);
 
+        //        tabs.addTab("Main", null, mainTabCont);
 //        MyTextField(String title, String hint, int columns, int constraint, Map<String, ScreenItemP.GetParseValue> parseIdMap, ParseObject parseObject, String parseId) {
 //        MyTextField description = new MyTextField("Task", 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2, () -> item.getText(), (s) -> item.setText(s));
 //        MyTextField description = new MyTextField(Item.DESCRIPTION_HINT, 20, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2,
@@ -900,7 +907,8 @@ public class ScreenItem2 extends MyForm {
                 description.setText(res.cleaned); //update text after estimate is removed 
                 description.repaint();
             }
-            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
+//            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
+            setTitle((item.isTemplate() ? "TEMPLATE: " : "") + description.getText());
         }); //update the form title when text is changed
         AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, item, 5000, () -> item.setText(description.getText()));
 
@@ -910,7 +918,6 @@ public class ScreenItem2 extends MyForm {
 //        initField(Item.STATUS, Item.STATUS_HELP, status, Item.PARSE_STATUS, () -> item.getStatus(), (t) -> item.setStatus((ItemStatus) t),
 //                () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t), null);
 //</editor-fold>
-
         MyCheckBox status = new MyCheckBox(itemLS.getStatus()); //, null);
         initField(Item.PARSE_STATUS, status,
                 () -> item.getStatus().toString(),
@@ -925,15 +932,18 @@ public class ScreenItem2 extends MyForm {
 //        });
 //        Container taskCont = new Container(new BoxLayout(BoxLayout.X_AXIS));
 //</editor-fold>
-        Container taskCont = new Container(new BorderLayout());
+        Container taskCont = new Container(new MyBorderLayout());
 
         //STARRED
 //        CheckBox starredcb = new CheckBox(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
 //        Button starred = new Button(itemLS.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
 //        Button starred = new RadioButton(); //TODO change to use RadionButton and automatically switch icon when selected/unselected --> RB no good
         Button starred = new Button(); //TODO change to use RadionButton and automatically switch icon when selected/unselected
-        starred.addActionListener((e) -> starred.setIcon(starred.getIcon() == Icons.iconStarUnselectedLabelStyle
-                ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle));
+        starred.setUIID("ScreenItemStarred");
+//        starred.addActionListener((e) -> starred.setIcon(starred.getIcon() == Icons.iconStarUnselectedLabelStyle
+//                ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle));
+        starred.addActionListener((e) -> starred.setMaterialIcon(starred.getMaterialIcon() == Icons.iconStarUnselected
+                ? Icons.iconStarSelected : Icons.iconStarUnselected));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        starred.setToggle(true);
 //        if (false) {
@@ -955,15 +965,19 @@ public class ScreenItem2 extends MyForm {
                 () -> item.isStarred(),
                 (b) -> item.setStarred((boolean) b),
                 //                () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
-                () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
-                (b) -> starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle)
+                //                () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
+                //                (b) -> starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle),
+                () -> starred.getMaterialIcon() == Icons.iconStarSelected,
+                (b) -> starred.setMaterialIcon((boolean) b ? Icons.iconStarSelected : Icons.iconStarUnselected),
+                () -> item.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarSelected)
         //                (b) -> starred.setIcon((boolean) b ?  Icons.iconStarUnselectedLabelStyle:Icons.iconStarSelectedLabelStyle )
         //                    starred.repaint();
         ); //add taskCont just to avoid creating an unnecessary field container
-        starred.setUIID("ScreenItemStarred");
+        taskCont.add(MyBorderLayout.CENTER, description);
+        updateUIIDForInherited(item.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarSelected), starred);
+
 //        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
 //        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
-        taskCont.add(BorderLayout.CENTER, description);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Button helpTextButton = new Button(Item.TASK);
 //        helpTextButton.setUIID("Label"); //show as Label
@@ -994,7 +1008,7 @@ public class ScreenItem2 extends MyForm {
         MyTextField comment = new MyTextField(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
         comment.setSingleLineTextArea(false);
         Container commentField = makeCommentContainer(comment);
-        AutoSaveTimer commentSaveTimer = new AutoSaveTimer(this, comment, item, 5000, () -> item.setComment(comment.getText()));
+        AutoSaveTimer commentSaveTimer = new AutoSaveTimer(this, comment, item, 5000, () -> item.setComment(comment.getText())); //NORMAL that appear as non-used since running in background!!
 
 //        mainCont.add(initField(Item.COMMENT, Item.COMMENT_HELP, comment, Item.PARSE_COMMENT, () -> item.getComment(), (t) -> item.setComment((String) t),
         initField(Item.PARSE_COMMENT, comment, () -> item.getComment(), (t) -> item.setComment((String) t), () -> comment.getText(), (t) -> comment.setText((String) t));
@@ -1039,9 +1053,9 @@ public class ScreenItem2 extends MyForm {
 ////            }
 //        }); //"<click to set a due date>"
 //</editor-fold>
-        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP,null,false,false,false,true));
-        mainCont.add(layoutN(Item.STARRED, starred, Item.STARRED_HELP,null, false,false,false,true));
-        
+        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true));
+        mainCont.add(layoutN(Item.STARRED, starred, Item.STARRED_HELP, null, false, false, false, true));
+
         MyDateAndTimePicker dueDate = new MyDateAndTimePicker();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont.add(new Label("Due")).add(dueDate);
@@ -1056,8 +1070,10 @@ public class ScreenItem2 extends MyForm {
                 () -> item.getDueDateD(),
                 (d) -> item.setDueDate((Date) d),
                 () -> dueDate.getDate(),
-                (d) -> dueDate.setDate((Date) d));
+                (d) -> dueDate.setDate((Date) d),
+                () -> item.isDueDateInherited(dueDate.getDate()));
         mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
+        updateUIIDForInherited(item.isDueDateInherited(dueDate.getDate()), dueDate); //NB! MUST do *after* layoutN() which sets the UIID
 
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
         //FINISH_TIME
@@ -1100,10 +1116,8 @@ public class ScreenItem2 extends MyForm {
 //        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)))); //, true, false, false));
         mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP)); //, true, false, false));
 //        int remainingIndex = mainCont.getComponentCount() - 1; //store the index at which to insert remainingEffort
-
-        Label l = new Label("", "Spacer");
-        l.setShowEvenIfBlank(true);
-        mainCont.add(l);
+if (false)
+        mainCont.add(makeSpacer());
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (!item.isProject()) {
@@ -1136,18 +1150,29 @@ public class ScreenItem2 extends MyForm {
 //                : getCategoriesAsCommaSeparatedString(item.getCategories()));
 //        WrapButton categoriesButton = new WrapButton(getCategoriesAsCommaSeparatedString((List<Category> )previousValues.get(Item.PARSE_CATEGORIES,item.getCategories())));
         WrapButton categoriesButton = new WrapButton();
+        ActionListener refreshCategoriesButton = (e) -> {
+            String commaSeparatedCategories = getCategoriesAsCommaSeparatedString(previousValues.get(Item.PARSE_CATEGORIES) != null
+                    ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
+                    : item.getCategories());
+            categoriesButton.setText(commaSeparatedCategories);
+        };
+        //categoriesButton.getTextComponent().setRTL(true);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        WrapButton editOwnerButton = new WrapButton(getListAsCommaSeparatedString(editedCats));
 
 //        Command categoryEditCmd = new MyReplayCommand("PickCategories", "") { //"<click to set categories>"
 //</editor-fold>
-        String commaSeparatedCategories = getCategoriesAsCommaSeparatedString(previousValues.get(Item.PARSE_CATEGORIES) != null
-                ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
-                : item.getCategories());
+        if (false) {
+            String commaSeparatedCategories = getCategoriesAsCommaSeparatedString(previousValues.get(Item.PARSE_CATEGORIES) != null
+                    ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
+                    : item.getCategories());
+        }
 //        Command categoryEditCmd = new Command(getCategoriesAsCommaSeparatedString((List<String>) previousValues.get(Item.PARSE_CATEGORIES, item.getCategories()))) { //"<click to set categories>"
-        Command categoryEditCmd = new Command(commaSeparatedCategories) { //"<click to set categories>"
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+//        Command categoryEditCmd = new Command(commaSeparatedCategories) { //"<click to set categories>"
+//        Command categoryEditCmd = new Command("") { //"<click to set categories>"
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+        Command categoryEditCmd = MyReplayCommand.create("EditCategories", null, null, (e)->{
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem2.this);
 //                if (previousValues.get(Item.PARSE_CATEGORIES) != null) {
@@ -1191,8 +1216,11 @@ public class ScreenItem2 extends MyForm {
                         });
                 screenCatPicker.show();
             }
-        };
+        );
         categoriesButton.setCommand(categoryEditCmd);
+//        categoriesButton.setText(commaSeparatedCategories);
+        refreshCategoriesButton.actionPerformed(null);
+        categoriesButton.revalidate();
         parseIdMap2.put(Item.PARSE_CATEGORIES, () -> {
             if (previousValues.get(Item.PARSE_CATEGORIES) != null) {
 //                item.setCategories(Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)));
@@ -1213,7 +1241,10 @@ public class ScreenItem2 extends MyForm {
 //        categoriesButton.revalidate();
 //        mainCont.add(layout(Item.CATEGORIES, categoriesButton, "**", false, false, false));
 //</editor-fold>
-        mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, "**", null, true, false, true));
+//        mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, "**", null, true, false, true));
+        mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, Item.CATEGORIES));
+if (false)
+        mainCont.add(makeSpacer());
 
         //REPEAT RULE
         Object editedRepeatRule = previousValues.get(Item.PARSE_REPEAT_RULE);
@@ -1241,7 +1272,7 @@ public class ScreenItem2 extends MyForm {
 //        locallyEditedRepeatRule = item.getRepeatRule();
 //        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRules", "", null, (e) -> {
 //        Command repeatRuleEditCmd = Command.create(repeatRuleButtonStr, null, (e) -> {
-        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenEditItem", null, (e) -> {
+        Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenEditItem", "", null, (e) -> {
             //TODO!!!! by making this a ReplayCommand, it is also necessary to store the edited values within the screen, otherwise the user is returned, but the values are lost => annoying!
 //DON'T set a string since SpanButton shows both Command string and SpanLabel string
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1337,7 +1368,7 @@ public class ScreenItem2 extends MyForm {
 //                revalidate(); //enough to update? YES //needed to allow space for additional text on RR button?!
 //                repeatRuleButton.revalidate(); //enough to update? NO (overwrites label text on left)
 //                repeatRuleButton.getParent().revalidate(); //enough to update? NO
-                mainCont.revalidate(); //enough to update? NO
+                if (false)mainCont.revalidate(); //enough to update? NO
 //                    }
             }, true, dueDate.getDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
@@ -1504,7 +1535,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 int totalNumberSubtasks2 = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 
                 editSubtasksFullScreen.setText(totalNumberSubtasks2 == 0 ? "" : "" + numberUndoneSubtasks2 + "/" + totalNumberSubtasks2);
-                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveTemplateCopyWithSubtasksInBackground((Item)item));
+                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveTemplateCopyWithSubtasksInBackground((Item) item));
                 previousForm.refreshAfterEdit(); //necessary to update sum of subtask effort
             }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
             ).show();
@@ -1512,7 +1543,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         ));
         mainCont.add(layoutN(Item.SUBTASKS, editSubtasksFullScreen, Item.SUBTASKS_HELP));
 
-        if (false)mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2)); //edit subtasks
+        if (false) mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2)); //edit subtasks
         //TODO!!!!! editing of subtasks should be local (and saved locally on app exit)
 //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, item, templateEditMode));
 
@@ -1587,7 +1618,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         Container timeCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         if (Config.TEST) timeCont.setName("TimeTab");
         timeCont.setScrollableY(true);
-        tabs.addTab("Time", Icons.iconTimeTab, 3, timeCont);
+
+        tabs.addTab("Time", Icons.iconTimeTab, TAB_ICON_SIZE_IN_MM, timeCont);
 
         boolean isProject = itemLS.isProject();
 
@@ -1725,10 +1757,14 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        timeCont.add(new Label(Item.WAIT_DATE)).add(addDatePickerWithClearButton(waitingTill));
 //        timeCont.add(new Label(Item.WAIT_DATE)).add(waitingTill.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.WAIT_UNTIL_DATE, waitingTill.makeContainerWithClearButton(), "**"));
-        initField(Item.PARSE_WAITING_TILL_DATE, waitingTill, () -> item.getWaitingTillDateD(), (t) -> item.setWaitingTillDate((Date) t),
-                () -> waitingTill.getDate(), (d) -> waitingTill.setDate((Date) d));
-
+        initField(Item.PARSE_WAITING_TILL_DATE, waitingTill,
+                () -> item.getWaitingTillDateD(),
+                (t) -> item.setWaitingTillDate((Date) t),
+                () -> waitingTill.getDate(),
+                (d) -> waitingTill.setDate((Date) d),
+                () -> item.isWaitingTillInherited(waitingTill.getDate()));
         timeCont.add(layoutN(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP));
+        updateUIIDForInherited(item.isWaitingTillInherited(waitingTill.getDate()), waitingTill);
 
 //        MyDateAndTimePicker waitingAlarm = new MyDateAndTimePicker(parseIdMap2, () -> itemLS.getWaitingAlarmDateD(), (d) -> item.setWaitingAlarmDate(d)); //"<waiting reminder this date>", 
         MyDateAndTimePicker waitingAlarm = new MyDateAndTimePicker(); //"<waiting reminder this date>", 
@@ -1752,14 +1788,18 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
 //        MyDateAndTimePicker startByDate = new MyDateAndTimePicker(parseIdMap2, () -> itemLS.getStartByDateD(), (d) -> item.setStartByDate(d)); // "<start task on this date>", 
         MyDateAndTimePicker startByDate = new MyDateAndTimePicker(); // "<start task on this date>", 
-        initField(Item.PARSE_START_BY_DATE, startByDate, () -> item.getStartByDateD(), (t) -> item.setStartByDate((Date) t),
-                () -> startByDate.getDate(), (d) -> startByDate.setDate((Date) d));
+        initField(Item.PARSE_START_BY_DATE, startByDate,
+                () -> item.getStartByDateD(),
+                (t) -> item.setStartByDate((Date) t),
+                () -> startByDate.getDate(),
+                (d) -> startByDate.setDate((Date) d),
+                () -> item.isStartByDateInherited(startByDate.getDate()));
+        timeCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP));
+        updateUIIDForInherited(item.isStartByDateInherited(startByDate.getDate()), startByDate);
 
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(addDatePickerWithClearButton(startByDate));
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(startByDate.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.START_BY_TIME, startByDate.makeContainerWithClearButton(), "**"));
-        timeCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP));
-
         if (true) {
 //            MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDateD(d)); // "<auto-cancel on date>", 
             MyDatePicker expireByDate = new MyDatePicker(); // "<auto-cancel on date>", 
@@ -1777,7 +1817,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
         prioCont.setScrollableY(true);
         if (Config.TEST) prioCont.setName("PrioTab");
-        tabs.addTab("Prio", Icons.iconPrioTab, 3, prioCont);
+
+        tabs.addTab("Prio", Icons.iconPrioTab, TAB_ICON_SIZE_IN_MM, prioCont);
 
 //        MyStringPicker priority = new MyStringPicker(new String[]{"None", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, parseIdMap2, () -> item.getPriority(), (i) -> item.setPriority(i));
 //        cont.add(new Label("Priority")).add(priority);
@@ -1786,55 +1827,64 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        MyComponentGroup priority = new MyComponentGroup(new String[]{"-", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, parseIdMap2,
 //                (s) -> item.setPriority(Integer.parseInt(s.length() == 0 ? "0" : s)));
         MyComponentGroup priority = new MyComponentGroup(new String[]{"-", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, true);
-        initField(Item.PARSE_PRIORITY, priority, () -> item.getPriority(), (t) -> item.setPriority((int) t),
-                () -> priority.getSelectedIndex(), (i) -> priority.select((int) i));
-
-//        prioCont.add(layout(Item.PRIORITY, priority, Item.PRIORITY_HELP, true, false, true));
+        initField(Item.PARSE_PRIORITY, priority,
+                () -> item.getPriority(),
+                (t) -> item.setPriority((int) t),
+                () -> priority.getSelectedIndex(),
+                (i) -> priority.select((int) i),
+                () -> item.isPriorityInherited(priority.getSelectedIndex()));
         prioCont.add(layoutN(Item.PRIORITY, priority, Item.PRIORITY_HELP));//, null, true, false, false, true));
+        updateUIIDForInherited(item.isPriorityInherited(priority.getSelectedIndex()), priority);
+//        prioCont.add(layout(Item.PRIORITY, priority, Item.PRIORITY_HELP, true, false, true));
 
 //        MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
 //                () -> itemLS.getImportanceN() == null ? "" : itemLS.getImportanceN().getDescription(),
 //                (s) -> item.setImportance(Item.HighMediumLow.getValue(s)));
-        MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), true);
+        MyComponentGroup importance = new MyComponentGroup(HighMediumLow.getDescriptionList(), true);
 //        initField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportanceN(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
         initField(Item.PARSE_IMPORTANCE, importance,
                 () -> item.getImportanceN() != null ? item.getImportanceN().toString() : null,
                 //                (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
-                (enumStr) -> item.setImportance(enumStr != null ? (Item.HighMediumLow.valueOf((String) enumStr)) : null),
+                (enumStr) -> item.setImportance(enumStr != null ? (HighMediumLow.valueOf((String) enumStr)) : null),
                 //                () -> importance.getSelectedString(),
-                () -> importance.getSelectedString() != null ? Item.HighMediumLow.getValue(importance.getSelectedString()).toString() : null,
+                () -> importance.getSelectedString() != null ? HighMediumLow.getValue(importance.getSelectedString()).toString() : null,
                 //                (i) -> importance.select(i != null ? (String) i.toString() : null));
-                //                (i) -> importance.select(i != null ? Item.HighMediumLow.getValue( (String)i).getDescription(): null));
-                //                (enumStr) -> importance.select(enumStr != null ? Item.HighMediumLow.valueOf((String)enumStr).getDescription(): null));
-                (enumStr) -> importance.select(enumStr != null ? Item.HighMediumLow.valueOf((String) enumStr).getDescription() : null));
+                //                (i) -> importance.select(i != null ? HighMediumLow.getValue( (String)i).getDescription(): null));
+                //                (enumStr) -> importance.select(enumStr != null ? HighMediumLow.valueOf((String)enumStr).getDescription(): null));
+                (enumStr) -> importance.select(enumStr != null ? HighMediumLow.valueOf((String) enumStr).getDescription() : null),
+                () -> item.isImportanceInherited(importance.getSelectedString() != null ? HighMediumLow.getValue(importance.getSelectedString()) : null)
+        );
 //                (i) -> importance.select(i != null ?  i.toString() : null));
 
 //        prioCont.add(Item.IMPORTANCE).add(FlowLayout.encloseCenterMiddle(importance));
 //        prioCont.add(layout(Item.IMPORTANCE, FlowLayout.encloseCenterMiddle(importance), "**"));
 //        prioCont.add(layout(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, true, false, true));
         prioCont.add(layoutN(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP));//, null, false, false, true, true));
+        updateUIIDForInherited(item.isImportanceInherited(importance.getSelectedString() != null ? HighMediumLow.getValue(importance.getSelectedString()) : null), importance);
 
 //        MyComponentGroup urgency = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
 //                () -> itemLS.getUrgencyN() == null ? "" : itemLS.getUrgencyN().getDescription(),
 //                (s) -> item.setUrgency(Item.HighMediumLow.getValue(s)));
-        MyComponentGroup urgency = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), true);
+        MyComponentGroup urgency = new MyComponentGroup(HighMediumLow.getDescriptionList(), true);
 //        cont.add(new Label("Urgency")).add(urgency);
 //        prioCont.add(Item.URGENCY).add(FlowLayout.encloseMiddle(urgency));
 //        prioCont.add(layout(Item.URGENCY, FlowLayout.encloseMiddle(urgency), "**"));
 //        prioCont.add(layout(Item.URGENCY, urgency, Item.URGENCY_HELP, true, false, true));
         initField(Item.PARSE_URGENCY, urgency,
                 () -> item.getUrgencyN() != null ? item.getUrgencyN().toString() : null,
-                (enumStr) -> item.setUrgency(enumStr != null ? (Item.HighMediumLow.valueOf((String) enumStr)) : null),
+                (enumStr) -> item.setUrgency(enumStr != null ? (HighMediumLow.valueOf((String) enumStr)) : null),
                 //                () -> urgency.getSelectedString(), (i) -> urgency.select(i != null ? (String) i.toString() : null));
-                () -> urgency.getSelectedString() != null ? Item.HighMediumLow.getValue(urgency.getSelectedString()).toString() : null,
-                (enumStr) -> urgency.select(enumStr != null
-                        ? Item.HighMediumLow.valueOf((String) enumStr).getDescription() : null));
+                () -> urgency.getSelectedString() != null ? HighMediumLow.getValue(urgency.getSelectedString()).toString() : null,
+                (enumStr) -> urgency.select(enumStr != null ? HighMediumLow.valueOf((String) enumStr).getDescription() : null),
+                () -> item.isUrgencyInherited(urgency.getSelectedString() != null ? HighMediumLow.getValue(urgency.getSelectedString()) : null)
+        );
         prioCont.add(layoutN(Item.URGENCY, urgency, Item.URGENCY_HELP));//, null, false, false, true, true));
+        updateUIIDForInherited(item.isUrgencyInherited(urgency.getSelectedString() != null ? HighMediumLow.getValue(urgency.getSelectedString()) : null), urgency);
 
 //        MyComponentGroup challenge = new MyComponentGroup(Item.Challenge.getDescriptionList(), parseIdMap2,
 //                () -> itemLS.getChallengeN() == null ? "" : itemLS.getChallengeN().getDescription(),
 //                (s) -> item.setChallenge(Item.Challenge.getValue(s)));
-        MyComponentGroup challenge1 = new MyComponentGroup(Item.Challenge.getDescriptionList(), true);
+        MyComponentGroup challenge1 = new MyComponentGroup(Challenge.getDescriptionList(), true);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont.add(new Label("Difficulty")).add(challenge);
 //        prioCont.add(new Label("Difficulty")).add(BorderLayout.center(Container.encloseIn(new FlowLayout(),challenge)));
@@ -1846,13 +1896,15 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        }
 //</editor-fold>
         MyComponentGroup challenge = challenge1.getPreferredW() < Display.getInstance().getDisplayWidth() ? challenge1
-                : new MyComponentGroup(Item.Challenge.getDescriptionList(true), true);
+                : new MyComponentGroup(Challenge.getDescriptionList(true), true);
         initField(Item.PARSE_CHALLENGE, challenge,
                 () -> item.getChallengeN() != null ? item.getChallengeN().toString() : null,
-                (enumStr) -> item.setChallenge(enumStr != null ? (Item.Challenge.valueOf((String) enumStr)) : null),
+                (enumStr) -> item.setChallenge(enumStr != null ? (Challenge.valueOf((String) enumStr)) : null),
                 //                () -> challenge.getSelectedString(), (s) -> challenge.select(s != null ? (String) s.toString() : null));
-                () -> challenge.getSelectedString() != null ? Item.Challenge.getValue(challenge.getSelectedString()).toString() : null,
-                (enumStr) -> challenge.select(enumStr != null ? Item.Challenge.valueOf((String) enumStr).getDescription() : null));
+                () -> challenge.getSelectedString() != null ? Challenge.getValue(challenge.getSelectedString()).toString() : null,
+                (enumStr) -> challenge.select(enumStr != null ? Challenge.valueOf((String) enumStr).getDescription() : null),
+                () -> item.isChallengeInherited((challenge.getSelectedString() != null ? Challenge.getValue(challenge.getSelectedString()) : null))
+        );
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        prioCont.add(new Label(Item.CHALLENGE)).add(FlowLayout.encloseCenterMiddle(challenge));
 //        prioCont.add(new Label("TEST")).add(FlowLayout.encloseCenterMiddle(new Label("11111"),new Label("22222"),new Label("33333"),new Label("44444"),new Label("55555")));
@@ -1860,6 +1912,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, true, false, true));
 //</editor-fold>
         prioCont.add(layoutN(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP));//, null, false, false, true, true));
+        updateUIIDForInherited(item.isChallengeInherited(challenge.getSelectedString() != null ? Challenge.getValue(challenge.getSelectedString()) : null), challenge);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyComponentGroup dreadFun = new MyComponentGroup(Item.DreadFunValue.getDescriptionList(), parseIdMap2,
@@ -1869,14 +1922,17 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.FUN_DREAD, FlowLayout.encloseCenterMiddle(dreadFun), Item.FUN_DREAD_HELP));
 //        prioCont.add(layout(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, true, false, true));
 //</editor-fold>
-        MyComponentGroup dreadFun = new MyComponentGroup(Item.DreadFunValue.getDescriptionList(), true);
+        MyComponentGroup dreadFun = new MyComponentGroup(DreadFunValue.getDescriptionList(), true);
         initField(Item.PARSE_DREAD_FUN_VALUE, dreadFun,
                 () -> item.getDreadFunValueN() != null ? item.getDreadFunValueN().toString() : null,
-                (enumStr) -> item.setDreadFunValue(enumStr != null ? (Item.DreadFunValue.valueOf((String) enumStr)) : null),
+                (enumStr) -> item.setDreadFunValue(enumStr != null ? (DreadFunValue.valueOf((String) enumStr)) : null),
                 //                () -> dreadFun.getSelectedString(), (s) -> dreadFun.select(s != null ? (String) s.toString() : null));
-                () -> dreadFun.getSelectedString() != null ? Item.DreadFunValue.getValue(dreadFun.getSelectedString()).toString() : null,
-                (enumStr) -> dreadFun.select(enumStr != null ? Item.DreadFunValue.valueOf((String) enumStr).getDescription() : null));
+                () -> dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()).toString() : null,
+                (enumStr) -> dreadFun.select(enumStr != null ? DreadFunValue.valueOf((String) enumStr).getDescription() : null),
+                () -> item.isDreadFunInherited((dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null))
+        );
         prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP));//, null, false, false, true, true));
+        updateUIIDForInherited(item.isDreadFunInherited(dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null), dreadFun);
 
 //        MyNumericTextField earnedValue = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValue(), (d) -> item.setEarnedValue(d));
         MyNumericTextField earnedValue = new MyNumericTextField("");
@@ -2136,7 +2192,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         Container statusCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         if (Config.TEST) statusCont.setName("StatusTab");
         statusCont.setScrollableY(true);
-        tabs.addTab("Status", Icons.iconStatusTab, 3, statusCont);
+        tabs.addTab("Status", Icons.iconStatusTab, TAB_ICON_SIZE_IN_MM, statusCont);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Label createdDate = new Label(item.getCreatedDate() == 0 ? "<date set when saved>" : L10NManager.getInstance().formatDateShortStyle(new Date(item.getCreatedDate())));
 //        Label createdDate = new Label(item.getCreatedDate() == 0 ? "<date set when saved>" : L10NManager.getInstance().formatDateTimeShort(new Date(item.getCreatedDate())));
@@ -2584,7 +2640,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //</editor-fold>
         WrapButton editOwnerButton = new WrapButton();
 
-        ActionListener setOwnerButton = (e) -> {
+        ActionListener refreshOwnerButton = (e) -> {
             String ownerStr
                     = (previousValues != null && previousValues.get(Item.PARSE_OWNER_ITEM) != null && ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0)
                     ? DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)).getText()
@@ -2656,7 +2712,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         }
         );
         editOwnerButton.setCommand(editOwnerCmd);
-        setOwnerButton.actionPerformed(null); //set button text *after* setting command
+        refreshOwnerButton.actionPerformed(null); //set button text *after* setting command
         parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
             if (previousValues.get(Item.PARSE_OWNER_ITEM) != null) {
                 if (((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0) {

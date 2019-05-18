@@ -9,7 +9,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
 import java.util.Map;
@@ -67,7 +67,8 @@ public class ScreenSettingsCommon extends MyForm {
     public void refreshAfterEdit() {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
-        revalidateWithAnimationSafety();
+//        revalidateWithAnimationSafety();
+        revalidate();
 //        restoreKeepPos();
 //        super.refreshAfterEdit();
     }
@@ -99,8 +100,9 @@ public class ScreenSettingsCommon extends MyForm {
                 MyPrefs.setBoolean(prefEntry, b);
             }));
 
-            if (!prefEntry.getHelpText().equals("")) {
-                cont.add(span2Cols, new SpanLabel(prefEntry.getHelpText()));
+            String helpText =prefEntry.getHelpText();
+            if (!helpText.equals("")&&!helpText.contains("**")) {
+                cont.add(span2Cols, new SpanLabel(helpText));
             }
         } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -110,7 +112,7 @@ public class ScreenSettingsCommon extends MyForm {
 //                MyPrefs.setBoolean(prefEntry, b);
 //            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
 //</editor-fold>
-            cont.add(layout(prefEntry.getFieldScription(), new MyOnOffSwitch(parseIdMap2, () -> {
+            cont.add(layoutSetting(prefEntry.getFieldScription(), new MyOnOffSwitch(parseIdMap2, () -> {
                 return MyPrefs.getBoolean(prefEntry);
             }, (b) -> {
                 MyPrefs.setBoolean(prefEntry, b);
@@ -136,8 +138,9 @@ public class ScreenSettingsCommon extends MyForm {
             durationPicker.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) durationPicker.getDuration() / MyDate.MINUTE_IN_MILLISECONDS)));
             cont.add(rightAdj, durationPicker);
 
-            if (!prefEntry.getHelpText().equals("")) {
-                cont.add(span2Cols, new SpanLabel(prefEntry.getHelpText()));
+            String helpText =prefEntry.getHelpText();
+            if (!helpText.equals("")&&!helpText.contains("**")) {
+                cont.add(span2Cols, new SpanLabel(helpText));
             }
         } else {
 //            cont.add(BorderLayout.center(new SpanLabel(prefEntry.getFieldScription())).add(BorderLayout.EAST, new MyDurationPicker(parseIdMap2, () -> {
@@ -147,7 +150,7 @@ public class ScreenSettingsCommon extends MyForm {
 //            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
             MyDurationPicker durationPicker2 = new MyDurationPicker(prefEntry.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
             durationPicker2.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) durationPicker2.getDuration() / MyDate.MINUTE_IN_MILLISECONDS)));
-            cont.add(layout(prefEntry.getFieldScription(), durationPicker2, prefEntry.getHelpText()));
+            cont.add(layoutSetting(prefEntry.getFieldScription(), durationPicker2, prefEntry.getHelpText()));
         }
     }
 
@@ -166,8 +169,9 @@ public class ScreenSettingsCommon extends MyForm {
                 MyPrefs.setInt(prefEntry, i);
             }, minValue, maxValue, step));
 
-            if (!prefEntry.getHelpText().equals("")) {
-                cont.add(span2Cols, new SpanLabel(prefEntry.getHelpText()));
+            String helpText =prefEntry.getHelpText();
+            if (!helpText.equals("")&&!helpText.contains("**")) {
+                cont.add(span2Cols, new SpanLabel(helpText));
             }
         } else {
 //            cont.add(BorderLayout.center(new SpanLabel(prefEntry.getFieldScription())).add(BorderLayout.EAST, new MyIntPicker(parseIdMap2, () -> {
@@ -175,7 +179,7 @@ public class ScreenSettingsCommon extends MyForm {
 //            }, (i) -> {
 //                MyPrefs.setInt(prefEntry, i);
 //            }, minValue, maxValue, step)).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
-            cont.add(layout(prefEntry.getFieldScription(), new MyIntPicker(parseIdMap2, () -> {
+            cont.add(layoutSetting(prefEntry.getFieldScription(), new MyIntPicker(parseIdMap2, () -> {
 //                return MyPrefs.getInt(prefEntry);
                 return prefEntry.getInt();
             }, (i) -> {
@@ -190,7 +194,7 @@ public class ScreenSettingsCommon extends MyForm {
 
         if (tableLayout) {
         } else {
-            cont.add(layout(prefEntry.getFieldScription(), new MyComponentGroup(displayValues, parseIdMap2, () -> {
+            cont.add(layoutSetting(prefEntry.getFieldScription(), new MyComponentGroup(displayValues, parseIdMap2, () -> {
                 return prefEntry.getString();
             }, (s) -> {
                 MyPrefs.setString(prefEntry, s);

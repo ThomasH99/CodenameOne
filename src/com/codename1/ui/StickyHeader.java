@@ -11,7 +11,7 @@ import com.codename1.ui.Graphics;
 import com.codename1.ui.Painter;
 import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.geom.Rectangle;
-import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.todocatalyst.todocatalyst.Icons;
 import java.util.ArrayList;
 
@@ -53,7 +53,7 @@ public class StickyHeader extends Container implements ScrollListener {
 
     public StickyHeader() {
         super();
-        setLayout(BorderLayout.center());
+        setLayout(MyBorderLayout.center());
         hideShowButton.setCommand(Command.createMaterial("", FontImage.MATERIAL_EXPAND_MORE, (ev) -> {
             hidden = !hidden;
 //            hideFollowingComponents(hidden);
@@ -73,7 +73,7 @@ public class StickyHeader extends Container implements ScrollListener {
             parent.animateHierarchy(300);
 
         }));
-        super.add(BorderLayout.EAST, hideShowButton);
+        super.add(MyBorderLayout.EAST, hideShowButton);
     }
 
     public StickyHeader(String uiid) {
@@ -94,7 +94,7 @@ public class StickyHeader extends Container implements ScrollListener {
     }
 
     public Container add(Component comp) {
-        return super.add(BorderLayout.CENTER, comp);
+        return super.add(MyBorderLayout.CENTER, comp);
     }
 
     @Override
