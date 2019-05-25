@@ -251,21 +251,21 @@ public class ScreenCategoryProperties extends MyForm {
         MyTextField categoryName = new MyTextField("Category name", parseIdMap2, () -> category.getText(), (s) -> category.setText(s));
 //        content.add(new Label(Category.CATEGORY)).add(categoryName);
         setEditOnShow(categoryName); //UI: start editing this field
-        content.add(layout(Category.CATEGORY, categoryName, "**"));
+        content.add(layoutN(Category.CATEGORY, categoryName, "**"));
 
 //        MyTextArea description = new MyTextArea("Description", parseIdMap2, () -> category.getComment(), (s) -> category.setComment(s));
         MyTextField description = new MyTextField("Description", parseIdMap2, () -> category.getComment(), (s) -> category.setComment(s));
 //        content.add(new Label(Category.DESCRIPTION)).add(description);
-        content.add(layout(Category.DESCRIPTION, description, "**"));
+        content.add(layoutN(Category.DESCRIPTION, description, "**"));
         description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
 
         Label createdDate = new Label(category.getCreatedAt() == null || category.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getCreatedAt()));
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        content.add(layout(Item.CREATED_DATE, createdDate, "**"));
+        content.add(layoutN(Item.CREATED_DATE, createdDate, "**"));
 
         Label lastModifiedDate = new Label(category.getUpdatedAt() == null || category.getUpdatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        content.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**"));
+        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**"));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {

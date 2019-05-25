@@ -92,20 +92,20 @@ class MyDurationPicker extends Picker implements SwipeClear {
         setUIID("LabelValue");
 //        this.zeroValuePattern = ""; // "<set>";
         setFormatter(new SimpleDateFormat() {
-            public String format(Object value) {
-                long val = ((Long) value).longValue();
-                if (val == 0 && zeroValuePattern != null) {
+            public String format(Object durationInMillis) {
+                long valInMillis = ((Long) durationInMillis).longValue();
+                if (valInMillis == 0 && zeroValuePattern != null) {
                     return zeroValuePattern;
                 }
                 if (true) {
-                    long seconds = val % MyDate.MINUTE_IN_MILLISECONDS / MyDate.SECOND_IN_MILLISECONDS;
+                    long seconds = (valInMillis % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS;
                     if (seconds != 0 && MyPrefs.durationPickerShowSecondsIfLessThan1Minute.getBoolean()) {
-                        return MyDate.formatDurationStd((Long) value, true); //if any seconds in time, show them
+                        return MyDate.formatDurationStd((Long) durationInMillis, true); //if any seconds in time, show them
                     } else {
-                        return MyDate.formatDurationStd((Long) value);
+                        return MyDate.formatDurationStd((Long) durationInMillis);
                     }
                 } else
-                    return MyDate.formatDurationStd((Long) value);
+                    return MyDate.formatDurationStd((Long) durationInMillis);
             }
         });
         setMinuteStep(MyPrefs.durationPickerMinuteStep.getInt()); //TODO!! setting to select interval of 1/5 minutes

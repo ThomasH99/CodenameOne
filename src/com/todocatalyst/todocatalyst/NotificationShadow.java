@@ -29,7 +29,7 @@ import java.util.Date;
 
         public String toString() {
 //            return "Type:"+type+" alarm:"+MyDate.formatDateTimeNew(alarmTime)+" NotifId:"+notificationId;
-            return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/"+notificationId;
+            return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/ ["+DAO.getInstance().fetchFromCacheOnly(AlarmType.getObjectIdStrWithoutTypeStr(notificationId))+"]";
         }
         
         public NotificationShadow() {

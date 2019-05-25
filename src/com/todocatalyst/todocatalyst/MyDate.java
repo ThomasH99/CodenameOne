@@ -1629,10 +1629,10 @@ public class MyDate extends Date {
         java.util.Calendar cal = java.util.Calendar.getInstance();
         TimeZone tz = cal.getTimeZone();
 //        cal.setTime(new Date(System.currentTimeMillis() - tz.getRawOffset()));
-        if (false) 
+        if (false)
             cal.setTime(new Date(hoursMinutesInMilliSeconds - (noTimeZoneCorrection ? 0 : tz.getRawOffset())));
         else
-            cal.setTime(new Date(hoursMinutesInMilliSeconds ));
+            cal.setTime(new Date(hoursMinutesInMilliSeconds));
         DateFormat dtfmt;
         if (useUSFormat) {
             dtfmt = new SimpleDateFormat((showLeadingZeroForHour ? "KK" : "K") + (showSeconds ? "mm:ss a" : "mm a"));
@@ -1736,12 +1736,16 @@ public class MyDate extends Date {
         int seconds = (int) restAfterMinutes / MyDate.SECOND_IN_MILLISECONDS; //60000;
 
         s.append(hours).append(':');
-        if (minutes >= 10) s.append(minutes);
-        else s.append('0').append(minutes);
+        if (minutes >= 10)
+            s.append(minutes);
+        else
+            s.append('0').append(minutes);
         if (showSeconds) {
             s.append(':');
-            if (seconds >= 10) s.append(seconds);
-            else s.append('0').append(seconds);
+            if (seconds >= 10)
+                s.append(seconds);
+            else
+                s.append('0').append(seconds);
         }
         return s.toString();
     }
@@ -1926,7 +1930,7 @@ public class MyDate extends Date {
     }
 
     /**
-     * set time to start of minute. E.g. 22:31:47 is rounded down to 22:31:00.
+     * round off time to nearest whole minute. E.g. 22:31:47 is rounded down to 22:32:00 and 22:30:27 to 22:30:00.
      * Used eg to ensure that a snooze alarm starts right at the minute seen by
      * user and not 45s later.
      *
@@ -1934,12 +1938,16 @@ public class MyDate extends Date {
      * @return
      */
     static Date getStartOfMinute(Date time) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(time);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0); //ensure it's after midnight //TODO!!!! is 0 the right value??
-        return cal.getTime();
+//        Calendar cal = Calendar.getInstance();
+//        cal.setTime(time);
+//        cal.set(Calendar.MINUTE, 0);
+//        cal.set(Calendar.SECOND, 0);
+//        cal.set(Calendar.MILLISECOND, 0); //ensure it's after midnight //TODO!!!! is 0 the right value??
+//        return cal.getTime();
+        long rounded = time.getTime();
+        long seconds = (rounded % MINUTE_IN_MILLISECONDS) / SECOND_IN_MILLISECONDS;
+        rounded = (rounded / MINUTE_IN_MILLISECONDS + seconds >= 30 ? 1 : 0) * MINUTE_IN_MILLISECONDS;
+        return new Date(rounded); //round off to minutes
     }
 
     /**

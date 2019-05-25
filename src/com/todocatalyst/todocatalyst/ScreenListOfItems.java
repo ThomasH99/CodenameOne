@@ -1646,6 +1646,10 @@ public class ScreenListOfItems extends MyForm {
     }
 
     public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category, ExpandedObjects expandedObjects) { //<editor-fold defaultstate="collapsed" desc="comment">
+        return buildItemContainer(myForm, item, ownerItemOrItemList, category, expandedObjects, null);
+    }
+
+    public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category, ExpandedObjects expandedObjects, ActionListener onExitAction) { //<editor-fold defaultstate="collapsed" desc="comment">
         //            MyForm.GetBoolean isDragAndDropEnabled, MyForm.Action refreshOnItemEdits,
         //            boolean selectionModeAllowed, ArrayList<Item> selectedObjects,
         //            KeepInSameScreenPosition keepPos, HashSet expandedObjects, MyForm.Action animator, boolean projectEditMode, boolean singleSelectionMode
@@ -1752,7 +1756,7 @@ public class ScreenListOfItems extends MyForm {
             mainCont.addComponent(MyBorderLayout.SOUTH, southDetailsContainer);
         }
 
-        Button expandSubTasksButton;// = null;//= new Button(); //null;
+//        expandSubTasksButton;// = null;//= new Button(); //null;
         //EXPAND subtasks in Item
 //        Button subTasksButton = new Button(); //null;
 //        if (true) {
@@ -1761,7 +1765,7 @@ public class ScreenListOfItems extends MyForm {
         int totalNumberSubtasks = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 //        int totalNumberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks; //true: get subtasks, always necessary for a project
 //            if (numberUndoneSubtasks > 0 || totalNumberSubtasks > 0) {
-        expandSubTasksButton = numberUndoneSubtasks > 0 || totalNumberSubtasks > 0 ? new Button() {
+        Button expandSubTasksButton = numberUndoneSubtasks > 0 || totalNumberSubtasks > 0 ? new Button() {
             @Override
             public void longPointerPress(int x, int y) {
                 super.longPointerPress(x, y);
@@ -1796,17 +1800,17 @@ public class ScreenListOfItems extends MyForm {
 //        } : new Button();
         } : null;
         if (Config.TEST && expandSubTasksButton != null) expandSubTasksButton.setName("ExpandSubtasks-" + item.toString(false));
-        if ( expandSubTasksButton != null) {
+        if (expandSubTasksButton != null) {
             if (false) expandSubTasksButton.addActionListener((evt) -> {
 //                if (expandedObjects!=null && expandedObjects.contains(item))
 ////                if (expandSubTasksButton.getUIID().equals("ListOfItemsShowSubtasks"))
 //                    expandSubTasksButton.setUIID("ListOfItemsShowSubtasksExpanded");
 //                else
 //                    expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
-                if (expandedObjects != null)
-                    //                    expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
-                    expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasksExpanded", "ListOfItemsShowSubtasks"); //NB!! hack: the two values are inversted since this actionListener is called 
-            });
+                    if (expandedObjects != null)
+                        //                    expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
+                        expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasksExpanded", "ListOfItemsShowSubtasks"); //NB!! hack: the two values are inversted since this actionListener is called 
+                });
 
 //            subTasksButton.setUIID("Label");
 //            expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
@@ -2172,6 +2176,8 @@ public class ScreenListOfItems extends MyForm {
 //                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
             myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
             new ScreenItem2(item, (MyForm) swipCont.getComponentForm(), () -> {
+                if (onExitAction != null)
+                    onExitAction.actionPerformed(null);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    KeepInSameScreenPosition keepPos = new KeepInSameScreenPosition(null, swipCont); //TODO!!!!!! porblem with access to this
 //                    KeepInSameScreenPosition keepPos = new KeepInSameScreenPosition(); //TODO!!!!!! porblem with access to this
@@ -2258,7 +2264,8 @@ public class ScreenListOfItems extends MyForm {
         Label priorityLabel = null;
 //        priorityLabel.setUIID("ItemDetailsLabel");
         if (item.getPriority() != 0) {
-            priorityLabel = new Label("P" + item.getPriority());
+//            priorityLabel = new Label("P" + item.getPriority());
+            priorityLabel = new Label("" + item.getPriority());
             if (false && showInDetails) {
                 southDetailsContainer.add(priorityLabel);
             }

@@ -2,6 +2,7 @@ package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
 import com.codename1.components.SpanLabel;
+import com.codename1.components.Switch;
 import com.codename1.io.Log;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
@@ -85,20 +86,21 @@ public class ScreenSettingsCommon extends MyForm {
         toolbar.addCommandToOverflowMenu(new CommandTracked("Reset to default**")); //reset to default values
     }
 
-    protected void addSettingBoolean(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry) {
+    protected Switch addSettingBoolean(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry) {
 
 //        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
         ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
-
+        Switch compForActionListener=null;
         if (tableLayout) {
             cont.add(new SpanLabel(prefEntry.getFieldScription()));
             cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
 
-            cont.add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
+            compForActionListener=new MyOnOffSwitch(parseIdMap2, () -> {
                 return MyPrefs.getBoolean(prefEntry);
             }, (b) -> {
                 MyPrefs.setBoolean(prefEntry, b);
-            }));
+            });
+            cont.add(rightAdj,compForActionListener );
 
             String helpText =prefEntry.getHelpText();
             if (!helpText.equals("")&&!helpText.contains("**")) {
@@ -112,12 +114,13 @@ public class ScreenSettingsCommon extends MyForm {
 //                MyPrefs.setBoolean(prefEntry, b);
 //            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
 //</editor-fold>
-            cont.add(layoutSetting(prefEntry.getFieldScription(), new MyOnOffSwitch(parseIdMap2, () -> {
+            cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener=new MyOnOffSwitch(parseIdMap2, () -> {
                 return MyPrefs.getBoolean(prefEntry);
             }, (b) -> {
                 MyPrefs.setBoolean(prefEntry, b);
             }), prefEntry.getHelpText()));
         }
+        return compForActionListener;
     }
 
     protected void addSettingTimeInMinutes(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry) {
@@ -244,7 +247,7 @@ public class ScreenSettingsCommon extends MyForm {
 
         if (tableLayout) {
         } else {
-            cont.add(layout(prefEntry.getFieldScription(), new MyComponentGroup(enumValues, parseIdMap2, () -> {
+            cont.add(layoutN(prefEntry.getFieldScription(), new MyComponentGroup(enumValues, parseIdMap2, () -> {
                 for (Object e : enumValues) {
                     if (((Enum) e).name().equals(prefEntry.getString())) {
                         return e.toString();

@@ -173,23 +173,23 @@ public class ScreenItemListProperties extends MyForm {
 
         MyTextField name = new MyTextField("List name", parseIdMap2, () -> itemList.getText(), (s) -> itemList.setText(s));
 //        content.add(new Label("List name")).add(name);
-        content.add(layout("List name", name, "**"));
+        content.add(layoutN("List name", name, "**"));
         setEditOnShow(name); //UI: start editing this field
 
         MyTextField description = new MyTextField("Description", parseIdMap2, () -> itemList.getComment(), (s) -> itemList.setComment(s));
 //        content.add(new Label("Description")).add(description).add(new SpanLabel("If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks."));
-        content.add(layout("Description", description, "If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks."));
+        content.add(layoutN("Description", description, "If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks."));
         description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
 
 //        Label createdDate = new Label(itemList.getCreatedAt() == null || itemList.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(itemList.getCreatedAt())); //"<date set when saved>"
         Label createdDate = new Label(itemList.getCreatedAt() == null || itemList.getCreatedAt().getTime() == 0 ? MyDate.formatDateNew(new Date()) : MyDate.formatDateNew(itemList.getCreatedAt())); //"<date set when saved>"
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        content.add(layout(Item.CREATED_DATE, createdDate, "**"));
+        content.add(layoutN(Item.CREATED_DATE, createdDate, "**"));
 
 //        Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(itemList.getUpdatedAt()));
         Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? MyDate.formatDateNew(new Date()) : MyDate.formatDateNew(itemList.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        content.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**"));
+        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**"));
 
         if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "LabelFixed");

@@ -1605,8 +1605,9 @@ public class MyForm extends Form {
     //    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon) {
 //        return makeDoneUpdateWithParseIdMapCommand(title, icon, true);
 //    }
-    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
-        Command cmd = new Command(title, icon) {
+//    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
+    public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
+        Command cmd = new Command(title, null) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 //use checkOnExit from parameters if defined, otherwise use the one set for the form if defined
@@ -1618,6 +1619,7 @@ public class MyForm extends Form {
                 showPreviousScreenOrDefault(callRefreshAfterEdit);
             }
         };
+        cmd.setMaterialIcon(icon);
         cmd.putClientProperty("android:showAsAction", "withText");
         return cmd;
     }
@@ -1648,18 +1650,18 @@ public class MyForm extends Form {
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit) {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit);
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, callRefreshAfterEdit);
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand() {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), true); //false); //default false since otherwise edited values will be lost
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, true); //false); //default false since otherwise edited values will be lost
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand(CheckDataIsComplete getCheckOnExit) {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), true, getCheckOnExit);
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, true, getCheckOnExit);
     }
 
-    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit) {
+    public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit) {
         return makeDoneUpdateWithParseIdMapCommand(title, icon, callRefreshAfterEdit, getCheckIfSaveOnExit());
     }
 
@@ -2008,39 +2010,40 @@ public class MyForm extends Form {
 //    protected static Component layout(String fieldLabelTxt, Component field) {
 //        return layout(fieldLabelTxt, field, null);
 //    }
-    protected static Component layout(String fieldLabelTxt, Component field, boolean checkForTooLargeWidth) {
-        return layout(fieldLabelTxt, field, null, null, checkForTooLargeWidth, false, true);
+    protected static Component layoutXXX(String fieldLabelTxt, Component field, boolean checkForTooLargeWidth) {
+        return layoutOLD(fieldLabelTxt, field, null, null, checkForTooLargeWidth, false, true);
     }
 
     protected static Component layout(String fieldLabelTxt, Component field, String help) {
-        return layout(fieldLabelTxt, field, help, field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null, true, false, true);
+//        return layoutOLD(fieldLabelTxt, field, help, field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null, true, false, true);
+        return new EditFieldContainer(fieldLabelTxt, field, help, (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null), true, false, true, false);
     }
 
-    protected static Component layout(String fieldLabelTxt, Component field, String help, boolean wrapText) {
-        return layout(fieldLabelTxt, field, help, field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null, wrapText, true, true);
+    protected static Component layoutXXX(String fieldLabelTxt, Component field, String help, boolean wrapText) {
+        return layoutOLD(fieldLabelTxt, field, help, field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null, wrapText, true, true);
     }
 
 //    protected static Component layout(String fieldLabelTxt, Component field, String help, boolean wrapText, boolean makeFieldUneditable) {
 //        return layout(fieldLabelTxt, field, help, null, wrapText, makeFieldUneditable, true);
 //    }
-    protected static Component layout(String fieldLabelTxt, Component field, String help, boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
+    protected static Component layoutXXX(String fieldLabelTxt, Component field, String help, boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
 //        return layout(fieldLabelTxt, field, help, (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue(): null), wrapText, makeFieldUneditable, hideEditButton);
-        return layout(fieldLabelTxt, field, help, null, wrapText, makeFieldUneditable, hideEditButton);
+        return layoutOLD(fieldLabelTxt, field, help, null, wrapText, makeFieldUneditable, hideEditButton);
     }
 
 //    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear) {
 //        return layout(fieldLabelTxt, field, help, swipeClear, true, false, false);
 //    }
-    protected static Component layout(String fieldLabelTxt, MyDateAndTimePicker field, String help) {
-        return layout(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
+    protected static Component layoutXXX(String fieldLabelTxt, MyDateAndTimePicker field, String help) {
+        return layoutOLD(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
     }
 
-    protected static Component layout(String fieldLabelTxt, MyDatePicker field, String help) {
-        return layout(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
+    protected static Component layoutXXX(String fieldLabelTxt, MyDatePicker field, String help) {
+        return layoutOLD(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
     }
 
-    protected static Component layout(String fieldLabelTxt, MyDurationPicker field, String help) {
-        return layout(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
+    protected static Component layoutXXX(String fieldLabelTxt, MyDurationPicker field, String help) {
+        return layoutOLD(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
     }
 
 //    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean wrapText) {
@@ -2072,7 +2075,7 @@ public class MyForm extends Form {
 
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
-        return layout(fieldLabelTxt, field, help,
+        return layoutOLD(fieldLabelTxt, field, help,
                 field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
                         : field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear()
                                 : () -> ((MyDateAndTimePicker) field).swipeClear(),
@@ -2227,12 +2230,12 @@ public class MyForm extends Form {
 //        return fieldContainer;
 //    }
 //</editor-fold>
-    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+    protected static Component layoutOLD(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
-        return layout(fieldLabelTxt, field, help, swipeClear, wrapText, makeFieldUneditable, hideEditButton, false);
+        return layoutOLD(fieldLabelTxt, field, help, swipeClear, wrapText, makeFieldUneditable, hideEditButton, false);
     }
 
-    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+    protected static Component layoutOLD(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton, boolean forceVisibleEditButton) {
 
 //        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {

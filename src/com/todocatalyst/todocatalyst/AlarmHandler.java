@@ -18,10 +18,11 @@ import com.codename1.ui.Display;
 import com.codename1.ui.Form;
 import com.codename1.ui.animations.CommonTransitions;
 import com.parse4cn1.ParseObject;
-import static com.todocatalyst.todocatalyst.AlarmType.snooze;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -43,7 +44,9 @@ public class AlarmHandler {
 //    private final static String WAITING_ALARM_TEXT = "WAITING: ";// reminder for: \n"; "[Waiting]"
 //    private final static String ALARM_TEXT = "";//Reminder for: \n";
 //    private final static String ALARM_REPEAT_STR = "-REP";//Used to create a separate notification ID for a repeat reminder (must also be used to cancel)
+    /** keep a copy of all local notifications set*/
     LocalNotificationsShadowList notificationList; // = new LocalNotificationsShadowList();
+    /**list of already expired alarms not yet processed by the end-user, to show in AlarmScreen to snooze, cancel etc*/
     List<ExpiredAlarm> expiredAlarms;
     AlarmInAppAlarmHandler inAppTimer; // = new AlarmInAppAlarmHandler(notificationList);
 
@@ -102,7 +105,7 @@ public class AlarmHandler {
         n.setId(notificationId);
         n.setAlertTitle(titleText);
         n.setAlertBody(bodyText);
-        n.setAlertSound("/" + MyPrefs.getString(MyPrefs.alarmSoundFile));
+        n.setAlertSound("/" + MyPrefs.alarmSoundFile.getString());
         Display.getInstance().scheduleLocalNotification(n, alarmDate.getTime(), LocalNotification.REPEAT_NONE);
     }
 
@@ -118,26 +121,54 @@ public class AlarmHandler {
 //</editor-fold>
     /**
      * Called regularly, eg daily, to set up local notifications for an
-     * additional period, e.g. another day. Called in background fetchFromCacheOnly, so must
+     * additional period, e.g. another day. May (also) be called in background fetchFromCacheOnly, so must
  be completely self-reliant and not eg assume that cache or other things
  have been loaded. Assumes that any changes in the time period for local
  notifications have already been setup are (???).
      */
 //    private void setAlarmsForNewIntervalBackgroundFetch() {
-    public void updateLocalNotificationsOnBackgroundFetchOrAppStart() {
-        if (!MyPrefs.getBoolean(MyPrefs.alarmsActivatedOnThisDevice)) {
+    public void updateLocalNotificationsOnBackgroundFetch() {
+        if (false && !MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) { //DONE: optimization: rather not *schedule* this if setting is deactivate and avoid need to reload preferences
             return;
         }
 //        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
-        notificationList.cancelAndRemoveAllAvailableLocalNotifications();
-        List<Item> newAlarmsList = DAO.getInstance().getItemsWithFutureAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+        if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
 
-        Item item;
-        while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
-            item = newAlarmsList.remove(0);
-            notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecord());
+            notificationList.cancelAndRemoveAllAvailableLocalNotifications();
+
+            Item item;
+            while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
+                item = newAlarmsList.remove(0);
+                notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecord());
+            }
+            refreshInAppTimerAndSaveNotificationList();
         }
-        refreshInAppTimerAndSaveNotificationList();
+    }
+
+    /**
+     * Called on app start or if alarms are globally enabled or disabled (via settings)
+     */
+    public void updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled() {
+        if (MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) { 
+            //disable all
+            notificationList.cancelAndRemoveAllAvailableLocalNotifications();
+            refreshInAppTimerAndSaveNotificationList();
+            return;
+        } else {
+            //update, or set from scratch, all alarms
+//        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
+        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+        if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
+            notificationList.cancelAndRemoveAllAvailableLocalNotifications();
+            Item item;
+            while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
+                item = newAlarmsList.remove(0);
+                notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecord());
+            }
+            refreshInAppTimerAndSaveNotificationList();
+        }
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -273,7 +304,7 @@ public class AlarmHandler {
  done in the main start().
      */
     public void setupAlarmHandlingOnAppStart() {
-        updateLocalNotificationsOnBackgroundFetchOrAppStart();
+        updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled();
         //remove any snoozed alarms in the past (since they have been handled by local notifications)
 //        long now = System.currentTimeMillis();
 //        if (false) {
@@ -300,12 +331,14 @@ public class AlarmHandler {
         Item item = DAO.getInstance().fetchItem(expiredAlarm.objectId);
         expiredAlarms.remove(expiredAlarm);
         expiredAlarmSave();
+        notificationList.removeAlarmAndRepeatAlarm(expiredAlarm.objectId, expiredAlarm.type); //on snooze, remove any still active alarms of the same type as the snoozed one
 //        notificationList.snoozeAlarm(notificationId, snoozeExpireTime, item.makeNotificationTitleText(type), item.makeNotificationBodyText(type));
-        notificationList.addAlarmAndRepeat(expiredAlarm.objectId, snoozeExpireTime, snooze, item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
+        notificationList.addAlarmAndRepeat(expiredAlarm.objectId, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type), item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
 //        notificationList.save();
         refreshInAppTimerAndSaveNotificationList();
         //save snooze time
-        item.setSnoozeDate(snoozeExpireTime);
+//        item.setSnoozeDate(snoozeExpireTime);
+        item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
         DAO.getInstance().saveInBackground(item);
     }
 
@@ -316,8 +349,9 @@ public class AlarmHandler {
             ExpiredAlarm expiredAlarm = expiredAlarms.get(0);
             Item item = DAO.getInstance().fetchItem(expiredAlarm.objectId);
             expiredAlarms.remove(expiredAlarm);
-            notificationList.addAlarmAndRepeat(expiredAlarm.objectId, snoozeExpireTime, snooze, item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
-            item.setSnoozeDate(snoozeExpireTime);
+            notificationList.addAlarmAndRepeat(expiredAlarm.objectId, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type), item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
+//            item.setSnoozeDate(snoozeExpireTime);
+            item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
 //            DAO.getInstance().save(item);
             itemsToSave.add(item);
         }
@@ -351,6 +385,17 @@ public class AlarmHandler {
     }
 
     /**
+    call eg if alarms are turned off or on on the devices
+    */
+    public void cancelAllAlarms() {
+//                    AlarmHandler.getInstance().removeExpiredAlarm(expired);
+        while (!expiredAlarms.isEmpty()) {
+            expiredAlarms.remove(0);
+        }
+        expiredAlarmSave();
+    }
+
+    /**
      * called by inApp timer or from local notification when an alarm expires
      *
      * @param notificationId
@@ -371,7 +416,7 @@ public class AlarmHandler {
                     notificationList.removeAlarmAndRepeatAlarm(notificationId);
                     notificationList.save();
 //        expiredAlarms.add(0, new ExpiredAlarm(notif.getObjectIdStr(), notif.alarmTime, notif.type));
-                    expiredAlarms.add(0, new ExpiredAlarm(notif));
+                    expiredAlarms.add(0, new ExpiredAlarm(notif)); //TODO!!!!! only add each item ONCE, to avoid seeing multiple expired alarms/snoozes?
                     expiredAlarmSave();
 
                     inAppTimer.startInAppTimerOnNextcomingAlarm();
@@ -536,7 +581,7 @@ public class AlarmHandler {
     }
 
     /**
-     * return list of already expired (but not yet processed) alarms
+     * return list of already expired alarms (but not yet processed by the end-user) 
      *
      * @return
      */
@@ -586,7 +631,10 @@ public class AlarmHandler {
     }
 
     public static void setPreferredBackgroundFetchInterval() {
-        Display.getInstance().setPreferredBackgroundFetchInterval(Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4)); //max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
+//max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
+//int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4);
+        int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4);
+        Display.getInstance().setPreferredBackgroundFetchInterval(fetchIntervalSeconds); //max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
     }
 
     public void receivePushUpdate() {
@@ -615,7 +663,7 @@ public class AlarmHandler {
             Media m = MediaManager.createMedia(soundDir + MyPrefs.getString(MyPrefs.alarmSoundFile), false); //in SImulator: put mp3 file in .cn1!
             m.play();
         } catch (IOException err) {
-            if (false)Log.e(err);
+            if (false) Log.e(err);
             Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
         }
     }

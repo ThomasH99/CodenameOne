@@ -233,6 +233,10 @@ public class MyPrefs {
 
     static PrefEntry alarmDefaultSnoozeTimeInMinutes
             = new PrefEntry("Snooze time in minutes", "alarmDefaultSnoozeTimeInMinutes", 1, "Set the time an alarm is snoozed"); //alarms activated by default
+    static PrefEntry alarmReuseIndividuallySetSnoozeDurationForLongPress
+            = new PrefEntry("Remember Snooze time set on long press", "alarmReuseIndividuallySetSnoozeDurationForLongPress", true, "When adjusting the snooze time of a task manually, the value is kept as default for other tasks, making it easy to snooze several tasks with the same duration. When not set, the Picker is initialized with the default value"); //alarms activated by default
+    static PrefEntry alarmReuseIndividuallySetSnoozeDurationForNormalSnooze
+            = new PrefEntry("If snooze time has been set on long press, use that value ", "alarmReuseIndividuallySetSnoozeDurationForNormalSnooze", true, "When adjusting the snooze time of a task manually, the value is kept as default for other tasks, making it easy to snooze several tasks with the same duration. When not set, the Picker is initialized with the default value. NB. The value is only kept while in the same screen"); //alarms activated by default
 
     static PrefEntry alarmFutureIntervalInWhichToSetAlarmsInHours
             = new PrefEntry("**", "alarmFutureIntervalInWhichToSetAlarmsInHours", 24, "How many days ahead are local notifications activated**"); //alarms activated by default
@@ -244,7 +248,7 @@ public class MyPrefs {
             = new PrefEntry("**", "alarmTimeOfDayWhenToUpdateAlarmsInMinutes", 10, "How many days ahead are alarmsminutes should an alarm snooze"); //10 = 10 minutes after midnight
 
     static PrefEntry alarmShowDueTimeAtEndOfNotificationText
-            = new PrefEntry("Include " + Item.DUE_DATE + "in notifications", "alarmShowDueTimeAtEndOfNotificationText", true, "Include " + Item.DUE_DATE + " in alarm notifications");
+            = new PrefEntry("Include " + Item.DUE_DATE + " in notifications", "alarmShowDueTimeAtEndOfNotificationText", true, "Include " + Item.DUE_DATE + " in alarm notifications");
 
     static PrefEntry alarmDaysAheadToFetchFutureAlarms
             = new PrefEntry("**", "alarmDaysAheadToFetchFutureAlarms", 30, "**"); //10 = 10 minutes after midnight
@@ -481,7 +485,7 @@ public class MyPrefs {
     //localization
     static PrefEntry localeUserSelected = new PrefEntry("Language for text", "localeUserSelected", "en", "Determines the language used. Use this setting to override the default language used on your device");
 
-    static PrefEntry dateTimePickerMinuteStep = new PrefEntry("Picker minute steps", "dateTimePickerMinuteStep", 5, "Minutes in pickers, chose 1, 5 10, 15");
+    static PrefEntry dateTimePickerMinuteStep = new PrefEntry("Picker minute steps", "dateTimePickerMinuteStep", 1, "Minutes in pickers, chose 1, 5 10, 15");
     static PrefEntry durationPickerMinuteStep = new PrefEntry("Duration picker minute steps", "durationPickerMinuteStep", 1, "Minutes in pickers, chose 1, 5, 10, 15");
     static PrefEntry durationPickerShowSecondsIfLessThanXMinutes = new PrefEntry("Show seconds in time if under N minutes (0 disables)", "durationPickerShowSecondsIfLessThanXMinutes", 1, "**");
     static PrefEntry durationPickerShowSecondsIfLessThan1Minute = new PrefEntry("Show seconds in time if less than 1 minute", "durationPickerShowSecondsIfLessThan1Minute", true, "**");

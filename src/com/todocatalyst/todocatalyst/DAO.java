@@ -3468,7 +3468,7 @@ public class DAO {
      * (=>1000)
      * @return
      */
-    private ParseQuery setupAlarmQuery(ParseQuery queryAlarm, String parseAlarmField, Date timeAfterWhichToFindNextItem, Date lastTimeForNextAlarm, int queryLimit) {
+    private ParseQuery setupAlarmQueryXXX(ParseQuery queryAlarm, String parseAlarmField, Date timeAfterWhichToFindNextItem, Date lastTimeForNextAlarm, int queryLimit) {
 //        queryAlarm.whereGreaterThanOrEqualTo(parseAlarmField, timeAfterWhichToFindNextItem);
         queryAlarm.whereGreaterThan(parseAlarmField, timeAfterWhichToFindNextItem);
         if (lastTimeForNextAlarm.getTime() != 0) {
@@ -3499,7 +3499,7 @@ public class DAO {
      * @param lastTimeForNextAlarm
      * @return
      */
-    public static List<Item> getItemsWithNormalAlarms(int maxNumberItemsToRetrieve, Date timeAfterWhichToFindNextItemWithAlarm) {
+    public static List<Item> getItemsWithNormalAlarmsXXX(int maxNumberItemsToRetrieve, Date timeAfterWhichToFindNextItemWithAlarm) {
         //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
         //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
@@ -3521,7 +3521,7 @@ public class DAO {
         return null;
     }
 
-    public static List<Item> getItemsWithWaitingAlarms(int maxNumberItemsToRetrieve,
+    public static List<Item> getItemsWithWaitingAlarmsXXX(int maxNumberItemsToRetrieve,
             Date timeAfterWhichToFindNextItemWithAlarm
     ) {
         //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
@@ -3552,9 +3552,12 @@ public class DAO {
      * previous future alarm. So, every item must be tried
      *
      * @param maxNumberItemsToRetrieve
-     * @return
+     * @return only future dates, sorted
      */
-    public List<Item> getItemsWithFutureAlarms(int maxNumberItemsToRetrieve) {
+    public List<Item> getItemsWithNextcomingAlarms(int maxNumberItemsToRetrieve) {
+        return getItemsWithNextcomingAlarms(maxNumberItemsToRetrieve, false);
+    }
+    public List<Item> getItemsWithNextcomingAlarms(int maxNumberItemsToRetrieve, boolean backgroundFetch) {
         //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
         //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
@@ -3563,18 +3566,21 @@ public class DAO {
             query.whereLessThan(Item.PARSE_NEXTCOMING_ALARM, new Date(MyDate.currentTimeMillis() + MyPrefs.alarmDaysAheadToFetchFutureAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS)); //don't search more than 30 days ahead in the future // NO real reason to limit the number 
         } else {
             query.whereExists(Item.PARSE_NEXTCOMING_ALARM);
+            query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on date
         }
         if (false) {
             query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on the alarm field
         }
-        if (false) {
+        if (backgroundFetch) {
             query.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE, Item.PARSE_SNOOZE_DATE))); // just fetchFromCacheOnly the data needed to set alarms //TODO!! investigate if only fetching the relevant fields is a meaningful optimziation (check that only the fetched fields are used!)
-        }
+        } else
+            query.selectKeys(new ArrayList()); // just fetch minimu
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
         query.setLimit(maxNumberItemsToRetrieve);
         List<Item> results;
         int numberOfItemsRetrieved;
-        do {
+        
+        do { //repeat until we have at least some future results (if all retrieved results had nextcoming data in the past)
 //        List<Item> results = null;
             results = null;
             try {
@@ -3584,14 +3590,17 @@ public class DAO {
             } catch (ParseException ex) {
                 Log.e(ex);
             }
+            if (!backgroundFetch) 
+                fetchListElementsIfNeededReturnCachedIfAvail(results); //only get in cache when not started in background
             numberOfItemsRetrieved = results.size();
+            
             //remove all items where getNextcomingAlarmDateD is no longer valid (time has passed and getNextcomingAlarm() returns another later value or null - meaning no more alarms)
             List<Item> expired = new ArrayList();
             //Solution from http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection :
             Iterator<Item> it = results.iterator();
             Date firstDate;
 //            Date futureDate;
-            Date lastAlarmDate = new Date(0); //time of the last alarm received from Parse server
+            Date lastAlarmDate = new Date(MyDate.MIN_DATE); //time of the last alarm received from Parse server
             while (it.hasNext()) {
                 Item item = it.next();
                 firstDate = item.getNextcomingAlarmDateD();
@@ -3620,8 +3629,8 @@ public class DAO {
                     results.add(expItem); //add the updated Items which do have a future alarm within the same interval as the other alarms retrieved (less than lastAlarmDate)
                 }
             }
-
-            // save the updated Items in a batch //optimization: do this as background task to avoid blocking the event thread
+//<editor-fold defaultstate="collapsed" desc="comment">
+// save the updated Items in a batch //optimization: do this as background task to avoid blocking the event thread
 //            if (!updated.isEmpty()) {
 //                try {
 //                    ParseBatch parseBatch = ParseBatch.create();
@@ -3631,8 +3640,9 @@ public class DAO {
 //                    Log.e(ex);
 //                }
 //            }
+//</editor-fold>
             saveBatch(updated);
-        } while (results.isEmpty() && maxNumberItemsToRetrieve == numberOfItemsRetrieved); //repeat in case every retrieved alarm was expired and we retrieved the maximum number (meaning there are like more alarms to retrieve)
+        } while (!backgroundFetch&& (results.isEmpty() && maxNumberItemsToRetrieve == numberOfItemsRetrieved)); //repeat in case every retrieved alarm was expired and we retrieved the maximum number (meaning there are like more alarms to retrieve)
 //        results.addAll(updated); //add the updated ones to results
         //sort the results
         if (results != null && !results.isEmpty()) {

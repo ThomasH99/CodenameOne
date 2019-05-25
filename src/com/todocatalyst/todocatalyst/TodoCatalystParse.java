@@ -14,6 +14,12 @@ import com.codename1.io.Storage;
 import com.codename1.l10n.L10NManager;
 import com.codename1.messaging.Message;
 import com.codename1.notifications.LocalNotificationCallback;
+import com.codename1.push.Push;
+import com.codename1.push.PushAction;
+import com.codename1.push.PushActionCategory;
+import com.codename1.push.PushActionsProvider;
+import com.codename1.push.PushCallback;
+import com.codename1.push.PushContent;
 import com.codename1.ui.*;
 import static com.codename1.ui.CN.getPlatformName;
 import com.codename1.ui.events.ActionEvent;
@@ -48,7 +54,7 @@ import net.informaticalibera.cn1.nativelogreader.NativeLogs;
  * @author Thomas
  */
 //public class TodoMidlet extends MIDlet {
-public class TodoCatalystParse implements LocalNotificationCallback, BackgroundFetch {
+public class TodoCatalystParse implements LocalNotificationCallback, BackgroundFetch, PushCallback {//, PushActionsProvider{
 
     private int count = 0;
     final static String APP_NAME = "TodoCatalyst";
@@ -601,7 +607,6 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        Log.setReportingLevel(Log.REPORTING_DEBUG);
 //        //PARSE logging:
 //        Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
-
 //        NativeLogs.initNativeLogs();
         Log.p("LOCALE = " + locale);
 
@@ -757,7 +762,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        Display d = Display.getInstance();
 //        Label supported = new Label();
         //code from https://www.codenameone.com/blog/background-fetchFromCacheOnly.html
-        if (Display.getInstance().isBackgroundFetchSupported()) {
+        if (Display.getInstance().isBackgroundFetchSupported()&&MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
             // This call is necessary to initialize background fetchFromCacheOnly
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Display.getInstance().setPreferredBackgroundFetchInterval(MyDate.HOUR_IN_MILISECONDS * 12 / 1000); //in seconds = 12hours
@@ -769,7 +774,11 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //            Display.getInstance().setPreferredBackgroundFetchInterval(Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt()* 3600 / 2, 3600/4) ); //max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
 //            AlarmHandler.setPreferredBackgroundFetchInterval();
 //</editor-fold>
-            Display.getInstance().setPreferredBackgroundFetchInterval(Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4)); //max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
+//max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
+//int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4);
+//int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() *3600 / 2, 3600 / 4);
+//            Display.getInstance().setPreferredBackgroundFetchInterval(fetchIntervalSeconds); 
+            AlarmHandler.setPreferredBackgroundFetchInterval();
             Log.p("Background Fetch IS Supported");
         } else {
             Log.p("Background Fetch is NOT Supported");
@@ -1132,7 +1141,107 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
         Log.p("destroy()");
     }
 
-//<editor-fold defaultstate="collapsed" desc="comment">
+    /*https://www.codenameone.com/manual/push.html*/
+    /**
+     * This method will be called in the background by the platform. Note: This
+     * only runs when the app is in the background.
+     * https://www.codenameone.com/manual/push.html
+     * @param deadline
+     * @param onComplete
+     */
+    @Override
+    public void performBackgroundFetch(long deadline, Callback<Boolean> onComplete) {
+        //https://www.codenameone.com/blog/background-fetch.html
+        //https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html
+//        RSSService rss = new RSSService("http://rss.slashdot.org/Slashdot/slashdotMain");
+//        NetworkManager.getInstance().addToQueueAndWait(rss);
+//        records = rss.getResults();
+//        System.out.println(records);
+        Log.p("performBackgroundFetch called, time=" + new Date() + ", deadline=" + deadline + ", date(deadline)=" + new Date(deadline));
+        AlarmHandler.getInstance().updateLocalNotificationsOnBackgroundFetch();
+//        System.out.println("performBackgroundFetch/deadline=" + deadline);
+        onComplete.onSucess(Boolean.TRUE);
+//        Log.p("performBackgroundFetch finished=");
+        Log.p("performBackgroundFetch finished, time=" + new Date());
+    }
+
+    /**
+     * Invoked when the push notification occurs
+     * https://www.codenameone.com/manual/push.html
+     * @param value the value of the push notification
+     */
+    @Override
+    public void push(String value) {
+        System.out.println("Received push message: " + value);
+    }
+
+    /**
+     * Invoked when push registration is complete to pass the device ID to the application.
+     * https://www.codenameone.com/manual/push.html
+     * @param deviceId OS native push id you should not use this value and instead use <code>Push.getPushKey()</code>
+     * @see Push#getPushKey()
+     */
+    @Override
+    public void registeredForPush(String deviceId) {
+        System.out.println("The Push ID for this device is " + Push.getPushKey());
+        //store locally
+        //add to central list for user to be able to send push messages to other devices
+    }
+
+    /**
+     * Invoked to indicate an error occurred during registration for push notification
+     * @param error descriptive error string
+     * @param errorCode an error code
+     */
+    @Override
+    public void pushRegistrationError(String error, int errorCode) {
+        System.out.println("An error occurred during push registration.");
+    }
+
+    private static final String PUSH_TOKEN = "********-****-****-****-*************";
+    private static final String FCM_SERVER_API_KEY = "******************-********************";
+
+    private static final String WNS_SID = "ms-app://**************************************";
+    private static final String WNS_CLIENT_SECRET = "*************************";
+
+    private static final boolean ITUNES_PRODUCTION_PUSH = false;
+
+    private static final String ITUNES_PRODUCTION_PUSH_CERT = "https://domain.com/linkToP12Prod.p12";
+    private static final String ITUNES_PRODUCTION_PUSH_CERT_PASSWORD = "ProdPassword";
+    private static final String ITUNES_DEVELOPMENT_PUSH_CERT = "https://domain.com/linkToP12Dev.p12";
+    private static final String ITUNES_DEVELOPMENT_PUSH_CERT_PASSWORD = "DevPassword";
+
+    public void sendPushToOtherDevice(String deviceKey) {
+        String cert = ITUNES_DEVELOPMENT_PUSH_CERT;
+        String pass = ITUNES_DEVELOPMENT_PUSH_CERT_PASSWORD;
+        if (ITUNES_PRODUCTION_PUSH) {
+            cert = ITUNES_PRODUCTION_PUSH_CERT;
+            pass = ITUNES_PRODUCTION_PUSH_CERT_PASSWORD;
+        }
+        new Push(PUSH_TOKEN, "Hello World", deviceKey)
+                .apnsAuth(cert, pass, ITUNES_PRODUCTION_PUSH)
+                .gcmAuth(FCM_SERVER_API_KEY)
+                .wnsAuth(WNS_SID, WNS_CLIENT_SECRET)
+                .send();
+    }
+
+    
+    
+//    @Override
+    public PushActionCategory[] getPushActionCategories() {
+        //https://www.codenameone.com/blog/rich-push-notification-improved.html
+        
+    return new PushActionCategory[]{
+        new PushActionCategory("fo", new PushAction[]{
+            new PushAction("yes", "Yes"),
+            new PushAction("no", "No"),
+            new PushAction("maybe", "Maybe", null, "Enter reason", "Reply")
+        })
+
+    };
+}
+    
+    //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    void setNotification(Date time) {
 //        LocalNotification n = new LocalNotification();
@@ -1169,6 +1278,7 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
     @Override
     public void localNotificationReceived(String notificationId) {
         AlarmHandler.getInstance().localNotificationReceived(notificationId);
+//        PushContent res = PushContent.get(); //won't work: see discussion here: https://www.codenameone.com/blog/rich-push-notification-improved.html
 //        if (!Dialog.show(notificationId, notificationId, "Cancel", "Continue")) {
 //            Display.getInstance().cancelLocalNotification("demo-notification");
 //        } else {
@@ -1180,25 +1290,6 @@ public class TodoCatalystParse implements LocalNotificationCallback, BackgroundF
 //        }
     }
 
-    /**
-     * This method will be called in the background by the platform. Note: This
-     * only runs when the app is in the background.
-     *
-     * @param deadline
-     * @param onComplete
-     */
-    @Override
-    public void performBackgroundFetch(long deadline, Callback<Boolean> onComplete) {
-//        RSSService rss = new RSSService("http://rss.slashdot.org/Slashdot/slashdotMain");
-//        NetworkManager.getInstance().addToQueueAndWait(rss);
-//        records = rss.getResults();
-//        System.out.println(records);
-        Log.p("performBackgroundFetch called, time=" + new Date() + ", deadline=" + deadline + ", date(deadline)=" + new Date(deadline));
-        AlarmHandler.getInstance().updateLocalNotificationsOnBackgroundFetchOrAppStart();
-//        System.out.println("performBackgroundFetch/deadline=" + deadline);
-        onComplete.onSucess(Boolean.TRUE);
-//        Log.p("performBackgroundFetch finished=");
-        Log.p("performBackgroundFetch finished, time=" + new Date());
-    }
 
+    
 }

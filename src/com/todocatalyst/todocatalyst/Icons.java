@@ -60,10 +60,10 @@ public class Icons {
         return makeT(FontImage.MATERIAL_EXPAND_MORE);
     }
     final static char iconShowMoreLabelStyleX = FontImage.MATERIAL_EXPAND_MORE;
-    final static char iconShowMore = FontImage.MATERIAL_EXPAND_MORE;
+    final static char iconShowMore = FontImage.MATERIAL_EXPAND_LESS; //MATERIAL_EXPAND_MORE
     final static Image iconShowMoreLabelStyle = FontImage.createMaterial(iconShowMore, labelStyle);
 
-    final static char iconShowLess = FontImage.MATERIAL_EXPAND_LESS;
+    final static char iconShowLess = FontImage.MATERIAL_EXPAND_MORE; //MATERIAL_EXPAND_LESS
     final static Image iconShowLessLabelStyle = FontImage.createMaterial(iconShowLess, labelStyle);
 
     final static char iconAddTimeStampToComment = FontImage.MATERIAL_ACCESS_TIME;
@@ -104,8 +104,10 @@ public class Icons {
     final static Image iconTimerNextTaskLabelStyle = FontImage.createMaterial(iconTimerNextTask, labelStyle); //like skip to next song
 
     //ALARM
-    final static Image iconSnoozeLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_SNOOZE, labelStyle);
-    final static Image iconAlarmOffLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_OFF, labelStyle);
+    final static char iconSnooze = FontImage.MATERIAL_SNOOZE;
+    final static Image iconSnoozeLabelStyle = FontImage.createMaterial(iconSnooze, labelStyle);
+    final static char iconAlarmOff = FontImage.MATERIAL_ALARM_OFF;
+    final static Image iconAlarmOffLabelStyle = FontImage.createMaterial(iconAlarmOff, labelStyle);
 
     //ITEM
 //    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, labelStyle);
@@ -250,8 +252,9 @@ public class Icons {
 
     final static char iconCommentTimeStamp = FontImage.MATERIAL_SCHEDULE;
 
-    final static Image iconWaitingDate = FontImage.createMaterial(FontImage.MATERIAL_PAUSE, labelStyle);
+    final static char iconWaitingAlarm = FontImage.MATERIAL_PAUSE;
     final static char iconWaitingDateMaterial = FontImage.MATERIAL_PAUSE;
+    final static Image iconWaitingDate = FontImage.createMaterial(iconWaitingDateMaterial, labelStyle);
 
     final static char iconWorkSlot = FontImage.MATERIAL_WORK;
     final static Image iconWorkSlotLabelStyle = FontImage.createMaterial(iconWorkSlot, labelStyle);
@@ -272,14 +275,15 @@ public class Icons {
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_EVENT_AVAILABLE;
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_RESTORE;
 
+    final static char iconBackToPreviousScreen = FontImage.MATERIAL_ARROW_BACK; //MATERIAL_EVENT_AVAILABLE;
     static Image iconBackToPrevFormToolbarStyle() {
-        return makeT(FontImage.MATERIAL_ARROW_BACK);
+        return makeT(iconBackToPreviousScreen);
     }
 
     static Image iconBackToPrevFormLabelStyle() {
-        return makeL(FontImage.MATERIAL_ARROW_BACK);
+        return makeL(iconBackToPreviousScreen);
     }
-    final static Image iconBackToPrevFormToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolBarStyle);
+    final static Image iconBackToPrevFormToolbarStyle = FontImage.createMaterial(iconBackToPreviousScreen, toolBarStyle);
 
     final static char iconEdit = FontImage.MATERIAL_CHEVRON_RIGHT;
 
@@ -317,8 +321,8 @@ public class Icons {
 //    final static Image iconCheckMarkToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_CIRCLE, toolBarStyle);
     final static Image iconAlarmSetToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, toolBarStyle);
     //EXPAND lists
-    final static Image iconShowMoreToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_EXPAND_MORE, toolBarStyle);
-    final static Image iconShowLessToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_EXPAND_LESS, toolBarStyle);
+    final static Image iconShowMoreToolbarStyle = FontImage.createMaterial(iconShowMore, toolBarStyle);
+    final static Image iconShowLessToolbarStyle = FontImage.createMaterial(iconShowLess, toolBarStyle);
     final static Image iconMoveUpDownToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_SWAP_VERT, toolBarStyle);
 
     //LOGIN

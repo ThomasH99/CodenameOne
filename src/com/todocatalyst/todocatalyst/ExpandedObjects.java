@@ -96,7 +96,8 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 //        boolean result = false;
 //        if (!expandedObjects.contains(element)) { //don't add if already there (to avoid having to 
         boolean result = false;
-        if (Config.TEST) ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null);
+        if (Config.TEST) ASSERT.that(element instanceof ItemAndListCommonInterface, "should only expand ItemAndListCommonInterface, not elt=" + element);
+        if (Config.TEST && element instanceof ItemAndListCommonInterface) ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null);
         if (element instanceof ItemAndListCommonInterface) //a hashset so no need to check if already added
             result = expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP()); //a hashset so no need to check if already added
         else if (element instanceof WorkSlotList)

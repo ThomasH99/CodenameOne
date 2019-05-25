@@ -216,7 +216,7 @@ public class ScreenFilter extends MyForm {
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show tasks with status:"));
         content.add(new SpanLabel("Show tasks with status:"));
 //        content.add(new SpanLabel(ItemStatus.CREATED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layout(ItemStatus.CREATED.getName(), new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutN(ItemStatus.CREATED.getName(), new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowNewTasks();
                 },
@@ -224,28 +224,28 @@ public class ScreenFilter extends MyForm {
                     filterSortDef.setShowNewTasks(b);
                 }), "**"));
 //                content.add(new SpanLabel(ItemStatus.ONGOING.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layout(ItemStatus.ONGOING.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutN(ItemStatus.ONGOING.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowOngoingTasks();
         },
                 (b) -> {
                     filterSortDef.setShowOngoingTasks(b);
                 }), "**"));
 //                content.add(new SpanLabel(ItemStatus.WAITING.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layout(ItemStatus.WAITING.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutN(ItemStatus.WAITING.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWaitingTasks();
         },
                 (b) -> {
                     filterSortDef.setShowWaitingTasks(b);
                 }), "**"));
 //                content.add(new SpanLabel(ItemStatus.DONE.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layout(ItemStatus.DONE.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutN(ItemStatus.DONE.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowDoneTasks();
         },
                 (b) -> {
                     filterSortDef.setShowDoneTasks(b);
                 }), "**"));
 //                content.add(new SpanLabel(ItemStatus.CANCELLED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layout(ItemStatus.CANCELLED.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutN(ItemStatus.CANCELLED.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowCancelledTasks();
         },
                 (b) -> {
@@ -256,7 +256,7 @@ public class ScreenFilter extends MyForm {
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show hidden tasks"));
         content.add(new SpanLabel("Show hidden tasks"));
 //        content.add(new SpanLabel("Before Hide until date")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layout("Before Hide until date", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutN("Before Hide until date", new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowBeforeHideUntilDate();
                 },
@@ -268,7 +268,7 @@ public class ScreenFilter extends MyForm {
 
         //show even if expiredDate is passed
 //        content.add(new SpanLabel("Expired tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layout("Expired tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutN("Expired tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowExpiresOnDate();
                 },
@@ -281,7 +281,7 @@ public class ScreenFilter extends MyForm {
         content.add(new SpanLabel("Show only certain types of tasks"));
         //Projects
 //        content.add(new SpanLabel("Projects")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layout("Projects", new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutN("Projects", new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowProjectsOnly();
         }, (b) -> {
             filterSortDef.setShowProjectsOnly(b);
@@ -295,7 +295,7 @@ public class ScreenFilter extends MyForm {
 //                }));
         //Interrupt tasks
 //       content.add(new SpanLabel("Interrupt tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layout("Interrupt tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutN("Interrupt tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowInterruptTasksOnly();
                 }, (b) -> {
@@ -304,7 +304,7 @@ public class ScreenFilter extends MyForm {
 
         //Estimates all/with/without
 //        content.add(new SpanLabel("With estimates")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layout("With estimates", new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutN("With estimates", new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWithoutEstimatesOnly();
         }, (b) -> {
             filterSortDef.setShowWithoutEstimatesOnly(b);
@@ -312,7 +312,7 @@ public class ScreenFilter extends MyForm {
 
         //Actual all/with/withoutno/all
 //        content.add(new SpanLabel("With work time")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layout("With work time", new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutN("With work time", new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWithActualsOnly();
         }, (b) -> {
             filterSortDef.setShowWithActualsOnly(b);
@@ -320,7 +320,7 @@ public class ScreenFilter extends MyForm {
 
         //Depending on tasks
 //        content.add(new SpanLabel("Tasks depending on other tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layout("Tasks depending on other tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutN("Tasks depending on other tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowDependingOnUndoneTasks();
                 },

@@ -62,7 +62,10 @@ public class ScreenMain extends MyForm {
             getToolbar().setUIID("Container");
             getToolbar().hideToolbar();
         }
-
+        setUIID("MainForm");
+        getContentPane().setUIID("MainContentPane");
+        setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
+    
 //        Style iconStyle = UIManager.getInstance().getComponentStyle("SideCommandIcon");
         refreshAfterEdit();
     }
@@ -159,7 +162,7 @@ public class ScreenMain extends MyForm {
         MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconMainAlarms/*FontImage.create(" \ue838 ", iconStyle)*/,
                 (e) -> {
 //                new ScreenListOfAlarms().show();
-                    ScreenListOfAlarms.getInstance().show();
+                    ScreenListOfAlarms.getInstance().show(ScreenMain.this);
                 }
         );
 

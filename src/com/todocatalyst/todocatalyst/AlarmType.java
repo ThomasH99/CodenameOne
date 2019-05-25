@@ -10,11 +10,13 @@ package com.todocatalyst.todocatalyst;
  * @author Thomas
  */
 enum AlarmType {
-    notification("-[ALARM]"), 
-    waiting("-[WAITING]"), 
-    notificationRepeat("-[ALARM-REP]"), 
-    waitingRepeat("-[WAITING-REP]"), 
-    snooze("-[SNOOZE]");
+    notification("-[ALARM]"),
+    waiting("-[WAITING]"),
+    notificationRepeat("-[ALARM-REP]"),
+    waitingRepeat("-[WAITING-REP]"),
+    snooze("-[ALM-SNOOZE]"),
+    snoozedNotif("-[ALM-SNOOZE]"),
+    snoozedWaiting("-[WAI-SNOOZE]");
     String text; //the text (eg "-[ALARM]") added to objectIds to get notificationId
 
     private AlarmType(String text) {
@@ -47,10 +49,41 @@ enum AlarmType {
         if (str.endsWith(waitingRepeat.text)) {
             return waitingRepeat;
         }
-        if (str.endsWith(snooze.text)) {
-            return snooze;
+//        if (str.endsWith(snooze.text)) {
+//            return snooze;
+//        }
+        if (str.endsWith(snoozedWaiting.text)) {
+            return snoozedWaiting;
+        }
+        if (str.endsWith(snoozedNotif.text)) {
+            return snoozedNotif;
         }
         return null;
+    }
+
+    /**
+    return the right type of snooze for a given alarm type
+    @param alarm
+    @return 
+     */
+    static AlarmType getSnoozedN(AlarmType alarm) {
+        if (alarm == notification || alarm == notificationRepeat)
+            return snoozedNotif;
+        else if (alarm == waiting || alarm == waitingRepeat)
+            return snoozedWaiting;
+        else if (alarm == snoozedNotif || alarm == snoozedWaiting)
+            return alarm; //return the same type for already snoozed alarm
+        else
+            return null;
+    }
+
+    static AlarmType getAlarmTypeFromSnoozedN(AlarmType snoozed) {
+        if (snoozed == snoozedNotif )
+            return notification;
+        else if (snoozed == snoozedWaiting)
+            return waiting;
+        else
+            return null;
     }
 
     static String getObjectIdStrWithoutTypeStr(String str, AlarmType type) {
@@ -77,7 +110,13 @@ enum AlarmType {
         if ((temp = notifId.indexOf(waitingRepeat.text)) != -1) {
             return temp;
         }
-        if ((temp = notifId.indexOf(snooze.text)) != -1) {
+//        if ((temp = notifId.indexOf(snooze.text)) != -1) {
+//            return temp;
+//        }
+        if ((temp = notifId.indexOf(snoozedNotif.text)) != -1) {
+            return temp;
+        }
+        if ((temp = notifId.indexOf(snoozedWaiting.text)) != -1) {
             return temp;
         }
         return -1;

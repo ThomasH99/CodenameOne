@@ -288,7 +288,6 @@ public class ScreenWorkSlot extends MyForm {
 //                (i) -> workSlot.setDurationInMinutes((int) i));
 //</editor-fold>
         MyDurationPicker duration = new MyDurationPicker();
-        duration.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
         Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0 ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS : 0));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //           initField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
@@ -306,6 +305,7 @@ public class ScreenWorkSlot extends MyForm {
                 (l) -> duration.setDuration((long) l),
                 new Long(0),
                 defaultDuration);
+        duration.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt());
 
         content.add(layoutN(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
 
@@ -323,7 +323,7 @@ public class ScreenWorkSlot extends MyForm {
         }
         ); //update the form title when text is changed
 //        content.add(new Label("Description")).add(workSlotName);
-        content.add(layoutN(WorkSlot.DESCRIPTION, workSlotName, WorkSlot.DESCRIPTION_HELP, true, false, false));
+        content.add(layoutN(WorkSlot.DESCRIPTION, workSlotName, WorkSlot.DESCRIPTION_HELP, null, false, false, false, true));
 //        setEditOnShow(workSlotName); //UI: start editing this field, NO
 
 //        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> workSlot.getComment(), (s) -> workSlot.setComment(s));

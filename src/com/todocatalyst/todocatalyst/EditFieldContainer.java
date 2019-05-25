@@ -15,6 +15,7 @@ import com.codename1.ui.Display;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
+import com.codename1.ui.TextField;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
@@ -43,18 +44,17 @@ public class EditFieldContainer extends Container {
         fieldContainer.setLayout(layout);
 
 //        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
-        if (field instanceof MyOnOffSwitch) {
-        } else {
-            if (field instanceof WrapButton) {
+        if (field instanceof TextField) {
+        } else if (field instanceof MyOnOffSwitch) {
+        } else if (field instanceof WrapButton) {
 //                ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
-                ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "ScreenItemField" : "ScreenItemValue");
-                ((WrapButton) field).setUIID("Container");
-                ((WrapButton) field).getTextComponent().setRTL(true);
-            } else if (field instanceof ComponentGroup) {
-            } else {
+            ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "ScreenItemField" : "ScreenItemValue");
+            ((WrapButton) field).setUIID("Container");
+            ((WrapButton) field).getTextComponent().setRTL(true);
+        } else if (field instanceof ComponentGroup) {
+        } else {
 //                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
-                field.setUIID(showAsFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemValue");
-            }
+            field.setUIID(showAsFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemValue");
         }
 
         //EDIT FIELD
@@ -63,13 +63,13 @@ public class EditFieldContainer extends Container {
             visibleField = field;
         } else { //place a visible or invisible button
 //            Label editFieldButton = new Label(Icons.iconEditSymbolLabelStyle, "IconEdit"); // [>]
-            Label editFieldButton = new Label("","IconEdit"); // [>]
+            Label editFieldButton = new Label("", "IconEdit"); // [>]
             editFieldButton.setMaterialIcon(Icons.iconEdit);
             editFieldButton.setVisible(!showAsFieldUneditable || visibleEditButton); //Visible, but still using space
             editFieldButton.setHidden(hiddenEditButton); //hidden, not taking any space
 //            visibleField = BorderLayout.centerEastWest(field, editFieldButton, null);
 //            visibleField = FlowLayout.encloseRight(field, editFieldButton);
-            visibleField = BorderLayout.centerCenterEastWest(field, editFieldButton,null);
+            visibleField = BorderLayout.centerCenterEastWest(field, editFieldButton, null);
             if (field instanceof WrapButton) {
                 ((Container) visibleField).setLeadComponent(((WrapButton) field).getActualButton());
 //                ((Container) visibleField).setLeadComponent(((WrapButton) field).setLeadComponent(field));

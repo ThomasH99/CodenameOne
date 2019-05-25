@@ -161,7 +161,8 @@ height (only used for generating background-images and borders)
 }
 
 Default {
-    background-color: transparent;
+    /*background-color: transparent;/**/
+    background-color: white; /*whitesmoke;/**/
     font-family:  "native:MainLight";
     font-size: 100%; /*100%;*/
     text-align: left;
@@ -193,10 +194,23 @@ MyButton {
     background-color: blue;
 }
 
+/****************** Form Title / Titlebar + Tool icons *******************/
+
+StatusBar {
+    /*cn1-derive: Button;/**/
+    cn1-derive: Container;/**/
+    /*color: blue;/**/
+    background-color: transparent;
+}
 Toolbar {
-    cn1-derive: Button;
+    /*cn1-derive: Button;/**/
+    cn1-derive: Container;/**/
     color: blue;
-    background-color: whitesmoke;
+    background-color: lightgrey;
+    /*border-bottom: 0.2mm black;/**/
+    border-bottom: 2px black solid;
+    /*border-width: 20pt;*/
+    /*border:  red;/**/
 }
 
 TitleXX {
@@ -206,23 +220,95 @@ TitleXX {
 }
 FormTitle {
     cn1-derive: Default;
-    font-size: 120%;
+    /*font-size: 120%; /**/
+    font-size: 100%; /**/
+    color: blueviolet;
+    /*background-color: red;/**/
+    /*background-color: transparent;/**/
     /*color: green;
     /*background-color: red;*/
 }
 TitleSmall {
     cn1-derive: FormTitle;
     font-size: 80%;
-    color: blueviolet;
+    /*color: blueviolet;/**/
+    /*background-color: transparent;/**/
     /*background-color: red;*/
 }
 TitleCommand {
     cn1-derive: Default;
     margin-top: 0.5mm;
     font-size: 120%;
+    background-color: transparent;
     /*color: green;
     /*background-color: red;*/
 }
+TextFieldSearch {
+    cn1-derive: Label;
+/*    margin-top: 0.5mm;
+    font-size: 120%;
+    background-color: transparent;
+    /*color: green;
+    /*background-color: red;*/
+}
+
+/******* LOGIN screen ****************/
+LoginForm {
+    cn1-derive: Form;
+    /*background-image: "andrew-buchanan-1377212-unsplash.jpg"; /**/
+    background-image: "andrew-edit1.jpg"; /**/
+}
+/******* ALARMS screen ****************/
+AlarmsForm {
+    cn1-derive: Form;
+    /*background-image: "andrew-buchanan-1377212-unsplash.jpg"; /**/
+    background: bisque; /**/
+}
+ScreenAlarmContainer { /*the top-level container containing everything for a single task */
+    cn1-derive: Container;
+   /*padding: 2pt;/**/
+    /*border-bottom: orange solid 2pt;/**/
+    border: orange solid 1mm;
+    background: yellow; /**/
+}
+ScreenAlarmsHeaderCont { /*the header above a task (containing text and cancel/snooze icons) */
+    cn1-derive: Container;
+    background: orange; /**/
+}
+ScreenAlarmsHeader { /*the label above a task (containing text) */
+    cn1-derive: Label;
+    background: burlywood; /**/
+}
+ScreenAlarmsWaitingTitle { /*icon for cancelling a single alarm*/
+    cn1-derive: Label;
+    color: white;
+    background: orange; /**/
+}
+ScreenAlarmsCancelAlarm { /*icon for cancelling a single alarm*/
+    cn1-derive: ScreenAlarmsWaitingTitle;
+    /*background: burlywood; /**/
+}
+ScreenAlarmsSnoozeAlarm { /*icon for snoozing a single alarm*/
+    cn1-derive: ScreenAlarmsWaitingTitle;
+    /*background: burlywood; /**/
+}
+
+ScreenAlarmsCancelAll { /*icon for cancelling a single alarm*/
+    cn1-derive: Button;
+    text-align: center;
+    /*background: burlywood; /**/
+    background: white;
+    color: orange;
+    /*margin: 0;
+    /*padding: 0; /**/
+    /*border: 6pt solid orange;/**/
+}
+ScreenAlarmsSnoozeAll { /*icon for snoozing a single alarm*/
+    cn1-derive: ScreenAlarmsCancelAll;
+    /*text-align: center;
+    background: burlywood; /**/
+}
+
 
 /*************** EDIT ITEM - ScreenItem2 ***********/
 
@@ -263,7 +349,8 @@ EditFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/
      margin:3mm;
      border-top: 1px darkgray;
      padding:0 ; /*top+bottom right+left*/
-    border-bottom: 4px black;
+    /*border: solid;/**/
+    border-bottom: 4px solid yellow; /*black;/**/
     padding: 0 0 ;
     margin: 2mm 2mm 0 3mm;
 }
@@ -387,7 +474,7 @@ Spacer {
     cn1-derive: LabelField;
     /*color: darkslategray;*/
     background-color: lightgray;
-    margin:3mm 3mm 0 3mm;
+    margin:2mm 3mm 2mm 3mm;
     padding:0 ; /*top+bottom right+left*/
     /*border-bottom: 0.2mm solid black;
     /*border-top: 1px darkgray;
@@ -581,19 +668,63 @@ ObjectSelectorRadioButton.selected {
 }
 
 /*************** main menu **************/
+
+MainForm {
+    cn1-derive: Form;
+    background: whitesmoke;
+    /*background: transparent;/**/
+    /*background: darkgray;/**/
+    /*background: url(images/my-image.png"andrew-buchanan-1377212-unsplash.jpg";/**/
+    /*background-image: url(/res/theme/andrew-buchanan-1377212-unsplash.jpg);/**/
+    /*background-image:  url(andrew-buchanan-1377212-unsplash.jpg);/**/
+    /*background-image: "andrew-buchanan-1377212-unsplash.jpg";/**/
+    /*background-image: "andrew-edit1.jpg"; /**/
+}
+MainContentPane {
+    cn1-derive: MainForm;
+    /*background-color: yellow; /**/
+    /*background-image: "andrew-buchanan-1377212-unsplash.jpg";/**/
+}
+
+
 MainMenuCommand {
     cn1-derive: Label;
     font-family :  "native:MainLight";
     font-size: 140%;
     text-align: left;
-    color: dimgray;
+    color: black;
+    /*text-decoration: cn1-3d-shadow-north; /*cn1-3d-lowered; /**/
     /*background: linear-gradient(0deg, #ccc, #666);*/
-    background: linear-gradient(0deg, #f5f5f5, white); /*whitesmoke*/
+    /*background: linear-gradient(0deg, #f5f5f5, white); /*whitesmoke*/
+    background: transparent; /*whitesmoke*/
     /*background-color: #3399ff;*/
-    margin:0px 0mm;/*1px 1mm;*/
+    margin:0mm 0mm;/*1px 1mm;*/
     padding:1.5mm 3mm; /*top+bottom right+left*/
+    border-bottom: 1mm solid lightgray;
     /*padding-left:0.5mm;
     padding-right:0.5mm;*/
+}
+
+
+ScreenItemStarred { /*style for starred icon task text in lists*/
+    cn1-derive: Button;
+    color:blue;
+    padding:0 0.5mm 0 0; /*top+bottom right+left*/
+    margin:0mm;
+}
+ScreenItemStarredInherited { /*style for starred icon task text in lists*/
+    cn1-derive: ScreenItemStarred;
+    color:red;
+}
+
+ItemListSmall {
+    cn1-derive: LabelValue;
+    text-align: left;
+    font-family :  "native:MainRegular";
+    font-size: 90%; /*80*/
+    color:darkgray;
+    padding:0 0.5mm 0 0; /*top+bottom right+left*/
+    margin:0;
 }
 /*************** list of items **************/
 
@@ -635,30 +766,15 @@ ListofItemsStarred { /*style for starred icon task text in lists*/
     margin:0mm;
     text-decoration: line-through;
 }
-ScreenItemStarred { /*style for starred icon task text in lists*/
-    cn1-derive: Button;
-    color:blue;
-    padding:0 0.5mm 0 0; /*top+bottom right+left*/
-    margin:0mm;
+ListOfItemsItemContent { /*style for task - CENTER - between status icon and edit task icon */
+    cn1-derive: Container;
+    margin:0mm 0 ;
+    padding: 1mm 0; /*top+bottom right+left*/
+    border-bottom: 4px solid blueviolet; /*lightgrey; */
 }
-ScreenItemStarredInherited { /*style for starred icon task text in lists*/
-    cn1-derive: ScreenItemStarred;
-    color:red;
-}
-
-ItemListSmall {
-    cn1-derive: LabelValue;
-    text-align: left;
-    font-family :  "native:MainRegular";
-    font-size: 90%; /*80*/
-    color:darkgray;
-    padding:0 0.5mm 0 0; /*top+bottom right+left*/
-    margin:0;
-}
-
 ListOfItemsItemDetails { /*style for task details - SOUTH */
     cn1-derive: Container;
-    border-bottom: 1px solid lightgrey;
+    border-bottom: 4px solid blueviolet; /*lightgrey; */
 
     margin:0mm;
     padding:0; /*top+bottom right+left*/
@@ -670,8 +786,9 @@ ListOfItemsItemTextStar {
 }
 ListOfItemsBottomContent { /*style for task details - SOUTH */
     cn1-derive: Container;
-    padding:0 0 0.5mm 0; /*top+bottom right+left*/
-    border-bottom: 1px solid lightgrey;
+    padding:0 0 0mm 0; /*top+bottom right+left*/
+    margin:0 0 0mm 0; /*top+bottom right+left*/
+    /*border-bottom: 8px solid green; /*lightgrey;*/ /* this one works!*/
     /*    margin:0mm;
         padding:0; /*top+bottom right+left*/
 }
@@ -689,6 +806,12 @@ ListOfItemsItemDetailsLabel { /*style for task details labels */
 
 ListOfItemsPrio {
     cn1-derive: ItemListSmall;
+    background: gray;
+    color: white;
+    text-align: center;
+    /*padding-left: 4pt;/**/
+    /*margin-right: 5pt;/**/
+    border: 0pt aquamarine cn1-pill-border;
 }
 
 ListOfItemsImpUrg {
@@ -838,6 +961,7 @@ ListOfItemListsRemainingTime  { /*the icon to the left of the name of the itemli
 Tree { 
     cn1-derive: Container;
 }
+
 StickyHeader {
     cn1-derive: ItemListSmall;
     text-align: center;
@@ -854,9 +978,7 @@ ContainerListElement {
     /*margin-left: 1mm;/*/
     margin: 0mm 0;
     /*border-left: 1mm solid blueviolet; /* expanded line for subtasks!! */
-
     /* border-spacing: 2mm; NOT supported */
-
     /*border-left: 0.3mm solid gray; 
     /*    border-bottom: 1px solid lightgrey;*/
     /*background-color: whitesmoke;
@@ -883,10 +1005,10 @@ ExpandedList { /* the ScrollY container, CENTER, with all expanded subtasks - in
     padding:0;
     /*margin: 0 0 0 4mm;
     padding: 0 0 0 4mm; */
-    margin-left: 1mm; /*this indents the first indent-line*/
-    background: lightgrey; /*space btw indent-line and itemContainer */
-    padding-left: 2mm; /*this is space between the indent-line and the ItemContainer*/
-    border-left: 1mm solid blueviolet; /* expanded line for subtasks!! */
+    margin-left: 2mm; /*this indents the first indent-line*/
+    /*background: lightgrey; /*space btw indent-line and itemContainer */
+    padding-left: 1mm; /*this is space between the indent-line and the ItemContainer*/
+    border-left: 1mm solid greenyellow; /* expanded line for subtasks!! */
 
     /*color: lightgray;*/
     /*border-left: 0.5mm solid green; 
@@ -914,8 +1036,8 @@ ListOfItemsSwipeButtons{
 }
 SwipeButton{
     font-size: 120%;
+    padding: 2mm;
     margin: 0;
-    padding: 1.5mm;
     text-align: right;
     color:white;
 }
@@ -1030,10 +1152,10 @@ GroupElementOnly{
 ToggleButton {
     cn1-derive: LabelValue; /*RadioButton;*/
     border-style: solid;
-    border-color: lightgrey;
-    border-width: 0.3mm;/*0.3mm;*/
+    border-color: royalblue;
+    border-width: 0.2mm;/*0.3mm;*/
     /* font-size: 100%;*/
-    color: grey;
+    color: royalblue;
     /* background: white;
      /*background: grey;*/
     text-align: center;
@@ -1046,13 +1168,13 @@ ToggleButton {
     /*color: #6eaeff; /**dodgerblue;*/
 }
 ToggleButton.pressed {
-    background: lightgrey;
-    color: blue;
+    background: blue;
+    color: white;
     /*color: green; /**dodgerblue;*/
 }
 ToggleButton.selected {
-    background: lightgrey;
-    color: blue;
+    background: royalblue;
+    color: white;
     /*color: brown; /**dodgerblue;*/
 }
 

@@ -1,6 +1,8 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
+import com.codename1.components.Switch;
+import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 
 //import com.codename1.ui.*;
@@ -32,11 +34,15 @@ public class ScreenSettingsAlarms extends ScreenSettingsCommon {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container cont) {
 //        cont.setScrollableY(true);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice).addActionListener((e) -> {
+            AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //enable/disable all alarms
+        });
         addSettingInt(cont, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);
         addSettingInt(cont, parseIdMap2, MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes, 0, 120, 1);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);
-        
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmReuseIndividuallySetSnoozeDurationForLongPress);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmReuseIndividuallySetSnoozeDurationForNormalSnooze);
+
         if (false) {
             //Examples:
             addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowEffortEstimateDetails);

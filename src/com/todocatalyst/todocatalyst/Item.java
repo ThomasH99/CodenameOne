@@ -12,6 +12,8 @@ import com.codename1.ui.util.EventDispatcher;
 import com.codename1.util.regex.RE;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.AlarmType.notification;
+import static com.todocatalyst.todocatalyst.AlarmType.waiting;
 import com.todocatalyst.todocatalyst.MyDate;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
 import com.todocatalyst.todocatalyst.MyPrefs;
@@ -495,7 +497,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return ItemStatus.getDescriptionValues();
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * the object that contains, or 'owns', this object. An object can have no
@@ -962,6 +963,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_NEXTCOMING_ALARM = "nextAlarm"; //first-coming/next-coming alarm (to allow easy search in Parse)
     final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
     final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the 
+    final static String PARSE_SNOOZED_TYPE = "snoozeType"; //date until which the 
     final static String PARSE_FILTER_SORT_DEF = "filterSort";
     final static String PARSE_WORKSLOTS = "workslots";
 //    final static String PARSE_FINISH_TIME = "finishTimexx"; //NOT a parse field, just used to store the field with
@@ -1356,7 +1358,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void setOwner(ItemAndListCommonInterface owner) {
         if (false) ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null), () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
         if (Config.TEST && !(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null)))
-            Log.p( "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
+            Log.p("Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
 //        if (owner instanceof Category) {
 //            setOwnerCategory((Category) owner);
 //        } else 
@@ -2462,8 +2464,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        setActualEffort(getActualEffort() + timeSpent); //store new actual effort
 //    }
 //</editor-fold>
-
-
     public void setStarred(boolean starred) {
 //        if (starred) {
 //        if (starred
@@ -2636,7 +2636,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
 //                && getOwnerItem() != null && MyUtil.eql(getOwnerItem().getChallengeN(), challenge);
 //        return isInherited(getChallengeN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectChallenge.getBoolean());
-           if (getOwnerItem() != null)
+        if (getOwnerItem() != null)
             return isInherited(getOwnerItem().getChallengeN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectChallenge.getBoolean());
         else
             return false;
@@ -2650,7 +2650,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectChallenge.getBoolean()
 //                && getOwnerItem() != null && MyUtil.eql(getOwnerItem().getChallengeN(), challenge);
 //        return getOwnerItem() != null ? isChallengeInheritedFrom(getOwnerItem().getChallengeN()) : false;
-        return  isChallengeInherited(getChallengeN());
+        return isChallengeInherited(getChallengeN());
     }
 
     public void setChallenge(Challenge challenge) {
@@ -2746,15 +2746,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public boolean isDreadFunInherited(DreadFunValue potentiallyInheritedValue) {
-           if (getOwnerItem() != null)
+        if (getOwnerItem() != null)
             return isInherited(getOwnerItem().getDreadFunValueN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean());
         else
             return false;
     }
 
     public boolean isDreadFunInherited() {
-        return  isDreadFunInherited(getDreadFunValueN());
-    }    /**
+        return isDreadFunInherited(getDreadFunValueN());
+    }
+
+    /**
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
@@ -2871,14 +2873,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @return 
      */
     public boolean isImportanceInherited(HighMediumLow potentiallyInheritedValue) {
-           if (getOwnerItem() != null)
+        if (getOwnerItem() != null)
             return isInherited(getOwnerItem().getImportanceN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectImportance.getBoolean());
         else
             return false;
     }
 
     public boolean isImportanceInherited() {
-        return  isImportanceInherited(getImportanceN());
+        return isImportanceInherited(getImportanceN());
     }
 
     /**
@@ -2938,20 +2940,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return (dreadFunValue == null) ? "" : dreadFunValue;
         return (urgency == null) ? null : HighMediumLow.valueOf(urgency); //Created is initial value
     }
-    
-        /**
+
+    /**
     returns true if the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
      */
     public boolean isUrgencyInherited(HighMediumLow potentiallyInheritedValue) {
-           if (getOwnerItem() != null)
+        if (getOwnerItem() != null)
             return isInherited(getOwnerItem().getUrgencyN(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectUrgency.getBoolean());
         else
             return false;
     }
 
     public boolean isUrgencyInherited() {
-        return  isUrgencyInherited(getUrgencyN());
+        return isUrgencyInherited(getUrgencyN());
     }
 
     /**
@@ -3347,18 +3349,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    private List<AlarmRecord> getAllAlarmRecords(Date onOrAfterDate, boolean sorted) {
+    public List<AlarmRecord> getAllAlarmRecords(Date onOrAfterDate, boolean sorted) {
         //TODO //optimization: keep track of whether alarms have been changed to avoid recalculating this at every  call of getNextcomingAlarm() //NO, probably very little to be gained
         List<AlarmRecord> list = new ArrayList();
+        AlarmRecord alarmRecord;
         Date date;
-        if ((date = getSnoozeDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-            list.add(new AlarmRecord(date, com.todocatalyst.todocatalyst.AlarmType.snooze));
+//        if ((date = getSnoozeDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+        if ((alarmRecord = getSnoozeAlarmRecord()) != null && (alarmRecord == null || alarmRecord.alarmTime.getTime() >= onOrAfterDate.getTime())) {
+//            list.add(new AlarmRecord(date, com.todocatalyst.todocatalyst.AlarmType.snooze));
+            list.add(alarmRecord);
         }
-        if ((date = getAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-            list.add(new AlarmRecord(date, com.todocatalyst.todocatalyst.AlarmType.notification));
+//        if ((date = getAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+        if ((date = getAlarmDateD()).getTime() != 0 && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+            list.add(new AlarmRecord(date, notification));
         }
-        if ((date = getWaitingAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-            list.add(new AlarmRecord(date, com.todocatalyst.todocatalyst.AlarmType.waiting));
+//        if ((date = getWaitingAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+        if ((date = getWaitingAlarmDateD()).getTime() != 0 && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+            list.add(new AlarmRecord(date, waiting));
         }
         if (sorted && list.size() > 1) {
             Collections.sort(list, (object1, object2) -> {
@@ -3391,7 +3398,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public void updateNextcomingAlarm() {
         Date date = getNextcomingAlarm(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
-        if (date == null) { //list.isEmpty()) {
+        if (date == null || date.getTime() == 0) { //list.isEmpty()) {
             remove(PARSE_NEXTCOMING_ALARM);
         } else {
             put(PARSE_NEXTCOMING_ALARM, date); //list.get(0).alarmTime);
@@ -3635,7 +3642,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public Date getWaitingAlarmDateD() {
 //        return new Date(getWaitingAlarmDate());
         Date waitingAlarmDate = getDate(PARSE_WAITING_ALARM_DATE);
-        return (waitingAlarmDate == null || isDone()) ? new Date(0) : waitingAlarmDate; //return 0 is task is Done
+//        return (waitingAlarmDate == null || isDone()) ? new Date(0) : waitingAlarmDate; //return 0 is task is Done
+        return waitingAlarmDate == null  ? new Date(0) : waitingAlarmDate; //return 0 is task is Done -NO, this prevents seeing alarmDates when editing a done task!! And maybe if copying done tasks. Instead, test on Done must be done at a higher level!!
     }
 
     public void setWaitingAlarmDate(long waitingAlarmDate) {
@@ -4423,8 +4431,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //<editor-fold defaultstate="collapsed" desc="deactivated updates">
         if (false && (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && item.getWaitingTillDateD().getTime() != 0L)) { //reset WaitingTillDate
             item.setWaitingTillDate(0); //reset waitingTill date
-            if (item.getWaitingAlarmDate() != 0) { //automatically turn off
-                item.setWaitingAlarmDate(0);
+//            if (item.getWaitingAlarmDateD() != null) { //automatically turn off
+            if (item.getWaitingAlarmDateD().getTime() != 0) { //automatically turn off
+                item.setWaitingAlarmDate(null);
             }
 //                setWaitingLastActivatedDate(0); //-waitingActivateDate is not changed (until the task is possibly set waiting again)
         }
@@ -5495,16 +5504,33 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    public Date getSnoozeDateD() {
+//    public Date getSnoozeDateD() {
+//        Date date = getDate(PARSE_SNOOZE_DATE);
+//        return (date == null) ? new Date(0) : date;
+//    }
+//
+//    public void setSnoozeDate(Date snoozeUntilDate) {
+//        if (snoozeUntilDate != null && snoozeUntilDate.getTime() != 0) {
+//            put(PARSE_SNOOZE_DATE, snoozeUntilDate);
+//        } else {
+//            remove(PARSE_SNOOZE_DATE);
+//        }
+//    }
+    public AlarmRecord getSnoozeAlarmRecord() {
         Date date = getDate(PARSE_SNOOZE_DATE);
-        return (date == null) ? new Date(0) : date;
+        String type = getString(PARSE_SNOOZED_TYPE);
+        if (Config.TEST&&type==null) type=AlarmType.snoozedNotif.toString();
+        return (date != null) ? new AlarmRecord(date, AlarmType.valueOf(type)) : null;
     }
 
-    public void setSnoozeDate(Date snoozeUntilDate) {
-        if (snoozeUntilDate != null && snoozeUntilDate.getTime() != 0) {
-            put(PARSE_SNOOZE_DATE, snoozeUntilDate);
+    public void setSnoozeAlarmRecord(AlarmRecord snooze) {
+        if (snooze.alarmTime != null && snooze.alarmTime.getTime() != 0) {
+            put(PARSE_SNOOZE_DATE, snooze.alarmTime);
+            put(PARSE_SNOOZED_TYPE, snooze.type.toString());
+
         } else {
             remove(PARSE_SNOOZE_DATE);
+            remove(PARSE_SNOOZED_TYPE);
         }
     }
 
@@ -7102,18 +7128,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        delete();
 //        DAO.getInstance().delete(this);
 //    }
-    public long getAlarmDate(int alarmId) {
+    public long getAlarmDateXXX(int alarmId) {
         if (alarmId == Item.FIELD_ALARM_DATE) {
             return getAlarmDate();
         } else if (alarmId == FIELD_WAITING_ALARM_DATE) {
-            return getWaitingAlarmDate();
+            return getWaitingAlarmDateD() != null ? getWaitingAlarmDateD().getTime() : 0;
         } else {
             return 0;
         }
 //        RuntimeException     ("Not supported yet.");
     }
 
-    public String getAlarmText(int alarmId) {
+    public String getAlarmTextXXX(int alarmId) {
         if (alarmId == Item.FIELD_ALARM_DATE) {
             return getText();
         } else if (alarmId == FIELD_WAITING_ALARM_DATE) {
