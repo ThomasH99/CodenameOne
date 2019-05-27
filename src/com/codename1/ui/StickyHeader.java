@@ -54,7 +54,7 @@ public class StickyHeader extends Container implements ScrollListener {
     public StickyHeader() {
         super();
         setLayout(MyBorderLayout.center());
-        hideShowButton.setCommand(Command.createMaterial("", FontImage.MATERIAL_EXPAND_MORE, (ev) -> {
+        hideShowButton.setCommand(Command.createMaterial("", FontImage.MATERIAL_EXPAND_LESS, (ev) -> {
             hidden = !hidden;
 //            hideFollowingComponents(hidden);
             Container parent = getParent();
@@ -69,7 +69,7 @@ public class StickyHeader extends Container implements ScrollListener {
 //                hideShowButton.setMaterialIcon(hidden?FontImage.MATERIAL_EXPAND_LESS:FontImage.MATERIAL_EXPAND_MORE);
 //            else
 //                hideShowButton.setMaterialIcon(FontImage.MATERIAL_EXPAND_MORE);
-            hideShowButton.setMaterialIcon(hidden ? FontImage.MATERIAL_EXPAND_LESS : FontImage.MATERIAL_EXPAND_MORE);
+            hideShowButton.setMaterialIcon(hidden ? FontImage.MATERIAL_EXPAND_MORE : FontImage.MATERIAL_EXPAND_LESS);
             parent.animateHierarchy(300);
 
         }));
@@ -79,6 +79,11 @@ public class StickyHeader extends Container implements ScrollListener {
     public StickyHeader(String uiid) {
         this();
         this.setUIID(uiid);
+    }
+    public StickyHeader(String uiid, String iconUiid) {
+        this();
+        this.setUIID(uiid);
+        hideShowButton.setUIID(iconUiid);
     }
 
     private void hideFollowingComponents(boolean hide) {

@@ -48,16 +48,16 @@ public class ScreenObjectPicker<E> extends MyForm {
     //TODO!! implement sorting of objects (eg categories), default manual, alphabetically, most recently used, #tasks, #hours of work
     //TODO! implement auto-selection of categories matching search string, e.g. if only one category shown, and press Back, then select that category (or more) ->?? not intuitive when it 'triggers' and not visible which are selected
     //DONE implement search on objects (eg categories)
-    private List listOfAllLists;
+    private List listOfAllLists1;
     private List listOfAllListsSelectionBackup = new ArrayList<E>();
-    private List listOfAllTopLevelProjects;
+    private List listOfAllTopLevelProjects1;
     private List listOfAllTopLevelProjectsSelectionBackup = new ArrayList<E>();
     private List displayedList;
 //    private List listOfAllTasks;
 //    private List selectedObjects;  
     private List<String> allLabels;//= new ArrayList();
 //    Set<Category> selectedCategories;
-    private List selectedObjects;
+    private List selectedObjects1;
     private CheckBox[] checkBoxes; //must always contain a checkbox for every selectable object, and *in same order* as the selectable objects are define in listOfAllObjects (to correlate checkboxes and objects)
     private GetStringFrom labelMaker;
     private int minNbOfSelected;
@@ -138,22 +138,37 @@ public class ScreenObjectPicker<E> extends MyForm {
             boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
         super(title, previousForm, updateOnDone);
         assert maxNbOfSelected >= minNbOfSelected && maxNbOfSelected >= 1;
-        this.listOfAllLists = listOfAllLists;
-        this.listOfAllTopLevelProjects = listOfAllTopLevelProjects;
+        this.listOfAllLists1 = new ArrayList(listOfAllLists); //make a copy to it can be modified if adding missing elements in code below
+        this.listOfAllTopLevelProjects1 = new ArrayList(listOfAllTopLevelProjects); //make a copy to it can be modified if adding missing elements in code below
 //        this.listOfAllTasks = listOfAllTasks;
-        this.selectedObjects = selectedObjects;
+        this.selectedObjects1 = selectedObjects;
         this.minNbOfSelected = minNbOfSelected;
         this.maxNbOfSelected = maxNbOfSelected;
         this.labelMaker = labelMaker;
         this.scrollToFirstSelected = scrollToFirstSelected;
         this.exitWhenMaxObjectsIsSelected = exitWhenMaxObjectsIsSelected;
 
-        listSelector = new ListSelector(this.selectedObjects, false, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, (obj, selected) -> {
+        //add any current elements in the selectedObjects which are NOT in the listOfAllLists/listOfAllTopLevelProjects, necessary eg for Inbox which is not a 'user' list (NB. This approach might be a bit of hack)
+        if (selectedObjects1 != null && selectedObjects1.size() > 0) {
+            if (selectedObjects1.get(0) instanceof ItemList) {
+                for (ItemList itemList : (List<ItemList>) selectedObjects1) {
+                    if (!listOfAllLists1.contains(itemList))
+                        listOfAllLists1.add(0, itemList); //TODO!!!! if multiple elements in selectedObjects, then they are added in *reverse* order to the list (not an issue as long as ObjectPicker is only used to pick Owner)
+                }
+            } else if (selectedObjects1.get(0) instanceof Item) {
+                for (Item item : (List<Item>) selectedObjects1) {
+                    if (!listOfAllTopLevelProjects1.contains(item))
+                        listOfAllTopLevelProjects1.add(0, item);
+                }
+            }
+        }
+
+        listSelector = new ListSelector(this.selectedObjects1, false, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, (obj, selected) -> {
             int idx = -1;
-            if (displayedList == this.listOfAllLists) {
-                idx = this.listOfAllLists.indexOf(obj);
-            } else if (displayedList == this.listOfAllTopLevelProjects) {
-                idx = this.listOfAllTopLevelProjects.indexOf(obj);
+            if (displayedList == this.listOfAllLists1) {
+                idx = this.listOfAllLists1.indexOf(obj);
+            } else if (displayedList == this.listOfAllTopLevelProjects1) {
+                idx = this.listOfAllTopLevelProjects1.indexOf(obj);
             }
             if (idx != -1) {
                 checkBoxes[idx].setSelected(selected);
@@ -208,7 +223,6 @@ public class ScreenObjectPicker<E> extends MyForm {
 //            getContentPane().animateLayout(150);
             animateMyForm();
         });
-
         refreshAfterEdit();
     }
 
@@ -240,7 +254,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 
         //if (objectCreator!=null)
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllObjects, ScreenObjectPicker.this)); //TODO!!!! enable adding new elements to picker screen
-        setCheckIfSaveOnExit(() -> checkObjectChoiceIsValid(selectedObjects.size()));
+        setCheckIfSaveOnExit(() -> checkObjectChoiceIsValid(selectedObjects1.size()));
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
 
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //UI: always enable Cancel to make it easy to regret any changes
@@ -260,21 +274,21 @@ public class ScreenObjectPicker<E> extends MyForm {
 
         //maintain a backup of previously selected objects when having more than one list
         if (displayedList != null && listOfAllObjects != displayedList) {
-            if (displayedList == listOfAllLists) {
+            if (displayedList == listOfAllLists1) {
 //        if (displayedList==listOfAllLists && listOfAllObjects!=displayedList){
                 //save current selection for listOfAllLists to its backup
                 listOfAllListsSelectionBackup.clear();
-                listOfAllListsSelectionBackup.addAll(selectedObjects);
+                listOfAllListsSelectionBackup.addAll(selectedObjects1);
                 //move previous selection into selectedObjects
-                selectedObjects.clear();
-                selectedObjects.addAll(listOfAllTopLevelProjectsSelectionBackup);
-            } else if (listOfAllObjects != displayedList && displayedList == listOfAllTopLevelProjects) {
+                selectedObjects1.clear();
+                selectedObjects1.addAll(listOfAllTopLevelProjectsSelectionBackup);
+            } else if (listOfAllObjects != displayedList && displayedList == listOfAllTopLevelProjects1) {
                 //save current selection for listOfAllTopLevelProjects to its backup
                 listOfAllTopLevelProjectsSelectionBackup.clear();
-                listOfAllTopLevelProjectsSelectionBackup.addAll(selectedObjects);
+                listOfAllTopLevelProjectsSelectionBackup.addAll(selectedObjects1);
                 //move previous selection into selectedObjects
-                selectedObjects.clear();
-                selectedObjects.addAll(listOfAllListsSelectionBackup);
+                selectedObjects1.clear();
+                selectedObjects1.addAll(listOfAllListsSelectionBackup);
             }
         }
 
@@ -289,12 +303,12 @@ public class ScreenObjectPicker<E> extends MyForm {
             String label = labelMaker.get(obj.getText());
             allLabels.add(label.toLowerCase()); //store the label in lowercase for faster search
             CheckBox chk = CheckBox.createToggle(label);
-            boolean selected = selectedObjects.contains(obj);
+            boolean selected = selectedObjects1.contains(obj);
+            chk.setSelected(selected);
             if (scrollToFirstSelected && selected && firstSelectedChk == null) {
                 firstSelectedChk = chk;
             }
             checkBoxes[i] = chk;
-            chk.setSelected(selected);
             cont.add(chk);
             chk.addActionListener((ActionEvent evt) -> {
                 listSelector.flipSelection(obj);
@@ -315,9 +329,11 @@ public class ScreenObjectPicker<E> extends MyForm {
         boolean listOfLists = true;
         if (listOfLists) {
 //            Button cmdLists = null;
-            RadioButton buttonLists = (listOfAllLists != null && listOfAllLists.size() > 0) ? new RadioButton("Lists", null) : null;
+            RadioButton buttonLists = (listOfAllLists1 != null && listOfAllLists1.size() > 0) ? new RadioButton("Lists", null) : null;
+            buttonLists.setToggle(true);
 //            Button cmdProjects = null;
-            RadioButton buttonProjects = (listOfAllTopLevelProjects != null && listOfAllTopLevelProjects.size() > 0) ? new RadioButton("Projects", null) : null;
+            RadioButton buttonProjects = (listOfAllTopLevelProjects1 != null && listOfAllTopLevelProjects1.size() > 0) ? new RadioButton("Projects", null) : null;
+            buttonProjects.setToggle(true);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Button cmdTasks = null;
 //            List<Button> cmds = new ArrayList();
@@ -336,7 +352,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             if (buttonLists != null) {
                 buttonLists.setUIID("ObjectSelectorRadioButton");
                 buttonLists.addActionListener((e) -> {
-                    buildList(listOfAllLists, cont);
+                    buildList(listOfAllLists1, cont);
 //                    cmdLists.setToggle(listOfLists);
                     animateMyForm();
                 });
@@ -359,7 +375,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             if (buttonProjects != null) {
                 buttonProjects.setUIID("ObjectSelectorRadioButton");
                 buttonProjects.addActionListener((e2) -> {
-                    buildList(listOfAllTopLevelProjects, cont);
+                    buildList(listOfAllTopLevelProjects1, cont);
                     buttonLists.setSelected(false);
                     animateMyForm();
                 });
@@ -389,20 +405,20 @@ public class ScreenObjectPicker<E> extends MyForm {
                 add(MyBorderLayout.SOUTH, butCont);
             }
             ItemAndListCommonInterface firstSelectedObj;
-            if (selectedObjects.size() > 0) { //if we already have element(s) selected
-                firstSelectedObj = (ItemAndListCommonInterface) selectedObjects.get(0); //get first selected object (or any element, just to get its type)
+            if (selectedObjects1.size() > 0) { //if we already have element(s) selected
+                firstSelectedObj = (ItemAndListCommonInterface) selectedObjects1.get(0); //get first selected object (or any element, just to get its type)
                 if (firstSelectedObj instanceof ItemList) {
 //                    cmdLists.getCommand().actionPerformed(null);
-                    buildList(listOfAllLists, cont);
+                    buildList(listOfAllLists1, cont);
                     buttonLists.setSelected(true);
                 } else if (firstSelectedObj instanceof Item) {
-                    if (((Item) firstSelectedObj).isProject()) { //selected element a project
+                    if (true || ((Item) firstSelectedObj).isProject()) { //selected element a project //TODO!!!: no need to test on isProject??
 //                        cmdProjects.getCommand().actionPerformed(null);
-                        buildList(listOfAllTopLevelProjects, cont);
+                        buildList(listOfAllTopLevelProjects1, cont);
                         buttonProjects.setSelected(true);
                     }
                 } else { //UI: if no selected elements, always show list of Lists first
-                    buildList(listOfAllLists, cont);
+                    buildList(listOfAllLists1, cont);
                 }
 //                else {
 //                    cmdTasks.getCommand().actionPerformed(null);
@@ -410,19 +426,19 @@ public class ScreenObjectPicker<E> extends MyForm {
 //            } else {
 //                cmdLists.getCommand().actionPerformed(null); //UI: Lists default
             } else {
-                buildList(listOfAllLists, cont);
+                buildList(listOfAllLists1, cont);
             }
 
         } else { //not currently activated!
             parseIdMapReset();
             cont.removeAll();
-            checkBoxes = new CheckBox[listOfAllLists.size()];
+            checkBoxes = new CheckBox[listOfAllLists1.size()];
             allLabels = new ArrayList();
 //        selectedObjects = new ArrayList();
             CheckBox firstSelectedChk = null;
             //DONE!!!! replace InfiniteContainer by a simpler structure
-            for (int i = 0, size = listOfAllLists.size(); i < size; i++) {
-                ItemAndListCommonInterface obj = (ItemAndListCommonInterface) listOfAllLists.get(i);
+            for (int i = 0, size = listOfAllLists1.size(); i < size; i++) {
+                ItemAndListCommonInterface obj = (ItemAndListCommonInterface) listOfAllLists1.get(i);
                 String label = labelMaker.get(obj.getText());
                 allLabels.add(label.toLowerCase()); //store the label in lowercase for faster search
                 CheckBox chk = CheckBox.createToggle(label);
@@ -430,7 +446,7 @@ public class ScreenObjectPicker<E> extends MyForm {
                     firstSelectedChk = chk;
                 }
                 checkBoxes[i] = chk;
-                chk.setSelected(selectedObjects.contains(obj));
+                chk.setSelected(selectedObjects1.contains(obj));
                 cont.add(chk);
                 chk.addActionListener((ActionEvent evt) -> {
                     listSelector.flipSelection(obj);

@@ -1701,20 +1701,41 @@ public class DAO {
     public ItemList getNamedItemList(String name, String visibleName, FilterSortDef filterSortDef) {
         ParseObject temp = null;
         switch (name) {
+            case OVERDUE:
+                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+//                    return (ItemList) temp;
+                } else {
+                    if (temp != null) {
+                        ((ItemAndListCommonInterface) temp).setList(getOverdue()); //refresh the list
+                        saveInBackground(temp);
+                    } else {
+                        temp = new ItemList(visibleName, getOverdue());
+                        saveAndWait(temp);
+                        cache.put(name, temp);
+//                    return (ItemList) temp;
+                    }
+                }
+                break; //unreachable statement!!
             case TODAY:
 //                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
                 if ((temp = cacheGet(name)) != null && (MyDate.isToday(temp.getUpdatedAt()))) {
 //                    return (ItemList) temp;
                 } else {
-                    temp = new ItemList(visibleName, getToday());
+                    if (temp != null) {
+                        ((ItemAndListCommonInterface) temp).setList(getToday()); //refresh the list
+                        saveInBackground(temp);
+                    } else {
+                        temp = new ItemList(visibleName, getToday());
 //                    saveInBackground(temp);
-                    //optimization: does this in background:
-                    saveAndWait(temp); //NB! MUST use saveAndWait, so the list is stored in Cache with an updatedAt date to make the check above work correctly!!
-                    cache.put(name, temp);
+                        //optimization: does this in background:
+                        saveAndWait(temp); //NB! MUST use saveAndWait, so the list is stored in Cache with an updatedAt date to make the check above work correctly!!
+                        cache.put(name, temp);
 //                    return (ItemList) temp;
+                    }
                 }
                 break; //unreachable statement!!
             case NEXT:
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
 //                    return (ItemList) temp;
 //                else
@@ -1727,51 +1748,75 @@ public class DAO {
 //                    cache.put(name, temp);
 //                }
 //                return (ItemList) temp;
-//                
+//
+//</editor-fold>
                 if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 //                    return (ItemList) temp;
                 } else {
-                    temp = new ItemList(visibleName, getCalendar());
-                    saveInBackground(temp);
-                    cache.put(name, temp);
+                    if (temp != null) {
+                        ((ItemAndListCommonInterface) temp).setList(getCalendar()); //refresh the list
+                        saveInBackground(temp);
+                    } else {
+                        temp = new ItemList(visibleName, getCalendar());
+                        saveAndWait(temp);
+                        cache.put(name, temp);
 //                    return (ItemList) temp;
+                    }
                 }
                 break; //unreachable statement!!
             case LOG:
                 if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 //                    return (ItemList) temp;
                 } else {
-                    temp = new ItemList(visibleName, getCompletionLog());
-                    saveInBackground(temp);
-                    cache.put(name, temp);
+                    if (temp != null) {
+                        ((ItemAndListCommonInterface) temp).setList(getCompletionLog()); //refresh the list
+                        saveInBackground(temp);
+                    } else {
+                        temp = new ItemList(visibleName, getCompletionLog());
+                        saveAndWait(temp);
+                        cache.put(name, temp);
 //                    return (ItemList) temp;
+                    }
                 }
                 break; //unreachable statement!!
             case DIARY:
                 if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 //                    return (ItemList) temp;
                 } else {
-                    temp = new ItemList(visibleName, getCreationLog());
-                    saveInBackground(temp);
-                    cache.put(name, temp);
+                    if (temp != null) {
+                        ((ItemAndListCommonInterface) temp).setList(getCreationLog()); //refresh the list
+                        saveInBackground(temp);
+                    } else {
+                        temp = new ItemList(visibleName, getCreationLog());
+                        saveAndWait(temp);
+                        cache.put(name, temp);
 //                    return (ItemList) temp;
+                    }
                 }
                 break; //unreachable statement!!
             case TOUCHED:
                 if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 //                    return (ItemList) temp;
                 } else {
-                    temp = new ItemList(visibleName, getTouchedLog());
-                    saveInBackground(temp);
-                    cache.put(name, temp);
+                    if (temp != null) {
+                        ((ItemAndListCommonInterface) temp).setList(getTouchedLog()); //refresh the list
+                        saveInBackground(temp);
+                    } else {
+                        temp = new ItemList(visibleName, getTouchedLog());
+                        saveAndWait(temp);
+                        cache.put(name, temp);
 //                    return (ItemList) temp;
+                    }
                 }
                 break; //unreachable statement!!
             default:
                 break;
         }
         if (temp != null) {
-            ((ItemList) temp).setFilterSortDef(filterSortDef);
+            if (filterSortDef != null) {
+                ((ItemList) temp).setFilterSortDef(filterSortDef);
+                saveInBackground(temp);
+            }
             return (ItemList) temp;
         } else ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
 
@@ -3557,6 +3602,7 @@ public class DAO {
     public List<Item> getItemsWithNextcomingAlarms(int maxNumberItemsToRetrieve) {
         return getItemsWithNextcomingAlarms(maxNumberItemsToRetrieve, false);
     }
+
     public List<Item> getItemsWithNextcomingAlarms(int maxNumberItemsToRetrieve, boolean backgroundFetch) {
         //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
         //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
@@ -3579,7 +3625,7 @@ public class DAO {
         query.setLimit(maxNumberItemsToRetrieve);
         List<Item> results;
         int numberOfItemsRetrieved;
-        
+
         do { //repeat until we have at least some future results (if all retrieved results had nextcoming data in the past)
 //        List<Item> results = null;
             results = null;
@@ -3590,10 +3636,10 @@ public class DAO {
             } catch (ParseException ex) {
                 Log.e(ex);
             }
-            if (!backgroundFetch) 
+            if (!backgroundFetch)
                 fetchListElementsIfNeededReturnCachedIfAvail(results); //only get in cache when not started in background
             numberOfItemsRetrieved = results.size();
-            
+
             //remove all items where getNextcomingAlarmDateD is no longer valid (time has passed and getNextcomingAlarm() returns another later value or null - meaning no more alarms)
             List<Item> expired = new ArrayList();
             //Solution from http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection :
@@ -3642,7 +3688,7 @@ public class DAO {
 //            }
 //</editor-fold>
             saveBatch(updated);
-        } while (!backgroundFetch&& (results.isEmpty() && maxNumberItemsToRetrieve == numberOfItemsRetrieved)); //repeat in case every retrieved alarm was expired and we retrieved the maximum number (meaning there are like more alarms to retrieve)
+        } while (!backgroundFetch && (results.isEmpty() && maxNumberItemsToRetrieve == numberOfItemsRetrieved)); //repeat in case every retrieved alarm was expired and we retrieved the maximum number (meaning there are like more alarms to retrieve)
 //        results.addAll(updated); //add the updated ones to results
         //sort the results
         if (results != null && !results.isEmpty()) {

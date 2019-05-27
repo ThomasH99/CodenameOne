@@ -1535,6 +1535,9 @@ class TimerStack {
         Refresh (either small or big timer, which is already shown) when timer has changed. 
         Show timer for first timer = add smallTimer or show BigTimer. 
          */
+        if (ReplayLog.getInstance().isReplayInProgress() && !ReplayLog.getInstance().isReplayAtLastCommand())
+            return; //don't add small Timers to any replayed screens
+
         TimerInstance timerInstance = getInstance().getCurrentTimerInstanceN();
 //        if ()
 //        Form currentForm = Display.getInstance().getCurrent();
@@ -1551,35 +1554,49 @@ class TimerStack {
                 myCurrentForm.revalidateWithAnimationSafety();
             }
         } else { //there is an active timer
-            Container smallTimer = null;
             if (myCurrentForm instanceof ScreenTimer6) { //if full screen Timer is active, refresh it
                 myCurrentForm.refreshAfterEdit();
 //                myCurrentForm.revalidateWithAnimationSafety(); //NOT sufficient, need to rebuild timer screen with commands related to new item
 //            } else if (timerInstance.isFullScreen()) { //if running timer was running in FullScreen, start up in full screen again (on app relaunch)
 //                new ScreenTimer6(myCurrentForm, timerInstance).show();
             } else { //other form than ScreenTimer6
-                Container previousSmallTimer = myCurrentForm.getSmallTimerCont();
-                if (previousSmallTimer != null) { //smallTimer already visible
-//                    myCurrentForm.setKeepPos(new KeepInSameScreenPosition()); //is this necessary if smallTimer is in South container??
-                    myCurrentForm.removeSmallTimerCont(); //remove old smallTimer (if there is one)
-                    smallTimer = buildContentPaneSmall(myCurrentForm); //refresh the small container
-                    myCurrentForm.addSmallTimerCont(smallTimer); //remove old smallTimer (if there is one)
-//                    myCurrentForm.revalidateWithAnimationSafety();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                Container previousSmallTimer = myCurrentForm.getSmallTimerCont();
+//                if (previousSmallTimer != null) { //smallTimer already visible
+////                    myCurrentForm.setKeepPos(new KeepInSameScreenPosition()); //is this necessary if smallTimer is in South container??
+//                    myCurrentForm.removeSmallTimerCont(); //remove old smallTimer (if there is one)
+//                    smallTimer = buildContentPaneSmall(myCurrentForm); //refresh the small container
+//                    myCurrentForm.addSmallTimerCont(smallTimer); //remove old smallTimer (if there is one)
+////                    myCurrentForm.revalidateWithAnimationSafety();
+//                    if (smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null)
+//                        myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
+//                } else { //show timer for first time
+//                    if (MyPrefs.timerEnableShowingSmallTimerWindow.getBoolean() && MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean()) {
+//                        myCurrentForm.setKeepPos(new KeepInSameScreenPosition()); //is this necessary if smallTimer is in South container??
+//                        myCurrentForm.removeSmallTimerCont(); //remove old smallTimer (if there is one)
+//                        smallTimer = buildContentPaneSmall(myCurrentForm); //refresh the small container
+//                        myCurrentForm.addSmallTimerCont(smallTimer); //remove old smallTimer (if there is one)
+////                        myCurrentForm.revalidateWithAnimationSafety();
+//                        if (smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null)
+//                            myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
+//                    } else {
+////                        new ScreenTimer6(previousForm, timerInstance).show();
+//                        new ScreenTimer6(myCurrentForm, timerInstance).show();
+//                    }
+//                }
+//</editor-fold>
+                myCurrentForm.removeSmallTimerCont(); //remove old smallTimer (if there is one)
+                if (timerInstance.isFullScreen() || !(MyPrefs.timerEnableShowingSmallTimerWindow.getBoolean() && MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean())) {
+//                        new ScreenTimer6(previousForm, timerInstance).show();
+                    timerInstance.setFullScreen(true); //set true in case we moved to full screen because of the settings
+                    new ScreenTimer6(myCurrentForm, timerInstance).show();
+                } else {//if (MyPrefs.timerEnableShowingSmallTimerWindow.getBoolean() && MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean()) {
+                    myCurrentForm.setKeepPos(new KeepInSameScreenPosition()); //is this necessary if smallTimer is in South container??
+                    Container smallTimer = buildContentPaneSmall(myCurrentForm); //refresh the small container
+                    myCurrentForm.addSmallTimerCont(smallTimer);
                     if (smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null)
                         myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
-                } else { //show timer for first time
-                    if (MyPrefs.timerEnableShowingSmallTimerWindow.getBoolean() && MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean()) {
-                        myCurrentForm.setKeepPos(new KeepInSameScreenPosition()); //is this necessary if smallTimer is in South container??
-                        myCurrentForm.removeSmallTimerCont(); //remove old smallTimer (if there is one)
-                        smallTimer = buildContentPaneSmall(myCurrentForm); //refresh the small container
-                        myCurrentForm.addSmallTimerCont(smallTimer); //remove old smallTimer (if there is one)
-//                        myCurrentForm.revalidateWithAnimationSafety();
-                        if (smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null)
-                            myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
-                    } else {
-//                        new ScreenTimer6(previousForm, timerInstance).show();
-                        new ScreenTimer6(myCurrentForm, timerInstance).show();
-                    }
+//                    myCurrentForm.revalidateWithAnimationSafety();
                 }
             }
         }
@@ -2034,7 +2051,7 @@ class TimerStack {
         /**
         exist large Timer
          */
-        Command cmdSaveAndExitTimerScreen = new CommandTracked("Exit", Icons.iconTimerStopExitTimer, "TimerCmdSaveAndExitTimerScreen") { //"Stop/Exit" "Close/Exit" //TODO select icon for Exit from timer
+        Command cmdSaveAndExitTimerScreen = new CommandTracked("Stop", Icons.iconTimerStopExitTimer, "TimerCmdSaveAndExitTimerScreen") { //"Stop/Exit" "Close/Exit" //TODO select icon for Exit from timer
             @Override
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);

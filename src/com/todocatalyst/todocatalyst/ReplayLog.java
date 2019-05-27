@@ -35,7 +35,7 @@ public class ReplayLog {
     private boolean replayingInProgress = false; //true while replaying commands on startup, used to avoid ??
     private boolean justFinishedReplaying = false; //true while replaying commands on startup, used to avoid ??
 //    private boolean firstTime = true;
-    private String screenName;
+//    private String screenName;
 
     public static ReplayLog getInstance() {
         if (INSTANCE == null) {

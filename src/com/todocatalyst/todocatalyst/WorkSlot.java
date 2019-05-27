@@ -40,16 +40,20 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    public static int MINUTES_IN_MILLISECONDS = MyDate.MINUTE_IN_MILLISECONDS; //60 * 1000;
     final static String WORKSLOT = "Workslot";
     final static String DESCRIPTION = "Description";//"Name";
-    final static String INACTIVE = "Inactive";
-    final static String DURATION = "Duration";
-    final static String START_TIME = "Start by"; //"Start time";
-    final static String REPEAT_DEFINITION = Item.REPEAT_RULE; //"Repeat";
-
     final static String DESCRIPTION_HELP = "Optional description of the " + WORKSLOT;//"Name";
     final static String DESCRIPTION_HINT = "Optional description";//"Name";
+    final static String INACTIVE = "Inactive";
+    final static String DURATION = "Duration";
     final static String DURATION_HELP = "Define the duration of the " + WORKSLOT;
+    final static String START_TIME = "Start by"; //"Start time";
     final static String START_TIME_HELP = "Define when the " + WORKSLOT + " starts"; //"Start time";
+    
+    final static String END_TIME = "End by"; //"Start time";
+    final static String END_TIME_HELP = "Define when the " + WORKSLOT + " ends"; //"Start time";
+  
+    final static String REPEAT_DEFINITION = Item.REPEAT_RULE; //"Repeat";
     final static String REPEAT_DEFINITION_HELP = Item.REPEAT_RULE_HELP; //"Repeat";
+
     final static String SOURCE = Item.SOURCE; //Template or Task that this one is a copy of, "Task copy of"
     final static String SOURCE_HELP = "Shows the " + WORKSLOT + " was copied from. E.g. for repeating or copy/paste.?"; //Template or Task that this one is a copy of, "Task copy of"
 

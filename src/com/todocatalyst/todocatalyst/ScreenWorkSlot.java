@@ -56,7 +56,7 @@ public class ScreenWorkSlot extends MyForm {
 //        } else {
 //        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId("-" + this.workSlot.getObjectIdP()));
 //        initLocalSaveOfEditedValues(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
-        previousValues = new SaveEditedValuesLocally( getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
+        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
 //        }
         setLayout(BoxLayout.y());
         getContentPane().setScrollableY(true);
@@ -287,8 +287,14 @@ public class ScreenWorkSlot extends MyForm {
 //                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
 //                (i) -> workSlot.setDurationInMinutes((int) i));
 //</editor-fold>
+        MyDateAndTimePicker endByDate = new MyDateAndTimePicker();
         MyDurationPicker duration = new MyDurationPicker();
-        Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0 ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS : 0));
+        duration.addActionListener(e -> {
+            endByDate.setDate(new Date(startByDate.getDate().getTime() + duration.getDuration()));
+        });
+        Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0 
+                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS 
+                : 0));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //           initField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
 //                () -> item.getRemainingEffort(false), (l) -> item.setRemaining((long) l, false),
@@ -308,6 +314,27 @@ public class ScreenWorkSlot extends MyForm {
         duration.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt());
 
         content.add(layoutN(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
+
+        endByDate.addActionListener(e -> {
+            if (endByDate.getDate().getTime()< startByDate.getDate().getTime())
+                endByDate.setDate(new Date(startByDate.getTime()));
+            else {
+                duration.setDuration(endByDate.getDate().getTime() - startByDate.getDate().getTime());
+            }
+        });
+        initField("RandomUnusedKey", endByDate, //random key because the value is never used directly, only in the UI to set Duration
+                //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ? 
+                //                        new Date(now) 
+                //                        : workSlot.getStartTimeD()),
+                () -> workSlot.getEndTimeD(),
+                (d) -> {},
+                () -> null,
+                (d) -> endByDate.setDate((Date)d),
+                new Date(0),
+                new Date(defaultDate.getTime()+defaultDuration));
+//        content.add(new Label("Start by")).add(startByDate);
+//        content.add(layout("Start by",startByDate, "**"));
+        content.add(layoutN(WorkSlot.END_TIME, endByDate, WorkSlot.END_TIME_HELP));
 
 //        MyTextField workSlotName = new MyTextField("Description", parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s));
         MyTextField workSlotName = new MyTextField(WorkSlot.DESCRIPTION_HINT, 20, 100, 0, parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s), TextField.RIGHT);

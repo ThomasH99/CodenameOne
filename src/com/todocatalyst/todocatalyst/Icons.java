@@ -256,6 +256,20 @@ public class Icons {
     final static char iconWaitingDateMaterial = FontImage.MATERIAL_PAUSE;
     final static Image iconWaitingDate = FontImage.createMaterial(iconWaitingDateMaterial, labelStyle);
 
+    final static char iconHideUntilDate = FontImage.MATERIAL_VISIBILITY_OFF;
+    final static char iconStartByDate = FontImage.MATERIAL_PRESENT_TO_ALL; //FontImage.MATERIAL_EXIT_TO_APP;
+    final static char iconExpireByDate = FontImage.MATERIAL_CANCEL;//FontImage.MATERIAL_EVENT_BUSY;
+
+    final static char iconFunDreadNeutral = FontImage.MATERIAL_THUMBS_UP_DOWN; //MATERIAL_SENTIMENT_VERY_SATISFIED;
+    final static char iconFun = FontImage.MATERIAL_THUMB_UP; //MATERIAL_SENTIMENT_VERY_SATISFIED
+    final static char iconDread = FontImage.MATERIAL_THUMB_DOWN; //FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
+            
+    final static char iconChallengeVeryEasy = FontImage.MATERIAL_SENTIMENT_VERY_SATISFIED;
+    final static char iconChallengeEasy = FontImage.MATERIAL_SENTIMENT_SATISFIED;
+    final static char iconChallengeMedium = FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED;
+    final static char iconChallengeHard = FontImage.MATERIAL_SENTIMENT_DISSATISFIED;
+    final static char iconChallengeVeryHard = FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
+
     final static char iconWorkSlot = FontImage.MATERIAL_WORK;
     final static Image iconWorkSlotLabelStyle = FontImage.createMaterial(iconWorkSlot, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_DONE, labelStyle);

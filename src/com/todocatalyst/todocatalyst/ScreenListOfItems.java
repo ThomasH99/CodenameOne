@@ -2070,7 +2070,8 @@ public class ScreenListOfItems extends MyForm {
 
         final Button setDueDateToToday;// = new Button(null, Icons.iconSetDueDateToToday());
 
-        long finishTime = item.getFinishTime();
+        Date finishTimeD = item.getFinishTimeD();
+        long finishTime = finishTimeD.getTime();
 //        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
 
 //        Container eastDateEffortCont = new Container(BoxLayout.y());
@@ -2099,7 +2100,8 @@ public class ScreenListOfItems extends MyForm {
 
         if (isDone) {
 //            completedDateLabel = new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
-            completedDateLabel = new Label(MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
+//            completedDateLabel = new Label(MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
+            completedDateLabel = new Label(MyDate.formatDateSmart(item.getCompletedDateD()), "ListOfItemsCompletedDate");
             completedDateLabel.setMaterialIcon(Icons.iconCompletedDate);
 //            completedDateLabel.setMaterialIcon(0);
             if (oldFormat) {
@@ -2113,7 +2115,8 @@ public class ScreenListOfItems extends MyForm {
             if (finishTime != MyDate.MAX_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
 //                    finishTimeLabel = new Label("F:" + MyDate.formatDateTimeNew(new Date(finishTime)),
 //                    finishTimeLabel = new Label(MyDate.formatDateTimeNew(new Date(finishTime)), Icons.iconFinishDate,
-                finishTimeLabel = new Label(MyDate.formatDateTimeNew(new Date(finishTime)),
+//                finishTimeLabel = new Label(MyDate.formatDateTimeNew(new Date(finishTime)),
+                finishTimeLabel = new Label(MyDate.formatDateSmart(finishTimeD),
                         due != 0 && finishTime > due ? "ListOfItemsFinishTimeOverdue" : "ListOfItemsFinishTime");
                 finishTimeLabel.setMaterialIcon(Icons.iconFinishDateMaterial);
 //                if (Config.TEST) {
@@ -2336,7 +2339,8 @@ public class ScreenListOfItems extends MyForm {
         if (item.getAlarmDate() != 0) {
 //            south.addComponent(new Label((Image) (item.getAlarmDate() != 0 ? Icons.get().iconAlarmSetLabelStyle : null)));
 //            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), (Image) Icons.get().iconAlarmSetLabelStyle, "ItemDetailsLabel");
-            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), "ItemDetailsLabel");
+//            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), "ItemDetailsLabel");
+            alarmLabel = new Label(MyDate.formatDateSmart(item.getAlarmDateD()), "ItemDetailsLabel");
             alarmLabel.setMaterialIcon(Icons.iconAlarmDate);
             if (Config.TEST) {
                 alarmLabel.setName("Alarm");
@@ -2352,7 +2356,9 @@ public class ScreenListOfItems extends MyForm {
         Label hideUntilLabel = new Label();
         if (item.getHideUntilDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowHideUntilDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD()), "ItemDetailsLabel");
+//            hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD()), "ItemDetailsLabel");
+            hideUntilLabel = new Label(MyDate.formatDateSmart(item.getHideUntilDateD()), "ItemDetailsLabel");
+            hideUntilLabel.setMaterialIcon(Icons.iconHideUntilDate);
             if (Config.TEST) {
                 hideUntilLabel.setName("HideUntil");
             }
@@ -2364,7 +2370,9 @@ public class ScreenListOfItems extends MyForm {
         Label startByLabel = new Label();
         if (item.getStartByDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowStartByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            startByLabel = new Label("S:" + MyDate.formatDateNew(item.getStartByDateD()), "ItemDetailsLabel");
+//            startByLabel = new\ Label("S:" + MyDate.formatDateNew(item.getStartByDateD()), "ItemDetailsLabel");
+            startByLabel = new Label( MyDate.formatDateSmart(item.getStartByDateD()), "ItemDetailsLabel");
+            startByLabel.setMaterialIcon(Icons.iconStartByDate);
             if (Config.TEST) {
                 startByLabel.setName("StartBy");
             }
@@ -2376,7 +2384,9 @@ public class ScreenListOfItems extends MyForm {
         Label expireByLabel = new Label();
         if (item.getExpiresOnDateD().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
-            expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()), "ItemDetailsLabel");
+//            expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()), "ItemDetailsLabel");
+            expireByLabel = new Label(MyDate.formatDateSmart(item.getExpiresOnDateD()), "ItemDetailsLabel");
+            expireByLabel.setMaterialIcon(Icons.iconExpireByDate);
             if (Config.TEST) {
                 expireByLabel.setName("ExpireBy");
             }
@@ -2390,7 +2400,8 @@ public class ScreenListOfItems extends MyForm {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            waitingTillLabel = new Label("W:" + MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
 //            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), Icons.iconWaitingDate, "ItemDetailsLabel");
-            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
+//            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
+            waitingTillLabel = new Label(MyDate.formatDateSmart(item.getWaitingTillDateD()), "ItemDetailsLabel");
             waitingTillLabel.setMaterialIcon(Icons.iconWaitingDateMaterial);
             if (Config.TEST) {
                 waitingTillLabel.setName("WaitingTill");

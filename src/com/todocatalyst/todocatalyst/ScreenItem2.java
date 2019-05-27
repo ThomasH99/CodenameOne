@@ -817,7 +817,7 @@ public class ScreenItem2 extends MyForm {
 
 //        mainTabCont.add(MyBorderLayout.CENTER, mainCont);
 //        if (false)
-            mainCont.setScrollableY(true);
+        mainCont.setScrollableY(true);
 
 //        Container mainTabCont = BorderLayout.north(mainCont);
 //        Container mainTabCont = BorderLayout.north(new Container(BoxLayout.y()));
@@ -856,7 +856,8 @@ public class ScreenItem2 extends MyForm {
 
         //https://stackoverflow.com/questions/34531047/how-to-add-donelistener-to-textarea-in-codename-one: "putClientProperty("searchField", true);, putClientProperty("sendButton", true);and putClientProperty("goButton", true); would place a button on the keyboard"
         description.putClientProperty("goButton", true);
-        description.setUIID("ScreenItemTaskText");
+//        description.setUIID("ScreenItemTaskText");
+        description.setUIID(item.isStarred() ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
         description.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
 //        MyCheckBox status = new MyCheckBox(null, parseIdMap2, () -> item.isDone(), (b) -> item.setDone(b));
 //        tabs.addSelectionListener(new SelectionListener() {
@@ -942,8 +943,19 @@ public class ScreenItem2 extends MyForm {
         starred.setUIID("ScreenItemStarred");
 //        starred.addActionListener((e) -> starred.setIcon(starred.getIcon() == Icons.iconStarUnselectedLabelStyle
 //                ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle));
-        starred.addActionListener((e) -> starred.setMaterialIcon(starred.getMaterialIcon() == Icons.iconStarUnselected
-                ? Icons.iconStarSelected : Icons.iconStarUnselected));
+        starred.addActionListener((e) -> {
+            boolean setStarActive = starred.getMaterialIcon() == Icons.iconStarUnselected;
+            starred.setMaterialIcon(setStarActive ?  Icons.iconStarSelected:Icons.iconStarUnselected);
+            description.setUIID(setStarActive ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
+            description.repaint();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (item.isStarInheritedFrom(starActive))
+//                starred.setUIID(starActive ? "ScreenItemStarredActive" : "ScreenItemStarred");
+//            else
+//                starred.setUIID(starActive ? "ScreenItemStarredActive" : "ScreenItemStarred");
+//</editor-fold>
+            starred.setUIID(item.isStarInheritedFrom(setStarActive) ? "ScreenItemStarredInherited" : "ScreenItemStarred");
+        });
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        starred.setToggle(true);
 //        if (false) {
@@ -1116,8 +1128,8 @@ public class ScreenItem2 extends MyForm {
 //        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)))); //, true, false, false));
         mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP)); //, true, false, false));
 //        int remainingIndex = mainCont.getComponentCount() - 1; //store the index at which to insert remainingEffort
-if (false)
-        mainCont.add(makeSpacer());
+        if (false)
+            mainCont.add(makeSpacer());
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (!item.isProject()) {
@@ -1172,26 +1184,27 @@ if (false)
 //        Command categoryEditCmd = new Command("") { //"<click to set categories>"
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
-        Command categoryEditCmd = MyReplayCommand.create("EditCategories", null, null, (e)->{
+        Command categoryEditCmd = MyReplayCommand.create("EditCategories", null, null, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem2.this);
 //                if (previousValues.get(Item.PARSE_CATEGORIES) != null) {
 //</editor-fold>
-                List<Category> catList = (previousValues.get(Item.PARSE_CATEGORIES) != null
-                        ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)) //if previous edited value exists, use that
-                        : new ArrayList(item.getCategories())); //make a copy to be able to compare the edited version to the orginal list from Item after editing
-                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(),
-                        catList,
-                        ScreenItem2.this, () -> {
+            List<Category> catList = (previousValues.get(Item.PARSE_CATEGORIES) != null
+                    ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)) //if previous edited value exists, use that
+                    : new ArrayList(item.getCategories())); //make a copy to be able to compare the edited version to the orginal list from Item after editing
+            ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(),
+                    catList,
+                    ScreenItem2.this, () -> {
 //                    categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
-                            if (catList.equals(item.getCategories())) {
-                                previousValues.remove(Item.PARSE_CATEGORIES); //remove previos/edited value (nothing to store)
-                                categoriesButton.setText(getCategoriesAsCommaSeparatedString(item.getCategories())); //"<click to set categories>"
-                            } else {
-                                previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(catList));
-                                categoriesButton.setText(getCategoriesAsCommaSeparatedString(catList)); //"<click to set categories>"
-                            }
-                            categoriesButton.revalidate(); //layout new list of categories, working??
+                        if (catList.equals(item.getCategories())) {
+                            previousValues.remove(Item.PARSE_CATEGORIES); //remove previos/edited value (nothing to store)
+                            categoriesButton.setText(getCategoriesAsCommaSeparatedString(item.getCategories())); //"<click to set categories>"
+                        } else {
+                            previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(catList));
+                            categoriesButton.setText(getCategoriesAsCommaSeparatedString(catList)); //"<click to set categories>"
+                        }
+//                            categoriesButton.revalidate(); //layout new list of categories, working??
+                        categoriesButton.getComponentForm().revalidate(); //layout new list of categories, working??
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////                                ItemAndListCommonInterface newOwner = locallyEditedOwner.size() >= 1 ? locallyEditedOwner.get(0) : null;
 ////                                editOwnerButton.setText(newOwner != null ? newOwner.getText() : ""); //"<no owner>"
@@ -1213,9 +1226,9 @@ if (false)
 //                        }
 //                    });
 //</editor-fold>
-                        });
-                screenCatPicker.show();
-            }
+                    });
+            screenCatPicker.show();
+        }
         );
         categoriesButton.setCommand(categoryEditCmd);
 //        categoriesButton.setText(commaSeparatedCategories);
@@ -1243,8 +1256,8 @@ if (false)
 //</editor-fold>
 //        mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, "**", null, true, false, true));
         mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, Item.CATEGORIES));
-if (false)
-        mainCont.add(makeSpacer());
+        if (false)
+            mainCont.add(makeSpacer());
 
         //REPEAT RULE
         Object editedRepeatRule = previousValues.get(Item.PARSE_REPEAT_RULE);
@@ -1368,7 +1381,7 @@ if (false)
 //                revalidate(); //enough to update? YES //needed to allow space for additional text on RR button?!
 //                repeatRuleButton.revalidate(); //enough to update? NO (overwrites label text on left)
 //                repeatRuleButton.getParent().revalidate(); //enough to update? NO
-                if (false)mainCont.revalidate(); //enough to update? NO
+                if (false) mainCont.revalidate(); //enough to update? NO
 //                    }
             }, true, dueDate.getDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
@@ -2661,7 +2674,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             List<ItemAndListCommonInterface> locallyEditedOwner
                     = previousValues != null && previousValues.get(Item.PARSE_OWNER_ITEM) != null && ((List) previousValues.get(Item.PARSE_OWNER_ITEM)).size() > 0
                     ? new ArrayList(Arrays.asList(DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0)))) //fetch the actual owner 
-                    : new ArrayList();
+                    : new ArrayList(Arrays.asList(item.getOwner()));
             //<editor-fold defaultstate="collapsed" desc="comment">
             //                        = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(), DAO.getInstance().getItemListList(), locallyEditedOwner, ScreenItem.this);
             //                ownerPicker.setUpdateActionOnDone(() -> {
@@ -2669,7 +2682,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             //                    parseIdMap2.put("ItemScreen.ScreenObjectPicker", () -> item.setOwner(locallyEditedOwner));
             //                });
             //</editor-fold>
-            ScreenObjectPicker ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER + " for " + item.getText(),
+            ScreenObjectPicker ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER /*+ " for " + item.getText()*/,
                     //                            DAO.getInstance().getItemListList(),
                     ItemListList.getInstance(),
                     projects,
@@ -2691,7 +2704,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                             ItemAndListCommonInterface newOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
 //                            if ((newOwner==null&&item.getOwner()==null)||newOwner.equals(item.getOwner())) {
                             if (newOwner.equals(item.getOwner())) {
-//                                        previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList()); //store empty list (e.g. if previous owner was selected agagin)
+//                                        previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList()); //store empty list (e.g. if previous owner was selected again)
                                 previousValues.remove(Item.PARSE_OWNER_ITEM); //store empty list (e.g. if previous owner was selected agagin)
 //                                editOwnerButton.setText(item.getOwner()==null?"":item.getOwner().getText());  //set back to old Owner
                                 editOwnerButton.setText(item.getOwner().getText());  //set back to old Owner

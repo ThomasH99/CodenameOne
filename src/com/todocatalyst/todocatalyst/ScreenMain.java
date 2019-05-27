@@ -51,7 +51,7 @@ public class ScreenMain extends MyForm {
 //        setLayout(new BorderLayout());
 //        setLayout(BoxLayout.y());
         setLayout(new MyBorderLayout());
-        getContentPane().setScrollableY(true);
+//        getContentPane().setScrollableY(true);
         Container contentContainer = new Container(BoxLayout.y());
         contentContainer.setScrollableY(true);
         add(MyBorderLayout.CENTER, contentContainer);

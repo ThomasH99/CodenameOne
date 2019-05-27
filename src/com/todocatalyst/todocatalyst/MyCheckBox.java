@@ -48,7 +48,8 @@ public class MyCheckBox extends Button {
 //    private static Style singleIconStyle;
 //    private static Style popupIconStyle;
 //    private static Image[] iconsSingleStatus; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
-    private static Image[] iconsPopup; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
+//    private static Image[] iconsPopup; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
+//    private static char[] iconsPopup; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
     private static char[] iconsPopupChar; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
 
 //    private Dialog d;
@@ -114,13 +115,6 @@ public class MyCheckBox extends Button {
 //            if (s != null && !s.equals(popupIconStyle)) {
 //                this.popupIconStyle = new Style(s);//keep a *copy* of the style (to ensure that CSS refresh works?!
 //            }
-//
-//            iconsPopup = new Image[ItemStatus.values().length];
-//            iconsPopup[0] = FontImage.createMaterial(Icons.iconItemStatusCreated, popupIconStyle);
-//            iconsPopup[1] = FontImage.createMaterial(Icons.iconItemStatusOngoing, popupIconStyle);
-//            iconsPopup[2] = FontImage.createMaterial(Icons.iconItemStatusWaiting, popupIconStyle);
-//            iconsPopup[3] = FontImage.createMaterial(Icons.iconItemStatusDone, popupIconStyle);
-//            iconsPopup[4] = FontImage.createMaterial(Icons.iconItemStatusCancelled, popupIconStyle);
 //            
             iconsPopupChar = new char[ItemStatus.values().length];
             iconsPopupChar[0] = Icons.iconItemStatusCreated;
@@ -341,19 +335,19 @@ public class MyCheckBox extends Button {
                 //                    setStatus(ItemStatus.CANCELLED);
                 //                }));
                 //</editor-fold>
-                create(ItemStatus.CREATED.getName(), iconsPopup[ItemStatus.CREATED.ordinal()], (e) -> {
+                create(ItemStatus.CREATED.getName(), iconsPopupChar[ItemStatus.CREATED.ordinal()], (e) -> {
                     setStatus(ItemStatus.CREATED);
                 }),
-                create(ItemStatus.ONGOING.getName(), iconsPopup[ItemStatus.ONGOING.ordinal()], (e) -> {
+                create(ItemStatus.ONGOING.getName(), iconsPopupChar[ItemStatus.ONGOING.ordinal()], (e) -> {
                     setStatus(ItemStatus.ONGOING);
                 }),
-                create(ItemStatus.WAITING.getName(), iconsPopup[ItemStatus.WAITING.ordinal()], (e) -> {
+                create(ItemStatus.WAITING.getName(), iconsPopupChar[ItemStatus.WAITING.ordinal()], (e) -> {
                     setStatus(ItemStatus.WAITING);
                 }),
-                create(ItemStatus.DONE.getName(), iconsPopup[ItemStatus.DONE.ordinal()], (e) -> {
+                create(ItemStatus.DONE.getName(), iconsPopupChar[ItemStatus.DONE.ordinal()], (e) -> {
                     setStatus(ItemStatus.DONE);
                 }),
-                create(ItemStatus.CANCELLED.getName(), iconsPopup[ItemStatus.CANCELLED.ordinal()], (e) -> {
+                create(ItemStatus.CANCELLED.getName(), iconsPopupChar[ItemStatus.CANCELLED.ordinal()], (e) -> {
                     setStatus(ItemStatus.CANCELLED);
                 }));
         d.popup(); //showDialog(x) = x is the component the dialog will 'point' to

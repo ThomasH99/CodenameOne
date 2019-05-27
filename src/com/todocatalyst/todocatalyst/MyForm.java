@@ -483,6 +483,12 @@ public class MyForm extends Form {
 //            this.keepPos.setNewScrollYPosition();
     }
 
+    @Override
+    public void revalidate() {
+        super.revalidate();
+        Log.p("REVALIDATE for form="+getUniqueFormId());
+    }
+    
     /**
     returns the container in which to add the smallTimer, can be overridden to place the smallTimer in other places than the default South container. 
     @return 
@@ -3111,7 +3117,7 @@ public class MyForm extends Form {
                 previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
             super.show();
             if (ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
-                //if bigTimer was actime, and we're not replaying, then show big timer again
+                //if bigTimer was active, and we're not replaying, then show big timer again (from whatever screen was the last in replay)
                 TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
                 if (!(this instanceof ScreenTimer6) && !ReplayLog.getInstance().isReplayInProgress() && timerInstance != null && timerInstance.isFullScreen())
                     TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);

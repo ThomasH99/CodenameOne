@@ -527,7 +527,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public void add(int index, Object element) {
 //        addItemAtIndex((E) element, index);
-        assert false : "check if below works correctly wrt getListFull etc";
+        ASSERT.that( false , "check if below works correctly wrt getListFull etc");
 //        addToList(index, (E) element);
         ItemAndListCommonInterface refElt = getList().get(index); //find the reference element (NB! won't work if multiple copies of same element in the list!)
         addToList((E) element, refElt, false);

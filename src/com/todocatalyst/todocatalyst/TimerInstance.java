@@ -190,9 +190,11 @@ public class TimerInstance extends ParseObject {
 
     public boolean isFullScreen() {
         Boolean fullScreen = getBoolean(PARSE_TIMER_FULL_SCREEN);
-        if (fullScreen != null)
-            return true;
-        else return false;
+//        if (fullScreen != null)
+//            return true;
+//        else 
+//            return false;
+        return fullScreen != null;
     }
 
     private void setItemList(ItemList itemList) {

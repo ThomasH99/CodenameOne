@@ -324,6 +324,10 @@ ScreenItemTaskText {
     /*font-size: 100%;*/
     text-align: left;
 }
+ScreenItemTaskTextStarred {
+    cn1-derive: ScreenItemTaskText;
+    color: blue;
+}
 /*
 ScreenItemTaskText.selected {
     cn1-derive: ScreenItemTaskText;
@@ -656,16 +660,22 @@ BigTimerNextItemWithText {
 
 ObjectSelectorRadioButton{
     cn1-derive: Button;
+    background: transparent;
     color: blue;
+    text-align: center;
 }
 ObjectSelectorRadioButton.pressed {
     color: white;
     background: blue;
 }
-ObjectSelectorRadioButton.selected {
+/*ObjectSelectorRadioButton.selected {
     color: white;
-    background: blueviolet;
-}
+    background: red;
+}*/
+/*ObjectSelectorRadioButton.unselected {
+    color: white;
+    /*background: blueviolet;/*
+}*/
 
 /*************** main menu **************/
 
@@ -708,6 +718,12 @@ MainMenuCommand {
 
 ScreenItemStarred { /*style for starred icon task text in lists*/
     cn1-derive: Button;
+    color:blue;
+    padding:0 0.5mm 0 0; /*top+bottom right+left*/
+    margin:0mm;
+}
+ScreenItemStarredActive { /*style for starred icon task text in lists*/
+    cn1-derive: ScreenItemStarred;
     color:blue;
     padding:0 0.5mm 0 0; /*top+bottom right+left*/
     margin:0mm;
@@ -774,7 +790,7 @@ ListOfItemsItemContent { /*style for task - CENTER - between status icon and edi
 }
 ListOfItemsItemDetails { /*style for task details - SOUTH */
     cn1-derive: Container;
-    border-bottom: 4px solid blueviolet; /*lightgrey; */
+    /*border-bottom: 4px solid blueviolet; /*lightgrey; */
 
     margin:0mm;
     padding:0; /*top+bottom right+left*/
@@ -964,7 +980,24 @@ Tree {
 
 StickyHeader {
     cn1-derive: ItemListSmall;
+    /*text-align: center;/**/
+    color:black;
+    background-color:lightgrey;
+    /*padding: 0 1mm;
+    /*foreground-color: #268b04;*/
+}
+StickyHeaderLabel {
+    cn1-derive: ItemListSmall;
     text-align: center;
+    background-color:transparent;
+    color:darkgray;
+    /*background-color:darkgrey;/**/
+    padding: 1mm 0mm;
+    /*foreground-color: #268b04;*/
+}
+StickyHeaderIcon {
+    cn1-derive: StickyHeaderLabel;
+    /*text-align: center;
     color:black;
     background-color:darkgrey;
     padding: 0mm 0;

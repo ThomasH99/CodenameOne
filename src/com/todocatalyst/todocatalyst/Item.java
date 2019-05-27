@@ -34,6 +34,8 @@ import java.util.Set;
 import java.util.Vector;
 import com.todocatalyst.todocatalyst.MyUtil;
 import static com.todocatalyst.todocatalyst.MyUtil.eql;
+import java.util.Calendar;
+import java.util.TimeZone;
 //import sun.security.acl.OwnerImpl;
 //import todo.TodoMidlet43.Categories;
 
@@ -5345,6 +5347,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public Date getUpdatedAt() {
         Date date = super.getUpdatedAt();
         return date != null ? date : new Date(0);
+//        if(date != null){
+////        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC")); //THJ
+//        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC")); //THJ
+//        cal.setTime(date);
+//        cal.setTimeZone(value);
+//        return cal.getTime();
+//        } else return new Date(0);
     }
 
     /**
