@@ -2004,7 +2004,7 @@ public class MyDate extends Date {
 //        return cal.getTime();
         long rounded = time.getTime();
         long seconds = (rounded % MINUTE_IN_MILLISECONDS) / SECOND_IN_MILLISECONDS;
-        rounded = (rounded / MINUTE_IN_MILLISECONDS + seconds >= 30 ? 1 : 0) * MINUTE_IN_MILLISECONDS;
+        rounded = (rounded / MINUTE_IN_MILLISECONDS + (seconds >= 30 ? 1 : 0)) * MINUTE_IN_MILLISECONDS;
         return new Date(rounded); //round off to minutes
     }
 

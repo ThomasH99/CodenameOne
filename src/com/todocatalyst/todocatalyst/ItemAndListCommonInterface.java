@@ -87,20 +87,36 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    add a new workslot to the list
+    add a new list of workslots to the list and setOwner(this) for them
     @param workSlot 
      */
-    default public void addWorkSlot(WorkSlot workSlot) {
+    default public void addWorkSlots(List<WorkSlot> workSlots) {
         WorkSlotList workSlotList = getWorkSlotListN();
         if (workSlotList == null) {
 //            workSlotList = new WorkSlotList();
-            workSlotList = new WorkSlotList(this, Arrays.asList(workSlot), true);
+//            workSlotList = new WorkSlotList(this, workSlots, true);
+            workSlotList = new WorkSlotList(this, null, true); //true to avoid unnecessary call to sort
 //            workSlotList.setOwner(this);
-        } else {//else needed since new workSlot already added in WorkSlotList constructor above
-            workSlotList.add(workSlot);
+        } //else {//else needed since new workSlot already added in WorkSlotList constructor above
+        for (WorkSlot workSlot:workSlots) {
+            workSlotList.add(workSlot); //adds *sorted*!
             workSlot.setOwner(this);
         }
         setWorkSlotList(workSlotList);
+    }
+
+    default public void addWorkSlot(WorkSlot workSlot) {
+//        WorkSlotList workSlotList = getWorkSlotListN();
+//        if (workSlotList == null) {
+////            workSlotList = new WorkSlotList();
+//            workSlotList = new WorkSlotList(this, Arrays.asList(workSlot), true);
+////            workSlotList.setOwner(this);
+//        } else {//else needed since new workSlot already added in WorkSlotList constructor above
+//            workSlotList.add(workSlot);
+//            workSlot.setOwner(this);
+//        }
+//        setWorkSlotList(workSlotList);
+            addWorkSlots(Arrays.asList(workSlot));
     }
 
     public int getNumberOfUndoneItems(boolean includeSubTasks);
@@ -1014,7 +1030,19 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    return a defined filter, null if none defined, for Items, returns a filter for the subtasks
+     *
+     * @return
+     */
+    default public FilterSortDef getDefaultFilterSortDef() {
+//            new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true)
+//        FilterSortDef hardcodedFilter = new FilterSortDef(null, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //no sorting, //TODO!! Move this filter to FilterSortDef.getDeafultFilter() and reuse everywhere
+        FilterSortDef hardcodedFilter =  FilterSortDef.getDefaultFilter();
+        return hardcodedFilter;
+    }
+
+    /**
+    return a defined filter, null if none defined, for Items, returns a filter for the subtasks.
+    Will reuse a filter defined by the owner of an item (either its project or list), or the default filter defined at the highest level.
     @return 
      */
     public FilterSortDef getFilterSortDef();

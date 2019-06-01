@@ -1564,6 +1564,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @param filterSortDef
      */
+    @Override
     public void setFilterSortDef(FilterSortDef filterSortDef) {
 //        if (filterSortDef != null && filterSortDef != FilterSortDef.getDefaultFilter()) { //only save if not the default filter
         if (filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) { //only save if changed compared to the default filter
@@ -1577,6 +1578,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        filteredSortedList = null;
     }
 
+    @Override
     public FilterSortDef getFilterSortDef() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
@@ -3555,7 +3557,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
             if (Config.CHECK_OWNERS) checkOwners(workslots);
-            return new WorkSlotList(this, workslots);
+            return new WorkSlotList(this, workslots,true);
         } else {
             return null; //new WorkSlotList();
         }

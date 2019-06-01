@@ -162,6 +162,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //</editor-fold>
         workSlotListOwner.resetWorkTimeDefinition(); //force recalculation on each update of list to show tasks in workslots correctly
         WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
+        workSlotList.setNow(MyDate.currentTimeMillis()); //refresh now everytime the list is displayed again
         if (workSlotList != null)
             workSlotList.setIncludeExpiredWorkSlots(showAlsoExpiredWorkSlots);
 
@@ -371,13 +372,13 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        west.add(MyDate.formatDateL10NShort(workSlot.getStartTime().getTime()));
 //        west.add(L10NManager.getInstance().formatDateTimeShort(workSlot.getStartTime()));
 //        west.add(MyDate.formatDateTimeNew(workSlot.getStartTimeD())+" - "+MyDate.formatDateTimeNew(new Date(workSlot.getEndTime())));
-//</editor-fold>
 //        String startTimeStr = (workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime())
 //                ? "Now"
 //                : MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
 //        startTimeStr += "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
 //                + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
 //        String startTimeStr = MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
+//</editor-fold>
         String startTimeStr = MyDate.formatDateSmart(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
         Label startTimeLabel = new Label(startTimeStr, Icons.iconWorkSlotLabelStyle,
                 workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime");

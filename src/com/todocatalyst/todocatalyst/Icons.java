@@ -289,6 +289,10 @@ public class Icons {
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_EVENT_AVAILABLE;
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_RESTORE;
 
+    //REPEAT
+    final static char iconSimulateRepeatDates = FontImage.MATERIAL_REFRESH; //MATERIAL_EVENT_AVAILABLE;
+    final static char iconShowGeneratedTasks = FontImage.MATERIAL_SETTINGS_BACKUP_RESTORE; //MATERIAL_EVENT_AVAILABLE;
+    
     final static char iconBackToPreviousScreen = FontImage.MATERIAL_ARROW_BACK; //MATERIAL_EVENT_AVAILABLE;
     static Image iconBackToPrevFormToolbarStyle() {
         return makeT(iconBackToPreviousScreen);

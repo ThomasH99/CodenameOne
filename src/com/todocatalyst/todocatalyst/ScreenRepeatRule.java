@@ -229,9 +229,10 @@ public class ScreenRepeatRule extends MyForm {
 //        toolbar.addCommandToLeftBar(cmd);
 //</editor-fold>
         setCheckIfSaveOnExit(() -> checkRepeatRuleIsValid(restoreEditedFieldsToRepeatRule(repeatRuleEdited)));
-        Command cmd = makeDoneUpdateWithParseIdMapCommand(true);
-        cmd.putClientProperty("android:showAsAction", "withText");
-        toolbar.addCommandToLeftBar(cmd);
+//        Command cmd = makeDoneUpdateWithParseIdMapCommand(true);
+//        cmd.putClientProperty("android:showAsAction", "withText");
+//        toolbar.addCommandToLeftBar(cmd);
+        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
 
         //CANCEL
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
@@ -252,10 +253,10 @@ public class ScreenRepeatRule extends MyForm {
         }
 
         //SHOW TASKS
-        Container tasks = new Container();
         if (repeatRuleEdited != null) {
             if (isForWorkSlot) {
-                toolbar.addCommandToOverflowMenu("Show workslots", null, (e) -> {
+                toolbar.addCommandToOverflowMenu(CommandTracked.createMaterial("Show workslots", Icons.iconShowGeneratedTasks, (e) -> {
+                    Container tasks = new Container();
                     //TODO!!! as popup dialog, show [3 completed >] task1 task2 task3
                     for (Object slot : repeatRuleEdited.getListOfUndoneRepeatInstances()) {
                         if (slot instanceof WorkSlot) {
@@ -266,9 +267,10 @@ public class ScreenRepeatRule extends MyForm {
 //                Command exit = Command.create("Exit", null, (evt) -> {  });
                     Dialog.show("WorkSlots", tasks, new Command("Exit"), new Command("Past " + repeatRuleEdited.getTotalNumberOfInstancesGeneratedSoFar() + " WorkSlots"));
                     Dialog.show("WorkSlots", "", "OK", "Exit");
-                });
+                }));
             } else {
-                toolbar.addCommandToOverflowMenu("Show tasks", null, (e) -> {
+                toolbar.addCommandToOverflowMenu(CommandTracked.createMaterial("Show tasks", Icons.iconShowGeneratedTasks, (e) -> {
+                    Container tasks = new Container();
                     //TODO!!! as popup dialog, show [3 completed >] task1 task2 task3
                     for (Object item : repeatRuleEdited.getListOfUndoneRepeatInstances()) {
                         if (item instanceof Item) {
@@ -276,20 +278,21 @@ public class ScreenRepeatRule extends MyForm {
                         }
                     }
                     Dialog.show("Tasks", tasks, new Command("Exit"), new Command("Past tasks"));
-                });
+                }));
             }
         }
 
         //SIMULATE DATES
-        toolbar.addCommandToOverflowMenu("Simulate dates", null, (e) -> {
+        toolbar.addCommandToOverflowMenu(CommandTracked.createMaterial("Simulate dates", Icons.iconSimulateRepeatDates, (e) -> {
             RepeatRuleParseObject tempMyRepeatRule = new RepeatRuleParseObject();
             if (restoreEditedFieldsToRepeatRule(tempMyRepeatRule)) {
                 tempMyRepeatRule.showRepeatDueDates();
             } else {
                 Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
             }
-        });
+        }));
 
+        if (Config.TEST)
         toolbar.addCommandToOverflowMenu("Run tests", null, (e) -> {
             RepeatRuleParseObject.testRepeatRules();
         });

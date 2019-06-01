@@ -113,7 +113,7 @@ public class ScreenStatistics extends MyForm {
         Date startDate = new Date(MyDate.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
         Date endDate = new Date();
 //        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
-        workSlots = new WorkSlotList(DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
+        workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
         itemsSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate);
 //        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
     }

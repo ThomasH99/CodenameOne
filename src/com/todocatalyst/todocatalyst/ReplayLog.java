@@ -175,7 +175,7 @@ public class ReplayLog {
 //                return screenCommands.get(cmdUIID);
                 MyReplayCommand cmd = screenCommands.get(cmdUIID);
                 if (cmd != null) {
-                    if (currentIndex == replayStack.size()-1) //just returned the last command
+                    if (currentIndex == replayStack.size() - 1) //just returned the last command
                         justFinishedReplaying = true;
                     return cmd;
                 } else {
@@ -220,6 +220,12 @@ public class ReplayLog {
 //        }
 //    }
 //</editor-fold>
+    /**
+    returns false when the last replayCommand has been executed on the call to fetchNextCmdFromReplayLog() 
+    (so after replayCmd() returns 
+    false, isReplayInProgress() will also return false)
+    @return 
+     */
     public boolean isReplayInProgress() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (firstTime) {**

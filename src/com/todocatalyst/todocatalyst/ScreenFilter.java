@@ -90,8 +90,8 @@ public class ScreenFilter extends MyForm {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
 //        restoreKeepPos();
-          super.refreshAfterEdit();
-  }
+        super.refreshAfterEdit();
+    }
 
     public void addCommandsToToolbar(Toolbar toolbar) {
 
@@ -192,6 +192,7 @@ public class ScreenFilter extends MyForm {
                                     }
                                     return 0; //default is first sort field selected
                                 }, (i) -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                    switch (filterSortDef.sortOptions[i]) {
 //                        default: //for all other, simply add to query
 //                            if (inverseOrder.isValue()) {
@@ -200,6 +201,7 @@ public class ScreenFilter extends MyForm {
 //                                if (query!=null) query.addAscendingOrder(filterSortDef.sortField[i]);
 //                            }
 //                    };
+//</editor-fold>
                                     filterSortDef.setSortFieldId(filterSortDef.getSortField()[i]);
                                 })), MyBorderLayout.west(new SpanLabel("Reverse sort order")).add(MyBorderLayout.EAST, inverseOrder));
         if (filterSortDef.isSortOn()) {
@@ -217,40 +219,31 @@ public class ScreenFilter extends MyForm {
         content.add(new SpanLabel("Show tasks with status:"));
 //        content.add(new SpanLabel(ItemStatus.CREATED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
         content.add(layoutN(ItemStatus.CREATED.getName(), new MyOnOffSwitch(parseIdMap2,
-                () -> {
-                    return filterSortDef.isShowNewTasks();
-                },
-                (b) -> {
-                    filterSortDef.setShowNewTasks(b);
-                }), "**"));
+                () -> filterSortDef.isShowNewTasks(),
+                (b) -> filterSortDef.setShowNewTasks(b)), "**"));
 //                content.add(new SpanLabel(ItemStatus.ONGOING.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN(ItemStatus.ONGOING.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
-            return filterSortDef.isShowOngoingTasks();
-        },
-                (b) -> {
-                    filterSortDef.setShowOngoingTasks(b);
-                }), "**"));
+        content.add(layoutN(ItemStatus.ONGOING.getName(), new MyOnOffSwitch(parseIdMap2,
+                () -> filterSortDef.isShowOngoingTasks(),
+                (b) -> filterSortDef.setShowOngoingTasks(b)), "**"));
 //                content.add(new SpanLabel(ItemStatus.WAITING.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN(ItemStatus.WAITING.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
-            return filterSortDef.isShowWaitingTasks();
-        },
-                (b) -> {
-                    filterSortDef.setShowWaitingTasks(b);
-                }), "**"));
+        content.add(layoutN(ItemStatus.WAITING.getName(), new MyOnOffSwitch(parseIdMap2,
+                () -> filterSortDef.isShowWaitingTasks(),
+                (b) -> filterSortDef.setShowWaitingTasks(b)), "**"));
 //                content.add(new SpanLabel(ItemStatus.DONE.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN(ItemStatus.DONE.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
-            return filterSortDef.isShowDoneTasks();
-        },
-                (b) -> {
-                    filterSortDef.setShowDoneTasks(b);
-                }), "**"));
+        content.add(layoutN(ItemStatus.DONE.getName(), new MyOnOffSwitch(parseIdMap2,
+                () -> filterSortDef.isShowDoneTasks(),
+                (b) -> filterSortDef.setShowDoneTasks(b)), "**"));
+        
+        ScreenSettingsCommon.addSettingBoolean(content, parseIdMap2, MyPrefs.keepDoneTasksVisibleTheDayTheyreCompleted);
+
 //                content.add(new SpanLabel(ItemStatus.CANCELLED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN(ItemStatus.CANCELLED.getName(), new MyOnOffSwitch(parseIdMap2, () -> {
-            return filterSortDef.isShowCancelledTasks();
-        },
-                (b) -> {
-                    filterSortDef.setShowCancelledTasks(b);
-                }), "**"));
+        content.add(layoutN(ItemStatus.CANCELLED.getName(), new MyOnOffSwitch(parseIdMap2,
+                () -> filterSortDef.isShowCancelledTasks(),
+                (b) -> filterSortDef.setShowCancelledTasks(b)), "**"));
+
+        content.add(layoutN(ItemStatus.CANCELLED.getName(), new MyOnOffSwitch(parseIdMap2,
+                () -> filterSortDef.isShowCancelledTasks(),
+                (b) -> filterSortDef.setShowCancelledTasks(b)), "**"));
 
         //show even before Hide until date
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show hidden tasks"));

@@ -16,10 +16,12 @@ public class WrapButton extends SpanButton {
 
     public WrapButton() {
         super();
+        setShouldLocalize(false);
     }
 
     public WrapButton(String text) {
         super(text);
+        setShouldLocalize(false);
     }
 
     public Button getActualButton() {

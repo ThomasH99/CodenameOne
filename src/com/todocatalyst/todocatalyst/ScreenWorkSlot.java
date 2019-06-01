@@ -11,6 +11,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
+import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
 //import static com.todocatalyst.todocatalyst.MyForm.putEditedValues2;
@@ -38,10 +39,11 @@ public class ScreenWorkSlot extends MyForm {
     private RepeatRuleParseObject locallyEditedRepeatRule;
     private RepeatRuleParseObject repeatRuleCopyBeforeEdit;
     protected static String FORM_UNIQUE_ID = "ScreenEditWorkSlot"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
+
 //    MyDateAndTimePicker startByDate;
 //    MyDurationPicker duration;
 //    private UpdateField updateActionOnDone;
-
 //    ScreenWorkSlot(WorkSlot workSlot, MyForm previousForm) { //throws ParseException, IOException {
 //        this(workSlot, previousForm, null);
 //    }
@@ -265,7 +267,7 @@ public class ScreenWorkSlot extends MyForm {
 //                ? new Date(now) : workSlot.getStartTimeD(),
 //                (d) -> workSlot.setStartTime(d));
 //</editor-fold>
-        Date defaultDate = (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? new Date(now) : new Date(0));
+        Date defaultDate = (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.getStartOfMinute(new Date(now)) : new Date(0));
         MyDateAndTimePicker startByDate = new MyDateAndTimePicker();
         initField(WorkSlot.PARSE_START_TIME, startByDate,
                 //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ? 
@@ -275,7 +277,7 @@ public class ScreenWorkSlot extends MyForm {
                 (d) -> workSlot.setStartTime((Date) d),
                 () -> startByDate.getDate(),
                 (d) -> startByDate.setDate((Date) d),
-                new Date(0),
+                new Date(0), //round to nearest minute to avoid seconds showing
                 defaultDate);
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
@@ -292,8 +294,8 @@ public class ScreenWorkSlot extends MyForm {
         duration.addActionListener(e -> {
             endByDate.setDate(new Date(startByDate.getDate().getTime() + duration.getDuration()));
         });
-        Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0 
-                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS 
+        Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0
+                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS
                 : 0));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //           initField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
@@ -316,7 +318,7 @@ public class ScreenWorkSlot extends MyForm {
         content.add(layoutN(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
 
         endByDate.addActionListener(e -> {
-            if (endByDate.getDate().getTime()< startByDate.getDate().getTime())
+            if (endByDate.getDate().getTime() < startByDate.getDate().getTime())
                 endByDate.setDate(new Date(startByDate.getTime()));
             else {
                 duration.setDuration(endByDate.getDate().getTime() - startByDate.getDate().getTime());
@@ -327,11 +329,12 @@ public class ScreenWorkSlot extends MyForm {
                 //                        new Date(now) 
                 //                        : workSlot.getStartTimeD()),
                 () -> workSlot.getEndTimeD(),
-                (d) -> {},
+                (d) -> {
+                },
                 () -> null,
-                (d) -> endByDate.setDate((Date)d),
+                (d) -> endByDate.setDate((Date) d),
                 new Date(0),
-                new Date(defaultDate.getTime()+defaultDuration));
+                new Date(defaultDate.getTime() + defaultDuration));
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
         content.add(layoutN(WorkSlot.END_TIME, endByDate, WorkSlot.END_TIME_HELP));
@@ -356,25 +359,63 @@ public class ScreenWorkSlot extends MyForm {
 //        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> workSlot.getComment(), (s) -> workSlot.setComment(s));
 //        content.add(new Label("Description")).add(comment);
 //REPEAT RULE
-        if (locallyEditedRepeatRule == null)
-            locallyEditedRepeatRule = workSlot.getRepeatRule();
+//        if (locallyEditedRepeatRule == null)
+//            locallyEditedRepeatRule = workSlot.getRepeatRule();
 //        SpanButton repeatRuleButton = new SpanButton();
         WrapButton repeatRuleButton = new WrapButton();
+        repeatRuleButton.setName("RepeatBut");
+        repeatRuleButton.getTextComponent().setName("RepeatBut");
+
+        Object locallyEditedRepeatRule1 = previousValues.get(Item.PARSE_REPEAT_RULE);
+        ActionListener refreshRepeatRuleButton = e -> {
+            String repeatRuleButtonStr;
+            if (locallyEditedRepeatRule1 == null) { //no edits
+                if (workSlot.getRepeatRule() != null) {
+                    repeatRuleButtonStr = workSlot.getRepeatRule().getText();
+                } else {
+                    repeatRuleButtonStr = "";
+                }
+            } else if (locallyEditedRepeatRule1.equals(REPEAT_RULE_DELETED_MARKER)) {
+                repeatRuleButtonStr = "";
+            } else { //if (editedRepeatRule instanceof RepeatRuleParseObject) { //NB instanceof RepeatRuleParseObject is only option possible
+                assert locallyEditedRepeatRule1 instanceof RepeatRuleParseObject;
+                repeatRuleButtonStr = ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)).getText();
+                ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)).setSpecifiedStartDate(startByDate.getDate()); //update RR to same startTime as set for the WorkSlot
+            }
+            repeatRuleButton.setText(repeatRuleButtonStr);
+        };
+
 //        Command repeatRuleEditCmd = new Command("<click to set repeat>NOT SHOWN?!") {
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenWorkSlot", "", null, (e) -> {
-            if (locallyEditedRepeatRule == null) {
-                locallyEditedRepeatRule = new RepeatRuleParseObject();
-            }
 
-//                if (!locallyEditedRepeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
-            if (!locallyEditedRepeatRule.canRepeatRuleBeEdited(workSlot)) {
-                Dialog.show("INFO", "Once a repeating " + WorkSlot.WORKSLOT + " is in the past, the " + WorkSlot.REPEAT_DEFINITION + " definition cannot be edited anymore", "OK", null);
+            if (workSlot.getRepeatRule() != null && !workSlot.getRepeatRule().isRepeatInstanceInListOfActiveInstances(workSlot)) {
+                Dialog.show("INFO", Format.f("Once a repeating task has been set [DONE] or [CANCELLED] the [REPEAT_RULE] definition cannot be edited from this task anymore"), "OK", null);
                 return;
             }
-
-            if (repeatRuleCopyBeforeEdit == null && workSlot.getRepeatRule() != null) {
-                repeatRuleCopyBeforeEdit = workSlot.getRepeatRule().cloneMe(); //make a copy of the *original* repeatRule
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (locallyEditedRepeatRule == null) {
+//                locallyEditedRepeatRule = new RepeatRuleParseObject();
+//            }
+//
+////                if (!locallyEditedRepeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
+//            if (!locallyEditedRepeatRule.canRepeatRuleBeEdited(workSlot)) {
+//                Dialog.show("INFO", "Once a repeating " + WorkSlot.WORKSLOT + " is in the past, the " + WorkSlot.REPEAT_DEFINITION + " definition cannot be edited anymore", "OK", null);
+//                return;
+//            }
+//
+//            if (repeatRuleCopyBeforeEdit == null && workSlot.getRepeatRule() != null) {
+////                repeatRuleCopyBeforeEdit = workSlot.getRepeatRule().cloneMe(); //make a copy of the *original* repeatRule
+//                repeatRuleCopyBeforeEdit = new RepeatRuleParseObject(workSlot.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
+//
+//            }
+//</editor-fold>
+            RepeatRuleParseObject locallyEditedRepeatRule;
+            if (previousValues.get(Item.PARSE_REPEAT_RULE) == null || previousValues.get(Item.PARSE_REPEAT_RULE).equals(REPEAT_RULE_DELETED_MARKER)) {
+                locallyEditedRepeatRule = new RepeatRuleParseObject(workSlot.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
+            } else {
+                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
             }
+
             ASSERT.that(workSlot.getRepeatRule() == null || (repeatRuleCopyBeforeEdit.equals(locallyEditedRepeatRule) && locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)),
                     "problem in cloning repeatRule");
 
@@ -392,6 +433,14 @@ public class ScreenWorkSlot extends MyForm {
 //                }
 //                }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
 //</editor-fold>
+                if (locallyEditedRepeatRule.equals(workSlot.getRepeatRule())) {
+                    previousValues.remove(Item.PARSE_REPEAT_RULE);
+                } else if (locallyEditedRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+                    previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
+                } else {
+                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
+                }
+
             }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
@@ -410,8 +459,22 @@ public class ScreenWorkSlot extends MyForm {
         });
 
         repeatRuleButton.setCommand(repeatRuleEditCmd);
+        refreshRepeatRuleButton.actionPerformed(null);
 //        repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule() != null ? workSlot.getRepeatRule().toString() : null, "")); //"<click to make task/project repeat>"
-        repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "")); //"<click to make task/project repeat>"
+//        repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "")); //"<click to make task/project repeat>"
+
+        parseIdMap2.put(REPEAT_RULE_KEY, () -> {
+//            if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
+//                    previousValues.remove(Item.PARSE_REPEAT_RULE);
+//                    repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
+//                } else {
+            Object repeatRuleVal = previousValues.get(Item.PARSE_REPEAT_RULE);
+            if (repeatRuleVal instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
+                workSlot.setRepeatRule((RepeatRuleParseObject) repeatRuleVal);
+            } else if (repeatRuleVal != null && repeatRuleVal.equals(REPEAT_RULE_DELETED_MARKER)) {
+                workSlot.setRepeatRule(null); //delete repeatRule (if any, if null before, no change)
+            } //else: ==null => do nothing (either no RR was defined before/after editing, or the rule was not changed
+        });
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -485,7 +548,8 @@ public class ScreenWorkSlot extends MyForm {
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
             content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
         }
-        content.add(layoutN("Unallocated time", new Label(MyDate.formatDurationStd(workSlot.getUnallocatedTime(now))), "How much of this work slot is still free",
+//        content.add(layoutN("Unallocated time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
+        content.add(layoutN("Available time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
                 true, true, false));
 
         if (Config.WORKTIME_TEST) {

@@ -86,27 +86,28 @@ public class ScreenSettingsCommon extends MyForm {
         toolbar.addCommandToOverflowMenu(new CommandTracked("Reset to default**")); //reset to default values
     }
 
-    protected Switch addSettingBoolean(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry) {
+    static Switch addSettingBoolean(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry) {
 
 //        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
         ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
         Switch compForActionListener=null;
-        if (tableLayout) {
-            cont.add(new SpanLabel(prefEntry.getFieldScription()));
-            cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
-
-            compForActionListener=new MyOnOffSwitch(parseIdMap2, () -> {
-                return MyPrefs.getBoolean(prefEntry);
-            }, (b) -> {
-                MyPrefs.setBoolean(prefEntry, b);
-            });
-            cont.add(rightAdj,compForActionListener );
-
-            String helpText =prefEntry.getHelpText();
-            if (!helpText.equals("")&&!helpText.contains("**")) {
-                cont.add(span2Cols, new SpanLabel(helpText));
-            }
-        } else {
+//        if (tableLayout) {
+//            cont.add(new SpanLabel(prefEntry.getFieldScription()));
+//            cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
+//
+//            compForActionListener=new MyOnOffSwitch(parseIdMap2, () -> {
+//                return MyPrefs.getBoolean(prefEntry);
+//            }, (b) -> {
+//                MyPrefs.setBoolean(prefEntry, b);
+//            });
+//            cont.add(rightAdj,compForActionListener );
+//
+//            String helpText =prefEntry.getHelpText();
+//            if (!helpText.equals("")&&!helpText.contains("**")) {
+//                cont.add(span2Cols, new SpanLabel(helpText));
+//            }
+//        } else
+        {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            cont.add(BorderLayout.center(new SpanLabel(prefEntry.getFieldScription())).add(BorderLayout.EAST, new MyOnOffSwitch(parseIdMap2, () -> {
 //                return MyPrefs.getBoolean(prefEntry);

@@ -842,9 +842,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PRIORITY = "Priority";
     final static String PRIORITY_HELP = "Priority";
     final static String PROJECT = "Project";
-    final static String EARNED_POINTS_PER_HOUR = "Value/hour"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
+    final static String EARNED_VALUE_PER_HOUR = "Value/hour"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
     //Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_VALUE + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."
-    final static String EARNED_POINTS_PER_HOUR_HELP = "Value/hour**"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
+    final static String EARNED_VALUE_PER_HOUR_HELP = "Value/hour**"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
     final static String EARNED_VALUE = "Value";
 //    final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate "+EARNED_POINTS_PER_HOUR+" which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
     final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate [EARNED_POINTS_PER_HOUR] which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
@@ -1862,7 +1862,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             } else if (toRepeatInst) {
                 if (setRepeatRuleWithoutUpdate) {
-                    destination.setRepeatRuleNoUpdate(getRepeatRule()); //point to existing repeat rule
+                    destination.setRepeatRuleInParse(getRepeatRule()); //point to existing repeat rule
                 } else if (getRepeatRule() != null) {
                     destination.setRepeatRule((RepeatRuleParseObject) getRepeatRule().cloneMe()); //for templates, make a copy of the RepeatRule, but do NOT create repeat instances
                 }
@@ -3645,7 +3645,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return new Date(getWaitingAlarmDate());
         Date waitingAlarmDate = getDate(PARSE_WAITING_ALARM_DATE);
 //        return (waitingAlarmDate == null || isDone()) ? new Date(0) : waitingAlarmDate; //return 0 is task is Done
-        return waitingAlarmDate == null  ? new Date(0) : waitingAlarmDate; //return 0 is task is Done -NO, this prevents seeing alarmDates when editing a done task!! And maybe if copying done tasks. Instead, test on Done must be done at a higher level!!
+        return waitingAlarmDate == null ? new Date(0) : waitingAlarmDate; //return 0 is task is Done -NO, this prevents seeing alarmDates when editing a done task!! And maybe if copying done tasks. Instead, test on Done must be done at a higher level!!
     }
 
     public void setWaitingAlarmDate(long waitingAlarmDate) {
@@ -3703,21 +3703,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @param repeatRule
      */
-    void setRepeatRuleNoUpdate(RepeatRuleParseObject repeatRule) {
+    void setRepeatRuleInParse(RepeatRuleParseObject repeatRule) {
 //        this.repeatRule = repeatRule;
 //        if (has(PARSE_REPEAT_RULE) || repeatRule != null) { //no need to save a value since a null pointer is interprested as zero
 //            put(PARSE_REPEAT_RULE, repeatRule);
 //        }
 //        RepeatRuleParseObject oldRepeatRule = (RepeatRuleParseObject) getParseObject(PARSE_REPEAT_RULE); //doesn't fetch from catch
-        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
+//        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
         if (repeatRule != null) {
-            if (oldRepeatRule == null) {
+//            if (oldRepeatRule == null) {
+            if (repeatRule.isDirty() || repeatRule.getObjectIdP() == null)
                 DAO.getInstance().saveInBackground(repeatRule); //save the (possibly new or changed) repeatRule
-                put(PARSE_REPEAT_RULE, repeatRule);
-            } else { //update the existing rule with the changes (avoid to create a new repeatRule at each edit)
-                oldRepeatRule.update(repeatRule);
-                put(PARSE_REPEAT_RULE, oldRepeatRule);
-            }
+            put(PARSE_REPEAT_RULE, repeatRule);
+//            } 
+//        else { //update the existing rule with the changes (avoid to create a new repeatRule at each edit), OK to do in background since saving the Item will also be done in background, so in sequential order
+////                oldRepeatRule.updateToValuesInEditedRepeatRule(repeatRule);
+//                put(PARSE_REPEAT_RULE, oldRepeatRule);
+//            }
         } else {
             remove(PARSE_REPEAT_RULE);
         }
@@ -3725,11 +3727,41 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     /**
      * sets or updates the repeatRule and ensures that additional or no longer
-     * needed repeat instances are created/deleted
+     * needed repeat instances are created/deleted, as well as deleting an old RR if de-activated
      *
-     * @param newRepeatRule
+     * @param newRepeatRule a new RR, null, or an edited *copy* of an existing RR
      */
     public void setRepeatRule(RepeatRuleParseObject newRepeatRule) {
+        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
+        boolean notTemplate = !isTemplate();
+
+        if (oldRepeatRule == null) { //setting a RR for the first time
+            if (newRepeatRule != null) {
+                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null)
+                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+                setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+                if (notTemplate)
+                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+            } else {
+                //setting null when already null - do nothing
+            }
+        } else { //oldRepeatRule != null
+            if (newRepeatRule == null || newRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
+                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
+                    //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
+                    setRepeatRuleInParse(null);
+            } else { //newRepeatRule != null and possibly modified
+                oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRule); //update existing rule with updated values
+                if (notTemplate)
+                    oldRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this); //
+                setRepeatRuleInParse(oldRepeatRule);
+//                setRepeatRuleInParse(oldRepeatRule); //must set again to save?? NO, not necessary, only if the *reference* changes in Item
+                DAO.getInstance().saveInBackground(oldRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+            }
+        }
+    }
+
+    public void setRepeatRuleOLD(RepeatRuleParseObject newRepeatRule) {
 //        if (this.repeatRule != repeatRule) {
 //            this.repeatRule = repeatRule; //TODO!!!!: shouldn't repeat instances be calculated/updated whenever a repeat rule sit set?! (Currently done in copyMeInto)
 //        }
@@ -3738,7 +3770,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            if (!isTemplate() && !repeatRule.equals(getRepeatRule())) { //do not activate/update repeat rules for templates
 //            repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, getOwner(), MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : getOwner().size());
 //                boolean newRepeatRule = getRepeatRule() == null;
-            setRepeatRuleNoUpdate(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+            setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
 //                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
             if (!isTemplate()) { //do not activate/update repeat rules for templates, NOT possible to compare using !repeatRule.equals(getRepeatRule()) since it may the same object
                 if (oldRepeatRule == null) {
@@ -3754,13 +3786,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else if (oldRepeatRule != null) { //if the user deleted the repeatRule, /* repeatRule == null && */ 
 //            getRepeatRule().delete();
             getRepeatRule().deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this);
-            setRepeatRuleNoUpdate(newRepeatRule);
+            setRepeatRuleInParse(newRepeatRule);
         } //else both old and new RR are null, do nothing
     }
 
     @Override
     public void setRepeatRuleForRepeatInstance(RepeatRuleParseObject repeatRule) {
-        setRepeatRuleNoUpdate(repeatRule);
+        setRepeatRuleInParse(repeatRule);
     }
 
     public long getStartedOnDate() {
@@ -5528,7 +5560,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public AlarmRecord getSnoozeAlarmRecord() {
         Date date = getDate(PARSE_SNOOZE_DATE);
         String type = getString(PARSE_SNOOZED_TYPE);
-        if (Config.TEST&&type==null) type=AlarmType.snoozedNotif.toString();
+        if (Config.TEST && type == null) type = AlarmType.snoozedNotif.toString();
         return (date != null) ? new AlarmRecord(date, AlarmType.valueOf(type)) : null;
     }
 
@@ -7778,7 +7810,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
             if (Config.CHECK_OWNERS) checkOwners(workslots);
             boolean updated = RepeatRuleParseObject.updateWorkSlotListXXX(workslots);
-            WorkSlotList workSlotList = new WorkSlotList(this, workslots);
+            WorkSlotList workSlotList = new WorkSlotList(this, workslots, true); //true=already sorted
             if (updated)
                 setWorkSlotList(workSlotList);
             return workSlotList;
@@ -7806,6 +7838,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
 //            put(PARSE_WORKSLOTS, workSlotList.getWorkSlots());
             workSlotList.setOwner(this);
+            ASSERT.that(MyUtil.isSorted(workSlotList.getWorkSlotListFull(),
+                    (ws1, ws2) -> ((int) ((((WorkSlot) ws2).getStartTime()) - ((WorkSlot) ws1).getStartTime()))),
+                    "setting list of workslots which is NOT sorted: " + workSlotList.getWorkSlotListFull());
             put(PARSE_WORKSLOTS, workSlotList.getWorkSlotListFull());
         } else {
             remove(PARSE_WORKSLOTS);
@@ -9328,12 +9363,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    private FilterSortDef getDefaultFilterSortDef() {
-//            new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true)
-        FilterSortDef hardcodedFilter = new FilterSortDef(null, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //no sorting, //TODO!! Move this filter to FilterSortDef.getDeafultFilter() and reuse everywhere
-        return hardcodedFilter;
-    }
-
     @Override
     public FilterSortDef getFilterSortDef() {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -9348,7 +9377,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
             return filterSortDef;
         } else {
-            return getDefaultFilterSortDef();
+            ItemAndListCommonInterface owner = getOwner();
+            FilterSortDef filter;
+            if (owner != null && (filter = owner.getFilterSortDef()) != null)
+                return filter;
+            else
+                return getDefaultFilterSortDef();
         }
     }
 

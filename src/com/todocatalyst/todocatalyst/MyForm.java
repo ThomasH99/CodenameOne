@@ -1629,38 +1629,38 @@ public class MyForm extends Form {
         cmd.putClientProperty("android:showAsAction", "withText");
         return cmd;
     }
-
-    //makeDoneUpdateWithParseIdMapCommand above is better: each check will show one or more dialogs etc and can fix things before returning true or false
-    public Command makeDoneUpdateWithParseIdMapCommandXXX(boolean callRefreshAfterEdit, GetString canGoBack) {
-//        Command cmd = new Command(title, icon) {
-        Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                String errorMsg;
-                if ((errorMsg = canGoBack.get()) == null || Dialog.show("INFO", errorMsg, "Yes", "No")) {
-//                    if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
-//                    if (getCheckOnExit() != null || (errorMsg = getCheckOnExit().check()) != null) {
-                    putEditedValues2(parseIdMap2);
-                    if (getUpdateActionOnDone() != null)
-                        getUpdateActionOnDone().update();
-                    showPreviousScreenOrDefault(callRefreshAfterEdit);
-                } else {
-                    //nothing, stay in screen
-//                    Dialog.show("Error", errorMsg, "OK", null);
-//                    Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save");
-                }
-            }
-        };
-        cmd.putClientProperty("android:showAsAction", "withText");
-        return cmd;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    //makeDoneUpdateWithParseIdMapCommand above is better: each check will show one or more dialogs etc and can fix things before returning true or false
+//    public Command makeDoneUpdateWithParseIdMapCommandXXX(boolean callRefreshAfterEdit, GetString canGoBack) {
+////        Command cmd = new Command(title, icon) {
+//        Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                String errorMsg;
+//                if ((errorMsg = canGoBack.get()) == null || Dialog.show("INFO", errorMsg, "Yes", "No")) {
+////                    if (checkDataIsCompleteBeforeExit == null || (errorMsg = checkDataIsCompleteBeforeExit.check()) == null) {
+////                    if (getCheckOnExit() != null || (errorMsg = getCheckOnExit().check()) != null) {
+//                    putEditedValues2(parseIdMap2);
+//                    if (getUpdateActionOnDone() != null)
+//                        getUpdateActionOnDone().update();
+//                    showPreviousScreenOrDefault(callRefreshAfterEdit);
+//                } else {
+//                    //nothing, stay in screen
+////                    Dialog.show("Error", errorMsg, "OK", null);
+////                    Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save");
+//                }
+//            }
+//        };
+//        cmd.putClientProperty("android:showAsAction", "withText");
+//        return cmd;
+//    }
+//</editor-fold>
     public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit) {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, callRefreshAfterEdit);
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, callRefreshAfterEdit,getCheckIfSaveOnExit());
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand() {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, true); //false); //default false since otherwise edited values will be lost
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, true,getCheckIfSaveOnExit()); //false); //default false since otherwise edited values will be lost
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand(CheckDataIsComplete getCheckOnExit) {
@@ -1839,7 +1839,7 @@ public class MyForm extends Form {
 
         Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
             Item item = new Item();
-            item.setOwner(itemListOrg);
+            item.setOwner(itemListOrg); //need to set owner here (even if cancelled) for repeatRule
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItem2(item, (MyForm) getComponentForm(), () -> {
                 if (true || item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
@@ -3119,8 +3119,12 @@ public class MyForm extends Form {
             if (ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
                 //if bigTimer was active, and we're not replaying, then show big timer again (from whatever screen was the last in replay)
                 TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
-                if (!(this instanceof ScreenTimer6) && !ReplayLog.getInstance().isReplayInProgress() && timerInstance != null && timerInstance.isFullScreen())
-                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
+                if (!(this instanceof ScreenTimer6) 
+//                        && !ReplayLog.getInstance().isReplayInProgress() //THE test above on justFinished should be enough
+                        && timerInstance != null && timerInstance.isFullScreen()
+                        )
+//                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
+                 new ScreenTimer6(MyForm.this, timerInstance).show();
 //            else
 //                super.show();
             }

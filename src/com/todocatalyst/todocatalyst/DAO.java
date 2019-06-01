@@ -3448,10 +3448,11 @@ public class DAO {
 //        List<WorkSlot> results = null;
         WorkSlotList results = null;
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+        query.addAscendingOrder(WorkSlot.PARSE_START_TIME);
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
         try {
 //            results = (List<WorkSlot>) query.find();
-            results = new WorkSlotList(query.find());
+            results = new WorkSlotList(null, query.find(), true);
         } catch (ParseException ex) {
             Log.e(ex);
         }
@@ -4035,7 +4036,8 @@ public class DAO {
         }
     }
 
-    public void deleteInBackground(TimerInstance anyParseObject) {
+//    public void deleteInBackground(TimerInstance anyParseObject) {
+    public void deleteInBackground(ParseObject anyParseObject) {
         if (anyParseObject == null) {
             return;
         }

@@ -138,8 +138,10 @@ public class ScreenObjectPicker<E> extends MyForm {
             boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
         super(title, previousForm, updateOnDone);
         assert maxNbOfSelected >= minNbOfSelected && maxNbOfSelected >= 1;
-        this.listOfAllLists1 = new ArrayList(listOfAllLists); //make a copy to it can be modified if adding missing elements in code below
-        this.listOfAllTopLevelProjects1 = new ArrayList(listOfAllTopLevelProjects); //make a copy to it can be modified if adding missing elements in code below
+        if (listOfAllLists != null) //may be null
+            this.listOfAllLists1 = new ArrayList(listOfAllLists); //make a copy to it can be modified if adding missing elements in code below
+        if (listOfAllTopLevelProjects != null) //may be null
+            this.listOfAllTopLevelProjects1 = new ArrayList(listOfAllTopLevelProjects); //make a copy to it can be modified if adding missing elements in code below
 //        this.listOfAllTasks = listOfAllTasks;
         this.selectedObjects1 = selectedObjects;
         this.minNbOfSelected = minNbOfSelected;

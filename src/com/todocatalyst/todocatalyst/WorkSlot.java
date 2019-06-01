@@ -47,10 +47,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     final static String DURATION_HELP = "Define the duration of the " + WORKSLOT;
     final static String START_TIME = "Start by"; //"Start time";
     final static String START_TIME_HELP = "Define when the " + WORKSLOT + " starts"; //"Start time";
-    
+
     final static String END_TIME = "End by"; //"Start time";
     final static String END_TIME_HELP = "Define when the " + WORKSLOT + " ends"; //"Start time";
-  
+
     final static String REPEAT_DEFINITION = Item.REPEAT_RULE; //"Repeat";
     final static String REPEAT_DEFINITION_HELP = Item.REPEAT_RULE_HELP; //"Repeat";
 
@@ -444,25 +444,47 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @Override
     public final void setRepeatRuleForRepeatInstance(RepeatRuleParseObject repeatRule) {
 //        setRepeatRule(repeatRule);
-        setRepeatRuleNoUpdate(repeatRule);
+        setRepeatRuleInParse(repeatRule);
     }
 
     public final void setRepeatRule(RepeatRuleParseObject newRepeatRule) {
         RepeatRuleParseObject oldRepeatRule = getRepeatRule();
+        if (oldRepeatRule == null) { //setting a RR for the first time
+            if (newRepeatRule != null) {
+                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null)
+                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+                setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+                newRepeatRule.createWorkslotsForNewRepeatRule(this);
+            } else {
+                //setting null when already null - do nothing
+            }
+        } else { //oldRepeatRule != null
+            if (newRepeatRule == null) { //deleting the existing RR
+                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
+                    setRepeatRuleInParse(null);
+            } else { //possibly modified
+                oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRule); //update existing rule with updated values
+                oldRepeatRule.updateWorkslotsForEditedRepeatRule(this); //
+            }
+        }
+    }
+
+    public final void setRepeatRuleOLD2(RepeatRuleParseObject newRepeatRule) {
+        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
         if (newRepeatRule != null) {
-            setRepeatRuleNoUpdate(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+            setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
             if (oldRepeatRule == null) {
 //                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-                newRepeatRule.updateWorkslots(this, false);
+                newRepeatRule.createWorkslotsForNewRepeatRule(this);
             } else {
 //                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-                oldRepeatRule.update(newRepeatRule); //update existing rule with updated values
-                oldRepeatRule.updateWorkslots(this);
+                oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRule); //update existing rule with updated values
+                oldRepeatRule.updateWorkslotsForEditedRepeatRule(this); //
             }
         } else if (oldRepeatRule != null) { //if the user deleted the repeatRule, /* repeatRule == null && */ 
             if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
-//            setRepeatRuleNoUpdate(newRepeatRule);
-            setRepeatRuleNoUpdate(null);
+                //            setRepeatRuleNoUpdate(newRepeatRule);
+                setRepeatRuleInParse(null);
         } //else both old and new RR are null, do nothing
     }
 
@@ -478,11 +500,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////            changed();
 //        }
 //        ParseObject.fetchFromCacheOnly("RepeatRule", repeatRule.getObjectId());
-        setRepeatRuleNoUpdate(repeatRule); //MUST set repeatRule before creating repeatInstances!
+        setRepeatRuleInParse(repeatRule); //MUST set repeatRule before creating repeatInstances!
         if (repeatRule != null) {
 //            repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
             boolean newRepeatRule = getRepeatRule() == null;
-            setRepeatRuleNoUpdate(repeatRule); //MUST set repeat rule *before* creating repeat instances in next line
+            setRepeatRuleInParse(repeatRule); //MUST set repeat rule *before* creating repeat instances in next line
 //                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
             if (newRepeatRule) {
 //                repeatRule.updateRepeatInstancesWhenRuleWasCreated(this);
@@ -516,7 +538,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //</editor-fold>
     }
 
-    public final void setRepeatRuleNoUpdate(RepeatRuleParseObject repeatRule) {
+    public final void setRepeatRuleInParse(RepeatRuleParseObject repeatRule) {
         if (repeatRule != null) {
             put(PARSE_REPEAT_RULE, repeatRule);
         } else {
@@ -670,7 +692,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             if (Config.TEST) {
                 notSaved = repeatRule.getObjectIdP() == null || repeatRule.getObjectIdP().isEmpty(); //repeatRule.isDirty() ||
             }
-            destination.setRepeatRuleNoUpdate(getRepeatRule());
+            destination.setRepeatRuleInParse(getRepeatRule());
         } else {
             destination.setRepeatRule(getRepeatRule());
         }
@@ -834,7 +856,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
         return (getRepeatRule() != null ? "*" : "") + "WS:" + MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS)
                 //                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
-                + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
+                + " [" + getObjectIdP() + "]"
+                + (getOwner() != null ? " Owner:" + getOwner().getText() + "/" + getOwner().getObjectIdP() : "");
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -918,23 +941,26 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //</editor-fold>
         if ((start != null && start.getTime() != 0)) {
             put(PARSE_START_TIME, start);
+            setEndTime(new Date(start.getTime() + getDurationInMillis()));
 //            updateEndTimeWithNewStartTime(start);
         } else {
             remove(PARSE_START_TIME);
+            setEndTime(null);
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        updateEndTimeWithNewStartTime(start == null ? new Date(0) : start);
-        Date testNewEndDateTmp = (start == null) ? (new Date(0)) : (new Date(start.getTime() + getDurationInMillis()));
-        Date testNewEndDateTmp2 = new Date(start == null ? 0 : start.getTime() + getDurationInMillis());
-        Date testNewEndDate;
-        if (start == null) {
-            testNewEndDate = new Date(0);
-        } else {
-            testNewEndDate = new Date(start.getTime() + getDurationInMillis());
-        }
-
-//        setEndTime((start == null) ? (new Date(0)) : (new Date(start.getTime() + getDurationInMillis()))); //!!!Java compiler error?? When date is a valid date, this somehow gives a 0 date as parameter to setEndTime()!!!
-        setEndTime(testNewEndDate);
-
+//        Date testNewEndDateTmp = (start == null) ? (new Date(0)) : (new Date(start.getTime() + getDurationInMillis()));
+//        Date testNewEndDateTmp2 = new Date(start == null ? 0 : start.getTime() + getDurationInMillis());
+//        Date testNewEndDate;
+//        if (start == null) {
+//            testNewEndDate = new Date(0);
+//        } else {
+//            testNewEndDate = new Date(start.getTime() + getDurationInMillis());
+//        }
+//
+////        setEndTime((start == null) ? (new Date(0)) : (new Date(start.getTime() + getDurationInMillis()))); //!!!Java compiler error?? When date is a valid date, this somehow gives a 0 date as parameter to setEndTime()!!!
+//        setEndTime(testNewEndDate);
+//</editor-fold>
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1351,8 +1377,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return date;
     }
 
-    @Override
-    public void delete() throws ParseException {
+//    @Override
+    public void deleteXX() throws ParseException {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates. 
     }
 
@@ -1494,10 +1520,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         if (getObjectIdP() != null && ((WorkSlot) obj).getObjectIdP() != null) {
             //compare isDirty in case we have two instances of the same 
 //            return getObjectId().equals(((Item) obj).getObjectId()) && isDirty()==((Item) obj).isDirty();
-            if (isDirty() != ((WorkSlot) obj).isDirty()) {
-                Log.p("comparing dirty and not dirty instance of same object=" + this);
-            }
-            return getObjectIdP().equals(((WorkSlot) obj).getObjectIdP());
+            ASSERT.that(isDirty() != ((WorkSlot) obj).isDirty(), "comparing dirty and not dirty instance of same object=" + this);
+            boolean sameObjId = getObjectIdP().equals(((WorkSlot) obj).getObjectIdP());
+            ASSERT.that(!sameObjId, "equals() comparing two different instances with SAME objectId, this=" + this + ", obj=" + obj);
+            return sameObjId; //getObjectIdP().equals(((WorkSlot) obj).getObjectIdP());
         }
         return false; //this == (WorkSlot) obj;
     }
@@ -1601,7 +1627,36 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return "WorkSlotAllocation EMPTY";
     }
 
-    public long getUnallocatedTime(long now) {
+    public long getRemainingAvailableTime(long now) {
+        if (getDurationAdjusted(now) == 0) {
+            return 0;
+        }
+        long lastAllocatedTimeOfWorkSlot = 0;
+        ItemAndListCommonInterface owner = getOwner();
+        List<Item> items = new ArrayList<>();
+        if (owner != null) {
+            for (Object i : owner.getListFull()) { //go through everyone of the WorkSLot's Owner's tasks
+                if (i instanceof Item) {
+                    Item item = (Item) i;
+                    WorkTimeSlices wTime = owner.getAllocatedWorkTimeN(item);
+                    if (wTime != null) {
+                        List<WorkSlotSlice> slices = wTime.getWorkSlotSlices();
+                        if (slices != null) {
+                            for (WorkSlotSlice slice : slices) {
+                                if (slice.workSlot == this && (slice.getDurationInMillis() > 0 && slice.getEndTime() > lastAllocatedTimeOfWorkSlot)) {// || Config.TEST)) {
+                                    lastAllocatedTimeOfWorkSlot = slice.getEndTime();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        long unalloc = getEndTime() - lastAllocatedTimeOfWorkSlot; //may get negative in case last item which got 
+        return unalloc > 0 ? unalloc : 0;
+    }
+
+    public long getUnallocatedTimeOLD(long now) {
         if (getDurationAdjusted(now) == 0) {
             return 0;
         }
@@ -1609,7 +1664,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         if (items == null || items.size() == 0) {
             return 0;
         } else {
-            return getEndTime() - items.get(items.size() - 1).getFinishTime();
+            //TODO!!!! not sure this algo will work in all cases
+            long unalloc = getEndTime() - items.get(items.size() - 1).getFinishTime(); //may get negative in case last item which got 
+//            return getEndTime() - items.get(items.size() - 1).getFinishTime();
+            return unalloc > 0 ? unalloc : 0; //in
         }
     }
 
@@ -1754,7 +1812,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    public boolean isExpandable() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-
     @Override
     public String toString(ToStringFormat format) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -1794,7 +1851,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-
     @Override
     public boolean addToList(ItemAndListCommonInterface item, ItemAndListCommonInterface subItemOrList, boolean addAfterItem) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -1934,7 +1990,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we 
 //            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
 //            myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
-            myRepeatRule.updateWorkslots(this, true); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+//            myRepeatRule.updateIfExpiredOrDeletedWorkslots(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+            myRepeatRule.updateWhenWorkSlotDeleted(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
             //NB. We don't delete the item's refs to repeatrule
         }
 

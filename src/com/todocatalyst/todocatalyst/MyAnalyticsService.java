@@ -259,7 +259,8 @@ public class MyAnalyticsService {
     }
 
     static void event(String eventAction) {
-        event((MyForm) Display.getInstance().getCurrent(), eventAction == null || eventAction.length() == 0 ? "<none?!>" : eventAction, null, -1);
+//        event((MyForm) Display.getInstance().getCurrent(), eventAction == null || eventAction.length() == 0 ? "<none?!>" : eventAction, null, -1);
+        event((MyForm) MyForm.getCurrentFormAfterClosingDialogOrMenu(), eventAction == null || eventAction.length() == 0 ? "<none?!>" : eventAction, null, -1);
     }
 
     /**

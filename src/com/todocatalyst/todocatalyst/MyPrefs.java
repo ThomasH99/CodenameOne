@@ -70,10 +70,11 @@ public class MyPrefs {
             = new PrefEntry("Add new categories to beginning of list**(make this setting public??)", "insertNewCategoriesForItemsInStartOfIList", true, "Always insert added categories at the beginning (makes most recently added categories appear first)");
 
     static PrefEntry insertNewRepeatInstancesInStartOfLists
-            = new PrefEntry("**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
+            = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
 
     static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
-            = new PrefEntry("**", "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task"); //"at the end"
+            = new PrefEntry("Insert new repeat instances after the original ", 
+                    "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task instead of beginning/end of list"); //"at the end"
 
     static PrefEntry dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList
             = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks", "dropItemAtBeginningOfUnexpandedCategorySubtaskList", false, "**");
@@ -293,6 +294,10 @@ public class MyPrefs {
     static PrefEntry askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem //TODO!!! No, only ask if overwriting an alreadyd defined value!
             = new PrefEntry("Confirm before inserting a template into an existing task", "askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem",
                     false, "**");
+    static PrefEntry keepDoneTasksVisibleTheDayTheyreCompleted //TODO!!! No, only ask if overwriting an alreadyd defined value!
+            = new PrefEntry("If Completed tasks are hidden, keep them visible until midnight of the day they were completed", //"Don't hide Completed tasks the day they were completed
+                    "keepDoneTasksVisibleTheDayTheyreCompleted",
+                    true, "**");
 
     // ************** inherit values from owning Project *************
     final static String INHERITS = "Subtasks inherit ";
@@ -425,16 +430,23 @@ public class MyPrefs {
             = new PrefEntry("enableRepairCommandsInMenus", "enableRepairCommandsInMenus", true, "**");
 
     //REPEATRULE
-    static PrefEntry repeatMaxInterval = new PrefEntry("**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
-    static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead = new PrefEntry("repeatMaxNumberFutureInstancesToGenerateAhead", "repeatMaxNumberFutureInstancesToGenerateAhead", 10, "0 disables - TODO**");
-    static PrefEntry repeatMaxNumberFutureDaysToGenerateAhead = new PrefEntry("zzz", "repeatMaxNumberFutureDaysToGenerateAhead", 31, "**");
-    static PrefEntry maxNumberRepeatInstancesToDeleteWithoutConfirmation = new PrefEntry("ttt", "maxNumberRepeatInstancesToDeleteWithoutConfirmation", 1, "**");
+    static PrefEntry repeatMaxInterval = new PrefEntry("repeatMaxInterval**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
+    static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead 
+            = new PrefEntry("repeatMaxNumberFutureInstancesToGenerateAhead", "repeatMaxNumberFutureInstancesToGenerateAhead", 10, "0 disables - TODO**");
+    static PrefEntry repeatMaxNumberFutureDaysToGenerateAhead = new PrefEntry("repeatMaxNumberFutureDaysToGenerateAhead**", "repeatMaxNumberFutureDaysToGenerateAhead", 31, "**");
+    static PrefEntry maxNumberRepeatInstancesToDeleteWithoutConfirmation 
+            = new PrefEntry("Ask for confirmation if deleting more repeat instances that this", "maxNumberRepeatInstancesToDeleteWithoutConfirmation", 3, "**");
     static PrefEntry repeatSetRelativeFieldsWhenCreatingRepeatInstances
-            = new PrefEntry("kkk", "repeatSetRelativeFieldsWhenCreatingRepeatInstances", true,
+            = new PrefEntry("Set Alarm, Hide until, Start by and Expires on fields relative to Due date", "repeatSetRelativeFieldsWhenCreatingRepeatInstances", true,
                     "set the relative date fields like Alarm/HideUntil/StartBy/Autoexpire** etc to same time before/after due date**");
-    static PrefEntry repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule = new PrefEntry("Reuse existing instances when changing " + RepeatRuleParseObject.REPEAT_RULE, "repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule", true, "When changing a repeat rule, reuse any task instances that already exist, this will keep any edits to such instances");
-    static PrefEntry repeatHidePreviousTasksDetails = new PrefEntry("lll", "repeatHidePreviousTasksDetails", true, "When editing an existing repeat rule, expand the list of existing tasks");
-    static PrefEntry repeatMaxNumberOfRepeatsToGenerate = new PrefEntry("To avoid that too many repeats get generated and overflod the server or the app, 0 disables", "repeatMaxNumberOfRepeatsToGenerate", 20, "more of an internal limitation for now**"); //TODO: what happens if the max is reached? Will the algorithms still work?
+    static PrefEntry repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule 
+            = new PrefEntry("Reuse existing instances when changing " + RepeatRuleParseObject.REPEAT_RULE, "repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule", 
+                    true, "When changing a repeat rule, reuse any task instances that already exist, this will keep any edits to such instances");
+    static PrefEntry repeatHidePreviousTasksDetails 
+            = new PrefEntry("When show previously generated repeat instances, expand to show their details", "repeatHidePreviousTasksDetails", false, "When editing an existing repeat rule, expand the list of existing tasks");
+    static PrefEntry repeatMaxNumberOfRepeatsToGenerate 
+            = new PrefEntry("To avoid that too many repeats get generated and overflod the server or the app, 0 disables", "repeatMaxNumberOfRepeatsToGenerate", 20, 
+                    "more of an internal limitation for now**"); //TODO: what happens if the max is reached? Will the algorithms still work?
 
     //ITEMS IN LIST
     static PrefEntry itemListAlwaysShowHideUntilDate = new PrefEntry("ppp", "itemListAlwaysShowHideUntilDate", true, "**");

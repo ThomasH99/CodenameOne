@@ -119,7 +119,7 @@ public class ScreenInspirationalLists extends MyForm {
         content.add(new Button(MyReplayCommand.create("Get that almost finished project done completely")));  //projects where most tasks are done (high ratio done - not done)
         content.add(new Button(MyReplayCommand.create("Longest duration between creation and start work or complete (procrastinating what type of tasks?)")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(MyReplayCommand.create("On top of the mountain")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(MyReplayCommand.create("Really that urgent?")));  //tasks marked Urgent that are not done after e.g. 7 days
+        content.add(new Button(MyReplayCommand.create("Really that urgent?")));  //tasks marked Urgent that are not done after e.g. 7 days after Due Date
         content.add(new Button(MyReplayCommand.create("Should have been postponed?")));  //tasks marked were marked Import=Low but still done quickly after creation?
         content.add(new Button(MyReplayCommand.create("Maybe start focusing on what's Important?")));  //tasks marked were marked Import=High but still done/started after eg 30 days?
         content.add(new Button(MyReplayCommand.create("What never gets done")));  //Important but not urgent, sorted by ROI

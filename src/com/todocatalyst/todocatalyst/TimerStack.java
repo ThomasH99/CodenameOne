@@ -1535,7 +1535,7 @@ class TimerStack {
         Refresh (either small or big timer, which is already shown) when timer has changed. 
         Show timer for first timer = add smallTimer or show BigTimer. 
          */
-        if (ReplayLog.getInstance().isReplayInProgress() && !ReplayLog.getInstance().isReplayAtLastCommand())
+        if (false && ReplayLog.getInstance().isReplayInProgress() && !ReplayLog.getInstance().isReplayAtLastCommand())
             return; //don't add small Timers to any replayed screens
 
         TimerInstance timerInstance = getInstance().getCurrentTimerInstanceN();
@@ -1544,18 +1544,21 @@ class TimerStack {
         MyForm myCurrentForm = null;
         if (currentForm instanceof MyForm)
             myCurrentForm = (MyForm) currentForm;
-        else
+        else {
+            assert false;
             return;
+        }
         if (timerInstance == null) { //no (or no more) timers, removeSmall or exit from big timer
             if (myCurrentForm instanceof ScreenTimer6) {
-                myCurrentForm.showPreviousScreenOrDefault(true); //exit to previous screen
+                if (false) myCurrentForm.showPreviousScreenOrDefault(true); //exit to previous screen //DON'T exit here, will be done by commands in Big Timer
             } else {
-                myCurrentForm.removeSmallTimerCont(); //remove old smallTimer (if there is one)
-                myCurrentForm.revalidateWithAnimationSafety();
+//                if (myCurrentForm.removeSmallTimerCont()) //remove old smallTimer (if there is one)
+//                    myCurrentForm.revalidateWithAnimationSafety();
+                myCurrentForm.removeSmallTimerCont(); //NO need to revalidate, done in refreshAfterEdit which calls refreshShowTimerUI //remove old smallTimer (if there is one)
             }
         } else { //there is an active timer
             if (myCurrentForm instanceof ScreenTimer6) { //if full screen Timer is active, refresh it
-                myCurrentForm.refreshAfterEdit();
+                if (false) myCurrentForm.refreshAfterEdit();
 //                myCurrentForm.revalidateWithAnimationSafety(); //NOT sufficient, need to rebuild timer screen with commands related to new item
 //            } else if (timerInstance.isFullScreen()) { //if running timer was running in FullScreen, start up in full screen again (on app relaunch)
 //                new ScreenTimer6(myCurrentForm, timerInstance).show();
@@ -1586,7 +1589,9 @@ class TimerStack {
 //                }
 //</editor-fold>
                 myCurrentForm.removeSmallTimerCont(); //remove old smallTimer (if there is one)
-                if (timerInstance.isFullScreen() || !(MyPrefs.timerEnableShowingSmallTimerWindow.getBoolean() && MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean())) {
+                if (//timerInstance.isFullScreen() ||
+                        !(MyPrefs.timerEnableShowingSmallTimerWindow.getBoolean()
+                        && MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean())) {
 //                        new ScreenTimer6(previousForm, timerInstance).show();
                     timerInstance.setFullScreen(true); //set true in case we moved to full screen because of the settings
                     new ScreenTimer6(myCurrentForm, timerInstance).show();
