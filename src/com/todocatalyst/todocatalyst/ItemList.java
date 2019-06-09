@@ -1086,7 +1086,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefEltOrEndOfList) {
 //        int index = indexOf(refElement);
         List listFull = getListFull();
-        int index = refElement == null ? (addAfterRefEltOrEndOfList ? listFull.size() : 0) : listFull.indexOf(refElement);
+        int index = refElement == null ? (addAfterRefEltOrEndOfList ? listFull.size() : 0) : (listFull.indexOf(refElement)+(addAfterRefEltOrEndOfList?1:0));
 //        if (index < 0)
 //            addToList(newElement);
 //        else

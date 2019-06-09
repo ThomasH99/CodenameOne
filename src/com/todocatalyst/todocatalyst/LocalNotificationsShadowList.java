@@ -135,7 +135,7 @@ public class LocalNotificationsShadowList implements Externalizable {
      *
      * @return
      */
-    NotificationShadow getNextFutureAlarm() {
+    NotificationShadow getNextFutureAlarmN() {
 //        long now = System.currentTimeMillis();
 //        for (int i = 0, size = list.size(); i < size; i++) {
 //            if (list.get(i).alarmTime.getTime() > now) {

@@ -593,20 +593,20 @@ public class AlarmHandler {
         return notificationList;
     }
 
-    NotificationShadow getNextFutureAlarm() {
+    NotificationShadow getNextFutureAlarmN() {
 //        return notificationList.getNextFutureAlarm();
         NotificationShadow notif;
         Long now = MyDate.currentTimeMillis();
         //remove expired alarms and add them to expiredAlarms
         if (false) { //now done in processExpiredAlarm()
-            while ((notif = notificationList.getNextFutureAlarm()) != null && notif.alarmTime.getTime() <= now) {
+            while ((notif = notificationList.getNextFutureAlarmN()) != null && notif.alarmTime.getTime() <= now) {
                 notificationList.removeAlarmAndRepeatAlarm(notif.notificationId);
                 expiredAlarms.add(0, new ExpiredAlarm(notif)); //UI: add most recent alarms to start
             }
             notificationList.save();
             expiredAlarmSave();
         } else {
-            notif = notificationList.getNextFutureAlarm();
+            notif = notificationList.getNextFutureAlarmN();
         }
 //        return notificationList.getNextFutureAlarm();
         return notif;

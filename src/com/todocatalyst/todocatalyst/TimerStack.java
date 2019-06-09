@@ -2631,9 +2631,11 @@ class TimerStack {
             contentPane.add(MyBorderLayout.center(estimateTable));
 
             MyForm.initField(Item.PARSE_COMMENT, comment,
-                    () -> timedItem.getComment(), (t) -> timedItem.setComment((String) t),
+                    () -> timedItem.getComment(), 
+                    (t) -> timedItem.setComment((String) t),
                     //                    () -> comment.getText(), (t) -> comment.setText((String) t), null, parseIdMap2
-                    () -> comment.getText(), (t) -> comment.setText((String) t), null, null //parseIdMap2=null, since everything is saved to ParseServer on edit, so no point in saving on exit as well
+                    () -> comment.getText(), 
+                    (t) -> comment.setText((String) t), null, null, null, null, null //parseIdMap2=null, since everything is saved to ParseServer on edit, so no point in saving on exit as well
             );
             Container commentContainer = ScreenItem2.makeCommentContainer(comment);
             contentPane.add(MyBorderLayout.center(commentContainer)); //TODO add full screen edit for Notes

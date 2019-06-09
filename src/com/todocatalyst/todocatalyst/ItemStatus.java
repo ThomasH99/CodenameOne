@@ -25,7 +25,8 @@ public enum ItemStatus {
      * or input happens)
      */
     WAITING("Waiting", "Task is on hold and waiting for something"),
-    DONE("Done", "Task is completed, no more work"),
+//    DONE("Done", "Task is completed, no more work"),
+    DONE("Completed", "Task is completed, no more work"),
     CANCELLED("Cancelled", "Task has been cancelled (similar to deleted, but is kept to maintain history)");
     
 //String[] descriptionList = new String[]{CREATED.description, ONGOING.getDescription(), WAITING.getDescription(), DONE.getDescription(), CANCELLED.getDescription()};

@@ -237,26 +237,32 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         }
 
         //Full screen edit of the new task:
+        //                                new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
         contForTextEntry.add(MyBorderLayout.EAST,
-                new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
-                    Item newItem = createNewTask(true);
+                new Button(
+                        Command.createMaterial(null, Icons.iconEdit, (ev) -> {
+//                new Button(MyReplayCommand.create("CreateNewItemInline-" + item.getObjectIdP(), "", Icons.iconEdit, (ev) -> {
+//                new Button(MyReplayCommand.create("CreateNewItemInline", "", Icons.iconEdit, (ev) -> { //CANNOT use getObjectId since item is not saved yet (but also not needed to refer new item since all entered date will be stored locally)
+                            Item newItem = createNewTask(true);
 //                    Item newItem = newTaskTemp != null ? newTaskTemp : new Item();
-                    lastCreatedItem = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)
-                    //TODO!!!! create even if no text was entered into field
-                    MyForm myForm = (MyForm) getComponentForm();
-                    myForm.setKeepPos(new KeepInSameScreenPosition(refItem, this)); //if Cancel, keep the current item in place 
+                            lastCreatedItem = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)
+                            //TODO!!!! create even if no text was entered into field
+                            MyForm myForm = (MyForm) getComponentForm();
+                            myForm.setKeepPos(new KeepInSameScreenPosition(refItem, this)); //if Cancel, keep the current item in place 
+                            insertNewTaskAndSaveChanges(newItem); //need to insert task before editing in ScreenItem2 since a repeatRule may be added which needs to know where to add repeat instances!
+                            //TODO!!!! How to support that Cancel in ScreenItem2 will delete/remove the just inserted new task??!!
 //                        new ScreenItem(lastCreatedItem, (MyForm) getComponentForm(), () -> {
-                    new ScreenItem2(newItem, myForm, () -> {
-                        //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
+                            new ScreenItem2(newItem, myForm, () -> {
+                                //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
 //                            DAO.getInstance().save(newTask);
-                        insertNewTaskAndSaveChanges(newItem);
+                                if (false) insertNewTaskAndSaveChanges(newItem);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        if (false && myForm.getEditFieldOnShowOrRefresh() == textEntryField2) {
 //                            myForm.setEditOnShowOrRefresh(null); //reset the previous editField
 //                        }
 //                        myForm.setKeepPos(new KeepInSameScreenPosition(newItem));
 //</editor-fold>
-                        lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
+                                lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        Container parent = getParent();
 //                        parent.removeComponent(InlineInsertNewItemContainer2.this);
@@ -269,18 +275,17 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //                                    ScreenListOfItems.buildItemContainer(myFormXXX, newItem, itemOrItemListForNewTasks, null), null, null, 300); //
 //                        }
 //</editor-fold>
-                        myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this, -1)); //if editing the new task in separate screen, 
-                        myForm.refreshAfterEdit();  //OK? NOT good, refreshAfterEdit will remove the new 
-                    }).show();
-                }
-                )));
+                                myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this, -1)); //if editing the new task in separate screen, 
+                                myForm.refreshAfterEdit();  //OK? NOT good, refreshAfterEdit will remove the new 
+                            }).show();
+                        })));
     }
 
     /**
      *
      * @return new task if created (meaning some text was entered), otherwise null
      */
-    private Item createNewTask(boolean createEvenIfNoTextInField) {
+    public Item createNewTask(boolean createEvenIfNoTextInField) {
         String taskText = textEntryField2.getText();
 //        Item newItem;
 //        if (createEvenIfNoTextInField || (taskText != null && taskText.length() > 0)) {
@@ -288,7 +293,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
             textEntryField2.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             Item newItem = new Item(taskText, true); //true: interpret textual values
 //            if (itemOrItemListForNewElements instanceof Item)
-                newItem.updateValuesInheritedFromOwner(itemOrItemListForNewElements);
+            newItem.updateValuesInheritedFromOwner(itemOrItemListForNewElements);
             if (category2 != null) {
                 newItem.addCategoryToItem(category2, false); //we don't add item to category here (done in xx) since we may still cancel
             }
@@ -296,7 +301,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
             ASSERT.that(itemOrItemListForNewElements != null, "InlineInsert: no owner list defined!");
             newItem.setOwner(itemOrItemListForNewElements); //must set owner here to display correctly if going to full screen edit of item (and if there is a repeatRule)
 //            }
-            if ((refItem != null && refItem.isTemplate())||itemOrItemListForNewElements==TemplateList.getInstance()) {
+            if ((refItem != null && refItem.isTemplate()) || itemOrItemListForNewElements == TemplateList.getInstance()) {
                 newItem.setTemplate(true);
             }
             return newItem;

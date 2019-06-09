@@ -57,6 +57,23 @@ public enum Challenge {
     static int[] getDescriptionValues() {
         return new int[]{VERY_EASY.ordinal(), EASY.ordinal(), AVERAGE.ordinal(), HARD.ordinal(), VERY_HARD.ordinal()};
     }
+    
+        char getIcon() {
+        switch (this) {
+            case VERY_EASY:
+                return Icons.iconChallengeVeryEasy;
+            case EASY:
+                return Icons.iconChallengeEasy;
+            case AVERAGE:
+                return Icons.iconChallengeAverage;
+            case HARD:
+                return Icons.iconChallengeHard;
+            case VERY_HARD:
+                return Icons.iconChallengeVeryHard;
+        }
+        return '?';
+    }
+
 
     /**
      * returns the enum corresponding to the description string

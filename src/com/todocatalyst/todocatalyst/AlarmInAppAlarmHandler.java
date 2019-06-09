@@ -63,7 +63,7 @@ public class AlarmInAppAlarmHandler {
 //        NotificationShadow notif = notificationList.getFirstAlarmNotification();
 //NotificationShadow notif=null;
 //        NotificationShadow notif = notificationList.getNextFutureAlarm(); //get (but don't remove) next notif
-        NotificationShadow notif = AlarmHandler.getInstance().getNextFutureAlarm(); //get (but don't remove) next notif
+        NotificationShadow notif = AlarmHandler.getInstance().getNextFutureAlarmN(); //get (but don't remove) next notif
 //        if (notificationList.getNextFutureAlarm() == notif) {
 //            return;
 //        }

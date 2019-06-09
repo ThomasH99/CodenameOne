@@ -1136,19 +1136,19 @@ public class ScreenRepair extends MyForm {
                 }
                 ));
 
-        content.add(
-                new Button(new Command("Edit RepeatRule", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt
-                    ) {
-                        RepeatRuleParseObject repeatRule = new RepeatRuleParseObject();
-                        repeatRule.setSpecifiedStartDate(new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 48).getTime());
-                        new ScreenRepeatRule("test", repeatRule, new Item("taskX", 15, new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 24)), 
-                                (MyForm) content.getComponentForm(), () -> {
-                        }, true, null, false).show();
-                    }
-                }
-                ));
+//        content.add(
+//                new Button(new Command("Edit RepeatRule", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
+//                    @Override
+//                    public void actionPerformed(ActionEvent evt
+//                    ) {
+//                        RepeatRuleParseObject repeatRule = new RepeatRuleParseObject();
+//                        repeatRule.setSpecifiedStartDate(new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 48).getTime());
+//                        new ScreenRepeatRule("test", repeatRule, new Item("taskX", 15, new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 24)), 
+//                                (MyForm) content.getComponentForm(), () -> {
+//                        }, true, null, null, false).show();
+//                    }
+//                }
+//                ));
 
 //        Button doubleOwnerButton = new Button(new Command("Showtasks belonging to more than one list") {
 //            @Override

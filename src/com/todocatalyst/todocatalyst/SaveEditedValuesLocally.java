@@ -102,7 +102,8 @@ public class SaveEditedValuesLocally {//extends HashMap {
         Integer scrollY = (Integer) previousValues.get(SCROLL_VALUE_KEY);
         if (scrollY != null) {
 //            ContainerScrollY scrollableComp = this.myForm.findScrollableContYChild(myForm.getContentPane());
-            scrollableComp.setScrollYPublic(scrollY);
+            if (scrollableComp!=null) //not sure why it can bcome null but it has happened
+                scrollableComp.setScrollYPublic(scrollY);
             previousValues.remove(SCROLL_VALUE_KEY); //we only scroll to this value once, on first show of screen after 
             if (Config.TEST) Log.p("Scroll to Y=" + scrollY);
         }

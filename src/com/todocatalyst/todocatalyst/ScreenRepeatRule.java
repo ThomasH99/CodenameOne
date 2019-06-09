@@ -51,7 +51,8 @@ public class ScreenRepeatRule extends MyForm {
     private MyDatePicker repeatEndDateEditButton;
 //    MyDate endDate;
     private Date endDate;
-    private Date startDate;
+    private Date defaultStartDate;
+    private GetVal makeStartDate;
     /**
      * holds the item that is currently being edited (from which the edited
      * repeatRule comes). Passed in display()
@@ -143,8 +144,21 @@ public class ScreenRepeatRule extends MyForm {
 //        this(title, repeatRule, null, repeatRuleOriginator, previousForm, doneAction, allowEditingStartDate, defaultStartDate, isForWorkSlot);
 //    }
 //    public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleParseObject repeatRuleEdited,
+    /**
+    
+    @param title
+    @param repeatRule
+    @param repeatRuleOriginator
+    @param previousForm
+    @param doneAction
+    @param allowEditingStartDate
+    @param defaultStartDate default starting date (copy of item's due date)
+    @param makeStartDate function to make a new starting date in case it is needed and none was provided by defaultStartDate
+    @param isForWorkSlot 
+     */
     public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm,
-            UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate, boolean isForWorkSlot) {
+            //            UpdateField doneAction, boolean allowEditingStartDate,  GetVal makeStartDate, boolean isForWorkSlot) {
+            UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate, GetVal makeStartDate, boolean isForWorkSlot) {
 //        super(title, repeatRule);
         super(title, previousForm, doneAction);
         setUniqueFormId("ScreenEditRepeatRule");
@@ -154,18 +168,26 @@ public class ScreenRepeatRule extends MyForm {
         this.allowEditingStartDate = allowEditingStartDate;
 //        this.myRepeatRule = (RepeatRuleParseObject) value;
         this.repeatRuleEdited = repeatRule;
+        if (repeatRuleEdited == null)
+            this.repeatRuleEdited = new RepeatRuleParseObject();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        this.repeatRuleEdited = this.repeatRuleEdited; //the editable/edited copy of the repeatRule, used to edit only the end-user edtaible fields
-        if (false)
-            if (repeatRuleEdited == null)
-                this.repeatRuleEdited = repeatRule; //the editable/edited copy of the repeatRule, used to edit only the end-user edtaible fields
-            else
-                this.repeatRuleEdited = repeatRuleEdited; //the editable/edited copy of the repeatRule, used to edit only the end-user edtaible fields
-        if (repeatRuleEdited != null && (this.startDate = repeatRuleEdited.getSpecifiedStartDateD()).getTime() == 0) {
-            this.startDate = defaultStartDate; //only use defaultStartDate if rule doesn't have one already
-//            this.startDate = myRepeatRule.getSpecifiedStartDateD(); //use rule's existing startDate if it has one
-//        } else {
-//            this.startDate = defaultStartDate; //only use startDate if rule doesn't have one already
-        }
+//        if (false) {
+//            if (repeatRuleEdited == null)
+//                this.repeatRuleEdited = repeatRule; //the editable/edited copy of the repeatRule, used to edit only the end-user edtaible fields
+//            else
+//                this.repeatRuleEdited = repeatRuleEdited; //the editable/edited copy of the repeatRule, used to edit only the end-user edtaible fields
+//        }
+//        if (repeatRuleEdited != null && (this.startDate = repeatRuleEdited.getSpecifiedStartDateD()).getTime() == 0 && defaultStartDate!=null) {
+//            this.startDate = (Date)defaultStartDate.getVal(); //only use defaultStartDate if rule doesn't have one already
+////            this.startDate = myRepeatRule.getSpecifiedStartDateD(); //use rule's existing startDate if it has one
+////        } else {
+////            this.startDate = defaultStartDate; //only use startDate if rule doesn't have one already
+//        }
+//        this.defaultStartDate = defaultStartDate == null ? new Date(0) : new Date(defaultStartDate.getTime()); //only use defaultStartDate if rule doesn't have one already
+//</editor-fold>
+        this.defaultStartDate = defaultStartDate; //only use defaultStartDate if rule doesn't have one already
+        this.makeStartDate = makeStartDate; //only use defaultStartDate if rule doesn't have one already
         this.isForWorkSlot = isForWorkSlot;
 //        this.repeatStartDatePicker = startDatePicker;
 //        mySetup();
@@ -293,9 +315,9 @@ public class ScreenRepeatRule extends MyForm {
         }));
 
         if (Config.TEST)
-        toolbar.addCommandToOverflowMenu("Run tests", null, (e) -> {
-            RepeatRuleParseObject.testRepeatRules();
-        });
+            toolbar.addCommandToOverflowMenu("Run tests", null, (e) -> {
+                RepeatRuleParseObject.testRepeatRules();
+            });
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleSettings", "Settings", Icons.iconSettingsLabelStyle, (e) -> {
             new ScreenSettingsRepeatRules(ScreenRepeatRule.this, () -> {
@@ -407,15 +429,28 @@ public class ScreenRepeatRule extends MyForm {
 //                    updateFields(); //refresh the layout based on changes in choice
                     fieldsShow();
                 }
+//                if (oldSel != newSel && newSel == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE && repeatStartDatePicker != null && repeatStartDatePicker.getDate().getTime() == 0) {
+//                    Dialog.show("INFO", "Please set the " + Item.DUE_DATE, "OK", null);
+//                    repeatStartDatePicker.setHidden(false);
+//                    animateHierarchy(300);
+//                }
             }
         };
-        repeatFrom_NoneCompletedDue_Field.addSelectionListener(refreshSelectionListener);
-        repeatFrom_NoneCompletedDue_Field.addSelectionListener((oldSel, newSel) -> {
-            if (oldSel != newSel && newSel == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE && repeatStartDatePicker != null && repeatStartDatePicker.getDate().getTime() == 0) {
-                Dialog.show("INFO", "Please set the " + Item.DUE_DATE, "OK", null);
-            }
 
-        });
+//        repeatStartDatePicker = new MyDateAndTimePicker(startDate, null); //"<no Start date**>"
+//        repeatStartDatePicker = new MyDateAndTimePicker((Date) makeStartDate.getVal()); //"<no Start date**>"
+//        repeatStartDatePicker = new MyDateAndTimePicker(makeStartDate); //makeStartDate: NOT good: will only set default value once pressed
+//        repeatStartDatePicker = new MyDateAndTimePicker(repeatRuleEdited.getSpecifiedStartDateD().getTime() != 0 ? repeatRuleEdited.getSpecifiedStartDateD() : defaultStartDate); // "<no Start date**>"
+        repeatStartDatePicker = new MyDateAndTimePicker(repeatRuleEdited.getSpecifiedStartDateD()); // "<no Start date**>"
+        if (Config.TEST) repeatStartDatePicker.setName("repeatStartDatePicker");
+        repeatFrom_NoneCompletedDue_Field.addSelectionListener(refreshSelectionListener);
+//        repeatFrom_NoneCompletedDue_Field.addSelectionListener((oldSel, newSel) -> {
+//            if (oldSel != newSel && newSel == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE && repeatStartDatePicker != null && repeatStartDatePicker.getDate().getTime() == 0) {
+//                Dialog.show("INFO", "Please set the " + Item.DUE_DATE, "OK", null);
+//                repeatStartDatePicker.setHidden(false);
+//                animateHierarchy(300);
+//            }
+//        });
 //        repeatFromDueOrCompletedFieldContainer = createLabelAndFieldContainer("Repeat from", repeatFromDueOrCompletedField);
         repeatFromDueOrCompletedFieldContainer = BoxLayout.encloseY(new Label("Repeat"), repeatFrom_NoneCompletedDue_Field);
 
@@ -426,8 +461,7 @@ public class ScreenRepeatRule extends MyForm {
 //            repeatStartDatePicker = new MyDateAndTimePicker("<hide task until>", parseIdMap2, () -> repeatRuleOwner.getRepeatStartTime(false), (d) -> repeatRuleOwner.setRepeatStartTime(d)); //OK
 //            repeatStartDatePicker = new MyDateAndTimePicker(repeatRuleOwner.getRepeatStartTime(false), "<hide task until>"); //OK
 //if (startDate.getTime()!=null)
-        repeatStartDatePicker = new MyDateAndTimePicker(startDate, null); //"<no Start date**>"
-        ASSERT.that(repeatStartDatePicker.getDate().getTime() == startDate.getTime(), "Picker changes date, org=" + startDate + ", picker=" + repeatStartDatePicker.getDate());
+//        ASSERT.that(repeatStartDatePicker.getDate().getTime() == startDate.getTime(), "Picker changes date, org=" + startDate + ", picker=" + repeatStartDatePicker.getDate());
         if (false && isForWorkSlot) {
             repeatStartDatePicker.setHidden(true);
         }
@@ -569,10 +603,14 @@ public class ScreenRepeatRule extends MyForm {
 //                : new MyDate(MyDate.getNowDateOnly() + MyDate.DAY_IN_MILLISECONDS * Settings.getInstance().getDefaultRepeatFromSpecifiedDateDaysAhead()));
 //        endDate = new Date(myRepeatRule.getEndDate() != Long.MAX_VALUE ?
 //</editor-fold>
-        endDate = new Date(repeatRuleEdited.getEndDate() != MyDate.MAX_DATE
-                ? repeatRuleEdited.getEndDate()
+        endDate = repeatRuleEdited.getEndDate() != MyDate.MAX_DATE
+                ? repeatRuleEdited.getEndDateD()
                 //                : System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * Settings.getInstance().getDefaultRepeatFromSpecifiedDateDaysAhead());
-                : startDate.getTime());
+                : (repeatStartDatePicker.getDate().getTime() != 0
+                ? repeatStartDatePicker.getDate()
+                : (makeStartDate != null
+                        ? ((Date) makeStartDate.getVal())
+                        : (new Date(MyDate.currentTimeMillis()))));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        repeatEndDateEditButton = new EditButton(null, new MyCommand("") {
 //            public String getCommandName() {
@@ -591,6 +629,7 @@ public class ScreenRepeatRule extends MyForm {
 //</editor-fold>
 //        repeatEndDateEditButton = new MyDatePicker("<last date>", parseIdMap2, () -> endDate, (d) -> {myRepeatRule.setEndDate(d.getTime() == 0 ? RepeatRuleParseObject.MAX_DATE : d.getTime());
         repeatEndDateEditButton = new MyDatePicker(endDate, "<last date>", true);
+//        repeatEndDateEditButton = new MyDatePicker(makeStartDate);
 //        }); //OK
 
 //        repeatHowManyTimesField = new ComboBoxOffset(new ListModelInfinite(1, Settings.getInstance().getMaxRepeatCount(), "", "counts**"/*times"*/, 1, false, false));
@@ -607,12 +646,13 @@ public class ScreenRepeatRule extends MyForm {
         showHowMany_InstancesDaysAhead_Combo.addSelectionListener(refreshSelectionListener);
 //            showHowManyContainer = createLabelAndFieldContainer("Show how many", showHowManyCombo);
 //        showHowManyContainer = createLabelAndFieldContainer("Create how many future repeats", showHowManyCombo);
-        showHowManyContainer = BoxLayout.encloseY(new Label("Create how many simultaneous repeats"), showHowMany_InstancesDaysAhead_Combo);
+        showHowManyContainer = BoxLayout.encloseY(new Label("Create several repeats"), showHowMany_InstancesDaysAhead_Combo); //"Create how many simultaneous repeats"
 
 //        showNumberFutureRepeats = new ComboBoxOffset(new ListModelInfinite(1, Settings.getInstance().getMaxFutureRepeatInstances(), "", "", 1, false, false));
 //        showNumberFutureRepeats.setSelectedValue(myRepeatRule.useNumberFutureRepeatsToGenerateAhead() ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() : 1); //use 1 as defaiæt vaæie (if NumberFutureRepeatsGeneratedAhead is not defined)
         showNumberFutureRepeats = new MyIntPicker(repeatRuleEdited.useNumberFutureRepeatsToGenerateAhead()
-                ? repeatRuleEdited.getNumberFutureRepeatsToGenerateAhead() + 1 : 1, 1, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead.getInt()); //+1: adjust rel. to UI which now says "simultaneous instances"
+                //                ? repeatRuleEdited.getNumberSimultaneousRepeats() + 1 : 1, 1, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead.getInt()); //+1: adjust rel. to UI which now says "simultaneous instances"
+                ? repeatRuleEdited.getNumberSimultaneousRepeats() : 1, 1, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead.getInt()); //+1: adjust rel. to UI which now says "simultaneous instances"
 
 //        showNumberDaysAhead = new ComboBoxOffset(new ListModelInfinite(1, Settings.getInstance().getMaxFutureRepeatInstances(), "", "", 1, false, false));
 //        showNumberDaysAhead.setSelectedValue(myRepeatRule.useNumberFutureRepeatsToGenerateAhead() ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() : 1); //use 1 as defaiæt vaæie (if NumberFutureRepeatsGeneratedAhead is not defined)
@@ -827,7 +867,21 @@ public class ScreenRepeatRule extends MyForm {
         } else {
             frequency_DailyWeekMonthYearly_Field.setHidden(false);
             intervalField_1_NN_TextField.setHidden(false);
-            repeatStartDatePicker.setHidden(repeatFrom_NoneCompletedDue_Field.getSelectedValue() != RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE || isForWorkSlot); //"due date
+            boolean hideRepeatStartDatePicker = repeatFrom_NoneCompletedDue_Field.getSelectedValue() != RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE || isForWorkSlot;
+//            repeatStartDatePicker.setHidden(repeatFrom_NoneCompletedDue_Field.getSelectedValue() != RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE || isForWorkSlot); //"due date
+            repeatStartDatePicker.setHidden(hideRepeatStartDatePicker); //"due date
+            if (!hideRepeatStartDatePicker && repeatStartDatePicker.getDate().getTime() == 0) {
+                if (defaultStartDate == null || defaultStartDate.getTime() == 0)
+                    Dialog.show("INFO", "No Due date set for task, please set here.", "OK", null); //" + Item.DUE_DATE+"
+//                if (makeStartDate != null && ((Date) makeStartDate.getVal()).getTime() != 0)
+                if (defaultStartDate != null && defaultStartDate.getTime() != 0)
+                    repeatStartDatePicker.setDate(new Date(defaultStartDate.getTime())); //make copy to avoid reusing eg same value as edited in Picker in ScreenItem2
+                else if (makeStartDate != null)
+                    repeatStartDatePicker.setDate(((Date) makeStartDate.getVal()));
+                else
+                    repeatStartDatePicker.setDate(new Date(MyDate.currentTimeMillis()));
+                repeatStartDatePicker.setHidden(false);
+            }
             showDatesButton.setHidden(repeatFrom_NoneCompletedDue_Field.getSelectedValue() != RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE); //only show for repeat from Due
 //            repeatStartDatePicker.setHidden(isForWorkSlot);
 
@@ -989,7 +1043,8 @@ public class ScreenRepeatRule extends MyForm {
 //                        Log.p("setNumberFutureRepeatsGeneratedAhead(" + showNumberFutureRepeats.getSelectedValue() + ")");
 //                        myRepeatRule.setNumberFutureRepeatsToGenerateAhead(showNumberFutureRepeats.getSelectedValue());
                     Log.p("setNumberFutureRepeatsGeneratedAhead(" + showNumberFutureRepeats.getValueInt() + ")");
-                    myRepeatRule.setNumberFutureRepeatsToGenerateAhead(showNumberFutureRepeats.getValueInt() - 1);
+//                    myRepeatRule.setNumberSimultaneousRepeatsToGenerateAhead(showNumberFutureRepeats.getValueInt() - 1);
+                    myRepeatRule.setNumberSimultaneousRepeats(showNumberFutureRepeats.getValueInt());
                     myRepeatRule.setNumberOfDaysRepeatsAreGeneratedAhead(0);
                 } else if (showHowMany_InstancesDaysAhead_Combo.getSelectedValue() == SHOW_HOW_MANY_AHEAD_DAYS_AHEAD) { //{"coming tasks", "days ahead"}
                     // SHOW_HOW_MANY_AHEAD_DAYS_AHEAD
@@ -998,7 +1053,7 @@ public class ScreenRepeatRule extends MyForm {
 //                            Log.p("setNumberOfDaysRepeatsAreGeneratedAhead(" + daysAheadField.getValue() + ")");
 //                            myRepeatRule.setNumberOfDaysRepeatsAreGeneratedAhead(daysAheadField.getValue());
                     myRepeatRule.setNumberOfDaysRepeatsAreGeneratedAhead(showNumberDaysAhead.getValueInt());
-                    myRepeatRule.setNumberFutureRepeatsToGenerateAhead(0);
+                    myRepeatRule.setNumberSimultaneousRepeats(0);
                 } else { // SHOW_HOW_MANY_AHEAD_DAYS_AHEAD
                     ASSERT.that("error");
                 }

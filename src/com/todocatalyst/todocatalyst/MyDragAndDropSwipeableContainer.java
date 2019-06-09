@@ -173,7 +173,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            }
 //        }
 //</editor-fold>
-        if (oldOwner == newOwner && oldOwner != null) {
+        if (oldOwner == newOwner) {// && oldOwner != null) { //NB oldOwner may be null but only in error cases, so don't test on null, better to get an error
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (newPos > oldOwner.getItemIndex(itemOrItemList)) {
 //                oldOwner.removeFromList(itemOrItemList);
@@ -1772,7 +1772,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 return; //changed the dropContainer, no need to do anything more
             }
         });
-        
+
         //NB!!! dragOverListener is called on the **DRAGGED** object (not the dropTarget as I originally assumed)
         addDragOverListener((e) -> {
 //            Component drag = e.getDraggedComponent();
@@ -3195,7 +3195,8 @@ before getting to here, we've already covered the following cases where both bef
                                     }
                                 }
 //                                if (siblingOwner != ownerOfBeforeElement) {//if top-level is the same as the sibling's owner, don't allow dropping as super-task
-                                if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT17 +NOR+SUB+SUP" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
+                                if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT17 +NOR+SUB+SUP" + " \"" + draggedElement.getText() + "\" after sibling \""
+                                            + (siblingContainer != null && siblingContainer.getDragAndDropObject() != null ? siblingContainer.getDragAndDropObject().getText() : "") + "\""
                                             + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
                                             + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
                             } else if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT18 +NOR+SUB-sup" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
@@ -4609,24 +4610,29 @@ before getting to here, we've already covered the following cases where both bef
 //            animate = true;
 //        }
 //</editor-fold>
-        Form f = null;
+//        Form f = null;
+        Container compToAnimate = null;
         //if there is still a dropPlaceholder inserted, remove it
         if (dropPlaceholder != null) {
-            f = dropPlaceholder.getComponentForm();
-            if (Config.TEST_DRAG_AND_DROP)
-                //                if (dropPlaceholder.getParent() != null) {//remove the old placeholder ( not done in successful drop)
-                //                    Log.p("MyDragAndD.dragFinished: removing dropPlaceholder=" + dropPlaceholder.getName() + " from parent=" + dropPlaceholder.getParent().getName());
-                //                    dropPlaceholder.getParent().removeComponent(dropPlaceholder); //remove the old placeholder ( not done in successful drop)
-                //                } else {
-                //                    Log.p("***MyDragAndD.dragFinished: no parent() for dropPlaceholder=" + dropPlaceholder.getName());
-                //                }
-                dropPlaceholder.remove(); //remove the old placeholder ( not done in successful drop)
+//            f = dropPlaceholder.getComponentForm();
+            compToAnimate = dropPlaceholder.getParent(); //TODO: rather find ScrollY container to animate?!
+//            if (Config.TEST_DRAG_AND_DROP)
+            //                if (dropPlaceholder.getParent() != null) {//remove the old placeholder ( not done in successful drop)
+            //                    Log.p("MyDragAndD.dragFinished: removing dropPlaceholder=" + dropPlaceholder.getName() + " from parent=" + dropPlaceholder.getParent().getName());
+            //                    dropPlaceholder.getParent().removeComponent(dropPlaceholder); //remove the old placeholder ( not done in successful drop)
+            //                } else {
+            //                    Log.p("***MyDragAndD.dragFinished: no parent() for dropPlaceholder=" + dropPlaceholder.getName());
+            //                }
+            dropPlaceholder.remove(); //remove the old placeholder ( not done in successful drop)
             dropPlaceholder = null;
 //            animate = true;
         }
         //always removeFromCache (eg if dropped outside a droptarget)
-        if (f != null) {
-            f.animateHierarchy(300); //refresh after hiding dropPlaceholder
+//        if (f != null) {
+//            f.animateHierarchy(300); //refresh after hiding dropPlaceholder
+//        }
+        if (compToAnimate != null) {
+            compToAnimate.animateHierarchy(300); //refresh after hiding dropPlaceholder
         }
 
 //        if (!dropSucceeded) {

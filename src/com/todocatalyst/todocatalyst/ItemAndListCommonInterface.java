@@ -118,6 +118,20 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        setWorkSlotList(workSlotList);
             addWorkSlots(Arrays.asList(workSlot));
     }
+    
+    /**
+    remove the workSlot from its owner, and set the workSlot's owner=null
+    @param workSlot 
+    */
+    default public void removeWorkSlot(WorkSlot workSlot) {
+        WorkSlotList workSlotList = getWorkSlotListN();
+        if (workSlotList != null) {
+            workSlotList.remove(workSlot); 
+            workSlot.setOwner(null);
+            setWorkSlotList(workSlotList);
+        }
+    }
+
 
     public int getNumberOfUndoneItems(boolean includeSubTasks);
 
@@ -359,6 +373,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * element, sets the list, sets Owner for subItemOrList to null)
      *
      * @param subItemOrList
+     * @param removeReferences
      * @return
      */
     public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeReferences);
@@ -368,9 +383,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-     * remove this from its owner and set this.owner=null;
+     * remove this from its owner and set this.owner=null; returns owner (eg so it can be saved)
+     * @return 
      */
-    default public void removeFromOwner() {
+    default public ItemAndListCommonInterface removeFromOwner() {
         ItemAndListCommonInterface owner = getOwner();
 //        if (owner != null) {
 //            List ownerList = getOwner().getListFull();
@@ -381,7 +397,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         if (owner != null) {
             owner.removeFromList(this);
             setOwner(null);
+            return owner;
         }
+        return null;
     }
 
     /**

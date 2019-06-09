@@ -486,9 +486,9 @@ public class MyForm extends Form {
     @Override
     public void revalidate() {
         super.revalidate();
-        Log.p("REVALIDATE for form="+getUniqueFormId());
+        Log.p("REVALIDATE for form=" + getUniqueFormId());
     }
-    
+
     /**
     returns the container in which to add the smallTimer, can be overridden to place the smallTimer in other places than the default South container. 
     @return 
@@ -1655,12 +1655,13 @@ public class MyForm extends Form {
 //        return cmd;
 //    }
 //</editor-fold>
+
     public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit) {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, callRefreshAfterEdit,getCheckIfSaveOnExit());
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, callRefreshAfterEdit, getCheckIfSaveOnExit());
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand() {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, true,getCheckIfSaveOnExit()); //false); //default false since otherwise edited values will be lost
+        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, true, getCheckIfSaveOnExit()); //false); //default false since otherwise edited values will be lost
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand(CheckDataIsComplete getCheckOnExit) {
@@ -2013,9 +2014,61 @@ public class MyForm extends Form {
         }
     }
 
+    interface CreateItem {
+
+        Item createNewTask(boolean xxx);
+    }
+
+    interface SetItem {
+
+        Item setLastCreatedItem(Item lastCreatedItem);
+    }
+
+//    protected static Command makeCreateInlineCmd(Item item, Item refItem, CreateItem createNewTask, SetItem lastCreatedItem, SaveEditedValuesLocally previousValues) {
+//        return MyReplayCommand.create("CreateNewItemInline-" + item.getObjectIdP(), "", Icons.iconEdit, (ev) -> {
+//
+//            Item newItem = (Item) previousValues.get("CreateInlineNewItem", InlineInsertNewItemContainer2.createNewTask(true));
+////                    Item newItem = newTaskTemp != null ? newTaskTemp : new Item();
+////                    lastCreatedItem = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)
+//            lastCreatedItem.setLastCreatedItem(null); //reset value (in case ScreenItem does a Cancel meaning no more inserts)
+//            //TODO!!!! create even if no text was entered into field
+////                    MyForm myForm = (MyForm) getComponentForm();
+//            MyForm myForm = (MyForm) Display.getInstance().getCurrent();
+//            myForm.setKeepPos(new KeepInSameScreenPosition(refItem, this)); //if Cancel, keep the current item in place 
+////                        new ScreenItem(lastCreatedItem, (MyForm) getComponentForm(), () -> {
+//            new ScreenItem2(newItem, myForm, () -> {
+//                //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
+////                            DAO.getInstance().save(newTask);
+//                insertNewTaskAndSaveChanges(newItem);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                        if (false && myForm.getEditFieldOnShowOrRefresh() == textEntryField2) {
+////                            myForm.setEditOnShowOrRefresh(null); //reset the previous editField
+////                        }
+////                        myForm.setKeepPos(new KeepInSameScreenPosition(newItem));
+////</editor-fold>
+////                        lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
+//                lastCreatedItem.setLastCreatedItem(continueAddingNewItems ? newItem : null); //ensures that MyTree2 will create a new insertContainer after newTask
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                        Container parent = getParent();
+////                        parent.removeComponent(InlineInsertNewItemContainer2.this);
+////replace the insert container with the created item, NOT GOOD approach since refrehsAfterEdit will rebuild, and not needed??!!
+////                        if (false) {
+//////                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
+////                            Container parent = getParent();
+////                            parent.replace(InlineInsertNewItemContainer2.this,
+////                                    //                                ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
+////                                    ScreenListOfItems.buildItemContainer(myFormXXX, newItem, itemOrItemListForNewTasks, null), null, null, 300); //
+////                        }
+////</editor-fold>
+//                myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this, -1)); //if editing the new task in separate screen, 
+//                myForm.refreshAfterEdit();  //OK? NOT good, refreshAfterEdit will remove the new 
+//            }).show();
+//        });
+//    }
 //    protected static Component layout(String fieldLabelTxt, Component field) {
 //        return layout(fieldLabelTxt, field, null);
 //    }
+
     protected static Component layoutXXX(String fieldLabelTxt, Component field, boolean checkForTooLargeWidth) {
         return layoutOLD(fieldLabelTxt, field, null, null, checkForTooLargeWidth, false, true);
     }
@@ -2819,10 +2872,16 @@ public class MyForm extends Form {
         initField(identifier, field, getVal, putVal, getField, putField, null, null, isInherited, previousValues, parseIdMap2);
     }
 
-    void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, Object undefinedValue, Object defaultValue) {
+    void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, Object undefinedValue, GetVal defaultValue) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
         initField(identifier, field, getVal, putVal, getField, putField, undefinedValue, defaultValue, null, previousValues, parseIdMap2);
+    }
+
+    void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited, Object undefinedValue, GetVal defaultValue) {
+//        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
+//        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
+        initField(identifier, field, getVal, putVal, getField, putField, undefinedValue, defaultValue, isInherited, previousValues, parseIdMap2);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2894,7 +2953,7 @@ public class MyForm extends Form {
 //        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, isInherited, previousValues, parseIdMap2);
 //    }
 //</editor-fold>
-    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField, Object undefinedValue, Object defaultValue,
+    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField, Object undefinedValue, GetVal getDefaultValue,
             GetBool isInherited, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //         initField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
@@ -2912,8 +2971,8 @@ public class MyForm extends Form {
                 putField.setVal(previousValues.get(fieldIdentifier)); //use a previously edited value
 //            } else if (isInherited != null && isInherited.getVal()) {
                 //handle inheritance when appropriate
-            } else if (MyUtil.eql(getOrg.getVal(), undefinedValue)) { //if org value==undefinedValue, then set field with default value
-                putField.setVal(defaultValue); //set editable field (will be stored in previousValues *if* it is modified later on
+            } else if (undefinedValue != null && MyUtil.eql(getOrg.getVal(), undefinedValue)) { //if org value==undefinedValue, then set field with default value
+                putField.setVal(getDefaultValue.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
             } else {
 //                effortEstimate.setDurationInMillis(item.getEffortEstimate());
                 putField.setVal(getOrg.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
@@ -3119,12 +3178,11 @@ public class MyForm extends Form {
             if (ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
                 //if bigTimer was active, and we're not replaying, then show big timer again (from whatever screen was the last in replay)
                 TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
-                if (!(this instanceof ScreenTimer6) 
-//                        && !ReplayLog.getInstance().isReplayInProgress() //THE test above on justFinished should be enough
-                        && timerInstance != null && timerInstance.isFullScreen()
-                        )
-//                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
-                 new ScreenTimer6(MyForm.this, timerInstance).show();
+                if (!(this instanceof ScreenTimer6)
+                        //                        && !ReplayLog.getInstance().isReplayInProgress() //THE test above on justFinished should be enough
+                        && timerInstance != null && timerInstance.isFullScreen())
+                    //                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
+                    new ScreenTimer6(MyForm.this, timerInstance).show();
 //            else
 //                super.show();
             }

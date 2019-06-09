@@ -298,6 +298,15 @@ public class MyPrefs {
             = new PrefEntry("If Completed tasks are hidden, keep them visible until midnight of the day they were completed", //"Don't hide Completed tasks the day they were completed
                     "keepDoneTasksVisibleTheDayTheyreCompleted",
                     true, "**");
+    static PrefEntry itemDueDateDefaultDaysAheadInTime //TODO!!! No, only ask if overwriting an alreadyd defined value!
+            = new PrefEntry("Default number of days ahead in time for Due dates (0 disables)", //"Don't hide Completed tasks the day they were completed
+                    "itemDueDateDefaultDaysAheadInTime",
+                    7, "**");
+
+    static PrefEntry itemDefaultAlarmTimeBeforeDueDateInMinutes //TODO!!! No, only ask if overwriting an alreadyd defined value!
+            = new PrefEntry("Default for how long before the Due date the alarm is set (", //"Don't hide Completed tasks the day they were completed
+                    "itemDefaultAlarmTimeBeforeDueDateInMinutes",
+                    60, "**");
 
     // ************** inherit values from owning Project *************
     final static String INHERITS = "Subtasks inherit ";
@@ -447,6 +456,9 @@ public class MyPrefs {
     static PrefEntry repeatMaxNumberOfRepeatsToGenerate 
             = new PrefEntry("To avoid that too many repeats get generated and overflod the server or the app, 0 disables", "repeatMaxNumberOfRepeatsToGenerate", 20, 
                     "more of an internal limitation for now**"); //TODO: what happens if the max is reached? Will the algorithms still work?
+    static PrefEntry repeatCancelNotDeleteSuperflousInstancesWhenUpdatingRule 
+            = new PrefEntry("When changing a repeat rule, Cancel, not Delete, future instances with recorded work time that are removed due to the change", "repeatCancelNotDeleteSuperflousInstancesWhenUpdatingRule", true, 
+                    "This ensures that any recorded work time is not lost, e.g. for statistics**"); //TODO: what happens if the max is reached? Will the algorithms still work?
 
     //ITEMS IN LIST
     static PrefEntry itemListAlwaysShowHideUntilDate = new PrefEntry("ppp", "itemListAlwaysShowHideUntilDate", true, "**");

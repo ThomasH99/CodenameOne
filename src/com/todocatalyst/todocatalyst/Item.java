@@ -1670,6 +1670,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    destination.setEstimate(getEffortEstimate(), fromTempl || toRepeatInst, true); //ensure remaining is set
 //                    destination.setEstimate(getEffortEstimate(), fromTempl || toRepeatInst); //TODO!!! WHY auto-update Remaining if (and only if) fromTempl || toRepeatInst????!!
                     destination.setEstimate(getEstimate(), false); //TODO!!! WHY auto-update Remaining if (and only if) fromTempl || toRepeatInst????!!
+                    destination.setEstimate(getEstimate(), fromTempl || toRepeatInst); //auto-update Remaining if fromTempl || toRepeatInst to ensure that Remaining gets set
                 }
             }
             //CHALLENGE
@@ -1807,6 +1808,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            destination.setCreatedDate(getCreatedDate());
             destination.setWaitingTillDate(getWaitingTillDateD().getTime());
             destination.setDateWhenSetWaiting(getDateWhenSetWaiting());
+//            destination.setRemaining(getRemaining(), false);
             destination.setRemaining(getRemaining(), false);
             destination.setActual(getActual(), false);
 //            destination.setLastModifiedDate(getLastModifiedDate());
@@ -1916,12 +1918,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public void updateRepeatInstanceRelativeDates(Date newDueDateTime) {
         ASSERT.that(newDueDateTime.getTime() != 0);
-        long oldDueDate = getDueDate();
+        Date oldDueDate = getDueDateD();
         long newDueDate = newDueDateTime.getTime();
         long delta = 0;
 //        if (oldDueDate != 0 && newDueDate != 0) {
-        if (oldDueDate != 0) {
-            delta = newDueDate - oldDueDate;
+        if (oldDueDate.getTime() != 0) {
+            delta = newDueDate - oldDueDate.getTime();
         }
 
         setDueDate(newDueDateTime);
@@ -2294,7 +2296,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        int index = subtasks.indexOf(item);
 //</editor-fold>
         List listFull = getListFull();
-        int indexFull = referenceItem == null ? (addAfterItemOrEndOfList ? listFull.size() : 0) : listFull.indexOf(referenceItem);
+        int indexFull = referenceItem == null ? (addAfterItemOrEndOfList ? listFull.size() : 0) : listFull.indexOf(referenceItem) + (addAfterItemOrEndOfList ? 1 : 0);
 //        if (indexFull < 0) {
 //            ASSERT.that(false, "REFERENCE item not found in addToList(newItem,refItem), refItem=" + referenceItem + ", newItem=" + newItem);
 //            return addToList(newItem); //UI: else add to end of list //TODO! should this depend on a setting?
@@ -3736,59 +3738,62 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         boolean notTemplate = !isTemplate();
 
         if (oldRepeatRule == null) { //setting a RR for the first time
-            if (newRepeatRule != null) {
-                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null)
-                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+            if (newRepeatRule != null && newRepeatRule.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+//                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null)
+//                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
                 setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
                 if (notTemplate)
-                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true);
             } else {
-                //setting null when already null - do nothing
+                //setting null or NO_REPEAT when already null - do nothing
             }
         } else { //oldRepeatRule != null
             if (newRepeatRule == null || newRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
                 if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
                     //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
                     setRepeatRuleInParse(null);
-            } else { //newRepeatRule != null and possibly modified
-                oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRule); //update existing rule with updated values
-                if (notTemplate)
-                    oldRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this); //
-                setRepeatRuleInParse(oldRepeatRule);
+            } else { //newRepeatRule != null and possibly modified (eg. click Edit Rule, then Back
+                if (!newRepeatRule.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
+                    oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRule); //update existing rule with updated values
+                    if (notTemplate)
+                        oldRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, false); //
+                    setRepeatRuleInParse(oldRepeatRule);
 //                setRepeatRuleInParse(oldRepeatRule); //must set again to save?? NO, not necessary, only if the *reference* changes in Item
-                DAO.getInstance().saveInBackground(oldRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+                    DAO.getInstance().saveInBackground(oldRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+                }
             }
         }
     }
-
-    public void setRepeatRuleOLD(RepeatRuleParseObject newRepeatRule) {
-//        if (this.repeatRule != repeatRule) {
-//            this.repeatRule = repeatRule; //TODO!!!!: shouldn't repeat instances be calculated/updated whenever a repeat rule sit set?! (Currently done in copyMeInto)
-//        }
-        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
-        if (newRepeatRule != null) {
-//            if (!isTemplate() && !repeatRule.equals(getRepeatRule())) { //do not activate/update repeat rules for templates
-//            repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, getOwner(), MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : getOwner().size());
-//                boolean newRepeatRule = getRepeatRule() == null;
-            setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
-//                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-            if (!isTemplate()) { //do not activate/update repeat rules for templates, NOT possible to compare using !repeatRule.equals(getRepeatRule()) since it may the same object
-                if (oldRepeatRule == null) {
-//                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreated(this);
-                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-                } else { //if (!oldRepeatRule.equals(newRepeatRule)) {
-//                    newRepeatRule.updateRepeatInstancesWhenRuleWasEdited(this);
-                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-                }
-            } else { //template
-
-            }
-        } else if (oldRepeatRule != null) { //if the user deleted the repeatRule, /* repeatRule == null && */ 
-//            getRepeatRule().delete();
-            getRepeatRule().deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this);
-            setRepeatRuleInParse(newRepeatRule);
-        } //else both old and new RR are null, do nothing
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void setRepeatRuleOLD(RepeatRuleParseObject newRepeatRule) {
+////        if (this.repeatRule != repeatRule) {
+////            this.repeatRule = repeatRule; //TODO!!!!: shouldn't repeat instances be calculated/updated whenever a repeat rule sit set?! (Currently done in copyMeInto)
+////        }
+//        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
+//        if (newRepeatRule != null) {
+////            if (!isTemplate() && !repeatRule.equals(getRepeatRule())) { //do not activate/update repeat rules for templates
+////            repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, getOwner(), MyPrefs.getBoolean(MyPrefs.insertNewRepeatInstancesInStartOfLists) ? 0 : getOwner().size());
+////                boolean newRepeatRule = getRepeatRule() == null;
+//            setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+////                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//            if (!isTemplate()) { //do not activate/update repeat rules for templates, NOT possible to compare using !repeatRule.equals(getRepeatRule()) since it may the same object
+//                if (oldRepeatRule == null) {
+////                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreated(this);
+//                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//                } else { //if (!oldRepeatRule.equals(newRepeatRule)) {
+////                    newRepeatRule.updateRepeatInstancesWhenRuleWasEdited(this);
+//                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//                }
+//            } else { //template
+//
+//            }
+//        } else if (oldRepeatRule != null) { //if the user deleted the repeatRule, /* repeatRule == null && */
+////            getRepeatRule().delete();
+//            getRepeatRule().deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this);
+//            setRepeatRuleInParse(newRepeatRule);
+//        } //else both old and new RR are null, do nothing
+//    }
+//</editor-fold>
 
     @Override
     public void setRepeatRuleForRepeatInstance(RepeatRuleParseObject repeatRule) {
@@ -5841,14 +5846,26 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        long prevRemainingProjectTask = getRemainingEffortProjectTaskItself();
 //</editor-fold>
         //auto-update Remaining
-        if (autoUpdateRemainingEffort && effortEstimateProjectTaskItselfMillis > 0
-                && MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
-                && getRemainingForProjectTaskItselfFromParse() == 0) {
-            setRemaining(effortEstimateProjectTaskItselfMillis - getActualForProjectTaskItself(), false); //TODO actualEffort should be set *before* effort estimate for this to work
-        } else { // *increase* remaining //UI: 
-            if (autoUpdateRemainingEffort
-                    && MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual.getBoolean()
-                    && effortEstimateProjectTaskItselfMillis > getRemainingFromParse() + getActual()) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (autoUpdateRemainingEffort && effortEstimateProjectTaskItselfMillis > 0
+//                && MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
+//                && getRemainingForProjectTaskItselfFromParse() == 0) {
+//            setRemaining(effortEstimateProjectTaskItselfMillis - getActualForProjectTaskItself(), false); //TODO actualEffort should be set *before* effort estimate for this to work
+//        } else { // *increase* remaining //UI:
+//            if (autoUpdateRemainingEffort
+//                    && MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual.getBoolean()
+//                    && effortEstimateProjectTaskItselfMillis > getRemainingFromParse() + getActual()) {
+//                setRemaining(effortEstimateProjectTaskItselfMillis - getActual(), false); //false to avoid circular updates between setEstimate() and setRemaining()
+//            }
+//        }
+//</editor-fold>
+        if (autoUpdateRemainingEffort) {
+            if (MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
+                    && effortEstimateProjectTaskItselfMillis > 0
+                    && getRemainingForProjectTaskItselfFromParse() == 0) {
+                setRemaining(effortEstimateProjectTaskItselfMillis - getActualForProjectTaskItself(), false); //TODO actualEffort should be set *before* effort estimate for this to work
+            } else if (MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual.getBoolean()
+                    && effortEstimateProjectTaskItselfMillis > getRemainingFromParse() + getActual()) { // *increase* remaining //UI:
                 setRemaining(effortEstimateProjectTaskItselfMillis - getActual(), false); //false to avoid circular updates between setEstimate() and setRemaining()
             }
         }
@@ -6984,6 +7001,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return getCompletedDateDInParse();
         } else { //isProject
             if (isDone()) {
+                //TODO!!! //optimization: normally, the project should be set Completed when the *last* subtask is completed, so iterating through subtasks as below shouldn't be necessary?!
 //                Date latestSubTaskCompletedDate = new Date(MyDate.MIN_DATE);
                 Date latestSubTaskCompletedDate = new Date(0);
                 for (Object item : getListFull()) { //full to ensure we get the latest date, no matter status
@@ -9346,6 +9364,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+    public boolean isFilterSortDefInherited(FilterSortDef filterSortDef) {
+        return filterSortDef != null && getOwner() != null && filterSortDef.equals(getOwner().getFilterSortDef());
+    }
+
     /**
      * set and save filter (and resets the filtered/sorted list)
      *
@@ -9353,13 +9375,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     @Override
     public void setFilterSortDef(FilterSortDef filterSortDef) {
-        if (filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) { //only save filter for subtasks if modified!
-            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved
-                DAO.getInstance().saveInBackground(filterSortDef); //
-            }
-            put(PARSE_FILTER_SORT_DEF, filterSortDef);
-        } else {
+//        if (filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) { //only save filter for subtasks if modified!
+        if (//filterSortDef == null || //if filter is deleted 
+                filterSortDef.equals(getDefaultFilterSortDef()) //if new filter is 'just' default filter
+                || isFilterSortDefInherited(filterSortDef)) { //or if filter is the same as the inherited filter (either edited back to same value or just not changed)
             remove(PARSE_FILTER_SORT_DEF);
+        } else {
+//            if (!isNoSave())  //otherwise temporary filters for e.g. Overdue will be saved //NO, now Overdue will be a saved (temporarily) list, but other lists (Statistics?) may still be temporary
+            if (filterSortDef.getObjectIdP() == null && !isNoSave())
+                DAO.getInstance().saveInBackground(filterSortDef); //
+            put(PARSE_FILTER_SORT_DEF, filterSortDef);
         }
     }
 

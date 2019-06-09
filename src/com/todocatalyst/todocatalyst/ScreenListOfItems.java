@@ -2211,8 +2211,7 @@ public class ScreenListOfItems extends MyForm {
                 if (Config.REFRESH_EVEN_THOUGH_DONE_IN_BACK) myForm.refreshAfterEdit();
             }).show();
 //                new ScreenItem(item, thisScreen).show();
-        }
-        );
+        });
         Button editItemButton = new Button(editItemCmd);
         editItemButton.setUIID("ListOfItemsEditItemIcon");
 
@@ -2282,6 +2281,7 @@ public class ScreenListOfItems extends MyForm {
         String impUrgStr = item.getImpUrgPrioValueAsString();
         if (!impUrgStr.isEmpty()) {
             impUrgLabel = new Label(impUrgStr, "ListOfItemsImpUrg");
+//            impUrgLabel.setMaterialIcon(Icons.iconxxx);
             if (Config.TEST) {
                 impUrgLabel.setName("ImpUrg");
             }
@@ -2294,7 +2294,10 @@ public class ScreenListOfItems extends MyForm {
         //DREAD/FUN
         if (item.getDreadFunValueN() != null) {
             Label funDreadLabel; // = new Label();
-            funDreadLabel = new Label(item.getDreadFunValueN().toString(), "ItemDetailsLabel");
+//            funDreadLabel = new Label(item.getDreadFunValueN().toString(), "ItemDetailsLabel");
+//            funDreadLabel = new Label(item.getDreadFunValueN().getDescription(), "ItemDetailsLabel");
+            funDreadLabel = new Label("", "ListOfItemsItemDetailsLabel");
+            funDreadLabel.setMaterialIcon(item.getDreadFunValueN().getIcon());
             if (Config.TEST) {
                 funDreadLabel.setName("FunDread");
             }
@@ -2306,7 +2309,10 @@ public class ScreenListOfItems extends MyForm {
         //CHALLENGE
         if (item.getChallengeN() != null) {
             Label challengeLabel; // = new Label();
-            challengeLabel = new Label(item.getChallengeN().toString(), "ItemDetailsLabel");
+//            challengeLabel = new Label(item.getChallengeN().toString(), "ItemDetailsLabel");
+//            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
+            challengeLabel = new Label("", "ListOfItemsItemDetailsLabel");
+            challengeLabel.setMaterialIcon(item.getChallengeN().getIcon());
             if (Config.TEST) {
                 challengeLabel.setName("Challenge");
             }
@@ -2371,7 +2377,7 @@ public class ScreenListOfItems extends MyForm {
         if (item.getStartByDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowStartByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            startByLabel = new\ Label("S:" + MyDate.formatDateNew(item.getStartByDateD()), "ItemDetailsLabel");
-            startByLabel = new Label( MyDate.formatDateSmart(item.getStartByDateD()), "ItemDetailsLabel");
+            startByLabel = new Label(MyDate.formatDateSmart(item.getStartByDateD()), "ItemDetailsLabel");
             startByLabel.setMaterialIcon(Icons.iconStartByDate);
             if (Config.TEST) {
                 startByLabel.setName("StartBy");

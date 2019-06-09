@@ -4061,6 +4061,23 @@ public class DAO {
             cacheDelete(anyParseObject);
         }
     }
+    
+       public void deleteBatch(List<ParseObject> listOfParseObjectsToBatchDelete) {
+        if (!listOfParseObjectsToBatchDelete.isEmpty()) {
+            try {
+                ParseBatch parseBatch = ParseBatch.create();
+                parseBatch.addObjects(listOfParseObjectsToBatchDelete, ParseBatch.EBatchOpType.DELETE);
+                parseBatch.execute();
+            } catch (ParseException ex) {
+                Log.e(ex);
+            }
+            for (ParseObject o : listOfParseObjectsToBatchDelete) {
+                cachePut(o);
+            }
+        }
+//        save(anyParseObject, true);
+    }
+
 
     //////////////////////////   CLEAN UP    /////////////////////////////
     //TODO!!!! a subtask may be in the project's subtask list, but have a different owner (e.g. a List) --> fix: if a project has a subtask with another owner, make the project the subtask's owner

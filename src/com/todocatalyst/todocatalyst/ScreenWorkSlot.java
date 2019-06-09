@@ -267,7 +267,8 @@ public class ScreenWorkSlot extends MyForm {
 //                ? new Date(now) : workSlot.getStartTimeD(),
 //                (d) -> workSlot.setStartTime(d));
 //</editor-fold>
-        Date defaultDate = (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.getStartOfMinute(new Date(now)) : new Date(0));
+//        Date defaultDate = (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.getStartOfMinute(new Date(now)) : new Date(0));
+        GetVal makeDefaultWorkSlotStartDate = ()->(MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.getStartOfMinute(new Date(now)) : new Date(0));
         MyDateAndTimePicker startByDate = new MyDateAndTimePicker();
         initField(WorkSlot.PARSE_START_TIME, startByDate,
                 //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ? 
@@ -278,7 +279,7 @@ public class ScreenWorkSlot extends MyForm {
                 () -> startByDate.getDate(),
                 (d) -> startByDate.setDate((Date) d),
                 new Date(0), //round to nearest minute to avoid seconds showing
-                defaultDate);
+                makeDefaultWorkSlotStartDate);
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
         content.add(layoutN(WorkSlot.START_TIME, startByDate, WorkSlot.START_TIME_HELP));
@@ -294,7 +295,10 @@ public class ScreenWorkSlot extends MyForm {
         duration.addActionListener(e -> {
             endByDate.setDate(new Date(startByDate.getDate().getTime() + duration.getDuration()));
         });
-        Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0
+//        Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0
+//                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS
+//                : 0));
+        GetVal makeDefaultDuration = ()-> new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0
                 ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS
                 : 0));
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -312,7 +316,7 @@ public class ScreenWorkSlot extends MyForm {
                 () -> duration.getDuration(),
                 (l) -> duration.setDuration((long) l),
                 new Long(0),
-                defaultDuration);
+                makeDefaultDuration);
         duration.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt());
 
         content.add(layoutN(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
@@ -334,7 +338,11 @@ public class ScreenWorkSlot extends MyForm {
                 () -> null,
                 (d) -> endByDate.setDate((Date) d),
                 new Date(0),
-                new Date(defaultDate.getTime() + defaultDuration));
+                ()->{
+                    long defaultEndTime= startByDate.getTime()!=0?startByDate.getTime():((Date)makeDefaultWorkSlotStartDate.getVal()).getTime()
+                            + duration.getTime()!=0?duration.getTime():((Date)makeDefaultDuration.getVal()).getTime();
+                    return new Date(defaultEndTime);
+                });
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
         content.add(layoutN(WorkSlot.END_TIME, endByDate, WorkSlot.END_TIME_HELP));
@@ -441,7 +449,7 @@ public class ScreenWorkSlot extends MyForm {
                     previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
                 }
 
-            }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
+            }, false, startByDate.getDate(),makeDefaultWorkSlotStartDate, true).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
 

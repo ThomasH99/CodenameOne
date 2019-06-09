@@ -121,6 +121,7 @@ public class ScreenItem2 extends MyForm {
 
     private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
     private float TAB_ICON_SIZE_IN_MM = 4; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
+    Date dueDateEditedInRepeatRuleScreen = null;
 
 //    ScreenItem(Item item, MyForm previousForm) { //throws ParseException, IOException {
 //        this(item, previousForm, ()->{});
@@ -680,6 +681,18 @@ public class ScreenItem2 extends MyForm {
 //        return subtaskContainer;
 //    }
 //</editor-fold>
+    public static Date makeDefaultDueDate() {
+        long defaultDue = MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS;
+        return new Date(defaultDue);
+    }
+
+    public static Date makeDefaultAlarmDate(Date dueDate) {
+        if (dueDate == null || dueDate.getTime() == 0)
+            dueDate = new Date(makeDefaultDueDate().getTime());
+        long defaultAlarm = dueDate.getTime() - MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS;
+        return new Date(defaultAlarm);
+    }
+
     /**
      * wraps a textArea for comments with a timeStamp button
      *
@@ -811,7 +824,7 @@ public class ScreenItem2 extends MyForm {
         MyTextField description;
         MyDurationPicker effortEstimate;
         MyDurationPicker remainingEffort;
-        
+
         //TAB MAIN
 //        Container mainTabCont = new Container(new MyBorderLayout());
         Container mainCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
@@ -852,15 +865,15 @@ public class ScreenItem2 extends MyForm {
                 //TODO!!! call templatePicker
             }
         };
-        
-        boolean testMoveTextFieldsToOtherTab=false;
+
+        boolean testMoveTextFieldsToOtherTab = false;
 
 //        initField(Item.DESCRIPTION, Item.DESCRIPTION_HELP, description, Item.PARSE_TEXT, () -> item.getText(), (t) -> item.setText((String) t),
 //                () -> description.getText(), (t) -> description.setText((String) t), null);
-        initField(Item.PARSE_TEXT, description, 
-                () -> item.getText(), 
-                (t) -> item.setText((String) t), 
-                () -> description.getText(), 
+        initField(Item.PARSE_TEXT, description,
+                () -> item.getText(),
+                (t) -> item.setText((String) t),
+                () -> description.getText(),
                 (t) -> description.setText((String) t));
 
         //https://stackoverflow.com/questions/34531047/how-to-add-donelistener-to-textarea-in-codename-one: "putClientProperty("searchField", true);, putClientProperty("sendButton", true);and putClientProperty("goButton", true); would place a button on the keyboard"
@@ -952,7 +965,7 @@ public class ScreenItem2 extends MyForm {
 //        Button starred = new RadioButton(); //TODO change to use RadionButton and automatically switch icon when selected/unselected --> RB no good
         Button starred = new Button(); //TODO change to use RadionButton and automatically switch icon when selected/unselected
         starred.setUIID("ScreenItemStarred");
-//        starred.addActionListener((e) -> starred.setIcon(starred.getIcon() == Icons.iconStarUnselectedLabelStyle
+//        starred.addActionListener((e) -> starred?setIcon(starred.getIcon() == Icons.iconStarUnselectedLabelStyle
 //                ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle));
         starred.addActionListener((e) -> {
             boolean setStarActive = starred.getMaterialIcon() == Icons.iconStarUnselected;
@@ -1080,7 +1093,7 @@ public class ScreenItem2 extends MyForm {
         mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true));
         mainCont.add(layoutN(Item.STARRED, starred, Item.STARRED_HELP, null, false, false, false, true));
 
-        MyDateAndTimePicker dueDate = new MyDateAndTimePicker();
+        MyDateAndTimePicker dueDate = new MyDateAndTimePicker(() -> makeDefaultDueDate());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont.add(new Label("Due")).add(dueDate);
 //        mainCont.add(new Label("Due")).add(LayeredLayout.encloseIn(dueDate, FlowLayout.encloseRightMiddle(new Button(Command.create(null,Icons.iconCloseCircle,(e)->{dueDate.setDate(new Date(0));})))));
@@ -1092,10 +1105,19 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
         initField(Item.PARSE_DUE_DATE, dueDate,
                 () -> item.getDueDateD(),
+                //                () -> {
+                //                    if (dueDateEditedInRepeatRuleScreen != null) {
+                //                        Date temp = dueDateEditedInRepeatRuleScreen;
+                //                        dueDateEditedInRepeatRuleScreen = null;
+                //                        return temp;
+                //                    } else return item.getDueDateD();
+                //                },
                 (d) -> item.setDueDate((Date) d),
                 () -> dueDate.getDate(),
                 (d) -> dueDate.setDate((Date) d),
                 () -> item.isDueDateInherited(dueDate.getDate()));
+//                new Date(0),
+//                ()->makeDefaultDueDate());
         mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
         updateUIIDForInherited(item.isDueDateInherited(dueDate.getDate()), dueDate); //NB! MUST do *after* layoutN() which sets the UIID
 
@@ -1128,7 +1150,7 @@ public class ScreenItem2 extends MyForm {
 //                () -> itemLS.getAlarmDateD(),
 //                (d) -> item.setAlarmDate(d));
 //</editor-fold>
-        MyDateAndTimePicker alarmDate = new MyDateAndTimePicker();
+        MyDateAndTimePicker alarmDate = new MyDateAndTimePicker(() -> makeDefaultAlarmDate(dueDate.getDate()));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        mainCont.add(new Label(Item.ALARM_DATE)).add(addDatePickerWithClearButton(alarmDate));
 //        mainCont.add(new Label(Item.ALARM_DATE)).add(alarmDate.makeContainerWithClearButton());
@@ -1136,7 +1158,14 @@ public class ScreenItem2 extends MyForm {
 //        if (false)mainCont.add(layout(Item.ALARM_DATE, alarmDate.makeContainerWithClearButton(), Item.ALARM_DATE_HELP));
 //</editor-fold>
 //        mainCont.add(layout(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)), true));
-        initField(Item.PARSE_ALARM_DATE, alarmDate, () -> item.getAlarmDateD(), (d) -> item.setAlarmDate((Date) d), () -> alarmDate.getDate(), (d) -> alarmDate.setDate((Date) d));
+        initField(Item.PARSE_ALARM_DATE,
+                alarmDate,
+                () -> item.getAlarmDateD(),
+                (d) -> item.setAlarmDate((Date) d),
+                () -> alarmDate.getDate(),
+                (d) -> alarmDate.setDate((Date) d));
+//                new Date(0),
+//                ()->makeDefaultAlarmDate(dueDate.getDate()));
 //        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)))); //, true, false, false));
         mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP)); //, true, false, false));
 //        int remainingIndex = mainCont.getComponentCount() - 1; //store the index at which to insert remainingEffort
@@ -1347,12 +1376,14 @@ public class ScreenItem2 extends MyForm {
 //                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
 //            }
 //</editor-fold>
-            if (previousValues.get(Item.PARSE_REPEAT_RULE) != null ) {
+            if (previousValues.get(Item.PARSE_REPEAT_RULE) != null) {
                 locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
             } else {
                 locallyEditedRepeatRule = new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
-                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);   
+                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
             }
+//            if (locallyEditedRepeatRule.getSpecifiedStartDateD().getTime() == 0 && dueDate.getDate().getTime() != 0)
+//                locallyEditedRepeatRule.setSpecifiedStartDate(new Date(dueDate.getDate().getTime())); //if RR has no startDate, then set startDate to value from Due picker (if set) //new Date() needed to avoid referring to the SAME Date object in Picker and RR
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (orgRepeatRule == null && editedRepeatRuleCopy == null) {
 //                    editedRepeatRuleCopy = new RepeatRuleParseObject(); //if no rule exists already, create a fresh one
@@ -1409,9 +1440,16 @@ public class ScreenItem2 extends MyForm {
 //                repeatRuleButton.revalidate(); //enough to update? NO (overwrites label text on left)
 //                repeatRuleButton.getParent().revalidate(); //enough to update? NO
 //</editor-fold>
+                //if a startDate was set in the RR, and none is set for the item, use RR startDate as due date. *unless* the dueDate was reset to 0 (hence the test on item.getDueDateD())
+                if (item.getDueDateD().getTime()==0 && dueDate.getDate().getTime() == 0 
+                        && locallyEditedRepeatRule.getSpecifiedStartDateD().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
+//                    dueDate.setDate(new Date(locallyEditedRepeatRule.getSpecifiedStartDateD().getTime())); //set dueDate if set in RepeatRule //TODO!!!! or if due date *changed* in RepeatRule?? //NOT necessary as picker is initialized from locallyEdited values
+                    previousValues.put(Item.PARSE_DUE_DATE, new Date(locallyEditedRepeatRule.getSpecifiedStartDateD().getTime())); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
+                }
                 if (false) mainCont.revalidate(); //enough to update? NO
 //                    }
-            }, true, dueDate.getDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
+//            }, true, dueDate.getDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
+            }, true, dueDate.getDate(), ()-> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1463,7 +1501,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //</editor-fold>
             if (editedRule instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
                 item.setRepeatRule((RepeatRuleParseObject) editedRule);
-            } 
+            }
 //            else if (editedRule != null && editedRule.equals(REPEAT_RULE_DELETED_MARKER)) {
 //                item.setRepeatRule(null); //delete repeatRule (if any, if null before, no change)
 //            } //else: ==null => do nothing (either no RR was defined before/after editing, or the rule was not changed
@@ -1492,7 +1530,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        }));
 //        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, null));
 //</editor-fold>
-       if (!testMoveTextFieldsToOtherTab) mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP));
+        if (!testMoveTextFieldsToOtherTab) mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP));
         //TODO deleting should not delete in item but delete editcopy and when saving via parseIdMap
         //<editor-fold defaultstate="collapsed" desc="comment">
         //        if (false) {
@@ -1674,12 +1712,11 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
         tabs.addTab("Time", Icons.iconTimeTab, TAB_ICON_SIZE_IN_MM, timeCont);
 
-        if (testMoveTextFieldsToOtherTab){
-        timeCont.add(layoutN(Item.CATEGORIES, categoriesButton, Item.CATEGORIES));
-          timeCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP));
+        if (testMoveTextFieldsToOtherTab) {
+            timeCont.add(layoutN(Item.CATEGORIES, categoriesButton, Item.CATEGORIES));
+            timeCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP));
         }
-     
-        
+
         boolean isProject = itemLS.isProject();
 
         //REMAINING************
@@ -2702,6 +2739,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             public void revalidate() {
                 super.revalidate();
             }
+
             @Override
             public void repaint() {
                 super.repaint();
@@ -3082,7 +3120,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (previousValues.containsKey(LAST_TAB_SELECTED)) {
 //            tabs.setSelectedIndex((int) previousValues.get(LAST_TAB_SELECTED), MyPrefs.itemEditEnableSwipeBetweenTabs.getBoolean()); //keep same tab selected even if regenerating the screen
             tabs.setSelectedIndex((int) previousValues.get(LAST_TAB_SELECTED)); //keep same tab selected even if regenerating the screen
-        } else 
+        } else
             tabs.setSelectedIndex(0); //default to main index (this also ensures the tab is refreshed so fields like Categories/Repeat are sized correctly??)
 
         setCheckIfSaveOnExit(() -> checkItemIsValidForSaving(description.getText(), comment.getText(), dueDate.getDate(), actualEffort.getDuration(),

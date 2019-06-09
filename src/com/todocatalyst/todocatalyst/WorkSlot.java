@@ -488,56 +488,57 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         } //else both old and new RR are null, do nothing
     }
 
-    public final void setRepeatRuleOLD(RepeatRuleParseObject repeatRule) {
-        //TODO!!!!! copy code from Item.setRepeatRule()
-//        if (this.repeatRule != repeatRule) {
-//            this.repeatRule = repeatRule;
-//            changed();
-//        }
-//        if (true) {
-//        if (this.repeatRule != repeatRule) {
-//            this.repeatRule = repeatRule; //TODO!!!!: shouldn't repeat instances be calculated/updated whenever a repeat rule sit set?! (Currently done in copyMeInto)
-////            changed();
-//        }
-//        ParseObject.fetchFromCacheOnly("RepeatRule", repeatRule.getObjectId());
-        setRepeatRuleInParse(repeatRule); //MUST set repeatRule before creating repeatInstances!
-        if (repeatRule != null) {
-//            repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-            boolean newRepeatRule = getRepeatRule() == null;
-            setRepeatRuleInParse(repeatRule); //MUST set repeat rule *before* creating repeat instances in next line
-//                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-            if (newRepeatRule) {
-//                repeatRule.updateRepeatInstancesWhenRuleWasCreated(this);
-                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-            } else {
-//                repeatRule.updateRepeatInstancesWhenRuleWasEdited(this);
-                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-            }
-        } else if (getRepeatRule() != null) { //if the user deleted the repeatRule, 
-            getRepeatRule().deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this);
-        }
 //<editor-fold defaultstate="collapsed" desc="comment">
+//    public final void setRepeatRuleOLD(RepeatRuleParseObject repeatRule) {
+//        //TODO!!!!! copy code from Item.setRepeatRule()
+////        if (this.repeatRule != repeatRule) {
+////            this.repeatRule = repeatRule;
+////            changed();
+////        }
+////        if (true) {
+////        if (this.repeatRule != repeatRule) {
+////            this.repeatRule = repeatRule; //TODO!!!!: shouldn't repeat instances be calculated/updated whenever a repeat rule sit set?! (Currently done in copyMeInto)
+//////            changed();
+////        }
+////        ParseObject.fetchFromCacheOnly("RepeatRule", repeatRule.getObjectId());
+//        setRepeatRuleInParse(repeatRule); //MUST set repeatRule before creating repeatInstances!
 //        if (repeatRule != null) {
-//            put(PARSE_REPEAT_RULE, repeatRule);
-//        } else {
-//            remove(PARSE_REPEAT_RULE);
+////            repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//            boolean newRepeatRule = getRepeatRule() == null;
+//            setRepeatRuleInParse(repeatRule); //MUST set repeat rule *before* creating repeat instances in next line
+////                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//            if (newRepeatRule) {
+////                repeatRule.updateRepeatInstancesWhenRuleWasCreated(this);
+//                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//            } else {
+////                repeatRule.updateRepeatInstancesWhenRuleWasEdited(this);
+//                repeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//            }
+//        } else if (getRepeatRule() != null) { //if the user deleted the repeatRule,
+//            getRepeatRule().deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this);
 //        }
-//        setRepeatRuleNoUpdate(repeatRule);
-//        } else {
-//            if (this.repeatRule != null && repeatRule != null && this.repeatRule != repeatRule) {
-//                //TODO!!!!: normally the user cannot change from one repeatRule to another (but we could programatically) - ensure item is removed from old rule
-//                this.repeatRule.deleteRuleAndAllRepeatInstancesExceptThis(this);
-//            }
-//            if ((repeatRule != this.repeatRule)) { //if it's a new repeat rule then replace the old one
-//                this.repeatRule = repeatRule; //TODO!!!!: shouldn't repeat instances be calculated/updated whenever a repeat rule sit set?! (Currently done in copyMeInto)
-//            }
-//            if (this.repeatRule != null && this.repeatRule.isDirty()) { //only call changed (on Item) if the repeat rule has actually been edited
-//                changed();
-//            }
-//        }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (repeatRule != null) {
+////            put(PARSE_REPEAT_RULE, repeatRule);
+////        } else {
+////            remove(PARSE_REPEAT_RULE);
+////        }
+////        setRepeatRuleNoUpdate(repeatRule);
+////        } else {
+////            if (this.repeatRule != null && repeatRule != null && this.repeatRule != repeatRule) {
+////                //TODO!!!!: normally the user cannot change from one repeatRule to another (but we could programatically) - ensure item is removed from old rule
+////                this.repeatRule.deleteRuleAndAllRepeatInstancesExceptThis(this);
+////            }
+////            if ((repeatRule != this.repeatRule)) { //if it's a new repeat rule then replace the old one
+////                this.repeatRule = repeatRule; //TODO!!!!: shouldn't repeat instances be calculated/updated whenever a repeat rule sit set?! (Currently done in copyMeInto)
+////            }
+////            if (this.repeatRule != null && this.repeatRule.isDirty()) { //only call changed (on Item) if the repeat rule has actually been edited
+////                changed();
+////            }
+////        }
+////</editor-fold>
+//    }
 //</editor-fold>
-    }
-
     public final void setRepeatRuleInParse(RepeatRuleParseObject repeatRule) {
         if (repeatRule != null) {
             put(PARSE_REPEAT_RULE, repeatRule);
@@ -1858,7 +1859,19 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeReferences) {
+//        ItemAndListCommonInterface owner = getOwner();
+//        if (owner!=null)
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    
+    public ItemAndListCommonInterface removeFromOwner() {
+        ItemAndListCommonInterface owner = getOwner();
+        if (owner != null) {
+            owner.removeWorkSlot(this);
+            return owner;
+        }
+        return null;
     }
 
     @Override

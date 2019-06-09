@@ -42,6 +42,8 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemEditEnableSwipeBetweenTabs);
         addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime);
         addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);
+        addSettingInt(content, parseIdMap2, MyPrefs.itemDueDateDefaultDaysAheadInTime, 0,31,1);
+        addSettingTimeInMinutes(content, parseIdMap2, MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes);
 
 
         addSettingInt(content, parseIdMap2, MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation, 0, 10, 1);

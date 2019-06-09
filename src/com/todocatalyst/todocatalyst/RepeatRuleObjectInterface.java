@@ -81,6 +81,7 @@ public interface RepeatRuleObjectInterface {
      * add the new repeatCopy to the right place in the owner list and return the owner list so it can be saved
      *
      * @param newRepeatRuleInstance
+     * @return 
      */
 //    void saveInsertList();
 //    void insertIntoListAndSaveList(RepeatRuleObjectInterface repeatRuleObject);

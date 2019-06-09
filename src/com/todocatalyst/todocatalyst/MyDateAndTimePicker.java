@@ -9,6 +9,7 @@ import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
 import com.codename1.ui.Display;
 import com.codename1.ui.spinner.Picker;
+import com.todocatalyst.todocatalyst.MyForm.GetVal;
 import java.util.Date;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 
 //    private String DEFAULT_ZERO_VALUE_PATTERN = "0";
     private String zeroValuePattern;
+    private GetVal getDefaultValue;
 //    private Button clearButton = null;
 
     MyDateAndTimePicker() {
@@ -53,8 +55,17 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
     MyDateAndTimePicker(Date date) {
         this(date, "");
     }
-    
-        @Override
+
+    /**
+    use getDefaultValue to get a default value to use in case the time is zero/undefined
+    @param getDefaultValue 
+    */
+    MyDateAndTimePicker(GetVal getDefaultValue) {
+        this();
+        this.getDefaultValue = getDefaultValue;
+    }
+
+    @Override
     protected void updateValue() {
         Date date = getDate();
         if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
@@ -97,7 +108,10 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
         //set date to Now if empty when button is clicked
         if (getDate().getTime() == 0) {
 //                setDate(new Date());
-            getDate().setTime(new Date().getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+            if (getDefaultValue != null)
+                getDate().setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+            else
+                getDate().setTime(new Date().getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
         }
         super.pressed();
     }
