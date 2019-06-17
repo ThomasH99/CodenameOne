@@ -22,6 +22,10 @@ import java.util.List;
  */
 public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface> extends MyTreeModel, Iterable {
 
+    /**
+    returns true if the task or project is completed, that is either Done (task or subtasks completed) or cancelled or soft-deleted. 
+    @return 
+    */
     public boolean isDone();
 //    boolean isTemplate();
 //    void setTemplate(boolean on);
@@ -1097,10 +1101,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     public void setDeletedDate(Date deletedDate);
 
-    public Date getDeletedDate();
+    public Date getDeletedDateN();
 
     default public boolean isDeleted() {
-        return getDeletedDate() != null;
+        return getDeletedDateN() != null;
     }
 
     /**

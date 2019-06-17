@@ -10,6 +10,7 @@ import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
+import static com.todocatalyst.todocatalyst.Item.PARSE_RESTART_TIMER;
 import static com.todocatalyst.todocatalyst.Item.PARSE_WORKSLOTS;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
 import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
@@ -154,6 +155,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public ItemList(String listName, List<E> list, boolean temporaryNoSaveList) {
         this(listName, list, null, temporaryNoSaveList);
     }
+
     public ItemList(String listName, List<E> list) {
         this(listName, list, null, false);
     }
@@ -527,7 +529,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public void add(int index, Object element) {
 //        addItemAtIndex((E) element, index);
-        ASSERT.that( false , "check if below works correctly wrt getListFull etc");
+        ASSERT.that(false, "check if below works correctly wrt getListFull etc");
 //        addToList(index, (E) element);
         ItemAndListCommonInterface refElt = getList().get(index); //find the reference element (NB! won't work if multiple copies of same element in the list!)
         addToList((E) element, refElt, false);
@@ -1086,7 +1088,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefEltOrEndOfList) {
 //        int index = indexOf(refElement);
         List listFull = getListFull();
-        int index = refElement == null ? (addAfterRefEltOrEndOfList ? listFull.size() : 0) : (listFull.indexOf(refElement)+(addAfterRefEltOrEndOfList?1:0));
+        int index = refElement == null ? (addAfterRefEltOrEndOfList ? listFull.size() : 0) : (listFull.indexOf(refElement) + (addAfterRefEltOrEndOfList ? 1 : 0));
 //        if (index < 0)
 //            addToList(newElement);
 //        else
@@ -1747,7 +1749,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        return getList().size();
 //        return getListFull().size();
 //    }
-
     /**
      * @inheritDoc
      */
@@ -2404,6 +2405,37 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return null;
     }
 
+    /**
+    in the case where previousItem is still in the list, but filtered out, this will still attempt to find an unfiltered item that comes after previousItem in the list
+    @param previousItem
+    @return 
+     */
+    private E getNextAfterEvenIfFiltered(E previousItem, boolean returnFirstItemIfPreviousNotFound) {
+        List<E> list = getList();
+        int index = list.indexOf(previousItem);
+        if (index >= 0) {
+            if (index < list.size() - 1) //if there is an element *after* previousItem in the list
+                return getList().get(index + 1);
+            else {
+                if (returnFirstItemIfPreviousNotFound && list.size() > 0)
+                    return list.get(0);
+                else
+                    return null; //else: previousItem was found in list, but was the last item
+            }
+        } else { //previousItem was NOT dfound in the list, try to find in unfiltered list and return first unfiltered item after it (if any)
+            List<E> listFull = getListFull();
+            int indexFull = listFull.indexOf(previousItem);
+            if (indexFull >= 0) {
+                //run through the elements in listFull and if return the first one which is in listFiltered  (if any)
+                for (E elt : listFull.subList(indexFull + 1, listFull.size())) { //only working if no duplicates in list!!
+                    if (list.contains(elt))
+                        return elt;
+                }
+            }
+            return null;
+        }
+    }
+
     public E getNextItemAfter(Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
         List<E> list = getList(); //get filtered list
@@ -2868,7 +2900,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        for (int i = 0, size = listSize; i < size; i++) {
 //            statusCount.add(getItemAt(i).getStatus());
 //        }
-        for (E item:getListFull()) {
+        for (E item : getListFull()) {
             statusCount.add(item.getStatus());
         }
         if (statusCount.getCount(ItemStatus.CANCELLED) == listSize) {//all subtasks are cancelled
@@ -2956,7 +2988,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                Object temp;
 //                for (int i = 0, size = getSize(); i < size; i++) {
 //                    temp = getItemAt(i);
-                for (E temp:getListFull()) {
+                for (E temp : getListFull()) {
 //                    temp = getItemAt(i);
                     if (temp instanceof ItemList) {
                         if (((ItemList) temp).containsRecurse(obj)) {
@@ -3250,7 +3282,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         int hash = 7;
 //        hash = 89 * hash + this.getObjectId().hashCode(); //doesn't work for unsaved objects
         hash = 89 * hash + this.getText().hashCode();
-        hash = 89 * hash + this.getObjectId().hashCode();
+        hash = 89 * hash + this.getObjectIdP().hashCode();
 //        hash = 89 * hash + Objects.hashCode(this.getText());
 //        hash = 89 * hash + this.typeId;
 ////        hash = 89 * hash + (int) (this.guid ^ (this.guid >>> 32));
@@ -3390,7 +3422,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return sum;
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public Object removeFromOwner() {
@@ -3557,7 +3588,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
             if (Config.CHECK_OWNERS) checkOwners(workslots);
-            return new WorkSlotList(this, workslots,true);
+            return new WorkSlotList(this, workslots, true);
         } else {
             return null; //new WorkSlotList();
         }
@@ -3733,10 +3764,28 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public Date getDeletedDate() {
+    public Date getDeletedDateN() {
         Date date = getDate(PARSE_DELETED_DATE);
 //        return (date == null) ? new Date(0) : date;
         return date; //return null to indicate NOT deleted
+    }
+
+    /**
+    set true if Timer should restart from the list's first element in case the current one is not found. This can be set per itemList since
+    it may be natural/desired to do so for some lists like Today
+    @param restartTimerOnNotFound 
+     */
+    public void setRestartTimerOnNotFound(boolean restartTimerOnNotFound) {
+        if (restartTimerOnNotFound) {
+            put(PARSE_RESTART_TIMER, true);
+        } else {
+            remove(PARSE_RESTART_TIMER); //delete when setting to default value
+        }
+    }
+
+    public boolean isRestartTimerOnNotFound() {
+        Boolean restartTimerOnNotFound = getBoolean(PARSE_RESTART_TIMER);
+        return restartTimerOnNotFound != null; //return null to indicate NOT deleted
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

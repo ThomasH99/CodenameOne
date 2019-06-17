@@ -150,7 +150,7 @@ public class AlarmHandler {
      * Called on app start or if alarms are globally enabled or disabled (via settings)
      */
     public void updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled() {
-        if (MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) { 
+        if (MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
             //disable all
             notificationList.cancelAndRemoveAllAvailableLocalNotifications();
             refreshInAppTimerAndSaveNotificationList();
@@ -158,16 +158,16 @@ public class AlarmHandler {
         } else {
             //update, or set from scratch, all alarms
 //        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
-        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
-        if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
-            notificationList.cancelAndRemoveAllAvailableLocalNotifications();
-            Item item;
-            while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
-                item = newAlarmsList.remove(0);
-                notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecord());
+            List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+            if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
+                notificationList.cancelAndRemoveAllAvailableLocalNotifications();
+                Item item;
+                while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
+                    item = newAlarmsList.remove(0);
+                    notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecord());
+                }
+                refreshInAppTimerAndSaveNotificationList();
             }
-            refreshInAppTimerAndSaveNotificationList();
-        }
         }
     }
 
@@ -343,6 +343,14 @@ public class AlarmHandler {
     }
 
     public void snoozeAllExpiredAlarms(Date snoozeExpireTime) {
+        while (!expiredAlarms.isEmpty()) {
+            ExpiredAlarm expiredAlarm = expiredAlarms.get(0); //get() here, since snoozeAlarm() will remove it once snoozed
+            snoozeAlarm(expiredAlarm, snoozeExpireTime);
+        }
+        expiredAlarmSave();
+    }
+
+    public void snoozeAllExpiredAlarmsOLD(Date snoozeExpireTime) {
 //        List<Item> itemsToSave = new ArrayList();
         List<ParseObject> itemsToSave = new ArrayList();
         while (!expiredAlarms.isEmpty()) {
@@ -385,9 +393,22 @@ public class AlarmHandler {
     }
 
     /**
+    eg when an Item is Done/Cancelled
+     */
+//    public void cancelAllFutureAlarms(Item item) {
+//        List<AlarmRecord> futureAlarms = item.getAllFutureAlarmRecordsSorted();
+//        for (AlarmRecord alarmRecord: futureAlarms) {
+//            cancelAlarm(NOTIF_LIST_FILE_ID);
+//        }
+//        while (!expiredAlarms.isEmpty()) {
+//            expiredAlarms.remove(0);
+//        }
+//        expiredAlarmSave();
+//    }
+    /**
     call eg if alarms are turned off or on on the devices
-    */
-    public void cancelAllAlarms() {
+     */
+    public void cancelAllAlarmsXXX() {
 //                    AlarmHandler.getInstance().removeExpiredAlarm(expired);
         while (!expiredAlarms.isEmpty()) {
             expiredAlarms.remove(0);

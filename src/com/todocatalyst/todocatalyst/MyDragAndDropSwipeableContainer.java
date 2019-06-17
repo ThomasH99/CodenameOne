@@ -91,6 +91,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //int screenWidthInPixels = Display.getInstance().getCurrent().getWidth();
         int screenWidthInPixels = Display.getInstance().getDisplayWidth();
         int dropWidthPixels = Display.getInstance().convertToPixels(MyPrefs.dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask.getInt());
+        if (false && Config.TEST) Log.p("x=" + x + ", screenWidth=" + screenWidthInPixels + ", dropWidth (" + MyPrefs.dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask.getInt() + "mm)=" + dropWidthPixels + "=" + ", screenWidth/3=" + screenWidthInPixels / 3 + ", min=" + Math.min(dropWidthPixels, screenWidthInPixels / 3));
         dropWidthPixels = Math.min(dropWidthPixels, screenWidthInPixels / 3); //UI: cannot set a drop zone width larger than one third 1/3 of the screen width
         //TODO: calculate some smart *minimum* widht for the drop zone - not obvious, and maybe not needed since minimum zone is 5mm (as defined in settings)
 //        int borderDropZoneWidthInPercent = MyPrefs.dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask.getInt();
@@ -452,39 +453,40 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             return false;
         }
     }
-
-    private boolean movingUpwardsOrOverDraggedOLD(MyDragAndDropSwipeableContainer newDropTarget) {
-//        boolean upwardsOrOverDragged = false;
-        int newY = newDropTarget.getAbsoluteY();
-//        Log.p("dragDirection: newDropTarget.getAbsoluteY()=" + newDropTarget.getAbsoluteY() + ", getY=" + newDropTarget.getY() + " getScrollY=" + newDropTarget.getScrollY());
-//        Log.p("dragDirection: lastY=" + lastY + ", newY=" + newY + " over=" + newDropTarget.getName());
-        if (lastY < 0 || newY <= lastY) {
-            lastY = newY;
-            return true;
-        } else {
-            assert newY > lastY;
-            lastY = newY;
-            return false;
-        }
-    }
-
-    private boolean movingUpwardsOrOverDraggedXXX(MyDragAndDropSwipeableContainer over) {
-//        boolean upwardsOrOverDragged = false;
-        Log.p("dragDirection: lastX=" + lastY + ", over.x=" + over.getX() + " over=" + over.getName());
-        if (lastY < 0 || over.getX() <= lastY) {
-            if (lastY != over.lastY) {
-                Log.p("Now dragging UP");
-            }
-            lastY = over.lastY;
-            return true;
-        } else {
-            if (lastY != over.lastY) {
-                Log.p("Now dragging DOWN");
-            }
-            lastY = over.lastY;
-            return false;
-        }
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private boolean movingUpwardsOrOverDraggedOLD(MyDragAndDropSwipeableContainer newDropTarget) {
+////        boolean upwardsOrOverDragged = false;
+//        int newY = newDropTarget.getAbsoluteY();
+////        Log.p("dragDirection: newDropTarget.getAbsoluteY()=" + newDropTarget.getAbsoluteY() + ", getY=" + newDropTarget.getY() + " getScrollY=" + newDropTarget.getScrollY());
+////        Log.p("dragDirection: lastY=" + lastY + ", newY=" + newY + " over=" + newDropTarget.getName());
+//        if (lastY < 0 || newY <= lastY) {
+//            lastY = newY;
+//            return true;
+//        } else {
+//            assert newY > lastY;
+//            lastY = newY;
+//            return false;
+//        }
+//    }
+//
+//    private boolean movingUpwardsOrOverDraggedXXX(MyDragAndDropSwipeableContainer over) {
+////        boolean upwardsOrOverDragged = false;
+//        Log.p("dragDirection: lastX=" + lastY + ", over.x=" + over.getX() + " over=" + over.getName());
+//        if (lastY < 0 || over.getX() <= lastY) {
+//            if (lastY != over.lastY) {
+//                Log.p("Now dragging UP");
+//            }
+//            lastY = over.lastY;
+//            return true;
+//        } else {
+//            if (lastY != over.lastY) {
+//                Log.p("Now dragging DOWN");
+//            }
+//            lastY = over.lastY;
+//            return false;
+//        }
+//    }
+//</editor-fold>
 
     /**
      * get the MyDragAndDropSwipeableContainer of the parent task of the subtask
@@ -1752,37 +1754,64 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
 
-        addPointerDraggedListener((e) -> {
-            Component drag = (Component) e.getSource();
-            Component dropTarget = e.getDropTarget(); //may be null (in Component.dragFinishedImpl(int x, int y))
-            int x = e.getX();
-            int y = e.getY();
-            //update drop position (NORMAL, SUBTASK, SUPERTASK):
-            InsertPositionType newInsertPosition = insertPosition(x);
-            if (insertPosition != newInsertPosition) {
+        if (false)
+            addPointerDraggedListener((e) -> {
+                Component drag = (Component) e.getSource();
+                Component dropTarget = e.getDropTarget(); //may be null (in Component.dragFinishedImpl(int x, int y))
+                int x = e.getX();
+                int y = e.getY();
+                //update drop position (NORMAL, SUBTASK, SUPERTASK):
+                InsertPositionType newInsertPosition = insertPosition(x);
+                if (insertPosition != newInsertPosition) {
 //                refreshDropPlaceholderContainer(insertPosition, newInsertAsType);
-                refreshDropPlaceholderContainer(newInsertPosition);
+                    refreshDropPlaceholderContainer(newInsertPosition);
 //                formNeedRefresh = true;
 //                Log.p("InsertPositionType now = " + newInsertAsType+" (before="+(insertPosition!=null?insertPosition.toString().toLowerCase():"<null>")+")", Log.DEBUG);
-                insertPosition = newInsertPosition;
-                Form form = Display.getInstance().getCurrent();
-                if (form != null) {
-                    form.revalidateWithAnimationSafety();
+                    insertPosition = newInsertPosition;
+                    Form form = Display.getInstance().getCurrent();
+                    if (form != null) {
+                        form.revalidateWithAnimationSafety();
+                    }
+                    return; //changed the dropContainer, no need to do anything more
                 }
-                return; //changed the dropContainer, no need to do anything more
-            }
-        });
+            });
 
         //NB!!! dragOverListener is called on the **DRAGGED** object (not the dropTarget as I originally assumed)
         addDragOverListener((e) -> {
 //            Component drag = e.getDraggedComponent();
-            Component drag = (Component) e.getSource();
-            Component dropTarget = e.getDropTarget(); //may be null (in Component.dragFinishedImpl(int x, int y))
+            Component dragged = (Component) e.getSource();
+            Component dropTarget;// = e.getDropTarget(); //may be null (in Component.dragFinishedImpl(int x, int y))
             int x = e.getX();
             int y = e.getY();
 
-            MyDragAndDropSwipeableContainer draggedMyDDCont = (MyDragAndDropSwipeableContainer) drag;
+            MyDragAndDropSwipeableContainer draggedMyDDCont = (MyDragAndDropSwipeableContainer) dragged;
             assert draggedMyDDCont == this;
+
+            /*
+            Since dropPlaceholder may be narrower on left-side (due to indentation for expanded subtasks) than full screen width, the dropTarget may be the Form (or whatever).
+            So check if y value is within the upper&lower y-bounds of the dropTarget and if so s etthe dropTarget directly. 
+            TODO!!! Use this approach systematically for simplicity?!
+             */
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            int tempY = draggedMyDDCont.dropPlaceholder != null ? draggedMyDDCont.dropPlaceholder.getAbsoluteY() : -1;
+//            int tempYY = draggedMyDDCont.dropPlaceholder.getY();
+//            int tempYAbs = draggedMyDDCont.dropPlaceholder.getAbsoluteY();
+//            int tempYInner = draggedMyDDCont.dropPlaceholder.getInnerY();
+//            int tempYOuter = draggedMyDDCont.dropPlaceholder.getOuterY();
+//            int tempYScroll = draggedMyDDCont.dropPlaceholder.getScrollY();
+//            int tempH = draggedMyDDCont.dropPlaceholder.getHeight();
+//            int tempYH = tempY + tempH;
+//</editor-fold>
+            if (draggedMyDDCont.dropPlaceholder != null//) {
+                    && y >= draggedMyDDCont.dropPlaceholder.getAbsoluteY()
+                    && y <= draggedMyDDCont.dropPlaceholder.getAbsoluteY() + draggedMyDDCont.dropPlaceholder.getHeight()) {
+                dropTarget = draggedMyDDCont.dropPlaceholder;
+            } else dropTarget = e.getDropTarget();
+//            if (draggedMyDDCont.dropPlaceholder != null
+//                    && draggedMyDDCont.dropPlaceholder.getY() >= y 
+//                && draggedMyDDCont.dropPlaceholder.getY() <= draggedMyDDCont.dropPlaceholder.getY() + draggedMyDDCont.dropPlaceholder.getHeight()) {
+//                dropTarget = draggedMyDDCont.dropPlaceholder;
+//            }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Component dropTarget = this;
@@ -3084,12 +3113,16 @@ before getting to here, we've already covered the following cases where both bef
 //                            MyDragAndDropSwipeableContainer siblingOwnerDD = getParentMyDDCont(siblingContainer);
 //                            ItemAndListCommonInterface siblingOwner = siblingOwnerDD.getDragAndDropObject().getOwner();
 //                            MyDragAndDropSwipeableContainer topLevelOwnerDD = getTopLevelParentMyDDCont(siblingOwnerDD);
+//                            MyDragAndDropSwipeableContainer siblingOwnerOwnerDD; // = getParentMyDDCont(siblingOwnerDD);
+//                            if (siblingOwnerDD != null && (siblingOwnerOwnerDD = getParentMyDDCont(siblingOwnerDD)) != null) {
+//                                ItemAndListCommonInterface siblingOwnerOwner = siblingOwnerDD.getDragAndDropObject().getOwner();
+//                            MyDragAndDropSwipeableContainer siblingOwnerOwnerDD; // = getParentMyDDCont(siblingOwnerDD);
+//                            ItemAndListCommonInterface siblingOwnerOwner = siblingOwnerDD.getDragAndDropObject().getOwner();
 //</editor-fold>
-                            MyDragAndDropSwipeableContainer siblingOwnerOwnerDD; // = getParentMyDDCont(siblingOwnerDD);
-                            if (siblingOwnerDD != null && (siblingOwnerOwnerDD = getParentMyDDCont(siblingOwnerDD)) != null) {
-                                ItemAndListCommonInterface siblingOwnerOwner = siblingOwnerDD.getDragAndDropObject().getOwner();
+                            ItemAndListCommonInterface siblingOwnerOwner = siblingOwner.getOwner();
+                            if (siblingOwnerOwner != null) {
 //                                if (siblingOwner != ownerOfBeforeElement) {//if top-level is the same as the sibling's owner, don't allow dropping as super-task
-                                if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT14 +NOR+SUB+SUP" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
+                                if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT14 +NOR+SUB+SUP" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingElement.getText() + "\""
                                             + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
                                             + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
 
@@ -3112,7 +3145,8 @@ before getting to here, we've already covered the following cases where both bef
                                     addDropPlaceholderToAppropriateParentCont(siblingOwnerDD, dropPh, 1);
                                 };
 //                                }
-                            } else if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT15 +NOR+SUB-sup" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
+                            } else if (Config.TEST_DRAG_AND_DROP)
+                                Log.p("-INSERT15 +NOR+SUB-sup" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingElement.getText() + "\""
                                         + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
                                         + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
 
@@ -4631,7 +4665,7 @@ before getting to here, we've already covered the following cases where both bef
 //        if (f != null) {
 //            f.animateHierarchy(300); //refresh after hiding dropPlaceholder
 //        }
-        if (compToAnimate != null) {
+        if (compToAnimate != null && compToAnimate.getComponentForm() != null) {
             compToAnimate.animateHierarchy(300); //refresh after hiding dropPlaceholder
         }
 

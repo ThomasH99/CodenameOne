@@ -1372,7 +1372,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public Date getDeletedDate() {
+    public Date getDeletedDateN() {
         Date date = getDate(Item.PARSE_DELETED_DATE);
 //        return (date == null) ? new Date(0) : date;
         return date;

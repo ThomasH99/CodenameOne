@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @author Thomas
  */
-public class SubtaskContainerSimple extends Container {
+public class SubtaskContainerSimpleXXX extends Container {
     
     private String SUBTASK_CONT_ID = "SubtaskContainerSimple";
 
@@ -36,7 +36,7 @@ public class SubtaskContainerSimple extends Container {
      * @param previousForm
      * @param templateEditMode
      */
-    SubtaskContainerSimple(Item item, MyForm previousForm, boolean templateEditMode,  Map<Object, UpdateField> parseIdMap2) { //    HashSet<ItemAndListCommonInterface> expandedObjects
+    SubtaskContainerSimpleXXX(Item item, MyForm previousForm, boolean templateEditMode,  Map<Object, UpdateField> parseIdMap2) { //    HashSet<ItemAndListCommonInterface> expandedObjects
 //        ItemList<Item> subtasksItemList = item.getItemList();
         setLayout(new MyBorderLayout()); //main container
 
@@ -62,7 +62,7 @@ public class SubtaskContainerSimple extends Container {
 //                if (false) 
 //                    item.setList((iList); //probably not necessary since all operations on the list (insert, D&D, ...) should update the list on each change
 //                DAO.getInstance().saveInBackground(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                parseIdMap2.put(SUBTASK_CONT_ID, ()->DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item));
+                parseIdMap2.put(SUBTASK_CONT_ID, ()->DAO.getInstance().saveTemplateCopyWithSubtasksInBackgroundXXX(item));
                 previousForm.refreshAfterEdit(); //necessary to update sum of subtask effort
             }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
             ).show();

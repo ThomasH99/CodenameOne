@@ -27,6 +27,7 @@ import com.codename1.ui.Form;
 //import com.codename1.ui.Form;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
+import com.codename1.ui.MenuBar;
 import com.codename1.ui.SideMenuBar;
 import com.codename1.ui.StickyHeader;
 import com.codename1.ui.SwipeableContainer;
@@ -1902,6 +1903,21 @@ public class MyForm extends Form {
         return makeCommandNewItemSaveToItemList(Inbox.getInstance(), "");
     }
 
+    public MyReplayCommand makeEditFilterSortCommand(ItemAndListCommonInterface itemListOrItem) {
+        return MyReplayCommand.create("Filter/Sort settings", "Edit filter", Icons.iconFilterSettings, (e) -> {
+            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDef() == null ? new FilterSortDef() : itemListOrItem.getFilterSortDef();
+            setKeepPos(new KeepInSameScreenPosition());
+            new ScreenFilter(filterSortDef, MyForm.this, () -> {
+                DAO.getInstance().saveInBackground(filterSortDef);
+                itemListOrItem.setFilterSortDef(filterSortDef);
+                DAO.getInstance().saveInBackground((ParseObject) itemListOrItem);
+                //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
+                refreshAfterEdit(); //TODO optimize the application of a filter? 
+            }).show();
+        }
+        );
+    }
+
     public static Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
@@ -1918,6 +1934,46 @@ public class MyForm extends Form {
 //        button.setIcon(FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, UIManager.getInstance().getComponentStyle("ItemCommentIcon")));
         button.setMaterialIcon(Icons.iconCommentTimeStamp);
         return button;
+    }
+
+    /**
+    replace the button created in the toolbar for cmd by the newCmdButton (which can for example have a longpress command)
+    @param cmd
+    @param longPressCmd
+    @return true if a button was found for
+     */
+    boolean addLongPressCmdToToolbarCmdButton(Command cmd, Command longPressCmd) {
+        Button oldCmdButton = getToolbar().findCommandComponent(cmd);
+        if (oldCmdButton != null) {
+
+            MyButtonLongPress newLongPressButton = new MyButtonLongPress(cmd, longPressCmd);
+
+            newLongPressButton.setUIID(oldCmdButton.getUIID()); //keep the same UIID
+            newLongPressButton.putClientProperty("TitleCommand", oldCmdButton.getClientProperty("TitleCommand")); //keep the same values as set in addCommandToLeft/Right/Bar
+            newLongPressButton.putClientProperty("Left", oldCmdButton.getClientProperty("Left"));
+
+            oldCmdButton.getParent().replace(oldCmdButton, newLongPressButton, null);
+            return true;
+        }
+        return false;
+    }
+
+    boolean replaceCommandButton(Command cmd, Button newCmdButton) {
+        ASSERT.that(newCmdButton.getCommand() == cmd || newCmdButton.getCommand().equals(cmd));
+
+        Button oldCmdButton = getToolbar().findCommandComponent(cmd);
+        if (oldCmdButton != null) {
+
+            newCmdButton.setUIID(oldCmdButton.getUIID()); //keep the same UIID
+            newCmdButton.putClientProperty("TitleCommand", oldCmdButton.getClientProperty("TitleCommand")); //keep the same values as set in addCommandToLeft/Right/Bar
+            newCmdButton.putClientProperty("Left", oldCmdButton.getClientProperty("Left"));
+
+            MenuBar sideMenu = getToolbar().getMenuBar();
+//        sideMenu.replace(oldCmdButton, newCmdButton, null);
+            oldCmdButton.getParent().replace(oldCmdButton, newCmdButton, null);
+            return true;
+        }
+        return false;
     }
 
     public Component makeSpacer() {
@@ -2068,7 +2124,6 @@ public class MyForm extends Form {
 //    protected static Component layout(String fieldLabelTxt, Component field) {
 //        return layout(fieldLabelTxt, field, null);
 //    }
-
     protected static Component layoutXXX(String fieldLabelTxt, Component field, boolean checkForTooLargeWidth) {
         return layoutOLD(fieldLabelTxt, field, null, null, checkForTooLargeWidth, false, true);
     }
@@ -3450,6 +3505,53 @@ public class MyForm extends Form {
 //        }
 //</editor-fold>
         Container wrappedInsertContainer = null;
+        if (false) {
+            String inlineElementKey = "InlineInsertElement";
+//        String inlineElementOwnerKey = "InlineInsertElementOwner";
+            String inlineElementBelowKey = "InlineInsertElementBelow";
+            String inlineCategoryKey = "InlineInsertCategory";
+            String inlineBeforeKey = "InlineInsertBefore";
+            previousValues.put(inlineElementKey, EAST);
+            previousValues.put(inlineElementBelowKey, EAST);
+            previousValues.put(inlineBeforeKey, EAST);
+            previousValues.put(inlineCategoryKey, EAST);
+
+//        ItemAndListCommonInterface refElement = (ItemAndListCommonInterface)previousValues.get(inlineElementKey);
+//        ItemAndListCommonInterface inlineElementOwner = (ItemAndListCommonInterface)previousValues.get(inlineElementKey);
+//        boolean inlineElementBelow = (Boolean)previousValues.get(inlineElementBelowKey);
+//        Category inlineCategory = (Category)previousValues.get(inlineCategoryKey);
+            previousValues.put("", EAST);
+            previousValues.put(inlineElementBelowKey, EAST);
+            previousValues.put(inlineCategoryKey, EAST);
+
+            if (previousValues.get("InlineInsertCmd") != null) {
+
+                MyReplayCommand inlineInsert = MyReplayCommand.create("", "", null, (e) -> {
+
+                    if (previousValues.get("InlineInsertCmd").equals("InsertContainer")) {
+
+                    } else {
+                        if (Config.TEST) ASSERT.that(previousValues.get("InlineInsertCmd").equals("EditItem"));
+
+                    }
+
+                    previousValues.remove(inlineElementKey); //removing the refElement is a marker to indicate 
+//            Container wrappedInsertContainer2;
+                    ItemAndListCommonInterface refElement = (ItemAndListCommonInterface) previousValues.get(inlineElementKey);
+                    ItemAndListCommonInterface inlineElementOwner = (ItemAndListCommonInterface) previousValues.get(inlineElementKey);
+                    boolean inlineElementBelow = (Boolean) previousValues.get(inlineElementBelowKey);
+                    Category inlineCategory = (Category) previousValues.get(inlineCategoryKey);
+                    InsertNewElementFunc insertContainer2 = createInsertContainer(refElement, inlineElementOwner, inlineCategory, inlineElementBelow); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+////            insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+                    Container wrappedInsertContainer2 = wrapInPinchableContainer(insertContainer2);
+                    Component dropComponentBelow2 = null; //TODO!!!!! smartest to let MyTree find the component for an element?!
+                    MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(dropComponentBelow2, wrappedInsertContainer2, 0); //insert insertContainer at position of dropComponentBelow
+//            setInlineInsertContainer(insertContainer); //call this *after* inserting the new container to ensure that text field starts in editing mode
+
+                });
+            }
+        }
+
         if (dropComponentAbove == null && dropComponentBelow != null) { //pull down on top-most item, insert before the first element (can be Item/Category/ItemList)
             insertContainer = createInsertContainer(itemEltBelow, itemEltBelow.getOwner(), category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
 //            insertContainer = createInsertContainer(itemEltBelow, ownerList, category, true); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
@@ -3784,6 +3886,7 @@ public class MyForm extends Form {
 
     @Override
     public void pointerDragged(int[] x, int[] y) {
+        
         boolean testingPinchOnSimulator = Config.TEST_PINCH && Display.getInstance().isSimulator();
         if (testingPinchOnSimulator) {
             int displayHeight = Display.getInstance().getDisplayHeight();

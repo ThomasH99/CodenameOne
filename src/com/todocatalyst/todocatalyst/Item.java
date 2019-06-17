@@ -90,6 +90,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
     public Item() {
         super(CLASS_NAME);
+//        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
+        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue()); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
     }
 
 //    public Item(Item source) {
@@ -968,6 +970,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_SNOOZED_TYPE = "snoozeType"; //date until which the 
     final static String PARSE_FILTER_SORT_DEF = "filterSort";
     final static String PARSE_WORKSLOTS = "workslots";
+    final static String PARSE_RESTART_TIMER = "restartTimer"; //should the Timer be re-started from first element if the currently timed is no longer in the list?
 //    final static String PARSE_FINISH_TIME = "finishTimexx"; //NOT a parse field, just used to store the field with
 //    final static String PARSE_ = "";
 
@@ -1126,9 +1129,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+    @Override
     public boolean isDone() {
         ItemStatus status = getStatus();
-        return status == ItemStatus.DONE || status == ItemStatus.CANCELLED;  //CANCELLED since this makes a Cancelled task flip back to Created when clicked in a list
+        return status == ItemStatus.DONE || status == ItemStatus.CANCELLED; // || getDeletedDateN() != null;  //CANCELLED since this makes a Cancelled task flip back to Created when clicked in a list
     }
 
     public boolean areAnySubtasksOngoingOrDone() {
@@ -2079,24 +2083,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return ""; //BaseItemTypes.toString(getTypeId()) + "\"" + getText() + "\"";
 //    }
 //</editor-fold>
-    /**
-     * delete the item, as well as sub-tasks. Remove it from categories and
-     * alarm server. Stop timer if running. For items with repeatrules, user
-     * must decide if only to delete this instance or all instances.
-     *
-     */
-    @Override
-    public boolean softDelete() { //throws ParseException {
-        return softDelete(false); //false=leave references from softDeleted objects to other elements (Categories, owner Item/ItemList etc) - easier to restore
-    }
-
-    @Override
-    public boolean softDelete(boolean removeRefs) { //throws ParseException {
-
+    private void softDeleteImpl(Date deleteDate, boolean removeRefs) {
+        setDeletedDate(deleteDate);
+        
         //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
         List<Item> itemsSubtasksOfThisItem = getListFull();
         for (Item item : itemsSubtasksOfThisItem) {
-            item.softDelete(removeRefs); //let each item delete itself properly, will recurse down the project hierarchy
+            item.softDeleteImpl(deleteDate,removeRefs); //let each item delete itself properly, will recurse down the project hierarchy
         }
 
         //TODO!!! (?)anything to do to handle case where subtasks are created and saved, but where the new mother task is finally not saved?
@@ -2133,8 +2126,66 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //this could make it very slow!!!!
         //ALARMS remove any active alarms
         AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
+    }
 
-        setDeletedDate(new Date());
+    /**
+     * delete the item, as well as sub-tasks. Remove it from categories and
+     * alarm server. Stop timer if running. For items with repeatrules, user
+     * must decide if only to delete this instance or all instances.
+     *
+     */
+    @Override
+    public boolean softDelete() { //throws ParseException {
+        return softDelete(false); //false=leave references from softDeleted objects to other elements (Categories, owner Item/ItemList etc) - easier to restore
+    }
+
+    @Override
+    public boolean softDelete(boolean removeRefs) { //throws ParseException {
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
+//        List<Item> itemsSubtasksOfThisItem = getListFull();
+//        for (Item item : itemsSubtasksOfThisItem) {
+//            item.softDelete(removeRefs); //let each item delete itself properly, will recurse down the project hierarchy
+//        }
+//
+//        //TODO!!! (?)anything to do to handle case where subtasks are created and saved, but where the new mother task is finally not saved?
+//        //DELETE IN CATEGORIES
+//        // remove item from all categories before deleting it
+//        for (Category cat : getCategories()) {
+//            ((Category) cat).removeItemFromCategory(this, removeRefs); //remove references to this item from the category before deleting it (false: but keep the item's categories)
+//            DAO.getInstance().saveInBackground((ParseObject) cat);
+//        }
+//
+//        //DELETE IN OWNERS/PROJECTS
+//        ItemAndListCommonInterface owner = getOwner();
+//        if (owner instanceof Item) {
+//            ((Item) owner).removeFromList(this, removeRefs); //
+//            DAO.getInstance().saveInBackground((ParseObject) owner);
+//        } else {
+//            owner.removeFromList(this);
+//            DAO.getInstance().saveInBackground((ParseObject) owner);
+//        }
+//
+//        //handle repeatrule
+//        //TODO!!!! handle repeatRules when deleting an Item
+//        RepeatRuleParseObject myRepeatRule = getRepeatRule();
+//        if (myRepeatRule != null) {
+////            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we
+////            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
+//            myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+//            //NB. We don't delete the item's refs to repeatrule
+//        }
+//
+//        //TODO!!!! remove item from OriginalSource field (from copies of this task) - all these links are one way, so need to search in ParseServer.
+//        //if deleting them, maybe replace the ObjectId link by the text of the original task??
+//        //or better simply to leave them and add a mechanism to ignore soft-deleted sources?? The mechanism would likely have to check the server each time, so
+//        //this could make it very slow!!!!
+//        //ALARMS remove any active alarms
+//        AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
+//</editor-fold>
+        softDeleteImpl(new Date(), true);
+//        setDeletedDate(new Date());
         DAO.getInstance().saveInBackground(this);
 
         return true;
@@ -2158,6 +2209,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        // TODO: remove any active alarms!!
 //        AlarmServer.getInstance().remove(this); //TODO!!!! should happen automatically via delete change event?
 //</editor-fold>
+    }
+
+    public void delete() throws ParseException {
+        softDeleteImpl(new Date(), false); //ONLY soft-delete is supported, softDeleteImpl() won't handle a deep hard-delete!
+        super.delete();
     }
 
     /**
@@ -3349,7 +3405,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     /**
      * returns all alarms, after or equal afterDate (if defined, otherwise all),
      * sorted by date if sorted is true. Returns empty list if no alarms defined
-     * after onOrAfterDate
+     * after onOrAfterDate. Returns dates whether Item is Done or not. 
      *
      * @return
      */
@@ -4671,6 +4727,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //if setting Done, ask if set actual
         if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //don't activate here, activate in UI part
             MyForm.dialogUpdateActualTime(this); //only call if we're changing TO Waiting status
+        }
+
+        if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
+            mustUpdateAlarms = true; //update alarms
         }
 
         if (updateSubtasks && isProject()) {
@@ -6245,6 +6305,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
 //</editor-fold>
 
+    public long getRemainingDefaultValue() {
+        return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
+    }
+
     public long getRemaining(boolean useDefaultEstimateForZeroEstimates, boolean returnZeroForDoneTasks) {
         if (returnZeroForDoneTasks && isDone()) {
             return 0;
@@ -6280,7 +6344,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
         if (useDefaultEstimateForZeroEstimates && effort == 0) {
-            return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
+//            return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
+            return getRemainingDefaultValue();
         } else {
             return effort;
         }
@@ -6319,6 +6384,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             effort += item.getRemaining(); //remainingEffort  returns complete actual effort for subtasks (including their own effort and that of any of their subtasks
         }
         return effort;
+    }
+
+    public boolean isRemainingDefaultValue() {
+        return getRemainingForProjectTaskItself() == getRemainingDefaultValue();
     }
 
     ////////////// ACTUAL ///////////////
@@ -7126,6 +7195,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public void setDeletedDate(Date dateDeleted) {
         if (dateDeleted != null && dateDeleted.getTime() != 0) {
+//            if (isProject()) //NO, not here, is done in softDeleteImpl()
+//                for (Item subtask : (List<Item>) getListFull()) { //full set even for hidden subtasks
+//                    subtask.setDeletedDate(dateDeleted);
+//                }
             put(PARSE_DELETED_DATE, dateDeleted);
         } else {
             remove(PARSE_DELETED_DATE); //delete when setting to default value
@@ -7133,7 +7206,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     @Override
-    public Date getDeletedDate() {
+    public Date getDeletedDateN() {
         Date date = getDate(PARSE_DELETED_DATE);
 //        return (date == null) ? new Date(0) : date;
         return date; //return null to indicate NOT deleted
@@ -7759,15 +7832,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             listeners.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
         }
 
-        updateNextcomingAlarm();
-
-        if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
-            Inbox.getInstance().addToList(this);
-            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
-            DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());
-        } else {
-            super.save();
-        }
 //        if (afterSaveActions.containsKey(AFTER_SAVE_ALARM_UPDATE)) {
 //            afterSaveActions.remove(AFTER_SAVE_TEXT_UPDATE); //if we're updating alarms due to time change, we can ignore any changed to the text
 //        }
@@ -7776,12 +7840,39 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////            afterSaveActions.remove(action); //NOT allowed, throws java.util.ConcurrentModificationException, see eg http://stackoverflow.com/questions/8104692/how-to-avoid-java-util-concurrentmodificationexception-when-iterating-through-an
 //        }
 //        afterSaveActions.clear();
-        if (mustUpdateAlarms) {
-            AlarmHandler.getInstance().updateAlarmsOrTextForItem(this);
-            mustUpdateAlarms = false;
+        if (isDone()) {
+            AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //remove any future alarms for a Done/Cancelled task
+            TimerStack.getInstance().stopTimerIfRunningOnThisItemAndStartTimerOnNext(this);
+        } else {
+            updateNextcomingAlarm();
+            if (mustUpdateAlarms) {
+                AlarmHandler.getInstance().updateAlarmsOrTextForItem(this);
+                mustUpdateAlarms = false;
+            }
         }
+        if (isDone() || getDeletedDateN() != null)
+            TimerStack.getInstance().stopTimerIfRunningOnThisItemAndStartTimerOnNext(this);
+
+        if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+            Inbox.getInstance().addToList(this);
+            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
+            DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());
+        } else {
+            super.save();
+        }
+
     }
 
+    /**
+     * templates (or their subtasks): should not show up when searching on tasks
+     * <=> require avoiding them when searching). Templates can be edited like
+     * normal tasks. Should be possible to distinguish template subtasks from
+     * other subtasks. When deleting a category it should be removed from
+     * templates. Solutions: mark every project/subtask as template during the
+     * copy? Create a separate ParseObject class to store completely separately?
+     *
+     * @param template
+     */
     /**
      * templates (or their subtasks): should not show up when searching on tasks
      * <=> require avoiding them when searching). Templates can be edited like
@@ -8369,7 +8460,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_DELETED_DATE:
                 if (toCSV) {
-                    list.add(MyDate.formatDateNew(getDeletedDate()));
+                    list.add(MyDate.formatDateNew(getDeletedDateN()));
                 } else {
                     setDeletedDate((Date) val);
                 }
@@ -8555,7 +8646,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
         long required = getRemaining(true); //includes subtasks and own time
-        if (Config.TEST) ASSERT.that(required == requiredCalc, this + " -getWorkTimeRequiredFromProvider(): wrong Remaining, calculated="
+        if (false && Config.TEST) ASSERT.that(required == requiredCalc, this + " -getWorkTimeRequiredFromProvider(): wrong Remaining, calculated="
                     + MyDate.formatDurationShort(requiredCalc, true) + ", getRemaining()=" + MyDate.formatDurationShort(required, true));
 
         WorkSlotList ownWorkSlots = getWorkSlotListN();

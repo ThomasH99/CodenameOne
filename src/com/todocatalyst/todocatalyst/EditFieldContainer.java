@@ -99,10 +99,11 @@ public class EditFieldContainer extends Container {
 
         //FIELD LABEL
         Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText);
-        if (true) {
-            fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
-            fieldContainer.add(MyBorderLayout.EAST, visibleField);
-        } else if (wrapText) {
+//        if (true) {
+//            fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
+//            fieldContainer.add(MyBorderLayout.EAST, visibleField);
+//        } else 
+            if (wrapText) {
             int availDisplWidth = (Display.getInstance().getDisplayWidth() * 90) / 100; //asumme roughly 90% of width is available after margins
 //            int availDisplWidthParent = getPaDisplay.getInstance().getDisplayWidth() * 10 / 10; //asumme roughly 90% of width is available after margins
             int labelPreferredW = fieldLabel.getPreferredW();

@@ -7,6 +7,7 @@ package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.CheckBox;
 import com.codename1.ui.Display;
+import com.codename1.ui.Font;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
@@ -22,6 +23,8 @@ public class Icons {
 
     //TODO smarter pattern for Icons https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
     private static Icons INSTANCE;
+    public static Font iconFont = Font.createTrueTypeFont("myIconFont", "myiconfont.ttf"); //name and filename
+    Label label = new Label();
 
     private Icons() {
 
@@ -263,7 +266,7 @@ public class Icons {
     final static char iconDreadFunNeutral = FontImage.MATERIAL_THUMBS_UP_DOWN; //MATERIAL_SENTIMENT_VERY_SATISFIED;
     final static char iconFun = FontImage.MATERIAL_THUMB_UP; //MATERIAL_SENTIMENT_VERY_SATISFIED
     final static char iconDread = FontImage.MATERIAL_THUMB_DOWN; //FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
-            
+
     final static char iconChallengeVeryEasy = FontImage.MATERIAL_SENTIMENT_VERY_SATISFIED;
     final static char iconChallengeEasy = FontImage.MATERIAL_SENTIMENT_SATISFIED;
     final static char iconChallengeAverage = FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED;
@@ -292,8 +295,9 @@ public class Icons {
     //REPEAT
     final static char iconSimulateRepeatDates = FontImage.MATERIAL_REFRESH; //MATERIAL_EVENT_AVAILABLE;
     final static char iconShowGeneratedTasks = FontImage.MATERIAL_SETTINGS_BACKUP_RESTORE; //MATERIAL_EVENT_AVAILABLE;
-    
+
     final static char iconBackToPreviousScreen = FontImage.MATERIAL_ARROW_BACK; //MATERIAL_EVENT_AVAILABLE;
+
     static Image iconBackToPrevFormToolbarStyle() {
         return makeT(iconBackToPreviousScreen);
     }
@@ -304,6 +308,7 @@ public class Icons {
     final static Image iconBackToPrevFormToolbarStyle = FontImage.createMaterial(iconBackToPreviousScreen, toolBarStyle);
 
     final static char iconEdit = FontImage.MATERIAL_CHEVRON_RIGHT;
+    final static char iconEditMyFont = '\ue809';
 
     static Image iconEditPropertiesToolbarStyle() {
         return makeT(iconEdit);

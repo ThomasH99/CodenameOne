@@ -715,13 +715,12 @@ public class ScreenListOfItems extends MyForm {
         }
 
         if (false) {
+//        Command newCmd=Command.create("X", null, (e)->Log.p("FIRST_COMMAND"));
+//        toolbar.addCommandToRightBar(newCmd);
+//        addLongPressCmdToToolbarCmdButton(newCmd, new MyButtonLongPress(newCmd, Command.create("",null,(e)->Log.p("LONGPRESS COMMAND"))));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Button oldCmdButton = toolbar.findCommandComponent(newCmd);
-//            Button newCmdButton = new Button(newCmd) {
-//                @Override
-//                public void longPointerPress(int x, int y) {
-//                    super.longPointerPress(x, y);
-////                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
+//            Button newCmdButton =  new MyButtonLongPress(newCmd, Command.create("", null, (e2)->{
 //                    Item selectedTemplate = pickTemplate();
 //                    if (selectedTemplate != null) { //null if user cancelled
 //                        Item newTemplateInstantiation = new Item();
@@ -736,8 +735,8 @@ public class ScreenListOfItems extends MyForm {
 //                            }
 //                        }).show();
 //                    }
-//                }
-//            };
+//                }));
+//            oldCmdButton.getParent().replace(oldCmdButton, newCmdButton, null);
 //            newCmdButton.setText("NewCmd");
 //            newCmdButton.putClientProperty("TitleCommand", Boolean.TRUE);
 //            toolbar.replace(oldCmdButton, newCmdButton, null);
@@ -874,31 +873,19 @@ public class ScreenListOfItems extends MyForm {
 
         //FILTER / SORT
         if (!optionTemplateEditMode && !optionUnmodifiableFilter) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "Edit filter", Icons.iconFilterSettings, (e) -> {
-//                    if (filterSortDef == null) {
-////                        filterSortDef = FilterSortDef.fetchFilterSortDef(SCREEN_ID, itemListOrg, new FilterSortDef(SCREEN_ID, itemListOrg));
-//                        filterSortDef = itemListOrg.getFilterSortDef();
-//                        if (filterSortDef == null) {
-//                            filterSortDef = new FilterSortDef();
-//                        }
-//                    }
-                FilterSortDef filterSortDef = itemListOrg.getFilterSortDef() == null ? new FilterSortDef() : itemListOrg.getFilterSortDef();
-//                if (filterSortDef == null) {
-//                    filterSortDef = new FilterSortDef();
-//                }
-                setKeepPos(new KeepInSameScreenPosition());
-                new ScreenFilter(filterSortDef, ScreenListOfItems.this, () -> {
-//                    itemList = filterSortDef.filterAndSortItemList(itemListOrg);
-                    DAO.getInstance().saveInBackground(filterSortDef);
-                    itemListOrg.setFilterSortDef(filterSortDef);
-                    DAO.getInstance().saveInBackground((ParseObject) itemListOrg);
-//                        refreshItemListFilterSort();
-//                        setupList(); //TODO optimize the application of a filter?
-                    //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
-                    refreshAfterEdit(); //TODO optimize the application of a filter? 
-                }).show();
-            }
-            ));
+//            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "Edit filter", Icons.iconFilterSettings, (e) -> {
+//                FilterSortDef filterSortDef = itemListOrg.getFilterSortDef() == null ? new FilterSortDef() : itemListOrg.getFilterSortDef();
+//                setKeepPos(new KeepInSameScreenPosition());
+//                new ScreenFilter(filterSortDef, ScreenListOfItems.this, () -> {
+//                    DAO.getInstance().saveInBackground(filterSortDef);
+//                    itemListOrg.setFilterSortDef(filterSortDef);
+//                    DAO.getInstance().saveInBackground((ParseObject) itemListOrg);
+//                    //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
+//                    refreshAfterEdit(); //TODO optimize the application of a filter? 
+//                }).show();
+//            }
+//            ));
+            toolbar.addCommandToOverflowMenu(makeEditFilterSortCommand(itemListOrg));
 
 //            toolbar.addCommandToOverflowMenu(sortOnOff = new Command("Sort ON/OFF", Icons.iconCmdSortOnOff) { //this title never shown
             Command sortOnOff = new CommandTracked("Sort XXX", Icons.iconFilter, "SortOnOff") {
@@ -1999,13 +1986,17 @@ public class ScreenListOfItems extends MyForm {
         } else {
             status = new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
                 if (newStatus != oldStatus) {
-                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfRunningOnThisItemOnStartTimerOnNext(item); //call this here to avoid triggering if status is changed from within the Timer
+                    if (false) { //stop timer in Item.save() - once all changes to status have been taken into account (whether Done/Cancel/SoftDelete
+                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfRunningOnThisItemAndStartTimerOnNext(item); //call this here to avoid triggering if status is changed from within the Timer
+                    }
+                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfRunningOnThisItemAndStartTimerOnNext(item); //call this here to avoid triggering if status is changed from within the Timer
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 
                     //if setting Done, ask if set actual
                     if (((newStatus == ItemStatus.DONE || newStatus == ItemStatus.WAITING)
                             && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.WAITING))
-                            && !wasTimerRunningForTheTask && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
+                            && !wasTimerRunningForTheTask 
+                            && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
                         dialogUpdateActualTime(item);
                     }
 
@@ -2313,6 +2304,7 @@ public class ScreenListOfItems extends MyForm {
 //            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
             challengeLabel = new Label("", "ListOfItemsItemDetailsLabel");
             challengeLabel.setMaterialIcon(item.getChallengeN().getIcon());
+            if (false) challengeLabel.setFontIcon(Icons.iconFont, Icons.iconEditMyFont);
             if (Config.TEST) {
                 challengeLabel.setName("Challenge");
             }

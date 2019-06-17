@@ -1701,7 +1701,7 @@ public class RepeatRuleParseObject
                     ItemAndListCommonInterface oldOwner = ((Item) obsoleteInstance).removeFromOwner();
                     if (!updatedOwners.contains(oldOwner))
                         updatedOwners.add(oldOwner);
-                    DAO.getInstance().delete((ParseObject) obsoleteInstance);   //TODO!!!! check that this deletes it in all lists, categories etc!
+                    DAO.getInstance().deleteInBackground((ParseObject) obsoleteInstance);   //DONE!!!! check that this deletes it in all lists, categories etc! IT DOES (via Item.delete())
                 }
 //            } else if (obsoleteInstance instanceof WorkSlot) {
 //                    ItemAndListCommonInterface oldOwner = ((WorkSlot) obsoleteInstance).removeFromOwner();
@@ -1953,10 +1953,10 @@ public class RepeatRuleParseObject
         for (RepeatRuleObjectInterface p : undoneList) {
             if (p instanceof Item) {
                 if (((Item) p).getObjectIdP() == null)
-                    ASSERT.that(false, "error");
+                    ASSERT.that(true, "error");
             } else if (p instanceof WorkSlot)
                 if (((WorkSlot) p).getObjectIdP() == null)
-                    ASSERT.that(false, "error");
+                    ASSERT.that(true, "error");
         }
     }
 
@@ -1994,7 +1994,7 @@ public class RepeatRuleParseObject
                 instancesToBeDeleted = undoneList.size();
                 while (undoneList.size() > 0) { //delete all already generated instances
                     ParseObject repeatRuleObject = (ParseObject) undoneList.remove(0);
-                    DAO.getInstance().delete(repeatRuleObject);
+                    DAO.getInstance().deleteAndWait(repeatRuleObject);
                 }
 //                DAO.getInstance().deleteBatch((List<ParseObject>)undoneList);
             }
@@ -3518,7 +3518,7 @@ public class RepeatRuleParseObject
                         ASSERT.that(true, "RepeatRule: " + this.toStringWObjId() + " references null elt!! "); //TODO!! remove such elements if detected (both from local cache and Parse Server)
                     }
                 } else {
-                    if (Config.DEBUG_LOGGING) {
+                    if (Config.DEBUG_LOGGING && p.getObjectIdP() == null) {
                         ASSERT.that(p.getObjectIdP() != null, "RepeatRule= \"" + this.toStringWObjId() + "\" references with getObjectIdP()==null, elt=\"" + p + "\"");
                     }
                     dos.writeUTF(p.getObjectIdP());

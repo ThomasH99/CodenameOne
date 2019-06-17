@@ -378,7 +378,9 @@ public class ScreenItem2 extends MyForm {
 //                            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
                             template.copyMeInto(item, Item.CopyMode.COPY_FROM_TEMPLATE);
 //                            DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
-                            DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
+//                            DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
+//                            DAO.getInstance().saveProjectInBackground(item);
+                            DAO.getInstance().saveInBackground(item);
 //                            locallyEditedCategories = null; //HACK needed to force update of locallyEditedCategories (which shouldn't be refreshed when eg editing subtasks to avoid losing the edited categories) 
 //                            ip.dispose();
                             refreshAfterEdit();
@@ -396,6 +398,9 @@ public class ScreenItem2 extends MyForm {
 //                    if (template != null) {
                 };
             }, "CreateFromTemplate"));
+
+            toolbar.addCommandToOverflowMenu(makeEditFilterSortCommand(item));
+
         }
 
         //DELETE
@@ -1441,7 +1446,7 @@ public class ScreenItem2 extends MyForm {
 //                repeatRuleButton.getParent().revalidate(); //enough to update? NO
 //</editor-fold>
                 //if a startDate was set in the RR, and none is set for the item, use RR startDate as due date. *unless* the dueDate was reset to 0 (hence the test on item.getDueDateD())
-                if (item.getDueDateD().getTime()==0 && dueDate.getDate().getTime() == 0 
+                if (item.getDueDateD().getTime() == 0 && dueDate.getDate().getTime() == 0
                         && locallyEditedRepeatRule.getSpecifiedStartDateD().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
 //                    dueDate.setDate(new Date(locallyEditedRepeatRule.getSpecifiedStartDateD().getTime())); //set dueDate if set in RepeatRule //TODO!!!! or if due date *changed* in RepeatRule?? //NOT necessary as picker is initialized from locallyEdited values
                     previousValues.put(Item.PARSE_DUE_DATE, new Date(locallyEditedRepeatRule.getSpecifiedStartDateD().getTime())); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
@@ -1449,7 +1454,7 @@ public class ScreenItem2 extends MyForm {
                 if (false) mainCont.revalidate(); //enough to update? NO
 //                    }
 //            }, true, dueDate.getDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
-            }, true, dueDate.getDate(), ()-> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
+            }, true, dueDate.getDate(), () -> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1626,15 +1631,17 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 int totalNumberSubtasks2 = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 
                 editSubtasksFullScreen.setText(totalNumberSubtasks2 == 0 ? "" : "" + numberUndoneSubtasks2 + "/" + totalNumberSubtasks2);
-                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveTemplateCopyWithSubtasksInBackground((Item) item));
+//                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveTemplateCopyWithSubtasksInBackground((Item) item));
+//                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveProjectInBackground((Item) item));
+                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveInBackground((Item) item));
                 previousForm.refreshAfterEdit(); //necessary to update sum of subtask effort
-            }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+            }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES|ScreenListOfItems.OPTION_NO_TIMER|ScreenListOfItems.OPTION_NO_TIMER|ScreenListOfItems.OPTION_NO_WORK_TIME
             ).show();
         }
         ));
         mainCont.add(layoutN(Item.SUBTASKS, editSubtasksFullScreen, Item.SUBTASKS_HELP));
 
-        if (false) mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2)); //edit subtasks
+//        if (false) mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2)); //edit subtasks
         //TODO!!!!! editing of subtasks should be local (and saved locally on app exit)
 //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, item, templateEditMode));
 

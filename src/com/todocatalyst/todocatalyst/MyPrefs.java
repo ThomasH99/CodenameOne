@@ -25,7 +25,7 @@ public class MyPrefs {
             = new PrefEntry("In Today, include tasks starting today", "todayViewIncludeStartingToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeWorkSlotsCoveringToday
             = new PrefEntry("In Today, include WorkSLots starting today", "todayViewIncludeWorkSlotsCoveringToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
-    
+
 //ESTIMATES
     static PrefEntry automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining
             = new PrefEntry("**", "automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining", true, "**");
@@ -58,10 +58,10 @@ public class MyPrefs {
 //    static PrefEntry insertNewItemsInStartOfCategory = new PrefEntry("insertNewItemsInStartOfCategory", true, "Always insert new tasks at the beginning of lists (instead of at the end)");
     static PrefEntry insertNewItemsInStartOfLists
             = new PrefEntry("Insert tasks at top of lists", "insertNewItemsInStartOfLists", true, "Always insert new or moved tasks at the beginning of lists (instead of at the end)");
-    
+
     static PrefEntry insertNewSubtasksInScreenItemInStartOfLists
             = new PrefEntry("**Insert new subtasks created at top of list", "insertNewSubtasksInScreenItemInStartOfLists", false, "**Always insert new subtasks at the beginning of lists (instead of at the end)");
-   
+
     static PrefEntry itemContinueAddingInlineItems //see text for workSlotContinueAddingInlineWorkslots
             = new PrefEntry("**", "itemContinueAddingInlineItems", true, "**");
     //"Insert created at top of list", "Insert new tasks at beginning of list"
@@ -73,39 +73,38 @@ public class MyPrefs {
             = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
 
     static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
-            = new PrefEntry("Insert new repeat instances after the original ", 
+            = new PrefEntry("Insert new repeat instances after the original ",
                     "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task instead of beginning/end of list"); //"at the end"
 
     static PrefEntry dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList
             = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks", "dropItemAtBeginningOfUnexpandedCategorySubtaskList", false, "**");
 
     static PrefEntry insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList
-//            = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", 
-            = new PrefEntry("Add subtasks at end of subtask list", 
+            //            = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", 
+            = new PrefEntry("Add subtasks at end of subtask list",
                     "insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList", true, "**");
 
     //DRAG AND DROP
     static PrefEntry dragDropAsSubtaskEnabled
             = new PrefEntry("Drag and drop to right edge of screen inserts as subtask", "dragDropAsSubtaskEnabled", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
-    
+
     static PrefEntry dragDropAsSupertaskEnabled
             = new PrefEntry("Drag and drop to left edge of screen inserts tasks at level above", "dragDropAsSupertaskEnabled", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
-    
+
 //    static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
     static PrefEntry dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask
             = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
-                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 20, "**");
+                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 12, "**");
 
 //    static PrefEntry dragDropLeftDropZoneWidth
 //            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
 //    
 //    static PrefEntry dragDropRightDropZoneWidth
 //            = new PrefEntry("Width of the right-hand drop zone (%)", "dragDropRightDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
-    
     //Edit ITEM screen - Screenitem2
     static PrefEntry itemEditEnableSwipeBetweenTabs
             = new PrefEntry("Enable swiping between task details", "itemEditEnableSwipeBetweenTabs", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
-    
+
     //TIMER - ScreenTimer6
     static PrefEntry timerAutomaticallyStartTimer
             = new PrefEntry("Automatically start timer for a task", "automaticallyStartTimer", true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
@@ -198,6 +197,9 @@ public class MyPrefs {
     static PrefEntry timerCanBeSwipeStartedEvenOnInvalidItem
             = new PrefEntry("Allow to swipe-start Timer on any task/project **", "timerCanBeSwipeStartedEvenOnInvalidItem", true,
                     "Start Timer directly on any swiped task or project"); //be force-started on tasks which are normally skipped, e.g. Done, Cancelled or Waiting tasks (depend on settings)**");
+    static PrefEntry timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject
+            = new PrefEntry("If the currently timed task is no longer in the timed list or project, then start Timer on first task", "timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject", false,
+                    "**");
 
     //COMMENTS
     static PrefEntry commentsAddToBeginningOfComment
@@ -214,7 +216,6 @@ public class MyPrefs {
     static PrefEntry commentMaxSizeInChars
             = new PrefEntry("**", "commentMaxSizeInChars", 512, "**"); //TODO make max comment size a PRO subscription dependendant setting
 
-    
     //CATEGORY
     static PrefEntry showCategoryDescriptionInCategoryList
             = new PrefEntry("**", "showCategoryDescriptionInCategoryList", false, "Show Category description in category lists");
@@ -411,7 +412,7 @@ public class MyPrefs {
 
     static PrefEntry showSourceItemInEditScreens
             = new PrefEntry("For a copy, show the original", "showSourceItemInEditScreens", true, "**");
-    
+
     static PrefEntry showSourceWorkSlotInEditScreens
             = new PrefEntry("For a copy, show the original", "showSourceWorkSlotInEditScreens", true, "**");
 
@@ -421,7 +422,7 @@ public class MyPrefs {
     //ITEMLIST
     static PrefEntry useDefaultFilterInItemListsWhenNoneDefined
             = new PrefEntry("By default, hide Done and Cancelled tasks in lists", "useDefaultFilterInItemListsWhenNoneDefined", true, "**");
-    
+
     //LOOK AND FEEL
     static PrefEntry themeNameWithoutBackslash
             = new PrefEntry("**", "themeNameWithoutBackslash", "theme", "name of the graphical theme");
@@ -440,24 +441,24 @@ public class MyPrefs {
 
     //REPEATRULE
     static PrefEntry repeatMaxInterval = new PrefEntry("repeatMaxInterval**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
-    static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead 
+    static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead
             = new PrefEntry("repeatMaxNumberFutureInstancesToGenerateAhead", "repeatMaxNumberFutureInstancesToGenerateAhead", 10, "0 disables - TODO**");
     static PrefEntry repeatMaxNumberFutureDaysToGenerateAhead = new PrefEntry("repeatMaxNumberFutureDaysToGenerateAhead**", "repeatMaxNumberFutureDaysToGenerateAhead", 31, "**");
-    static PrefEntry maxNumberRepeatInstancesToDeleteWithoutConfirmation 
+    static PrefEntry maxNumberRepeatInstancesToDeleteWithoutConfirmation
             = new PrefEntry("Ask for confirmation if deleting more repeat instances that this", "maxNumberRepeatInstancesToDeleteWithoutConfirmation", 3, "**");
     static PrefEntry repeatSetRelativeFieldsWhenCreatingRepeatInstances
             = new PrefEntry("Set Alarm, Hide until, Start by and Expires on fields relative to Due date", "repeatSetRelativeFieldsWhenCreatingRepeatInstances", true,
                     "set the relative date fields like Alarm/HideUntil/StartBy/Autoexpire** etc to same time before/after due date**");
-    static PrefEntry repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule 
-            = new PrefEntry("Reuse existing instances when changing " + RepeatRuleParseObject.REPEAT_RULE, "repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule", 
+    static PrefEntry repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule
+            = new PrefEntry("Reuse existing instances when changing " + RepeatRuleParseObject.REPEAT_RULE, "repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule",
                     true, "When changing a repeat rule, reuse any task instances that already exist, this will keep any edits to such instances");
-    static PrefEntry repeatHidePreviousTasksDetails 
+    static PrefEntry repeatHidePreviousTasksDetails
             = new PrefEntry("When show previously generated repeat instances, expand to show their details", "repeatHidePreviousTasksDetails", false, "When editing an existing repeat rule, expand the list of existing tasks");
-    static PrefEntry repeatMaxNumberOfRepeatsToGenerate 
-            = new PrefEntry("To avoid that too many repeats get generated and overflod the server or the app, 0 disables", "repeatMaxNumberOfRepeatsToGenerate", 20, 
+    static PrefEntry repeatMaxNumberOfRepeatsToGenerate
+            = new PrefEntry("To avoid that too many repeats get generated and overflod the server or the app, 0 disables", "repeatMaxNumberOfRepeatsToGenerate", 20,
                     "more of an internal limitation for now**"); //TODO: what happens if the max is reached? Will the algorithms still work?
-    static PrefEntry repeatCancelNotDeleteSuperflousInstancesWhenUpdatingRule 
-            = new PrefEntry("When changing a repeat rule, Cancel, not Delete, future instances with recorded work time that are removed due to the change", "repeatCancelNotDeleteSuperflousInstancesWhenUpdatingRule", true, 
+    static PrefEntry repeatCancelNotDeleteSuperflousInstancesWhenUpdatingRule
+            = new PrefEntry("When changing a repeat rule, Cancel, not Delete, future instances with recorded work time that are removed due to the change", "repeatCancelNotDeleteSuperflousInstancesWhenUpdatingRule", true,
                     "This ensures that any recorded work time is not lost, e.g. for statistics**"); //TODO: what happens if the max is reached? Will the algorithms still work?
 
     //ITEMS IN LIST
@@ -475,9 +476,9 @@ public class MyPrefs {
     static PrefEntry completionLogInterval = new PrefEntry("rrr", "completionLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_COMPLETION_LOG_TITLE);
     static PrefEntry overdueLogInterval = new PrefEntry("Past days in " + ScreenMain.SCREEN_OVERDUE_TITLE, "overdueLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_OVERDUE_TITLE);
     static PrefEntry touchedLogInterval = new PrefEntry("eee", "touchedLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED);
-    
-    static PrefEntry useSmartdatesForThisManyDaysOverdueDueOrFinishDates = new PrefEntry("Use Smart format for past "+Item.DUE_DATE+" or "+Item.FINISH_WORK_TIME+" when overdue by less than this many days", 
-            "useSmartdatesForThisManyDaysOverdueDueOrFinishDates", 30, "**Show overdue dates in Smart format, e.g. Wed17h30. This is useful for overdue dates in the near past, but can get confusing for" );
+
+    static PrefEntry useSmartdatesForThisManyDaysOverdueDueOrFinishDates = new PrefEntry("Use Smart format for past " + Item.DUE_DATE + " or " + Item.FINISH_WORK_TIME + " when overdue by less than this many days",
+            "useSmartdatesForThisManyDaysOverdueDueOrFinishDates", 30, "**Show overdue dates in Smart format, e.g. Wed17h30. This is useful for overdue dates in the near past, but can get confusing for");
 
     //STATISTICS SCREEN
     static PrefEntry statisticsScreenNumberPastDaysToShow = new PrefEntry("Past days to include", "statisticsScreenNumberPastDaysToShow", 30, "How many past days to include");
@@ -492,18 +493,18 @@ public class MyPrefs {
     static PrefEntry statisticsGroupTasksUnderTheirProject = new PrefEntry("Show subtasks grouped under their project", "statisticsGroupTasksUnderTheirProject", true, "Show completed subtasks grouped under their top-level project");
     static PrefEntry statisticsShowDetailsForAllLists = new PrefEntry("Always show details for statistics", "statisticsShowDetailsForAllLists", false, "**");
     static PrefEntry statisticsShowMostRecentFirst = new PrefEntry("Show most recent first", "statisticsShowMostRecentFirst", true, "**");
-    
+
     //LIST OF ITEMLISTS
-    static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry(Format.f("Show number of tasks",""), "listOfItemListsShowNumberUndoneTasks", true, "**");
-    static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry(Format.f("Show number of completed tasks, e.g. 7/23",""), "listOfItemListsShowNumberDoneTasks", true, "**");
-    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry(Format.f("Show sum of Remaining estimates for tasks",""), 
+    static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry(Format.f("Show number of tasks", ""), "listOfItemListsShowNumberUndoneTasks", true, "**");
+    static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry(Format.f("Show number of completed tasks, e.g. 7/23", ""), "listOfItemListsShowNumberDoneTasks", true, "**");
+    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry(Format.f("Show sum of Remaining estimates for tasks", ""),
             "listOfItemListsShowRemainingEstimate", true, "**"); //, "e.g. 3h20", Only shown if not-zero. NB. May make displaying the list slower for very large lists or slow devices
-    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry("Show sum of Total time for tasks", 
+    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry("Show sum of Total time for tasks",
             "listOfItemListsShowTotalTime", true, "**");
-    static PrefEntry listOfItemListsShowWorkTime = new PrefEntry("Show sum of defined work time for the list", 
+    static PrefEntry listOfItemListsShowWorkTime = new PrefEntry("Show sum of defined work time for the list",
             "listOfItemListsShowWorkTime", true, "**"); //"e.g. 1h10/23h12/[4h00]
-    static PrefEntry listOfItemListsShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects", 
-            "listOfItemListsShowTotalNumberOfLeafTasks", true, "**"); 
+    static PrefEntry listOfItemListsShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects",
+            "listOfItemListsShowTotalNumberOfLeafTasks", true, "**");
 
     //GLOBAL
     //localization
@@ -523,15 +524,15 @@ public class MyPrefs {
 
     //WORKSLOT
     static PrefEntry workSlotDefaultDurationInMinutes = new PrefEntry("Default work slot duration (min)",
-                    "workSlotDefaultDurationInMinutes", 60, "**");
-    static PrefEntry workSlotDefaultStartDateIsNow = new PrefEntry("Use current time as Default work slot start time", 
-                    "workSlotDefaultStartDateIsNow", true, "**");
+            "workSlotDefaultDurationInMinutes", 60, "**");
+    static PrefEntry workSlotDefaultStartDateIsNow = new PrefEntry("Use current time as Default work slot start time",
+            "workSlotDefaultStartDateIsNow", true, "**");
     static PrefEntry workSlotDurationStepIntervalInMinutes = new PrefEntry("Step in WorkSlot duration (min)",
-                    "workSlotDurationStepIntervalInMinutes", 5, "**");
+            "workSlotDurationStepIntervalInMinutes", 5, "**");
     static PrefEntry workSlotContinueAddingInlineWorkslots = new PrefEntry("Continue adding a new workslot below one inserted with pinch",
-                    "workSlotContinueAddingInlineWorkslots", true, "**");
+            "workSlotContinueAddingInlineWorkslots", true, "**");
     static PrefEntry workSlotUseSmartDates = new PrefEntry("Use smart dates",
-                    "workSlotUseSmartDates", true, "**");
+            "workSlotUseSmartDates", true, "**");
 
     MyPrefs() {
 //         int x=7:

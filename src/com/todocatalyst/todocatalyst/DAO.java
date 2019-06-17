@@ -10,16 +10,20 @@ import com.codename1.components.InfiniteProgress;
 import com.codename1.io.CacheMap;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
+import com.codename1.io.Util;
+import com.codename1.ui.CN;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Form;
 import com.codename1.ui.util.UITimer;
 import com.codename1.util.EasyThread;
+import com.codename1.util.RunnableWithResult;
 import com.parse4cn1.ParseBatch;
 import com.parse4cn1.ParseBatch.EBatchOpType;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import com.parse4cn1.ParseQuery;
+import com.parse4cn1.ParseRole;
 import com.parse4cn1.ParseUser;
 import com.parse4cn1.callback.GetCallback;
 import com.parse4cn1.util.Logger;
@@ -173,7 +177,7 @@ public class DAO {
         return cacheGet(parseObject.getObjectIdP());
     }
 
-    private void cacheDelete(ParseObject parseObject) {
+    private synchronized void cacheDelete(ParseObject parseObject) {
         if (parseObject.getObjectIdP() == null) {
             return;
         }
@@ -1641,6 +1645,9 @@ public class DAO {
     @return 
      */
     public ItemList getSpecialNamedItemListFromParse(String name, String visibleName) {
+//        if (cache.get(name) != null) {
+//            return (ItemList) cache.get(cache.get(name)); //cahce: name -> objectIdP
+//        } else {
         ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
         query.whereEqualTo(ItemList.PARSE_TEXT, name);
         query.whereDoesNotExist(ItemList.PARSE_OWNER); //only get lists that do not belong to the ItemListList
@@ -1655,32 +1662,39 @@ public class DAO {
         ASSERT.that(results.size() <= 1, () -> "too many lists (" + s + ") with reserved name: " + name);
         if (s > 0) {
             results.get(0).setText(visibleName);
+//            cache.put(name, results.get(0).getObjectIdP());
             return results.get(0);
         } else {
             return null;
         }
+//        }
     }
 
     public ItemList getInbox(String name, String visibleName) {
 //        if (!forceFromParse && (inbox = (Inbox) cacheGet(Inbox.CLASS_NAME)) != null) {
 //            return inbox;
 //        } //NO need for caching since this is done in the instance/singleton
-        ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
-        if (inbox == null) { //if no Inbox already saved, initialize it with existing motherless tasks
-            inbox = new ItemList();
-            inbox.setText(name);
-            List itemWithoutOwners = getAllItemsWithoutOwners();
-            for (Item item : (List<Item>) itemWithoutOwners) {
-                inbox.addToList(item);
-            }
-            saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
-            saveInBackground(itemWithoutOwners); //save all items who now have their Inbox owner assigned
+        if (cache.get(name) != null) {
+            return (ItemList) cache.get(cache.get(name)); //cahce: name -> objectIdP
+        } else {
+            ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
+            if (inbox == null) { //if no Inbox already saved, initialize it with existing motherless tasks
+                inbox = new ItemList();
+                inbox.setText(name);
+                List itemWithoutOwners = getAllItemsWithoutOwners();
+                for (Item item : (List<Item>) itemWithoutOwners) {
+                    inbox.addToList(item);
+                }
+                saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
+                saveInBackground(itemWithoutOwners); //save all items who now have their Inbox owner assigned
 //                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
 //            saveInBackground((ParseObject)inbox); //always save so new lists can be assigned to it
 //            saveAndWait((ParseObject)inbox); //always save so new lists can be assigned to it
+            }
+            cache.put(name, inbox.getObjectIdP());
+            cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
+            return inbox;
         }
-        cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
-        return inbox;
     }
 
     public final static String OVERDUE = "Overdue";
@@ -1700,13 +1714,14 @@ public class DAO {
 //    }
     public ItemList getNamedItemList(String name, String visibleName, FilterSortDef filterSortDef) {
         ParseObject temp = null;
+        String objId;
         switch (name) {
             case OVERDUE:
                 if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 //                    return (ItemList) temp;
                 } else {
                     if (temp != null) {
-                        ((ItemAndListCommonInterface) temp).setList(getOverdue()); //refresh the list
+                        ((ItemAndListCommonInterface) temp).setList(getOverdue()); //refresh the list (important so eg Timer continues on same list!!)
                         saveInBackground(temp);
                     } else {
                         temp = new ItemList(visibleName, getOverdue());
@@ -1722,7 +1737,7 @@ public class DAO {
 //                    return (ItemList) temp;
                 } else {
                     if (temp != null) {
-                        ((ItemAndListCommonInterface) temp).setList(getToday()); //refresh the list
+                        ((ItemAndListCommonInterface) temp).setList(getToday()); //refresh the list (important so eg Timer continues on same list!!)
                         saveInBackground(temp);
                     } else {
                         temp = new ItemList(visibleName, getToday());
@@ -1754,7 +1769,7 @@ public class DAO {
 //                    return (ItemList) temp;
                 } else {
                     if (temp != null) {
-                        ((ItemAndListCommonInterface) temp).setList(getCalendar()); //refresh the list
+                        ((ItemAndListCommonInterface) temp).setList(getCalendar()); //refresh the list (important so eg Timer continues on same list!!)
                         saveInBackground(temp);
                     } else {
                         temp = new ItemList(visibleName, getCalendar());
@@ -1769,7 +1784,7 @@ public class DAO {
 //                    return (ItemList) temp;
                 } else {
                     if (temp != null) {
-                        ((ItemAndListCommonInterface) temp).setList(getCompletionLog()); //refresh the list
+                        ((ItemAndListCommonInterface) temp).setList(getCompletionLog()); //refresh the list (important so eg Timer continues on same list!!)
                         saveInBackground(temp);
                     } else {
                         temp = new ItemList(visibleName, getCompletionLog());
@@ -1784,7 +1799,7 @@ public class DAO {
 //                    return (ItemList) temp;
                 } else {
                     if (temp != null) {
-                        ((ItemAndListCommonInterface) temp).setList(getCreationLog()); //refresh the list
+                        ((ItemAndListCommonInterface) temp).setList(getCreationLog()); //refresh the list (important so eg Timer continues on same list!!)
                         saveInBackground(temp);
                     } else {
                         temp = new ItemList(visibleName, getCreationLog());
@@ -1799,7 +1814,7 @@ public class DAO {
 //                    return (ItemList) temp;
                 } else {
                     if (temp != null) {
-                        ((ItemAndListCommonInterface) temp).setList(getTouchedLog()); //refresh the list
+                        ((ItemAndListCommonInterface) temp).setList(getTouchedLog()); //refresh the list (important so eg Timer continues on same list!!)
                         saveInBackground(temp);
                     } else {
                         temp = new ItemList(visibleName, getTouchedLog());
@@ -1818,25 +1833,31 @@ public class DAO {
                 saveInBackground(temp);
             }
             return (ItemList) temp;
-        } else ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
-
-        ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
-        if (inbox == null) {
-            //if no Inbox already saved, initialize it with existing categories
-            inbox = new ItemList();
-            inbox.setText(name);
-            List itemWithoutOwners = getAllItemsWithoutOwners();
-            for (Item item : (List<Item>) itemWithoutOwners) {
-                inbox.addToList(item);
-            }
-            saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
-            saveInBackground(itemWithoutOwners); //save all items who now have their Inbox owner assigned
-//                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
-//            saveInBackground((ParseObject)inbox); //always save so new lists can be assigned to it
-//            saveAndWait((ParseObject)inbox); //always save so new lists can be assigned to it
+        } else {
+            ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
+            return null;
         }
-        cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
-        return inbox;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
+//            if (inbox == null) {
+//                //if no Inbox already saved, initialize it with existing categories
+//                inbox = new ItemList();
+//                inbox.setText(name);
+//                List itemWithoutOwners = getAllItemsWithoutOwners();
+//                for (Item item : (List<Item>) itemWithoutOwners) {
+//                    inbox.addToList(item);
+//                }
+//                saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
+//                saveInBackground(itemWithoutOwners); //save all items who now have their Inbox owner assigned
+////                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
+////            saveInBackground((ParseObject)inbox); //always save so new lists can be assigned to it
+////            saveAndWait((ParseObject)inbox); //always save so new lists can be assigned to it
+//            }
+//            cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
+//            return inbox;
+//        }
+//</editor-fold>
     }
 
 //    private final static String ALL_TEMPLATES_KEY = "ALL_TEMPLATES_KEY";
@@ -2580,51 +2601,73 @@ public class DAO {
     }
 
     public int deleteAll(String ParseClassName) {
-        final int BATCH_SIZE = 500;
+//        final int BATCH_SIZE = 500;
+        Log.p("DELETING ALL " + ParseClassName);
+        final int BATCH_SIZE = 1000000;
         int skip = 0;
         int deletedObjectsCount = 0;
         List<ParseObject> results = null;
-        do {
-            ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseClassName);
-            Set<String> targetKeys = new HashSet<String>();
+//        do {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseClassName);
+        Set<String> targetKeys = new HashSet<String>();
 //            targetKeys.add("playerName");
-            query.selectKeys(targetKeys); // will this avoid retrieving any data but just the objects themselves??
-            query.setLimit(BATCH_SIZE).setSkip(skip);
-            skip = skip + BATCH_SIZE;
-            try {
-                results = (List<ParseObject>) query.find();
-                // Run a batch to persist the objects to Parse
-                ParseBatch batch = ParseBatch.create();
-                for (ParseObject obj : results) {
-                    batch.addObject(obj, ParseBatch.EBatchOpType.DELETE);
-                }
-                if (batch.execute()) {
-                    // Batch operation succeeded
-                    deletedObjectsCount += results.size();
-                } else {
-                    Log.p("deleteAll(" + ParseClassName + ") batch.execute failed, results.size()=" + results.size());
+        query.selectKeys(targetKeys); // will this avoid retrieving any data but just the objects themselves??
+//            query.setLimit(BATCH_SIZE).setSkip(skip);
+        query.setLimit(BATCH_SIZE);
+//            skip = skip + BATCH_SIZE;
+        try {
+            results = (List<ParseObject>) query.find();
+            // Run a batch to persist the objects to Parse
+            ParseBatch batch = ParseBatch.create();
+//            for (ParseObject obj : results) {
+//                batch.addObject(obj, ParseBatch.EBatchOpType.DELETE);
+//            }
+            batch.addObjects(results, EBatchOpType.DELETE);
+            if (batch.execute()) {
+                // Batch operation succeeded
+                deletedObjectsCount += results.size();
+            } else {
+                Log.p("deleteAll(" + ParseClassName + ") batch.execute failed, results.size()=" + results.size());
 //                    return 0;
-                }
-            } catch (ParseException ex) {
-                Log.e(ex);
             }
-        } while (results.size() == BATCH_SIZE);
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        Log.p("  elements deleted " + deletedObjectsCount);
+
+//        } while (results.size() == BATCH_SIZE);
         return deletedObjectsCount;
     }
 
-    public int deleteAllUserDataCannotBeUndone() {
+    public int deleteAllUserDataOnParseServerCannotBeUndone(boolean removeUserAccount) {
         int deletedObjectsCount = 0;
+        deletedObjectsCount += deleteAll(Category.CLASS_NAME);
+        deletedObjectsCount += deleteAll(CategoryList.CLASS_NAME);
+        deletedObjectsCount += deleteAll(FilterSortDef.CLASS_NAME);
         deletedObjectsCount += deleteAll(Item.CLASS_NAME);
         deletedObjectsCount += deleteAll(ItemList.CLASS_NAME);
         deletedObjectsCount += deleteAll(ItemListList.CLASS_NAME);
-        deletedObjectsCount += deleteAll(Category.CLASS_NAME);
-        deletedObjectsCount += deleteAll(CategoryList.CLASS_NAME);
-        deletedObjectsCount += deleteAll(TemplateList.CLASS_NAME);
-        deletedObjectsCount += deleteAll(FilterSortDef.CLASS_NAME);
-        deletedObjectsCount += deleteAll(WorkSlot.CLASS_NAME);
         deletedObjectsCount += deleteAll(RepeatRuleParseObject.CLASS_NAME);
+        deletedObjectsCount += deleteAll(TemplateList.CLASS_NAME);
+        deletedObjectsCount += deleteAll(TimerInstance.CLASS_NAME);
+        deletedObjectsCount += deleteAll(WorkSlot.CLASS_NAME);
+        deletedObjectsCount += deleteAll(WorkSlot.CLASS_NAME);
+        ParseUser parseUser = ParseUser.getCurrent();
+        if (removeUserAccount)
+            try {
+                parseUser.delete();
+                deletedObjectsCount++;
+            } catch (ParseException ex) {
+                Log.p("could not delete user");
+            }
         //TODO!!!! update to cover all classes
         return deletedObjectsCount;
+    }
+
+    public boolean deleteAllLocalStorage() {
+        Storage.getInstance().clearStorage();
+        Storage.getInstance().clearCache();
+        return true;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2810,6 +2853,8 @@ public class DAO {
     private EasyThread backgroundSaveThread = null; //thread with background task
     private final Object LOCK = new Object();
     private Vector backgroundSavePendingList = new Vector(); //Vector is thread safe
+    private Vector saveVector = new Vector();
+    private ParseObject toSave;
 
     /**
      * saves the list of ParseObjects in the background but in sequential order
@@ -2828,7 +2873,18 @@ public class DAO {
         }
         Vector vector = new Vector(); //make copy
         for (ParseObject p : parseObjects) {
-            vector.add(p);
+            if (p.getObjectIdP() == null || p.isDirty()) //only save unsaved or dirty objects
+                vector.add(p);
+        }
+        if (false) {
+            synchronized (LOCK) {
+                for (ParseObject p : parseObjects) {
+                    if (p.getObjectIdP() == null || p.isDirty()) {//only save unsaved or dirty objects
+                        saveVector.add(p);
+                        LOCK.notify();
+                    }
+                }
+            }
         }
 //        v.addAll(parseObjects);
 //        for (ParseObject parseObject : parseObjects) {
@@ -2841,54 +2897,72 @@ public class DAO {
                 if (parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave())
                     Log.p("BACKGROUND saving IGNORE: " + parseObject);
                 else {
-                    Log.p("BACKGROUND saving: " + parseObject);
-                    saveImpl((ParseObject) parseObject, true);
+//                    Log.p("BACKGROUND saving: " + parseObject);
+                    ParseObject parseObject2 = parseObject;
+                    Display.getInstance().callSerially(() -> saveImpl((ParseObject) parseObject2, true)); //must run on EDT to avoid conflicts with other ParseObject operations
+                }
+            }
+            if (false) { //copied from CN1.EasyThread
+                while (true) {
+                    synchronized (LOCK) {
+                        if (saveVector.size() > 0) {
+                            toSave = (ParseRole) saveVector.remove(0);
+                            if (parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave())
+                                Log.p("BACKGROUND saving IGNORE: " + parseObject);
+                            else {
+//                                Log.p("BACKGROUND saving: " + parseObject);
+                                saveImpl((ParseObject) parseObject, true);
+                            }
+                        } else {
+                            Util.wait(LOCK);
+                        }
+                    }
                 }
             }
         });
     }
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    public void saveInBackgroundXXX(List<ParseObject> parseObjects) {
+    ////        saveImpl(anyParseObject);
+    //        if (parseObjects == null || parseObjects.size() == 0) {
+    //            return;
+    //        }
+    //        if (backgroundSaveThread == null) {
+    //            backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
+    //            backgroundSaveThread.run(() -> {
+    ////            synchronized (backgroundSaveLOCK) {
+    //                ParseObject parseObject;
+    //                synchronized (LOCK) {
+    //                    while (true) {
+    //                        com.codename1.io.Util.wait(LOCK);
+    //                        while (!backgroundSavePendingList.isEmpty()) {
+    //                            parseObject = (ParseObject) backgroundSavePendingList.remove(0);
+    //                            saveImpl(parseObject, true);
+    //                        }
+    //                    }
+    //                }
+    //                //<editor-fold defaultstate="collapsed" desc="comment">
+    ////            for (ParseObject parseObject : parseObjects) {
+    //////                if (parseObject.getObjectIdP()==null) { //if not previously saved, save firs to get the ObjectId used by cache
+    ////                saveImpl(parseObject, true);
+    //////                cachePut(parseObject); //first cache all objects
+    //////                } else
+    //////                saveToParseOnlyNoCaching(parseObject);
+    ////            }
+    ////            }
+    ////</editor-fold>
+    //            });
+    //        }
+    //
+    //        synchronized (LOCK) {
+    //            for (ParseObject parseObject : parseObjects) {
+    //                backgroundSavePendingList.add(parseObject);
+    //            }
+    //            LOCK.notify();
+    //        }
+    //    }
+    //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public void saveInBackgroundXXX(List<ParseObject> parseObjects) {
-////        saveImpl(anyParseObject);
-//        if (parseObjects == null || parseObjects.size() == 0) {
-//            return;
-//        }
-//        if (backgroundSaveThread == null) {
-//            backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
-//            backgroundSaveThread.run(() -> {
-////            synchronized (backgroundSaveLOCK) {
-//                ParseObject parseObject;
-//                synchronized (LOCK) {
-//                    while (true) {
-//                        com.codename1.io.Util.wait(LOCK);
-//                        while (!backgroundSavePendingList.isEmpty()) {
-//                            parseObject = (ParseObject) backgroundSavePendingList.remove(0);
-//                            saveImpl(parseObject, true);
-//                        }
-//                    }
-//                }
-//                //<editor-fold defaultstate="collapsed" desc="comment">
-////            for (ParseObject parseObject : parseObjects) {
-//////                if (parseObject.getObjectIdP()==null) { //if not previously saved, save firs to get the ObjectId used by cache
-////                saveImpl(parseObject, true);
-//////                cachePut(parseObject); //first cache all objects
-//////                } else
-//////                saveToParseOnlyNoCaching(parseObject);
-////            }
-////            }
-////</editor-fold>
-//            });
-//        }
-//
-//        synchronized (LOCK) {
-//            for (ParseObject parseObject : parseObjects) {
-//                backgroundSavePendingList.add(parseObject);
-//            }
-//            LOCK.notify();
-//        }
-//    }
-//</editor-fold>
     void saveInBackground(ParseObject... parseObjects) {
         saveInBackground(Arrays.asList(parseObjects));
     }
@@ -2916,8 +2990,46 @@ public class DAO {
         saveInBackground(Arrays.asList(anyParseObject));
     }
 
+    /**
+    save a (potentially just) created project with (potentially just created or modified) subtasks avoiding issues with circular references (project referring to unsaved subtasks, subtasks referring to unsaved project)
+    @param projectOrItem the owner must have been saved before (so that a reference from projectOrItem to its owner can be saved)
+    @return 
+     */
+//    public void saveProjectInBackground(Item projectOrItem) {
+    public void saveInBackground(Item projectOrItem) {
+        if (projectOrItem == null)
+            return;
+        ASSERT.that(projectOrItem.getOwner() == null || projectOrItem.getOwner().getObjectIdP() != null, "calling saveProjectInBackgroundImpl for " + projectOrItem + ", but no ObjectId for its owner=" + projectOrItem.getOwner());
+        if (!projectOrItem.isProject()) {
+//            ItemAndListCommonInterface owner = projectOrItem.getOwner();
+//            if (owner.getObjectIdP() == null) {
+            saveImpl(projectOrItem, true);
+        } else {//           if (projectOrItem.isProject()) {
+            CN.callSerially(() -> {
+                if (projectOrItem.getObjectIdP() == null) {
+                    List<Item> subtasks = projectOrItem.getListFull();
+                    projectOrItem.setList(null);
+                    saveImpl(projectOrItem, true);
+                    for (Item subtask : subtasks) {
+//                        saveProjectInBackground(subtask);
+                        saveInBackground(subtask);
+                    }
+                    projectOrItem.setList(subtasks);
+                    saveImpl(projectOrItem, true);
+                } else {
+                    List<Item> subtasks = projectOrItem.getListFull();
+                    for (Item subtask : subtasks) {
+//                        saveProjectInBackground(subtask);
+                        saveInBackground(subtask);
+                    }
+                    saveImpl(projectOrItem, true);
+                }
+            });
+        }
+    }
+
 //    private List<Item> saveTemplateCopyWithSubtasksInBackgroundImpl(List<Item> tasksInSaveOrder, Item projectOrItem) {
-    private List saveTemplateCopyWithSubtasksInBackgroundImpl(List tasksInSaveOrder, Item projectOrItem) {
+    private List saveTemplateCopyWithSubtasksInBackgroundImplXXX(List tasksInSaveOrder, Item projectOrItem) {
         if (!projectOrItem.isProject() && (projectOrItem.getObjectIdP() == null || projectOrItem.isDirty())) {
             tasksInSaveOrder.add(projectOrItem);
             return tasksInSaveOrder;
@@ -2925,7 +3037,7 @@ public class DAO {
             //first add all subtasks (so they are saved and given an ObjectId before their project is saved)
             for (Object obj : projectOrItem.getListFull()) {
                 Item item = (Item) obj;
-                tasksInSaveOrder.addAll(saveTemplateCopyWithSubtasksInBackgroundImpl(tasksInSaveOrder, item));
+                tasksInSaveOrder.addAll(saveTemplateCopyWithSubtasksInBackgroundImplXXX(tasksInSaveOrder, item));
             }
             tasksInSaveOrder.add(projectOrItem);
         }
@@ -2936,9 +3048,9 @@ public class DAO {
     save eg a template copy in the right order (all leaf subtasks before their owner project, so all are given objectiIds before saving references to them)
     @param projectOrItem 
      */
-    public void saveTemplateCopyWithSubtasksInBackground(Item projectOrItem) {
+    public void saveTemplateCopyWithSubtasksInBackgroundXXX(Item projectOrItem) {
 //        saveInBackground((List<ParseObject>)saveTemplateCopyWithSubtasksInBackgroundImpl(new ArrayList<Item>(), projectOrItem));
-        saveInBackground(saveTemplateCopyWithSubtasksInBackgroundImpl(new ArrayList(), projectOrItem));
+        saveInBackground(saveTemplateCopyWithSubtasksInBackgroundImplXXX(new ArrayList(), projectOrItem));
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private EasyThread backgroundSaveQueueThread = EasyThread.start("DAO.backgroundQueueSave"); //thread with background task
@@ -3028,12 +3140,33 @@ public class DAO {
         }
 //        save(anyParseObject, true);
     }
+    
+    /**
+    check if the list of parsePobjects are all of same type and can be saved as a batch, if yes do so and return true, otherwise do nothing and return false
+    @param parseObjects
+    @return 
+    */
+        private boolean batchSave(List<ParseObject> parseObjects) {
+        String type=null;
+        for (ParseObject parseObject: parseObjects){
+            if (type==null) {
+                type=parseObject.getClassName(); //store type of first object
+            } else if (!type.equals(parseObject.getClassName()))
+                return false; //if any subsequent object has a different type, return false
+        }
+        //all objects have same type, save them as a batch operation
+        saveBatch(parseObjects);
+        return true;
+    }
+    
+
 
 //    private void saveImpl(ParseObject anyParseObject) {
 //        saveImpl(anyParseObject, true);
 //    }
     private synchronized void saveImpl(ParseObject anyParseObject, boolean saveToCache) {
         try {
+            Log.p("Saving: " + anyParseObject);
             anyParseObject.save();
         } catch (ParseException ex) {
             Log.e(ex);
@@ -3051,7 +3184,7 @@ public class DAO {
      * @param anyParseObject
      * @param saveToCache if true save anyParseObject to cache
      */
-    public void save(ParseObject anyParseObject, boolean saveToCache) {
+    private void save(ParseObject anyParseObject, boolean saveToCache) {
         if (anyParseObject != null && anyParseObject instanceof ParseObject) {
             if (anyParseObject instanceof ItemList && ((ItemList) anyParseObject).isNoSave()) { //TODO!! shouldn't be necessary - yes, needed for lists like Today that are generated on the fly
                 return;
@@ -4019,21 +4152,22 @@ public class DAO {
     delete the parseObject. Ignore if null
     @param anyParseObject 
      */
-    public void delete(ParseObject anyParseObject) {
+    public void deleteAndWait(ParseObject anyParseObject) {
         if (anyParseObject == null) {
             return;
         }
         String objId = anyParseObject.getObjectIdP();
 
+        cacheDelete(anyParseObject);
         try {
             anyParseObject.delete();
         } catch (ParseException ex) {
             Log.e(ex);
         }
 
-        if (objId != null) {
-            cacheDelete(anyParseObject);
-        }
+//        if (objId != null) {
+//            cacheDelete(anyParseObject); //By here, the objId has been deleted from the parseobject
+//        }
     }
 
 //    public void deleteInBackground(TimerInstance anyParseObject) {
@@ -4047,8 +4181,10 @@ public class DAO {
             backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
         }
         if (Config.TEST) {
-            ASSERT.that(anyParseObject != null, "saveInBackground with null pointer");
+            ASSERT.that(anyParseObject != null && objId != null, "deleteInBackground with null pointer or no ObjectId");
         }
+
+        cacheDelete(anyParseObject);
         backgroundSaveThread.run(() -> {
             try {
                 anyParseObject.delete();
@@ -4057,12 +4193,12 @@ public class DAO {
             }
         });
 
-        if (objId != null) {
-            cacheDelete(anyParseObject);
-        }
+//        if (objId != null) {
+//            cacheDelete(anyParseObject);
+//        }
     }
-    
-       public void deleteBatch(List<ParseObject> listOfParseObjectsToBatchDelete) {
+
+    public void deleteBatch(List<ParseObject> listOfParseObjectsToBatchDelete) {
         if (!listOfParseObjectsToBatchDelete.isEmpty()) {
             try {
                 ParseBatch parseBatch = ParseBatch.create();
@@ -4077,7 +4213,6 @@ public class DAO {
         }
 //        save(anyParseObject, true);
     }
-
 
     //////////////////////////   CLEAN UP    /////////////////////////////
     //TODO!!!! a subtask may be in the project's subtask list, but have a different owner (e.g. a List) --> fix: if a project has a subtask with another owner, make the project the subtask's owner
@@ -4559,7 +4694,7 @@ public class DAO {
                     }
                 } else if (itemList.getListFull().size() == 0) { //a lost ItemList, empty, not visible to user, so probably safe to delete
                     if (executeCleanup) {
-                        delete(itemList); //nothing in ItemList, safe to delete
+                        deleteAndWait(itemList); //nothing in ItemList, safe to delete
                     }
                 } else //not in ItemListList, not empty, keep
                 if (executeCleanup) {
@@ -4655,7 +4790,7 @@ public class DAO {
             if (catsWithFilter.get(filter) == null && itemListsWithFilter.get(filter) == null && itemsWithFilter.get(filter) == null) { //no refs to filter
                 Log.p("CLEANUP: FilterSortDef (ObjId=" + filter.getObjectIdP() + ") is not referenced by any Category or ItemList", logLevel);
                 if (executeCleanup) {
-                    delete(filter); //delete filters without ref to both objectId and Screen
+                    deleteAndWait(filter); //delete filters without ref to both objectId and Screen
                 }
             };
 //            }
@@ -4699,7 +4834,7 @@ public class DAO {
                 Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationInMinutes(), logLevel);
 //                try {
                 if (executeCleanup) {
-                    delete(workSlot); //delete filters without ref to both objectId and Screen
+                    deleteAndWait(workSlot); //delete filters without ref to both objectId and Screen
                 }//                } catch (ParseException ex) {
 //                    Log.e(ex);
 //                }
@@ -4740,7 +4875,7 @@ public class DAO {
             if (workSlotsWithFilter.get(repeatRule) == null && workSlotsWithFilter.get(repeatRule) == null) { //no refs to repeatRule
                 Log.p("CLEANUP: RepeatRule (ObjId=" + repeatRule.getObjectIdP() + ") is not referenced by any Item or WorkSlot", logLevel);
                 if (executeCleanup) {
-                    delete(repeatRule); //delete filters without ref to both objectId and Screen
+                    deleteAndWait(repeatRule); //delete filters without ref to both objectId and Screen
                     allRepeatRules.remove(repeatRule);
                 }
             };
@@ -6213,6 +6348,12 @@ public class DAO {
 //            cache.clearAllCache(); //clear any cached data (even in memory to make sure we get a completely fresh copy)
             cache.clearAllCache(RESERVED_LIST_NAMES); //clear any cached data (even in memory to make sure we get a completely fresh copy)
             cache = null;  //force GC and creation of new cache in initAndConfigureCache()
+        }
+        if (cacheWorkSlots != null) {
+//            cache.clearStorageCache(); //delete any locally cached data/files
+//            cache.clearAllCache(); //clear any cached data (even in memory to make sure we get a completely fresh copy)
+            cacheWorkSlots.clearAllCache(RESERVED_LIST_NAMES); //clear any cached data (even in memory to make sure we get a completely fresh copy)
+            cacheWorkSlots = null;  //force GC and creation of new cache in initAndConfigureCache()
         }
 //        initAndConfigureCache(true);
         initAndConfigureCache();

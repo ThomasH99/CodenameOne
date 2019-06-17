@@ -68,18 +68,20 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
 //
-//        Button logoutButton = new Button(new Command("Log out") {
-//            @Override
-//            public void actionPerformed(ActionEvent evt) {
-//                try {
-//                    ParseUser parseUser = ParseUser.getCurrent();
-//                    parseUser.logout();
-//                } catch (ParseException ex) {
-//                    Log.p(ex.getMessage());
-//                    Log.e(ex);
-//                }
-//            }
-//        });
+        Button logoutButton = new Button(new Command("Log out") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    ParseUser parseUser = ParseUser.getCurrent();
+                    parseUser.logout();
+                } catch (ParseException ex) {
+                    Log.p(ex.getMessage());
+                    Log.e(ex);
+                }
+            }
+        });
+        content.add(layoutN("Log out of your account (require you to log in next time you start)", logoutButton,"")); 
+       
 //
 //        if (!MyPrefs.loginIncognitoMode.getBoolean()) { //DON'T enable logging out in Incognito mode since that would lose the login
 //            content.add(layout("Log out from my account", logoutButton, "After you logout, you must enter your email and password to access your data again.", true));
@@ -99,29 +101,48 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //            content.add(layout("Reset my password", remindPsWdButton, "You will receive an email with a link to reset your password. NB. This will log you out until you have entered a new password."));
 //        }
 //
-//        if (false) { //TODO really necessary? Not if uninstalling, but maybe if starting from a fresh after playing with data??
-//            Button deleteAllData = new Button(new Command("DELETE data") {
-//                @Override
-//                public void actionPerformed(ActionEvent evt) {
-//                    //TODO add WARNING: this will delete xx tasks, yy lists, zz categories as well as work time, finished tasks etc. Do NOT use this unless you have a backup of your data or really want to erase all your data in Sharper
-//                    DAO.getInstance().deleteAllUserDataCannotBeUndone();
-//                }
-//            });
-//            content.add(layout("Delete ALL data (tasks etc) permanently", deleteAllData, "This will permanently delete all your data (tasks, lists, categories etc) from your account. The deleted data can NOT be restored in any way afterwards (there is .")); //TODO!!! show how many tasks etc, ask to enter email to confirm, add "I confirm I delete all my data and that they cannot be restored [v]"
-//        }
+        if (true) { //TODO really necessary? Not if uninstalling, but maybe if starting from a fresh after playing with data??
+            Button deleteAllData = new Button(new Command("DELETE data") {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    //TODO add WARNING: this will delete xx tasks, yy lists, zz categories as well as work time, finished tasks etc. Do NOT use this unless you have a backup of your data or really want to erase all your data in Sharper
+                    DAO.getInstance().deleteAllUserDataOnParseServerCannotBeUndone(false);
+//                    DAO.getInstance().resetAndDeleteAndReloadAllCachedData(); //NOT enough since it would leave all local data stored 
+                    DAO.getInstance().deleteAllLocalStorage(); //NB! will also delete the login token
+                    DAO.getInstance().resetAndDeleteAndReloadAllCachedData(); 
+                    
+                   
+//                    ParseUser parseUser = ParseUser.getCurrent();
+//                    parseUser.delete();
+                }
+            });
+            content.add(layoutN("Delete ALL data (tasks etc) permanently", deleteAllData, 
+                    "This will permanently delete all your data (tasks, lists, categories etc) from your account. The deleted data can NOT be restored in any way afterwards (there is .")); //TODO!!! show how many tasks etc, ask to enter email to confirm, add "I confirm I delete all my data and that they cannot be restored [v]"
+        }
 //
-//        if (false) {
-//            Button deleteMyAccountButton = new Button(new Command("DELETE account") {
-//                @Override
-//                public void actionPerformed(ActionEvent evt) {
-//                    //clear cache
-//                    //delete user with user.delete() BUT data:
-////http://stackoverflow.com/questions/31351168/parse-com-delete-a-user-account-including-related-objects,
-////background task: http://stackoverflow.com/questions/28366161/parse-remove-user-and-its-related-records
-//                }
-//            });
-//            content.add(layout("Delete my account and all my data", deleteMyAccountButton, "**"));
-//        }
+        if (true) {
+            Button deleteMyAccountButton = new Button(new Command("DELETE my account") {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    //TODO: "please type in your email address to confirm deleting all your data permanently"
+                    //clear cache //
+                    //delete user with user.delete() BUT data:
+//http://stackoverflow.com/questions/31351168/parse-com-delete-a-user-account-including-related-objects,
+//background task: http://stackoverflow.com/questions/28366161/parse-remove-user-and-its-related-records
+                    //TODO!!! ask "A few last words to help us understand why you delete your account?"
+                    DAO.getInstance().deleteAllUserDataOnParseServerCannotBeUndone(true);
+                    DAO.getInstance().deleteAllLocalStorage(); //will also delete the login token
+                    ParseUser parseUser = ParseUser.getCurrent();
+                    try {
+                        parseUser.logout();
+                    } catch (ParseException ex) {
+                        Log.p("error trying to logout user="+parseUser.getUsername()+", email="+parseUser.getEmail());
+                    }
+                    new ScreenLogin().go();
+                }
+            });
+            content.add(layoutN("Delete my account and all my data permanently (all your data will be permanently deleted and CANNOT be recovered)", deleteMyAccountButton, "**"));
+        }
 //try {
 //    Resources theme = Resources.openLayered("/theme");
 //    UIManager.getInstance().setThemeProps(theme.getTheme(theme.getThemeResourceNames()[0]));
