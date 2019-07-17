@@ -52,7 +52,7 @@ import java.util.Map;
             return interval;
         }
         
-        MyIntTextField(String hint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getValue, MyForm.PutInt setValue, Integer intMin, Integer intMax, Integer defaultValue) {
+        MyIntTextField(String hint, ParseIdMap2 parseIdMap, MyForm.GetInt getValue, MyForm.PutInt setValue, Integer intMin, Integer intMax, Integer defaultValue) {
 //            super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
             this(getValue.get(), hint, intMin, intMax, defaultValue);
 //            this.set //TODO how to ensure cursor is positioned at end of entered text and not beginning?

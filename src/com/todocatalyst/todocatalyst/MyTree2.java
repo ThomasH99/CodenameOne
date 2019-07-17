@@ -143,9 +143,9 @@ public class MyTree2 extends ContainerScrollY {
 //        this(model, null);
 //    }
 //    public MyTree2(MyTreeModel model, HashSet expandedObjects) {
-    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects) {
-        this(model, expandedObjects, null);
-    }
+//    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects) {
+//        this(model, expandedObjects, null);
+//    }
 
 //    public MyTree2(MyTreeModel model, HashSet expandedObjects, FilterSortDef itemListFilteredSorted) {
 //        this(model, expandedObjects, itemListFilteredSorted, null);
@@ -160,9 +160,9 @@ public class MyTree2 extends ContainerScrollY {
      * insert below an Item
      */
 //    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask) {
-    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask) {
-        this(model, expandedObjects, insertNewTask, null);
-    }
+//    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask) {
+//        this(model, expandedObjects, insertNewTask, null);
+//    }
 
 //    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
     public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
@@ -714,7 +714,8 @@ public class MyTree2 extends ContainerScrollY {
             InsertNewElementFunc newInsertCont;
             if (insertNewElementFunc != null) {
                 if (current instanceof WorkSlot) {
-                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current, null, null);
+//                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current, null, null);
+                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current, ((WorkSlot) current).getOwner(), null); //insert add'l workslots in same list as current, category has no sense for workslots
                     if (newInsertCont != null) {
                         if (Config.TEST && current instanceof ItemAndListCommonInterface) ((Component) newInsertCont).setName("TreeInsertContainer-" + ((ItemAndListCommonInterface) current).getText());
                         destination.add((Component) newInsertCont);

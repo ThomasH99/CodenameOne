@@ -138,6 +138,7 @@ public class MyCheckBox extends Button {
 //        }
 //</editor-fold>
         s = null;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Style s = UIManager.getInstance().getComponentStyle(singleIconStyle).get; //never returns null
 //        if (iconsSingleStatus == null //if no icons defined
 //                || (singleIconStyleUIID != null && !singleIconStyleUIID.equals(this.singleIconStyleUIID)) //or if no name defined, or style name has changed
@@ -163,6 +164,7 @@ public class MyCheckBox extends Button {
 //            iconsSingleStatus[3] = FontImage.createMaterial(Icons.iconItemStatusDone, singleIconStyle);
 //            iconsSingleStatus[4] = FontImage.createMaterial(Icons.iconItemStatusCancelled, singleIconStyle);
 //        }
+//</editor-fold>
 
         setStatus(initialItemStatus); //NB! Do this *after* initializing the icons above, but *before* setting statusChangeHandler to avoid infinite loop
         this.activateFullMenuOnSingleClick = activateFullMenuOnSingleClick;
@@ -170,7 +172,7 @@ public class MyCheckBox extends Button {
 
 //Handle single-click
         addActionListener((evt) -> {
-            if (MyCheckBox.this.activateFullMenuOnSingleClick) {
+            if (this.activateFullMenuOnSingleClick) {
                 selectNewStatus();
             } else {
                 //TODO!! move below logic into static method in Item to avoid duplication

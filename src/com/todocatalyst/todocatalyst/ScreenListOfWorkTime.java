@@ -62,6 +62,7 @@ public class ScreenListOfWorkTime extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
+        super.addCommandsToToolbar(toolbar);
         //BACK
 //        toolbar.addCommandToLeftBar(makeDoneCommand("", FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle())));
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true));

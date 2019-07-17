@@ -54,7 +54,7 @@ public class ScreenStatistics extends MyForm {
 //        this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
 //    }
 //    ScreenStatistics(String title, ItemList itemListList, MyForm previousForm, GetItemList updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
-    ScreenStatistics(String screenTitle, MyForm previousForm, UpdateField updateActionOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenStatistics(String screenTitle, MyForm previousForm, Runnable updateActionOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(screenTitle, previousForm, updateActionOnDone);
 //        this.itemListList = itemListList;
         setUniqueFormId("ScreenStatistics");
@@ -119,6 +119,9 @@ public class ScreenStatistics extends MyForm {
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
+        
+        super.addCommandsToToolbar(toolbar);
+        
         if (false) {
             getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
@@ -756,8 +759,8 @@ public class ScreenStatistics extends MyForm {
 //    }
 //</editor-fold>
     protected Container buildContentPane(ItemList itemListStats) {
-        parseIdMapReset();
-        MyTree2 cl = new MyTree2(itemListStats, expandedObjects) {
+        parseIdMap2.parseIdMapReset();
+        MyTree2 cl = new MyTree2(itemListStats, expandedObjects,null,null) {
             @Override
             protected Component createNode(Object node, int depth) {
                 Container cmp = null;

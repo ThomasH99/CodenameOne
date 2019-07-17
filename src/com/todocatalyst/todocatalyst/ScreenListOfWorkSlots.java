@@ -87,11 +87,11 @@ public class ScreenListOfWorkSlots extends MyForm {
      * @param refreshWorkSlotList
      */
 //    ScreenListOfWorkSlots(String nameOfOwner, WorkSlotList workSlotList, ItemAndListCommonInterface owner, MyForm previousForm,
-    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, UpdateField updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, Runnable updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         this(owner, previousForm, null, updateActionOnDone, showOwner);
     }
 
-    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, FetchWorkSlotList refreshWorkSlotList, UpdateField updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, FetchWorkSlotList refreshWorkSlotList, Runnable updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm,
         super(SCREEN_TITLE + ((owner.getText() != null && owner.getText().length() > 0) ? " for " + owner.getText() : ""), previousForm, updateActionOnDone);
@@ -179,6 +179,9 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        if (this.keepPos != null) {
 //            this.keepPos.setNewScrollYPosition();
 //        }
+        //check if there was an insertContainer active earlier
+        recreateInlineInsertContainerIfNeeded();
+
         super.refreshAfterEdit();
 //        revalidate();
 //        restoreKeepPos();
@@ -187,6 +190,7 @@ public class ScreenListOfWorkSlots extends MyForm {
     @Override
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
+        super.addCommandsToToolbar(toolbar);
         //NEW WORKSLOT
         toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
             WorkSlot newWorkSlot = new WorkSlot();
@@ -234,7 +238,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                    workSlotList.add(newWorkSlot);
 //                    workSlotListOwner.setWorkSlotList(workSlotList);
                     workSlotListOwner.addWorkSlot(newWorkSlot);
-                    DAO.getInstance().saveInBackground(newWorkSlot,(ParseObject) workSlotListOwner);
+                    DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) workSlotListOwner);
                     refreshAfterEdit();
                 }
             }).show();
@@ -496,7 +500,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //</editor-fold>
     protected Container buildContentPaneForWorkSlotList(WorkSlotList workSlotList) {
 //    protected Container buildContentPaneForWorkSlotList(List<WorkSlot> workSlotList) {
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false){

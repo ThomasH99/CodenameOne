@@ -158,7 +158,7 @@ public class ScreenRepeatRule extends MyForm {
      */
     public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm,
             //            UpdateField doneAction, boolean allowEditingStartDate,  GetVal makeStartDate, boolean isForWorkSlot) {
-            UpdateField doneAction, boolean allowEditingStartDate, Date defaultStartDate, GetVal makeStartDate, boolean isForWorkSlot) {
+            Runnable doneAction, boolean allowEditingStartDate, Date defaultStartDate, GetVal makeStartDate, boolean isForWorkSlot) {
 //        super(title, repeatRule);
         super(title, previousForm, doneAction);
         setUniqueFormId("ScreenEditRepeatRule");
@@ -227,6 +227,7 @@ public class ScreenRepeatRule extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
 
+        super.addCommandsToToolbar(toolbar);
         //DONE
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Command cmd = makeDoneUpdateWithParseIdMapCommand();
@@ -269,7 +270,7 @@ public class ScreenRepeatRule extends MyForm {
                     repeatRuleEdited.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(repeatRuleOwner); //delete rule and all other instances than this one (currently edited)
                     repeatRuleEdited = null;
 //                    showPreviousScreenOrDefault(previousForm, false);
-                    showPreviousScreenOrDefault(false);
+                    showPreviousScreen(false);
                 });
             }
         }
@@ -351,7 +352,7 @@ public class ScreenRepeatRule extends MyForm {
 
     protected void setupLayoutAndFields() {
 //        if (!initialized) {
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
 
         setLayout(BoxLayout.y());
         setScrollableY(true);

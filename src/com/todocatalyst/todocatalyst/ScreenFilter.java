@@ -68,7 +68,7 @@ public class ScreenFilter extends MyForm {
 //    }
 //</editor-fold>
 
-    ScreenFilter(FilterSortDef filterSortDef, MyForm previousForm, UpdateField updateActionOnDone) {
+    ScreenFilter(FilterSortDef filterSortDef, MyForm previousForm, Runnable updateActionOnDone) {
         super(SCREEN_TITLE, previousForm, updateActionOnDone);
         this.filterSortDef = filterSortDef;
 //        FilterPredicate filterPredicate, MyHashMap filterHashMap, 
@@ -83,7 +83,7 @@ public class ScreenFilter extends MyForm {
         refreshAfterEdit();
 //        getContentPane().setScrollableY(true);
     }
-
+    
     @Override
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
@@ -92,25 +92,26 @@ public class ScreenFilter extends MyForm {
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }
-
+    
     public void addCommandsToToolbar(Toolbar toolbar) {
-
+        
+        super.addCommandsToToolbar(toolbar);
         //DONE/BACK
 //        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
-
+        
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
-
+        
         toolbar.addCommandToOverflowMenu(new Command("Save**")); //save with name for reuse elsewhere (how useful is it with the current few options??)
         toolbar.addCommandToOverflowMenu(new Command("Copy existing filter**")); //save with name for reuse elsewhere (how useful is it with the current few options??)
         toolbar.addCommandToOverflowMenu(new Command("Reset to default**")); //reset to default values
     }
-
+    
     private Container sortContainer;
     private Container sortSelectorContainer;
-    private Label hideSortSelectorContainerLabel = new Label("");
+//    private Label hideSortSelectorContainerLabel = new Label("");
 
     /**
      * This method shows the main user interface of the app
@@ -126,26 +127,28 @@ public class ScreenFilter extends MyForm {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
         content.setScrollableY(true);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Container content = new Container();
-//TableLayout tl = new TableLayout(2, 3); 
+//TableLayout tl = new TableLayout(2, 3);
 //Form hi = new Form("Table Layout Cons", tl);
-        if (false) {
-            TableLayout tl;
-//        int spanButton = 2;
-            int nbFields = 30;
-            if (Display.getInstance().isTablet() || true) {
-                tl = new TableLayout(nbFields, 2);
-            } else {
-                tl = new TableLayout(nbFields * 2, 1);
-//            spanButton = 1;
-            }
-            tl.setGrowHorizontally(true);
-//        setScrollableY(true);
-            content.setLayout(tl);
-//        content.setLayout(BoxLayout.y());
-            TableLayout.Constraint rightAdj = tl.createConstraint().horizontalAlign(Component.RIGHT).widthPercentage(20);
-        }
+//        if (false) {
+//            TableLayout tl;
+////        int spanButton = 2;
+//            int nbFields = 30;
+//            if (Display.getInstance().isTablet() || true) {
+//                tl = new TableLayout(nbFields, 2);
+//            } else {
+//                tl = new TableLayout(nbFields * 2, 1);
+////            spanButton = 1;
+//            }
+//            tl.setGrowHorizontally(true);
+////        setScrollableY(true);
+//            content.setLayout(tl);
+////        content.setLayout(BoxLayout.y());
+//            TableLayout.Constraint rightAdj = tl.createConstraint().horizontalAlign(Component.RIGHT).widthPercentage(20);
+//        }
 //        ParseQuery query = null;
+//</editor-fold>
         //SORT
 //        boolean ascending = true;
         MyOnOffSwitch inverseOrder = new MyOnOffSwitch(parseIdMap2, () -> {
@@ -169,29 +172,32 @@ public class ScreenFilter extends MyForm {
 //        sortOnSwitch.setOn("Sort");
 //        sortOnSwitch.setOff("Manual");
         sortOnSwitch.addActionListener((e) -> {
-            if (sortOnSwitch.isValue()) {
-                //TODO!!! do the animation at the level above (like in Timer)
+//            if (sortOnSwitch.isValue()) {
+//                //TODO!!! do the animation at the level above (like in Timer)
+////                sortContainer.replaceAndWait(sortSelectorContainer, hideSortSelectorContainerLabel, CommonTransitions.createFade(300));
 //                sortContainer.replaceAndWait(sortSelectorContainer, hideSortSelectorContainerLabel, CommonTransitions.createFade(300));
-                sortContainer.replaceAndWait(sortSelectorContainer, hideSortSelectorContainerLabel, CommonTransitions.createFade(300));
-            } else {
-                sortContainer.replaceAndWait(hideSortSelectorContainerLabel, sortSelectorContainer, CommonTransitions.createFade(300));
-            }
+//            } else {
+//                sortContainer.replaceAndWait(hideSortSelectorContainerLabel, sortSelectorContainer, CommonTransitions.createFade(300));
+//            }
+            sortSelectorContainer.setHidden(!sortSelectorContainer.isHidden());
+            sortSelectorContainer.getParent().getParent().animateLayout(300);
         });
 //        content.add(sortOnSwitch);
 //        sortContainer = Container.encloseIn(BoxLayout.y(), new Label("Manual sorting"), sortOnSwitch);
-        sortContainer = MyBorderLayout.west(new SpanLabel("Manual sorting")).add(MyBorderLayout.EAST, sortOnSwitch);
-        sortSelectorContainer
-                = Container.encloseIn(BoxLayout.y(),
-                        MyBorderLayout.west(new SpanLabel("Sort on")).add(MyBorderLayout.EAST,
-                                new MyStringPicker(filterSortDef.getSortOptions(), parseIdMap2, () -> {
-                                    String sortId = filterSortDef.getSortFieldId();
-                                    for (int i = 0, size = filterSortDef.getSortField().length; i < size; i++) {
-                                        if (filterSortDef.getSortField()[i].equals(sortId)) {
-                                            return i;
-                                        }
-                                    }
-                                    return 0; //default is first sort field selected
-                                }, (i) -> {
+        Component manualSort = layoutSetting("Manual sorting", sortOnSwitch, "**");
+//        sortContainer = MyBorderLayout.west(new SpanLabel("Manual sorting")).add(MyBorderLayout.EAST, sortOnSwitch);
+//        sortContainer = MyBorderLayout.west(manualSort);
+        sortContainer = MyBorderLayout.north(manualSort);
+        
+        MyStringPicker sortPicker = new MyStringPicker(filterSortDef.getSortOptions(), parseIdMap2, () -> {
+            String sortId = filterSortDef.getSortFieldId();
+            for (int i = 0, size = filterSortDef.getSortField().length; i < size; i++) {
+                if (filterSortDef.getSortField()[i].equals(sortId)) {
+                    return i;
+                }
+            }
+            return 0; //default is first sort field selected
+        }, (i) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    switch (filterSortDef.sortOptions[i]) {
 //                        default: //for all other, simply add to query
@@ -202,13 +208,24 @@ public class ScreenFilter extends MyForm {
 //                            }
 //                    };
 //</editor-fold>
-                                    filterSortDef.setSortFieldId(filterSortDef.getSortField()[i]);
-                                })), MyBorderLayout.west(new SpanLabel("Reverse sort order")).add(MyBorderLayout.EAST, inverseOrder));
-        if (filterSortDef.isSortOn()) {
-            sortContainer.add(MyBorderLayout.SOUTH, sortSelectorContainer);
-        } else {
-            sortContainer.add(MyBorderLayout.SOUTH, hideSortSelectorContainerLabel);
-        }
+            filterSortDef.setSortFieldId(filterSortDef.getSortField()[i]);
+        });
+        
+        Component sortOnOffCont = layoutSetting("Sort", sortPicker, "**");
+        Component sortReversed = layoutSetting("Reverse sort order", inverseOrder, "**");
+        
+        sortSelectorContainer
+                = Container.encloseIn(BoxLayout.y(), sortOnOffCont, sortReversed
+                //                        MyBorderLayout.west(new SpanLabel("Sort on")).add(MyBorderLayout.EAST, sortPicker),
+                //                        MyBorderLayout.west(new SpanLabel("Reverse sort order")).add(MyBorderLayout.EAST, inverseOrder)
+                );
+        sortSelectorContainer.setHidden(!filterSortDef.isSortOn());
+//        if (filterSortDef.isSortOn()) {
+//            sortContainer.add(MyBorderLayout.SOUTH, sortSelectorContainer);
+//        } else {
+//            sortContainer.add(MyBorderLayout.SOUTH, hideSortSelectorContainerLabel);
+//        }
+        sortContainer.add(MyBorderLayout.SOUTH, sortSelectorContainer);
 //        content.add(tl.createConstraint().horizontalSpan(2), sortContainer);
         content.add(sortContainer);
 
@@ -216,40 +233,53 @@ public class ScreenFilter extends MyForm {
         //Select Done or not
 //        new Container().add(MyOnOffSwitch doneTasks = new MyOnOffSwitch(parseIdMap2, () -> {return false;}, 
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show tasks with status:"));
-        content.add(new SpanLabel("Show tasks with status:"));
+//        content.add(new SpanLabel("Show tasks with status:"));
+        content.add(makeSpacer());
+        content.add(layoutSetting("Show tasks with status:", null, ""));
 //        content.add(new SpanLabel(ItemStatus.CREATED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutN(ItemStatus.CREATED.getName(), new MyOnOffSwitch(parseIdMap2,
+//        content.add(layoutN(ItemStatus.CREATED.getName(), new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show " + ItemStatus.CREATED.getName() + " tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowNewTasks(),
                 (b) -> filterSortDef.setShowNewTasks(b)), "**"));
 //                content.add(new SpanLabel(ItemStatus.ONGOING.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN(ItemStatus.ONGOING.getName(), new MyOnOffSwitch(parseIdMap2,
+//        content.add(layoutN(ItemStatus.ONGOING.getName(), new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show " + ItemStatus.ONGOING.getName() + " tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowOngoingTasks(),
                 (b) -> filterSortDef.setShowOngoingTasks(b)), "**"));
 //                content.add(new SpanLabel(ItemStatus.WAITING.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN(ItemStatus.WAITING.getName(), new MyOnOffSwitch(parseIdMap2,
+//        content.add(layoutN(ItemStatus.WAITING.getName(), new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show " + ItemStatus.WAITING.getName() + " tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowWaitingTasks(),
                 (b) -> filterSortDef.setShowWaitingTasks(b)), "**"));
 //                content.add(new SpanLabel(ItemStatus.DONE.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN(ItemStatus.DONE.getName(), new MyOnOffSwitch(parseIdMap2,
+//        content.add(layoutN(ItemStatus.DONE.getName(), new MyOnOffSwitch(parseIdMap2,
+
+        MyOnOffSwitch showDone = new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowDoneTasks(),
-                (b) -> filterSortDef.setShowDoneTasks(b)), "**"));
+                (b) -> filterSortDef.setShowDoneTasks(b));
+        content.add(layoutSetting("Show " + ItemStatus.DONE.getName() + " tasks", showDone, "**"));
         
-        ScreenSettingsCommon.addSettingBoolean(content, parseIdMap2, MyPrefs.keepDoneTasksVisibleTheDayTheyreCompleted);
+        Container c = new Container();
+        c.setHidden(filterSortDef.isShowDoneTasks());
+        ScreenSettingsCommon.addSettingBoolean(c, parseIdMap2, MyPrefs.keepDoneTasksVisibleTheDayTheyreCompleted);
+        content.add(c);
+        
+        showDone.addActionListener((e) -> {
+            c.setHidden(!c.isHidden());
+            c.getParent().getParent().animateLayout(300);
+        });
 
 //                content.add(new SpanLabel(ItemStatus.CANCELLED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN(ItemStatus.CANCELLED.getName(), new MyOnOffSwitch(parseIdMap2,
-                () -> filterSortDef.isShowCancelledTasks(),
-                (b) -> filterSortDef.setShowCancelledTasks(b)), "**"));
-
-        content.add(layoutN(ItemStatus.CANCELLED.getName(), new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show " + ItemStatus.CANCELLED.getName() + " tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowCancelledTasks(),
                 (b) -> filterSortDef.setShowCancelledTasks(b)), "**"));
 
         //show even before Hide until date
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show hidden tasks"));
-        content.add(new SpanLabel("Show hidden tasks"));
+//        content.add(new SpanLabel("Show hidden tasks"));
+        content.add(makeSpacer());
 //        content.add(new SpanLabel("Before Hide until date")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutN("Before Hide until date", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show Before Hide until date", new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowBeforeHideUntilDate();
                 },
@@ -261,7 +291,7 @@ public class ScreenFilter extends MyForm {
 
         //show even if expiredDate is passed
 //        content.add(new SpanLabel("Expired tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutN("Expired tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Expired tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowExpiresOnDate();
                 },
@@ -271,10 +301,11 @@ public class ScreenFilter extends MyForm {
                 }), "**")); //if show hidden tasks, then no add'l query constraint
 
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show only certain types of tasks"));
-        content.add(new SpanLabel("Show only certain types of tasks"));
+//        content.add(new SpanLabel("Show only certain types of tasks"));
+        content.add(makeSpacer());
         //Projects
 //        content.add(new SpanLabel("Projects")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN("Projects", new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutSetting("Show only Projects", new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowProjectsOnly();
         }, (b) -> {
             filterSortDef.setShowProjectsOnly(b);
@@ -288,7 +319,7 @@ public class ScreenFilter extends MyForm {
 //                }));
         //Interrupt tasks
 //       content.add(new SpanLabel("Interrupt tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutN("Interrupt tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show only Interrupt tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowInterruptTasksOnly();
                 }, (b) -> {
@@ -297,7 +328,7 @@ public class ScreenFilter extends MyForm {
 
         //Estimates all/with/without
 //        content.add(new SpanLabel("With estimates")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN("With estimates", new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutSetting("Show only tasks with estimates", new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWithoutEstimatesOnly();
         }, (b) -> {
             filterSortDef.setShowWithoutEstimatesOnly(b);
@@ -305,7 +336,7 @@ public class ScreenFilter extends MyForm {
 
         //Actual all/with/withoutno/all
 //        content.add(new SpanLabel("With work time")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutN("With work time", new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutSetting("Show only tasks with work time", new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWithActualsOnly();
         }, (b) -> {
             filterSortDef.setShowWithActualsOnly(b);
@@ -313,7 +344,7 @@ public class ScreenFilter extends MyForm {
 
         //Depending on tasks
 //        content.add(new SpanLabel("Tasks depending on other tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutN("Tasks depending on other tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show tasks depending on other tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowDependingOnUndoneTasks();
                 },

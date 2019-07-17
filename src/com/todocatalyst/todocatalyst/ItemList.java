@@ -1672,6 +1672,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public boolean softDelete(boolean removeRefs) {
 
+        //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
+        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
+
         //since we're deleting the list, and thus soft-deleting all its tasks (and their subtasks, recursively), we don't need to remove the list as the tasks' owner!
         List<? extends ItemAndListCommonInterface> tasks = getListFull();
         for (Item item : (List<Item>) getListFull()) {
@@ -1680,14 +1683,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
         //remove itemList from meta-itemLists (all itemLists to which it is a sub-itemList)
         //remove this ItemList from all lists (ItemLists or Categories) which include it as a sourceList
-        List<ParseObject> updatedElements = new ArrayList<>();
-        updatedElements.clear();
-        for (ItemList itemList : (List<ItemList<E>>) getMetaList()) {
-            if (itemList.removeSubList(this)) {
-                updatedElements.add(itemList);
+        List<ItemList<E>> metaList = (List<ItemList<E>>) getMetaList();
+        if (metaList != null && metaList.size() > 0) {
+            List<ParseObject> updatedMetaLists = new ArrayList<>();
+            updatedMetaLists.clear();
+            for (ItemList itemList : metaList) {
+                if (itemList.removeSubList(this)) {
+                    updatedMetaLists.add(itemList);
+                }
             }
+            DAO.getInstance().saveInBackground(updatedMetaLists);
         }
-        DAO.getInstance().saveInBackground(updatedElements);
 
         ItemListList itemListList = ItemListList.getInstance();
         itemListList.remove(this);
@@ -2439,18 +2445,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public E getNextItemAfter(Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
         List<E> list = getList(); //get filtered list
-        int prevIndex;
-        if (previousItem != null) {
-            prevIndex = list.indexOf(previousItem);
-        } else {
-            prevIndex = -1;
-        }
-        int nextIndex;
-        if (prevIndex < 0 && returnFirstItemIfPreviousNotFound) {
-            nextIndex = 0;
-        } else {
-            nextIndex = prevIndex + 1;
-        }
+//        int prevIndex;
+//        if (previousItem != null) {
+//            prevIndex = list.indexOf(previousItem);
+//        } else {
+//            prevIndex = -1;
+//        }
+        int prevIndex = previousItem != null ? prevIndex = list.indexOf(previousItem) : -1;
+//        int nextIndex;
+//        if (prevIndex < 0 && returnFirstItemIfPreviousNotFound) {
+//            nextIndex = 0;
+//        } else {
+//            nextIndex = prevIndex + 1;
+//        }
+        int nextIndex = prevIndex < 0 && returnFirstItemIfPreviousNotFound ? 0 : prevIndex + 1;
         if (nextIndex >= 0 && nextIndex < list.size()) { //if nextIndex is a valid index
             return list.get(nextIndex);
         }
@@ -3063,6 +3071,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    public boolean isLeaf() {
 //        return getList() == null || getList().size() == 0;
 //    }
+    @Override
     public List getChildrenList(Object itemInThisList) {
         if (itemInThisList == null) {
 //            List l = getList(); //getList to get filtered/sorted list for display

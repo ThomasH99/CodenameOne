@@ -17,19 +17,19 @@ import java.util.Map;
  */
     class MyTextField extends TextField {
         
-        MyTextField(String hint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
+        MyTextField(String hint, ParseIdMap2 parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
             this(hint, COLUMNS_FOR_STRING, TextArea.ANY, parseIdMap, getValue, setValue);
         }
         
-        MyTextField(String hint, int columns, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
+        MyTextField(String hint, int columns, int constraint, ParseIdMap2 parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
             this(hint, columns, 128, constraint, parseIdMap, getValue, setValue); //UI: 128 = default max size of a text field //TODO: make a preference or PRO feature
         }
         
-        MyTextField(String hint, int columns, int maxTextSize, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
+        MyTextField(String hint, int columns, int maxTextSize, int constraint, ParseIdMap2 parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
             this(hint, columns, maxTextSize, constraint, parseIdMap, getValue, setValue, TextField.LEFT);
         }
         
-        MyTextField(String hint, int columns, int maxTextSize, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue, int alignment) {
+        MyTextField(String hint, int columns, int maxTextSize, int constraint, ParseIdMap2 parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue, int alignment) {
             this(hint, columns, 0, 0, maxTextSize, constraint, parseIdMap, getValue, setValue, alignment);
         }
 //            MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint) {
@@ -38,7 +38,7 @@ import java.util.Map;
             this(hint, columns, rows, maxRows, maxTextSize, constraint, null, null, null, TextField.LEFT);
         }
         
-        MyTextField(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue, int alignment) {
+        MyTextField(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint, ParseIdMap2 parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue, int alignment) {
             super("", hint, columns, constraint);
             setAlignment(alignment);
             setGrowByContent(true);

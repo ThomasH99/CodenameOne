@@ -167,6 +167,10 @@ public class MyReplayCommand extends CommandTracked {
         return create(cmdUniquePrefix, cmdUniquePostfix, commandName, icon, ev, false, () -> true);
     }
 
+    public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, char icon, final ActionListener ev) {
+        return create(cmdUniquePrefix, cmdUniquePostfix, commandName, icon, ev, false, () -> true);
+    }
+
     public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev) {
         return create(cmdUniqueID, "", commandName, icon, ev, false, () -> true);
     }
@@ -175,8 +179,8 @@ public class MyReplayCommand extends CommandTracked {
         return create(cmdUniqueID, "", commandName, icon, ev, false, () -> true);
     }
 
-    public static MyReplayCommand create(String commandName, char icon, final ActionListener ev) {
-        return create(commandName, "", commandName, icon, ev, false, () -> true);
+    public static MyReplayCommand create(String commandNameAndUniqueId, char icon, final ActionListener ev) {
+        return create(commandNameAndUniqueId, "", commandNameAndUniqueId, icon, ev, false, () -> true);
     }
 //    public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, MyForm.GetBool pushCmd) {
 //        return create(cmdUniqueID, "", commandName, icon, ev, false, pushCmd);
@@ -204,6 +208,10 @@ public class MyReplayCommand extends CommandTracked {
 
     public static MyReplayCommand createKeep(String cmdUniqueID, String commandName, char icon, final ActionListener ev) {
         return create(cmdUniqueID, "", commandName, icon, ev, true, () -> true);
+    }
+
+    public static MyReplayCommand createKeep(String cmdUniqueCmdName, char icon, final ActionListener ev) {
+        return create(cmdUniqueCmdName, "", cmdUniqueCmdName, icon, ev, true, () -> true);
     }
 
     public static MyReplayCommand create(String name) {

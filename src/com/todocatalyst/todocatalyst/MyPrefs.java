@@ -158,6 +158,9 @@ public class MyPrefs {
             = new PrefEntry("Show total time in timer", "timerShowTotalActualInTimer", false,
                     "Timer always shows the total amount of elapsed time, not just from this timer session");
 
+    static PrefEntry keepScreenAlwaysOnInApp
+            = new PrefEntry("Keep screen on when app is active", "keepScreenAlwaysOnInApp", false,
+                    "Disables device screen saver while app is in foreground");
     static PrefEntry timerKeepScreenAlwaysOnInTimer
             = new PrefEntry("Keep screen on when Timer is active", "timerKeepScreenAlwaysOnInTimer", false,
                     "Prevents device screen saver from closing while Timer is active");
@@ -199,6 +202,10 @@ public class MyPrefs {
                     "Start Timer directly on any swiped task or project"); //be force-started on tasks which are normally skipped, e.g. Done, Cancelled or Waiting tasks (depend on settings)**");
     static PrefEntry timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject
             = new PrefEntry("If the currently timed task is no longer in the timed list or project, then start Timer on first task", "timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject", false,
+                    "**");
+    static PrefEntry enableTimerToRestartOnLists
+            = new PrefEntry("Enable Timer to restart over on a timed list, for example if the previously timed task is no longer in the list", 
+                    "enableTimerToRestartOnLists", false,
                     "**");
 
     //COMMENTS
@@ -462,14 +469,18 @@ public class MyPrefs {
                     "This ensures that any recorded work time is not lost, e.g. for statistics**"); //TODO: what happens if the max is reached? Will the algorithms still work?
 
     //ITEMS IN LIST
-    static PrefEntry itemListAlwaysShowHideUntilDate = new PrefEntry("ppp", "itemListAlwaysShowHideUntilDate", true, "**");
-    static PrefEntry itemListAlwaysShowStartByDate = new PrefEntry("ooo", "itemListAlwaysShowStartByDate", true, "**");
-    static PrefEntry itemListExpiresByDate = new PrefEntry("iii", "itemListExpiresByDate", true, "**");
-    static PrefEntry itemListWaitingTillDate = new PrefEntry("uuu", "itemListWaitingTillDate", true, "**");
+    static PrefEntry itemListAlwaysShowHideUntilDate = new PrefEntry("Show Hide Until date", "itemListAlwaysShowHideUntilDate", true, "**");
+    static PrefEntry itemListAlwaysShowStartByDate = new PrefEntry("Show Start By dates", "itemListAlwaysShowStartByDate", true, "**");
+    static PrefEntry itemListExpiresByDate = new PrefEntry("Show Expires By date", "itemListExpiresByDate", true, "**");
+    static PrefEntry itemListWaitingTillDate = new PrefEntry("Show Waiting Till date", "itemListWaitingTillDate", true, "**");
     static PrefEntry itemListShowRemainingEvenIfZero = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", "itemListShowRemainingEvenIfZero", false, "**");
-    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", "itemListShowActualIfNonZeroEvenIfNotDone", false, "**");
+    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", 
+            "itemListShowActualIfNonZeroEvenIfNotDone", false, "**");
     static PrefEntry itemListEffortEstimate = new PrefEntry("Show Effort Estimate in list details**", "itemListEffortEstimate", true, "**");
     static PrefEntry itemListAllowDuplicateListNames = new PrefEntry("Show Effort Estimate in list details**", "itemListAllowDuplicateListNames", false, "**");
+    static PrefEntry earnedValueDecimals = new PrefEntry("Number of decimals shown for task Value**", "earnedValueDecimals", 2, "**");
+    static PrefEntry itemListDontShowValueIfEarnedValuePerHourIsNonZero = new PrefEntry("Show Effort Estimate in list details**", 
+            "itemListDontShowValueIfEarnedValuePerHourIsNonZero", true, "**");
 
     //
     static PrefEntry creationLogInterval = new PrefEntry("yyy", "creationLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_CREATION_LOG_TITLE);

@@ -23,7 +23,7 @@ import com.codename1.ui.Container;
  */
 public class ScreenSettingsAlarms extends ScreenSettingsCommon {
 
-    ScreenSettingsAlarms(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
+    ScreenSettingsAlarms(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
         super(mainScreen, doneAction);
     }
 

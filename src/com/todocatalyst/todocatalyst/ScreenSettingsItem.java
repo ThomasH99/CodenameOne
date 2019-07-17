@@ -22,7 +22,7 @@ import com.codename1.ui.Container;
 public class ScreenSettingsItem extends ScreenSettingsCommon {
 
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-    ScreenSettingsItem(String title, MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
+    ScreenSettingsItem(String title, MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
         super(mainScreen, doneAction);
         setUniqueFormId("ScreenItemSettings");

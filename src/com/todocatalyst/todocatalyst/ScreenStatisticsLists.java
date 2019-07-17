@@ -94,7 +94,7 @@ public class ScreenStatisticsLists extends MyForm {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
 //        Container content = new Container();
         TableLayout tl;
         if (Display.getInstance().isTablet() || !Display.getInstance().isPortrait()) {

@@ -63,12 +63,12 @@ public class ScreenCategoryPicker extends MyForm {
 //    ScreenCategoryPicker(List<Category> listOfAllCategories, Set<Category> selectedCategories, MyForm previousForm) {
 //    ScreenCategoryPicker(CategoryList listOfAllCategories, Set<Category> selectedCategories, MyForm previousForm) {
 //</editor-fold>
-    ScreenCategoryPicker(CategoryList listOfAllCategories, List<Category> selectedCategories, MyForm previousForm, UpdateField updateOnDone) {
+    ScreenCategoryPicker(CategoryList listOfAllCategories, List<Category> selectedCategories, MyForm previousForm, Runnable updateOnDone) {
         this("Select Categories", listOfAllCategories, selectedCategories, previousForm, updateOnDone);
     }
 
 //    ScreenCategoryPicker(String title, CategoryList listOfAllCategories, Set<Category> selectedCategories, MyForm previousForm, UpdateField updateOnDone) { //throws ParseException, IOException {
-    ScreenCategoryPicker(String title, CategoryList listOfAllCategories, List<Category> selectedCategories, MyForm previousForm, UpdateField updateOnDone) { //throws ParseException, IOException {
+    ScreenCategoryPicker(String title, CategoryList listOfAllCategories, List<Category> selectedCategories, MyForm previousForm, Runnable updateOnDone) { //throws ParseException, IOException {
 //        this(title, categories, item.getCategories(), previousForm);
 //    }
 //    ScreenCategoryPicker(String title, List<Category> categories, Set<Category> selectedCategories, Form previousForm) { //throws ParseException, IOException {
@@ -177,6 +177,7 @@ public class ScreenCategoryPicker extends MyForm {
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {
+        super.addCommandsToToolbar(toolbar);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
@@ -214,7 +215,7 @@ public class ScreenCategoryPicker extends MyForm {
 //                    previousForm.showBack();
 //</editor-fold>
 //                        showPreviousScreenOrDefault(previousForm, false);
-                        showPreviousScreenOrDefault( false);
+                        showPreviousScreen( false);
                     }
             );
         }

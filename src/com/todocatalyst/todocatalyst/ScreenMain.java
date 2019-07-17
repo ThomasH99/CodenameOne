@@ -162,7 +162,8 @@ public class ScreenMain extends MyForm {
         MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconMainAlarms/*FontImage.create(" \ue838 ", iconStyle)*/,
                 (e) -> {
 //                new ScreenListOfAlarms().show();
-                    ScreenListOfAlarms.getInstance().show(ScreenMain.this);
+//                   if (false) 
+                       ScreenListOfAlarms.getInstance().show(ScreenMain.this);
                 }
         );
 

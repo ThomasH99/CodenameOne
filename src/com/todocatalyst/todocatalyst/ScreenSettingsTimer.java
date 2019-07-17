@@ -24,7 +24,7 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 
-    ScreenSettingsTimer(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
+    ScreenSettingsTimer(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
           super(mainScreen, doneAction);
           setUniqueFormId("ScreenTimerSettings");
@@ -51,6 +51,8 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeWaitingTasks);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeDoneTasks);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.enableTimerToRestartOnLists);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject);
         if (false) {
             addSettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
         }

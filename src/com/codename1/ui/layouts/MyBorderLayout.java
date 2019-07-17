@@ -291,11 +291,17 @@ public class MyBorderLayout extends Layout {
         return null;
     }
 
-    public final static int SIZE_EAST_AND_WEST_TO_PREFERRED = 0;
+//    public final static int SIZE_EAST_AND_WEST_TO_PREFERRED = 0;
+    /** give full preferred size to west container before sizing east*/
     public final static int SIZE_WEST_BEFORE_EAST = 1;
+    /** give full preferred size to east container before sizing west - default value*/
     public final static int SIZE_EAST_BEFORE_WEST = 2;
-    private int eastWestSizeApproach = SIZE_EAST_AND_WEST_TO_PREFERRED;
+    private int eastWestSizeApproach = SIZE_EAST_BEFORE_WEST;
 
+    /**
+    
+    @param eastWestSizeApproach 
+    */
     public void setSizeEastWestMode(int eastWestSizeApproach) {
         this.eastWestSizeApproach = eastWestSizeApproach;
     }

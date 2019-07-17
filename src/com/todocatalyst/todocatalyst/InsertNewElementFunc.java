@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.TextArea;
@@ -37,5 +38,11 @@ public interface InsertNewElementFunc {
 //    public ItemAndListCommonInterface close(boolean saveAnyEnteredElement);
 //    public void close(boolean saveAnyEnteredElement);
     public TextArea getTextArea();
+    
+    /**
+    returns the command used to launch the full screen edit of the task. Used for "Replay" = 
+    @return 
+    */
+    public Command getEditTaskCmd();
 
 }

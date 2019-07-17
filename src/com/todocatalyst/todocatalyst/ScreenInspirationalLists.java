@@ -49,7 +49,7 @@ public class ScreenInspirationalLists extends MyForm {
     //DONE skip login screen when already logged in
     
    public final static String SCREEN_TITLE = "Inspirational lists";
-
+   
 //    MyForm mainScreen;
     ScreenInspirationalLists(MyForm mainScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, mainScreen, () -> {
@@ -115,15 +115,18 @@ public class ScreenInspirationalLists extends MyForm {
         //TODO!!! Add an explanation to each of these (definition + why/when work on it)
         //TODO!! check old filters from first version of TodoCatalyst
         content.add(new Button(MyReplayCommand.create("Highest earned ROI relative to remaining time")));  //the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)
-        content.add(new Button(MyReplayCommand.create("Tasks in progress but without any actual time recorded")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(MyReplayCommand.create("Get that almost finished project done completely")));  //projects where most tasks are done (high ratio done - not done)
+        content.add(new Button(MyReplayCommand.create("Warm up")));  //quick easy tasks to get that dopamine flowing
+        content.add(new Button(MyReplayCommand.create("What never gets done: Important, not Urgent and Challenging or time consuming")));  //take on challenging/difficult, dreaded tasks, important
+
+        content.add(new Button(MyReplayCommand.create("Just that last little bit - started tasks that are almost done")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(MyReplayCommand.create("Longest duration between creation and start work or complete (procrastinating what type of tasks?)")));  //take on challenging/difficult, dreaded tasks, important
-        content.add(new Button(MyReplayCommand.create("On top of the mountain")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("Tasks in progress but without any actual time recorded")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(MyReplayCommand.create("Really that urgent?")));  //tasks marked Urgent that are not done after e.g. 7 days after Due Date
+        content.add(new Button(MyReplayCommand.create("Get that almost finished project done completely")));  //projects where most tasks are done (high ratio done - not done)
+        content.add(new Button(MyReplayCommand.create("On top of the mountain")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(MyReplayCommand.create("Should have been postponed?")));  //tasks marked were marked Import=Low but still done quickly after creation?
         content.add(new Button(MyReplayCommand.create("Maybe start focusing on what's Important?")));  //tasks marked were marked Import=High but still done/started after eg 30 days?
         content.add(new Button(MyReplayCommand.create("What never gets done")));  //Important but not urgent, sorted by ROI
-        content.add(new Button(MyReplayCommand.create("Warm up")));  //getting started when 
         content.add(new Button(MyReplayCommand.create("Quickies")));  //less than 2 minutes
         content.add(new Button(MyReplayCommand.create("Fits a timeslot")));  //most important tasks I have the time to do in a certain time (e.g. I have just 1 hour)
         content.add(new Button(MyReplayCommand.create("Here and Now")));  //due date today, waiting until today, starred

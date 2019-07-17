@@ -18,7 +18,7 @@ class MyOnOffSwitch extends Switch {
 
 //            String title;
 //            String parseId;
-    MyOnOffSwitch(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetBoolean get, MyForm.PutBoolean set) {
+    MyOnOffSwitch(ParseIdMap2 parseIdMap, MyForm.GetBoolean get, MyForm.PutBoolean set) {
         super();
 //        getAllStyles().setPaddingRight(6);
 //            setUIID("Button");

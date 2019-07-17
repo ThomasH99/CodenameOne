@@ -22,7 +22,7 @@ import com.codename1.ui.Container;
 public class ScreenSettingsRepeatRules extends ScreenSettingsCommon {
 
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-    ScreenSettingsRepeatRules(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
+    ScreenSettingsRepeatRules(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
         super(mainScreen, doneAction);
         setUniqueFormId("ScreenItemSettings");

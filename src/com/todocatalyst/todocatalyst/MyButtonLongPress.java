@@ -59,7 +59,7 @@ public class MyButtonLongPress extends Button {
     public MyButtonLongPress() {
         super();
     }
-
+    
     public MyButtonLongPress(Command shortPressCmd, Command longPressCmd, Image icon) {
         super(shortPressCmd);
 //        this.shortPressCmd = shortPressCmd;
@@ -67,19 +67,19 @@ public class MyButtonLongPress extends Button {
         setCommand(shortPressCmd);
         setUIID("Label");
     }
-
+    
     public MyButtonLongPress(Command shortPressCmd, Command longPressCmd) {
         this(shortPressCmd, longPressCmd, null);
     }
-
+    
     public void setLongPressCommand(Command longPressCmd) {
         this.longPressCmd = longPressCmd;
     }
-
+    
     public Command getLongPressCommand() {
         return longPressCmd;
     }
-
+    
     @Override
     public void longPointerPress(int x, int y) {
         longPointerPress = true;
@@ -105,6 +105,7 @@ public class MyButtonLongPress extends Button {
 //        getComponentForm()      
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    protected void dragInitiated() { //from Button
 //        if(Display.getInstance().shouldRenderSelection(this)) {
 //            state=STATE_ROLLOVER;
@@ -113,6 +114,7 @@ public class MyButtonLongPress extends Button {
 //        }
 //        repaint();
 //    }
+//</editor-fold>
     protected void dragInitiated() {
         /*
         dragInitiated is called in Form.autoRelease(int x, int y) eg Picker is shown. 
@@ -126,6 +128,7 @@ public class MyButtonLongPress extends Button {
         super.dragInitiated();
     }
 
+    //<editor-fold defaultstate="collapsed" desc="comment">
 ////    @Override
 //    public void pointerReleasedXX(int x, int y) {
 //        if (longPointerPress) {
@@ -174,8 +177,6 @@ public class MyButtonLongPress extends Button {
 //    public void keyRepeatedXXX(int keyCode) {
 //
 //    }
-
-    //<editor-fold defaultstate="collapsed" desc="comment">
     //    public void longPointerPress(int x, int y) {
     //        super.longPointerPress(x, y);
     //        longPressCmd.actionPerformed(new ActionEvent(null, x, y));

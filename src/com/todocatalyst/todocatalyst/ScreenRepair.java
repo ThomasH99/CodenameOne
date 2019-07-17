@@ -688,7 +688,7 @@ public class ScreenRepair extends MyForm {
                         Component closest = getClosestComponentTo(x[0], y[0]);
                         Container parentContAbove = compAbove != null ? compAbove.getParent() : null;
 //                        MyDragAndDropSwipeableContainer dropComponentAbove = MyForm.findDropContainerStartingFrom(compAbove);
-                        MyDragAndDropSwipeableContainer dropCompAbove = MyDragAndDropSwipeableContainer.findDropContainerStartingFrom(parentContAbove);
+                        MyDragAndDropSwipeableContainer dropCompAbove = MyDragAndDropSwipeableContainer.findMyDDContainerStartingFrom(parentContAbove);
                         ItemAndListCommonInterface objAbove = dropCompAbove != null
                                 ? (ItemAndListCommonInterface) dropCompAbove.getDragAndDropObject()
                                 : null;
@@ -828,11 +828,11 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        content.add(new Button(Command.create("Test ScreenEdit2", null, (e) -> {
+        if (false)content.add(new Button(Command.create("Test ScreenEdit2", null, (e) -> {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
             new ScreenItem2(new Item(), ScreenRepair.this, () -> {
-            }).show();
+            },false,null).show();
         }
         )));
 

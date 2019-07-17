@@ -6,6 +6,8 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.io.Log;
+import com.codename1.ui.events.ActionListener;
+import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyUtil.eql;
@@ -25,7 +27,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     /**
     returns true if the task or project is completed, that is either Done (task or subtasks completed) or cancelled or soft-deleted. 
     @return 
-    */
+     */
     public boolean isDone();
 //    boolean isTemplate();
 //    void setTemplate(boolean on);
@@ -102,7 +104,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
             workSlotList = new WorkSlotList(this, null, true); //true to avoid unnecessary call to sort
 //            workSlotList.setOwner(this);
         } //else {//else needed since new workSlot already added in WorkSlotList constructor above
-        for (WorkSlot workSlot:workSlots) {
+        for (WorkSlot workSlot : workSlots) {
             workSlotList.add(workSlot); //adds *sorted*!
             workSlot.setOwner(this);
         }
@@ -120,22 +122,21 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //            workSlot.setOwner(this);
 //        }
 //        setWorkSlotList(workSlotList);
-            addWorkSlots(Arrays.asList(workSlot));
+        addWorkSlots(Arrays.asList(workSlot));
     }
-    
+
     /**
     remove the workSlot from its owner, and set the workSlot's owner=null
     @param workSlot 
-    */
+     */
     default public void removeWorkSlot(WorkSlot workSlot) {
         WorkSlotList workSlotList = getWorkSlotListN();
         if (workSlotList != null) {
-            workSlotList.remove(workSlot); 
+            workSlotList.remove(workSlot);
             workSlot.setOwner(null);
             setWorkSlotList(workSlotList);
         }
     }
-
 
     public int getNumberOfUndoneItems(boolean includeSubTasks);
 
@@ -340,10 +341,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * 
      * @param newElement new item
      * @param refElement the reference item item inserted before/after this one
-     * @param addAfterRefElement if true, add subItemOrList *after* the position of item
+     * @param addAfterRefEltOrEndOfList if true, add subItemOrList *after* the position of item
      * @return 
      */
-    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefElement);
+    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefEltOrEndOfList);
 
     /**
      *
@@ -387,17 +388,33 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
+    move item from its current position within the ItemList to after/before the refItem's position (or if refItem not found, to beginning/end of list depending
+    on addAfterRefEltOrEndOfList)
+    If item not already in the list, it will do nothing (to avoid adding it if the user had not inserted it in the first place)
+    @param item
+    @param refItem
+    @param addCategoryToItem
+    @param addAfterRefEltOrEndOfList 
+     */
+    default public void moveItemInList(Item item, Item refItem,  boolean addAfterRefEltOrEndOfList) {
+        if (removeFromList(item, false)) //only add if already there
+            addToList(item, refItem, addAfterRefEltOrEndOfList);
+    }
+
+    /**
      * remove this from its owner and set this.owner=null; returns owner (eg so it can be saved)
      * @return 
      */
     default public ItemAndListCommonInterface removeFromOwner() {
         ItemAndListCommonInterface owner = getOwner();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (owner != null) {
 //            List ownerList = getOwner().getListFull();
 ////        getOwnerList().removeItem(this);
 //            ownerList.remove(this);
 //            getOwner().setList(ownerList);
 //        }
+//</editor-fold>
         if (owner != null) {
             owner.removeFromList(this);
             setOwner(null);
@@ -562,7 +579,17 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     public void resetWorkTimeDefinition();
 
+    /**
+     *
+     * @return
+     */
     public String getObjectIdP();
+
+    /**
+     *
+     * @return
+     */
+//    public String getClassName();
 
     /**
      * sets the workTime for the item (transitory for now, calculated
@@ -1058,7 +1085,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default public FilterSortDef getDefaultFilterSortDef() {
 //            new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true)
 //        FilterSortDef hardcodedFilter = new FilterSortDef(null, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //no sorting, //TODO!! Move this filter to FilterSortDef.getDeafultFilter() and reuse everywhere
-        FilterSortDef hardcodedFilter =  FilterSortDef.getDefaultFilter();
+        FilterSortDef hardcodedFilter = FilterSortDef.getDefaultFilter();
         return hardcodedFilter;
     }
 
@@ -1158,7 +1185,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
             }
         }
     }
-    
+
     /**
     returns true if inheritance the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
     @return 
@@ -1166,7 +1193,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default public boolean isInherited(Object ownValue, Object potentiallyInheritedValue, boolean inheritanceEnabledForField) {
 //        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
         return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && inheritanceEnabledForField
-                && eql(ownValue , potentiallyInheritedValue);
+                && eql(ownValue, potentiallyInheritedValue);
     }
 
 }

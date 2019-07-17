@@ -29,6 +29,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
     private ItemListList itemOrItemListForNewItemLists;
     private ItemList newItemList;
     private boolean insertBeforeRefElement;
+    private Command editNewCmd;
 //    private Container cont=new Container(new BorderLayout());
 
     private final static String ENTER_ITEMLIST = "New " + ItemList.ITEM_LIST; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
@@ -59,12 +60,12 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
      * @param myForm
      * @param refItemList
      */
-    public InlineInsertNewItemListContainer(MyForm myForm, ItemList refItemList, boolean insertBeforeRefElement) {
+    public InlineInsertNewItemListContainer(MyForm form, ItemList refItemList, boolean insertBeforeRefElement) {
 //        this(myForm, ItemListList.getInstance(), refItemList, insertBeforeRefElement);
 //    }
 //
 //    public InlineInsertNewItemListContainer(MyForm myForm, ItemList itemList2, ItemList refItemList, boolean insertBeforeRefElement) {
-        this.myForm = myForm;
+        this.myForm = form;
         this.refItemList = refItemList;
         ASSERT.that(refItemList != null, () -> "why itemOrItemListForNewTasks2==null here?");
         this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
@@ -87,11 +88,15 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
                     myForm.setKeepPos(new KeepInSameScreenPosition(refItemList, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
 //                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : element, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                 }
-                closeInsertNewItemListContainer();
+                closeInsertNewItemListContainer(true);
                 insertNewItemListAndSaveChanges(newItemList);
                 myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });
+
+        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null)
+            textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
+        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
         contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
 
@@ -101,23 +106,26 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
             westCont.add(new Button(Command.createMaterial(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
 //                myForm.lastInsertNewElementContainer = null;
-                closeInsertNewItemListContainer();
+                closeInsertNewItemListContainer(true);
             })));
         }
 
+//        editNewCmd = CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
+        editNewCmd = CommandTracked.create(null, Icons.iconEdit, (ev) -> {
+            if ((newItemList = createNewItemList()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
+                myForm.setKeepPos(new KeepInSameScreenPosition(newItemList, this, -1)); //if editing the new task in separate screen, 
+                myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
+                new ScreenItemListProperties(newItemList, (MyForm) getComponentForm(), () -> {
+                    insertNewItemListAndSaveChanges(newItemList);
+                    myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE,false); //marker to indicate that the inlineinsert container launched edit of the task
+                    myForm.refreshAfterEdit();
+                }).show();
+            } else {
+                ASSERT.that(false, "Something went wrong here, what to do? ...");
+            }
+        }, "InlineEditItemList");
         //Enter full screen edit of the new Category:
-        contForTextEntry.add(MyBorderLayout.EAST,
-                new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
-                    if ((newItemList = createNewItemList()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
-                        myForm.setKeepPos(new KeepInSameScreenPosition(newItemList, this, -1)); //if editing the new task in separate screen, 
-                        new ScreenItemListProperties(newItemList, (MyForm) getComponentForm(), () -> {
-                            insertNewItemListAndSaveChanges(newItemList);
-                            myForm.refreshAfterEdit();
-                        }).show();
-                    } else {
-                        ASSERT.that(false, "Something went wrong here, what to do? ...");
-                    }
-                })));
+        contForTextEntry.add(MyBorderLayout.EAST, new Button(editNewCmd));
         add(contForTextEntry);
     }
 
@@ -164,14 +172,24 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 //        }
 //</editor-fold>
         itemOrItemListForNewItemLists.addToList(newItemList, refItemList, !insertBeforeRefElement); //add after item
-        DAO.getInstance().saveInBackground(newItemList, (ParseObject) itemOrItemListForNewItemLists);
+        DAO.getInstance().saveInBackground(newItemList, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP()));
+        DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewItemLists);
+        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
+        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
     }
 
-    private void closeInsertNewItemListContainer() {
+    private void closeInsertNewItemListContainer(boolean stopAddingInlineContainers) {
         //UI: close the text field
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(this);
+        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+        if (stopAddingInlineContainers) {
+            myForm.setInlineInsertContainer(null); //remove this as inlineContainer
+            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
+            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
+        }
+
 //        if (parent != null && parent.getParent() != null) {
-        if (parent != null ) {
+        if (parent != null) {
 //            parent.getParent().animateLayout(300); //parent of parent since pinchcontainer is kept inside a variable height container
             parent.animateLayout(300); //parent of parent since pinchcontainer is kept inside a variable height container
         }
@@ -201,6 +219,11 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
     @Override
     public TextArea getTextArea() {
         return textEntryField;
+    }
+
+    @Override
+    public Command getEditTaskCmd() {
+        return editNewCmd;
     }
 
 }

@@ -12,5 +12,7 @@ import com.codename1.ui.Container;
  * @author thomashjelm
  */
 public class InlineInsertNewContainer extends Container {
-    
+
+//    protected static final String SAVE_LOCALLY_INLINE_INSERT_TEXT = "InlineInsertSavedText"; //used to save inline text from within the InlineInsert container
+
 }

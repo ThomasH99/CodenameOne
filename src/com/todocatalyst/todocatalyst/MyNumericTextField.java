@@ -20,7 +20,7 @@ import java.util.Map;
     
     class MyNumericTextField extends TextField {
         
-        MyNumericTextField(String hint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDouble getValue, MyForm.PutDouble setValue) {
+        MyNumericTextField(String hint, ParseIdMap2 parseIdMap, MyForm.GetDouble getValue, MyForm.PutDouble setValue) {
             super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
 //                        super("", 1, columns, constraint);
 //            setHint(hint);

@@ -928,6 +928,19 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
         }
     }
 
+    /**
+    move item from its current position within the category's list of items to after/before the refItem's position.
+    If item not already in the category, it will do nothing (to avoid adding it if the user had not inserted it in the first place)
+    @param item
+    @param refItem
+    @param addCategoryToItem
+    @param insertAfterOrEndOfList 
+     */
+    public void moveItemInCategory(Item item, Item refItem, boolean addCategoryToItem, boolean insertAfterOrEndOfList) {
+        if (removeItemFromCategory(item, false)) //only add if already there
+            addItemToCategory(item, refItem, false, insertAfterOrEndOfList);
+    }
+
     public void addItemToCategory(Item item, int index, boolean addCategoryToItem) {
         if (item != null) {
 //            addItem(item);
@@ -938,13 +951,15 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
         }
     }
 
-    public void removeItemFromCategory(Item item, boolean removeCategoryFromItem) {
+    public boolean removeItemFromCategory(Item item, boolean removeCategoryFromItem) {
         if (item != null) {
-            removeItem(item);
+            boolean success = removeItem(item);
             if (removeCategoryFromItem) {
                 item.removeCategoryFromItem(this, false);
             }
+            return success;
         }
+        return false;
     }
 
     @Override

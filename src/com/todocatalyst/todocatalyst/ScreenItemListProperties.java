@@ -41,7 +41,7 @@ public class ScreenItemListProperties extends MyForm {
         this(itemList, previousForm, null);
     }
 
-    ScreenItemListProperties(ItemList itemList, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
+    ScreenItemListProperties(ItemList itemList, MyForm previousForm, Runnable doneAction) { //throws ParseException, IOException {
         super("", previousForm, doneAction);
         setTitle(itemList instanceof Category ? Category.CATEGORY : ItemList.ITEM_LIST);
 //        ScreenItemP.item = item;
@@ -100,6 +100,7 @@ public class ScreenItemListProperties extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) {
 
+        super.addCommandsToToolbar(toolbar);
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle());
 //        Command cmd = Command.create("", icon, (e) -> {
 //            putEditedValues2(parseIdMap2);
@@ -127,7 +128,7 @@ public class ScreenItemListProperties extends MyForm {
 //            previousForm.showBack(); //drop any changes
 //                previousForm.revalidate();
 //                previousForm.show(); //drop any changes
-                showPreviousScreenOrDefault(true); //false);
+                showPreviousScreen(true); //false);
             });
         }
         if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
@@ -155,7 +156,7 @@ public class ScreenItemListProperties extends MyForm {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
 //        Container content = new Container();
         if (false) {
             TableLayout tl;
@@ -196,7 +197,8 @@ public class ScreenItemListProperties extends MyForm {
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
-        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));
+//        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));
+        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), itemList));
 
         return content;
     }

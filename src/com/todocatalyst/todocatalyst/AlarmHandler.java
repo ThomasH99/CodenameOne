@@ -69,6 +69,7 @@ public class AlarmHandler {
         }
 //        inAppTimer = new AlarmInAppAlarmHandler(notificationList);
         inAppTimer = new AlarmInAppAlarmHandler();
+        inAppTimer.startInAppTimerOnNextcomingAlarm(notificationList.getNextFutureAlarmN());
     }
 
     private static AlarmHandler INSTANCE;
@@ -349,24 +350,25 @@ public class AlarmHandler {
         }
         expiredAlarmSave();
     }
-
-    public void snoozeAllExpiredAlarmsOLD(Date snoozeExpireTime) {
-//        List<Item> itemsToSave = new ArrayList();
-        List<ParseObject> itemsToSave = new ArrayList();
-        while (!expiredAlarms.isEmpty()) {
-            ExpiredAlarm expiredAlarm = expiredAlarms.get(0);
-            Item item = DAO.getInstance().fetchItem(expiredAlarm.objectId);
-            expiredAlarms.remove(expiredAlarm);
-            notificationList.addAlarmAndRepeat(expiredAlarm.objectId, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type), item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
-//            item.setSnoozeDate(snoozeExpireTime);
-            item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
-//            DAO.getInstance().save(item);
-            itemsToSave.add(item);
-        }
-        refreshInAppTimerAndSaveNotificationList();
-        expiredAlarmSave();
-        DAO.getInstance().saveBatch(itemsToSave);
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void snoozeAllExpiredAlarmsOLD(Date snoozeExpireTime) {
+////        List<Item> itemsToSave = new ArrayList();
+//        List<ParseObject> itemsToSave = new ArrayList();
+//        while (!expiredAlarms.isEmpty()) {
+//            ExpiredAlarm expiredAlarm = expiredAlarms.get(0);
+//            Item item = DAO.getInstance().fetchItem(expiredAlarm.objectId);
+//            expiredAlarms.remove(expiredAlarm);
+//            notificationList.addAlarmAndRepeat(expiredAlarm.objectId, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type), item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
+////            item.setSnoozeDate(snoozeExpireTime);
+//            item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
+////            DAO.getInstance().save(item);
+//            itemsToSave.add(item);
+//        }
+//        refreshInAppTimerAndSaveNotificationList();
+//        expiredAlarmSave();
+//        DAO.getInstance().saveBatch(itemsToSave);
+//    }
+//</editor-fold>
 
     /**
      * called when user canels an expired alarm
@@ -420,8 +422,10 @@ public class AlarmHandler {
      * called by inApp timer or from local notification when an alarm expires
      *
      * @param notificationId
+     * @param localNotificationReceived a local (system/iOS) notification was received, otherwise, if false, call was made for an inApp timer
      */
     void processExpiredAlarm(String notificationId, boolean localNotificationReceived) {
+        AlarmHandler.alarmLog("processExpiredAlarm called with: \"" + notificationId + "\"");
         Display.getInstance().callSerially(() -> {
             if (localNotificationReceived) {
                 AlarmHandler.alarmLog("Local notifiation received: \"" + notificationId + "\"");
@@ -443,8 +447,14 @@ public class AlarmHandler {
                     inAppTimer.startInAppTimerOnNextcomingAlarm();
 //        if (notif != null) {
 //        Display.getInstance().callSerially(() -> {
-                    ScreenListOfAlarms.getInstance().show(); //will check if already visible
                     playAlarm();
+//                    ScreenListOfAlarms.getInstance().show(); //will check if already visible
+                    MyForm myForm = MyForm.getCurrentFormAfterClosingDialogOrMenu();
+//                    if ((Config.PRODUCTION_RELEASE && myForm != null) || !Config.PRODUCTION_RELEASE)
+                    if (myForm instanceof ScreenListOfAlarms) {
+                        myForm.refreshAfterEdit();
+                    } else if ((!Config.PRODUCTION_RELEASE || myForm != null) && myForm.getMyShowAlarmsReplayCmd() != null) //don't risk crash in production release
+                        myForm.getMyShowAlarmsReplayCmd().actionPerformed(null);
                 }
             }
         });

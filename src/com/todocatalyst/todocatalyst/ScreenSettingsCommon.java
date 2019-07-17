@@ -31,12 +31,12 @@ public class ScreenSettingsCommon extends MyForm {
  protected static String FORM_UNIQUE_ID = "ScreenSettingsCommon"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 //    MyForm mainScreen;
-    ScreenSettingsCommon(MyForm previousScreen, UpdateField doneAction) {
+    ScreenSettingsCommon(MyForm previousScreen, Runnable doneAction) {
 //        this("Settings " + previousScreen.SCREEN_TITLE, previousScreen, doneAction);
         this("Settings " + previousScreen.getTitle(), previousScreen, doneAction);
     }
 
-    ScreenSettingsCommon(String title, MyForm previousScreen, UpdateField doneAction) { // throws ParseException, IOException {
+    ScreenSettingsCommon(String title, MyForm previousScreen, Runnable doneAction) { // throws ParseException, IOException {
         super(title, previousScreen, doneAction); // ScreenTimer.SCREEN_TITLE + " settings"
         setUniqueFormId("ScreenSettingsCommon");
 //        this.previousForm = previousScreen;
@@ -86,7 +86,7 @@ public class ScreenSettingsCommon extends MyForm {
         toolbar.addCommandToOverflowMenu(new CommandTracked("Reset to default**")); //reset to default values
     }
 
-    static Switch addSettingBoolean(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry) {
+    static Switch addSettingBoolean(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
 
 //        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
         ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
@@ -124,7 +124,7 @@ public class ScreenSettingsCommon extends MyForm {
         return compForActionListener;
     }
 
-    protected void addSettingTimeInMinutes(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry) {
+    protected void addSettingTimeInMinutes(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
 
 //        assert prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 : "trying to define a setting for a field without description";
         ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
@@ -158,7 +158,7 @@ public class ScreenSettingsCommon extends MyForm {
         }
     }
 
-    protected void addSettingInt(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, int minValue, int maxValue, int step) {
+    protected void addSettingInt(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, int minValue, int maxValue, int step) {
 
 //        ASSERT.that( prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()!=0 , "trying to define a setting for a field without description");
         ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
@@ -194,7 +194,7 @@ public class ScreenSettingsCommon extends MyForm {
     }
 
 //    protected void addSettingStringValues(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, String[] displayValues, boolean unselectAllowed) {
-    protected void addSettingStringValues(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] displayValues, boolean unselectAllowed) {
+    protected void addSettingStringValues(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] displayValues, boolean unselectAllowed) {
 
         if (tableLayout) {
         } else {
@@ -244,7 +244,7 @@ public class ScreenSettingsCommon extends MyForm {
 //
 //        }
 //    }
-    protected void addSettingEnum(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed) {
+    protected void addSettingEnum(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed) {
 
         if (tableLayout) {
         } else {
@@ -278,6 +278,6 @@ public class ScreenSettingsCommon extends MyForm {
 //        }
 //    }
     protected void buildContentPane(Container cont) {
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
     }
 }

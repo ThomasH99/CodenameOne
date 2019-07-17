@@ -18,16 +18,16 @@ class MyTextArea extends TextArea {
 
 //            String title;
 //            String parseId;
-    MyTextArea(String hint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
+    MyTextArea(String hint, ParseIdMap2 parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
         this(hint, COLUMNS_FOR_STRING, TextArea.ANY, parseIdMap, getValue, setValue);
     }
 
-    MyTextArea(String hint, int columns, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
+    MyTextArea(String hint, int columns, int constraint, ParseIdMap2 parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
         this(hint, columns, 1, 1, 128, constraint, parseIdMap, getValue, setValue); //UI: 128 = default max size of a text field //TODO: make a preference or PRO feature
     }
 //        MyTextField(String title, String hint, int columns, int constraint, Map<String, ScreenItemP.GetParseValue> parseIdMap, Consumer<String> setValue, Supplier<String> getValue, ParseObject parseObject, String parseId) {
 
-    MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
+    MyTextArea(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint, ParseIdMap2 parseIdMap, MyForm.GetString getValue, MyForm.PutString setValue) {
         super("", rows, columns, constraint);
 //            if (rows != 1) {
 //                setRows(rows);

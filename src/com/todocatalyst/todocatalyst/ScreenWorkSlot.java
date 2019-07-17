@@ -47,7 +47,7 @@ public class ScreenWorkSlot extends MyForm {
 //    ScreenWorkSlot(WorkSlot workSlot, MyForm previousForm) { //throws ParseException, IOException {
 //        this(workSlot, previousForm, null);
 //    }
-    ScreenWorkSlot(WorkSlot workSlot, ItemAndListCommonInterface owner, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
+    ScreenWorkSlot(WorkSlot workSlot, ItemAndListCommonInterface owner, MyForm previousForm, Runnable doneAction) { //throws ParseException, IOException {
         super(SCREEN_TITLE, previousForm, doneAction);
         setUniqueFormId("ScreenEditWorkSlot");
 //        ScreenItemP.item = item;
@@ -121,6 +121,7 @@ public class ScreenWorkSlot extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) {
 
+        super.addCommandsToToolbar(toolbar);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
 //        if (false) {
@@ -196,7 +197,7 @@ public class ScreenWorkSlot extends MyForm {
 //            previousForm.showBack(); //drop any changes
 //</editor-fold>
             workSlot.softDelete();
-            showPreviousScreenOrDefault(true);
+            showPreviousScreen(true);
         });
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("WorkSlotSettings", "Settings", Icons.iconSettingsLabelStyle, (e) -> {
@@ -245,7 +246,7 @@ public class ScreenWorkSlot extends MyForm {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
 //        Container content = new Container();
         if (false) {
             TableLayout tl;

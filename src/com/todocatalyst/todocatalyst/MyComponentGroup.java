@@ -166,11 +166,11 @@ class MyComponentGroup extends ComponentGroup {
         this(values, values[selectedStringIndex], unselectAllowed);
     }
 
-    MyComponentGroup(Object[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString get, MyForm.PutString set) {
+    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set) {
         this(values, parseIdMap, get, set, true);
     }
 
-    MyComponentGroup(Object[] values, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {
+    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {
         this(values, get.get(), unselectAllowed);
         parseIdMap.put(this, () -> {
             int size = this.getComponentCount();

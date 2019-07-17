@@ -1521,6 +1521,10 @@ public class MyDate extends Date {
         return formatDateSmart(date, true, true);
     }
     
+    static public String formatDateSmart(Date date,boolean alwaysShowTimeOfDay) {
+        return formatDateSmart(date, alwaysShowTimeOfDay, true);
+    }
+    
     static public String formatDateSmart(Date date, boolean showTimeOfDay, boolean showPastDatesAsSmart) {
 //        long now = MyDate.currentTimeMillis();
 //        long diff = date.getTime() - now;
@@ -1560,12 +1564,12 @@ public class MyDate extends Date {
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS * 365) {
 //            if (date.getTime() < startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * 365) {
         if (isNextcomingYear(date) || (showPastDatesAsSmart && isPreviousYear(date))) {
-            return new SimpleDateFormat("MMM dd").format(date);
+            return new SimpleDateFormat("MMM dd"+ (showTimeOfDay ? " H'h'mm" : "")).format(date);
         }
         
         //beyond 365 days: "Jun'18"???
 //        return new SimpleDateFormat("MMM''yy").format(date); //"Jun'18"
-        return new SimpleDateFormat("dd'/'MM'/'yy").format(date); //"Jun'18"
+        return new SimpleDateFormat("dd'/'MM'/'yy"+ (showTimeOfDay ? " H'h'mm" : "")).format(date); //"Jun'18"
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    private static String formatDateNewXX(MyDate date, MyDate referenceDate) { //, boolean useYesterdayTodayTomorrow) {

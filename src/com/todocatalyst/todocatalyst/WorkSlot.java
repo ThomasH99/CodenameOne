@@ -35,7 +35,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         Externalizable, Work //Comparable /* * , IComparable 
 {
 
-    public static String CLASS_NAME = "WorkSlot";
+    public final static String CLASS_NAME = "WorkSlot";
 
 //    public static int MINUTES_IN_MILLISECONDS = MyDate.MINUTE_IN_MILLISECONDS; //60 * 1000;
     final static String WORKSLOT = "Workslot";
@@ -452,7 +452,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         if (oldRepeatRule == null) { //setting a RR for the first time
             if (newRepeatRule != null) {
                 if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null)
-                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+//                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+                    DAO.getInstance().saveInBackground(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
                 setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
                 newRepeatRule.createWorkslotsForNewRepeatRule(this);
             } else {

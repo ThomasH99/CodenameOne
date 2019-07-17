@@ -134,6 +134,10 @@ public class ScreenListOfCategories extends MyForm {
 ////            this.keepPos.setNewScrollYPosition();
 ////        }
 //        restoreKeepPos();
+
+        //check if there was an insertContainer active earlier
+        recreateInlineInsertContainerIfNeeded();
+
         super.refreshAfterEdit();
     }
 
@@ -159,6 +163,7 @@ public class ScreenListOfCategories extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
+        super.addCommandsToToolbar(toolbar);
         //NEW CATEGORY
         toolbar.addCommandToRightBar(makeNewCategoryCmd(categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
 //        toolbar.addCommandToRightBar(MyReplayCommand.create("CreateNewCategory", "", Icons.iconNewToolbarStyle(), (e) -> {
@@ -519,7 +524,7 @@ public class ScreenListOfCategories extends MyForm {
 //</editor-fold>
 
     protected Container buildContentPaneForItemList(ItemList itemLists) {
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        InfiniteContainer cl = new InfiniteContainer(20) {
 //            @Override
@@ -539,7 +544,7 @@ public class ScreenListOfCategories extends MyForm {
 //        };
 //        return cl;
 //</editor-fold>
-        dt = new MyTree2(itemLists, expandedObjects) {
+        dt = new MyTree2(itemLists, expandedObjects,null,null) {
             Category category;
 
 //<editor-fold defaultstate="collapsed" desc="comment">

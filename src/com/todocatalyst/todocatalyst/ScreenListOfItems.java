@@ -287,6 +287,11 @@ public class ScreenListOfItems extends MyForm {
         this(title, itemListFct, previousForm, updateItemListOnDone, options, null);
     }
 
+    ScreenListOfItems(ScreenType screenType, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, int options) {
+        this(screenType.getTitle(), itemListFct, previousForm, updateItemListOnDone, options, null);
+        this.screenType = screenType;
+    }
+
     ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
             int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
@@ -301,7 +306,7 @@ public class ScreenListOfItems extends MyForm {
 //        MyDragAndDropSwipeableContainer.dragEnabled = false; //always disable before setting up a new screen
 //        this.itemListOrg = itemList;
         getItemListFct = itemListFct;
-        itemListOrg = itemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!!
+        itemListOrg = getItemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!!
 //        initLocalSaveOfEditedValues(getUniqueFormId() + itemListOrg.getObjectIdP());
 //        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + itemListOrg.getObjectIdP());
 //        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + itemListOrg.getObjectIdP(), true);
@@ -521,7 +526,7 @@ public class ScreenListOfItems extends MyForm {
         if (contentContainer instanceof MyTree2) setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
 //        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
-        getContentPane().add(MyBorderLayout.CENTER, contentContainer);
+        getContentPane().add(MyBorderLayout.CENTER, contentContainer); //NB!!! this doesn't actually replace the old contentPane immediately (in the below calls!!!) meaning recreateInlineInsertContainerIfNeeded() doesn't work
         if (contentContainer != null) {
             ContainerScrollY scrollable = findScrollableContYChild(contentContainer);
             if (scrollable != null)
@@ -591,6 +596,10 @@ public class ScreenListOfItems extends MyForm {
 //            restoreKeepPos();
 //            setStartEditingAsyncIfDefined(contentContainer);
             });
+
+        //check if there was an insertContainer active earlier
+        recreateInlineInsertContainerIfNeeded();
+
         super.refreshAfterEdit();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        addShowListener(startAsyncListener); //do *after* show (will this make the async editing work?!)
@@ -623,6 +632,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
+        super.addCommandsToToolbar(toolbar);
         //NEW ITEM
 //        Command newCmd = new Command("OldCmd", Icons.iconNewToolbarStyle) {
         if (!optionNoNewButton) {
@@ -707,7 +717,7 @@ public class ScreenListOfItems extends MyForm {
 //                            itemListOrg.removeFromList(template); //if no saveable data, undo the 
 //                            //TODO!!!! how to remove from eg Categories if finally the task is not saved??
 //                        }
-                    }, optionTemplateEditMode).show();
+                    }, optionTemplateEditMode, null).show();
                 }
                 );
                 toolbar.addCommandToOverflowMenu(newCmd);
@@ -806,7 +816,7 @@ public class ScreenListOfItems extends MyForm {
 
                         setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation)); //scroll to position of new item, whereever it is inserted
                         refreshAfterEdit();
-                    }).show();
+                    }, false, null).show();
                 }
             }
             ));
@@ -996,7 +1006,7 @@ public class ScreenListOfItems extends MyForm {
 //                        MultipleSelection.performOnAll(itemListFilteredSorted, MultipleSelection.setAnything(itemWithNewValues));
                             MultipleSelection.performOnAll(selectedObjects.getSelected(), MultipleSelection.setAnything(itemWithNewValues));
                             refreshAfterEdit();
-                        }).show();
+                        }, false, null).show();
                     }
                 }
             };
@@ -1177,14 +1187,14 @@ public class ScreenListOfItems extends MyForm {
             ));
 
         toolbar.addCommandToOverflowMenu(CommandTracked.create("Help", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-            showPreviousScreenOrDefault(true);
+            showPreviousScreen(true);
         }, "Help"));
         toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-            showPreviousScreenOrDefault(true);
+            showPreviousScreen(true);
         }, "ReportIssue"));
         if (false) //doesn't make sense for a list!
             toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-                showPreviousScreenOrDefault(true);
+                showPreviousScreen(true);
             }, "Cancel"));
 
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
@@ -1629,14 +1639,15 @@ public class ScreenListOfItems extends MyForm {
      * @return
      */
     public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category) { //<editor-fold defaultstate="collapsed" desc="comment">
-        return buildItemContainer(myForm, item, ownerItemOrItemList, category, null);
+        return buildItemContainer(myForm, item, ownerItemOrItemList, category, null, null);
     }
 
     public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category, ExpandedObjects expandedObjects) { //<editor-fold defaultstate="collapsed" desc="comment">
         return buildItemContainer(myForm, item, ownerItemOrItemList, category, expandedObjects, null);
     }
 
-    public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category, ExpandedObjects expandedObjects, ActionListener onExitAction) { //<editor-fold defaultstate="collapsed" desc="comment">
+    public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category,
+            ExpandedObjects expandedObjects, ActionListener onExitAction) { //<editor-fold defaultstate="collapsed" desc="comment">
         //            MyForm.GetBoolean isDragAndDropEnabled, MyForm.Action refreshOnItemEdits,
         //            boolean selectionModeAllowed, ArrayList<Item> selectedObjects,
         //            KeepInSameScreenPosition keepPos, HashSet expandedObjects, MyForm.Action animator, boolean projectEditMode, boolean singleSelectionMode
@@ -1848,6 +1859,7 @@ public class ScreenListOfItems extends MyForm {
         WorkSlotList wSlots = item.getWorkSlotListN(false);
         MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(
                 item.getText()
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-Id" : "")
                 + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
@@ -1979,54 +1991,52 @@ public class ScreenListOfItems extends MyForm {
 //        if (item.isTemplate()) {
 //            west.add(new Label(Icons.iconTemplateStatusSymbolLabelStyle)); //NO, not nice with this symbol
 //        } else 
-        MyCheckBox status = null;
-        if (myForm instanceof ScreenListOfItems && ((ScreenListOfItems) myForm).projectEditMode) {
-            //TODO!!!! mark this task selected (and others unselected), or unselected if already selected
-            //store the task somewhere to can be used to add subtasks to or sibling tasks after
-        } else {
-            status = new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
-                if (newStatus != oldStatus) {
-                    if (false) { //stop timer in Item.save() - once all changes to status have been taken into account (whether Done/Cancel/SoftDelete
-                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfRunningOnThisItemAndStartTimerOnNext(item); //call this here to avoid triggering if status is changed from within the Timer
-                    }
-                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfRunningOnThisItemAndStartTimerOnNext(item); //call this here to avoid triggering if status is changed from within the Timer
+        MyCheckBox status = new MyCheckBox(item.getStatus());
+//        if (myForm instanceof ScreenListOfItems && ((ScreenListOfItems) myForm).projectEditMode) {
+//            //TODO!!!! mark this task selected (and others unselected), or unselected if already selected
+//            //store the task somewhere to can be used to add subtasks to or sibling tasks after
+//            status = null;
+//        } else {
+//            status = new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
+        status.setStatusChangeHandler((oldStatus, newStatus) -> {
+            if (newStatus != oldStatus && item.confirmUpdateOfSubtasks(oldStatus, newStatus)) {
+                if (false) { //stop timer in Item.save() - once all changes to status have been taken into account (whether Done/Cancel/SoftDelete
+                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item); //call this here to avoid triggering if status is changed from within the Timer
+                }
+                boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item); //call this here to avoid triggering if status is changed from within the Timer
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 
-                    //if setting Done, ask if set actual
-                    if (((newStatus == ItemStatus.DONE || newStatus == ItemStatus.WAITING)
-                            && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.WAITING))
-                            && !wasTimerRunningForTheTask 
-                            && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
-                        dialogUpdateActualTime(item);
-                    }
+                //if setting Done, ask if set actual
+                if (((newStatus == ItemStatus.DONE || newStatus == ItemStatus.WAITING)
+                        && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.WAITING))
+                        && !wasTimerRunningForTheTask
+                        && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
+                    dialogUpdateActualTime(item);
+                }
 
-                    //if setting Waiting, ask if set waiting date and/or waiting alarm
-                    if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
-                        dialogSetWaitingDateAndAlarm(item); //only call if we're changing TO Waiting status
-                    }
+                //if setting Waiting, ask if set waiting date and/or waiting alarm
+                if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
+                    dialogSetWaitingDateAndAlarm(item); //only call if we're changing TO Waiting status
+                }
 
-                    myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
+                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 
-                    item.setStatus(newStatus);
+                item.setStatus(newStatus);
 //                        if (refreshOnItemEdits != null) {
 //                            refreshOnItemEdits.launchAction();
 //                        }
-                    myForm.refreshAfterEdit();
-                    DAO.getInstance().saveInBackground(item);
-                    //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
+                myForm.refreshAfterEdit();
+                DAO.getInstance().saveInBackground(item);
+                //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
 //                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refreshTimersFromParseServer();}});
-                }
-            }
-            //                    , () -> {
-            //                return item.hasWorkStarted(); //item.getActualEffort() > 0;
-            //            }
-            );
-            status.setUIID("ListOfItemsMyCheckBox");
-            if (Config.TEST) status.setName("CheckBox");
-            if (oldFormat) {
-                west.add(status);
-            }
+            } else status.setStatus(oldStatus, false);
+        });
+        status.setUIID("ListOfItemsMyCheckBox");
+        if (Config.TEST) status.setName("CheckBox");
+        if (oldFormat) {
+            west.add(status);
         }
+//        }
 //        }
 
         //EAST
@@ -2076,23 +2086,35 @@ public class ScreenListOfItems extends MyForm {
 //        Label remainingEffortLabel = null;
 
         long actualEffort = item.getActual();
-        if (isDone && (actualEffort != 0 || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean())) {
+        if (isDone) {
+            if (actualEffort != 0 || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean()) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (actualEffort != 0||MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean()) {
 //                east.addComponent(actualEffortLabel = new Label(MyDate.formatTimeDuration(actualEffort)));
 //                actualEffortLabel = new Label();
 //                actualEffortLabel.setText("A:" + MyDate.formatTimeDuration(actualEffort));
 //                actualEffortLabel.setText(MyDate.formatDurationShort(actualEffort));
-            actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
-            actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
-            actualEffortLabel.setUIID("ListOfItemsActualEffort");
-            if (Config.TEST) status.setName("ActualEffort");
-            if (oldFormat) east.addComponent(actualEffortLabel);
+//</editor-fold>
+                actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
+                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
+                actualEffortLabel.setUIID("ListOfItemsActualEffort");
+                if (Config.TEST) status.setName("ActualEffort");
+                if (oldFormat) east.addComponent(actualEffortLabel);
+            }
+        } else { //if task not done, show Actual in details
+            if (showInDetails) {
+                actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
+                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
+                actualEffortLabel.setUIID("ListOfItemsActualEffort");
+                southDetailsContainer.add(actualEffortLabel);
+            }
+
         }
 
         if (isDone) {
 //            completedDateLabel = new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
 //            completedDateLabel = new Label(MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
-            completedDateLabel = new Label(MyDate.formatDateSmart(item.getCompletedDateD()), "ListOfItemsCompletedDate");
+            completedDateLabel = new Label(MyDate.formatDateSmart(item.getCompletedDateD(), true), "ListOfItemsCompletedDate"); //true: always show time of day when task was completed
             completedDateLabel.setMaterialIcon(Icons.iconCompletedDate);
 //            completedDateLabel.setMaterialIcon(0);
             if (oldFormat) {
@@ -2200,7 +2222,7 @@ public class ScreenListOfItems extends MyForm {
 //                    }
 //</editor-fold>
                 if (Config.REFRESH_EVEN_THOUGH_DONE_IN_BACK) myForm.refreshAfterEdit();
-            }).show();
+            }, false, null).show();
 //                new ScreenItem(item, thisScreen).show();
         });
         Button editItemButton = new Button(editItemCmd);
@@ -2313,6 +2335,36 @@ public class ScreenListOfItems extends MyForm {
             }
         }
 
+        //EARNED VALUE
+        if (item.getEarnedValue() != 0 && !(MyPrefs.itemListDontShowValueIfEarnedValuePerHourIsNonZero.getBoolean() && item.getEarnedValuePerHour() != 0)) {
+            Label earnedValueLabel; // = new Label();
+//            challengeLabel = new Label(item.getChallengeN().toString(), "ItemDetailsLabel");
+//            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
+            earnedValueLabel = new Label(L10NManager.getInstance().format(item.getEarnedValue(), MyPrefs.earnedValueDecimals.getInt()), "ListOfItemsItemDetailsLabel");
+            earnedValueLabel.setMaterialIcon(Icons.iconEarnedValue);
+            if (Config.TEST) {
+                earnedValueLabel.setName("EarnedValue");
+            }
+            if (showInDetails) {
+                southDetailsContainer.add(earnedValueLabel);
+            }
+        }
+
+        //EARNED VALUE PER HOUR
+        if (item.getEarnedValuePerHour() != 0) {
+            Label earnedValuePerHourLabel; // = new Label();
+//            challengeLabel = new Label(item.getChallengeN().toString(), "ItemDetailsLabel");
+//            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
+            earnedValuePerHourLabel = new Label(L10NManager.getInstance().format(item.getEarnedValuePerHour(), MyPrefs.earnedValueDecimals.getInt()), "ListOfItemsItemDetailsLabel");
+            earnedValuePerHourLabel.setMaterialIcon(Icons.iconEarnedValuePerHour);
+            if (Config.TEST) {
+                earnedValuePerHourLabel.setName("EarnedValuePerHour");
+            }
+            if (showInDetails) {
+                southDetailsContainer.add(earnedValuePerHourLabel);
+            }
+        }
+
         //DUE DATE or COMPLETED DATE
         if (false && !isDone) {
             if (item.getDueDateD().getTime() != 0) {
@@ -2338,15 +2390,16 @@ public class ScreenListOfItems extends MyForm {
 //            south.addComponent(new Label((Image) (item.getAlarmDate() != 0 ? Icons.get().iconAlarmSetLabelStyle : null)));
 //            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), (Image) Icons.get().iconAlarmSetLabelStyle, "ItemDetailsLabel");
 //            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), "ItemDetailsLabel");
-            alarmLabel = new Label(MyDate.formatDateSmart(item.getAlarmDateD()), "ItemDetailsLabel");
+//            alarmLabel = new Label(MyDate.formatDateSmart(item.getAlarmDateD()), "ItemDetailsLabel");
+            alarmLabel = new Label(MyDate.formatDateSmart(item.getAlarmDateD()), "ListOfItemsAlarmDate");
             alarmLabel.setMaterialIcon(Icons.iconAlarmDate);
             if (Config.TEST) {
                 alarmLabel.setName("Alarm");
             }
 //            alarmLabel.getStyle().setAlignment(Component.RIGHT);
-            if (showInDetails) {
-                southDetailsContainer.addComponent(alarmLabel);
-            }
+//            if (showInDetails) {
+//                southDetailsContainer.addComponent(alarmLabel);
+//            }
         }
 
         //                new Label("(R:" + item.getRemainingEffortInMinutes() + "/A:" + item.getActualEffortInMinutes() + ")"),
@@ -2490,6 +2543,11 @@ public class ScreenListOfItems extends MyForm {
             else if (dueDateLabel != null)
                 westCont.add(dueDateLabel);
         if (isDone && completedDateLabel != null) westCont.add(completedDateLabel);
+        if (alarmLabel != null) {
+            southDetailsContainer.addComponent(alarmLabel);
+            if (myForm.screenType == ScreenType.ALARMS)
+                myForm.showDetails.add(item); //UI: always show details (with alarm time) in alarm screen
+        }
         bottomContent.add(MyBorderLayout.WEST, westCont);
 //        bottomContent.add(BorderLayout.EAST, expandSubsCont);
         if (expandSubTasksButton != null) bottomContent.add(MyBorderLayout.EAST, expandSubTasksButton);
@@ -2765,7 +2823,7 @@ refreshAfterEdit();
                     DAO.getInstance().saveInBackground(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
                     ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation));
 //                            refreshOnItemEdits.launchAction(); //NOT necessary, since item not saved in list of templates
-                }).show();
+                }, false, null).show();
                 swipCont.close(); //close before save 
             }));
             newFromTemplate.setMaterialIcon(Icons.iconNewItemFromTemplateMaterial);
@@ -3853,7 +3911,7 @@ refreshAfterEdit();
     @return 
      */
     Container buildContentPaneForListOfItems(ItemAndListCommonInterface listOfItems) { //, HashSet expandedObjects, ItemAndListCommonInterface itemListOrg, MyForm myForm, KeepInSameScreenPosition keepPos
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        parseIdMapReset();
 //        MyTree dt = new MyTree(itemListList) {

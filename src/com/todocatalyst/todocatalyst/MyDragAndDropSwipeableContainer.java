@@ -388,23 +388,24 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 
 //        ASSERT.that(!(refComp instanceof MyTree2) && !(refComp instanceof ContainerScrollY));
 //        Container dropCont =getParentScrollYContainer(refComp); //NOT possible to use getParentScrollYContainer because we need the refCompComp below to find the index
-        Container dropCont = refComp.getParent(); //treeList = the list in which to insert the dropPlaceholder
+        Container dropContParent = refComp.getParent(); //treeList = the list in which to insert the dropPlaceholder
+        if (Config.TEST) ASSERT.that(dropContParent!=null, "parent to refComp="+refComp+" is null!");
         Component refCompComp = refComp; //the containing container of refComp contained in dropCont
-        while (!(dropCont instanceof ContainerScrollY) && dropCont != null) {
-            refCompComp = dropCont;
-            dropCont = dropCont.getParent();
+        while (!(dropContParent instanceof ContainerScrollY) && dropContParent != null) {
+            refCompComp = dropContParent;
+            dropContParent = dropContParent.getParent();
         }
 
-        ASSERT.that(dropCont == null || (dropCont instanceof ContainerScrollY), "dropCont not correct type, dropCont=" + (dropCont != null ? dropCont.toString() : "<null>"));
-        if (dropCont != null) {
+        ASSERT.that(dropContParent == null || (dropContParent instanceof ContainerScrollY), "dropCont not correct type, dropCont=" + (dropContParent != null ? dropContParent.toString() : "<null>"));
+        if (dropContParent != null) {
 //            return (Container) dropCont;
 //            ( (Container) dropCont).addComponent(dropCont.getC, refComp);
             if (relativeIndex == Integer.MAX_VALUE) {
 //                ((Container) dropCont).addComponent(((Container) dropCont).getComponentCount(), dropPh);
-                dropCont.addComponent(dropPh);
+                dropContParent.addComponent(dropPh);
             } else {
-                int index = dropCont.getComponentIndex(refCompComp);
-                dropCont.addComponent(index + relativeIndex, dropPh);
+                int index = dropContParent.getComponentIndex(refCompComp);
+                dropContParent.addComponent(index + relativeIndex, dropPh);
             }
             return true;
         } else {
@@ -648,7 +649,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     @param comp
     @return drop target or null if none found
      */
-    protected static MyDragAndDropSwipeableContainer findDropContainerStartingFrom(Component comp) {
+    protected static MyDragAndDropSwipeableContainer findMyDDContainerStartingFrom(Component comp) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (comp == null) {
 //            return null;
@@ -911,7 +912,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //     static MyDragAndDropSwipeableContainer findPrecedingDDCont(MyDragAndDropSwipeableContainer cont) {
 //         return findPrecedingDDCont(cont, null);
 //     }
-    static MyDragAndDropSwipeableContainer findPrecedingDDCont(MyDragAndDropSwipeableContainer cont, MyDragAndDropSwipeableContainer dragged) {
+    static MyDragAndDropSwipeableContainer findPrecedingMyDDCont(MyDragAndDropSwipeableContainer cont, MyDragAndDropSwipeableContainer dragged) {
         //find a preceding sibling if any
         ContainerScrollY parentScrollYContainer = getParentScrollYContainer(cont);
         //Examples of lists with (H)idden element: H T1 T2: preceding(T1)=null (a), preceding(T2)=T1 (b); T1 H T2: preceding(T2)=T1 (c)
@@ -2244,14 +2245,14 @@ T3
                 }
 //                }
             } else if (draggedMyDDCont == dropTarget) { //initial situation: dragged element is over itself
-                beforeMyDDCont = findPrecedingDDCont(draggedMyDDCont, draggedMyDDCont);
+                beforeMyDDCont = findPrecedingMyDDCont(draggedMyDDCont, draggedMyDDCont);
                 afterMyDDCont = findNextDDCont(draggedMyDDCont, draggedMyDDCont);
                 if (Config.TEST_DRAG_AND_DROP) Log.p("---before (calc)= \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
                 if (Config.TEST_DRAG_AND_DROP) Log.p("---after        = \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
             } else if (draggingUpwardsOrOverInitialDraggedEltPosition) {
                 afterMyDDCont = (MyDragAndDropSwipeableContainer) dropTarget;
 //                beforeMyDDCont = findCont(afterMyDDCont, true);
-                beforeMyDDCont = findPrecedingDDCont(afterMyDDCont, draggedMyDDCont);
+                beforeMyDDCont = findPrecedingMyDDCont(afterMyDDCont, draggedMyDDCont);
                 if (Config.TEST_DRAG_AND_DROP) Log.p("---before (calc)= \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
                 if (Config.TEST_DRAG_AND_DROP) Log.p("---after        = \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
             } else { //dragging downwards

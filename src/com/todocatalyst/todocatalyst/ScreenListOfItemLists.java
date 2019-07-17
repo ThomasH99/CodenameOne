@@ -124,6 +124,9 @@ public class ScreenListOfItemLists extends MyForm {
             }
         }
 
+        //check if there was an insertContainer active earlier
+        recreateInlineInsertContainerIfNeeded();
+
 //        revalidate();
 //        revalidateWithAnimationSafety();
 ////        if (this.keepPos != null) {
@@ -135,6 +138,7 @@ public class ScreenListOfItemLists extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
+        super.addCommandsToToolbar(toolbar);
         //BACK
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 
@@ -753,7 +757,7 @@ public class ScreenListOfItemLists extends MyForm {
     }
 
     protected Container buildContentPaneForItemList(ItemList listOfItemLists) {
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyTree dt = new MyTree(itemListList) {
 //        Tree dt = new Tree(listOfItemLists) {
@@ -803,7 +807,7 @@ public class ScreenListOfItemLists extends MyForm {
 //        };
 //</editor-fold>
 //        if (listOfItemLists != null && listOfItemLists.getList().size() > 0) {
-        MyTree2 cl = new MyTree2(listOfItemLists, expandedObjects) {
+        MyTree2 cl = new MyTree2(listOfItemLists, expandedObjects,null,null) {
             @Override
             protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
                 Container cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItemLists.this, (Item) node, itemOrItemList, category);

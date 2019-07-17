@@ -95,7 +95,9 @@ public class ScreenItem2 extends MyForm {
 //    Map<Object, UpdateField> parseIdMap2 = new HashMap<Object, UpdateField>();
 //    MyForm previousForm;
     private Item item;
-    private Item itemLS; //FromLocalStorage, read from local storage if app was stopped with unsaved edits to Item, otherwise set to edited item
+    private Item itemCopy;
+
+//    private Item item; //FromLocalStorage, read from local storage if app was stopped with unsaved edits to Item, otherwise set to edited item
 //    Set locallyEditedCategories;
 //    private List locallyEditedCategories = null;
 //    private ItemAndListCommonInterface locallyEditedOwner = null;
@@ -126,35 +128,44 @@ public class ScreenItem2 extends MyForm {
 //    ScreenItem(Item item, MyForm previousForm) { //throws ParseException, IOException {
 //        this(item, previousForm, ()->{});
 //    }
-    ScreenItem2(Item item, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
-        this(item, previousForm, doneAction, false);
-    }
-
+//    ScreenItem2(Item item, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
+//        this(item, previousForm, doneAction, false);
+//    }
     private static String getScreenTitle(boolean isTemplate, String title) {
         return (isTemplate ? "TEMPLATE: " : "") + title;
     }
 
-    ScreenItem2(Item item, MyForm previousForm, UpdateField doneAction, boolean templateEditMode) { //throws ParseException, IOException {
-        this(item, previousForm, doneAction, templateEditMode, null);
+    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues) { //throws ParseException, IOException {
+        this(item, previousForm, doneAction, null, templateEditMode, previousValues);
     }
+//    ScreenItem2(Item item, MyForm previousForm, UpdateField doneAction, boolean templateEditMode) { //throws ParseException, IOException {
+//        this(item, previousForm, doneAction, templateEditMode, null);
+//    }
 
-    ScreenItem2(Item item, MyForm previousForm, UpdateField doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues) { //throws ParseException, IOException {
+    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, Runnable cancelAction, boolean templateEditMode, SaveEditedValuesLocally previousValuesN) { //throws ParseException, IOException {
 //        super("Task", previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
 //        super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
-        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
+        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction);
         setUniqueFormId("ScreenEditItem");
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
         if (false) {
             ASSERT.that(item.isDataAvailable(), () -> "Item \"" + item + "\" data not available");
         }
 
-        if (previousValues != null) {
-            this.previousValues = previousValues;
-        } else {
-//            this.previousValues = new SaveEditedValuesLocally(FORM_UNIQUE_ID + "-" + item.getObjectIdP());
-            this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + item.getObjectIdP());
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (previousValues == null) {
+////            this.previousValues = new SaveEditedValuesLocally(FORM_UNIQUE_ID + "-" + item.getObjectIdP());
+//            this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + item.getObjectIdP());
+//        } else {
+//            if (this.previousValues != null && previousValues != null) {
+//                this.previousValues.addAndOverwrite(previousValues);
+//            } else
+//                this.previousValues = previousValues;
+//        }
+//</editor-fold>
+        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + item.getObjectIdP());
+        this.previousValues.addAndOverwrite(previousValuesN);
 
         this.templateEditMode = item.isTemplate() || templateEditMode; //
         getTitleComponent().setEndsWith3Points(true);
@@ -183,12 +194,14 @@ public class ScreenItem2 extends MyForm {
 //        } else {
 //            itemLS = this.item; //if no locally saved edits, then use item to 'feed' the edits fields
 //        }
-        itemLS = this.item; //quick hack. TODO!! replace all references to itemLS with item
+//        item = this.item; //quick hack. TODO!! replace all references to itemLS with item
+        itemCopy = new Item(); //reate a coppy to allow chaning the owner to update inherited values
+        item.copyMeInto(itemCopy);
+
         //restore locally edited Owner
 //        locallyEditedOwner = restoreNewOwner_N();
 //        locallyEditedCategories = restoreNewCategories_N();
 //        locallyEditedRepeatRule = restoreNewRepeatRule_N();
-
 //        ScreenItemP.previousForm = previousForm;
 //        this.previousForm = previousForm;
 //        this.updateActionOnDone = doneAction;
@@ -239,6 +252,7 @@ public class ScreenItem2 extends MyForm {
 
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
 
+        super.addCommandsToToolbar(toolbar);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle());
 //        Command cmd = Command.create("", icon, (e) -> {
@@ -271,21 +285,22 @@ public class ScreenItem2 extends MyForm {
             public void actionPerformed(ActionEvent evt) {
                 if (getCheckIfSaveOnExit() == null || getCheckIfSaveOnExit().check()) {
 
-                    UpdateField repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+                    Runnable repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
 
                     for (Object parseId : parseIdMap2.keySet()) {
 //            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
-                        parseIdMap2.get(parseId).update();
+                        parseIdMap2.get(parseId).run();
                     }
                     if (getUpdateActionOnDone() != null)
-                        getUpdateActionOnDone().update();
+                        getUpdateActionOnDone().run();
+
                     if (repeatRule != null) {
                         if (item != null && item.getObjectIdP() == null)
                             DAO.getInstance().saveInBackground(item); //if not saved
-                        repeatRule.update();
+                        repeatRule.run();
                     }
 //                    putEditedValues2(parseIdMap2);
-                    showPreviousScreenOrDefault(true);
+                    showPreviousScreen(true);
                 }
             }
         };
@@ -330,7 +345,8 @@ public class ScreenItem2 extends MyForm {
                 //TODO add option to let user edit template after creation
                 //TODO enable user to select which fields to exclude
 //                putEditedValues2(parseIdMap2, item); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
-                putEditedValues2(parseIdMap2); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
+//                putEditedValues2(parseIdMap2); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
+                parseIdMap2.update(); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
                 Item template = new Item();
                 item.copyMeInto(template, Item.CopyMode.COPY_TO_TEMPLATE);
                 DAO.getInstance().saveInBackground(template);
@@ -362,7 +378,8 @@ public class ScreenItem2 extends MyForm {
                         || Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
                     //TODO enable user to select which fields to exclude
 //                    putEditedValues2(parseIdMap2, item); //save any already edited values before inserting the template
-                    putEditedValues2(parseIdMap2); //save any already edited values before inserting the template to avoid overwriting values only entered into the screen but not stored in the Item itself (yet)
+//                    putEditedValues2(parseIdMap2); //save any already edited values before inserting the template to avoid overwriting values only entered into the screen but not stored in the Item itself (yet)
+                    parseIdMap2.update(); //save any already edited values before inserting the template to avoid overwriting values only entered into the screen but not stored in the Item itself (yet)
 //                    Item template = pickTemplateOLD(); //TODO!!!! make this a full Screen picker like CategorySelector
                     List selectedTemplates = new ArrayList();
                     if (false) { //shouldn't be necessary
@@ -415,7 +432,7 @@ public class ScreenItem2 extends MyForm {
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
 //            showPreviousScreenOrDefault(previousForm, true);
-            showPreviousScreenOrDefault(true);
+            showPreviousScreen(true);
         }, "DeleteItem"));
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", "Task settings", Icons.iconSettings, (e) -> {
@@ -427,7 +444,7 @@ public class ScreenItem2 extends MyForm {
 
         toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> {
             //TODO!!! popup to say Cancel is not implemented yet
-            showPreviousScreenOrDefault(true);
+            showPreviousScreen(true);
         }, "Cancel"));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -711,7 +728,7 @@ public class ScreenItem2 extends MyForm {
 //        MyTextArea comment = new MyTextArea(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY, parseIdMap2, () -> {
 //        }, (s) -> {
 //        });
-        comment.setUIID("Comment");
+//        comment.setUIID("Comment");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Button addTimeStampToComment = new Button(Command.create(null, Icons.iconAddTimeStampToCommentLabelStyle, (e) -> {
 //            comment.setText(Item.addTimeToComment(comment.getText()));
@@ -789,7 +806,7 @@ public class ScreenItem2 extends MyForm {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container cont) {
 //        Container content = new Container();
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
         if (false) {
             TableLayout tl;
 //        int spanButton = 2;
@@ -940,7 +957,8 @@ public class ScreenItem2 extends MyForm {
 //            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
             setTitle((item.isTemplate() ? "TEMPLATE: " : "") + description.getText());
         }); //update the form title when text is changed
-        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, item, 5000, () -> item.setText(description.getText())); //normal that this appear as non-used!
+//        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, item, 5000, () -> item.setText(description.getText())); //normal that this appear as non-used!
+        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, null, null); //normal that this appear as non-used!
 
         //STATUS
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -948,7 +966,7 @@ public class ScreenItem2 extends MyForm {
 //        initField(Item.STATUS, Item.STATUS_HELP, status, Item.PARSE_STATUS, () -> item.getStatus(), (t) -> item.setStatus((ItemStatus) t),
 //                () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t), null);
 //</editor-fold>
-        MyCheckBox status = new MyCheckBox(itemLS.getStatus()); //, null);
+        MyCheckBox status = new MyCheckBox(item.getStatus()); //, null);
         initField(Item.PARSE_STATUS, status,
                 () -> item.getStatus().toString(),
                 (enumStr) -> item.setStatus((ItemStatus.valueOf((String) enumStr)), false), //item.setStatus((ItemStatus) t, false),
@@ -1003,19 +1021,19 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
 //        Component starredComp = initField(Item.STARRED, Item.STARRED_HELP, starred, Item.PARSE_STARRED, () -> item.isStarred(), (b) -> item.setStarred((boolean) b),
         initField(Item.PARSE_STARRED, starred,
-                () -> item.isStarred(),
+                () -> itemCopy.isStarred(),
                 (b) -> item.setStarred((boolean) b),
                 //                () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
                 //                () -> starred.getIcon().equals(Icons.iconStarSelectedLabelStyle),
                 //                (b) -> starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle),
                 () -> starred.getMaterialIcon() == Icons.iconStarSelected,
                 (b) -> starred.setMaterialIcon((boolean) b ? Icons.iconStarSelected : Icons.iconStarUnselected),
-                () -> item.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarSelected)
+                () -> itemCopy.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarSelected)
         //                (b) -> starred.setIcon((boolean) b ?  Icons.iconStarUnselectedLabelStyle:Icons.iconStarSelectedLabelStyle )
         //                    starred.repaint();
         ); //add taskCont just to avoid creating an unnecessary field container
 //        if (false)taskCont.add(MyBorderLayout.CENTER, description);
-        updateUIIDForInherited(item.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarSelected), starred);
+        updateUIIDForInherited(itemCopy.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarSelected), starred);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
 //        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
@@ -1049,8 +1067,10 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
         MyTextField comment = new MyTextField(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
         comment.setSingleLineTextArea(false);
+        comment.setUIID("Comment");
         Container commentField = makeCommentContainer(comment);
-        AutoSaveTimer commentSaveTimer = new AutoSaveTimer(this, comment, item, 5000, () -> item.setComment(comment.getText())); //NORMAL that appear as non-used since running in background!!
+//        AutoSaveTimer commentSaveTimer = new AutoSaveTimer(this, comment, item, 5000, () -> item.setComment(comment.getText())); //NORMAL that appear as non-used since running in background!!
+        AutoSaveTimer commentSaveTimer = new AutoSaveTimer(this, comment, null, null); //NORMAL that appear as non-used since running in background!!
 
 //        mainCont.add(initField(Item.COMMENT, Item.COMMENT_HELP, comment, Item.PARSE_COMMENT, () -> item.getComment(), (t) -> item.setComment((String) t),
         initField(Item.PARSE_COMMENT, comment, () -> item.getComment(), (t) -> item.setComment((String) t), () -> comment.getText(), (t) -> comment.setText((String) t));
@@ -1109,7 +1129,7 @@ public class ScreenItem2 extends MyForm {
 //        mainCont.add(initField(Item.DUE_DATE, Item.DUE_DATE_HELP, dueDate, Item.PARSE_DUE_DATE, () -> item.getDueDateD(), (t) -> item.setDueDate((Date) t),
 //</editor-fold>
         initField(Item.PARSE_DUE_DATE, dueDate,
-                () -> item.getDueDateD(),
+                () -> itemCopy.getDueDateD(),
                 //                () -> {
                 //                    if (dueDateEditedInRepeatRuleScreen != null) {
                 //                        Date temp = dueDateEditedInRepeatRuleScreen;
@@ -1120,11 +1140,11 @@ public class ScreenItem2 extends MyForm {
                 (d) -> item.setDueDate((Date) d),
                 () -> dueDate.getDate(),
                 (d) -> dueDate.setDate((Date) d),
-                () -> item.isDueDateInherited(dueDate.getDate()));
+                () -> itemCopy.isDueDateInherited(dueDate.getDate()));
 //                new Date(0),
 //                ()->makeDefaultDueDate());
         mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP));
-        updateUIIDForInherited(item.isDueDateInherited(dueDate.getDate()), dueDate); //NB! MUST do *after* layoutN() which sets the UIID
+        updateUIIDForInherited(itemCopy.isDueDateInherited(dueDate.getDate()), dueDate); //NB! MUST do *after* layoutN() which sets the UIID
 
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
         //FINISH_TIME
@@ -1635,7 +1655,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveProjectInBackground((Item) item));
                 parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveInBackground((Item) item));
                 previousForm.refreshAfterEdit(); //necessary to update sum of subtask effort
-            }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES|ScreenListOfItems.OPTION_NO_TIMER|ScreenListOfItems.OPTION_NO_TIMER|ScreenListOfItems.OPTION_NO_WORK_TIME
+            }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
             ).show();
         }
         ));
@@ -1644,7 +1664,6 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        if (false) mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2)); //edit subtasks
         //TODO!!!!! editing of subtasks should be local (and saved locally on app exit)
 //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, item, templateEditMode));
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                new Button(Command.create((size == 0 ? Icons.iconNewToolbarStyle : null), (size!=0?"[" + subtasksItemList.size() + "]":null), (ev) -> {
 //                    if (subtaskCont.getComponentCount()==0) {
@@ -1724,12 +1743,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             timeCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP));
         }
 
-        boolean isProject = itemLS.isProject();
+        boolean isProject = item.isProject();
 
         //REMAINING************
         if (isProject) {
 //            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
-            timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatDurationStd(itemLS.getRemainingForSubtasks()), "LabelFixed"),
+            timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatDurationStd(item.getRemainingForSubtasks()), "LabelFixed"),
                     Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false)); //hack to insert after alarmDate field
         }
 //TODO: makes no sense to show remaining for project itself, just confusing??
@@ -1740,7 +1759,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //ACTUAL************
         //if project, show actual for subtasks
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
-            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatDurationStd(itemLS.getActualForSubtasks()), "LabelFixed"),
+            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatDurationStd(item.getActualForSubtasks()), "LabelFixed"),
                     Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false));
         }
 
@@ -1795,7 +1814,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
 //            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
-            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatDurationStd(itemLS.getEstimateForSubtasks()), "LabelFixed"),
+            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatDurationStd(item.getEstimateForSubtasks()), "LabelFixed"),
                     Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false));
         }
         String estimateTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT : Item.EFFORT_ESTIMATE;
@@ -1861,13 +1880,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        timeCont.add(new Label(Item.WAIT_DATE)).add(waitingTill.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.WAIT_UNTIL_DATE, waitingTill.makeContainerWithClearButton(), "**"));
         initField(Item.PARSE_WAITING_TILL_DATE, waitingTill,
-                () -> item.getWaitingTillDateD(),
+                () -> itemCopy.getWaitingTillDateD(),
                 (t) -> item.setWaitingTillDate((Date) t),
                 () -> waitingTill.getDate(),
                 (d) -> waitingTill.setDate((Date) d),
-                () -> item.isWaitingTillInherited(waitingTill.getDate()));
+                () -> itemCopy.isWaitingTillInherited(waitingTill.getDate()));
         timeCont.add(layoutN(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP));
-        updateUIIDForInherited(item.isWaitingTillInherited(waitingTill.getDate()), waitingTill);
+        updateUIIDForInherited(itemCopy.isWaitingTillInherited(waitingTill.getDate()), waitingTill);
 
 //        MyDateAndTimePicker waitingAlarm = new MyDateAndTimePicker(parseIdMap2, () -> itemLS.getWaitingAlarmDateD(), (d) -> item.setWaitingAlarmDate(d)); //"<waiting reminder this date>", 
         MyDateAndTimePicker waitingAlarm = new MyDateAndTimePicker(); //"<waiting reminder this date>", 
@@ -1892,13 +1911,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        MyDateAndTimePicker startByDate = new MyDateAndTimePicker(parseIdMap2, () -> itemLS.getStartByDateD(), (d) -> item.setStartByDate(d)); // "<start task on this date>", 
         MyDateAndTimePicker startByDate = new MyDateAndTimePicker(); // "<start task on this date>", 
         initField(Item.PARSE_START_BY_DATE, startByDate,
-                () -> item.getStartByDateD(),
+                () -> itemCopy.getStartByDateD(),
                 (t) -> item.setStartByDate((Date) t),
                 () -> startByDate.getDate(),
                 (d) -> startByDate.setDate((Date) d),
-                () -> item.isStartByDateInherited(startByDate.getDate()));
+                () -> itemCopy.isStartByDateInherited(startByDate.getDate()));
         timeCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP));
-        updateUIIDForInherited(item.isStartByDateInherited(startByDate.getDate()), startByDate);
+        updateUIIDForInherited(itemCopy.isStartByDateInherited(startByDate.getDate()), startByDate);
 
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(addDatePickerWithClearButton(startByDate));
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(startByDate.makeContainerWithClearButton());
@@ -1931,13 +1950,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                (s) -> item.setPriority(Integer.parseInt(s.length() == 0 ? "0" : s)));
         MyComponentGroup priority = new MyComponentGroup(new String[]{"-", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, true);
         initField(Item.PARSE_PRIORITY, priority,
-                () -> item.getPriority(),
+                () -> itemCopy.getPriority(),
                 (t) -> item.setPriority((int) t),
                 () -> priority.getSelectedIndex(),
                 (i) -> priority.select((int) i),
-                () -> item.isPriorityInherited(priority.getSelectedIndex()));
+                () -> itemCopy.isPriorityInherited(priority.getSelectedIndex()));
         prioCont.add(layoutN(Item.PRIORITY, priority, Item.PRIORITY_HELP));//, null, true, false, false, true));
-        updateUIIDForInherited(item.isPriorityInherited(priority.getSelectedIndex()), priority);
+        updateUIIDForInherited(itemCopy.isPriorityInherited(priority.getSelectedIndex()), priority);
 //        prioCont.add(layout(Item.PRIORITY, priority, Item.PRIORITY_HELP, true, false, true));
 
 //        MyComponentGroup importance = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
@@ -1946,7 +1965,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         MyComponentGroup importance = new MyComponentGroup(HighMediumLow.getDescriptionList(), true);
 //        initField(Item.PARSE_IMPORTANCE, importance, () -> item.getImportanceN(), (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
         initField(Item.PARSE_IMPORTANCE, importance,
-                () -> item.getImportanceN() != null ? item.getImportanceN().toString() : null,
+                () -> itemCopy.getImportanceN() != null ? item.getImportanceN().toString() : null,
                 //                (t) -> item.setImportance((Item.HighMediumLow.getValue((String) t))),
                 (enumStr) -> item.setImportance(enumStr != null ? (HighMediumLow.valueOf((String) enumStr)) : null),
                 //                () -> importance.getSelectedString(),
@@ -1955,7 +1974,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 //                (i) -> importance.select(i != null ? HighMediumLow.getValue( (String)i).getDescription(): null));
                 //                (enumStr) -> importance.select(enumStr != null ? HighMediumLow.valueOf((String)enumStr).getDescription(): null));
                 (enumStr) -> importance.select(enumStr != null ? HighMediumLow.valueOf((String) enumStr).getDescription() : null),
-                () -> item.isImportanceInherited(importance.getSelectedString() != null ? HighMediumLow.getValue(importance.getSelectedString()) : null)
+                () -> itemCopy.isImportanceInherited(importance.getSelectedString() != null ? HighMediumLow.getValue(importance.getSelectedString()) : null)
         );
 //                (i) -> importance.select(i != null ?  i.toString() : null));
 
@@ -1963,7 +1982,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.IMPORTANCE, FlowLayout.encloseCenterMiddle(importance), "**"));
 //        prioCont.add(layout(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, true, false, true));
         prioCont.add(layoutN(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP));//, null, false, false, true, true));
-        updateUIIDForInherited(item.isImportanceInherited(importance.getSelectedString() != null ? HighMediumLow.getValue(importance.getSelectedString()) : null), importance);
+        updateUIIDForInherited(itemCopy.isImportanceInherited(importance.getSelectedString() != null ? HighMediumLow.getValue(importance.getSelectedString()) : null), importance);
 
 //        MyComponentGroup urgency = new MyComponentGroup(Item.HighMediumLow.getDescriptionList(), parseIdMap2,
 //                () -> itemLS.getUrgencyN() == null ? "" : itemLS.getUrgencyN().getDescription(),
@@ -1974,15 +1993,15 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.URGENCY, FlowLayout.encloseMiddle(urgency), "**"));
 //        prioCont.add(layout(Item.URGENCY, urgency, Item.URGENCY_HELP, true, false, true));
         initField(Item.PARSE_URGENCY, urgency,
-                () -> item.getUrgencyN() != null ? item.getUrgencyN().toString() : null,
+                () -> itemCopy.getUrgencyN() != null ? item.getUrgencyN().toString() : null,
                 (enumStr) -> item.setUrgency(enumStr != null ? (HighMediumLow.valueOf((String) enumStr)) : null),
                 //                () -> urgency.getSelectedString(), (i) -> urgency.select(i != null ? (String) i.toString() : null));
                 () -> urgency.getSelectedString() != null ? HighMediumLow.getValue(urgency.getSelectedString()).toString() : null,
                 (enumStr) -> urgency.select(enumStr != null ? HighMediumLow.valueOf((String) enumStr).getDescription() : null),
-                () -> item.isUrgencyInherited(urgency.getSelectedString() != null ? HighMediumLow.getValue(urgency.getSelectedString()) : null)
+                () -> itemCopy.isUrgencyInherited(urgency.getSelectedString() != null ? HighMediumLow.getValue(urgency.getSelectedString()) : null)
         );
         prioCont.add(layoutN(Item.URGENCY, urgency, Item.URGENCY_HELP));//, null, false, false, true, true));
-        updateUIIDForInherited(item.isUrgencyInherited(urgency.getSelectedString() != null ? HighMediumLow.getValue(urgency.getSelectedString()) : null), urgency);
+        updateUIIDForInherited(itemCopy.isUrgencyInherited(urgency.getSelectedString() != null ? HighMediumLow.getValue(urgency.getSelectedString()) : null), urgency);
 
 //        MyComponentGroup challenge = new MyComponentGroup(Item.Challenge.getDescriptionList(), parseIdMap2,
 //                () -> itemLS.getChallengeN() == null ? "" : itemLS.getChallengeN().getDescription(),
@@ -2001,12 +2020,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         MyComponentGroup challenge = challenge1.getPreferredW() < Display.getInstance().getDisplayWidth() ? challenge1
                 : new MyComponentGroup(Challenge.getDescriptionList(true), true);
         initField(Item.PARSE_CHALLENGE, challenge,
-                () -> item.getChallengeN() != null ? item.getChallengeN().toString() : null,
+                () -> itemCopy.getChallengeN() != null ? item.getChallengeN().toString() : null,
                 (enumStr) -> item.setChallenge(enumStr != null ? (Challenge.valueOf((String) enumStr)) : null),
                 //                () -> challenge.getSelectedString(), (s) -> challenge.select(s != null ? (String) s.toString() : null));
                 () -> challenge.getSelectedString() != null ? Challenge.getValue(challenge.getSelectedString()).toString() : null,
                 (enumStr) -> challenge.select(enumStr != null ? Challenge.valueOf((String) enumStr).getDescription() : null),
-                () -> item.isChallengeInherited((challenge.getSelectedString() != null ? Challenge.getValue(challenge.getSelectedString()) : null))
+                () -> itemCopy.isChallengeInherited((challenge.getSelectedString() != null ? Challenge.getValue(challenge.getSelectedString()) : null))
         );
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        prioCont.add(new Label(Item.CHALLENGE)).add(FlowLayout.encloseCenterMiddle(challenge));
@@ -2015,7 +2034,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, true, false, true));
 //</editor-fold>
         prioCont.add(layoutN(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP));//, null, false, false, true, true));
-        updateUIIDForInherited(item.isChallengeInherited(challenge.getSelectedString() != null ? Challenge.getValue(challenge.getSelectedString()) : null), challenge);
+        updateUIIDForInherited(itemCopy.isChallengeInherited(challenge.getSelectedString() != null ? Challenge.getValue(challenge.getSelectedString()) : null), challenge);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyComponentGroup dreadFun = new MyComponentGroup(Item.DreadFunValue.getDescriptionList(), parseIdMap2,
@@ -2027,15 +2046,23 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //</editor-fold>
         MyComponentGroup dreadFun = new MyComponentGroup(DreadFunValue.getDescriptionList(), true);
         initField(Item.PARSE_DREAD_FUN_VALUE, dreadFun,
-                () -> item.getDreadFunValueN() != null ? item.getDreadFunValueN().toString() : null,
+                () -> itemCopy.getDreadFunValueN() != null ? itemCopy.getDreadFunValueN().toString() : null,
                 (enumStr) -> item.setDreadFunValue(enumStr != null ? (DreadFunValue.valueOf((String) enumStr)) : null),
                 //                () -> dreadFun.getSelectedString(), (s) -> dreadFun.select(s != null ? (String) s.toString() : null));
                 () -> dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()).toString() : null,
                 (enumStr) -> dreadFun.select(enumStr != null ? DreadFunValue.valueOf((String) enumStr).getDescription() : null),
-                () -> item.isDreadFunInherited((dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null))
+                () -> itemCopy.isDreadFunInherited((dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null))
         );
+//        initField(Item.PARSE_DREAD_FUN_VALUE, dreadFun,
+//                () -> item.getDreadFunValueN() != null ? item.getDreadFunValueN().toString() : null,
+//                (enumStr) -> item.setDreadFunValue(enumStr != null ? (DreadFunValue.valueOf((String) enumStr)) : null),
+//                //                () -> dreadFun.getSelectedString(), (s) -> dreadFun.select(s != null ? (String) s.toString() : null));
+//                () -> dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()).toString() : null,
+//                (enumStr) -> dreadFun.select(enumStr != null ? DreadFunValue.valueOf((String) enumStr).getDescription() : null),
+//                () -> item.isDreadFunInherited((dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null))
+//        );
         prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP));//, null, false, false, true, true));
-        updateUIIDForInherited(item.isDreadFunInherited(dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null), dreadFun);
+        updateUIIDForInherited(itemCopy.isDreadFunInherited(dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null), dreadFun);
 
 //        MyNumericTextField earnedValue = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValue(), (d) -> item.setEarnedValue(d));
         MyNumericTextField earnedValue = new MyNumericTextField("");
@@ -2045,14 +2072,14 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, true, false, false));
         initField(Item.PARSE_EARNED_VALUE, earnedValue, () -> L10NManager.getInstance().format(item.getEarnedValue(), 2), (s) -> item.setEarnedValue(L10NManager.getInstance().parseDouble((String) s)),
                 () -> earnedValue.getText(), (s) -> earnedValue.setText((String) s)); //TODO!!! localize number of decimal points (2)??
-        prioCont.add(layoutN(Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, true, false, true));
+        prioCont.add(layoutN(Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, null, false, true, false, false));
 
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("<set>", parseIdMap2, () -> item.getEarnedValuePerHour(), (d) -> {
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValuePerHour(), (d) -> {
 //        });
 ////        earnedValuePerHour.setConstraint(TextArea.UNEDITABLE);
 //        earnedValuePerHour.setEditable(false);
-        Label earnedValuePerHour = new Label(L10NManager.getInstance().format(itemLS.getEarnedValuePerHour(), 2));
+        Label earnedValuePerHour = new Label(L10NManager.getInstance().format(item.getEarnedValuePerHour(), 2));
         earnedValuePerHour.setUIID("LabelFixed");
 //        prioCont.add(new Label(Item.EARNED_POINTS_PER_HOUR)).add(earnedValuePerHour).add(new SpanLabel("Value per hour is calculated as Value divided by the Estimate, or the sum of Remaining and Actual effort - once work has started."));
 //                add(new SpanLabel(Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_VALUE + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."));
@@ -2179,7 +2206,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
             if (remainingEffortSetManually && !effortEstimateSetManually
                     && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
-                    && itemLS.getEstimate() == 0) { //UI: only allow manual setting if no value was set before
+                    && item.getEstimate() == 0) { //UI: only allow manual setting if no value was set before
                 effortEstimateSetAutomatically = true;
                 effortEstimate.setDurationAndNotify(remainingEffort.getDuration() + actualEffort.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
                 effortEstimateSetAutomatically = false;
@@ -2283,7 +2310,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
             if (effortEstimateSetManually && !remainingEffortSetManually
                     && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
-                    && itemLS.getRemainingForProjectTaskItselfFromParse() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+                    && item.getRemainingForProjectTaskItselfFromParse() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
                 remainingEffortSetAutomatically = true;
                 remainingEffort.setDurationAndNotify(effortEstimate.getDuration() - actualEffort.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
                 remainingEffortSetAutomatically = false;
@@ -2809,7 +2836,10 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                                editOwnerButton.setText(item.getOwner()==null?"":item.getOwner().getText());  //set back to old Owner
                                 if (false) editOwnerButton.setText(item.getOwner().getText());  //set back to old Owner
                             } else { //new owner
+                                //ensure all pickers take their value from current owner if none is defined for the item.
+                                itemCopy.setOwner(newOwner, true);
                                 previousValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(((ItemAndListCommonInterface) newOwner).getObjectIdP()))); //store objectId of new owner
+                                refreshAfterEdit(); //update eg inherited values
                                 if (false) editOwnerButton.setText(newOwner.getText());
                             }
                         } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
@@ -2820,7 +2850,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                             }
                             if (false) editOwnerButton.setText(""); //"<no owner>"
                         }
-                    }, null, 0, 1, true, false, false);
+                    }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
             ownerPicker.show();
         }
         );
@@ -2834,16 +2864,22 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                    if (oldOwner != null) {
 //                        oldOwner.removeFromList(item);
 //                    }
-                    item.removeFromOwner();
-                    ItemAndListCommonInterface newOwner = DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0));
-                    newOwner.addToList(item);
+                    ItemAndListCommonInterface newOwner = null;
+                    if (false) {
+                        ItemAndListCommonInterface oldOwner = item.removeFromOwner();
+                        newOwner = DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0));
+                        newOwner.addToList(item);
+                        DAO.getInstance().saveInBackground((ParseObject) oldOwner, (ParseObject) newOwner);
+                    }
+                    item.setOwner(newOwner, false); //false: don't update inherited values from owner, they should have been set in this screen
 //                    item.setOwner();
                 } else {
 //                    ItemAndListCommonInterface oldOwner = item.getOwner();
 //                    if (oldOwner != null) {
 //                        oldOwner.removeFromList(item);
 //                    }
-                    item.removeFromOwner();
+                    ItemAndListCommonInterface oldOwner = item.removeFromOwner();
+                    DAO.getInstance().saveInBackground((ParseObject) oldOwner);
 //                    item.setOwner(null);
                 }
             }
@@ -2921,13 +2957,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        if (item.isInteruptOrInstantTask()) {
 //            MyOnOffSwitch interruptTask = new MyOnOffSwitch(parseIdMap2, () -> item.isInteruptOrInstantTask(), (b) -> item.setInteruptOrInstantTask(b));
         //INTERRUPTED TASK
-        if (itemLS.getTaskInterrupted() != null) {
+        if (item.getTaskInterrupted() != null) {
             //TODO!!! enable deleting the taskInterrupted (in case wrong or meaningless)
 //            statusCont.add(layout(Item.INTERRUPT_TASK_INTERRUPTED,
 //                    new SpanLabel("\"" + itemLS.getTaskInterrupted() != null ? itemLS.getTaskInterrupted().getText() + "\"" : "<none>"), "**", true, false, true)); //TODO capture and save the task that was interrupted
             statusCont.add(layoutN(Item.INTERRUPT_TASK_INTERRUPTED,
                     //                    new SpanLabel("\"" + itemLS.getTaskInterrupted() != null ? itemLS.getTaskInterrupted().getText() + "\"" : "<none>"),
-                    new SpanLabel(itemLS.getTaskInterrupted().getText()),
+                    new SpanLabel(item.getTaskInterrupted().getText()),
                     Item.INTERRUPT_TASK_INTERRUPTED_HELP, true)); //TODO capture and save the task that was interrupted
 //            } else {
 //                statusCont.add(new Label(Item.INTERRUPT_OR_INSTANT_TASK)).add(interruptTask);
@@ -3130,8 +3166,16 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         } else
             tabs.setSelectedIndex(0); //default to main index (this also ensures the tab is refreshed so fields like Categories/Repeat are sized correctly??)
 
-        setCheckIfSaveOnExit(() -> checkItemIsValidForSaving(description.getText(), comment.getText(), dueDate.getDate(), actualEffort.getDuration(),
-                remainingEffort.getDuration(), (((List) previousValues.get(Item.PARSE_CATEGORIES)) != null ? ((List) previousValues.get(Item.PARSE_CATEGORIES)).size() : 0), item.getListFull().size())); //item.getListFull().size() sinze subtasks are stored 
+        setCheckIfSaveOnExit(() -> {
+            if (item.getObjectIdP() != null) return true; //don't ask to save an already saved item
+            else return checkItemIsValidForSaving(description.getText(), comment.getText(), dueDate.getDate(),
+                        actualEffort.getDuration(),
+                        remainingEffort.getDuration(),
+                        (((List) previousValues.get(Item.PARSE_CATEGORIES)) != null
+                        ? ((List) previousValues.get(Item.PARSE_CATEGORIES)).size()
+                        : 0),
+                        item.getListFull().size());
+        }); //item.getListFull().size() sinze subtasks are stored 
 //TODO: when owner can be edited, use new/edited one
 
         return cont;

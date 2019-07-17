@@ -15,30 +15,32 @@ import com.codename1.ui.util.UITimer;
  * @author Thomas
  */
 public class MyTextField2 extends TextField {
-    
+
     public MyTextField2(int columns) {
         super(columns);
     }
+
     public MyTextField2() {
         this(200);
     }
-    
-       private UITimer timer;
-       public void pointerReleased(int x, int y) {
-           super.pointerReleased(x, y);
-           if(timer == null) {
+
+    private UITimer timer;
+
+    public void pointerReleased(int x, int y) {
+        super.pointerReleased(x, y);
+        if (timer == null) {
 //              timer = UITimer.timer(300, false, getComponentForm(), () -> {
-              timer = UITimer.timer(300, false, () -> {
+            timer = UITimer.timer(300, false, () -> {
 //                  singleTapEvent();
-                  Log.p("singletap");
-                  timer = null;
-              });
-           } else {
-              timer.cancel();
-              timer = null;
+                Log.p("singletap");
+                timer = null;
+            });
+        } else {
+            timer.cancel();
+            timer = null;
 //              doubleTapEvent();
-                  Log.p("doubletap");
-           }
-       }
-    
+            Log.p("doubletap");
+        }
+    }
+
 }

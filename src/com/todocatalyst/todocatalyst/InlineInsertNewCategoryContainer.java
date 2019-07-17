@@ -26,10 +26,11 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
 //    private Container oldNewTaskCont=null;
     private MyTextField2 textEntryField;
     private Category category;
-//    private MyForm myForm;
+    private MyForm myForm;
     private ItemAndListCommonInterface categoryList;
     private Category newCategory;
     private boolean insertBeforeElement;
+    private Command editNewCmd;
 //    private Container cont=new Container(new BorderLayout());
 
     private final static String ENTER_CATEGORY = "New " + Category.CATEGORY; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
@@ -65,7 +66,8 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
         this(myForm, category, (CategoryList) category.getOwner(), insertBeforeElement);
     }
 
-    private InlineInsertNewCategoryContainer(MyForm myForm, Category category2, CategoryList categoryList, boolean insertBeforeElement) {
+    private InlineInsertNewCategoryContainer(MyForm form, Category category2, CategoryList categoryList, boolean insertBeforeElement) {
+        this.myForm = form;
         this.category = category2;
         ASSERT.that(categoryList != null, "why itemOrItemListForNewTasks2==null here?");
         this.categoryList = categoryList;
@@ -89,12 +91,16 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
 //                    myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                     myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                 }
-                closeInsertNewCategoryContainer();
+                closeInsertNewContainer(true);
 //                this.categoryList.addToList(newCategory);
                 insertNewCategoryAndSaveChanges(newCategory);
                 myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });
+
+        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null)
+            textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
+        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
         contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
 
@@ -106,23 +112,26 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
                 //TODO!!! Replay: store the state/position of insertContainer. NO, too detailed...
 //                myForm.lastInsertNewElementContainer = null;
                 //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-                closeInsertNewCategoryContainer();
+                closeInsertNewContainer(true);
             })));
         }
 
+//        editNewCmd = CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
+        editNewCmd = CommandTracked.create(null, Icons.iconEdit, (ev) -> {
+            if ((newCategory = createNewCategory()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
+                myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this, -1)); //if editing the new task in separate screen, 
+                myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
+                new ScreenCategoryProperties(newCategory, (MyForm) getComponentForm(), () -> {
+                    insertNewCategoryAndSaveChanges(newCategory);
+                    myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false); //marker to indicate that the inlineinsert container launched edit of the task
+                    myForm.refreshAfterEdit();
+                }).show();
+            } else {
+                ASSERT.that(false, "Something went wrong here, what to do? ...");
+            }
+        }, "InlineEditCategory");
         //Enter full screen edit of the new Category:
-        contForTextEntry.add(MyBorderLayout.EAST,
-                new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
-                    if ((newCategory = createNewCategory()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
-                        myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this, -1)); //if editing the new task in separate screen, 
-                        new ScreenCategoryProperties(newCategory, (MyForm) getComponentForm(), () -> {
-                            insertNewCategoryAndSaveChanges(newCategory);
-                            myForm.refreshAfterEdit();
-                        }).show();
-                    } else {
-                        ASSERT.that(false, "Something went wrong here, what to do? ...");
-                    }
-                })));
+        contForTextEntry.add(MyBorderLayout.EAST, new Button(editNewCmd));
         add(contForTextEntry);
     }
 
@@ -166,12 +175,21 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
 //            categoryList.addToList(newCategory); //if item is null or not in orgList, insert at beginning of (potentially empty) list
 //        }
         categoryList.addToList(newCategory, category, !insertBeforeElement); //add after item
-        DAO.getInstance().saveInBackground(newCategory, (ParseObject) categoryList);
+        DAO.getInstance().saveInBackground(newCategory, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newCategory.getObjectIdP()));
+        DAO.getInstance().saveInBackground((ParseObject) categoryList);
+        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, false); //always insert *after* just created inline item
+        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
     }
 
-    private void closeInsertNewCategoryContainer() {
+    private void closeInsertNewContainer(boolean stopAddingInlineContainers) {
         //UI: close the text field
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(this);
+        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+        if (stopAddingInlineContainers) {
+            myForm.setInlineInsertContainer(null); //remove this as inlineContainer
+            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
+            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
+        }
         if (parent != null)
             parent.animateLayout(300);
     }
@@ -199,6 +217,11 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
     @Override
     public TextArea getTextArea() {
         return textEntryField;
+    }
+
+    @Override
+    public Command getEditTaskCmd() {
+        return editNewCmd;
     }
 
 }

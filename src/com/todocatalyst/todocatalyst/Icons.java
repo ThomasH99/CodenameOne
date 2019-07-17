@@ -115,7 +115,8 @@ public class Icons {
     //ITEM
 //    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, labelStyle);
     final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_NOTIFICATIONS, labelStyle);
-    final static char iconAlarmDate = FontImage.MATERIAL_NOTIFICATIONS;
+    final static char iconAlarmDate = FontImage.MATERIAL_NOTIFICATIONS_NONE;
+    final static char iconAlarmTriggered = FontImage.MATERIAL_NOTIFICATIONS_ACTIVE;
 
     final static char iconFilterSettings = FontImage.MATERIAL_LOW_PRIORITY;
     final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
@@ -272,6 +273,9 @@ public class Icons {
     final static char iconChallengeAverage = FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED;
     final static char iconChallengeHard = FontImage.MATERIAL_SENTIMENT_DISSATISFIED;
     final static char iconChallengeVeryHard = FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
+    
+    final static char iconEarnedValue = FontImage.MATERIAL_ATTACH_MONEY;
+    final static char iconEarnedValuePerHour = FontImage.MATERIAL_MONETIZATION_ON;
 
     final static char iconWorkSlot = FontImage.MATERIAL_WORK;
     final static Image iconWorkSlotLabelStyle = FontImage.createMaterial(iconWorkSlot, labelStyle);

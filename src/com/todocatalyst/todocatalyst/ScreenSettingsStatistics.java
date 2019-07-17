@@ -21,7 +21,7 @@ import com.codename1.ui.Container;
  */
 public class ScreenSettingsStatistics extends ScreenSettingsCommon {
 
-    ScreenSettingsStatistics(MyForm mainScreen, UpdateField doneAction) { // throws ParseException, IOException {
+    ScreenSettingsStatistics(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
         super(mainScreen, doneAction);
     }
 

@@ -25,7 +25,7 @@ class MyStringPicker extends Picker {
         }
     }
 
-    MyStringPicker(String[] stringArray, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetString get, MyForm.PutString set) {
+    MyStringPicker(String[] stringArray, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set) {
         super();
         this.setType(Display.PICKER_TYPE_STRINGS);
         this.setStrings(stringArray);
@@ -38,7 +38,7 @@ class MyStringPicker extends Picker {
         }
     }
 
-    MyStringPicker(String[] stringArray, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
+    MyStringPicker(String[] stringArray, ParseIdMap2 parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
         super();
         this.setType(Display.PICKER_TYPE_STRINGS);
         this.setStrings(stringArray);

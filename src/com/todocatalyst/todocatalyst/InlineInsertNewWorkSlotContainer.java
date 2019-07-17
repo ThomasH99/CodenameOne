@@ -36,6 +36,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
     private boolean insertBeforeRefElement;
     private boolean continueAddingNewWorkSlots = true;
     private ItemAndListCommonInterface lastCreatedWorkSlot;
+    private Command editNewCmd;
     //    private Container cont=new Container(new BorderLayout());
 
     private final static String ENTER_WORKSLOT = "New " + WorkSlot.WORKSLOT; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
@@ -70,8 +71,8 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 //        this(myForm, new ItemList(), refWorkSlot2, insertBeforeRefElement);
 //    }
 //    public InlineInsertNewWorkSlotContainer(MyForm myForm, ItemList itemList2, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeRefElement) {
-    public InlineInsertNewWorkSlotContainer(MyForm myForm, WorkSlot refWorkSlot2, boolean insertBeforeRefElement) {
-        this.myForm = myForm;
+    public InlineInsertNewWorkSlotContainer(MyForm form, WorkSlot refWorkSlot2, boolean insertBeforeRefElement) {
+        this.myForm = form;
 //        this.workSlotList = workSlotList2;
         this.workSlotListOwner = refWorkSlot2.getOwner();
 //        WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
@@ -99,11 +100,15 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
                     lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //store new task for use when recreating next insert container
 
                 }
-                closeInsertNewWorkSlotContainer();
-                insertNewWorkSlotAndSaveChanges(newWorkSlot);
+                closeInsertContainer(true);
+                insertNewAndSaveChanges(newWorkSlot);
                 this.myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });
+
+        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null)
+            textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
+        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
         contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
 
@@ -121,21 +126,24 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
             }, "EditItemFromInsertNewContainer")));
         }
 
+//        editNewCmd = CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
+        editNewCmd = CommandTracked.create(null, Icons.iconEdit, (ev) -> {
+            if ((newWorkSlot = createNewWorkSlot()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
+                lastCreatedWorkSlot = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)
+                this.myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, -1)); //if editing the new task in separate screen,
+                myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
+                new ScreenWorkSlot(newWorkSlot, workSlotListOwner, (MyForm) getComponentForm(), () -> {
+                    insertNewAndSaveChanges(newWorkSlot);
+                    lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //ensures that MyTree2 will create a new insertContainer after newTask
+                    myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false); //marker to indicate that the inlineinsert container launched edit of the task
+                    this.myForm.refreshAfterEdit();
+                }).show();
+            } else {
+                ASSERT.that(false, "Something went wrong here, what to do? ...");
+            }
+        }, "InlineEditWorkSlot");
         //Enter full screen edit of the new WorkSlot:
-        contForTextEntry.add(MyBorderLayout.EAST,
-                new Button(CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
-                    if ((newWorkSlot = createNewWorkSlot()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
-                        lastCreatedWorkSlot = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)
-                        this.myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, -1)); //if editing the new task in separate screen, 
-                        new ScreenWorkSlot(newWorkSlot, workSlotListOwner, (MyForm) getComponentForm(), () -> {
-                            insertNewWorkSlotAndSaveChanges(newWorkSlot);
-                            lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //ensures that MyTree2 will create a new insertContainer after newTask
-                            this.myForm.refreshAfterEdit();
-                        }).show();
-                    } else {
-                        ASSERT.that(false, "Something went wrong here, what to do? ...");
-                    }
-                }, "EditItemListProperties")));
+        contForTextEntry.add(MyBorderLayout.EAST, new Button(editNewCmd));
     }
 
     public MyTextField2 getTextField() {
@@ -192,7 +200,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
      * @param newWorkSlot
      * @return
      */
-    private void insertNewWorkSlotAndSaveChanges(WorkSlot newWorkSlot) {
+    private void insertNewAndSaveChanges(WorkSlot newWorkSlot) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        int index = workSlotList.getItemIndex(refWorkSlot);
 //        if (index > -1) {
@@ -205,12 +213,22 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 //        workSlotList.add(newWorkSlot); //no need to insert sorted, workSlotLists are sorted by workSlot.startDate
         workSlotListOwner.addWorkSlot(newWorkSlot); //no need to insert sorted, workSlotLists are sorted by workSlot.startDate
 //        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) refWorkSlot);
-        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) workSlotListOwner);
+        DAO.getInstance().saveInBackground(newWorkSlot, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP()));
+        DAO.getInstance().saveInBackground((ParseObject) workSlotListOwner);
+        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
+        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+//        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
     }
 
-    private void closeInsertNewWorkSlotContainer() {
+    private void closeInsertContainer(boolean stopAddingInlineContainers) {
 //        closeInsertNewWorkSlotContainer(null);
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(this);
+        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+        if (stopAddingInlineContainers) {
+            myForm.setInlineInsertContainer(null); //remove this as inlineContainer
+            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
+            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
+        }
         if (parent != null)
             parent.animateLayout(300);
     }
@@ -227,6 +245,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 //    }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
+
     /**
      * if the textEntry field is in Form f, then it is set to editOnShow
      *
@@ -255,6 +274,11 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
     @Override
     public TextArea getTextArea() {
         return textEntryField;
+    }
+
+    @Override
+    public Command getEditTaskCmd() {
+        return editNewCmd;
     }
 
 }

@@ -41,13 +41,13 @@ public class ScreenCategoryProperties extends MyForm {
 //    private Command backCommand;
 // protected static String FORM_UNIQUE_ID = "ScreenEditCategory"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //     private UpdateField updateActionOnDone;
-    
+
 //    ScreenCategory(Category category, MyForm previousForm) { //throws ParseException, IOException {
 //        this(category, previousForm, () -> {
 //        });
 //    }
 //</editor-fold>
-    ScreenCategoryProperties(Category category, MyForm previousForm, UpdateField doneAction) { //throws ParseException, IOException {
+    ScreenCategoryProperties(Category category, MyForm previousForm, Runnable doneAction) { //throws ParseException, IOException {
         super(category.getText(), previousForm, doneAction);
         setUniqueFormId("ScreenEditCategory");
 //        ScreenItemP.item = item;
@@ -127,7 +127,7 @@ public class ScreenCategoryProperties extends MyForm {
 //    }
 //</editor-fold>
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
-
+        super.addCommandsToToolbar(toolbar);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle());
@@ -161,7 +161,7 @@ public class ScreenCategoryProperties extends MyForm {
 //            previousForm.show(); //drop any changes
 //                showPreviousScreenOrDefault(previousForm, false);
 //</editor-fold>
-                showPreviousScreenOrDefault(false);
+                showPreviousScreen(false);
             });
         }
 
@@ -179,7 +179,7 @@ public class ScreenCategoryProperties extends MyForm {
 //            showPreviousScreenOrDefault(previousForm, true);
 //</editor-fold>
             category.softDelete();
-            showPreviousScreenOrDefault(true);
+            showPreviousScreen(true);
         }));
         if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
             toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
@@ -230,7 +230,7 @@ public class ScreenCategoryProperties extends MyForm {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
-        parseIdMapReset();
+        parseIdMap2.parseIdMapReset();
 //        Container content = new Container();
         if (false) {
             TableLayout tl;

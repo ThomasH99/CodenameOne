@@ -20,7 +20,7 @@ import java.util.Map;
 //        int intDefault = 0;
 
 //                MyStringPicker(String[] stringArray, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
-        MyIntPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue) {
+        MyIntPicker(ParseIdMap2 parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue) {
             this(parseIdMap, get, set, minValue, maxValue, 1);
         }
         
@@ -52,7 +52,7 @@ import java.util.Map;
             this.setSelectedString(Integer.toString(value));
         }
         
-        MyIntPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue, int step) {
+        MyIntPicker(ParseIdMap2 parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue, int step) {
             this(get.get(), minValue, maxValue, step);
             if (parseIdMap != null) {
                 parseIdMap.put(this, () -> {
