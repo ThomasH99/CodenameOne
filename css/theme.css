@@ -224,11 +224,12 @@ TitleXX {
     background-color: red;
 }
 FormTitle {
-    cn1-derive: Default;
+    cn1-derive: Button;
     /*font-size: 120%; /**/
     font-size: 100%; /**/
-    color: blue;
+    color: #333333; /*blue;/**/
     background-color: transparent;
+    text-align: center;
     /*background-color: red;/**/
     /*background-color: transparent;/**/
     /*color: green;
@@ -236,7 +237,7 @@ FormTitle {
 }
 TitleSmall {
     cn1-derive: FormTitle;
-    font-size: 80%;
+    font-size: 60%;
     /*color: blueviolet;/**/
     /*background-color: transparent;/**/
     /*background-color: red;*/
@@ -274,11 +275,11 @@ CommandList { /* the overflow menu itself */
 
 TextFieldSearch {
     cn1-derive: Label;
-/*    margin-top: 0.5mm;
-    font-size: 120%;
-    background-color: transparent;
-    /*color: green;
-    /*background-color: red;*/
+    /*    margin-top: 0.5mm;
+        font-size: 120%;
+        background-color: transparent;
+        /*color: green;
+        /*background-color: red;*/
 }
 
 /******* LOGIN screen ****************/
@@ -295,7 +296,7 @@ AlarmsForm {
 }
 ScreenAlarmContainer { /*the top-level container containing everything for a single task */
     cn1-derive: Container;
-   /*padding: 2pt;/**/
+    /*padding: 2pt;/**/
     /*border-bottom: orange solid 2pt;/**/
     border: orange solid 1mm;
     background: white; /**/
@@ -357,7 +358,7 @@ ScreenItemTaskText {
 }
 ScreenItemTaskTextStarred {
     cn1-derive: ScreenItemTaskText;
-    color: blue;
+    color: blueviolet;
 }
 /*
 ScreenItemTaskText.selected {
@@ -425,7 +426,7 @@ LabelValue {
 ScreenItemValue {
     cn1-derive: LabelField;
     color: #666;
-     padding:0mm 0mm 0 0mm; /*top+bottom right+left*/
+    padding:0mm 0mm 0 0mm; /*top+bottom right+left*/
     margin:0mm 0mm;
 }
 ScreenItemValueInherited {
@@ -693,8 +694,8 @@ SmallTimerTimer {
     font-size: 100%;
     padding: 1mm;
     margin: 1mm 1mm;
-/*        margin-top: 1mm;
-    margin-bottom: 1mm;*/
+    /*        margin-top: 1mm;
+        margin-bottom: 1mm;*/
 
 }
 SmallTimerTimerPaused {
@@ -772,13 +773,13 @@ MainMenuCommand {
 
 ScreenItemStarred { /*style for starred icon task text in lists*/
     cn1-derive: Button;
-    color:blue;
+    color:blueviolet;
     padding:0 0.5mm 0 0; /*top+bottom right+left*/
     margin:0mm;
 }
 ScreenItemStarredActive { /*style for starred icon task text in lists*/
     cn1-derive: ScreenItemStarred;
-    color:blue;
+    color:blueviolet;
     padding:0 0.5mm 0 0; /*top+bottom right+left*/
     margin:0mm;
 }
@@ -805,8 +806,8 @@ ListOfItemsTextCont { /*style for task container (WrapButton) in lists*/
 
 ListOfItemsText { /*style for task text in lists*/
     cn1-derive: Label;/**/
-       font-family :  "native:MainLight";
-       /* color:black;*/
+    font-family :  "native:MainLight";
+    /* color:black;*/
     /*font-size: 90%; /*100%;*/
     text-align: left;
     /*background-color: #3399ff;*/
@@ -824,14 +825,14 @@ ListOfItemsTextDone { /*style for DONE task text in lists*/
 
 ListOfItemsTextStarred { /*style for Starred task text in lists*/
     cn1-derive: ListOfItemsText;
-    color: blue;
+    color: blueviolet;
     /*background:yellow;
     */
 }
 
 ListofItemsStarred { /*style for starred icon task text in lists*/
     cn1-derive: Button;
-    color:blue;
+    color:blueviolet;
     padding:0 0.5mm 0 0; /*top+bottom right+left*/
     margin:0mm;
     text-decoration: line-through;
@@ -842,7 +843,7 @@ ListOfItemsItemContent { /*style for task - CENTER - between status icon and edi
     margin:0mm 0 ;
     padding: 1mm 0; /*top+bottom right+left*/
     /*border-bottom: 2px solid lightgrey; /*4px solid blueviolet; /*lightgrey; */
-    border-bottom: 1px solid black; /*4px solid blueviolet; /*lightgrey; */
+    border-bottom: 1px solid darkgray; /*darkslategray/black: too dark, 4px solid blueviolet; /*lightgrey; */
 }
 
 ListOfItemsItemDetails { /*style for task details - SOUTH */
@@ -875,6 +876,19 @@ ListOfItemsItemDetailsLabel { /*style for task details labels */
     /*color:darkgray;
     /*margin:0mm;
     padding:0 0.5mm; /*top+bottom right+left*/
+}
+
+ListOfItemsCategories { /*style for task details labels */
+    cn1-derive: ItemListSmall;
+    color:white;
+    background:darkgray;
+    /*color:darkgray;
+    /*margin:0mm;
+    padding:0 0.5mm; /*top+bottom right+left*/
+}
+
+ItemDetailsLabel { /*style for task details labels */
+    cn1-derive: ItemListSmall;
 }
 
 ListOfItemsPrio {
@@ -1108,8 +1122,8 @@ ExpandedList { /* the ScrollY container, CENTER, with all expanded subtasks - in
     padding: 0 0 0 4mm; */
     margin-left: 2mm; /*this indents the first indent-line*/
     /*background: lightgrey; /*space btw indent-line and itemContainer */
-    padding-left: 1mm; /*this is space between the indent-line and the ItemContainer*/
-    border-left: 5px solid darkgrey; /*greenyellow; /* expanded line for subtasks!! */
+    /*padding-left: 0.5mm; /*this is space between the indent-line and the ItemContainer*/
+    border-left: 15px solid darkgrey; /*greenyellow; /* expanded line for subtasks!! */
 
     /*color: lightgray;*/
     /*border-left: 0.5mm solid green; 
@@ -1144,11 +1158,11 @@ SwipeButtonCommonBase{
 }
 
 SwipeButton{
-     cn1-derive: SwipeButtonCommonBase;
-   /* font-size: 120%;
-    padding: 2mm;
-    margin: 0;
-    text-align: right;*/
+    cn1-derive: SwipeButtonCommonBase;
+    /* font-size: 120%;
+     padding: 2mm;
+     margin: 0;
+     text-align: right;*/
     color:white;
 }
 
@@ -1172,7 +1186,7 @@ SwipeButtonSetDueToToday {
 SwipeButtonStar {
     cn1-derive: SwipeButtonCommonBase;
     /*background-color:blue;*/
-    background-color:blue;
+    background-color:blueviolet;
     color:white;
 }
 
@@ -1271,11 +1285,11 @@ GroupElementOnly{
 }
 ToggleButton {
     cn1-derive: LabelValue; /*Button; RadioButton;*/
-    
+
     border-color: #007AFF; /*royalblue;*/
     border-style: solid;
     border-width: 0.2mm;/*0.3mm;*/
-    
+
     /* font-size: 100%;*/
     color: #007AFF; /*royalblue;*/
     /* background: white;

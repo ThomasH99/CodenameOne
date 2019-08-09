@@ -196,7 +196,8 @@ public class Icons {
     static char iconSetDueDateToTodayFontImageMaterial = FontImage.MATERIAL_TODAY;
 //    final static Image iconSetDueDateToToday = FontImage.createMaterial(FontImage.MATERIAL_TODAY, labelStyle);
 //    final static Image iconIndentExdendInsertNewTask = FontImage.createMaterial(FontImage.MATERIAL_COMPARE_ARROWS, labelStyle);
-//    final static Image iconIndentExdendInsertNewTask = FontImage.createMaterial(FontImage.MATERIAL_SWAP_HORIZ, labelStyle);
+//    final static char iconIndentExdendInsertNewTask = FontImage.MATERIAL_TRANSFORM; //TODO: make icons showing a task indended to subtask and a subtask exdended to super-task
+    final static char iconIndentExdendInsertNewTask = FontImage.MATERIAL_SWAP_HORIZ; //Other possible icons: FIRST_PAGE/LAST_PAGE, SUBDIRECTORY_ARROW_RIGHT/LEFT
 //    final static Image iconInsertNewTaskIndent = FontImage.createMaterial(FontImage.MATERIAL_FORWARD, labelStyle); //fat arrow
 //    final static Image iconInsertNewTaskIndent = FontImage.createMaterial(FontImage.MATERIAL_ARROW_FORWARD, labelStyle); //MATERIAL_TRENDING_FLAT:thin arrow, TODO!! should be MATERIAL_KEYBOARD_RETURN flipped, MATERIAL_SUBDIRECTORY_ARROW_RIGHT
 //    final static Image iconInsertNewTaskExdend = iconInsertNewTaskIndent.flipHorizontally(true); //flip the above image

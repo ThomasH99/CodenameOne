@@ -186,7 +186,8 @@ public class ScreenCategoryPicker extends MyForm {
 //            new ScreenCategory(new Category(), this).show();
 //        });
 //</editor-fold>
-        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, () -> refreshAfterEdit()));
+//        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, () -> refreshAfterEdit()));
+        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, ()->{})); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        icon = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle());

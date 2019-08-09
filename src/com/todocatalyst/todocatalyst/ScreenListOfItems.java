@@ -315,7 +315,7 @@ public class ScreenListOfItems extends MyForm {
         setUpdateActionOnDone(() -> {
 //            this.itemListOrg = itemListFct.getUpdatedItemList(); //NO - WHY? Must set with edited subtask list
             updateItemListOnDone.update(itemListOrg);
-            refreshAfterEdit();
+            if (false) refreshAfterEdit(); //NO point in refreshing this screen when done??!
         });
 //        workSlotList = itemListOrg.getWorkSlotListN(); //expensive operation, only do once for the screen, or after editing WorkSlots
 
@@ -531,9 +531,10 @@ public class ScreenListOfItems extends MyForm {
             ContainerScrollY scrollable = findScrollableContYChild(contentContainer);
             if (scrollable != null)
                 scrollable.setScrollVisible(true);
+            if (previousValues != null)
+                //            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
+                previousValues.setScrollComponent(scrollable);
         }
-        if (previousValues != null)
-            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
 
         setTitleAnimation(contentContainer); //MUST do this here since we create a new container on each refresh
 
@@ -598,7 +599,8 @@ public class ScreenListOfItems extends MyForm {
             });
 
         //check if there was an insertContainer active earlier
-        recreateInlineInsertContainerIfNeeded();
+        if (getInlineInsertContainer() == null)
+            recreateInlineInsertContainerIfNeeded();
 
         super.refreshAfterEdit();
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1805,9 +1807,11 @@ public class ScreenListOfItems extends MyForm {
 //                    expandSubTasksButton.setUIID("ListOfItemsShowSubtasksExpanded");
 //                else
 //                    expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
-                    if (expandedObjects != null)
+                    if (expandedObjects != null) {
                         //                    expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
                         expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasksExpanded", "ListOfItemsShowSubtasks"); //NB!! hack: the two values are inversted since this actionListener is called 
+                        if (false) myForm.scrollComponentToVisible(swipCont.getParent()); //tried this, but not working=!
+                    }
                 });
 
 //            subTasksButton.setUIID("Label");
@@ -1859,11 +1863,13 @@ public class ScreenListOfItems extends MyForm {
         WorkSlotList wSlots = item.getWorkSlotListN(false);
         MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(
                 item.getText()
-                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-Id" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-ID" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getOwner() == null ? "-OWN" : "")
                 + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isTemplate() ? "%" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource()!=null&&item.getSource().isTemplate()? "/C" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
                 + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
@@ -2049,6 +2055,7 @@ public class ScreenListOfItems extends MyForm {
         Container east = new Container(eastLayout, "ListOfItemsEditItemButton");
 
         //STARRED
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            final Button starButton = new Button((Image) null, "ListofItemsStarred");
 //            starButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselectedLabelStyleMaterial);
@@ -2066,6 +2073,7 @@ public class ScreenListOfItems extends MyForm {
 //                east.add(starButton);
 //            }
 //        }
+//</editor-fold>
         final Button starredSwipeableButton = new Button();
         starredSwipeableButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselected);
 
@@ -2493,7 +2501,8 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
         List cats = item.getCategories();
         if (cats != null && cats.size() > 0) {
-            SpanLabel catsLabel = new SpanLabel("Cat: " + getListAsCommaSeparatedString(cats), "ItemDetailsLabel");
+//            SpanLabel catsLabel = new SpanLabel("Cat: " + getListAsCommaSeparatedString(cats), "ItemDetailsLabel");
+            SpanLabel catsLabel = new SpanLabel(getListAsCommaSeparatedString(cats), "ListOfItemsCategories");
             if (Config.TEST) {
                 catsLabel.setName("Categories");
             }
@@ -2864,7 +2873,7 @@ refreshAfterEdit();
         }
 
         //UPDATE DUE DATE
-        if (!item.isTemplate() && !isDone && myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE) || myForm.getTitle().equals(MyForm.SCREEN_OVERDUE_TITLE)) { //UI: only show in Today view
+        if (!item.isTemplate() && !isDone && (myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE) || myForm.getTitle().equals(MyForm.SCREEN_OVERDUE_TITLE))) { //UI: only show in Today view
 //            setDueDateToToday = new Button(null, Icons.iconSetDueDateToToday());
             setDueDateToToday = new Button();
             setDueDateToToday.setMaterialIcon(Icons.iconSetDueDateToTodayMaterial);

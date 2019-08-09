@@ -161,12 +161,12 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        getContentPane().add(buildContentPaneForWorkSlotList(wsList));
 //</editor-fold>
         workSlotListOwner.resetWorkTimeDefinition(); //force recalculation on each update of list to show tasks in workslots correctly
-        WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
-        workSlotList.setNow(MyDate.currentTimeMillis()); //refresh now everytime the list is displayed again
-        if (workSlotList != null)
-            workSlotList.setIncludeExpiredWorkSlots(showAlsoExpiredWorkSlots);
-
-        Container contentContainer = buildContentPaneForWorkSlotList(workSlotList);
+        WorkSlotList workSlotListN = workSlotListOwner.getWorkSlotListN();
+        if (workSlotListN != null) {
+            workSlotListN.setNow(MyDate.currentTimeMillis()); //refresh now everytime the list is displayed again
+            workSlotListN.setIncludeExpiredWorkSlots(showAlsoExpiredWorkSlots);
+        }
+        Container contentContainer = buildContentPaneForWorkSlotList(workSlotListN);
         if (contentContainer instanceof MyTree2)
             setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
 
@@ -498,7 +498,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        return cont;
 //    }
 //</editor-fold>
-    protected Container buildContentPaneForWorkSlotList(WorkSlotList workSlotList) {
+    protected Container buildContentPaneForWorkSlotList(WorkSlotList workSlotListN) {
 //    protected Container buildContentPaneForWorkSlotList(List<WorkSlot> workSlotList) {
         parseIdMap2.parseIdMapReset();
 
@@ -525,8 +525,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        }
 //        return cont;}
 //</editor-fold>
-        if (workSlotList != null && workSlotList.size() > 0) {
-            MyTree2 myTree = new MyTree2(workSlotList, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
+        if (workSlotListN != null && workSlotListN.size() > 0) {
+            MyTree2 myTree = new MyTree2(workSlotListN, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
                 @Override
                 protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
                     Container cmp = null;

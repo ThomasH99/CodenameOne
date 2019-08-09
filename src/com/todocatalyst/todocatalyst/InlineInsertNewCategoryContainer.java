@@ -123,7 +123,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
                 myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
                 new ScreenCategoryProperties(newCategory, (MyForm) getComponentForm(), () -> {
                     insertNewCategoryAndSaveChanges(newCategory);
-                    myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false); //marker to indicate that the inlineinsert container launched edit of the task
+                    myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
                     myForm.refreshAfterEdit();
                 }).show();
             } else {

@@ -48,6 +48,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         this.scrollListenerActive = activateScrollPositionSave;
         if (scrollListenerActive && this.myForm != null) {
             saveScrollTimer = new UITimer(() -> {
+                if (false) Log.p("SaveEditedValuesLocally.saveScrollTimer: SAVING scroll Y=" + scrollY);
                 previousValues.put(SCROLL_VALUE_KEY, scrollY); //only save scroll position after timeout
                 saveFile();
             });
@@ -84,19 +85,21 @@ public class SaveEditedValuesLocally {//extends HashMap {
         this(null, null, false);
     }
 
-    public void setScrollComponent(Component scrollable) {
+    public void setScrollComponent(Component scrollableN) {
         if (lastScrollableComponent != null && lastScrollListener != null)
             lastScrollableComponent.removeScrollListener(lastScrollListener);
 //        Component scrollable = this.myForm.findScrollableContYChild();
-        if (scrollListenerActive && scrollable != null) {
-            lastScrollableComponent = scrollable;
+        if (scrollListenerActive && scrollableN != null) {
+            lastScrollableComponent = scrollableN;
             lastScrollListener = (newX, newY, oldX, oldY) -> {
+                if (false && Config.TEST) Log.p("SaveEditedValuesLocally.lastScrollListener: called with "
+                            + ((newY != oldY) ? "changed Y=" + newY + " (scheduling save)" : "same Y=" + newY));
                 if (newY != oldY) {
                     scrollY = newY;
-                    saveScrollTimer.schedule(500, false, this.myForm);
+                    saveScrollTimer.schedule(500, false, myForm);
                 }
             };
-            scrollable.addScrollListener(lastScrollListener);
+            scrollableN.addScrollListener(lastScrollListener);
         }
     }
 
@@ -116,7 +119,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             if (scrollableComp != null) //not sure why it can bcome null but it has happened
                 scrollableComp.setScrollYPublic(scrollY);
             previousValues.remove(SCROLL_VALUE_KEY); //we only scroll to this value once, on first show of screen after 
-            if (Config.TEST) Log.p("Scroll to Y=" + scrollY);
+            if (false && Config.TEST) Log.p("SaveEditedValuesLocally: Scroll to Y=" + scrollY);
         }
     }
 
@@ -154,7 +157,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     public Object put(Object key, Object value) {
-        if (Config.TEST) ASSERT.that(value != null, "SaveEditedValuesLocally put " + key + " with null value - missing objectIdP??");
+        if (false && Config.TEST) ASSERT.that(value != null, "SaveEditedValuesLocally: put key=\"" + key + "\" with null value - missing objectIdP??");
         if (previousValues != null) {
             Object previousValue = previousValues.put(key, value);
             saveFile();
@@ -240,7 +243,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
     @param predefinedValues 
      */
     public void addAndOverwrite(SaveEditedValuesLocally predefinedValues) {
-        if (predefinedValues==null)
+        if (predefinedValues == null)
             return;
 //        for(Map.Entry<String, HashMap> entry : selects.entrySet()) {
 //    String key = entry.getKey();
@@ -250,7 +253,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             Object key = entry.getKey();
             Object value = entry.getValue();
             Object oldValue = previousValues.put(key, value);
-            ASSERT.that(oldValue == null || oldValue.equals(value), this.getClass()+".addAndOverwrite: key="+key+", overwriting exiting value="+oldValue+", with different value="+value);
+            ASSERT.that(oldValue == null || oldValue.equals(value), this.getClass() + ".addAndOverwrite: key=" + key + ", overwriting exiting value=" + oldValue + ", with different value=" + value);
         }
         saveFile();
     }

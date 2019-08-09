@@ -44,5 +44,12 @@ public interface InsertNewElementFunc {
     @return 
     */
     public Command getEditTaskCmd();
+    
+    /**
+    will finish the inlineInsert when Enter is pressed, or in case the container was left open with text in it when user presses Back
+    */
+    default public void done() {
+        
+    };
 
 }

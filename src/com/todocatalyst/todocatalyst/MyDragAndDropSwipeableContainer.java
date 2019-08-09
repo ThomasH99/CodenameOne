@@ -389,7 +389,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        ASSERT.that(!(refComp instanceof MyTree2) && !(refComp instanceof ContainerScrollY));
 //        Container dropCont =getParentScrollYContainer(refComp); //NOT possible to use getParentScrollYContainer because we need the refCompComp below to find the index
         Container dropContParent = refComp.getParent(); //treeList = the list in which to insert the dropPlaceholder
-        if (Config.TEST) ASSERT.that(dropContParent!=null, "parent to refComp="+refComp+" is null!");
+        if (Config.TEST) ASSERT.that(dropContParent != null, "parent to refComp=" + refComp + " is null!");
         Component refCompComp = refComp; //the containing container of refComp contained in dropCont
         while (!(dropContParent instanceof ContainerScrollY) && dropContParent != null) {
             refCompComp = dropContParent;
@@ -509,9 +509,10 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                && !((layout = beforeParentParent.getLayout()) instanceof BorderLayout
 //                && !((north = ((BorderLayout) layout).getNorth()) instanceof MyDragAndDropSwipeableContainer))) {
         while (beforeParentParent != null) {
-            if ((layout = beforeParentParent.getLayout()) instanceof MyBorderLayout
+            if (((layout = beforeParentParent.getLayout()) instanceof MyBorderLayout
                     && (north = ((MyBorderLayout) layout).getNorth()) instanceof MyDragAndDropSwipeableContainer
-                    && north != cont) { //north != cont special case for when dragged is over itself (otherwise it returns itself)
+                    && north != cont) //north != cont special case for when dragged is over itself (otherwise it returns itself)
+                    || beforeParentParent instanceof MyTree2) { //top-level MyTree2 is NOT in a north container like lower-level elements
                 break;
             } else {
                 beforeParentParent = beforeParentParent.getParent();
@@ -523,7 +524,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        } else {
 //            return null;
 //        }
-        return (north instanceof MyDragAndDropSwipeableContainer) ? (MyDragAndDropSwipeableContainer) north : null;
+        return (!(beforeParentParent instanceof MyTree2) && north instanceof MyDragAndDropSwipeableContainer) ? (MyDragAndDropSwipeableContainer) north : null;
     }
 
     /**
@@ -945,11 +946,14 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 // T2
 // next(S22)==S3, next(S3)==T2
 //</editor-fold>
-            if (index >= 0) {
+            if (index < 0) {
+                return null; //no previous container found
+            } else if (index >= 0) {
                 //if it has an earlier subelements, find and return the preceding one
 //            Component c = parentScrollYContainer.getComponentAt(index - 1);
                 Component c = parentScrollYContainer.getComponentAt(index);
 //            if (c instanceof Container) {
+                if (Config.TEST) ASSERT.that(c instanceof Container, "c is NOT instance of Container, c=" + c);
                 return findLastDDContainer(getTaskContainer((Container) c), dragged); //return the very last element (eg last expanded subtask at deepest level of expansion)
 //            }
             }
@@ -1094,7 +1098,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     /**
      * returns the first MyDD after comp, or null if none. The next element can
      * be either the first expanded subtask, the next sibling task, or (complex
-     * case) the next sibling of one of its parents up the hierarchy
+     * case) the next sibling of one of its parents up the hierarchy, or nothing/null if last element
      *
      * @param comp
      * @return
@@ -2247,20 +2251,20 @@ T3
             } else if (draggedMyDDCont == dropTarget) { //initial situation: dragged element is over itself
                 beforeMyDDCont = findPrecedingMyDDCont(draggedMyDDCont, draggedMyDDCont);
                 afterMyDDCont = findNextDDCont(draggedMyDDCont, draggedMyDDCont);
-                if (Config.TEST_DRAG_AND_DROP) Log.p("---before (calc)= \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
-                if (Config.TEST_DRAG_AND_DROP) Log.p("---after        = \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                if (Config.TEST_DRAG_AND_DROP) Log.p("1---before (calc)= \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                if (Config.TEST_DRAG_AND_DROP) Log.p("1---after        = \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
             } else if (draggingUpwardsOrOverInitialDraggedEltPosition) {
                 afterMyDDCont = (MyDragAndDropSwipeableContainer) dropTarget;
 //                beforeMyDDCont = findCont(afterMyDDCont, true);
                 beforeMyDDCont = findPrecedingMyDDCont(afterMyDDCont, draggedMyDDCont);
-                if (Config.TEST_DRAG_AND_DROP) Log.p("---before (calc)= \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
-                if (Config.TEST_DRAG_AND_DROP) Log.p("---after        = \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                if (Config.TEST_DRAG_AND_DROP) Log.p("2---before (calc)= \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                if (Config.TEST_DRAG_AND_DROP) Log.p("2---after        = \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
             } else { //dragging downwards
                 beforeMyDDCont = (MyDragAndDropSwipeableContainer) dropTarget;
 //                afterMyDDCont = findCont(beforeMyDDCont, false);
                 afterMyDDCont = findNextDDCont(beforeMyDDCont, draggedMyDDCont);
-                if (Config.TEST_DRAG_AND_DROP) Log.p("---before      = \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
-                if (Config.TEST_DRAG_AND_DROP) Log.p("---after (calc)= \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                if (Config.TEST_DRAG_AND_DROP) Log.p("3---before      = \"" + (beforeMyDDCont != null ? beforeMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
+                if (Config.TEST_DRAG_AND_DROP) Log.p("3---after (calc)= \"" + (afterMyDDCont != null ? afterMyDDCont.getDragAndDropObject() : "<null>"), Log.DEBUG);
             }
 
             ItemAndListCommonInterface draggedElement = draggedMyDDCont.getDragAndDropObject();
@@ -3071,11 +3075,15 @@ before getting to here, we've already covered the following cases where both bef
 //                                        + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
 //                                        + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
 //</editor-fold>
-                            ASSERT.that(siblingContainer.getDragAndDropObject().getOwner() == draggedElement.getOwner(), "sibling does not have same owner as draggedItem");
+                            ASSERT.that(siblingContainer.getDragAndDropObject().getOwner() == draggedElement.getOwner(), "sibling does not have same owner as draggedItem, draggedElt="
+                                    + draggedElement + ", draggedElt.owner=" + draggedElement.getOwner() + ", siblingContainer.getDragAndDropObject()=" + siblingContainer.getDragAndDropObject()
+                                    + ", owner=" + siblingContainer.getDragAndDropObject().getOwner());
                             ItemAndListCommonInterface siblingElement = siblingContainer.getDragAndDropObject();
                             MyDragAndDropSwipeableContainer siblingOwnerDD = getParentMyDDCont(siblingContainer);
                             ItemAndListCommonInterface siblingOwner = siblingElement.getOwner();
-                            ASSERT.that(siblingOwnerDD == null || siblingOwner == siblingOwnerDD.getDragAndDropObject(), "inconsistency: not getting the same sibling owner");
+                            ASSERT.that(siblingOwnerDD == null || siblingOwner == siblingOwnerDD.getDragAndDropObject(), 
+                                    "inconsistency: not getting the same sibling owner, siblingOwner=" + siblingOwner 
+                                            + ", siblingOwnerDD.getDragAndDropObject()=" + (siblingOwnerDD==null?"<null>":siblingOwnerDD.getDragAndDropObject()));
                             //insert at same level as sibling (visually after it's last expanded subtask):
                             dropActionCall = () -> {
 //                                int insertIndex = siblingOwner.getItemIndex(siblingElement) + 1; //+1: insert after sibling
@@ -3103,7 +3111,7 @@ before getting to here, we've already covered the following cases where both bef
 //</editor-fold>
                                 ItemAndListCommonInterface newOwnerPrj = beforeElement;
                                 moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
-                                expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears'
+                                expandSubtasks(newOwnerPrj); //UI: expand to show list of subtasks to avoid that just dropped element 'disappears'
                             };
                             insertDropPlaceholderForSubtask = (dropPh) -> {
                                 addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);

@@ -122,7 +122,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //            workSlot.setOwner(this);
 //        }
 //        setWorkSlotList(workSlotList);
-        addWorkSlots(Arrays.asList(workSlot));
+        addWorkSlots(new ArrayList(Arrays.asList(workSlot)));
     }
 
     /**
@@ -396,7 +396,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     @param addCategoryToItem
     @param addAfterRefEltOrEndOfList 
      */
-    default public void moveItemInList(Item item, Item refItem,  boolean addAfterRefEltOrEndOfList) {
+    default public void moveItemInList(Item item, Item refItem, boolean addAfterRefEltOrEndOfList) {
         if (removeFromList(item, false)) //only add if already there
             addToList(item, refItem, addAfterRefEltOrEndOfList);
     }
@@ -590,7 +590,6 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return
      */
 //    public String getClassName();
-
     /**
      * sets the workTime for the item (transitory for now, calculated
      * dynamically in memory and not stored)
@@ -1194,6 +1193,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
         return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && inheritanceEnabledForField
                 && eql(ownValue, potentiallyInheritedValue);
+    }
+
+    default public String getUnsavedReferences() {
+        return "";
+    }
+
+    default public void updateBeforeSave() {
+
     }
 
 }

@@ -1040,7 +1040,8 @@ public class ScreenRepair extends MyForm {
                     c = new SpanLabel(s);
                     logForm.addComponent(c);
                 }
-                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneCommandWithNoUpdate());
+//                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneCommandWithNoUpdate());
+                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneUpdateWithParseIdMapCommand(true));
                 logForm.show();
                 logForm.scrollComponentToVisible(c); //scroll down to show last line in list
             }

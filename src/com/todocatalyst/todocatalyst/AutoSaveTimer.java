@@ -28,9 +28,11 @@ public class AutoSaveTimer extends UITimer {
      */
     private AutoSaveTimer(Form form, TextField textField, ParseObject parseObject, int timeout, Runnable update) {
         super(() -> {
-            if (textField.isEditing()) { //only need to save if actively editing (when leaving text field, it is saved locally usimg the normal mechanism)
-                update.run(); //timedItem.setText(textField.getText());
-                DAO.getInstance().saveInBackground(parseObject);
+            if (textField.isEditing() && !textField.getText().isEmpty() && update != null) { //only need to save if actively editing (when leaving text field, it is saved locally usimg the normal mechanism)
+                if (update != null) 
+                    update.run(); //timedItem.setText(textField.getText());
+                if (parseObject != null) 
+                    DAO.getInstance().saveInBackground(parseObject);
             }
         });
         textField.addDataChangedListener((chgType, index) -> {

@@ -126,7 +126,7 @@ public class WorkTimeSlices {
 //        this.workSlotSlicesSortedOnStartTime = new ArrayList<>();
 //        workSlotSlicesSortedOnStartTime.add(workSlotSlice);
 //        sortWorkSlotSlices();
-        this(Arrays.asList(workSlotSlice));
+        this(new ArrayList(Arrays.asList(workSlotSlice)));
 //        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        this.workSlots = workSlots;

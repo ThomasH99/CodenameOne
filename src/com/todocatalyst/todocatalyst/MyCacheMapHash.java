@@ -106,7 +106,7 @@ public class MyCacheMapHash {
      * @param key the key
      * @param value the value
      */
-    public void put(Object key, Object value) {
+    synchronized public void put(Object key, Object value) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (cacheSize <= memoryCache.size()) {
 //            // we need to find the oldest entry
@@ -135,14 +135,14 @@ public class MyCacheMapHash {
 //        }
 //        if (get(key) == null) {
 //</editor-fold>
-        synchronized (LOCK) {
+//        synchronized (LOCK) {
 //            Object val = memoryCache.get(key);
 //            if (val == null || !val.equals(value)) {
 //                Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value);
 //            }
             Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save to persist changes on device between app activations
             Object oldVal = memoryCache.put(key, value);
-        }
+//        }
     }
 
     /**
@@ -151,9 +151,9 @@ public class MyCacheMapHash {
      * @param key key object
      * @return value from a previous put or null
      */
-    public Object get(Object key) {
+    synchronized public Object get(Object key) {
         Object val = null;
-        synchronized (LOCK) {
+//        synchronized (LOCK) {
             val = memoryCache.get(key);
             if (val == null) {
                 val = Storage.getInstance().readObject(CACHE_ID + cachePrefix + key.toString());
@@ -162,7 +162,7 @@ public class MyCacheMapHash {
                     memoryCache.put(key, val);
                 }
             }
-        }
+//        }
         return val;
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////
@@ -214,7 +214,7 @@ public class MyCacheMapHash {
      *
      * @param key entry to remove from the cache
      */
-    public void delete(Object key) {
+    synchronized public void delete(Object key) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        memoryCache.remove(key);
 //        weakCache.remove(key);
@@ -240,10 +240,10 @@ public class MyCacheMapHash {
 ////            Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
 //        }
 //</editor-fold>
-        synchronized (LOCK) {
+//        synchronized (LOCK) {
             memoryCache.remove(key);
             Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString()); //always remove, even if not in memoryCache
-        }
+//        }
     }
 
     /**
@@ -274,7 +274,7 @@ public class MyCacheMapHash {
 //        clearStorageCache();
     }
 
-    public void clearAllCache(String[] reservedNames) {
+    synchronized public void clearAllCache(String[] reservedNames) {
         clearMemoryCache();
         for (String name:reservedNames) {
             delete(name);
@@ -291,6 +291,7 @@ public class MyCacheMapHash {
     }
 
     private void placeInStorageCache(Object key, long lastAccessed, Object value) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (storageCacheSize < 1) {
 //            return;
 //        }
@@ -311,7 +312,7 @@ public class MyCacheMapHash {
 //        if (storageCacheContent.get(key)!=null) {
 //            placeInStorageCache(iter, key, lastAccessed, value);
 //        }
-//    
+//
 //        Object temp = storageCacheContent.get(key);
 //        if (temp!=null){
 //            placeInStorageCache(iter, key, lastAccessed, value);
@@ -335,11 +336,13 @@ public class MyCacheMapHash {
 //            }
 //            placeInStorageCache(offset, key, lastAccessed, value);
 //        }
+//</editor-fold>
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private void placeInStorageCache(int offset, Object key, long lastAccessed, Object value) {
 //        Vector v = new Vector();
-//        // stored format: { value, lastAccessed, key } 
+//        // stored format: { value, lastAccessed, key }
 //        v.addElement(value);
 //        Long l = new Long(lastAccessed);
 //        v.addElement(l);
@@ -347,14 +350,15 @@ public class MyCacheMapHash {
 //        Storage.getInstance().writeObject("$CACHE$" + cachePrefix + key.toString(), v);
 //        Hashtable storageCacheContent = getStorageCacheContent();
 //        if (storageCacheContent.size() > offset) {
-////            storageCacheContent.setElementAt(new Object[]{l, key}, offset); //format of storage index: { lastAccessed, key } 
-//            storageCacheContent.put(key, value); //format of storage index: { lastAccessed, key } 
+////            storageCacheContent.setElementAt(new Object[]{l, key}, offset); //format of storage index: { lastAccessed, key }
+//            storageCacheContent.put(key, value); //format of storage index: { lastAccessed, key }
 //        } else {
 ////            storageCacheContent.insertElementAt(new Object[]{l, key}, offset);
-//            storageCacheContent.put(key, value); //format of storage index: { lastAccessed, key } 
+//            storageCacheContent.put(key, value); //format of storage index: { lastAccessed, key }
 //        }
 //        Storage.getInstance().writeObject("$CACHE$Idx" + cachePrefix, storageCacheContent);
 //    }
+//</editor-fold>
     /**
      * Returns the keys for all the objects currently in cache, this is useful
      * to traverse all the objects and refresh them without actually deleting
@@ -365,7 +369,8 @@ public class MyCacheMapHash {
      * @return a vector containing a snapshot of the current elements within the
      * cache.
      */
-    public Vector getKeysInCache() {
+    public Vector getKeysInCacheXXX() {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Vector r = new Vector();
 //        Enumeration en = memoryCache.keys();
 //        while (en.hasMoreElements()) {
@@ -379,6 +384,7 @@ public class MyCacheMapHash {
 ////            }
 ////        }
 //        return r;
+//</editor-fold>
         return new Vector(memoryCache.keySet());
     }
 
@@ -391,7 +397,7 @@ public class MyCacheMapHash {
     /**
      * Clears the storage cache
      */
-    public void clearStorageCache() {
+    public void clearStorageCacheXXX() {
 //        if (storageCacheSize > 0) {
 //            Vector v = getStorageCacheContent();
 //            int s = v.size();

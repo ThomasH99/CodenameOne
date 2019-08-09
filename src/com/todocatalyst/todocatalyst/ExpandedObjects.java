@@ -97,14 +97,32 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 //        if (!expandedObjects.contains(element)) { //don't add if already there (to avoid having to 
         boolean result = false;
         if (Config.TEST) ASSERT.that(element instanceof ItemAndListCommonInterface, "should only expand ItemAndListCommonInterface, not elt=" + element);
-        if (Config.TEST && element instanceof ItemAndListCommonInterface) ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null,"ERROR expanding an element with no objectId, elt="+element);
-        if (element instanceof ItemAndListCommonInterface) //a hashset so no need to check if already added
-            result = expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP()); //a hashset so no need to check if already added
-        else if (element instanceof WorkSlotList)
-            result = expandedObjects.add(((WorkSlotList) element).getOwner().getObjectIdP()); //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
-        if (result) save(); //only save if modified
+        if (((ItemAndListCommonInterface) element).getObjectIdP() == null) {
+            if (Config.TEST && element instanceof ItemAndListCommonInterface)
+                if (false) ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null, "ERROR expanding an element with no objectId, elt=" + element);
+            //if no ObjId yet, save it later
+            DAO.getInstance().saveInBackground(() -> add(element)); //call recursively, may iterate until element is finally saved in background
+//                boolean result2 = false;
+//                if (((ItemAndListCommonInterface) element).getObjectIdP() != null) {
+//                    
+//                    if (element instanceof ItemAndListCommonInterface) //a hashset so no need to check if already added
+//                        result2 = expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP()); //a hashset so no need to check if already added
+//                    else if (element instanceof WorkSlotList)
+//                        result2 = expandedObjects.add(((WorkSlotList) element).getOwner().getObjectIdP()); //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
+//                } else 
+//                ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null, "ERROR expanding an element with no objectId, elt=" + element);
+//                if (result2) save();
+//            });
+            return true;
+        } else {
+            if (element instanceof ItemAndListCommonInterface) //a hashset so no need to check if already added
+                result = expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP()); //a hashset so no need to check if already added
+            else if (element instanceof WorkSlotList)
+                result = expandedObjects.add(((WorkSlotList) element).getOwner().getObjectIdP()); //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
+            if (result) save(); //only save if modified
 //        }
-        return result;
+            return result;
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

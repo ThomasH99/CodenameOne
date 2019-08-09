@@ -1104,11 +1104,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return true;
     }
 
-    @Override
-    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList) {
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addReferences) {
 //        addToList( subItemOrList,MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists));
         addItemAtIndex((E) subItemOrList, addToEndOfList ? getSize() : 0);
+        if (addReferences)
+            subItemOrList.setOwner(this);
         return true;
+    }
+
+    @Override
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList) {
+        return addToList(subItemOrList, addToEndOfList, true);
     }
 
     public boolean addToList(ItemAndListCommonInterface subItemOrList) {

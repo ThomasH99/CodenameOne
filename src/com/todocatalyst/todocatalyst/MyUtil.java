@@ -167,7 +167,7 @@ public class MyUtil {
     @param list
     @param comp
     @return 
-    */
+     */
     public static boolean isSorted(List list, Comparator comp) {
         Object oPrev = null;
         for (Object o : list) {
@@ -180,6 +180,43 @@ public class MyUtil {
             }
         }
         return true;
+    }
+
+    /**
+     * eg ("hamburger",4,3) -> "hamber" eg ("hamburger",4,3) -> "hamber"
+     *
+     * @param s
+     * @param start
+     * @param len
+     * @return
+     */
+    public static String deleteSubstring(String s, int start, int len) {
+        //"hamburger".substring(4, 8) returns "urge" so endIndex is not included
+        return s.substring(0, start)
+                + s.substring(start + len);
+    }
+
+    static int getIntFromTextString(String txt, int start, int len) {
+        String valStr = txt.substring(start, start + len);
+        int val = Integer.parseInt(valStr);
+        return val;
+    }
+
+    /**
+     replace first occurrence of subStr (if found) with newStr, if not found return the original string s unchanged
+     @param s
+     @param subStr
+     @param newStr
+     @return 
+     */
+    public static String replaceSubstring(String s, String subStr, String newStr) {
+        int pos = s.indexOf(subStr);
+        if (pos != -1) {
+            StringBuilder res = new StringBuilder();
+            res.append(s.substring(0, pos)).append(newStr).append(s.substring(pos + 2));
+            return res.toString();
+        }
+        return s;
     }
 
 }

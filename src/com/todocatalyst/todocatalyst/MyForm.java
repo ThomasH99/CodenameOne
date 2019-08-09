@@ -11,6 +11,7 @@ import com.codename1.components.SpanLabel;
 import com.codename1.components.Switch;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
+import com.codename1.io.NetworkManager;
 import com.codename1.l10n.L10NManager;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
@@ -526,7 +527,8 @@ public class MyForm extends Form {
     @Override
     public void revalidate() {
         super.revalidate();
-        Log.p("REVALIDATE for form=" + getUniqueFormId());
+//        Log.p("REVALIDATE for form=" + getUniqueFormId());
+        ASSERT.that(true, "REVALIDATE for form=" + getUniqueFormId());
     }
 
     /**
@@ -788,7 +790,7 @@ public class MyForm extends Form {
                 || (item.getWaitingTillDateD().getTime() != 0 && item.getWaitingAlarmDateD().getTime() != 0)) {
             return; //do nothing if both waiting dates are already set
         }
-        Map<Object, Runnable> parseIdMap2 = new HashMap<Object, Runnable>();
+//        Map<Object, Runnable> parseIdMap2 = new HashMap<Object, Runnable>();
         Dialog dia = new Dialog();
         dia.setTitle("Set Waiting");
         dia.setLayout(new BoxLayout(BoxLayout.Y_AXIS));
@@ -797,7 +799,7 @@ public class MyForm extends Form {
 
         Container cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         dia.add(cont);
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Picker p = new Picker();
 //        MyDateAndTimePicker waitingDatePicker = new MyDateAndTimePicker("<set date>", parseIdMap2, () -> {
 //        MyDatePicker waitingDatePicker = new MyDatePicker("<set date>", parseIdMap2, () -> {
@@ -807,11 +809,12 @@ public class MyForm extends Form {
 ////            item.setWaitingTillDate(d.getTime());
 //            item.setWaitingTillDate(d);
 //        });
+//</editor-fold>
         MyDatePicker waitingDatePicker = new MyDatePicker(item.getWaitingTillDateD());
         waitingDatePicker.addActionListener((e) -> item.setWaitingTillDate(waitingDatePicker.getDate()));
 //        cont.add(new Label("Wait until")).add(waitingDatePicker).add("When you set a date, waiting tasks can automatically be hidden until that date.");
         cont.add(new Label(Item.WAIT_UNTIL_DATE)).add(waitingDatePicker).add(new SpanLabel("Waiting tasks are automatically hidden until the set date."));
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDateAndTimePicker waitingAlarmPicker = new MyDateAndTimePicker("<set date>", parseIdMap2, () -> {
 ////            return new Date(item.getWaitingAlarmDate());
 //            return item.getWaitingAlarmDateD();
@@ -819,13 +822,14 @@ public class MyForm extends Form {
 ////            item.setWaitingAlarmDate(d.getTime());
 //            item.setWaitingAlarmDate(d); //NB. only called if date is edited to sth different than 0
 //        });
+//</editor-fold>
         MyDateAndTimePicker waitingAlarmPicker = new MyDateAndTimePicker(item.getWaitingAlarmDateD());
         waitingAlarmPicker.addActionListener((e) -> item.setWaitingAlarmDate(waitingAlarmPicker.getDate()));
 //        cont.add(new Label("Waiting alarm")).add(waitingAlarmPicker).add("Set a special alarm for waiting tasks.");
         cont.add(new Label(Item.WAITING_ALARM_DATE)).add(waitingAlarmPicker).add(new SpanLabel("Set a reminder to follow up on a waiting task."));
 
         cont.addComponent(new Button(Command.create("OK", null, (e) -> {
-            putEditedValues2(parseIdMap2);
+//            putEditedValues2(parseIdMap2);
             dia.dispose(); //close dialog
         })));
         dia.show();
@@ -838,7 +842,7 @@ public class MyForm extends Form {
                 || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero.getBoolean() && item.getActual() == 0))) {
             return; //do nothing if item is done, or settings/conditions not fulfilled
         }
-        Map<Object, Runnable> parseIdMap2 = new HashMap<Object, Runnable>();
+//        Map<Object, Runnable> parseIdMap2 = new HashMap<Object, Runnable>();
         Dialog dia = new Dialog();
         dia.setTitle("Set Actual effort");
         dia.setLayout(new BoxLayout(BoxLayout.Y_AXIS));
@@ -850,7 +854,10 @@ public class MyForm extends Form {
 
         //TODO!!!! if marking a project, with undone subtasks, Done, then also show sum of subtask actuals to know how much time was spend on them
         MyDurationPicker actualPicker = new MyDurationPicker(item.getActualForProjectTaskItself(), "0:00");
-        actualPicker.addActionListener((e) -> item.setActual(actualPicker.getDuration(), true));
+        actualPicker.addActionListener((e) -> {
+            item.setActual(actualPicker.getDuration(), true);
+            dia.dispose(); //dispose of dialog on Done on picker
+        });
 //        }, (l) -> {
 ////            item.setActualEffort(d*MyDate.MINUTE_IN_MILLISECONDS);
 //            item.setActualEffort(l);
@@ -859,8 +866,10 @@ public class MyForm extends Form {
                 //                .add(new SpanLabel("How much time was spend on this task?"));
                 .add(new SpanLabel("Click to set how much time was spend on this task"));
 
-        cont.addComponent(new Button(Command.create("OK", null, (e) -> {
-            putEditedValues2(parseIdMap2);
+//        cont.addComponent(new Button(Command.create("OK", null, (e) -> {
+        cont.addComponent(new Button(Command.create("Cancel", null, (e) -> {
+//            putEditedValues2(parseIdMap2);
+            actualPicker.stopEditing(null); //close picker
             dia.dispose(); //close dialog
         })));
         dia.show();
@@ -1248,14 +1257,18 @@ public class MyForm extends Form {
         }
     }
 
-    private static void putEditedValues2(Map<Object, Runnable> parseIdMap2, ParseObject parseObject) {
+//    private static void putEditedValues2(Map<Object, Runnable> parseIdMap2, ParseObject parseObject) {
+    public static void putEditedValues2XXX(Map<Object, Runnable> parseIdMap2) {
 ////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
 //                parseIdMap.get(parseId).saveEditedValueInParseObject();
 //            }
         //Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
 //        ASSERT.that(parseIdMap2 != null);
 //        if (parseIdMap2 != null) {
-        Runnable repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+        Runnable repeatRule = null;
+        if (false) {
+            repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY);
+        } //set a repeatRule aside for execution last (after restoring all fields)
 //            UpdateField repeatRule = parseIdMap2.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
 //            if (false && repeatRule != null) {
 //                DAO.getInstance().saveInBackground((ParseObject) repeatRule); //MUST save before saving Item, since item will reference a new repeatRule
@@ -1266,17 +1279,16 @@ public class MyForm extends Form {
             parseIdMap2.get(parseId).run();
         }
         if (repeatRule != null) {
-            if (parseObject != null && parseObject.getObjectIdP() == null)
-                DAO.getInstance().saveInBackground(parseObject); //if not saved
+//            if (parseObject != null && parseObject.getObjectIdP() == null)
+//                DAO.getInstance().saveInBackground(parseObject); //if not saved
             repeatRule.run();
         }
 //        }
     }
 
-    protected static void putEditedValues2(Map<Object, Runnable> parseIdMap2) {
-        putEditedValues2(parseIdMap2, null);
-    }
-
+//    protected static void putEditedValues2(Map<Object, Runnable> parseIdMap2) {
+//        putEditedValues2(parseIdMap2, null);
+//    }
     /**
      * will iterate over all the fields in parseIdMap and call the stored lambda
      * functions to update the corresponding fields in the edited ParseObject
@@ -1297,11 +1309,11 @@ public class MyForm extends Form {
     }
 
     Runnable getUpdateActionOnDone() {
-        return updateActionOnCancel;
+        return updateActionOnDone;
     }
 
     void setUpdateActionOnCancel(Runnable updateActionOnCancel) {
-        this.updateActionOnDone = updateActionOnCancel;
+        this.updateActionOnCancel = updateActionOnCancel;
     }
 
     Runnable getUpdateActionOnCancel() {
@@ -1324,6 +1336,7 @@ public class MyForm extends Form {
      * of the entire list)
      */
     public void refreshAfterEdit() {
+        if (false && Config.TEST) ASSERT.that(false, "Calling RefreshAfterEdit");
 //        if (editFieldOnShowOrRefresh != null) { // && (testIfEdit == null || testIfEdit.test())) {
         if (false && inlineInsertContainer != null && inlineInsertContainer.getTextArea() != null) { // && (testIfEdit == null || testIfEdit.test())) {
 //            editFieldOnShowOrRefresh.startEditingAsync();
@@ -1345,9 +1358,7 @@ public class MyForm extends Form {
 //                getStartEditingAsyncTextArea().startEditingAsync();
 //            }
         }
-        if (Config.TEST) {
-            Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
-        }
+        if (Config.TEST) Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
         if (previousValues != null && previousValues.getScrollY() != null)
             previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
     }
@@ -1517,6 +1528,10 @@ public class MyForm extends Form {
         if (Config.TEST) ASSERT.that(previousForm != null, "In showPreviousScreenOrDefault() in form=" + getUniqueFormId() + ", previousForm==null!");
         if (callRefreshAfterEdit) {
             previousForm.refreshAfterEdit();
+
+            //if saves are still pending, force a(nother) refresh once they are all done
+            if (!NetworkManager.getInstance().isQueueIdle())
+                DAO.getInstance().saveInBackground(() -> previousForm.refreshAfterEdit());
         }
         previousForm.showBack(!(this instanceof ScreenTimer6));  //prevent exiting from ScreenTimer6 to pop the last replayCommand (since ScreenTimer6 is never launched with a replayCommand)
     }
@@ -1531,12 +1546,13 @@ public class MyForm extends Form {
 
     void updateEditedValuesOnExit() {
         parseIdMap2.update();
-if (getUpdateActionOnDone() != null)
-                        getUpdateActionOnDone().run();
+        if (getUpdateActionOnDone() != null)
+            getUpdateActionOnDone().run();
     }
 
     void saveOnExit() {
-assert false;
+//        DAO.getInstance().saveInBackground((Item)this);
+        assert false;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1680,7 +1696,7 @@ assert false;
 //    }
 //    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
 //</editor-fold>
-    public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
+    public Command makeDoneUpdateWithParseIdMapCommandOLD(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
         Command cmd = new Command(title, null) {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -1699,17 +1715,19 @@ assert false;
         return cmd;
     }
 
-    public Command makeDoneUpdateWithParseIdMapCommandOLD(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
+    public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
         Command cmd = new Command(title, null) {
             @Override
             public void actionPerformed(ActionEvent evt) {
+                if (getInlineInsertContainer() != null) //if an insertContainer is left when pushing Back, then save the new element if some text was entered
+                    getInlineInsertContainer().done();
                 //use checkOnExit from parameters if defined, otherwise use the one set for the form if defined
                 if (checkIfSaveOnExit()) {
 //                    parseIdMap2.update();
 //                    if (getUpdateActionOnDone() != null)
 //                        getUpdateActionOnDone().run();
                     updateEditedValuesOnExit();
-                    saveOnExit();
+                    if (false) saveOnExit();
                 }
                 showPreviousScreen(callRefreshAfterEdit);
             }
@@ -1764,7 +1782,7 @@ assert false;
 //    public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetString canGoBack) {
 //        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit, canGoBack);
 //    }
-    public Command makeDoneCommandWithNoUpdate() {
+    public Command makeDoneCommandWithNoUpdateXXX() {
         Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -1863,6 +1881,7 @@ assert false;
         return startTimer;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * adds new item to itemListOrg at the given position and saves both list
      * and item. Nothing is done if itemListOrg is null or not already saved
@@ -1910,7 +1929,6 @@ assert false;
     //    static void addNewTaskToListAndSaveXXX(Item item, ItemAndListCommonInterface itemListOrg) {
     //        addNewTaskToListAndSaveXXX(item, itemListOrg, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
     //    }
-    //<editor-fold defaultstate="collapsed" desc="comment">
     //    private void addNewTaskToListAndSave(Item item, int pos, ItemAndListCommonInterface itemListOrg) {
     ////        item.setTemplate(optionTemplateEditMode); //template or not
     //        boolean addToList = (itemListOrg != null && itemListOrg.getObjectIdP() != null
@@ -3553,6 +3571,25 @@ assert false;
         return null;
     }
 
+    private MyDragAndDropSwipeableContainer findMyDDContWithObjIdN(List<Component> compList, String refObjId) {
+//        Container cont = getContentPane();
+//        if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP().equals(refObjId))
+        for (Component comp : compList) {
+            if (comp instanceof MyDragAndDropSwipeableContainer && refObjId.equals(((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP()))
+                return (MyDragAndDropSwipeableContainer) comp;
+            else if (comp instanceof Container) {
+                Component c = null;
+                Container cont = (Container) comp;
+                for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+                    c = findMyDDContWithObjIdN(cont.getComponentAt(i), refObjId);
+                    if (c instanceof MyDragAndDropSwipeableContainer)
+                        return (MyDragAndDropSwipeableContainer) c;
+                }
+            }
+        }
+        return null;
+    }
+
     protected void createAndAddInsertContainer(String refEltObjId, String eltParseClass, boolean insertBeforeRefElement) {
         ItemAndListCommonInterface refElement = null;
         switch (eltParseClass) {
@@ -3575,12 +3612,13 @@ assert false;
             default:
                 if (Config.TEST) ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + eltParseClass);
         }
-        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane(), refEltObjId);
+//        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane(), refEltObjId);
+        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
         if (Config.TEST) ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + eltParseClass + ", insertAfter=" + insertBeforeRefElement);
         createAndAddInsertContainer(myDDContN, refElement, insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
     }
 
-    protected static final String SAVE_LOCALLY_REF_ELT_OBJID_KEY = "InlineInsertElementOBJId";
+    protected static final String SAVE_LOCALLY_REF_ELT_OBJID_KEY = "InlineInsertElementOBJID";
     protected static final String SAVE_LOCALLY_REF_ELT_PARSE_CLASS = "InlineInsertEltParseCLASS";
     protected static final String SAVE_LOCALLY_INSERT_BEFORE_REF_ELT = "InlineInsertAFTERRefElt";
     protected static final String SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE = "InlineInsertEditTaskACTIVE";
@@ -3600,47 +3638,46 @@ assert false;
 //            makeInlineInsertReplayCmd();
         if (previousValues != null) {
             //if inlineInsert was left active when app was last active, then re-insert the container again
-            if (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null) {
-                createAndAddInsertContainer((String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY),
-                        (String) previousValues.get(SAVE_LOCALLY_REF_ELT_PARSE_CLASS),
-                        (Boolean) previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT));
+            if (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null) { //check if there were an earlier inline container
+                String refObjId = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY);
+                String refClass = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_PARSE_CLASS);
+                boolean insertBefore = (Boolean) previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //!=null;
+                createAndAddInsertContainer(refObjId, refClass, insertBefore);
                 //if full screen edit was launched from inline container, then do so here:
-                if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null && previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE).equals(true)) {
-
-                    if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
-                        InsertNewElementFunc inlineCont = getInlineInsertContainer();
-                        inlineCont.getEditTaskCmd().actionPerformed(null);
-                    }
+                if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
+                    InsertNewElementFunc inlineCont = getInlineInsertContainer();
+                    inlineCont.getEditTaskCmd().actionPerformed(null);
                 }
             }
         }
 //        }
     }
-
-    /**
-    create (and insert into list) the replay command to re-insert the inlineinsert container. It will then automatically be launched by the Replay
-    @return 
-     */
-    private MyReplayCommand makeInlineInsertReplayCmdXXX() {
-        return MyReplayCommand.create("InlineInsertCmd", 'x', (e) -> {
-            if (previousValues != null) {
-                //if inlineInsert was left active when app was last active, then re-insert the container again
-                if (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null) {
-                    createAndAddInsertContainer((String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY),
-                            (String) previousValues.get(SAVE_LOCALLY_REF_ELT_PARSE_CLASS),
-                            (Boolean) previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT));
-                    //if full screen edit was launched from inline container, then do so here:
-                    if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null && previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE).equals(true)) {
-
-                        if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
-                            InsertNewElementFunc inlineCont = getInlineInsertContainer();
-                            inlineCont.getEditTaskCmd().actionPerformed(null);
-                        }
-                    }
-                }
-            }
-        });
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//    create (and insert into list) the replay command to re-insert the inlineinsert container. It will then automatically be launched by the Replay
+//    @return
+//     */
+//    private MyReplayCommand makeInlineInsertReplayCmdXXX() {
+//        return MyReplayCommand.create("InlineInsertCmd", 'x', (e) -> {
+//            if (previousValues != null) {
+//                //if inlineInsert was left active when app was last active, then re-insert the container again
+//                if (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null) {
+//                    createAndAddInsertContainer((String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY),
+//                            (String) previousValues.get(SAVE_LOCALLY_REF_ELT_PARSE_CLASS),
+//                            (Boolean) previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT));
+//                    //if full screen edit was launched from inline container, then do so here:
+//                    if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null && previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE).equals(true)) {
+//
+//                        if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
+//                            InsertNewElementFunc inlineCont = getInlineInsertContainer();
+//                            inlineCont.getEditTaskCmd().actionPerformed(null);
+//                        }
+//                    }
+//                }
+//            }
+//        });
+//    }
+//</editor-fold>
 
     /**
     insert container and animate??
@@ -3903,17 +3940,19 @@ assert false;
 //</editor-fold>
 //        createAndAddInsertContainer(itemEltBelow, pinchInsertEnabled);
         MyDragAndDropSwipeableContainer refComp = dropComponentAbove != null ? dropComponentAbove : (dropComponentBelow != null ? dropComponentAbove : null);
-        ItemAndListCommonInterface refElt = refComp.getDragAndDropObject();
-        boolean insertBeforeRefElement = (refComp == dropComponentBelow);
-        if (true) { //Done in inlineinsert container
-            previousValues.put(SAVE_LOCALLY_REF_ELT_OBJID_KEY, refElt.getObjectIdP());
-            previousValues.put(SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) refElt).getClassName());
-            previousValues.put(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, insertBeforeRefElement);
-            previousValues.put(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false);
-        }
+        if (refComp != null) { //may become null in some edge cases like an empty list with only the initial inline insert container
+            ItemAndListCommonInterface refElt = refComp.getDragAndDropObject();
+            boolean insertBeforeRefElement = (refComp == dropComponentBelow);
+            if (true) { //Done in inlineinsert container
+                previousValues.put(SAVE_LOCALLY_REF_ELT_OBJID_KEY, refElt.getObjectIdP());
+                previousValues.put(SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) refElt).getClassName());
+                previousValues.put(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, insertBeforeRefElement);
+//                previousValues.remove(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE);
+            }
 //        wrappedInsertContainer = createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
 //        makeInlineInsertReplayCmd().actionPerformed(null);
-        createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
+            createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
 //            ASSERT.that(itemEltAbove.getClass() == itemEltBelow.getClass()); //should always be of same class if in same list (TODO!!!! what about Today view?!

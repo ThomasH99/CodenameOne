@@ -1310,38 +1310,53 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-//    @Override
-    public void setOwnerItem(Item newOwnerItem) {
-        setOwnerItem(newOwnerItem, false);
-    }
-
     /**
     
     @param newOwnerItem
     @param updateInheritedValues if true, update all potentially inherited values. Should be true eg when copy/paste a task/-sub-project to a new owner or if moving/D&D within projects or between projects/lists
      */
-    public void setOwnerItem(Item newOwnerItem, boolean updateInheritedValues) {
+    public void setOwnerItem(Item newOwnerItem, boolean updateInheritedValues, boolean removeFromOldOwnerList) {
 //        if (has(PARSE_OWNER_ITEM) || ownerItem != null) {
 //            put(PARSE_OWNER_ITEM, ownerItem);
 //        }
-        if (updateInheritedValues) {
-            Item oldOwner = getOwnerItem();
-            ops.add((x) -> {
+        Item oldOwner = getOwnerItem();
+        if (oldOwner != null) {
+//            Item oldOwner = getOwnerItem();
+//            opsOnSubtasks.add((x) -> { //NOT an operation on subtasks
+//                removeValuesInheritedFromOwner(oldOwner); //nothing's done if oldOwner is null
+//                if (oldOwner != null) //can be null if first assignment of owner
+//                    oldOwner.removeFromList(this);
+//                updateValuesInheritedFromOwner(newOwnerItem);
+//                return true;
+//            });
+            if (updateInheritedValues)
                 removeValuesInheritedFromOwner(oldOwner); //nothing's done if oldOwner is null
-                oldOwner.removeFromList(this);
-                updateValuesInheritedFromOwner(newOwnerItem);
-                return true;
-            });
-            removeValuesInheritedFromOwner(oldOwner); //nothing's done if oldOwner is null
+//            if (removeFromOldOwnerList && oldOwner != null)
+//                oldOwner.removeFromList(this, true);
+            if (removeFromOldOwnerList) //do this *after* setting newOwner to avoid infinite loop?!
+                oldOwner.removeFromList(this, false); //false since this.owner is set below when assigning the new owner
         }
         if (newOwnerItem != null) {
 //        ((Item) subtask).updateValuesInheritedFromOwner(this, (oldOwner instanceof Item) ? (Item) oldOwner : null);
-            if (updateInheritedValues)
+//            if (false && updateInheritedValues) //NO need to update inherited values here
+            if (updateInheritedValues) //YES, must update inherited values here (the individual fields will then be updated via the changes stored in opsOnSubtasks
                 updateValuesInheritedFromOwner(newOwnerItem);
             put(PARSE_OWNER_ITEM, newOwnerItem);
+
         } else {
             remove(PARSE_OWNER_ITEM);
         }
+    }
+
+    public void setOwnerItem(Item newOwnerItem, boolean updateInheritedValues) {
+        setOwnerItem(newOwnerItem, updateInheritedValues, true);
+    }
+
+    //    @Override
+    public void setOwnerItem(Item newOwnerItem) {
+        //updateInherited:default value is true so eg move/copyPaste will update to new owner's inherited values, while ScreenItem2 will not (since invididual fields are set explicitly)
+        //removeFromOwnerList: default is true to avoid removing eg 
+        setOwnerItem(newOwnerItem, true, true);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1398,7 +1413,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else if (owner instanceof ItemList) {
             setOwnerItemList((ItemList) owner);
         } else if (owner instanceof Item) {
-            setOwnerItem((Item) owner,updateInheritedValues);
+            setOwnerItem((Item) owner, updateInheritedValues);
         } else if (owner == null) {
             setOwnerItemList(null);
             setOwnerItem(null);
@@ -1408,11 +1423,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-        @Override
+    @Override
     public void setOwner(ItemAndListCommonInterface owner) {
-            setOwner(owner, true); //be default, update inherited values
+        setOwner(owner, true); //be default, update inherited values
     }
-    
+
 //    public ParseObject getOwner() {
     @Override
     public ItemAndListCommonInterface getOwner() {
@@ -1492,6 +1507,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (interpretInlineValues) {
             text = parseTaskTextForProperties(this, text);
         }
+
+        if (Config.TEST) //use for testing to ensure all generated Items are unique with a date/time stamp
+            text = MyUtil.replaceSubstring(text, "##", MyDate.formatDateTimeNew(new MyDate()));
+
         setText(text);
     }
 
@@ -1504,6 +1523,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (MyPrefs.itemRemoveTrailingPrecedingSpacesAndNewlines.getBoolean()) {
             text = removeTrailingPrecedingSpacesNewLinesEtc(text);
         }
+
         boolean textChanged = !getText().equals(text);
         if (text != null && !text.equals("")) { //don't test for val != null to avoid silent failure on this error condition
             put(PARSE_TEXT, text);
@@ -1629,12 +1649,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param destiny
      * @inherit
      */
-    public void copyMeInto(Item destiny) {
-        copyMeInto(destiny, CopyMode.COPY_ALL_FIELDS);
+    public Item copyMeInto(Item destiny) {
+        return copyMeInto(destiny, CopyMode.COPY_ALL_FIELDS);
     }
 
-    void copyMeInto(Item destination, CopyMode copyFieldDefintion) {
-        copyMeInto(destination, copyFieldDefintion, 0);
+    Item copyMeInto(Item destination, CopyMode copyFieldDefintion) {
+        return copyMeInto(destination, copyFieldDefintion, 0);
     }
 
     /**
@@ -1648,11 +1668,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    void copyMeInto(Item destination, CopyMode copyFieldDefintion, int copyExclusions) {
 //        copyMeInto(destination, copyFieldDefintion, copyExclusions, true);
 //    }
-    void copyMeInto(Item destination, CopyMode copyFieldDefintion, int copyExclusions) {
-        copyMeInto(destination, copyFieldDefintion, copyExclusions, false);
+    Item copyMeInto(Item destination, CopyMode copyFieldDefintion, int copyExclusions) {
+        return copyMeInto(destination, copyFieldDefintion, copyExclusions, false);
     }
 
-    void copyMeInto(Item destination, CopyMode copyFieldDefintion, int copyExclusions, boolean setRepeatRuleWithoutUpdate) {
+    Item copyMeInto(Item destination, CopyMode copyFieldDefintion, int copyExclusions, boolean setRepeatRuleWithoutUpdate) {
 
         /**
          * copy for all types of copies
@@ -1829,7 +1849,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         }
 
-        if (toRepeatInst) { //repeat instances will always have same owner, and it needs to be set so that when creating multiple instances, they get inserted into the owner's list
+        if (all || toRepeatInst) { //repeat instances will always have same owner, and it needs to be set so that when creating multiple instances, they get inserted into the owner's list
             destination.setOwner(getOwner());
         }
 
@@ -1907,6 +1927,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
         }
+        return destination;
     }
 
     /**
@@ -2135,13 +2156,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         //DELETE IN OWNERS/PROJECTS
         ItemAndListCommonInterface owner = getOwner();
-        if (owner instanceof Item) {
-            ((Item) owner).removeFromList(this, removeRefs); //
-            DAO.getInstance().saveInBackground((ParseObject) owner);
-        } else {
-            owner.removeFromList(this);
-            DAO.getInstance().saveInBackground((ParseObject) owner);
-        }
+//        if (owner instanceof Item) {
+//            ((Item) owner).removeFromList(this, removeRefs); //
+//            DAO.getInstance().saveInBackground((ParseObject) owner);
+//        } else {
+//            owner.removeFromList(this);
+//            DAO.getInstance().saveInBackground((ParseObject) owner);
+//        }
+//        if (owner!=null) //don't test, better to get a null ref error if an object doesnt' have an owner
+        owner.removeFromList(this, removeRefs); //
 
         //handle repeatrule
         //TODO!!!! handle repeatRules when deleting an Item
@@ -2410,7 +2433,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         boolean status = subtasks.remove(subItemOrList);
         setList(subtasks);
         assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
-        if (removeOwner)
+        if (removeOwner)// && getOwner() == this)
             subItemOrList.setOwner(null);
         ((Item) subItemOrList).removeValuesInheritedFromOwner(this);
         return status;
@@ -2675,7 +2698,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                || getOwnerItem() == null || getOwnerItem().getPriority() != prio)) {
         int oldVal = getPriority();
         if (MyUtil.neql(prio, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getPriority(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setPriority(prio);
@@ -2770,7 +2793,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         Challenge oldVal = getChallengeN();
         if (MyUtil.neql(challenge, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getChallengeN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setChallenge(challenge);
@@ -2879,7 +2902,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (dreadFunValue != null) {// && !dreadFunValue.equals("")) {
         DreadFunValue oldVal = getDreadFunValueN();
         if (MyUtil.neql(dreadFunValue, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getDreadFunValueN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setDreadFunValue(dreadFunValue);
@@ -2903,7 +2926,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         boolean update(Item item); //, Object oldValue, Object newValue);
     }
 
-    List<UpdateItem> ops = new ArrayList();
+    List<UpdateItem> opsOnSubtasks = new ArrayList();
+    List<Runnable> opsPostUpdateFields = new ArrayList(); //operations to run once all changes to Item's fields have been made, e.g. repeatRules
+    List<Runnable> opsPreSave = new ArrayList();
     HashMap<String, Object> saveOps = new HashMap<String, Object>();
 
 //    void setImportance(HighMediumLow importance) {
@@ -2932,7 +2957,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         HighMediumLow oldVal = getImportanceN();
         if (MyUtil.neql(importance, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getImportanceN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setImportance(importance);
@@ -3002,7 +3027,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (urgency != null) {// && !dreadFunValue.equals("")) {
         HighMediumLow oldVal = getUrgencyN();
         if (MyUtil.neql(urgency, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getUrgencyN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setUrgency(urgency);
@@ -3287,7 +3312,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         Date oldVal = getExpiresOnDateD();
         if (MyUtil.neql(expiresOnDate, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getExpiresOnDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setExpiresOnDate(expiresOnDate);
@@ -3841,20 +3866,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
                 setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
                 if (notTemplate)
-                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true);
+                    //                    newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true);
+                    opsPostUpdateFields.add(() -> newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true));
             } else {
                 //setting null or NO_REPEAT when already null - do nothing
             }
         } else { //oldRepeatRule != null
             if (newRepeatRule == null || newRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
-                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
-                    //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
-                    setRepeatRuleInParse(null);
+//                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
+                //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
+                setRepeatRuleInParse(null);
+                opsPostUpdateFields.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this));
             } else { //newRepeatRule != null and possibly modified (eg. click Edit Rule, then Back
                 if (!newRepeatRule.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
                     oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRule); //update existing rule with updated values
                     if (notTemplate)
-                        oldRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, false); //
+                        opsPostUpdateFields.add(() -> oldRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, false)); //
                     setRepeatRuleInParse(oldRepeatRule);
 //                setRepeatRuleInParse(oldRepeatRule); //must set again to save?? NO, not necessary, only if the *reference* changes in Item
                     DAO.getInstance().saveInBackground(oldRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
@@ -4827,14 +4854,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @param oldStatus
     @param newStatus
     @return 
-    */
+     */
     public boolean confirmUpdateOfSubtasks(ItemStatus oldStatus, ItemStatus newStatus) {
         boolean doneProject = (oldStatus == ItemStatus.DONE);
-                    int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
-            return (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
-                    || Dialog.show("INFO", "Change " + nbChgStatus + " subtasks to " + newStatus.getDescription() + "?", "OK", "Cancel"));
+        int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
+        return (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
+                || Dialog.show("INFO", "Change " + nbChgStatus + " subtasks to " + newStatus.getDescription() + "?", "OK", "Cancel"));
     }
-    
+
     public void setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now) {
         ItemStatus oldStatus = getStatusFromParse();
 
@@ -4853,15 +4880,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
 //            if (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
 //                    || Dialog.show("INFO", "Change " + nbChgStatus + " subtasks to " + newStatus.getDescription() + "?", "OK", "Cancel")) {
-                ops.add((subtask) -> {
-                    ItemStatus oldSubtaskStatus = subtask.getStatus();
-                    if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, oldStatus == ItemStatus.DONE)) { //only change status when transition is allowed
-                        subtask.setStatus(newStatus, true, false, true, now); //always update dependent fields for subtasks
-                        return true;
-                    } else
-                        return false; //UI: do nothing it user does not want to change all subtasks!
-                });
-                //UI: else do nothing it user does not want to change all subtasks!
+            opsOnSubtasks.add((subtask) -> {
+                ItemStatus oldSubtaskStatus = subtask.getStatus();
+                if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, oldStatus == ItemStatus.DONE)) { //only change status when transition is allowed
+                    subtask.setStatus(newStatus, true, false, true, now); //always update dependent fields for subtasks
+                    return true;
+                } else
+                    return false; //UI: do nothing it user does not want to change all subtasks!
+            });
+            //UI: else do nothing it user does not want to change all subtasks!
 //            }
         }
 
@@ -5319,9 +5346,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     /**
     when removing a subtask from its project, reset all inherited values (where previousOwnerItem has same value as project) back to 'undefined')
-    @param previousOwner if null nothing's done
+    @param previousOwnerN if null nothing's done
      */
-    private void removeValuesInheritedFromOwner(ItemAndListCommonInterface previousOwner) {
+    void removeValuesInheritedFromOwner(ItemAndListCommonInterface previousOwnerN) {
         //***Inherited from owner***
         //PARSE_DUE_DATE -> subtasks can inherit due date from parent? TODO
         //PARSE_EXPIRES_ON_DATE -> all subtasks are impacted if their project experies, BUT is it enough to act at the project-level? Yes, setting a Proje t CANCELLED will/should also cancel subtasks!! (
@@ -5335,9 +5362,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        Item owner = getOwnerItem();
 
         //NB!! we need to distinguish when an owner has changed value (so need before/after value!) => the subtasks must be updated
-        if (previousOwner instanceof Item && MyPrefs.itemInheritOwnerProjectProperties.getBoolean()) {
+        if (previousOwnerN instanceof Item && MyPrefs.itemInheritOwnerProjectProperties.getBoolean()) {
 
-            Item previousOwnerItem = (Item) previousOwner;
+            Item previousOwnerItem = (Item) previousOwnerN;
 
             if (MyPrefs.itemInheritOwnerProjectDueDate.getBoolean() && getDueDateD().equals(previousOwnerItem.getDueDateD())) { //getDueDateD().getTime() == 0 =>> only set inherited value if no value has been set manually already
                 setDueDate(new Date(0));
@@ -5387,7 +5414,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 setTemplate(false);
             }
         }
+    }
 
+    void removeValuesInheritedFromOwner() {
+        removeValuesInheritedFromOwner(getOwnerItem());
     }
 
     //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5575,7 +5605,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         Date oldVal = getDueDateD();
         if (MyUtil.neql(dueDate, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getDueDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setDueDate(dueDate);
@@ -5662,7 +5692,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         Date oldVal = getHideUntilDateD();
         if (MyUtil.neql(hideUntil, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getHideUntilDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setHideUntilDate(hideUntil);
@@ -5676,6 +5706,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             remove(PARSE_HIDE_UNTIL_DATE);
         }
+    }
+
+    public boolean isHideUntilDate(Date potentiallyInheritedValue) {
+        if (getOwnerItem() != null)
+            return isInherited(getOwnerItem().getHideUntilDateD(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean());
+        else
+            return false;
     }
 
 //    public long getStartByDate() {
@@ -5748,7 +5785,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                || getOwnerItem() == null || getOwnerItem().getStartByDateD().getTime() != startByDate.getTime())) {
         Date oldVal = getStartByDateD();
         if (MyUtil.neql(startByDate, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getStartByDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setStartByDate(startByDate);
@@ -5899,7 +5936,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         Date oldVal = getWaitingTillDateD();
         if (MyUtil.neql(waitingTillDate, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getWaitingTillDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setWaitingTillDate(waitingTillDate);
@@ -5963,7 +6000,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //TODO!!! check that date is set when status is set Waiting
         Date oldVal = getDateWhenSetWaitingD();
         if (MyUtil.neql(waitingLastActivatedDate, oldVal)) {
-            ops.add((subtask) -> {
+            opsOnSubtasks.add((subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
                 if (MyUtil.eql(subtask.getDateWhenSetWaitingD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setDateWhenSetWaiting(waitingLastActivatedDate);
@@ -7017,6 +7054,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
+    add category ids NOT already in the list
+    @param categoryIdList
+    @return 
+     */
+    static public List<String> addCatObjectIdsListToCategoryList(List<String> categoryIdList, List<Category> newCategoryList) {
+        if (categoryIdList != null && newCategoryList != null) {
+            for (Category c : newCategoryList) {
+                if (!categoryIdList.contains(c.getObjectIdP())) {
+                    if (Config.TEST) ASSERT.that(c.getObjectIdP() != null, "Adding category=" + c + ", for which objId=null");
+                    categoryIdList.add(c.getObjectIdP());
+                }
+            }
+        }
+        return categoryIdList;
+    }
+
+    /**
      * updates this Item's categories (adds new ones,
      * deleteRuleAndAllRepeatInstancesExceptThis unselected ones) AVOID TO USE??
      * - only change categories via getCategories().update/remove...
@@ -7841,7 +7895,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     /**
      * call to save the item
      */
-    public void commit() throws ParseException {
+    public void commitXXX() throws ParseException {
         this.save();//ParseObject.save()
 
     }
@@ -7994,41 +8048,62 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     when saving, first update all values and save all, THEN create repeat instances.
     @throws ParseException 
      */
-    @Override
-    public void save() throws ParseException {
+    public void updateBeforeSave() {
 
-        List<Item> subtasks = null;
-        if (isProject() && getObjectIdP() == null) {
-            //save project first, *without* the potentially unsaved subtasks
-            subtasks = getListFull();
-            setList(null);
-            DAO.getInstance().saveInBackground((ParseObject) this);
+        List<Item> subtasks = getListFull();
+        if (subtasks != null && subtasks.size() > 0) {
+            if (getObjectIdP() == null) { //if project was not saved before
+                //save project first, *without* the potentially unsaved subtasks
+                setList(null);
+                DAO.getInstance().saveInBackground((ParseObject) this);
 
-            //then save all subtasks (recursively) (they will all have the now saved Project as owner)
-            if (false) for (Item subtask : subtasks) {
-                    DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
-                }
-        }
+                //then save all subtasks (recursively) (they will all have the now saved Project as owner)
+                if (false) for (Item subtask : subtasks) {
+                        DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
+                    }
+            }
 
-        //if there are any dependencies btw a task/subtask and another unsaved, then ensure the dependent-on task is saved first!!
-        //update any subtasks that may be affected by project changes to inherited fields:
-        if (subtasks != null && subtasks.size() > 0 && ops != null && ops.size() > 0) {
-            List<Item> updatedSubtasks = new ArrayList<>();
-            for (Item subtask : subtasks) {
-                if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
-                    for (UpdateItem f : ops) {
-                        if (f.update(subtask))
-                            updatedSubtasks.add(subtask);
+            //if there are any dependencies btw a task/subtask and another unsaved, then ensure the dependent-on task is saved first!!
+            //update any subtasks that may be affected by project changes to inherited fields:
+            if (opsOnSubtasks != null && opsOnSubtasks.size() > 0) {
+                List<Item> updatedSubtasks = new ArrayList<>();
+                for (Item subtask : subtasks) {
+                    if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
+                        for (UpdateItem f : opsOnSubtasks) {
+                            if (f.update(subtask))
+                                updatedSubtasks.add(subtask);
+                        }
                     }
                 }
+                if (false) DAO.getInstance().saveInBackground((List) updatedSubtasks); //optimization: batch up all subtasks in saveInBackground
+                opsOnSubtasks = null; //reset after all subtasks have updated
+                opsOnSubtasks = new ArrayList<>(); //reset after all subtasks have updated
+                //then save all subtasks (recursively) (they will all have the now saved Project as owner)
+                for (Item subtask : subtasks) {
+                    DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
+                }
             }
-            if (false) DAO.getInstance().saveInBackground((List) updatedSubtasks); //optimization: batch up all subtasks in saveInBackground
-            ops = null; //reset after all subtasks have updated
-            ops = new ArrayList<>(); //reset after all subtasks have updated
+            //then add the now saved subtasks and save the project again:
+            setList(subtasks);
         }
-        //then save all subtasks (recursively) (they will all have the now saved Project as owner)
-        for (Item subtask : subtasks) {
-            DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
+
+        if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+            Inbox.getInstance().addToList(this);
+            DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance()); //will/should only be executed *after* this Item is saved (to avoid ObjId reference errors)
+        }
+
+        if (isDone() || getDeletedDateN() != null)
+            TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this); //stop timer *before* saving to ensure updates to Actual are saved
+
+        if (false) DAO.getInstance().saveInBackground((ParseObject) this); //WHY save again?? We're already saving 'this'
+
+        //handling of change in owner: if set in ScreenItem2: all values updated there; if this is a copy: all values can be assumed to already have been correctly set; if subtask inserted into new project: 
+//        Runnable repeatRule = (Runnable) saveOps.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+//        repeatRule.run(); //create or update any repeatInstances 
+        if (opsPostUpdateFields != null) {
+            for (Runnable f : opsPostUpdateFields) {
+                f.run();
+            }
         }
 
         //save dirty Categories:
@@ -8036,22 +8111,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            if (cat.isDirty())
 //                DAO.getInstance().saveInBackground((ParseObject) cat);
 //        }
-        DAO.getInstance().saveBatch((List) getCategories()); //saveBatch will remove for non-dirty objects
-
-        //then add the now saved subtasks and save the project again:
-        setList(subtasks);
-//                    saveImpl(projectOrItem, true);
-        DAO.getInstance().saveInBackground((ParseObject) this);
-
-        //handling of change in owner: if set in ScreenItem2: all values updated there; if this is a copy: all values can be assumed to already have been correctly set; if subtask inserted into new project: 
-        Runnable repeatRule = (Runnable) saveOps.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
-
-        repeatRule.run(); //create or update any repeatInstances 
+//        DAO.getInstance().saveBatch((List) getCategories()); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories
+//        DAO.getInstance().saveBatch(new ArrayList(getCategories())); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories. Work on copy of list to avoid java.util.ConcurrentModificationException
+if (getCategories().size()>0)
+        DAO.getInstance().saveInBackground(new ArrayList(getCategories())); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories. Work on copy of list to avoid java.util.ConcurrentModificationException
 
         if (isDirty()) {
             listeners.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
         }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (afterSaveActions.containsKey(AFTER_SAVE_ALARM_UPDATE)) {
 //            afterSaveActions.remove(AFTER_SAVE_TEXT_UPDATE); //if we're updating alarms due to time change, we can ignore any changed to the text
 //        }
@@ -8060,9 +8128,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////            afterSaveActions.remove(action); //NOT allowed, throws java.util.ConcurrentModificationException, see eg http://stackoverflow.com/questions/8104692/how-to-avoid-java-util-concurrentmodificationexception-when-iterating-through-an
 //        }
 //        afterSaveActions.clear();
-        if (isDone() || getDeletedDateN() != null)
-            TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
+//</editor-fold>
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
 //            Inbox.getInstance().addToList(this);
 //            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
@@ -8070,6 +8138,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        } else {
 //            super.save();
 //        }
+//</editor-fold>
         if (isDone()) {
             AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //remove any future alarms for a Done/Cancelled task
             TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
@@ -8083,22 +8152,134 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
             Inbox.getInstance().addToList(this);
-            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
+//            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
             DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());
-        } else {
-            super.save();
         }
+    }
+
+    @Override
+    public void save() throws ParseException {
+
+        if (false) {
+            List<Item> subtasks = getListFull();
+            if (subtasks != null && subtasks.size() > 0) {
+                if (getObjectIdP() == null) { //if project was not saved before
+                    //save project first, *without* the potentially unsaved subtasks
+                    setList(null);
+                    DAO.getInstance().saveInBackground((ParseObject) this);
+
+                    //then save all subtasks (recursively) (they will all have the now saved Project as owner)
+                    if (false) for (Item subtask : subtasks) {
+                            DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
+                        }
+                }
+
+                //if there are any dependencies btw a task/subtask and another unsaved, then ensure the dependent-on task is saved first!!
+                //update any subtasks that may be affected by project changes to inherited fields:
+                if (opsOnSubtasks != null && opsOnSubtasks.size() > 0) {
+                    List<Item> updatedSubtasks = new ArrayList<>();
+                    for (Item subtask : subtasks) {
+                        if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
+                            for (UpdateItem f : opsOnSubtasks) {
+                                if (f.update(subtask))
+                                    updatedSubtasks.add(subtask);
+                            }
+                        }
+                    }
+                    if (false) DAO.getInstance().saveInBackground((List) updatedSubtasks); //optimization: batch up all subtasks in saveInBackground
+                    opsOnSubtasks = null; //reset after all subtasks have updated
+                    opsOnSubtasks = new ArrayList<>(); //reset after all subtasks have updated
+                    //then save all subtasks (recursively) (they will all have the now saved Project as owner)
+                    for (Item subtask : subtasks) {
+                        DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
+                    }
+                }
+                //then add the now saved subtasks and save the project again:
+                setList(subtasks);
+            }
+
+            if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+                Inbox.getInstance().addToList(this);
+                DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance()); //will/should only be executed *after* this Item is saved (to avoid ObjId reference errors)
+            }
+
+            if (isDone() || getDeletedDateN() != null)
+                TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this); //stop timer *before* saving to ensure updates to Actual are saved
+
+            if (false) DAO.getInstance().saveInBackground((ParseObject) this); //WHY save again?? We're already saving 'this'
+
+            //handling of change in owner: if set in ScreenItem2: all values updated there; if this is a copy: all values can be assumed to already have been correctly set; if subtask inserted into new project: 
+//        Runnable repeatRule = (Runnable) saveOps.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+//        repeatRule.run(); //create or update any repeatInstances 
+            if (opsPostUpdateFields != null) {
+                for (Runnable f : opsPostUpdateFields) {
+                    f.run();
+                }
+            }
+
+            //save dirty Categories:
+//        for (Category cat : getCategories()) {
+//            if (cat.isDirty())
+//                DAO.getInstance().saveInBackground((ParseObject) cat);
+//        }
+//        DAO.getInstance().saveBatch((List) getCategories()); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories
+            DAO.getInstance().saveBatch(new ArrayList(getCategories())); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories. Work on copy of list to avoid java.util.ConcurrentModificationException
+
+            if (isDirty()) {
+                listeners.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (afterSaveActions.containsKey(AFTER_SAVE_ALARM_UPDATE)) {
+//            afterSaveActions.remove(AFTER_SAVE_TEXT_UPDATE); //if we're updating alarms due to time change, we can ignore any changed to the text
+//        }
+//        for (MyForm.Action action : afterSaveActions.values()) {
+//            action.launchAction();
+////            afterSaveActions.remove(action); //NOT allowed, throws java.util.ConcurrentModificationException, see eg http://stackoverflow.com/questions/8104692/how-to-avoid-java-util-concurrentmodificationexception-when-iterating-through-an
+//        }
+//        afterSaveActions.clear();
+//</editor-fold>
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+//            Inbox.getInstance().addToList(this);
+//            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
+//            DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());
+//        } else {
+//            super.save();
+//        }
+//</editor-fold>
+            if (isDone()) {
+                AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //remove any future alarms for a Done/Cancelled task
+                TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
+            } else {
+                updateNextcomingAlarm();
+                if (mustUpdateAlarms) {
+                    AlarmHandler.getInstance().updateAlarmsOrTextForItem(this);
+                    mustUpdateAlarms = false;
+                }
+            }
+
+            if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+                Inbox.getInstance().addToList(this);
+//            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
+                DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());
+            }
+//        else {
+//            super.save();
+//        }
+        }
+        super.save();
 
     }
 
     public void saveORG() throws ParseException {
         //update any subtasks that may be affected by project changes to inherited fields:
-        if (ops != null && ops.size() > 0) {
+        if (opsOnSubtasks != null && opsOnSubtasks.size() > 0) {
             List<Item> updatedSubtasks = new ArrayList<>();
             for (Item subtask : (List<Item>) getListFull()) {
                 boolean subtaskUpdated = false;
                 if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
-                    for (UpdateItem f : ops) {
+                    for (UpdateItem f : opsOnSubtasks) {
 //                        subtaskUpdated = f.update(subtask) || subtaskUpdated;
                         if (f.update(subtask))
                             updatedSubtasks.add(subtask);
@@ -8109,8 +8290,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                }
             }
             DAO.getInstance().saveInBackground((List) updatedSubtasks); //optimization: batch up all subtasks in saveInBackground
-            ops = null; //reset after all subtasks have updated
-            ops = new ArrayList<>(); //reset after all subtasks have updated
+            opsOnSubtasks = null; //reset after all subtasks have updated
+            opsOnSubtasks = new ArrayList<>(); //reset after all subtasks have updated
         }
 
         if (isDirty()) {
@@ -8320,27 +8501,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 || getListFull().size() != 0;
     }
 
-    /**
-     * eg ("hamburger",4,3) -> "hamber" eg ("hamburger",4,3) -> "hamber"
-     *
-     * @param s
-     * @param start
-     * @param len
-     * @return
-     */
-    public static String deleteSubstring(String s, int start, int len) {
-        //"hamburger".substring(4, 8) returns "urge" so endIndex is not included
-        return s.substring(0, start)
-                + s.substring(start + len);
-    }
-
-    private static int getIntFromTextString(String txt, int start, int len) {
-        String valStr = txt.substring(start, start + len);
-        int val = Integer.parseInt(valStr);
-        return val;
-
-    }
-
     static class EstimateResult {
 
         int minutes;
@@ -8363,25 +8523,25 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (MyPrefs.itemExtractRemainingEstimateFromStringInTaskText.getBoolean()) {
         RE minutes_hours_RE = new RE("\\b([0-9]+)(?:h|\\:)([0-5][0-9]|[0-9])(?:m(in)?)?\\b"); //HHhMM. OK: 0h17, 10h00 2h17m, 199h. NOK: 1h65, Not allowed to start with '0' 
         if (minutes_hours_RE.match(txt)) {
-            hours = getIntFromTextString(txt, minutes_hours_RE.getParenStart(1), minutes_hours_RE.getParenLength(1));
-            minutes = getIntFromTextString(txt, minutes_hours_RE.getParenStart(2), minutes_hours_RE.getParenLength(2)) + 60 * hours;
+            hours = MyUtil.getIntFromTextString(txt, minutes_hours_RE.getParenStart(1), minutes_hours_RE.getParenLength(1));
+            minutes = MyUtil.getIntFromTextString(txt, minutes_hours_RE.getParenStart(2), minutes_hours_RE.getParenLength(2)) + 60 * hours;
             if (!keepOrgTextUnchanged && !MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
-                txt = deleteSubstring(txt, minutes_hours_RE.getParenStart(0), minutes_hours_RE.getParenLength(0));
+                txt = MyUtil.deleteSubstring(txt, minutes_hours_RE.getParenStart(0), minutes_hours_RE.getParenLength(0));
             }
 //                System.out.println("ValStr=\"" + valStr + "\" val=" + val + "\tcleaned=\"" + txt + "\"\n");
         } else {
             RE minutes_RE = new RE("\\s*\\b(([1-9][0-9]+)|([1-9]))m(?:in)?\\b"); //MINUTES not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
             if (minutes_RE.match(txt)) {
-                minutes = getIntFromTextString(txt, minutes_RE.getParenStart(1), minutes_RE.getParenLength(1));
+                minutes = MyUtil.getIntFromTextString(txt, minutes_RE.getParenStart(1), minutes_RE.getParenLength(1));
                 if (!keepOrgTextUnchanged && !MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
-                    txt = deleteSubstring(txt, minutes_RE.getParenStart(0), minutes_RE.getParenLength(0));
+                    txt = MyUtil.deleteSubstring(txt, minutes_RE.getParenStart(0), minutes_RE.getParenLength(0));
                 }
             } else {
                 RE hours_RE = new RE("\\b(([1-9][0-9]+)|([1-9]))h(our(s)?)?\\b"); //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
                 if (hours_RE.match(txt)) {
-                    minutes = getIntFromTextString(txt, hours_RE.getParenStart(1), hours_RE.getParenLength(1)) * 60;
+                    minutes = MyUtil.getIntFromTextString(txt, hours_RE.getParenStart(1), hours_RE.getParenLength(1)) * 60;
                     if (!keepOrgTextUnchanged && !MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
-                        txt = deleteSubstring(txt, hours_RE.getParenStart(0), hours_RE.getParenLength(0));
+                        txt = MyUtil.deleteSubstring(txt, hours_RE.getParenStart(0), hours_RE.getParenLength(0));
                     }
                 }
 //                }
@@ -8437,7 +8597,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        RE categoryXXX = new RE("//text"); //eg "/cat1"
 //}
 //</editor-fold>
-        //ESTIMATE
+
+//ESTIMATE
 //        int minutes = 0;
 //        int hours = 0;
         if (MyPrefs.itemExtractRemainingEstimateFromStringInTaskText.getBoolean()) {
@@ -9821,6 +9982,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     void fireChangeEvent() {
         changeDispatcher.fireActionEvent(new ActionEvent(this, ActionEvent.Type.Change));
+    }
+
+    public String getUnsavedReferences() {
+        String str = "";
+        String sep = "";
+
+        if (getOwner() == null) str += "No Owner";
+        else if (getOwner().getObjectIdP() == null) str += " | No ObjId for owner:" + getOwner();
+
+        if (getCategories() != null && getCategories().size() > 0) {
+            for (Category cat : getCategories()) {
+                if (cat.getObjectIdP() == null) str += " | No ObjId for Category:" + cat;
+            }
+        }
+        if (getListFull() != null && getListFull().size() > 0) {
+            for (Item subtask : (List<Item>) getListFull()) {
+                if (subtask.getObjectIdP() == null) str += "No ObjId for subtask:" + subtask;
+            }
+        }
+        if (getRepeatRule() != null && getRepeatRule().getObjectIdP() == null) str += " | No ObjId for RepeatRule:" + getRepeatRule();
+        if (getTaskInterrupted() != null && getTaskInterrupted().getObjectIdP() == null) str += " | No ObjId for TaskInterrupted:" + getTaskInterrupted();
+        if (getSource() != null && getSource().getObjectIdP() == null) str += " | No ObjId for Source:" + getSource();
+
+        return str;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

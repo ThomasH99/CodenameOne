@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
@@ -18,7 +19,6 @@ import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import com.todocatalyst.todocatalyst.MyForm.Action;
-import static com.todocatalyst.todocatalyst.MyForm.SAVE_LOCALLY_REF_ELT_PARSE_CLASS;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -55,6 +55,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
      */
     private boolean continueAddingNewItems = true;
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * create a new Container and a new Item
      *
@@ -75,6 +76,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //    public InlineInsertNewItemContainer2(MyForm myForm2, Item item2, ItemAndListCommonInterface itemOrItemListForNewTasks2, Category category2) {
 //        this(myForm2, item2, itemOrItemListForNewTasks2, category2, false);
 //    }
+//</editor-fold>
     /**
      * create a new Container and a new Item
      *
@@ -86,7 +88,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
      * @param insertBeforeElement if true, insert *before* item, instead of, as default, after
      */
 //    public InlineInsertNewItemContainer2(MyForm myForm, ItemAndListCommonInterface item, ItemAndListCommonInterface itemOrItemListForNewTasks, Category category, boolean insertBeforeElement) {
-    public InlineInsertNewItemContainer2(MyForm form, Item referenceItem, ItemAndListCommonInterface itemOrItemListForNewTasks, Category category, boolean insertBeforeElement) {
+    public InlineInsertNewItemContainer2(MyForm form, Item referenceItem, ItemAndListCommonInterface itemOrItemListForNewTasks, 
+            Category category, boolean insertBeforeElement) {
 //        this(myForm, item, itemOrItemListForNewTasks, category, insertBeforeElement, null);
 //    }
 //
@@ -107,8 +110,11 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
             setName("InlineInsertNewItemContainer2"); //for debugging
         }
         Container contForTextEntry = new Container(new MyBorderLayout());
-
-        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
+        Container swipC;
+        if (refItem != null)
+            swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
+        else
+            swipC = contForTextEntry;
         add(swipC);
 
         this.myForm = form;
@@ -123,9 +129,11 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
             textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
         }
 
-        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK) != null) {
-            insertAsSubtask = (Boolean) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK);
-        }
+//        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK) != null) {
+////            insertAsSubtask = (Boolean) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK);
+//            insertAsSubtask =  myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK)!=null;
+//        }
+            insertAsSubtask =  myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK)!=null;
 
         setUIID(insertAsSubtask ? "InlineInsertItemAsSubtask" : "InlineInsertItemAsTask"); //TODO!!!
 
@@ -135,11 +143,12 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         textEntryField.setHint(refItem == null || !(refItem instanceof Item) ? ENTER_TASK_NO_SWIPE_RIGHT : ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK); //if no item, then don't show hint about swipe right for subtask
         textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
 //        myForm.setEditOnShowOrRefresh(textEntryField2); //ensure fields enters edit mode after show() or removeFromCache
-        if (refItem != null) {
-            swipC.addSwipeOpenListener((ev) -> { //Swipe RIGHT/LEFT for subtask/task
+        if (refItem != null && swipC instanceof SwipeableContainer) {
+            SwipeableContainer swipable = ((SwipeableContainer) swipC);
+            swipable.addSwipeOpenListener((ev) -> { //Swipe RIGHT/LEFT for subtask/task
                 //swipe right == make it a subtask //TODO!!!! use button/icon instead to mark it subtask eg [S] or indented subtask icon
-
-                insertAsSubtask = swipC.isOpenedToRight();
+                insertAsSubtask = swipable.isOpenedToRight();
+                Log.p("InlineInsertNewItemContainer2: insertAsSubtask=" + insertAsSubtask);
                 if (insertAsSubtask)
                     myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK, true);
                 else
@@ -148,10 +157,20 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 textEntryField.setHint(insertAsSubtask ? ENTER_SUBTASK : ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK); //item!=null to avoid 
 //                InlineInsertNewItemContainer2.this.setUIID(insertAsSubtask ? "InlineInsertItemAsSubtask" : "InlineInsertItemAsTask"); //TODO!!!
                 setUIID(insertAsSubtask ? "InlineInsertItemAsSubtask" : "InlineInsertItemAsTask"); //TODO!!!
-                swipC.setSwipeActivated(insertAsSubtask);
+                if (false) swipable.setSwipeActivated(insertAsSubtask);
                 ev.consume();
-                swipC.close();
-                swipC.getParent().revalidateWithAnimationSafety();//update with new hint
+                swipable.close();
+                if (false) {
+                    myForm.setEditOnShow(textEntryField);
+//                textEntryField.
+//                swipC.getParent().revalidateWithAnimationSafety();//update with new hint
+                    swipC.revalidateWithAnimationSafety();//update with new hint
+                    textEntryField.repaint();
+                }
+//                    myForm.revalidate();
+//                    textEntryField.requestFocus();
+//                    textEntryField.startEditingAsync();
+//                textEntryField.startEditing(); //NOT good: left-swipe gets textField stuck on the left
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                textEntryField2.repaint(); //update with new hint
 //                if (insertAsSubtask && !myForm.expandedObjects.contains(refItem)) {
@@ -169,70 +188,74 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         //DONE listener - create and insert new task
         textEntryField.setDoneListener(
                 (ev) -> { //When pressing ENTER, insert new task
-                    if (!ev.isConsumed() && !swipC.isOpen()) {
-//                        MyForm myForm = (MyForm) getComponentForm();
-//                        Item newItem = createNewTaskForInlineInsert(false); //store new task for use when recreating next insert container
-                        Item newItem = null;
-                        String taskText = textEntryField.getText();
-                        if (taskText != null && taskText.length() > 0) {
-                            textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
-                            newItem = new Item(taskText, true); //true: interpret textual values
-                        }
+                    if (Config.TEST) Log.p("ev.isConsumed()" + ev.isConsumed() + (swipC instanceof SwipeableContainer ? (", swipC.isOpen()=" + ((SwipeableContainer) swipC).isOpen()) : ", no SwipeableContainer"));
+                    if (!ev.isConsumed() && (!(swipC instanceof SwipeableContainer) || !((SwipeableContainer) swipC).isOpen())) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                        if (continueAddingNewItems) {
-//                            lastCreatedItem = newItem; //store new task for use when recreating next insert container
-//                        } else {
-//                            lastCreatedItem = null; //store new task for use when recreating next insert container
+////                        MyForm myForm = (MyForm) getComponentForm();
+////                        Item newItem = createNewTaskForInlineInsert(false); //store new task for use when recreating next insert container
+//                        Item newItem = null;
+//                        String taskText = textEntryField.getText();
+//                        if (taskText != null && taskText.length() > 0) {
+//                            textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
+//                            newItem = new Item(taskText, true); //true: interpret textual values
+//                        }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                        if (continueAddingNewItems) {
+////                            lastCreatedItem = newItem; //store new task for use when recreating next insert container
+////                        } else {
+////                            lastCreatedItem = null; //store new task for use when recreating next insert container
+////                        }
+////</editor-fold>
+//                        if (newItem != null) {
+//                            lastCreatedItem = continueAddingNewItems ? newItem : null; //store new task for use when recreating next insert container
+//                            insertNewTaskAndSaveChanges(newItem);
+////                            ASSERT.that(newItem.getOwner() != null); //owner will be set to Inbox on saving the item
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                        if (lastCreatedItem != null) {
+////                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+////                        } else {
+////                            myForm.setKeepPos(new KeepInSameScreenPosition(element, this, -1)); //otherwise keep same position of mother-item
+////                        }
+////</editor-fold>
+//                            if (false) myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+//                            else myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : refItem, this, 0)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                        closeInsertNewTaskContainer();
+////                            getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
+////                            Container parent = getParent();
+////                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
+//////                        parent.removeComponent(InlineInsertNewItemContainer2.this);
+//////                            parent.replace(InlineInsertNewItemContainer2.this,
+//////                                    ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
+//////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
+////                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
+////                            parent.animateHierarchy(300);
+////                            if (continueAddingNewItems) {
+////                                lastCreatedItem = newItem; //ensures that MyTree2 will create a new insertContainer after newTask
+////                            }
+////                            myForm.animateMyForm();
+////</editor-fold>
+//                            closeInsertContainer(false);
+//                            myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
+//                        } else { //if no new item created, remove the container like with Close (x)
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                            Container parent = getParent();
+////                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
+//////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
+//////                            parent.replace(InlineInsertNewItemContainer2.this, new Label(), null);
+////                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
+////                            parent.animateHierarchy(300);
+////</editor-fold>
+//                            closeInsertContainer(true);
+////                            myForm.setInlineInsertContainer(null); //remove this as inlineContainer
+////                            parent.animateLayout(300); //not necesssary with replace?
 //                        }
 //</editor-fold>
-                        if (newItem != null) {
-                            lastCreatedItem = continueAddingNewItems ? newItem : null; //store new task for use when recreating next insert container
-                            insertNewTaskAndSaveChanges(newItem);
-//                            ASSERT.that(newItem.getOwner() != null); //owner will be set to Inbox on saving the item
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                        if (lastCreatedItem != null) {
-//                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
-//                        } else {
-//                            myForm.setKeepPos(new KeepInSameScreenPosition(element, this, -1)); //otherwise keep same position of mother-item
-//                        }
-//</editor-fold>
-                            if (false) myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
-                            else myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : refItem, this, 0)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                        closeInsertNewTaskContainer();
-//                            getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-//                            Container parent = getParent();
-//                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
-////                        parent.removeComponent(InlineInsertNewItemContainer2.this);
-////                            parent.replace(InlineInsertNewItemContainer2.this,
-////                                    ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
-////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
-//                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
-//                            parent.animateHierarchy(300);
-//                            if (continueAddingNewItems) {
-//                                lastCreatedItem = newItem; //ensures that MyTree2 will create a new insertContainer after newTask
-//                            }
-//                            myForm.animateMyForm();
-//</editor-fold>
-                            closeInsertContainer(false);
-                            myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
-                        } else { //if no new item created, remove the container like with Close (x)
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                            Container parent = getParent();
-//                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
-////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
-////                            parent.replace(InlineInsertNewItemContainer2.this, new Label(), null);
-//                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
-//                            parent.animateHierarchy(300);
-//</editor-fold>
-                            closeInsertContainer(true);
-//                            myForm.setInlineInsertContainer(null); //remove this as inlineContainer
-//                            parent.animateLayout(300); //not necesssary with replace?
-                        }
+                        done();
                     }
                 }
         );
-        contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
+        if (false) contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
 
         Container westCont = new Container(BoxLayout.x());
         contForTextEntry.add(MyBorderLayout.WEST, westCont);
@@ -272,6 +295,14 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //</editor-fold>
             })));
         }
+        if (true || refItem != null) { //only show icon when insert container is after/below a task
+            Label subtaskSupertaskIconsLabel = new Label();
+            subtaskSupertaskIconsLabel.setMaterialIcon(Icons.iconIndentExdendInsertNewTask);
+            subtaskSupertaskIconsLabel.setUIID("Icon");
+            westCont.add(subtaskSupertaskIconsLabel);
+            subtaskSupertaskIconsLabel.setVisible(refItem != null);
+        }
+        westCont.add(textEntryField);
 
         //Full screen edit of the new task:
         //                                new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
@@ -382,7 +413,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
             SaveEditedValuesLocally prevValues = null;
             if (category2 != null) {
                 prevValues = new SaveEditedValuesLocally();
-                prevValues.putCategories(Arrays.asList(category2));
+                prevValues.putCategories(new ArrayList(Arrays.asList(category2)));
             }
 
             boolean isTemplate = false;
@@ -397,7 +428,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
             SaveEditedValuesLocally predefinedValues = new SaveEditedValuesLocally();
             if (this.category2 != null) {
 //                predefinedValues = new SaveEditedValuesLocally();
-                predefinedValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(Arrays.asList(this.category2)));
+                predefinedValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(new ArrayList(Arrays.asList(this.category2))));
             }
             predefinedValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(
                     (insertAsSubtask ? refItem : ((ItemAndListCommonInterface) itemOrItemListForNewElements)).getObjectIdP()))); //store objectId of new owner
@@ -408,10 +439,11 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 textEntryField.setText(""); //clear text now that new item is created
 
                 lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
-                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+//                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                DAO.getInstance().saveInBackground(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
 
                 if (category2 != null && newItem.getCategories().contains(category2)) {//contains(): only move item within category if the user has not removed the category during manual editing
-                    category2.moveItemInCategory(newItem, refItem, false, insertBeforeElement); //if category was not removed during manual editing, then move the item to the right position wrt refItem
+                    category2.moveItemInCategory(newItem, refItem, false, this.insertBeforeElement); //if category was not removed during manual editing, then move the item to the right position wrt refItem
                     DAO.getInstance().saveInBackground((ParseObject) category2); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 }
 
@@ -425,26 +457,98 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 }
 
                 if (itemOrItemListForNewElements != null && newItem.getOwner() == itemOrItemListForNewElements) {
-                    itemOrItemListForNewElements.moveItemInList(newItem, refItem, !insertBeforeElement); //add after item, unless insertBeforeElement is true, then insert *before* element
+                    itemOrItemListForNewElements.moveItemInList(newItem, refItem, !this.insertBeforeElement); //add after item, unless insertBeforeElement is true, then insert *before* element
                     DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 }
                 myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, false); //always insert *after* just created inline item
                 myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //task now created for text, so remove locally saved text
 
                 myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this, -1)); //if editing the new task in separate screen, 
-                myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false); //delete the marker on exit
+                myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //delete the marker on exit
                 myForm.refreshAfterEdit();  //OK? NOT good, refreshAfterEdit will remove the new 
-            }, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false), isTemplate, predefinedValues);
+//            }, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false), isTemplate, predefinedValues);
+            }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), isTemplate, predefinedValues);
             screenItem2.show();
         }, "InlineEditItem");
         contForTextEntry.add(MyBorderLayout.EAST, new Button(editNewCmd));
+    }
+
+    public void done() {
+//                            if (Config.TEST) Log.p("ev.isConsumed()" + ev.isConsumed() + (swipC instanceof SwipeableContainer ? (", swipC.isOpen()=" + ((SwipeableContainer) swipC).isOpen()) : ", no SwipeableContainer"));
+//                    if (!ev.isConsumed() && (!(swipC instanceof SwipeableContainer) || !((SwipeableContainer) swipC).isOpen())) {
+//                        MyForm myForm = (MyForm) getComponentForm();
+//                        Item newItem = createNewTaskForInlineInsert(false); //store new task for use when recreating next insert container
+        Item newItem = null;
+        String taskText = textEntryField.getText();
+        if (taskText != null && taskText.length() > 0) {
+            textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
+            newItem = new Item(taskText, true); //true: interpret textual values
+        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                        if (continueAddingNewItems) {
+//                            lastCreatedItem = newItem; //store new task for use when recreating next insert container
+//                        } else {
+//                            lastCreatedItem = null; //store new task for use when recreating next insert container
+//                        }
+//</editor-fold>
+        if (newItem != null) {
+            lastCreatedItem = continueAddingNewItems ? newItem : null; //store new task for use when recreating next insert container
+            insertNewTaskAndSaveChanges(newItem);
+//                            ASSERT.that(newItem.getOwner() != null); //owner will be set to Inbox on saving the item
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                        if (lastCreatedItem != null) {
+//                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+//                        } else {
+//                            myForm.setKeepPos(new KeepInSameScreenPosition(element, this, -1)); //otherwise keep same position of mother-item
+//                        }
+//</editor-fold>
+            if (false) myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+            else myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : refItem, this, 0)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                        closeInsertNewTaskContainer();
+//                            getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
+//                            Container parent = getParent();
+//                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
+////                        parent.removeComponent(InlineInsertNewItemContainer2.this);
+////                            parent.replace(InlineInsertNewItemContainer2.this,
+////                                    ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
+////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
+//                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
+//                            parent.animateHierarchy(300);
+//                            if (continueAddingNewItems) {
+//                                lastCreatedItem = newItem; //ensures that MyTree2 will create a new insertContainer after newTask
+//                            }
+//                            myForm.animateMyForm();
+//</editor-fold>
+            closeInsertContainer(false);
+            myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
+        } else { //if no new item created, remove the container like with Close (x)
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                            Container parent = getParent();
+//                            Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(InlineInsertNewItemContainer2.this);
+////                            parent.removeComponent(InlineInsertNewItemContainer2.this);
+////                            parent.replace(InlineInsertNewItemContainer2.this, new Label(), null);
+//                            MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(InlineInsertNewItemContainer2.this);
+//                            parent.animateHierarchy(300);
+//</editor-fold>
+            closeInsertContainer(true);
+//                            myForm.setInlineInsertContainer(null); //remove this as inlineContainer
+//                            parent.animateLayout(300); //not necesssary with replace?
+        }
+//                    }
+
+    }
+
+    private void saveKeys(Item newItem) {
+        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP());
+//        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) newItem).getClassName()); //already saved and can't change during an insert 'session'
     }
 
     /**
      *
      * @return new task if created (meaning some text was entered), otherwise null
      */
-    public Item createNewTaskForInlineInsert() {
+    public Item createNewTaskForInlineInsertXXX() {
         String taskText = textEntryField.getText();
 //        Item newItem;
 //        if (createEvenIfNoTextInField || (taskText != null && taskText.length() > 0)) {
@@ -483,7 +587,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         SaveEditedValuesLocally prevValues = null;
         if (category2 != null) {
             prevValues = new SaveEditedValuesLocally();
-            prevValues.putCategories(Arrays.asList(category2));
+            prevValues.putCategories(new ArrayList(Arrays.asList(category2)));
         }
 
         if ((refItem != null && refItem.isTemplate()) || itemOrItemListForNewElements == TemplateList.getInstance()) {
@@ -514,14 +618,16 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 myForm.expandedObjects.add(refItem); //expand to show subtasks
 //                    myForm2.refreshAfterEdit();
 //              if (((ParseObject) refItem).getObjectIdP() != null) //don't save if refItem has not already been saved (to enable Cancel on mother task which adds subtasks via ScreenItem2
-                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP()));
+//                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP()));
+                DAO.getInstance().saveInBackground(newItem, () -> saveKeys(newItem));
                 DAO.getInstance().saveInBackground(refItem);
                 insertAsSubtask = false; //remove the subtask property so next task does not become a subtask to the subtask
                 myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK);
             } else {
                 ////                Dialog.show("Internal error", "Could not insert subtask", "OK", null);
                 ASSERT.that(false, this.getClass() + ".insertNewTaskAndSaveChanges(): insert as subtask, but refItem==null?!");
-                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //task only inserted into inbox
+//                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //task only inserted into inbox
+                DAO.getInstance().saveInBackground(newItem, () -> saveKeys(newItem)); //task only inserted into inbox
             }
         } else {
             if (category2 != null) { //if category defined,  means we're inserting into list of category items, so the ItemList owning the refItem should be ignored!!
@@ -537,7 +643,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                     }
                 }
 //                category2.addItemToCategory(newItem, false); //add newItem to cateogory (but NOT category to newItem since that is done below in itemOrItemListForNewTasks.addToList(newItem))
-                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+//                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                DAO.getInstance().saveInBackground(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 DAO.getInstance().saveInBackground((ParseObject) category2); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 //UI: if inserting tasks directly into a category, they will be added to the Inbox list
             } else if (itemOrItemListForNewElements != null && !itemOrItemListForNewElements.isNoSave()) {
@@ -557,7 +664,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                     itemOrItemListForNewElements.addToList(newItem, refItem, !insertBeforeElement); //add after item, unless insertBeforeElement is true, then insert *before* element
                 }
 //                DAO.getInstance().saveInBackground((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+//                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                DAO.getInstance().saveInBackground(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
             } else {
                 ASSERT.that(false, "pinchInsert with no category and no itemList??!! Saving item in Inbox");

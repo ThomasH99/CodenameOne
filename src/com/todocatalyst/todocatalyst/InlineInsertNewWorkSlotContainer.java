@@ -135,7 +135,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
                 new ScreenWorkSlot(newWorkSlot, workSlotListOwner, (MyForm) getComponentForm(), () -> {
                     insertNewAndSaveChanges(newWorkSlot);
                     lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //ensures that MyTree2 will create a new insertContainer after newTask
-                    myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false); //marker to indicate that the inlineinsert container launched edit of the task
+                    myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
                     this.myForm.refreshAfterEdit();
                 }).show();
             } else {

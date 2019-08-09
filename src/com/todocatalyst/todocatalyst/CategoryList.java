@@ -34,6 +34,7 @@ public class CategoryList extends ItemList {
      */
     public CategoryList() {
         super(CLASS_NAME);
+        if (Config.TEST) setText("CategoryList");
     }
 
     static synchronized public CategoryList getInstance() {

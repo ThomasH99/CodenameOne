@@ -90,7 +90,7 @@ public class ScreenObjectPicker<E> extends MyForm {
      */
 //    ScreenObjectPicker(String title, List listOfAllObjects, ItemAndListCommonInterface owner, MyForm previousForm, UpdateField updateOnDone) {
     ScreenObjectPicker(String title, List listOfAllObjects, ItemAndListCommonInterface owner, MyForm previousForm, Runnable updateOnDone) {
-        this(title, listOfAllObjects, null, Arrays.asList(owner), previousForm, updateOnDone, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
+        this(title, listOfAllObjects, null, new ArrayList(Arrays.asList(owner)), previousForm, updateOnDone, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
     }
 
     ScreenObjectPicker(String title, List listOfAllObjects, List<ItemAndListCommonInterface> ownerList, MyForm previousForm, Runnable updateOnDone) {
@@ -321,7 +321,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             }
             );
         }
-        if (scrollToFirstSelected) {
+        if (scrollToFirstSelected&&firstSelectedChk!=null) {
             scrollComponentToVisible(firstSelectedChk);
         }
         return cont;
@@ -333,10 +333,8 @@ public class ScreenObjectPicker<E> extends MyForm {
         if (listOfLists) {
 //            Button cmdLists = null;
             RadioButton buttonLists = (listOfAllLists1 != null && listOfAllLists1.size() > 0) ? new RadioButton("Lists", null) : null;
-            buttonLists.setToggle(true);
 //            Button cmdProjects = null;
             RadioButton buttonProjects = (listOfAllTopLevelProjects1 != null && listOfAllTopLevelProjects1.size() > 0) ? new RadioButton("Projects", null) : null;
-            buttonProjects.setToggle(true);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Button cmdTasks = null;
 //            List<Button> cmds = new ArrayList();
@@ -353,6 +351,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 //            }
 //</editor-fold>
             if (buttonLists != null) {
+                buttonLists.setToggle(true);
                 buttonLists.setUIID("ObjectSelectorRadioButton");
                 buttonLists.addActionListener((e) -> {
                     buildList(listOfAllLists1, cont);
@@ -376,6 +375,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 //            }
 //</editor-fold>
             if (buttonProjects != null) {
+                buttonProjects.setToggle(true);
                 buttonProjects.setUIID("ObjectSelectorRadioButton");
                 buttonProjects.addActionListener((e2) -> {
                     buildList(listOfAllTopLevelProjects1, cont);

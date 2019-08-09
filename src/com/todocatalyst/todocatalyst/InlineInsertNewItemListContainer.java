@@ -117,7 +117,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
                 myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
                 new ScreenItemListProperties(newItemList, (MyForm) getComponentForm(), () -> {
                     insertNewItemListAndSaveChanges(newItemList);
-                    myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE,false); //marker to indicate that the inlineinsert container launched edit of the task
+                    myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
                     myForm.refreshAfterEdit();
                 }).show();
             } else {
@@ -172,6 +172,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 //        }
 //</editor-fold>
         itemOrItemListForNewItemLists.addToList(newItemList, refItemList, !insertBeforeRefElement); //add after item
+        ASSERT.that(myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT)!=null);
         DAO.getInstance().saveInBackground(newItemList, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP()));
         DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewItemLists);
         myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item

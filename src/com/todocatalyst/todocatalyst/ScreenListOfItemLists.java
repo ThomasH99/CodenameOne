@@ -152,7 +152,7 @@ public class ScreenListOfItemLists extends MyForm {
                 }
             });
         }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                new Command("", iconDone) {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
@@ -162,6 +162,7 @@ public class ScreenListOfItemLists extends MyForm {
 //            }
 //        });
 //        addCommandsToToolbar(getToolbar());
+//</editor-fold>
         //SEARCH
         if (false) getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
@@ -431,7 +432,10 @@ public class ScreenListOfItemLists extends MyForm {
 //                            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
                         f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
                         itemList.setList(iList.getListFull());
-                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        //TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
+                        DAO.getInstance().saveAndWait((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
                         swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
                     } else {

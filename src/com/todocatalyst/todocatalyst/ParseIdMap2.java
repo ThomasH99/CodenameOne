@@ -19,55 +19,58 @@ import java.util.Set;
 public class ParseIdMap2 {//extends HashMap {
 
     private HashMap<Object, Runnable> parseIdMap2 = new HashMap<Object, Runnable>();
-    List<Runnable> runnables = new ArrayList<Runnable>();
+    private List<Runnable> runnablesXXX = new ArrayList<Runnable>();
 
     ParseIdMap2() {
 
     }
-    
+
     public Object put(Object key, Runnable value) {
-        if (Config.TEST) ASSERT.that(value!=null, "SaveEditedValuesLocally put "+key+" with null value - missing objectIdP??");
-            Object previousValue = parseIdMap2.put(key, value);
-            return previousValue;
+        if (Config.TEST) ASSERT.that(value != null, "SaveEditedValuesLocally put " + key + " with null value - missing objectIdP??");
+        Object previousValue = parseIdMap2.put(key, value);
+        return previousValue;
     }
 
     public Runnable get(Object key) {
-            return parseIdMap2.get(key);
+        return parseIdMap2.get(key);
     }
 
     public Runnable remove(Object key) {
-            return parseIdMap2.remove(key);
+        return parseIdMap2.remove(key);
     }
 
-
-    void addPostSave(Runnable r) {
-        runnables.add(r);
+    void addPostSaveXXX(Runnable r) {
+        runnablesXXX.add(r);
     }
 
     void update() {
-        Runnable repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+        Runnable repeatRule = null;
+        if (false) {
+            repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+        }
 
         for (Object parseId : parseIdMap2.keySet()) {
             parseIdMap2.get(parseId).run();
         }
-        if (repeatRule != null) {
-            repeatRule.run();
-        }
+        if (false)
+            if (repeatRule != null) {
+                repeatRule.run();
+            }
     }
-    
-    public Set<Object> keySet(){
+
+    public Set<Object> keySet() {
         return parseIdMap2.keySet();
     }
 
-    void runPostSaveRunnables() {
-        for (Runnable r : runnables) {
+    void runPostSaveRunnablesXXX() {
+        for (Runnable r : runnablesXXX) {
             r.run();
         }
     }
-    
-    void parseIdMapReset(){
+
+    void parseIdMapReset() {
         parseIdMap2.clear();
-        runnables.clear();
+        if (false)runnablesXXX.clear();
     }
 
 }
