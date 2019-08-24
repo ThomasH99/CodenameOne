@@ -3460,7 +3460,8 @@ public class MyForm extends Form {
     @param insertBeforeRefElement
     @return 
      */
-    private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface ownerList, Category category, boolean insertBeforeRefElement) {
+    private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface ownerList,
+            Category category, boolean insertBeforeRefElement) {//, boolean insertAsSubtask) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        return createInsertContainer(refElement, list, insertBeforeRefElement, null);
 //    }
@@ -3488,6 +3489,7 @@ public class MyForm extends Form {
 //            }
 //            return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement));
 //</editor-fold>
+//            insertContainer = new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement);
             insertContainer = new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement);
 
         } else if (refElement instanceof Category) {
@@ -3529,15 +3531,17 @@ public class MyForm extends Form {
         return false;
     }
 
-    private void createAndAddInsertContainer(MyDragAndDropSwipeableContainer refComponentN, ItemAndListCommonInterface itemElt, boolean insertBeforeRefElement) {
+    private void createAndAddInsertContainer(MyDragAndDropSwipeableContainer refComponentN, ItemAndListCommonInterface itemElt,
+            boolean insertBeforeRefElement) {//, boolean insertAsSubtask) {
         if (itemElt == null || refComponentN == null) {
 //            return null;
             pinchContainer = null;
             return;
         }
 //        MyDragAndDropSwipeableContainer refComponent = null;xx;
-        Category category = refComponentN.getDragAndDropCategory();
-        InsertNewElementFunc insertContainer = createInsertContainer(itemElt, itemElt.getOwner(), category, insertBeforeRefElement); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+//        Category category = refComponentN.getDragAndDropCategory();
+//        InsertNewElementFunc insertContainer = createInsertContainer(itemElt, itemElt.getOwner(), category, insertBeforeRefElement, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+        InsertNewElementFunc insertContainer = createInsertContainer(itemElt, itemElt.getOwner(), refComponentN.getDragAndDropCategory(), insertBeforeRefElement);//, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
         Container wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
         MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(refComponentN, wrappedInsertContainer, insertBeforeRefElement ? 0 : 1); //insert insertContainer at position of dropComponentBelow
         setInlineInsertContainer(insertContainer); //call this *after* inserting the new container to ensure that text field starts in editing mode
@@ -3590,7 +3594,7 @@ public class MyForm extends Form {
         return null;
     }
 
-    protected void createAndAddInsertContainer(String refEltObjId, String eltParseClass, boolean insertBeforeRefElement) {
+    protected void createAndAddInsertContainerXXX(String refEltObjId, String eltParseClass, boolean insertBeforeRefElement) {
         ItemAndListCommonInterface refElement = null;
         switch (eltParseClass) {
             case Item.CLASS_NAME:
@@ -3615,15 +3619,18 @@ public class MyForm extends Form {
 //        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane(), refEltObjId);
         MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
         if (Config.TEST) ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + eltParseClass + ", insertAfter=" + insertBeforeRefElement);
+//        createAndAddInsertContainer(myDDContN, refElement, myDDContN.getDragAndDropCategory(), insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
         createAndAddInsertContainer(myDDContN, refElement, insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
     }
 
     protected static final String SAVE_LOCALLY_REF_ELT_OBJID_KEY = "InlineInsertElementOBJID";
     protected static final String SAVE_LOCALLY_REF_ELT_PARSE_CLASS = "InlineInsertEltParseCLASS";
-    protected static final String SAVE_LOCALLY_INSERT_BEFORE_REF_ELT = "InlineInsertAFTERRefElt";
+    protected static final String SAVE_LOCALLY_INSERT_BEFORE_REF_ELT = "InlineInsertBEFORERefElt";
+    protected static final String SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK = "InlineInsertSavedSUBTASK"; //used to save inline text from within the InlineInsert container
+    protected static final String SAVE_LOCALLY_INLINE_INSERT_LEVEL = "InlineInsertSavedLEVEL"; //used to save inline text from within the InlineInsert container
+
     protected static final String SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE = "InlineInsertEditTaskACTIVE";
     protected static final String SAVE_LOCALLY_INLINE_INSERT_TEXT = "InlineInsertSavedTEXT"; //used to save inline text from within the InlineInsert container
-    protected static final String SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK = "InlineInsertSavedSUBTASK"; //used to save inline text from within the InlineInsert container
 
     /**
     if inline insert was active in previous session (SAVE_LOCALLY_REF_ELT_OBJID_KEY points to, then 
@@ -3639,10 +3646,39 @@ public class MyForm extends Form {
         if (previousValues != null) {
             //if inlineInsert was left active when app was last active, then re-insert the container again
             if (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null) { //check if there were an earlier inline container
-                String refObjId = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY);
+                String refEltObjId = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY);
                 String refClass = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_PARSE_CLASS);
-                boolean insertBefore = (Boolean) previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //!=null;
-                createAndAddInsertContainer(refObjId, refClass, insertBefore);
+//                boolean insertBefore = (Boolean) previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //!=null;
+                boolean insertBefore = previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) != null; //!=null;
+//                createAndAddInsertContainer(refEltObjId, refClass, insertBefore);
+
+                ItemAndListCommonInterface refElement = null;
+                switch (refClass) {
+                    case Item.CLASS_NAME:
+//                Item aboveItem = DAO.getInstance().fetchItem(refEltObjId);
+                        refElement = DAO.getInstance().fetchItem(refEltObjId);
+                        break;
+                    case ItemList.CLASS_NAME:
+//                ItemList aboveItemList = DAO.getInstance().fetchItemList(refEltObjId);
+                        refElement = DAO.getInstance().fetchItemList(refEltObjId);
+                        break;
+                    case Category.CLASS_NAME:
+//                ItemList aboveCategory = DAO.getInstance().fetchCategory(refEltObjId);
+                        refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                        break;
+                    case WorkSlot.CLASS_NAME:
+//                ItemList aboveWorkSlot = DAO.getInstance().fetchCategory(refEltObjId);
+                        refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                        break;
+                    default:
+                        if (Config.TEST) ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + refClass);
+                }
+//        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane(), refEltObjId);
+                MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
+                if (Config.TEST) ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + refClass + ", insertAfter=" + insertBefore);
+//        createAndAddInsertContainer(myDDContN, refElement, myDDContN.getDragAndDropCategory(), insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
+                createAndAddInsertContainer(myDDContN, refElement, insertBefore); //NB: createAndAddInsertContainer checks for null values
+
                 //if full screen edit was launched from inline container, then do so here:
                 if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
                     InsertNewElementFunc inlineCont = getInlineInsertContainer();
@@ -3939,20 +3975,78 @@ public class MyForm extends Form {
 //        }
 //</editor-fold>
 //        createAndAddInsertContainer(itemEltBelow, pinchInsertEnabled);
-        MyDragAndDropSwipeableContainer refComp = dropComponentAbove != null ? dropComponentAbove : (dropComponentBelow != null ? dropComponentAbove : null);
-        if (refComp != null) { //may become null in some edge cases like an empty list with only the initial inline insert container
-            ItemAndListCommonInterface refElt = refComp.getDragAndDropObject();
-            boolean insertBeforeRefElement = (refComp == dropComponentBelow);
-            if (true) { //Done in inlineinsert container
-                previousValues.put(SAVE_LOCALLY_REF_ELT_OBJID_KEY, refElt.getObjectIdP());
-                previousValues.put(SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) refElt).getClassName());
-                previousValues.put(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, insertBeforeRefElement);
-//                previousValues.remove(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE);
+        MyDragAndDropSwipeableContainer refComp;
+        ItemAndListCommonInterface refElt;
+//        Category category = null;
+        boolean insertBeforeRefElement = false;
+        if (((itemEltAbove instanceof Category || itemEltAbove instanceof ItemList))
+                && (itemEltBelow instanceof Category || itemEltBelow instanceof ItemList || itemEltBelow == null)) {
+            //new Category/ItemList between two Categories or ItemLists or at the end of the list of Categories/ItemLists
+            refElt = itemEltAbove;
+            refComp = dropComponentAbove; //Category can be obtained via this
+        } else if (((itemEltBelow instanceof Category || itemEltBelow instanceof ItemList))
+                && (itemEltAbove == null)) {
+            //insert at the *beginning* of the list of Categories or ItemLists (above the topmost element)
+            refElt = itemEltBelow;
+            insertBeforeRefElement = true;
+            refComp = dropComponentBelow;
+        } else if ((itemEltAbove instanceof Category || itemEltAbove instanceof ItemList) && itemEltBelow instanceof Item) {
+            //inserting btw a Category and an expanded subtask => insert the subtask before the expanded item
+            refElt = itemEltBelow;
+            insertBeforeRefElement = true;
+            refComp = dropComponentBelow; //Category can be obtained via this
+//            if (itemEltAbove instanceof Category) category = (Category) itemEltAbove;
+        } else if (itemEltAbove instanceof Item && itemEltBelow == null) {
+            //inserting after the last element in the list
+            refElt = itemEltAbove;
+            refComp = dropComponentAbove;
+        } else if (itemEltAbove == null && itemEltBelow instanceof Item) {
+            //inserting before the first item in the list
+            refElt = itemEltBelow;
+            insertBeforeRefElement = true;
+            refComp = dropComponentBelow;
+        } else if (itemEltAbove instanceof Item && itemEltBelow instanceof Item) {
+            //insert between two Items (can be in sequence, a project + first expanded subtask or a subtask and a higher-level item (a sibling to the subtask's parent task)
+            Item itemAbove = (Item) itemEltAbove;
+            Item itemBelow = (Item) itemEltBelow;
+            if (itemAbove.isSubtaskTo(itemBelow)) {
+                //pinch insert between a project and its first subtask
+                refElt = itemBelow;
+                insertBeforeRefElement = true;
+                refComp = dropComponentBelow;
+            } else if (itemAbove.getOwner() == itemBelow.getOwner()) {
+                //pinch insert between two sibling tasks (insert after the first)
+                refElt = itemAbove;
+                refComp = dropComponentAbove;
+            } else {
+                //item below is a higher-level item (a sibling to the subtask's parent task) so we insert below the itemAbove
+//                ASSERT.that();
+                refElt = itemAbove;
+                refComp = dropComponentAbove;
             }
+        } else {
+            ASSERT.that(false, "unknown error when inserting InsertContainer, above=" + itemEltAbove + ", below=" + itemEltBelow);
+            refElt = null;
+            refComp = null;
+        }
+//        refComp = dropComponentAbove != null ? dropComponentAbove : (dropComponentBelow != null ? dropComponentBelow : null);
+//        if (true || refComp != null) { //may become null in some edge cases like an empty list with only the initial inline insert container
+//            refElt = refComp.getDragAndDropObject();
+        previousValues.put(SAVE_LOCALLY_REF_ELT_OBJID_KEY, refElt.getObjectIdP());
+        previousValues.put(SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) refElt).getClassName());
+//            boolean insertBeforeRefElement = (refComp == dropComponentBelow);
+//            insertBeforeRefElement = dropComponentAbove == null && dropComponentBelow != null;
+//            if (dropComponentAbove != null && dropComponentBelow != null
+//                    && itemEltBelow instanceof Item && itemEltAbove.isSubtaskTo((Item) itemEltBelow)) //pinch insert between a project and its first subtask
+//                previousValues.put(SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK, true);
+        if (insertBeforeRefElement)
+            previousValues.put(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, true);
+//                previousValues.remove(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE);
+//        }
 //        wrappedInsertContainer = createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
 //        makeInlineInsertReplayCmd().actionPerformed(null);
-            createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
-        }
+        createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
+//        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
 //            ASSERT.that(itemEltAbove.getClass() == itemEltBelow.getClass()); //should always be of same class if in same list (TODO!!!! what about Today view?!
@@ -4496,6 +4590,15 @@ public class MyForm extends Form {
 
     public ContainerScrollY findScrollableContYChild() {
         return findScrollableContYChild(getContentPane());
+    }
+
+    /**
+    return the top-level ItemAndListCommonInterface edited or displayed by this Form. Eg if showing a Project or List, return that
+    @return 
+     */
+    public ItemAndListCommonInterface getDisplayedElement() {
+        assert false;
+        return null;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

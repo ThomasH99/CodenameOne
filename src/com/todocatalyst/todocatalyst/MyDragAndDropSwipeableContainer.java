@@ -2820,7 +2820,7 @@ T3
 //                        int insertIndex = 0; //when dropping as subtask on an time, always insert at top of list (otherwise insert idrectly in expanded subtask list
 ////                            moveItemOrItemListAndSave(((Item) getDragAndDropObject()).getOwner(), newOwnerPrj, (Item) getDragAndDropObject(), insertIndex);
 //                        moveItemOrItemListAndSave(newOwnerPrj, draggedElement, insertIndex);
-                        moveItemOrItemListAndSave(newOwnerPrj, draggedElement, false); //false=insert at head of list
+                        moveItemOrItemListAndSave(newOwnerPrj, draggedElement, afterElement,false); //false=insert at head of list
                     };
                     insertDropPlaceholder = (dropPh) -> {
                         addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
@@ -2948,7 +2948,7 @@ A
     C
                          */
 //</editor-fold>
-                        //insert between two siblings at same level
+                        //insert between two siblings at same level, or *before* first element in a list
                         if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT13 +NOR+SUB-SUP \"" + draggedElement.getText() + "\" between two siblings with same owner("
                                     + afterElement.getOwner() + ") \"" + beforeElement.getText() + "\" and \"" + afterElement.getText() + "\"", Log.DEBUG);
 
@@ -3128,8 +3128,10 @@ before getting to here, we've already covered the following cases where both bef
 //                            MyDragAndDropSwipeableContainer siblingOwnerOwnerDD; // = getParentMyDDCont(siblingOwnerDD);
 //                            ItemAndListCommonInterface siblingOwnerOwner = siblingOwnerDD.getDragAndDropObject().getOwner();
 //</editor-fold>
+//                            ItemAndListCommonInterface siblingOwnerOwner = siblingOwner.getOwner();
+//                            if (siblingOwnerOwner != null) {
+                            if (siblingOwnerDD != null) {
                             ItemAndListCommonInterface siblingOwnerOwner = siblingOwner.getOwner();
-                            if (siblingOwnerOwner != null) {
 //                                if (siblingOwner != ownerOfBeforeElement) {//if top-level is the same as the sibling's owner, don't allow dropping as super-task
                                 if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT14 +NOR+SUB+SUP" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingElement.getText() + "\""
                                             + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
@@ -3242,7 +3244,7 @@ before getting to here, we've already covered the following cases where both bef
                                             + (siblingContainer != null && siblingContainer.getDragAndDropObject() != null ? siblingContainer.getDragAndDropObject().getText() : "") + "\""
                                             + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
                                             + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
-                            } else if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT18 +NOR+SUB-sup" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingContainer.getDragAndDropObject().getText() + "\""
+                            } else if (Config.TEST_DRAG_AND_DROP) Log.p("-INSERT18 +NOR+SUB-sup" + " \"" + draggedElement.getText() + "\" after sibling \"" + (siblingContainer!=null?siblingContainer.getDragAndDropObject().getText():"<null>") + "\""
                                         + (beforeMyDDCont.getDragAndDropCategory() != null ? (" +Cat \"" + beforeMyDDCont.getDragAndDropCategory() + "\"") : "")
                                         + (getDragAndDropCategory() != null ? (" -Cat \"" + getDragAndDropCategory() + "\"") : ""), Log.DEBUG);
 

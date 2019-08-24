@@ -445,6 +445,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
 //    public List<? extends ItemAndListCommonInterface> getListFull();
     public List<E> getListFull();
+    
+    default public boolean isInList(ItemAndListCommonInterface elt){
+        List elements=getListFull();
+        return elements.contains(elt);
+    }
 
     /**
      * sets the *full* list of items owned - MUST never be called with a (filtered) list retrieved via getList() since that would effectively remove all filtered elements definitively!
@@ -1201,6 +1206,15 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     default public void updateBeforeSave() {
 
+    }
+
+    /**
+    return true if subtask is a (first-level) task within this list/project (it doesn't not go through entire project tree, only first level directly within list/project)
+    @param subtask
+    @return 
+     */
+    default public boolean isSubtaskTo(Item subtask) {
+        return getListFull().contains(subtask);
     }
 
 }

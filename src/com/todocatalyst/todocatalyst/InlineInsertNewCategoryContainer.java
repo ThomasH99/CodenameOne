@@ -177,7 +177,8 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
         categoryList.addToList(newCategory, category, !insertBeforeElement); //add after item
         DAO.getInstance().saveInBackground(newCategory, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newCategory.getObjectIdP()));
         DAO.getInstance().saveInBackground((ParseObject) categoryList);
-        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, false); //always insert *after* just created inline item
+//        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, false); //always insert *after* just created inline item
+        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
     }
 

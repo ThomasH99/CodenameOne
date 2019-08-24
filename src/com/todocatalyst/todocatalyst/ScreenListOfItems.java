@@ -1478,6 +1478,11 @@ public class ScreenListOfItems extends MyForm {
         return !optionDisableDragAndDrop && !isSortOn(); //
     }
 
+        public ItemAndListCommonInterface getDisplayedElement() {
+        return itemListOrg;
+    }
+
+    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    Component makeNewInsertNewTaskContainerXXX(Item item, ItemList itemList) {
 //        if (lastInsertNewTaskContainer != null && item == lastInsertNewTaskContainer.newItem) {
