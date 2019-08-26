@@ -5821,7 +5821,7 @@ public class DAO {
 
         int i = 0;
 //        List<Item> items = itemListOrCategory.getListFull();
-        while (i < itemListOrCategory.size()) {
+        while (i < itemListOrCategory.getSize()) {
             boolean moveToNextIndex = true; //hack to make sure we don't skip an i when an element in the list is removed
             Object elt = itemListOrCategory.getItemAt(i);
 

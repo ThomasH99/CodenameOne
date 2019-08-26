@@ -3759,14 +3759,14 @@ public class MyForm extends Form {
 //        Container parentContainerBelow = compBelow.getParent();
 //</editor-fold>
         //find the drop containers
-        MyDragAndDropSwipeableContainer dropComponentAbove = MyDragAndDropSwipeableContainer.findMyDDContainerStartingFrom(compAbove);
+        MyDragAndDropSwipeableContainer dropComponentAbove = MyDragAndDropSwipeableContainer.findMyDDContStartingFrom(compAbove);
 
         MyDragAndDropSwipeableContainer dropComponentBelow = null;
         if (dropComponentAbove != null) { //UI: be default we ignore the lowest placed finger and always create insertCont below the highest placed finger
 //            if (isOrPartOfInsertNewContainer(compAbove) || isOrPartOfInsertNewContainer(compBelow)) return null; //UI: cannot pinchinsert next to an existing insertContainer
             dropComponentBelow = MyDragAndDropSwipeableContainer.findNextDDCont(dropComponentAbove);
         } else if (compBelow != null) { //if dropComponentAbove==null, then use the container , can happen eg if inserting above top-most item in list (above finger is on toolbar)
-            dropComponentBelow = MyDragAndDropSwipeableContainer.findMyDDContainerStartingFrom(compBelow);
+            dropComponentBelow = MyDragAndDropSwipeableContainer.findMyDDContStartingFrom(compBelow);
             if (false && dropComponentBelow != null) //false: why set dropComponentAbove if it was originally null (indicating that top finger was on toolbar)?!
                 dropComponentAbove = MyDragAndDropSwipeableContainer.findPrecedingMyDDCont(dropComponentBelow, null);
         }

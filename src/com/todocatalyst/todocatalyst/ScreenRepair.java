@@ -688,7 +688,7 @@ public class ScreenRepair extends MyForm {
                         Component closest = getClosestComponentTo(x[0], y[0]);
                         Container parentContAbove = compAbove != null ? compAbove.getParent() : null;
 //                        MyDragAndDropSwipeableContainer dropComponentAbove = MyForm.findDropContainerStartingFrom(compAbove);
-                        MyDragAndDropSwipeableContainer dropCompAbove = MyDragAndDropSwipeableContainer.findMyDDContainerStartingFrom(parentContAbove);
+                        MyDragAndDropSwipeableContainer dropCompAbove = MyDragAndDropSwipeableContainer.findMyDDContStartingFrom(parentContAbove);
                         ItemAndListCommonInterface objAbove = dropCompAbove != null
                                 ? (ItemAndListCommonInterface) dropCompAbove.getDragAndDropObject()
                                 : null;

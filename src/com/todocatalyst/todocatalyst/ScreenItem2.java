@@ -1296,7 +1296,7 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
             List<Category> catList = (previousValues.get(Item.PARSE_CATEGORIES) != null
                     ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)) //if previous edited value exists, use that
-                    : new ArrayList(itemCopy.getCategories())); //make a copy to be able to compare the edited version to the orginal list from Item after editing
+                    : new ArrayList(item.getCategories())); //make a copy to be able to compare the edited version to the orginal list from Item after editing
             ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(),
                     catList,
                     ScreenItem2.this, () -> {

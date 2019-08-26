@@ -57,7 +57,7 @@ public class ReplayLog {
 
     @Override
     public String toString() {
-        String s = "ReplayStack = [";
+        String s = " ReplayStack = [";
         String sep = "";
         for (int i = 0, size = replayStack.size(); i < size; i++) {
             String r = replayStack.get(i);
@@ -133,7 +133,8 @@ public class ReplayLog {
             }
             replayStack.add(replayCommand.getCmdUniqueID());
             Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack);
-            Log.p("ADD    ReplayCommand: " + replayCommand.getCmdUniqueID());
+//            Log.p("ADDED   ReplayCommand: " + replayCommand.getCmdUniqueID()+"; stack="+replayStack);
+            Log.p("ADDED   ReplayCommand: " + replayCommand.getCmdUniqueID()+this);
         }
     }
 
@@ -144,7 +145,8 @@ public class ReplayLog {
 //        if (true) { //deactivate while testing
         if (replayStack.size() > 0) { //while debugging //TODO!!!!! remove DEBUG once ReplayCommands have been added everywhere
             if (Config.TEST) {
-                Log.p("REMOVE ReplayCommand: " + replayStack.get(replayStack.size() - 1));
+//                Log.p("REMOVED ReplayCommand: " + replayStack.get(replayStack.size() - 1)+"; stack="+replayStack);
+                Log.p("REMOVED ReplayCommand: " + replayStack.get(replayStack.size() - 1)+this);
             }
             replayStack.remove(replayStack.size() - 1); //TODO!!! add check that logList.size>=1 (not during testing to provoke stacktrace
         }
