@@ -167,7 +167,7 @@ public class RepeatRuleParseObject
             setDayInYear(0); //TODO: choosing the middle day of the year, eg365/2=182 would make it faster to choose right date in a scrolling list, but is less intuitive
             setNumberSimultaneousRepeats(0);
             setNumberOfDaysRepeatsAreGeneratedAhead(0);
-            setSpecifiedStartDate(new Date()); //default start date today/now
+            setSpecifiedStartDate(new MyDate()); //default start date today/now
 //        setLastDateGeneratedFor(Long.MIN_VALUE); //=0; //
 //        setLastGeneratedDate(Long.MIN_VALUE); //=0; //
             setLastGeneratedDate(new Date(MyDate.MIN_DATE)); //=0; //
@@ -224,42 +224,41 @@ public class RepeatRuleParseObject
         return repeatRule;
     }
 
-    private RepeatRule getRepeatRuleOLD() {
-        RepeatRule repeatRule = new RepeatRule();
-        repeatRule.setInt(RepeatRule.FREQUENCY, getFrequency());
-        //TODO!!!: not necessary to set below values since they're also set when calculating dates
-//        if (useCount()) {
-        if (getNumberOfRepeats() != Integer.MAX_VALUE) {
-//            repeatRule.setInt(RepeatRule.COUNT, getCount()-getCountOfInstancesGeneratedSoFar()); //-getCountOfInstancesGeneratedSoFar() since we call this repeatedly but still want to limit the overall amount generated
-            repeatRule.setInt(RepeatRule.COUNT, getNumberOfRepeats());
-//        } else if (getEndDate() != Long.MAX_VALUE) {
-        } else if (getEndDate() != MyDate.MAX_DATE) {
-//            repeatRule.setDate(RepeatRule.END, getEndDate());
-            repeatRule.setDate(RepeatRule.END, MyDate.getEndOfDay(getEndDateD()).getTime()); //set to end of day to not miss 
-//            repeatRule.setInt(RepeatRule.COUNT, 0); //0 means repeat forever, or until end date //-necessary when end date is set? (is default count == 0?)
-        } else if (getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_FROM_COMPLETED_DATE) {
-            repeatRule.setInt(RepeatRule.COUNT, 1);
-        }
-        if (getInterval() > 1) {
-            repeatRule.setInt(RepeatRule.INTERVAL, getInterval());
-        }
-        switch (getFrequency()) {
-            case RepeatRule.DAILY:
-                //nothing further to set than interval or count set above
-                break;
-            case RepeatRule.WEEKLY:
-                setWeek(repeatRule);
-                break;
-            case RepeatRule.MONTHLY:
-                setMonth(repeatRule);
-                break;
-            case RepeatRule.YEARLY:
-                setYear(repeatRule);
-                break;
-        }
-        return repeatRule;
-    }
-
+//    private RepeatRule getRepeatRuleOLD() {
+//        RepeatRule repeatRule = new RepeatRule();
+//        repeatRule.setInt(RepeatRule.FREQUENCY, getFrequency());
+//        //TODO!!!: not necessary to set below values since they're also set when calculating dates
+////        if (useCount()) {
+//        if (getNumberOfRepeats() != Integer.MAX_VALUE) {
+////            repeatRule.setInt(RepeatRule.COUNT, getCount()-getCountOfInstancesGeneratedSoFar()); //-getCountOfInstancesGeneratedSoFar() since we call this repeatedly but still want to limit the overall amount generated
+//            repeatRule.setInt(RepeatRule.COUNT, getNumberOfRepeats());
+////        } else if (getEndDate() != Long.MAX_VALUE) {
+//        } else if (getEndDate() != MyDate.MAX_DATE) {
+////            repeatRule.setDate(RepeatRule.END, getEndDate());
+//            repeatRule.setDate(RepeatRule.END, MyDate.getEndOfDay(getEndDateD()).getTime()); //set to end of day to not miss 
+////            repeatRule.setInt(RepeatRule.COUNT, 0); //0 means repeat forever, or until end date //-necessary when end date is set? (is default count == 0?)
+//        } else if (getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_FROM_COMPLETED_DATE) {
+//            repeatRule.setInt(RepeatRule.COUNT, 1);
+//        }
+//        if (getInterval() > 1) {
+//            repeatRule.setInt(RepeatRule.INTERVAL, getInterval());
+//        }
+//        switch (getFrequency()) {
+//            case RepeatRule.DAILY:
+//                //nothing further to set than interval or count set above
+//                break;
+//            case RepeatRule.WEEKLY:
+//                setWeek(repeatRule);
+//                break;
+//            case RepeatRule.MONTHLY:
+//                setMonth(repeatRule);
+//                break;
+//            case RepeatRule.YEARLY:
+//                setYear(repeatRule);
+//                break;
+//        }
+//        return repeatRule;
+//    }
     public void setListOfUndoneRepeatInstances(List list) {
         if (list != null && !list.isEmpty()) {
             put(PARSE_REPEAT_INSTANCE_ITEMLIST, list);
@@ -2694,9 +2693,13 @@ public class RepeatRuleParseObject
             expiredWorkSlot = (WorkSlot) oldUndoneRepeatInstanceList.remove(0); //remove expired workslot
             //and remove expired workSlot from owner's list
             owner = expiredWorkSlot.getOwner();
-            WorkSlotList workSlotList = owner.getWorkSlotListN();
-            workSlotList.remove(expiredWorkSlot);
-            owner.setWorkSlotList(workSlotList);
+            if (owner != null) {
+                WorkSlotList workSlotListN = owner.getWorkSlotListN();
+                if (workSlotListN != null) {
+                    workSlotListN.remove(expiredWorkSlot);
+                    owner.setWorkSlotList(workSlotListN);
+                }
+            }
         }
 
 //        setListOfUndoneRepeatInstances(oldUndoneRepeatInstanceList); //update so correct size is used when calculating additional repeat dates
@@ -2883,20 +2886,19 @@ public class RepeatRuleParseObject
     @param workslots
     @return 
      */
-    public static boolean updateWorkSlotListXXX(List<WorkSlot> workslots) {
-        boolean updated = false;
-//        //Algorithm: in sorted workslots, start from last, move backwards, if expired, check if needs update from repeatRule. If yes, check if updated on server, if not, update and save
-//        //check if any workSlots have repeat rules
-//        RepeatRuleParseObject repeatRule;
-//        for (WorkSlot workSlot : workslots) {
-//            if ((repeatRule = workSlot.getRepeatRule()) != null) {
-//                if (repeatRule.updateWorkslots(workSlot))
-//                    updated = true;
-//            }
-//        }
-        return updated;
-    }
-
+//    public static boolean updateWorkSlotListXXX(List<WorkSlot> workslots) {
+//        boolean updated = false;
+////        //Algorithm: in sorted workslots, start from last, move backwards, if expired, check if needs update from repeatRule. If yes, check if updated on server, if not, update and save
+////        //check if any workSlots have repeat rules
+////        RepeatRuleParseObject repeatRule;
+////        for (WorkSlot workSlot : workslots) {
+////            if ((repeatRule = workSlot.getRepeatRule()) != null) {
+////                if (repeatRule.updateWorkslots(workSlot))
+////                    updated = true;
+////            }
+////        }
+//        return updated;
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public RepeatRuleObjectInterface updateRepeatInstancesOnDoneCancelOrDeleteOLD_ITEM(Item repeatInstanceOrg) {
 //
@@ -3169,7 +3171,7 @@ public class RepeatRuleParseObject
         //Since all tasks generated from a rule will normally be in same list (except of course if we've moved some of them)
         //then softDeleting the list could lead to softdeleting the rule. But then all refernces to the rule will become 
         //unavailable anyway...????
-        setDeletedDate(new Date());
+        setDeletedDate(new MyDate());
         DAO.getInstance().saveInBackground(this);
         return true;
     }
@@ -3929,11 +3931,10 @@ public class RepeatRuleParseObject
         }
     }
 
-    public Date getNextcomingDateDXXX() {
-        Date date = getDate(PARSE_NEXTCOMING_REPEAT_DATE);
-        return (date == null) ? new Date(MyDate.MIN_DATE) : null;
-    }
-
+//    public Date getNextcomingDateDXXX() {
+//        Date date = getDate(PARSE_NEXTCOMING_REPEAT_DATE);
+//        return (date == null) ? new Date(MyDate.MIN_DATE) : null;
+//    }
 //    public long getLastGeneratedDateXXX() {
 ////        return lastGeneratedDate;
 ////        return getLong(LAST_DATE_GENERATED_FOR);
@@ -3945,17 +3946,16 @@ public class RepeatRuleParseObject
     /**
      * the latest date of any of the instances generated
      */
-    private void setNextcomingDateXXX(Date nextcomingRepeatDate) {
-        ASSERT.that(getDate(PARSE_NEXTCOMING_REPEAT_DATE) == null || nextcomingRepeatDate == null
-                || nextcomingRepeatDate.getTime() > getDate(PARSE_NEXTCOMING_REPEAT_DATE).getTime(),
-                "new lastGeneratedDate should always be higher than previous");
-        if (nextcomingRepeatDate != null && nextcomingRepeatDate.getTime() != MyDate.MIN_DATE) {
-            put(PARSE_NEXTCOMING_REPEAT_DATE, nextcomingRepeatDate);
-        } else {
-            remove(PARSE_NEXTCOMING_REPEAT_DATE);
-        }
-    }
-
+//    private void setNextcomingDateXXX(Date nextcomingRepeatDate) {
+//        ASSERT.that(getDate(PARSE_NEXTCOMING_REPEAT_DATE) == null || nextcomingRepeatDate == null
+//                || nextcomingRepeatDate.getTime() > getDate(PARSE_NEXTCOMING_REPEAT_DATE).getTime(),
+//                "new lastGeneratedDate should always be higher than previous");
+//        if (nextcomingRepeatDate != null && nextcomingRepeatDate.getTime() != MyDate.MIN_DATE) {
+//            put(PARSE_NEXTCOMING_REPEAT_DATE, nextcomingRepeatDate);
+//        } else {
+//            remove(PARSE_NEXTCOMING_REPEAT_DATE);
+//        }
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void setCount(int count) { //now called getNumberOfRepeats()
 //        if (count != 0) {
@@ -4822,16 +4822,15 @@ public class RepeatRuleParseObject
         }
     }
 
-    private void setLatestDateCompletedOrCancelledIfGreaterThanLastOLD(Date newDateOfCompleted) {
-        Date lastDateOfCompleted = getDate(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED);
-//        Date lastDateOfCompleted = getLatestDateCompletedOrCancelled();
-        if (lastDateOfCompleted == null || newDateOfCompleted.getTime() > lastDateOfCompleted.getTime()) {
-            put(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED, newDateOfCompleted);
-        } else {
-            remove(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED);
-        }
-    }
-
+//    private void setLatestDateCompletedOrCancelledIfGreaterThanLastOLD(Date newDateOfCompleted) {
+//        Date lastDateOfCompleted = getDate(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED);
+////        Date lastDateOfCompleted = getLatestDateCompletedOrCancelled();
+//        if (lastDateOfCompleted == null || newDateOfCompleted.getTime() > lastDateOfCompleted.getTime()) {
+//            put(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED, newDateOfCompleted);
+//        } else {
+//            remove(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED);
+//        }
+//    }
     public Date getLatestDateCompletedOrCancelled() {
         Date lastDateOfCompleted = getDate(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED);
         return lastDateOfCompleted != null ? lastDateOfCompleted : new Date(0);

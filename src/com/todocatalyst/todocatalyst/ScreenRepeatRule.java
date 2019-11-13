@@ -1240,12 +1240,12 @@ public class ScreenRepeatRule extends MyForm {
         return !missingData;
     }
 
-    void restoreEditedFieldsOnDoneXXX() {
-//        repeatRuleOwner.setRepeatStartTime(repeatStartDatePicker.getDate()); //update due date in case it was changed while editing the repeat rule
-        if (!restoreEditedFieldsToRepeatRule(repeatRuleEdited)) {
-            Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
-        }
-    }
+//    void restoreEditedFieldsOnDoneXXX() {
+////        repeatRuleOwner.setRepeatStartTime(repeatStartDatePicker.getDate()); //update due date in case it was changed while editing the repeat rule
+//        if (!restoreEditedFieldsToRepeatRule(repeatRuleEdited)) {
+//            Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
+//        }
+//    }
 
 }
 

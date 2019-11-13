@@ -350,48 +350,48 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         };
     }
 
-    private static Comparator<WorkSlot> getMultipleComparatorOLD(Comparator<WorkSlot>[] comparators) {
-//        assert comparators.length >= 1 && comparators.length == sortDescending.length : "must be same length";
-//        for (int i = 0, size = getSortFieldId.length; i < size; i++) {
-//            Comparator<Item> comp1 = getSortingComparator(getSortFieldId[0], sortDescending[0]);
-//        }
-//        Comparator<Item> comp1 = getSortFieldId.length >= 1 ? getSortingComparator(getSortFieldId[0], sortDescending[0]) : null;
-//        Comparator<Item> comp2 = getSortFieldId.length >= 2 ? getSortingComparator(getSortFieldId[1], sortDescending[1]) : null;
-//        Comparator<Item> comp3 = getSortFieldId.length >= 3 ? getSortingComparator(getSortFieldId[2], sortDescending[2]) : null;
-        Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;
-        Comparator<WorkSlot> comp2 = comparators.length >= 2 ? comparators[1] : null;
-        Comparator<WorkSlot> comp3 = comparators.length >= 3 ? comparators[2] : null;
-
-        return (i1, i2) -> {
-            int res1 = comp1.compare(i1, i2);
-            if (res1 != 0) {
-                return res1;
-            } else {
-                if (comp2 == null) {
-//                    return 0; //TODO!!!! should compare eg objectId to ensure a consistent ordering on every sort
-                    return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
-                } else {
-                    int res2 = comp2.compare(i1, i2);
-                    if (res2 != 0) {
-                        return res2;
-                    } else {
-                        if (comp3 == null) {
-//                            return 0;
-                            return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
-                        } else {
-                            int res3 = comp3.compare(i1, i2);
-                            if (res3 != 0) {
-                                return res3;
-                            } else {
-//                                return 0;
-                                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
-                            }
-                        }
-                    }
-                }
-            }
-        };
-    }
+//    private static Comparator<WorkSlot> getMultipleComparatorOLD(Comparator<WorkSlot>[] comparators) {
+////        assert comparators.length >= 1 && comparators.length == sortDescending.length : "must be same length";
+////        for (int i = 0, size = getSortFieldId.length; i < size; i++) {
+////            Comparator<Item> comp1 = getSortingComparator(getSortFieldId[0], sortDescending[0]);
+////        }
+////        Comparator<Item> comp1 = getSortFieldId.length >= 1 ? getSortingComparator(getSortFieldId[0], sortDescending[0]) : null;
+////        Comparator<Item> comp2 = getSortFieldId.length >= 2 ? getSortingComparator(getSortFieldId[1], sortDescending[1]) : null;
+////        Comparator<Item> comp3 = getSortFieldId.length >= 3 ? getSortingComparator(getSortFieldId[2], sortDescending[2]) : null;
+//        Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;
+//        Comparator<WorkSlot> comp2 = comparators.length >= 2 ? comparators[1] : null;
+//        Comparator<WorkSlot> comp3 = comparators.length >= 3 ? comparators[2] : null;
+//
+//        return (i1, i2) -> {
+//            int res1 = comp1.compare(i1, i2);
+//            if (res1 != 0) {
+//                return res1;
+//            } else {
+//                if (comp2 == null) {
+////                    return 0; //TODO!!!! should compare eg objectId to ensure a consistent ordering on every sort
+//                    return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+//                } else {
+//                    int res2 = comp2.compare(i1, i2);
+//                    if (res2 != 0) {
+//                        return res2;
+//                    } else {
+//                        if (comp3 == null) {
+////                            return 0;
+//                            return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+//                        } else {
+//                            int res3 = comp3.compare(i1, i2);
+//                            if (res3 != 0) {
+//                                return res3;
+//                            } else {
+////                                return 0;
+//                                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        };
+//    }
 
     /**
     sort on startTime, then on duration (put longest timeslots first if several starting at same time), 
@@ -429,17 +429,17 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //    public WorkSlotList sortWorkSlotList() {
 //        return sortWorkSlotList(false);
 //    }
-    private void sortWorkSlotListOLD(boolean sortOnEndTime) {
-//        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
-        if (sortOnEndTime) {
-            Collections.sort(sortedOnStartTimeWorkslotList, getMultipleComparator(new Comparator[]{
-                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
-                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD())
-            }));
-        } else {
-            Collections.sort(sortedOnStartTimeWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
-        }
-    }
+//    private void sortWorkSlotListOLD(boolean sortOnEndTime) {
+////        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
+//        if (sortOnEndTime) {
+//            Collections.sort(sortedOnStartTimeWorkslotList, getMultipleComparator(new Comparator[]{
+//                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
+//                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD())
+//            }));
+//        } else {
+//            Collections.sort(sortedOnStartTimeWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+//        }
+//    }
 
     /**
      * returns a list with all the workSlots that has some work time between startDate and
@@ -497,23 +497,23 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     @param now
     @return 
      */
-    public static List<WorkSlot> removePastWorkSlotsXXX(List<WorkSlot> workSlots, long now) {
-        final int WORKSLOT_LIMIT = 200;
-
-        List<WorkSlot> result = new ArrayList<>();
-
-//        ASSERT.that(!workSlots.isSorted(), "workSlots must be sorted for this algo to work");
-//        long nowLong = now.getTime();
-//        List<WorkSlot>  workSlots =workSlotList.getWorkSlots();
-        for (int i = workSlots.size() - 1; i >= 0; i--) {
-            if (workSlots.get(i).getEndTime() <= now) {
-                result = workSlots.subList(i, workSlots.size() - 1);
-                return result;
-            }
-        }
-        //if we get to here, no workslots had endTime in the past, so we don't have to remove
-        return workSlots;
-    }
+//    public static List<WorkSlot> removePastWorkSlotsXXX(List<WorkSlot> workSlots, long now) {
+//        final int WORKSLOT_LIMIT = 200;
+//
+//        List<WorkSlot> result = new ArrayList<>();
+//
+////        ASSERT.that(!workSlots.isSorted(), "workSlots must be sorted for this algo to work");
+////        long nowLong = now.getTime();
+////        List<WorkSlot>  workSlots =workSlotList.getWorkSlots();
+//        for (int i = workSlots.size() - 1; i >= 0; i--) {
+//            if (workSlots.get(i).getEndTime() <= now) {
+//                result = workSlots.subList(i, workSlots.size() - 1);
+//                return result;
+//            }
+//        }
+//        //if we get to here, no workslots had endTime in the past, so we don't have to remove
+//        return workSlots;
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public static WorkSlotList removeWorkSlotsInIntervalXXX(WorkSlotList workSlotList, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {

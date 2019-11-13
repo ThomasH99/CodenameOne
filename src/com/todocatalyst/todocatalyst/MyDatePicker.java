@@ -96,7 +96,7 @@ class MyDatePicker extends Picker implements SwipeClear {
         //set date to Now if empty when button is clicked
         if (getDate().getTime() == 0) {
 //                setDate(new Date());
-            getDate().setTime(new Date().getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+            getDate().setTime(new MyDate().getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
         }
         super.pressed();
     }

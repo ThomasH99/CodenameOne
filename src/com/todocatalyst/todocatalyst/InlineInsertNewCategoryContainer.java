@@ -200,15 +200,15 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
      *
      * @param f
      */
-    public void setTextFieldEditableOnShow(Form f) {
-        if (textEntryField != null) {
-            if (false) {
-                textEntryField.requestFocus();
-            } else {
-                textEntryField.startEditingAsync();
-            }
-        }
-    }
+//    public void setTextFieldEditableOnShowXXX(Form f) {
+//        if (textEntryField != null) {
+//            if (false) {
+//                textEntryField.requestFocus();
+//            } else {
+//                textEntryField.startEditingAsync();
+//            }
+//        }
+//    }
 
     @Override
     public InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {

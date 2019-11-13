@@ -131,7 +131,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, insertBeforeElement);
 
         textEntryField = new MyTextField2(100); //TODO!!!! need field to enter edit mode //UI: 100 width of text field (to avoid showing a small one on eg tablet
-
+        textEntryField.setName("inlineItemEditFieldAsync");
+        
 //          AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField2, item, 1000, () -> item.setText(textEntryField2.getText())); //normal that this appear as non-used!
         if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
             textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
@@ -689,55 +690,55 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
      *
      * @return new task if created (meaning some text was entered), otherwise null
      */
-    public Item createNewTaskForInlineInsertXXX() {
-        String taskText = textEntryField.getText();
-//        Item newItem;
-//        if (createEvenIfNoTextInField || (taskText != null && taskText.length() > 0)) {
-        if (taskText != null && taskText.length() > 0) {
-            textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
-            Item newItem = new Item(taskText, true); //true: interpret textual values
-//            if (itemOrItemListForNewElements instanceof Item)
-            if (false) {
-                newItem.updateValuesInheritedFromOwner((insertAsSubt && refItem instanceof Item) ? (Item) refItem : (itemOrItemListForNewElements instanceof Item ? (Item) itemOrItemListForNewElements : null));
-                if (category2 != null) {
-                    newItem.addCategoryToItem(category2, false); //we don't add item to category here (done in xx) since we may still cancel
-                }
-//            if (itemOrItemListForNewElements != null) {
-                ASSERT.that(itemOrItemListForNewElements != null, "InlineInsert: no owner list defined!");
-                newItem.setOwner(insertAsSubt ? refItem : itemOrItemListForNewElements); //must set owner here to display correctly if going to full screen edit of item (and if there is a repeatRule)
+//    public Item createNewTaskForInlineInsertXXX() {
+//        String taskText = textEntryField.getText();
+////        Item newItem;
+////        if (createEvenIfNoTextInField || (taskText != null && taskText.length() > 0)) {
+//        if (taskText != null && taskText.length() > 0) {
+//            textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
+//            Item newItem = new Item(taskText, true); //true: interpret textual values
+////            if (itemOrItemListForNewElements instanceof Item)
+//            if (false) {
+//                newItem.updateValuesInheritedFromOwner((insertAsSubt && refItem instanceof Item) ? (Item) refItem : (itemOrItemListForNewElements instanceof Item ? (Item) itemOrItemListForNewElements : null));
+//                if (category2 != null) {
+//                    newItem.addCategoryToItem(category2, false); //we don't add item to category here (done in xx) since we may still cancel
+//                }
+////            if (itemOrItemListForNewElements != null) {
+//                ASSERT.that(itemOrItemListForNewElements != null, "InlineInsert: no owner list defined!");
+//                newItem.setOwner(insertAsSubt ? refItem : itemOrItemListForNewElements); //must set owner here to display correctly if going to full screen edit of item (and if there is a repeatRule)
+////            }
+//                if ((refItem != null && refItem.isTemplate()) || itemOrItemListForNewElements == TemplateList.getInstance()) {
+//                    newItem.setTemplate(true);
+//                }
 //            }
-                if ((refItem != null && refItem.isTemplate()) || itemOrItemListForNewElements == TemplateList.getInstance()) {
-                    newItem.setTemplate(true);
-                }
-            }
-            return newItem;
-        }
-        return null;
-    }
+//            return newItem;
+//        }
+//        return null;
+//    }
 
     /**
      *
      * @return new task if created (meaning some text was entered), otherwise null
      */
-    private Item createNewTaskForInlineEditScreenXXX() {
-        Item newItem = new Item(textEntryField.getText(), true); //true: interpret textual values
-        textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
-        //must set owner here to display correctly if going to full screen edit of item (and if there is a repeatRule)
-        newItem.setOwner(insertAsSubt && refItem instanceof Item ? refItem : itemOrItemListForNewElements);
-
-        SaveEditedValuesLocally prevValues = null;
-        if (category2 != null) {
-            prevValues = new SaveEditedValuesLocally();
-            prevValues.putCategories(new ArrayList(Arrays.asList(category2)));
-        }
-
-        if ((refItem != null && refItem.isTemplate()) || itemOrItemListForNewElements == TemplateList.getInstance()) {
-            newItem.setTemplate(true);
-        }
-
-        ASSERT.that(itemOrItemListForNewElements != null, "InlineInsert: no owner list defined!");
-        return newItem;
-    }
+//    private Item createNewTaskForInlineEditScreenXXX() {
+//        Item newItem = new Item(textEntryField.getText(), true); //true: interpret textual values
+//        textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
+//        //must set owner here to display correctly if going to full screen edit of item (and if there is a repeatRule)
+//        newItem.setOwner(insertAsSubt && refItem instanceof Item ? refItem : itemOrItemListForNewElements);
+//
+//        SaveEditedValuesLocally prevValues = null;
+//        if (category2 != null) {
+//            prevValues = new SaveEditedValuesLocally();
+//            prevValues.putCategories(new ArrayList(Arrays.asList(category2)));
+//        }
+//
+//        if ((refItem != null && refItem.isTemplate()) || itemOrItemListForNewElements == TemplateList.getInstance()) {
+//            newItem.setTemplate(true);
+//        }
+//
+//        ASSERT.that(itemOrItemListForNewElements != null, "InlineInsert: no owner list defined!");
+//        return newItem;
+//    }
 
     private void closeInsertContainer(boolean stopAddingInlineContainers) {
         //UI: close the text field

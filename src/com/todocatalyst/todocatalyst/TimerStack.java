@@ -19,6 +19,7 @@ import com.codename1.ui.Form;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
+import com.codename1.ui.TextField;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
@@ -400,9 +401,9 @@ class TimerStack {
         goToNextTimedItemImpl(true);
     }
 
-    private Item getTheNextComingTimedItemXXX() {
-        return goToNextTimedItemImpl(false);
-    }
+//    private Item getTheNextComingTimedItemXXX() {
+//        return goToNextTimedItemImpl(false);
+//    }
 
     private Item getNextComingItem() {
         return goToNextTimedItemImpl(false);
@@ -1544,59 +1545,59 @@ class TimerStack {
 //        return getContentPaneSouth(Display.getInstance().getCurrent());
 //    }
 
-    private static Container getContentPaneSouthXXX(Form form) {
-//        Form form = Display.getInstance().getCurrent();
-        if (form != null) {
-            Container formContentPane = form.getContentPane();
-            if (!(form instanceof ScreenTimer6)) {
-                Layout contentPaneLayout = formContentPane.getLayout();
-                if (contentPaneLayout instanceof MyBorderLayout) {
-                    Component southComponent = ((MyBorderLayout) contentPaneLayout).getSouth();
-                    if (southComponent instanceof Container) {
-                        return (Container) southComponent;
-                    }
-                }
-            }
-        }
-        return null;
-    }
+//    private static Container getContentPaneSouthXXX(Form form) {
+////        Form form = Display.getInstance().getCurrent();
+//        if (form != null) {
+//            Container formContentPane = form.getContentPane();
+//            if (!(form instanceof ScreenTimer6)) {
+//                Layout contentPaneLayout = formContentPane.getLayout();
+//                if (contentPaneLayout instanceof MyBorderLayout) {
+//                    Component southComponent = ((MyBorderLayout) contentPaneLayout).getSouth();
+//                    if (southComponent instanceof Container) {
+//                        return (Container) southComponent;
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     /**
     return the container into which the smallTimer should be interted. Return null if no smallTimer should be shown. 
     Override to disable smallTimer or place it somewhere else. 
     @return 
      */
-    static protected Container getContainerForSmallTimerXXX() {
-        return getContainerForSmallTimerXXX(Display.getInstance().getCurrent());
-    }
+//    static protected Container getContainerForSmallTimerXXX() {
+//        return getContainerForSmallTimerXXX(Display.getInstance().getCurrent());
+//    }
 
-    static protected Container getContainerForSmallTimerXXX(Form form) {
-        Container timerContainer = null;
-//        Form form = this;
-//        if (form instanceof ScreenListOfItemLists || form instanceof ScreenListOfItems
-//                || form instanceof ScreenStatistics
-//                || form instanceof ScreenListOfWorkSlots || form instanceof ScreenListOfCategories) {
-        if (form instanceof MyForm && !(form instanceof ScreenCategoryPicker
-                //                || form instanceof ScreenListOfAlarms //DO show timer in alarmHandler, since likely that alarms will interrupt when timing a task, so should not risk to forget timer is running
-                || form instanceof ScreenLogin || form instanceof ScreenObjectPicker
-                || form instanceof ScreenRepair || form instanceof ScreenTimer6)) {
-//        }else {
-            Container formContentPane = form.getContentPane();
-            Layout contentPaneLayout = formContentPane.getLayout();
-            if (contentPaneLayout instanceof MyBorderLayout) {
-//                timerContainer = getContentPaneSouth(form);
-                Component southComponent = ((MyBorderLayout) contentPaneLayout).getSouth();
-                if (southComponent instanceof Container) {
-                    timerContainer = (Container) southComponent;
-                } else if (southComponent == null) {
-                    Container newCont = new Container(BoxLayout.y());
-                    formContentPane.add(MyBorderLayout.SOUTH, newCont);
-                    timerContainer = newCont;
-                }
-            }
-        }
-        return timerContainer;
-    }
+//    static protected Container getContainerForSmallTimerXXX(Form form) {
+//        Container timerContainer = null;
+////        Form form = this;
+////        if (form instanceof ScreenListOfItemLists || form instanceof ScreenListOfItems
+////                || form instanceof ScreenStatistics
+////                || form instanceof ScreenListOfWorkSlots || form instanceof ScreenListOfCategories) {
+//        if (form instanceof MyForm && !(form instanceof ScreenCategoryPicker
+//                //                || form instanceof ScreenListOfAlarms //DO show timer in alarmHandler, since likely that alarms will interrupt when timing a task, so should not risk to forget timer is running
+//                || form instanceof ScreenLogin || form instanceof ScreenObjectPicker
+//                || form instanceof ScreenRepair || form instanceof ScreenTimer6)) {
+////        }else {
+//            Container formContentPane = form.getContentPane();
+//            Layout contentPaneLayout = formContentPane.getLayout();
+//            if (contentPaneLayout instanceof MyBorderLayout) {
+////                timerContainer = getContentPaneSouth(form);
+//                Component southComponent = ((MyBorderLayout) contentPaneLayout).getSouth();
+//                if (southComponent instanceof Container) {
+//                    timerContainer = (Container) southComponent;
+//                } else if (southComponent == null) {
+//                    Container newCont = new Container(BoxLayout.y());
+//                    formContentPane.add(MyBorderLayout.SOUTH, newCont);
+//                    timerContainer = newCont;
+//                }
+//            }
+//        }
+//        return timerContainer;
+//    }
 
     private static void refreshFormOnTimerUpdate() {
         Form form = Display.getInstance().getCurrent();
@@ -2132,7 +2133,8 @@ class TimerStack {
         ItemList itemList = timerInstance.getTimedItemList();
 
         Button elapsedTimeButton = new Button("", (fullScreenTimer ? "BigTimerTimer" : "SmallTimerTimer"));
-        MyTextField description;
+//        MyTextField description;
+        TextField description;
 
         MyCheckBox status = new MyCheckBox(timedItem.getStatus());
 
@@ -2154,7 +2156,7 @@ class TimerStack {
         totalActualEffort.setUIID("BigTimerTotalActual");
 
         Button editItemButton;
-        Picker hiddenElapsedTimePicker = new MyDurationPicker();
+        MyDurationPicker hiddenElapsedTimePicker = new MyDurationPicker();
         hiddenElapsedTimePicker.setHidden(true); //hiddenElapsedTimePicker must be added to a Form, but we don't want to show it, only activate it via a longpress on the timer button
 //        MyButtonLongPress timerStartStopButton = new MyButtonLongPress() {
 //            int maxWidthSoFar = 0;
@@ -2235,6 +2237,7 @@ class TimerStack {
 //                }
             hiddenElapsedTimePicker.setDuration(timerInstance.getElapsedTimeToDisplay()); //must edit total elapsed time since that is what is shown
             hiddenElapsedTimePicker.startEditingAsync();
+
             hiddenElapsedTimePicker.addActionListener((e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                TimerInstance timerInstance2 = TimerStack.getInstance().getCurrentTimerInstanceN();
@@ -2566,10 +2569,10 @@ class TimerStack {
             public void actionPerformed(ActionEvent evt) {
                 stopUITimers.actionPerformed(null);
                 status.setStatus(ItemStatus.WAITING, false); //update UI
-                
+
                 //if setting Waiting, ask if set waiting date and/or waiting alarm
                 MyForm.dialogSetWaitingDateAndAlarm(timedItem); //only call if we're changing TO Waiting status
-                
+
                 timerInstance.stopTimer(true);
                 MyForm.showDialogUpdateRemainingTime(effort);
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2727,7 +2730,7 @@ class TimerStack {
                 //moved from status.actionListener: 
 //                timedItem.setStatus(status.getStatus());
                 if (false) DAO.getInstance().saveInBackground(timedItem); //done in the commands
-            } else status.setStatus(oldStatus,false); //if user regrest changing status of so many subtasks, change visible status back again
+            } else status.setStatus(oldStatus, false); //if user regrest changing status of so many subtasks, change visible status back again
         });
 
 //            Container contentPane = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
@@ -2831,10 +2834,11 @@ class TimerStack {
             }
             description.setText(timedItem.getText());
         } else { //smallTimer
-            description = new MyTextField(Item.DESCRIPTION_HINT, 100, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY);
-            description.setSingleLineTextArea(false);
-            description.setColumns(100);
-            description.setActAsLabel(true);
+            description = new MyTextField(Item.DESCRIPTION_HINT, 200, 1, 1, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY);
+//            description.setSingleLineTextArea(false);
+            description.setSingleLineTextArea(true);
+//            description.setColumns(200);
+            if (false) description.setActAsLabel(true);
 //            description.setUIID("Label");
             description.setUIID("SmallTimerItemText");
             description.setCommitTimeout(300);
@@ -2842,7 +2846,8 @@ class TimerStack {
             description.setText(timedItem.getText());
             if (timedItem.isInteruptOrInstantTask() && description.getText().equals("")) {
 //                    contentPane.getComponentForm().setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
-                myForm.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
+//                myForm.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
+                description.startEditingAsync();
             }
         }
 
@@ -3129,26 +3134,26 @@ class TimerStack {
             contentPane.add(hiddenElapsedTimePicker);
             contentPane.setScrollableY(true); //since the size of the timer may overflow
 
-            Button c10 = new Button(cmdSaveAndExitTimerScreen); //"Exit"),
-            c10.setUIID("BigTimerExit");
-            c10.setTextPosition(textPos);
-            Button c11 = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"), 
-            c11.setUIID("BigTimerWaiting");
-            c11.setTextPosition(textPos);
-            Button c12 = null;
-            if (cmdStopTimerAndGotoNextTaskOrExit != null) {
-                c12 = new Button(cmdStopTimerAndGotoNextTaskOrExit); //"Stop", "Next", 
-                c12.setUIID("BigTimerNext");
-                c12.setTextPosition(textPos);
+            Button exitButton = new Button(cmdSaveAndExitTimerScreen); //"Exit"),
+            exitButton.setUIID("BigTimerExit");
+            exitButton.setTextPosition(textPos);
+            Button setWaitingButton = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"), 
+            setWaitingButton.setUIID("BigTimerWaiting");
+            setWaitingButton.setTextPosition(textPos);
+            Button nextButton = null;
+            if (nextComingItem != null&&cmdStopTimerAndGotoNextTaskOrExit != null) {
+                nextButton = new Button(cmdStopTimerAndGotoNextTaskOrExit); //"Stop", "Next", 
+                nextButton.setUIID("BigTimerNext");
+                nextButton.setTextPosition(textPos);
             }
-            Button c13 = null;
-            c13 = new Button(cmdSetCompletedAndGotoNextTaskOrExit);
-            c13.setUIID("BigTimerCompleted");
-            c13.setTextPosition(textPos);
-            contentPane.add(GridLayout.encloseIn(1, c13));
-            if (c12 != null)
-                contentPane.add(GridLayout.encloseIn(3, c10, c11, c12));
-            else contentPane.add(GridLayout.encloseIn(2, c10, c11));
+            Button completedButton = null;
+            completedButton = new Button(cmdSetCompletedAndGotoNextTaskOrExit);
+            completedButton.setUIID("BigTimerCompleted");
+            completedButton.setTextPosition(textPos);
+            contentPane.add(GridLayout.encloseIn(1, completedButton));
+            if (nextButton != null)
+                contentPane.add(GridLayout.encloseIn(3, exitButton, setWaitingButton, nextButton));
+            else contentPane.add(GridLayout.encloseIn(2, exitButton, setWaitingButton));
 //                        nextTaskCont.add(gotoNextTaskButtonWithItemText);
             if (gotoNextTaskButtonWithItemText != null)
                 contentPane.add(gotoNextTaskButtonWithItemText);
@@ -3297,7 +3302,8 @@ class TimerStack {
             }
 //            contentPane.add(MyBorderLayout.CENTER, text);
 //            west.add(text);
-            west.add(description);
+//            west.add(description);
+            contentPane.add(MyBorderLayout.CENTER, BoxLayout.encloseX(description));
 
             /*East*/
             Container east = BorderLayout.centerAbsolute(BoxLayout.encloseXNoGrow(timerStartStopButton));

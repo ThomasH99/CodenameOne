@@ -583,27 +583,27 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * updater.getValue() will only be called to refresh the buffered value if
      * reset() has been called.
      */
-    class BufferedValueXXX {
-
-        BufferedValueXXX(UpdaterInterface updater) {
-            this.updater = updater;
-        }
-        boolean needsRecalculation = true;
-        Object value;
-        UpdaterInterface updater;
-
-        void reset() {
-            needsRecalculation = true;
-        }
-
-        Object getValue() {
-            if (needsRecalculation) {
-                value = updater.getValue();
-                needsRecalculation = false;
-            }
-            return value;
-        }
-    }
+//    class BufferedValueXXX {
+//
+//        BufferedValueXXX(UpdaterInterface updater) {
+//            this.updater = updater;
+//        }
+//        boolean needsRecalculation = true;
+//        Object value;
+//        UpdaterInterface updater;
+//
+//        void reset() {
+//            needsRecalculation = true;
+//        }
+//
+//        Object getValue() {
+//            if (needsRecalculation) {
+//                value = updater.getValue();
+//                needsRecalculation = false;
+//            }
+//            return value;
+//        }
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private BufferedValueXXX derivedRemainingEffortSubItemsSumBuffered = new BufferedValueXXX(new UpdaterInterface() {
@@ -983,153 +983,153 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param fieldId
      * @return
      */
-    public Object getFilterFieldXXX(int fieldId) {
-        switch (fieldId) {  //optimization: organize this list so most frequntly used fields appear left in switch
-            case FIELD_DESCRIPTION:
-                return getText(); //optimization: replace by variable description directly
-            case FIELD_CATEGORIES:
-                return getCategories(); //optimization: replace by variable description directly
-            case FIELD_DONE:
-                return isDone();
-            case FIELD_STATUS:
-//                return new Integer(getStatus());
-                return getStatus();
-            case FIELD_DUE_DATE:
-                return getDueDate();
-            case FIELD_MODIFIED_DATE:
-                return getLastModifiedDate();
-            case FIELD_COMPLETED_DATE:
-                return getCompletedDate();
-            case FIELD_CREATED_DATE:
-                return getCreatedDate();
-            case FIELD_COMMENT:
-                return getComment();
-            case FIELD_EFFORT_ESTIMATE:
-//                return new Long(getEffortEstimate());
-                return new Duration(getEstimate());
-            case FIELD_EFFORT_ACTUAL:
-//                return new Long(getActualEffort());
-                return new Duration(getActual());
-            case FIELD_EFFORT_REMAINING:
-//                return new Long(getRemainingEffort());
-                return new Duration(getRemaining());
-            case FIELD_PRIORITY:
-                return getPriority();
-            case FIELD_EARNED_POINTS:
-                return getEarnedValue();
-            case FIELD_EARNED_POINTS_PER_HOUR:
-                return getEarnedValuePerHour();
-            case FIELD_STARTED_ON_DATE:
-                return getStartedOnDate();
-            case FIELD_START_BY_TIME:
-                return getStartByDateD().getTime();
-//            case FIELD_START_WORK_TIME:
-//                return getStartTime();
-            case FIELD_FINISH_WORK_TIME:
-//                return new Long(getFinishTime());
-                return null;
-            case FIELD_EFFORT_TOTAL:
-                return getTotalExpectedEffort();
-            case FIELD_TIMESPAN:
-                return getTimeSpan();
-            case FIELD_DREAD_FUN:
-                return getDreadFunValueN();
-            case FIELD_CHALLENGE:
-                return getChallengeN();
-            default:
-                ASSERT.that("Item: Field Identifier not defined " + fieldId);
-        }
-        return null;
-    }
-
-    public void setFilterFieldXXX(int fieldId, Object fieldValue) {
-        switch (fieldId) {  //optimization: organize this list so most frequntly used fields appear left in switch
-            case FIELD_DESCRIPTION:
-                setText((String) fieldValue); //optimization: replace by variable description directly
-                break;
-            case FIELD_CATEGORIES:
-                setCategories((List) fieldValue); //optimization: replace by variable description directly
-                break;
-            case FIELD_DONE:
-                setDone(((Boolean) fieldValue));
-                break;
-            case FIELD_STATUS:
-//                setStatus(((Integer) fieldValue).intValue());
-                setStatus((ItemStatus) fieldValue);
-                break;
-            case FIELD_DUE_DATE:
-//                setDueDate(((Date) fieldValue).getTime());
-                setDueDate(((Date) fieldValue));
-                break;
+//    public Object getFilterFieldXXX(int fieldId) {
+//        switch (fieldId) {  //optimization: organize this list so most frequntly used fields appear left in switch
+//            case FIELD_DESCRIPTION:
+//                return getText(); //optimization: replace by variable description directly
+//            case FIELD_CATEGORIES:
+//                return getCategories(); //optimization: replace by variable description directly
+//            case FIELD_DONE:
+//                return isDone();
+//            case FIELD_STATUS:
+////                return new Integer(getStatus());
+//                return getStatus();
+//            case FIELD_DUE_DATE:
+//                return getDueDate();
 //            case FIELD_MODIFIED_DATE:
-////                setLastModifiedDate(((Date)fieldValue).getTime());
-//                setLastModifiedDate(((Long) fieldValue));
-//                break;
-            case FIELD_COMPLETED_DATE:
-//                setCompletedDate(((Date)fieldValue).getTime());
-                setCompletedDate(((Long) fieldValue));
-                break;
+//                return getLastModifiedDate();
+//            case FIELD_COMPLETED_DATE:
+//                return getCompletedDate();
 //            case FIELD_CREATED_DATE:
-////                setCreatedDate(((Date)fieldValue).getTime());
-//                setCreatedDate(((Long) fieldValue));
+//                return getCreatedDate();
+//            case FIELD_COMMENT:
+//                return getComment();
+//            case FIELD_EFFORT_ESTIMATE:
+////                return new Long(getEffortEstimate());
+//                return new Duration(getEstimate());
+//            case FIELD_EFFORT_ACTUAL:
+////                return new Long(getActualEffort());
+//                return new Duration(getActual());
+//            case FIELD_EFFORT_REMAINING:
+////                return new Long(getRemainingEffort());
+//                return new Duration(getRemaining());
+//            case FIELD_PRIORITY:
+//                return getPriority();
+//            case FIELD_EARNED_POINTS:
+//                return getEarnedValue();
+//            case FIELD_EARNED_POINTS_PER_HOUR:
+//                return getEarnedValuePerHour();
+//            case FIELD_STARTED_ON_DATE:
+//                return getStartedOnDate();
+//            case FIELD_START_BY_TIME:
+//                return getStartByDateD().getTime();
+////            case FIELD_START_WORK_TIME:
+////                return getStartTime();
+//            case FIELD_FINISH_WORK_TIME:
+////                return new Long(getFinishTime());
+//                return null;
+//            case FIELD_EFFORT_TOTAL:
+//                return getTotalExpectedEffort();
+//            case FIELD_TIMESPAN:
+//                return getTimeSpan();
+//            case FIELD_DREAD_FUN:
+//                return getDreadFunValueN();
+//            case FIELD_CHALLENGE:
+//                return getChallengeN();
+//            default:
+//                ASSERT.that("Item: Field Identifier not defined " + fieldId);
+//        }
+//        return null;
+//    }
+
+//    public void setFilterFieldXXX(int fieldId, Object fieldValue) {
+//        switch (fieldId) {  //optimization: organize this list so most frequntly used fields appear left in switch
+//            case FIELD_DESCRIPTION:
+//                setText((String) fieldValue); //optimization: replace by variable description directly
 //                break;
-            case FIELD_COMMENT:
-                setComment((String) fieldValue);
-                break;
-            case FIELD_EFFORT_ESTIMATE:
-//                setEstimate(((Duration)fieldValue).getDays());
-                setEstimate(((Long) fieldValue), false);
-                break;
-            case FIELD_EFFORT_ACTUAL:
-//                setActualEffort(((Duration)fieldValue).getDays());
-                setActual(((Long) fieldValue), false);
-                break;
-            case FIELD_EFFORT_REMAINING:
-//                setRemainingEffortXXX(((Duration)fieldValue).getDays());
-                setRemaining(((Long) fieldValue), false);
-                break;
-            case FIELD_PRIORITY:
-                setPriority(((Integer) fieldValue));
-                break;
-            case FIELD_EARNED_POINTS:
-                setEarnedValue(((Double) fieldValue));
-                break;
-            case FIELD_EARNED_POINTS_PER_HOUR:
-                //do nothing, value is calculated and cannot be set
-                ASSERT.that("Should not call setFilterField for FIELD_EARNED_POINTS_PER_HOUR");
-                break;
-            case FIELD_STARTED_ON_DATE:
-//                setStartedOnDate(((Date)fieldValue).getTime());
-                setStartedOnDate(((Long) fieldValue));
-            case FIELD_START_BY_TIME:
-//                setStartByDate(((Date)fieldValue).getTime());
-                setStartByDate(((Long) fieldValue));
-            case FIELD_START_WORK_TIME:
-                //do nothing, value is calculated and cannot be set
-                ASSERT.that("Should not call setFilterField for FIELD_START_WORK_TIME");
-                break;
-            case FIELD_FINISH_WORK_TIME:
-                //do nothing, value is calculated and cannot be set
-                ASSERT.that("Should not call setFilterField for FIELD_FINISH_WORK_TIME");
-                break;
-            case FIELD_EFFORT_TOTAL:
-                //do nothing, value is calculated and cannot be set
-                ASSERT.that("Should not call setFilterField for FIELD_EFFORT_TOTAL");
-                break;
-            case FIELD_TIMESPAN:
-                //do nothing, value is calculated and cannot be set
-                ASSERT.that("Should not call setFilterField for FIELD_EFFORT_TOTAL");
-                break;
-            case FIELD_DREAD_FUN:
-                setDreadFunValue(((DreadFunValue) fieldValue));
-                break;
-            case FIELD_CHALLENGE:
-                setChallenge(((Challenge) fieldValue));
-                break;
-            default:
-                ASSERT.that("Item.setFilterField: Field Identifier not defined " + fieldId);
-        }
-    }
+//            case FIELD_CATEGORIES:
+//                setCategories((List) fieldValue); //optimization: replace by variable description directly
+//                break;
+//            case FIELD_DONE:
+//                setDone(((Boolean) fieldValue));
+//                break;
+//            case FIELD_STATUS:
+////                setStatus(((Integer) fieldValue).intValue());
+//                setStatus((ItemStatus) fieldValue);
+//                break;
+//            case FIELD_DUE_DATE:
+////                setDueDate(((Date) fieldValue).getTime());
+//                setDueDate(((Date) fieldValue));
+//                break;
+////            case FIELD_MODIFIED_DATE:
+//////                setLastModifiedDate(((Date)fieldValue).getTime());
+////                setLastModifiedDate(((Long) fieldValue));
+////                break;
+//            case FIELD_COMPLETED_DATE:
+////                setCompletedDate(((Date)fieldValue).getTime());
+//                setCompletedDate(((Long) fieldValue));
+//                break;
+////            case FIELD_CREATED_DATE:
+//////                setCreatedDate(((Date)fieldValue).getTime());
+////                setCreatedDate(((Long) fieldValue));
+////                break;
+//            case FIELD_COMMENT:
+//                setComment((String) fieldValue);
+//                break;
+//            case FIELD_EFFORT_ESTIMATE:
+////                setEstimate(((Duration)fieldValue).getDays());
+//                setEstimate(((Long) fieldValue), false);
+//                break;
+//            case FIELD_EFFORT_ACTUAL:
+////                setActualEffort(((Duration)fieldValue).getDays());
+//                setActual(((Long) fieldValue), false);
+//                break;
+//            case FIELD_EFFORT_REMAINING:
+////                setRemainingEffortXXX(((Duration)fieldValue).getDays());
+//                setRemaining(((Long) fieldValue), false);
+//                break;
+//            case FIELD_PRIORITY:
+//                setPriority(((Integer) fieldValue));
+//                break;
+//            case FIELD_EARNED_POINTS:
+//                setEarnedValue(((Double) fieldValue));
+//                break;
+//            case FIELD_EARNED_POINTS_PER_HOUR:
+//                //do nothing, value is calculated and cannot be set
+//                ASSERT.that("Should not call setFilterField for FIELD_EARNED_POINTS_PER_HOUR");
+//                break;
+//            case FIELD_STARTED_ON_DATE:
+////                setStartedOnDate(((Date)fieldValue).getTime());
+//                setStartedOnDate(((Long) fieldValue));
+//            case FIELD_START_BY_TIME:
+////                setStartByDate(((Date)fieldValue).getTime());
+//                setStartByDate(((Long) fieldValue));
+//            case FIELD_START_WORK_TIME:
+//                //do nothing, value is calculated and cannot be set
+//                ASSERT.that("Should not call setFilterField for FIELD_START_WORK_TIME");
+//                break;
+//            case FIELD_FINISH_WORK_TIME:
+//                //do nothing, value is calculated and cannot be set
+//                ASSERT.that("Should not call setFilterField for FIELD_FINISH_WORK_TIME");
+//                break;
+//            case FIELD_EFFORT_TOTAL:
+//                //do nothing, value is calculated and cannot be set
+//                ASSERT.that("Should not call setFilterField for FIELD_EFFORT_TOTAL");
+//                break;
+//            case FIELD_TIMESPAN:
+//                //do nothing, value is calculated and cannot be set
+//                ASSERT.that("Should not call setFilterField for FIELD_EFFORT_TOTAL");
+//                break;
+//            case FIELD_DREAD_FUN:
+//                setDreadFunValue(((DreadFunValue) fieldValue));
+//                break;
+//            case FIELD_CHALLENGE:
+//                setChallenge(((Challenge) fieldValue));
+//                break;
+//            default:
+//                ASSERT.that("Item.setFilterField: Field Identifier not defined " + fieldId);
+//        }
+//    }
 
     @Override
     public boolean isDone() {
@@ -1409,10 +1409,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            setOwnerCategory((Category) owner);
 //        } else 
         if (owner instanceof TemplateList) {
+            setOwnerItemList(null);
+            setOwnerItem(null);
             setOwnerTemplateList((TemplateList) owner);
         } else if (owner instanceof ItemList) {
+            setOwnerItem(null);
+            setOwnerTemplateList(null);
             setOwnerItemList((ItemList) owner);
         } else if (owner instanceof Item) {
+            setOwnerItemList(null);
+            setOwnerTemplateList(null);
             setOwnerItem((Item) owner, updateInheritedValues);
         } else if (owner == null) {
             setOwnerItemList(null);
@@ -2240,7 +2246,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        //ALARMS remove any active alarms
 //        AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
 //</editor-fold>
-        softDeleteImpl(new Date(), true);
+        softDeleteImpl(new MyDate(), true);
 //        setDeletedDate(new Date());
         DAO.getInstance().saveInBackground(this);
 
@@ -2268,7 +2274,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public void delete() throws ParseException {
-        softDeleteImpl(new Date(), false); //ONLY soft-delete is supported, softDeleteImpl() won't handle a deep hard-delete!
+        softDeleteImpl(new MyDate(), false); //ONLY soft-delete is supported, softDeleteImpl() won't handle a deep hard-delete!
         super.delete();
     }
 
@@ -3501,7 +3507,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public List<AlarmRecord> getAllFutureAlarmRecordsSorted() {
-        return getAllAlarmRecords(new Date(), true);
+        return getAllAlarmRecords(new MyDate(), true);
     }
 
     public AlarmRecord getNextcomingAlarmRecord() {
@@ -4363,22 +4369,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    static public ItemStatus updateStatusOnActualChangeXXX(long oldActualMillis, long newActualMillis, ItemStatus oldStatus, ItemStatus newStatus, boolean areAnySubtasksOngoing) {
-        if (oldActualMillis == newActualMillis) {
-            return oldStatus; //return if no change
-        } else if (areAnySubtasksOngoing) { //if some subtasks are done
-            return ItemStatus.ONGOING;
-        } else if (newActualMillis > 0) { //if user has changed actual
-            if (oldStatus == ItemStatus.CREATED /*don't change WAITING/CANCELLED/ONGOING*/
-                    && (newStatus == oldStatus/*status not manually changed*/
-                    || oldStatus == ItemStatus.ONGOING /*setting back to existing value*/)) {
-                return ItemStatus.ONGOING;
-            } //else 
-        } else if (oldStatus == ItemStatus.ONGOING && newStatus == oldStatus) {
-            return ItemStatus.CREATED; //if setting actual to 0, set status back to Created
-        }
-        return newStatus; //if no need to change status, just return already set value
-    }
+//    static public ItemStatus updateStatusOnActualChangeXXX(long oldActualMillis, long newActualMillis, ItemStatus oldStatus, ItemStatus newStatus, boolean areAnySubtasksOngoing) {
+//        if (oldActualMillis == newActualMillis) {
+//            return oldStatus; //return if no change
+//        } else if (areAnySubtasksOngoing) { //if some subtasks are done
+//            return ItemStatus.ONGOING;
+//        } else if (newActualMillis > 0) { //if user has changed actual
+//            if (oldStatus == ItemStatus.CREATED /*don't change WAITING/CANCELLED/ONGOING*/
+//                    && (newStatus == oldStatus/*status not manually changed*/
+//                    || oldStatus == ItemStatus.ONGOING /*setting back to existing value*/)) {
+//                return ItemStatus.ONGOING;
+//            } //else 
+//        } else if (oldStatus == ItemStatus.ONGOING && newStatus == oldStatus) {
+//            return ItemStatus.CREATED; //if setting actual to 0, set status back to Created
+//        }
+//        return newStatus; //if no need to change status, just return already set value
+//    }
 
     /**
      * returns true if the status of this task should be changed to the
@@ -4752,11 +4758,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     @Override
     public void setStatus(ItemStatus newStatus) {
-        setStatus(newStatus, true, true, true, new Date());
+        setStatus(newStatus, true, true, true, new MyDate());
     }
 
     public void setStatus(ItemStatus newStatus, boolean updateDependentFields) {
-        setStatus(newStatus, true, true, updateDependentFields, new Date());
+        setStatus(newStatus, true, true, updateDependentFields, new MyDate());
     }
 
     /**
@@ -4767,86 +4773,86 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @param updateDependentFields false if fields are set explicitly as in ScreenItemEdit
     @param now reference time to ensure all fields get exactly the same time (using System time would create some micro seconds different <=> not exactly the same time)
      */
-    public void setStatusOLD(ItemStatus newStatus, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now) {
-        ItemStatus oldStatus = getStatusFromParse();
-        if (newStatus == oldStatus) {
-            return;
-        }
-
-        if (newStatus == ItemStatus.CREATED && getActual() > 0) {  //convert CREATED to ONGOING if actual effort is recorded
-            newStatus = ItemStatus.ONGOING;
-        }
-
-        //if setting Waiting, ask if set 
-        if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
-            MyForm.dialogSetWaitingDateAndAlarm(this); //only call if we're changing TO Waiting status
-        }
-        //if setting Done, ask if set actual
-        if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //don't activate here, activate in UI part
-            MyForm.dialogUpdateActualTime(this); //only call if we're changing TO Waiting status
-        }
-
-        if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
-            mustUpdateAlarms = true; //update alarms
-        }
-
-        if (updateSubtasks && isProject()) {
-            //when changing the status of a project, only the status of the subtasks are changed(??)
-//            ItemStatus oldStatus = getStatus();
-//            if (newStatus != oldStatus) { //only check how many subtasks may be impacted if overall status is being changed
-            boolean doneProject = (oldStatus == ItemStatus.DONE);
-//            int nbUndone = getNumberOfUndoneItems(true);
-            int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
-            if (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
-                    //                    || Dialog.show("INFO", "Changing status to " + newStatus.getDescription() + " for " + nbChgStatus + " subtasks", "OK", "Cancel")) {
-                    || Dialog.show("INFO", "Change " + nbChgStatus + " subtasks to " + newStatus.getDescription(), "OK", "Cancel")) {
-                List subtasksToSave = new ArrayList();
-//                    List<Item> subtasks = getList();s
-//                    for (int i = 0, size = subtasks.size(); i < size; i++) {
-                for (Item item : (List<Item>) getListFull()) {
-//                    if (!subtasks.get(i).isDone()) {
-//                        ItemStatus oldSubtaskStatus = subtasks.get(i).getStatus();
-                    ItemStatus oldSubtaskStatus = item.getStatus();
-                    if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, doneProject)) { //only change status when transition is allowed
-//                            Item item = subtasks.get(i);
-                        item.setStatus(newStatus, true, false, true, now); //always update dependent fields for subtasks
-                        subtasksToSave.add(item);
-//                            DAO.getInstance().saveInBackgroundSequential(item);
-                    }
-                }
-//                DAO.getInstance().saveInBackgroundSequential(subtasksToSave);
-                DAO.getInstance().saveInBackground(subtasksToSave);
-            } else
-                return; //UI: do nothing it user does not want to change all subtasks!
-//            }
-        }
-
-        setStatusInParse(newStatus); //must set *before* updating supertasks
-
-        if (updateDependentFields) {
-            updateFieldsDependingOnStatus(this, oldStatus, newStatus, now);
-        }
-
-        if (updateSupertasks) {
-            Item owner = getOwnerItem();
-            if (owner != null) {// && owner.getStatus() != newStatus) {
-                owner.updateStatusOnSubtaskStatusChange(this, oldStatus, newStatus, now);
-//                owner.setStatus(newStatus, false, true, now);
-                DAO.getInstance().saveInBackground(owner);
-            }
-        }
-
-//        setStatusInParse(newStatus);
-//        else {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), true);
-//        setStatusImpl(true, newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), !Settings.getInstance().neverChangeProjectsSubtasksWhenChangingProjectStatus.getBoolean());
-//            setStatusImpl(true, newStatus, !MyPrefs.changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), MyPrefs.neverChangeProjectsSubtasksWhenChangingProjectStatusXXX.getBoolean());
-//            setStatusImpl(true, newStatus);
-//</editor-fold>
-//        setStatusImpl(newStatus);
+//    public void setStatusOLD(ItemStatus newStatus, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now) {
+//        ItemStatus oldStatus = getStatusFromParse();
+//        if (newStatus == oldStatus) {
+//            return;
 //        }
-    }
+//
+//        if (newStatus == ItemStatus.CREATED && getActual() > 0) {  //convert CREATED to ONGOING if actual effort is recorded
+//            newStatus = ItemStatus.ONGOING;
+//        }
+//
+//        //if setting Waiting, ask if set 
+//        if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
+//            MyForm.dialogSetWaitingDateAndAlarm(this); //only call if we're changing TO Waiting status
+//        }
+//        //if setting Done, ask if set actual
+//        if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //don't activate here, activate in UI part
+//            MyForm.dialogUpdateActualTime(this); //only call if we're changing TO Waiting status
+//        }
+//
+//        if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
+//            mustUpdateAlarms = true; //update alarms
+//        }
+//
+//        if (updateSubtasks && isProject()) {
+//            //when changing the status of a project, only the status of the subtasks are changed(??)
+////            ItemStatus oldStatus = getStatus();
+////            if (newStatus != oldStatus) { //only check how many subtasks may be impacted if overall status is being changed
+//            boolean doneProject = (oldStatus == ItemStatus.DONE);
+////            int nbUndone = getNumberOfUndoneItems(true);
+//            int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
+//            if (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
+//                    //                    || Dialog.show("INFO", "Changing status to " + newStatus.getDescription() + " for " + nbChgStatus + " subtasks", "OK", "Cancel")) {
+//                    || Dialog.show("INFO", "Change " + nbChgStatus + " subtasks to " + newStatus.getDescription(), "OK", "Cancel")) {
+//                List subtasksToSave = new ArrayList();
+////                    List<Item> subtasks = getList();s
+////                    for (int i = 0, size = subtasks.size(); i < size; i++) {
+//                for (Item item : (List<Item>) getListFull()) {
+////                    if (!subtasks.get(i).isDone()) {
+////                        ItemStatus oldSubtaskStatus = subtasks.get(i).getStatus();
+//                    ItemStatus oldSubtaskStatus = item.getStatus();
+//                    if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, doneProject)) { //only change status when transition is allowed
+////                            Item item = subtasks.get(i);
+//                        item.setStatus(newStatus, true, false, true, now); //always update dependent fields for subtasks
+//                        subtasksToSave.add(item);
+////                            DAO.getInstance().saveInBackgroundSequential(item);
+//                    }
+//                }
+////                DAO.getInstance().saveInBackgroundSequential(subtasksToSave);
+//                DAO.getInstance().saveInBackground(subtasksToSave);
+//            } else
+//                return; //UI: do nothing it user does not want to change all subtasks!
+////            }
+//        }
+//
+//        setStatusInParse(newStatus); //must set *before* updating supertasks
+//
+//        if (updateDependentFields) {
+//            updateFieldsDependingOnStatus(this, oldStatus, newStatus, now);
+//        }
+//
+//        if (updateSupertasks) {
+//            Item owner = getOwnerItem();
+//            if (owner != null) {// && owner.getStatus() != newStatus) {
+//                owner.updateStatusOnSubtaskStatusChange(this, oldStatus, newStatus, now);
+////                owner.setStatus(newStatus, false, true, now);
+//                DAO.getInstance().saveInBackground(owner);
+//            }
+//        }
+//
+////        setStatusInParse(newStatus);
+////        else {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), true);
+////        setStatusImpl(true, newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), !Settings.getInstance().neverChangeProjectsSubtasksWhenChangingProjectStatus.getBoolean());
+////            setStatusImpl(true, newStatus, !MyPrefs.changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), MyPrefs.neverChangeProjectsSubtasksWhenChangingProjectStatusXXX.getBoolean());
+////            setStatusImpl(true, newStatus);
+////</editor-fold>
+////        setStatusImpl(newStatus);
+////        }
+//    }
 
     /**
     returns true if OK to update status of subtasks (based on new status for mother task). Returns true if either the number of impacted subtasks is 
@@ -5019,21 +5025,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param list
      * @param statusCount
      */
-    private static void getStatusImplProjectLeaftasksXXX(List<Item> list, Bag<ItemStatus> statusCount) {
-//    protected ItemStatus getListStatus() {
-        for (int i = 0, size = list.size(); i < size; i++) {
-//            statusCount.add(list.get(i).getStatus());
-//            statusCount.add(list.get(i).getStatus());
-//            ItemAndListCommonInterface item = list.get(i);
-            Item item = list.get(i);
-            if (item.isProject()) {
-                getStatusImplProjectLeaftasksXXX(item.getListFull(), statusCount);
-            } else {
-                statusCount.add(list.get(i).getStatus());
-//                statusCount.add(item.getStatus());
-            }
-        }
-    }
+//    private static void getStatusImplProjectLeaftasksXXX(List<Item> list, Bag<ItemStatus> statusCount) {
+////    protected ItemStatus getListStatus() {
+//        for (int i = 0, size = list.size(); i < size; i++) {
+////            statusCount.add(list.get(i).getStatus());
+////            statusCount.add(list.get(i).getStatus());
+////            ItemAndListCommonInterface item = list.get(i);
+//            Item item = list.get(i);
+//            if (item.isProject()) {
+//                getStatusImplProjectLeaftasksXXX(item.getListFull(), statusCount);
+//            } else {
+//                statusCount.add(list.get(i).getStatus());
+////                statusCount.add(item.getStatus());
+//            }
+//        }
+//    }
 
     private ItemStatus getStatusFromParse() {
         String status = getString(PARSE_STATUS);
@@ -6159,13 +6165,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         setEstimate(effortEstimateProjectTaskItselfMillis, false); //false=> don't update the other field by default, only if explicitly defined
     }
 
-    protected void updateOnEstimateChangeInSubtaskXXX(long oldEstimate, long newEstimate) {
-//                    long currentProjectEffortEstimate = owner.getEffortEstimate();
-//            long currentProjectEffortEstimateInParse = owner.getEffortEstimateFromParse();
-        long effortEstimate = getEstimate();
-//            if (currentProjectEffortEstimate != currentProjectEffortEstimateInParse) {
-        setEstimateImpl(effortEstimate - oldEstimate + newEstimate);
-    }
+//    protected void updateOnEstimateChangeInSubtaskXXX(long oldEstimate, long newEstimate) {
+////                    long currentProjectEffortEstimate = owner.getEffortEstimate();
+////            long currentProjectEffortEstimateInParse = owner.getEffortEstimateFromParse();
+//        long effortEstimate = getEstimate();
+////            if (currentProjectEffortEstimate != currentProjectEffortEstimateInParse) {
+//        setEstimateImpl(effortEstimate - oldEstimate + newEstimate);
+//    }
 
     protected void updateEstimateOnChangeInSubtasks() {
         setEstimateImpl(getEstimateForProjectTaskItself());
@@ -6780,9 +6786,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     adds elapsedTime to the Actual of this Item
     @param elapsedTime 
      */
-    public void addElapsedTimerTimeToActualXXX(long elapsedTime) {
-        setActual(getActualForProjectTaskItself() + elapsedTime, false);
-    }
+//    public void addElapsedTimerTimeToActualXXX(long elapsedTime) {
+//        setActual(getActualForProjectTaskItself() + elapsedTime, false);
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
@@ -7276,8 +7282,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 //below: % MyDate.DAY_IN_MILLISECONDS quick hack to to only show time for hours/minutes
                 //                MyDate.formatDateL10NShort(System.currentTimeMillis()) + (MyPrefs.getBoolean(MyPrefs.commentsAddTimedEntriesWithDateANDTime) ? " " + MyDate.formatTimeOfDay(System.currentTimeMillis() % MyDate.DAY_IN_MILLISECONDS) : "") + ": ",
                 //                MyDate.formatDateNew(System.currentTimeMillis()) + (MyPrefs.getBoolean(MyPrefs.commentsAddTimedEntriesWithDateANDTime) ? " " + MyDate.formatTimeOfDay(System.currentTimeMillis() % MyDate.DAY_IN_MILLISECONDS) : "") + ": ",
-                MyPrefs.getBoolean(MyPrefs.commentsAddTimedEntriesWithDateANDTime) ? MyDate.formatDateTimeNew(new Date()) + ": "
-                : MyDate.formatDateNew(new Date()) + ": ",
+                MyPrefs.getBoolean(MyPrefs.commentsAddTimedEntriesWithDateANDTime) ? MyDate.formatDateTimeNew(new MyDate()) + ": "
+                : MyDate.formatDateNew(new MyDate()) + ": ",
                 !MyPrefs.getBoolean(MyPrefs.commentsAddToBeginningOfComment));
     }
 
@@ -7499,27 +7505,27 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        delete();
 //        DAO.getInstance().delete(this);
 //    }
-    public long getAlarmDateXXX(int alarmId) {
-        if (alarmId == Item.FIELD_ALARM_DATE) {
-            return getAlarmDate();
-        } else if (alarmId == FIELD_WAITING_ALARM_DATE) {
-            return getWaitingAlarmDateD() != null ? getWaitingAlarmDateD().getTime() : 0;
-        } else {
-            return 0;
-        }
-//        RuntimeException     ("Not supported yet.");
-    }
-
-    public String getAlarmTextXXX(int alarmId) {
-        if (alarmId == Item.FIELD_ALARM_DATE) {
-            return getText();
-        } else if (alarmId == FIELD_WAITING_ALARM_DATE) {
-            return getText();
-        } else {
-            return "";
-        }
-//        ASSERT.that("Not supported yet.");
-    }
+//    public long getAlarmDateXXX(int alarmId) {
+//        if (alarmId == Item.FIELD_ALARM_DATE) {
+//            return getAlarmDate();
+//        } else if (alarmId == FIELD_WAITING_ALARM_DATE) {
+//            return getWaitingAlarmDateD() != null ? getWaitingAlarmDateD().getTime() : 0;
+//        } else {
+//            return 0;
+//        }
+////        RuntimeException     ("Not supported yet.");
+//    }
+//
+//    public String getAlarmTextXXX(int alarmId) {
+//        if (alarmId == Item.FIELD_ALARM_DATE) {
+//            return getText();
+//        } else if (alarmId == FIELD_WAITING_ALARM_DATE) {
+//            return getText();
+//        } else {
+//            return "";
+//        }
+////        ASSERT.that("Not supported yet.");
+//    }
 
 //    public String getAlarmIdText(int alarmId) {
 //        if (alarmId == Item.FIELD_ALARM_DATE) {
@@ -7895,10 +7901,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     /**
      * call to save the item
      */
-    public void commitXXX() throws ParseException {
-        this.save();//ParseObject.save()
-
-    }
+//    public void commitXXX() throws ParseException {
+//        this.save();//ParseObject.save()
+//    }
 
 //    public int countTasksWhereStatusWillBeChanged(ItemStatus newStatus, boolean recurseOverSubtasks) {
 //        return (changeSubtaskStatus(newStatus, getStatus()) ? 1 : 0)
@@ -8392,7 +8397,7 @@ if (getCategories().size()>0)
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
             if (Config.CHECK_OWNERS) checkOwners(workslots);
-            boolean updated = RepeatRuleParseObject.updateWorkSlotListXXX(workslots);
+            boolean updated = false ;//&& RepeatRuleParseObject.updateWorkSlotListXXX(workslots);
             WorkSlotList workSlotList = new WorkSlotList(this, workslots, true); //true=already sorted
             if (updated)
                 setWorkSlotList(workSlotList);
@@ -9984,7 +9989,7 @@ if (getCategories().size()>0)
         changeDispatcher.fireActionEvent(new ActionEvent(this, ActionEvent.Type.Change));
     }
 
-    public String getUnsavedReferences() {
+    public String hasReferencesToUnsavedParseObjects() {
         String str = "";
         String sep = "";
 

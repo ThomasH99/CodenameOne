@@ -25,11 +25,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.io.ConnectionRequest;
 import com.codename1.io.Log;
 import com.codename1.io.NetworkManager;
-import com.codename1.io.Util;
 import com.codename1.ui.Display;
-import com.codename1.ui.Form;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * <p>The analytics service allows an application to report its usage, it is seamlessly
@@ -166,14 +162,14 @@ public class MyAnalyticsService {
             String version = Display.getInstance().getProperty("AppVersion", "1.0");
             req.addArgument("av", version);
 //            String cleanedPage = clean(page); //remove spaces etc
-            String cleanPage = clean(page);
-            req.addArgument("cd", cleanPage);
+            String cleanedPageId = clean(page);
+            req.addArgument("cd", cleanedPageId);
             if (false) { //no support for referer in 
                 String cleanReferer = clean(referer);
                 req.addArgument("cd", cleanReferer);
             }
 //            Log.p("Analytics VISIT: " + req.getRequestBody());
-            Log.p("Analytics VISIT: " + "Page=" + cleanPage);// + " Ref=" + cleanReferer);
+            Log.p("Analytics VISIT: " + "Page=" + cleanedPageId);// + " Ref=" + cleanReferer);
             if (!Config.PARSE_OFFLINE)
                 NetworkManager.getInstance().addToQueue(req);
         } else {
@@ -270,13 +266,20 @@ public class MyAnalyticsService {
      * @param fatal is the exception fatal
      */
     public static void sendCrashReport(Throwable t, String message, boolean fatal) {
-        if (MyPrefs.disableGoogleAnalytics.getBoolean()) return;
+        if (MyPrefs.disableGoogleAnalytics.getBoolean() || !appsMode) return;
 
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#exception
         ConnectionRequest req = GetGARequest();
         req.addArgument("t", "exception");
+
+//        req.addArgument("t", "screenview");
+        req.addArgument("an", Display.getInstance().getProperty("AppName", "Codename One App"));
+        String version = Display.getInstance().getProperty("AppVersion", "1.0");
+        req.addArgument("av", version);
+
 //        System.out.println(message);
-        String messageCleaned = message.substring(0, Math.min(message.length(), 150) - 1); //TODO!!! extract only relevant/core data from stack trace
+//max 150 bytes: https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters: "exd" 
+        String messageCleaned = message.substring(0, Math.min(message.length(), 150 - 1) - 1); //TODO!!! extract only relevant/core data from stack trace (app version, line number, class.method)
         req.addArgument("exd", messageCleaned);
         if (fatal) {
             req.addArgument("exf", "1");
@@ -285,7 +288,7 @@ public class MyAnalyticsService {
         }
 
 //        Log.p("Analytics CRASH: " + req.getRequestBody());
-        Log.p("Analytics CRASH: " + "Throwable=" + t + " Msg=" + messageCleaned + " Fatal=" + (fatal ? "YES" : "no"));
+        Log.p("Analytics CRASH: " + "Throwable=\"" + t + "\", Msg (len=" + messageCleaned.length() + ")=\"" + messageCleaned + "\", Fatal=\"" + (fatal ? "YES\"" : "no\""));
         if (!Config.PARSE_OFFLINE)
             NetworkManager.getInstance().addToQueue(req);
     }

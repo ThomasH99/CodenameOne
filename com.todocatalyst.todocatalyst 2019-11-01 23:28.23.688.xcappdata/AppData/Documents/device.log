@@ -1,0 +1,37 @@
+2019-11-01 23:25:20.625 TodoCatalyst[3443:1674607] [EDT] 0:0:0,13 - Native Logs Reader initialized correctly
+2019-11-01 23:25:20.626 TodoCatalyst[3443:1674607] [EDT] 0:0:0,14 - Registering subclass 'Item'
+2019-11-01 23:25:20.626 TodoCatalyst[3443:1674607] [EDT] 0:0:0,14 - Registering object factory for class 'Item'
+2019-11-01 23:25:20.626 TodoCatalyst[3443:1674607] [EDT] 0:0:0,14 - Registering subclass 'ItemList'
+2019-11-01 23:25:20.627 TodoCatalyst[3443:1674607] [EDT] 0:0:0,15 - Registering object factory for class 'ItemList'
+2019-11-01 23:25:20.627 TodoCatalyst[3443:1674607] [EDT] 0:0:0,15 - Registering subclass 'Category'
+2019-11-01 23:25:20.627 TodoCatalyst[3443:1674607] [EDT] 0:0:0,15 - Registering object factory for class 'Category'
+2019-11-01 23:25:20.627 TodoCatalyst[3443:1674607] [EDT] 0:0:0,15 - Registering object factory for class 'WorkSlot'
+2019-11-01 23:25:20.629 TodoCatalyst[3443:1674607] [EDT] 0:0:0,17 - Registering object factory for class 'CategoryList'
+2019-11-01 23:25:20.630 TodoCatalyst[3443:1674607] [EDT] 0:0:0,18 - Registering object factory for class 'ItemListList'
+2019-11-01 23:25:20.630 TodoCatalyst[3443:1674607] [EDT] 0:0:0,18 - Registering object factory for class 'TemplateList'
+2019-11-01 23:25:20.631 TodoCatalyst[3443:1674607] [EDT] 0:0:0,19 - Registering object factory for class 'FilterSortDef'
+2019-11-01 23:25:20.632 TodoCatalyst[3443:1674607] [EDT] 0:0:0,20 - Registering object factory for class 'RepeatRule'
+2019-11-01 23:25:20.633 TodoCatalyst[3443:1674607] [EDT] 0:0:0,21 - Registering object factory for class 'Timer'
+2019-11-01 23:25:20.715 TodoCatalyst[3443:1674607] [EDT] 0:0:0,103 - Locale (Display.getInstance().getLocalizationManager().getLocale()) = FR
+2019-11-01 23:25:20.723 TodoCatalyst[3443:1674607] [EDT] 0:0:0,111 - TimeZone (TimeZone.getDefault()) = Obj[-2093697536]
+2019-11-01 23:25:20.723 TodoCatalyst[3443:1674607] [EDT] 0:0:0,111 - LOCALE = en
+2019-11-01 23:25:20.723 TodoCatalyst[3443:1674607] [EDT] 0:0:0,111 - Registering subclass '_User'
+2019-11-01 23:25:20.724 TodoCatalyst[3443:1674607] [EDT] 0:0:0,112 - Registering subclass '_Role'
+2019-11-01 23:25:20.724 TodoCatalyst[3443:1674607] [EDT] 0:0:0,112 - Registering 'Delete' decoder
+2019-11-01 23:25:20.724 TodoCatalyst[3443:1674607] [EDT] 0:0:0,112 - Registering 'Increment' decoder
+2019-11-01 23:25:20.724 TodoCatalyst[3443:1674607] [EDT] 0:0:0,112 - Registering 'Add' decoder
+2019-11-01 23:25:20.724 TodoCatalyst[3443:1674607] [EDT] 0:0:0,112 - Registering 'AddUnique' decoder
+2019-11-01 23:25:20.725 TodoCatalyst[3443:1674607] [EDT] 0:0:0,113 - Registering 'Remove' decoder
+2019-11-01 23:25:20.725 TodoCatalyst[3443:1674607] [EDT] 0:0:0,113 - Registering 'AddRelation' decoder
+2019-11-01 23:25:20.726 TodoCatalyst[3443:1674607] [EDT] 0:0:0,114 - Registering 'RemoveRelation' decoder
+2019-11-01 23:25:20.726 TodoCatalyst[3443:1674607] [EDT] 0:0:0,114 - using server https://parseapi.back4app.com (ONLINE)
+2019-11-01 23:25:20.734 TodoCatalyst[3443:1674607] [EDT] 0:0:0,122 - Background Fetch IS Supported
+2019-11-01 23:25:20.736 TodoCatalyst[3443:1674607] [EDT] 0:0:0,124 - Retrieved Sessiontoken=null
+2019-11-01 23:25:20.736 TodoCatalyst[3443:1674607] [EDT] 0:0:0,124 - ParseUser=null
+2019-11-01 23:25:20.737 TodoCatalyst[3443:1674607] [EDT] 0:0:0,125 - init() - DONE - go to login screen...
+2019-11-01 23:25:20.860 TodoCatalyst[3443:1674587] <Google> To get test ads on this device, set: request.testDevices = @[ @"3f2e7b88f210cc621aec77b58ca686fc" ];
+2019-11-01 23:25:20.862 TodoCatalyst[3443:1674587] *** Terminating app due to uncaught exception 'GADInvalidInitializationException', reason: 'The Google Mobile Ads SDK was initialized without an application ID. Google AdMob publishers, follow instructions here: https://googlemobileadssdk.page.link/admob-ios-update-plist to set GADApplicationIdentifier with a valid App ID. Google Ad Manager publishers, follow instructions here: https://googlemobileadssdk.page.link/ad-manager-ios-update-plist'
+*** First throw call stack:
+(0x1ad407ab0 0x1ad121028 0x1ad306b20 0x1032e5208 0x103296ca4 0x103297088 0x10329dd5c 0x103297058 0x1032f0edc 0x1032b3bb4 0x1032b302c 0x10329dd5c 0x1032b2d60 0x1032b31fc 0x103264a38 0x102c6ce00 0x102c6abac 0x1b0eb0028 0x1b0eb2348 0x1b0eb10dc 0x1b14f72ec 0x1b14e6658 0x1b1505668 0x1ad383068 0x1ad3827ec 0x1ad37d7ec 0x1ad37d084 0x1b75cb534 0x1b14ed698 0x102e15e74 0x102c7b98c 0x10282e310 0x1028e67e0 0x1028e682c 0x1ad1fce18)
+libc++abi.dylib: terminating with uncaught exception of type NSException
+2019-11-01 23:25:20.863 TodoCatalyst[3443:1674587] We had a signal 6

@@ -39,9 +39,9 @@ public class ParseIdMap2 {//extends HashMap {
         return parseIdMap2.remove(key);
     }
 
-    void addPostSaveXXX(Runnable r) {
-        runnablesXXX.add(r);
-    }
+//    void addPostSaveXXX(Runnable r) {
+//        runnablesXXX.add(r);
+//    }
 
     void update() {
         Runnable repeatRule = null;
@@ -62,11 +62,11 @@ public class ParseIdMap2 {//extends HashMap {
         return parseIdMap2.keySet();
     }
 
-    void runPostSaveRunnablesXXX() {
-        for (Runnable r : runnablesXXX) {
-            r.run();
-        }
-    }
+//    void runPostSaveRunnablesXXX() {
+//        for (Runnable r : runnablesXXX) {
+//            r.run();
+//        }
+//    }
 
     void parseIdMapReset() {
         parseIdMap2.clear();

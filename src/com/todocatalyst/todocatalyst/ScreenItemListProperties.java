@@ -54,7 +54,8 @@ public class ScreenItemListProperties extends MyForm {
 //        form = new Form("TodoCatalyst");
 //        form = this;
         // we use border layout so the list will take up all the available space
-        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+//        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+        setLayout(BoxLayout.y());
         setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
 
 //        setToolbar(new Toolbar());
@@ -101,6 +102,7 @@ public class ScreenItemListProperties extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {
 
         super.addCommandsToToolbar(toolbar);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle());
 //        Command cmd = Command.create("", icon, (e) -> {
 //            putEditedValues2(parseIdMap2);
@@ -119,6 +121,7 @@ public class ScreenItemListProperties extends MyForm {
 //        });
 //        cmd.putClientProperty("android:showAsAction", "withText");
 //        toolbar.addCommandToLeftBar(cmd);
+//</editor-fold>
         toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
@@ -157,40 +160,46 @@ public class ScreenItemListProperties extends MyForm {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
         parseIdMap2.parseIdMapReset();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Container content = new Container();
-        if (false) {
-            TableLayout tl;
-//        int spanButton = 2;
-            int nbFields = 8;
-            if (Display.getInstance().isTablet()) {
-                tl = new TableLayout(nbFields, 2);
-            } else {
-                tl = new TableLayout(nbFields * 2, 1);
-//            spanButton = 1;
-            }
-            tl.setGrowHorizontally(true);
-            content.setLayout(tl);
-        }
-
+//        if (false) {
+//            TableLayout tl;
+////        int spanButton = 2;
+//            int nbFields = 8;
+//            if (Display.getInstance().isTablet()) {
+//                tl = new TableLayout(nbFields, 2);
+//            } else {
+//                tl = new TableLayout(nbFields * 2, 1);
+////            spanButton = 1;
+//            }
+//            tl.setGrowHorizontally(true);
+//            content.setLayout(tl);
+//        }
+//</editor-fold>
         MyTextField name = new MyTextField("List name", parseIdMap2, () -> itemList.getText(), (s) -> itemList.setText(s));
 //        content.add(new Label("List name")).add(name);
-        content.add(layoutN("List name", name, "**"));
+//        content.add(layoutN(false, "List name", name, "**"));
+//        content.add(layoutN(null, name, "**", true));
+        content.add(name);
+        name.addActionListener((e) -> setTitle(name.getText())); //update the form title when text is changed
         setEditOnShow(name); //UI: start editing this field
 
+//        MyTextField description = new MyTextField("Description", parseIdMap2, () -> itemList.getComment(), (s) -> itemList.setComment(s));
         MyTextField description = new MyTextField("Description", parseIdMap2, () -> itemList.getComment(), (s) -> itemList.setComment(s));
 //        content.add(new Label("Description")).add(description).add(new SpanLabel("If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks."));
-        content.add(layoutN("Description", description, "If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks."));
-        description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
+//        content.add(layoutN(false, "Description", description, "If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks."));
+//        content.add(layoutN( null, description, "If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks.",true));
+        content.add(description);
 
 //        Label createdDate = new Label(itemList.getCreatedAt() == null || itemList.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(itemList.getCreatedAt())); //"<date set when saved>"
-        Label createdDate = new Label(itemList.getCreatedAt() == null || itemList.getCreatedAt().getTime() == 0 ? MyDate.formatDateNew(new Date()) : MyDate.formatDateNew(itemList.getCreatedAt())); //"<date set when saved>"
+        Label createdDate = new Label(itemList.getCreatedAt() == null || itemList.getCreatedAt().getTime() == 0 ? MyDate.formatDateNew(new MyDate()) : MyDate.formatDateNew(itemList.getCreatedAt())); //"<date set when saved>"
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        content.add(layoutN(Item.CREATED_DATE, createdDate, "**"));
+        content.add(layoutN(Item.CREATED_DATE, createdDate, "**", true));
 
 //        Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(itemList.getUpdatedAt()));
-        Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? MyDate.formatDateNew(new Date()) : MyDate.formatDateNew(itemList.getUpdatedAt()));
+        Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? MyDate.formatDateNew(new MyDate()) : MyDate.formatDateNew(itemList.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**"));
+        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true));
 
         if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "LabelFixed");

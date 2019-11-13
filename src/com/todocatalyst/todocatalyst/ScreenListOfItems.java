@@ -16,6 +16,7 @@ import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.Component;
 import com.codename1.ui.animations.ComponentAnimation;
 import com.codename1.ui.events.ActionListener;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.plaf.UIManager;
@@ -120,6 +121,7 @@ public class ScreenListOfItems extends MyForm {
     private MyTree2.StickyHeaderGenerator stickyHeaderGen;
 //    private Container contentContainer = null; //holds Container with actual content, typically MyTree2
     private ActionListener startAsyncListener = null; //stores the ayncEditListener, so we can remove the previous when adding a new for the new field
+    private static SwipeableContainer openSwipeContainer = null;
 
     /**
      * set to true if a fixed filter is passed to the screen, if true user is
@@ -287,6 +289,11 @@ public class ScreenListOfItems extends MyForm {
         this(title, itemListFct, previousForm, updateItemListOnDone, options, null);
     }
 
+    ScreenListOfItems(String title, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, int options) {
+        this(title, textIfListEmpty, itemListFct, previousForm, updateItemListOnDone, options, null);
+//        setShowIfEmptyList(textIfListEmpty);
+    }
+
     ScreenListOfItems(ScreenType screenType, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, int options) {
         this(screenType.getTitle(), itemListFct, previousForm, updateItemListOnDone, options, null);
         this.screenType = screenType;
@@ -294,9 +301,15 @@ public class ScreenListOfItems extends MyForm {
 
     ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
             int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
+        this(title, "", itemListFct, previousForm, updateItemListOnDone, options, stickyHeaderGen);
+    }
+
+    ScreenListOfItems(String title, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
+            int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListOrg));
         super(title, previousForm, null);
+        setShowIfEmptyList(textIfListEmpty);
         setUniqueFormId("ScreenListOfItems");
         if (false) setScrollVisible(true); //UI: show scrollbar(?)
 //        super(title, previousForm, null);
@@ -641,7 +654,7 @@ public class ScreenListOfItems extends MyForm {
 //            if (itemListOrg.isNoSave()) {
             toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
 
-            if (itemListOrg instanceof ItemList && !itemListOrg.isNoSave())
+            if (itemListOrg instanceof ItemList && !itemListOrg.isNoSave() && !optionTemplateEditMode)
                 toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrg, "Add task", Icons.iconNew));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            } else {
@@ -1478,11 +1491,10 @@ public class ScreenListOfItems extends MyForm {
         return !optionDisableDragAndDrop && !isSortOn(); //
     }
 
-        public ItemAndListCommonInterface getDisplayedElement() {
+    public ItemAndListCommonInterface getDisplayedElement() {
         return itemListOrg;
     }
 
-    
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    Component makeNewInsertNewTaskContainerXXX(Item item, ItemList itemList) {
 //        if (lastInsertNewTaskContainer != null && item == lastInsertNewTaskContainer.newItem) {
@@ -1556,57 +1568,60 @@ public class ScreenListOfItems extends MyForm {
 
         void action();
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public static Button makeSubtaskButton(Item item, Container swipCont) {
 
-    private static Button makeSubtaskButtonXXX(Item item, SubtaskButtonFct longPressFunction) {
-        int numberUndoneSubtasks = item.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
-        int totalNumberSubtasks = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
-//        int totalNumberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks; //true: get subtasks, always necessary for a project
-        if (numberUndoneSubtasks > 0 || totalNumberSubtasks > 0) {
-            Button subTasksButton = new Button() {
-                @Override
-                public void longPointerPress(int x, int y) {
-                    super.longPointerPress(x, y);
-                    if (longPressFunction != null) {
-                        longPressFunction.action();
-                    }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (swipCont != null) {
-//                        //if event comes from eg a button inside the original node, get the original node
-////            if (topContainer.getClientProperty(MyTree2.KEY_TOP_NODE) != null) {
-////                topContainer = (Container) topContainer.getClientProperty(MyTree2.KEY_TOP_NODE);
-////            };
-//                        putClientProperty(KEY_LONG_PRESS, Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
-//                        Log.p("longPointerPress");
-//                        Object e = swipCont.getClientProperty(MyTree2.KEY_EXPANDED);
-//                        MyTree2 myTree = MyTree2.getMyTreeTopLevelContainer(swipCont);
-//                        if (e != null && e.equals("true")) {
-////                        myTree.collapsePathNode(topContainer, true);
-//                            myTree.collapseNode(swipCont, true);
-//                        } else {
-////                        myTree.expandPathNode(isInitialized(), topContainer, true);
-//                            myTree.expandNode(false, swipCont, true);
-//                        }
+//    private static Button makeSubtaskButtonXXX(Item item, SubtaskButtonFct longPressFunction) {
+//        int numberUndoneSubtasks = item.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
+//        int totalNumberSubtasks = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
+////        int totalNumberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks; //true: get subtasks, always necessary for a project
+//        if (numberUndoneSubtasks > 0 || totalNumberSubtasks > 0) {
+//            Button subTasksButton = new Button() {
+//                @Override
+//                public void longPointerPress(int x, int y) {
+//                    super.longPointerPress(x, y);
+//                    if (longPressFunction != null) {
+//                        longPressFunction.action();
 //                    }
 //</editor-fold>
-                }
-            };
-//            subTasksButton.setUIID("Label");
-            subTasksButton.setUIID("ListOfItemsSubtasks");
-//            subTasksButton.setGrabsPointerEvents(true); //TODO!!! does this work to avoid 
-//            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberDoneSubtasks + "]");// {
-//            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberSubtasks + "]");// {
-            Command expandSubTasks = new Command(numberUndoneSubtasks + "/" + totalNumberSubtasks);// {
-            subTasksButton.setCommand(expandSubTasks);
-//            topContainer.putClientProperty("subTasksButton", subTasksButton);
-//            if (swipCont != null) {
-//                swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
-//            }
-            return subTasksButton;
-        }
-        return null;
-    }
-
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    if (swipCont != null) {
+////                        //if event comes from eg a button inside the original node, get the original node
+//////            if (topContainer.getClientProperty(MyTree2.KEY_TOP_NODE) != null) {
+//////                topContainer = (Container) topContainer.getClientProperty(MyTree2.KEY_TOP_NODE);
+//////            };
+////                        putClientProperty(KEY_LONG_PRESS, Boolean.TRUE); //is unset in MyTree2.Handler.actionPerformed()
+////                        Log.p("longPointerPress");
+////                        Object e = swipCont.getClientProperty(MyTree2.KEY_EXPANDED);
+////                        MyTree2 myTree = MyTree2.getMyTreeTopLevelContainer(swipCont);
+////                        if (e != null && e.equals("true")) {
+//////                        myTree.collapsePathNode(topContainer, true);
+////                            myTree.collapseNode(swipCont, true);
+////                        } else {
+//////                        myTree.expandPathNode(isInitialized(), topContainer, true);
+////                            myTree.expandNode(false, swipCont, true);
+////                        }
+////                    }
+////</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                }
+//            };
+////            subTasksButton.setUIID("Label");
+//            subTasksButton.setUIID("ListOfItemsSubtasks");
+////            subTasksButton.setGrabsPointerEvents(true); //TODO!!! does this work to avoid
+////            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberDoneSubtasks + "]");// {
+////            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberSubtasks + "]");// {
+//            Command expandSubTasks = new Command(numberUndoneSubtasks + "/" + totalNumberSubtasks);// {
+//            subTasksButton.setCommand(expandSubTasks);
+////            topContainer.putClientProperty("subTasksButton", subTasksButton);
+////            if (swipCont != null) {
+////                swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
+////            }
+//            return subTasksButton;
+//        }
+//        return null;
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public static Container buildItemContainer(final MyForm myForm, Item item) {
 //        return buildItemContainer(myForm, item, null, null);
@@ -1670,7 +1685,7 @@ public class ScreenListOfItems extends MyForm {
         Container mainCont = new Container(new MyBorderLayout());
         mainCont.setUIID("ItemContainer");
 
-        Container swipeActionContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+//        Container swipeActionContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //        Container buttonSwipeContainer = null;
 //        Container buttonSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
         Container buttonSwipeContainer = new Container(BoxLayout.x(), "ListOfItemsSwipeButtons"); //must grow buttons to fill entire space
@@ -1716,18 +1731,25 @@ public class ScreenListOfItems extends MyForm {
                 return item;
             }
 
-//            @Override
-//            public void saveDragged() {
-//                DAO.getInstance().save(item);
-//            }
             @Override
             public Category getDragAndDropCategory() {
                 return category;
-//                return null;
             }
 
+//            @Override
+//            public void close() {
+//                openSwipeContainer = null;
+//                super.close();
+//            }
         }; //D&D
-        swipCont.setGrabsPointerEvents(true); //when swiping on task description, it also activated the button to show tasks details
+
+//        swipCont.addSwipeOpenListener((e) -> {
+//            if (openSwipeContainer != null && openSwipeContainer != swipCont) { //if there's a previously open Swipetable, then close it
+//                openSwipeContainer.close();
+//            }
+//            openSwipeContainer = swipCont;
+//        });
+        if (false) swipCont.setGrabsPointerEvents(true); //when swiping on task description, it also activated the button to show tasks details
         if (Config.TEST) {
             if (true)
                 swipCont.setName("Swipe|" + item);
@@ -1874,7 +1896,7 @@ public class ScreenListOfItems extends MyForm {
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isTemplate() ? "%" : "")
-                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource()!=null&&item.getSource().isTemplate()? "/C" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource() != null && item.getSource().isTemplate() ? "/C" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
                 + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
@@ -1892,29 +1914,40 @@ public class ScreenListOfItems extends MyForm {
 
         itemLabel.setTextUIID(item.isDone() ? "ListOfItemsTextDone" : (item.isStarred() ? "ListOfItemsTextStarred" : "ListOfItemsText"));
 
-        ActionListener showDetailsListener = (e) -> {
-            //if showDetails is already true, run the listener immediately
-            //if details container exists, remove it/make invisible
-            int detailLevel = 0;
-            if (detailLevel == 1) {
-
-            }
-        };
-
+//        ActionListener showDetailsListener = (e) -> {
+//            //if showDetails is already true, run the listener immediately
+//            //if details container exists, remove it/make invisible
+//            int detailLevel = 0;
+//            if (detailLevel == 1) {
+//
+//            }
+//        };
         itemLabel.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
 //        itemLabel.actualButton.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
             @Override
             public void actionPerformed(ActionEvent evt) {
                 southDetailsContainer.setHidden(!southDetailsContainer.isHidden()); //toggle hidden details
-//                southDetailsContainer.revalidateWithAnimationSafety();
-                Container parent = southDetailsContainer.getParent();
-                while (parent != null && !(parent instanceof MyDragAndDropSwipeableContainer)) //find top-level MyDragAndDropSwipeableContainer
-                {
-                    parent = parent.getParent();
+
+                if (myForm.showDetails != null) {
+                    if (southDetailsContainer.isHidden()) {
+                        myForm.showDetails.remove(item);
+                    } else {
+                        myForm.showDetails.add(item);
+                    }
                 }
-                if (parent != null && parent.getParent() != null) //the top-level Container is the parent of the top-level MyDragAndDropSwipeableContainer
-                    //                    parent.getParent().getParent().getParent().revalidateWithAnimationSafety();
-                    parent.getParent().getParent().getParent().animateLayout(150);
+//                southDetailsContainer.revalidateWithAnimationSafety();
+                if (false) {
+                    Container parent = southDetailsContainer.getParent();
+                    while (parent != null && !(parent instanceof MyDragAndDropSwipeableContainer)) {//find top-level MyDragAndDropSwipeableContainer
+                        parent = parent.getParent();
+                    }
+                    if (parent != null && parent.getParent() != null) //the top-level Container is the parent of the top-level MyDragAndDropSwipeableContainer
+                        //                    parent.getParent().getParent().getParent().revalidateWithAnimationSafety();
+                        parent.getParent().getParent().getParent().animateLayout(150);
+                }
+//                mainCont.getParent().getParent().animateLayout(100);
+//                mainCont.getParent().animateLayout(100);
+                swipCont.getParent().animateLayout(100);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                parent.animateLayout(150);
 //                if (!south.isHidden()) {
@@ -1926,13 +1959,7 @@ public class ScreenListOfItems extends MyForm {
 //                    tasksWithDetailsShown.remove(item);
 //                }
 //</editor-fold>
-                if (myForm.showDetails != null) {
-                    if (southDetailsContainer.isHidden()) {
-                        myForm.showDetails.remove(item);
-                    } else {
-                        myForm.showDetails.add(item);
-                    }
-                }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                swipCont.animateLayout(300); //moves center container down a bit, then redraws, NOT good
 //                south.animateLayout(300); //no animation, simply redraws list with details added
@@ -2002,7 +2029,7 @@ public class ScreenListOfItems extends MyForm {
 //        if (item.isTemplate()) {
 //            west.add(new Label(Icons.iconTemplateStatusSymbolLabelStyle)); //NO, not nice with this symbol
 //        } else 
-        MyCheckBox status = new MyCheckBox(item.getStatus());
+        MyCheckBox status = new MyCheckBox(item.getStatus(), item.isTemplate());
 //        if (myForm instanceof ScreenListOfItems && ((ScreenListOfItems) myForm).projectEditMode) {
 //            //TODO!!!! mark this task selected (and others unselected), or unselected if already selected
 //            //store the task somewhere to can be used to add subtasks to or sibling tasks after
@@ -2339,7 +2366,8 @@ public class ScreenListOfItems extends MyForm {
 //            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
             challengeLabel = new Label("", "ListOfItemsItemDetailsLabel");
             challengeLabel.setMaterialIcon(item.getChallengeN().getIcon());
-            if (false) challengeLabel.setFontIcon(Icons.iconFont, Icons.iconEditMyFont);
+//            if (false) 
+            challengeLabel.setFontIcon(Icons.iconFont, Icons.iconEditMyFont);
             if (Config.TEST) {
                 challengeLabel.setName("Challenge");
             }
@@ -2853,6 +2881,7 @@ refreshAfterEdit();
 //            Button starredSwipeable = new Button(null, item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
                 starredSwipeableButton.addActionListener((e) -> {
                     item.setStarred(!item.isStarred()); //flip the starred value
+                    starredSwipeableButton.setUIID(item.isStarred() ? "SwipeButtonStarActive" : "SwipeButtonStarInactive");
                     itemLabel.setTextUIID((item.isStarred() ? "ListOfItemsTextStarred" : "ListOfItemsText"));
 
                     //update the starred button
@@ -2872,7 +2901,7 @@ refreshAfterEdit();
                     swipCont.revalidate();
                     DAO.getInstance().saveInBackground(item);
                 });
-                starredSwipeableButton.setUIID("SwipeButtonStar");
+                starredSwipeableButton.setUIID(item.isStarred() ? "SwipeButtonStarActive" : "SwipeButtonStarInactive");
                 buttonSwipeContainer.add(starredSwipeableButton);
             }
         }
@@ -4087,7 +4116,8 @@ refreshAfterEdit();
             return myTree;
         } else {
             if (getShowIfEmptyList() != null) {
-                return Container.encloseIn(BoxLayout.y(), new Label(getShowIfEmptyList()));
+//                return Container.encloseIn(BoxLayout.y(), new Label(getShowIfEmptyList()));
+                return BorderLayout.centerCenter(new SpanLabel(getShowIfEmptyList()));
 //            return new InsertNewTaskContainer(null, listOfItems, ScreenListOfItems.this);
 //            return new InlineInsertNewElementContainer(this, null, listOfItems);
             } else if (listOfItems instanceof Category) {

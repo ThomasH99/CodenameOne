@@ -234,7 +234,7 @@ public class ScreenFilter extends MyForm {
 //        new Container().add(MyOnOffSwitch doneTasks = new MyOnOffSwitch(parseIdMap2, () -> {return false;}, 
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show tasks with status:"));
 //        content.add(new SpanLabel("Show tasks with status:"));
-        content.add(makeSpacer());
+        content.add(makeSpacerThin());
         content.add(layoutSetting("Show tasks with status:", null, ""));
 //        content.add(new SpanLabel(ItemStatus.CREATED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
 //        content.add(layoutN(ItemStatus.CREATED.getName(), new MyOnOffSwitch(parseIdMap2,
@@ -277,7 +277,7 @@ public class ScreenFilter extends MyForm {
         //show even before Hide until date
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show hidden tasks"));
 //        content.add(new SpanLabel("Show hidden tasks"));
-        content.add(makeSpacer());
+        content.add(makeSpacerThin());
 //        content.add(new SpanLabel("Before Hide until date")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
         content.add(layoutSetting("Show Before Hide until date", new MyOnOffSwitch(parseIdMap2,
                 () -> {
@@ -302,7 +302,7 @@ public class ScreenFilter extends MyForm {
 
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show only certain types of tasks"));
 //        content.add(new SpanLabel("Show only certain types of tasks"));
-        content.add(makeSpacer());
+        content.add(makeSpacerThin());
         //Projects
 //        content.add(new SpanLabel("Projects")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
         content.add(layoutSetting("Show only Projects", new MyOnOffSwitch(parseIdMap2, () -> {

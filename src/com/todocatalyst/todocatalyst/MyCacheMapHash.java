@@ -369,24 +369,24 @@ public class MyCacheMapHash {
      * @return a vector containing a snapshot of the current elements within the
      * cache.
      */
-    public Vector getKeysInCacheXXX() {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        Vector r = new Vector();
-//        Enumeration en = memoryCache.keys();
-//        while (en.hasMoreElements()) {
-//            r.addElement(en.nextElement());
-//        }
-////        Vector storageCacheContent = getStorageCacheContent();
-////        for (int iter = 0; iter < storageCacheContent.size(); iter++) {
-////            Object[] o = (Object[]) storageCacheContent.elementAt(iter);
-////            if (!r.contains(o[1])) {
-////                r.addElement(o[1]);
-////            }
+//    public Vector getKeysInCacheXXX() {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        Vector r = new Vector();
+////        Enumeration en = memoryCache.keys();
+////        while (en.hasMoreElements()) {
+////            r.addElement(en.nextElement());
 ////        }
-//        return r;
-//</editor-fold>
-        return new Vector(memoryCache.keySet());
-    }
+//////        Vector storageCacheContent = getStorageCacheContent();
+//////        for (int iter = 0; iter < storageCacheContent.size(); iter++) {
+//////            Object[] o = (Object[]) storageCacheContent.elementAt(iter);
+//////            if (!r.contains(o[1])) {
+//////                r.addElement(o[1]);
+//////            }
+//////        }
+////        return r;
+////</editor-fold>
+//        return new Vector(memoryCache.keySet());
+//    }
 
 //    private Vector fetchFromStorageCache(int offset) {
 ////        Vector v = getStorageCacheContent();
@@ -397,18 +397,18 @@ public class MyCacheMapHash {
     /**
      * Clears the storage cache
      */
-    public void clearStorageCacheXXX() {
-//        if (storageCacheSize > 0) {
-//            Vector v = getStorageCacheContent();
-//            int s = v.size();
-//            for (int iter = 0; iter < s; iter++) {
-//                Object[] arr = (Object[]) v.elementAt(iter);
-//                Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + arr[1].toString()); //THJ: 'arr[iter]'-> 'arr[1]'
-//            }
-//            Storage.getInstance().deleteStorageFile("$CACHE$Idx" + cachePrefix);
-//            storageCacheContentVec = new Vector();
-//        }
-    }
+//    public void clearStorageCacheXXX() {
+////        if (storageCacheSize > 0) {
+////            Vector v = getStorageCacheContent();
+////            int s = v.size();
+////            for (int iter = 0; iter < s; iter++) {
+////                Object[] arr = (Object[]) v.elementAt(iter);
+////                Storage.getInstance().deleteStorageFile("$CACHE$" + cachePrefix + arr[1].toString()); //THJ: 'arr[iter]'-> 'arr[1]'
+////            }
+////            Storage.getInstance().deleteStorageFile("$CACHE$Idx" + cachePrefix);
+////            storageCacheContentVec = new Vector();
+////        }
+//    }
 
     /**
      * Indicates the size of the storage cache after which the cache won't grow

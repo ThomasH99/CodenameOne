@@ -38,6 +38,7 @@ import com.codename1.ui.animations.Transition;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.Style;
@@ -168,7 +169,7 @@ public class MyTree2 extends ContainerScrollY {
     public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
         super();
         this.model = model;
-        setUIID("MyTree2");
+//        setUIID("MyTree2");
         if (Config.TEST) {
             setName("MyTree2");
         }
@@ -417,6 +418,14 @@ public class MyTree2 extends ContainerScrollY {
     @return 
      */
     static ContainerScrollY insertSubtaskContainer(Container parent) {
+        //if there is already a subtask container, return it
+        if (parent.getLayout()instanceof BorderLayout) {
+            BorderLayout borderLayout = (BorderLayout)parent.getLayout();
+            if (borderLayout.getCenter() instanceof ContainerScrollY) {
+                return (ContainerScrollY)borderLayout.getCenter();
+            }
+        } 
+    //else create new container:
         ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
         dest.setUIID("ExpandedList");
         parent.addComponent(MyBorderLayout.CENTER, dest);
@@ -428,9 +437,9 @@ public class MyTree2 extends ContainerScrollY {
     @param parent
     @param subtaskComp 
      */
-    static void insertSubtask(Container parent, Component subtaskComp) {
+    static void insertAtPositionOfFirstSubtask(Container parent, Component subtaskComp) {
         ContainerScrollY dest = insertSubtaskContainer(parent);
-        dest.addComponent(subtaskComp);
+        dest.addComponent(0,subtaskComp); //always insert at first position
     }
 
     private Container expandNodeImpl(boolean animate, Component c, boolean expandAllLevels) {
@@ -685,7 +694,7 @@ public class MyTree2 extends ContainerScrollY {
 //            } else {
 //</editor-fold>
             Container componentArea = new Container(new MyBorderLayout());
-            componentArea.setUIID("ContainerListElement"); //wraps a possibly expanded task
+            componentArea.setUIID("TreeContainer"); //wraps a possibly expanded task
 
             componentArea.addComponent(MyBorderLayout.NORTH, nodeComponent);
             if (Config.TEST) componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 

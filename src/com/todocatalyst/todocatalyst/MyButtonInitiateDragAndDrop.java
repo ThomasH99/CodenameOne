@@ -19,7 +19,7 @@ import com.codename1.ui.TextArea;
  * @author Thomas
  */
 //public class MyButtonInitiateDragAndDrop extends SpanButton {
-public class MyButtonInitiateDragAndDrop extends WrapButton {
+public class MyButtonInitiateDragAndDrop extends MySpanButton {
 
     private Component dragAndDropComponent;
     private MyForm.GetBoolean isDragAndDropEnabledFct;
@@ -38,28 +38,53 @@ public class MyButtonInitiateDragAndDrop extends WrapButton {
         setTextUIID("ListOfItemsText");
         setAutoRelease(true); //"A bit of "black magic" to avoid that swipe triggers the button http://stackoverflow.com/questions/39558166/how-to-avoid-that-swiping-a-swipeablecontainer-also-creates-an-event-in-the-top
 //        actualButton.setAutoRelease(true); //"A bit of "black magic" to avoid that swipe triggers the button http://stackoverflow.com/questions/39558166/how-to-avoid-that-swiping-a-swipeablecontainer-also-creates-an-event-in-the-top
-    }
-
-    @Override
-    public void longPointerPress(int x, int y) {
-        if (isDragAndDropEnabledFct.get()) {
-            if (false) {
-                new Runnable() {
-                    public void run() {
-                        Display.getInstance().vibrate(BUZZER_DRAG_ON_DURATION);
-                    }
-                }.run();
-            }
-            dragAndDropComponent.setDraggable(true);
-            dragAndDropComponent.setFocusable(true);
-            Form f = getComponentForm();
-            f.pointerPressed(x, y);
-            pointerDragged(x - 1, y - 1); //ths dragged element moves by the '1' pixels
-            pointerDragged(x - 2, y - 2); //ths dragged element moves by the '1' pixels
-        } else {
+//        setBlockLead(true);
+        addLongPressListener((ev) -> {
+            int x = ev.getX();
+            int y = ev.getY();
+            if (isDragAndDropEnabledFct.get()) {
+                if (false) {
+                    new Runnable() {
+                        public void run() {
+                            Display.getInstance().vibrate(BUZZER_DRAG_ON_DURATION);
+                        }
+                    }.run();
+                }
+                dragAndDropComponent.setDraggable(true);
+                dragAndDropComponent.setFocusable(true);
+                Form f = getComponentForm();
+                f.pointerPressed(x, y);
+                Display.getInstance().callSerially(() -> {
+//                    pointerDragged(x - 1, y - 1); //ths dragged element moves by the '1' pixels
+                    pointerDragged(x - 2, y - 2); //ths dragged element moves by the '1' pixels
+                });
+                if (false) ev.consume(); //not necessary since the event is only send once and there are no other longPress listeners(??)
+            } else {
 //            Dialog.show("", "Turn Sort OFF to Drag and drop", "OK", null);
-            Dialog.show("", "Drag and drop not possible (view sorted, or D&D not possible in this view)", "OK", null);
-        }
+                Dialog.show("", "Drag and drop not possible (view sorted, or D&D not possible in this view)", "OK", null);
+            }
+        });
     }
 
+//    @Override
+//    public void longPointerPressXXX(int x, int y) {
+//        if (isDragAndDropEnabledFct.get()) {
+//            if (false) {
+//                new Runnable() {
+//                    public void run() {
+//                        Display.getInstance().vibrate(BUZZER_DRAG_ON_DURATION);
+//                    }
+//                }.run();
+//            }
+//            dragAndDropComponent.setDraggable(true);
+//            dragAndDropComponent.setFocusable(true);
+//            Form f = getComponentForm();
+//            f.pointerPressed(x, y);
+//            pointerDragged(x - 1, y - 1); //ths dragged element moves by the '1' pixels
+//            pointerDragged(x - 2, y - 2); //ths dragged element moves by the '1' pixels
+//        } else {
+////            Dialog.show("", "Turn Sort OFF to Drag and drop", "OK", null);
+//            Dialog.show("", "Drag and drop not possible (view sorted, or D&D not possible in this view)", "OK", null);
+//        }
+//    }
 }

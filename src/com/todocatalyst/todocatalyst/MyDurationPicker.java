@@ -22,6 +22,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
     private String zeroValuePattern = null;
 //    private int defaultValueInMinutes = 0;
     private long preserveSecondsAndMillis = 0; //preserve seconds and milliseconds so if the picker is used eg for Actuals, and closed with Done, but value not changed, that the value won't dhange and trigger an errenous update of the item
+    private boolean preserveSecondsWhenEditing = false; //preserve seconds and milliseconds so if the picker is used eg for Actuals, and closed with Done, but value not changed, that the value won't dhange and trigger an errenous update of the item
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        String title;
 //        String parseId;
@@ -153,14 +154,13 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //        this.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
 //    }
 //</editor-fold>
-    private void notifyMyActionListenersXXX() {
-        for (Object al : getListeners()) {
-            if (al instanceof MyActionListener) {
-                ((MyActionListener) al).actionPerformed(null);
-            }
-        }
-    }
-
+//    private void notifyMyActionListenersXXX() {
+//        for (Object al : getListeners()) {
+//            if (al instanceof MyActionListener) {
+//                ((MyActionListener) al).actionPerformed(null);
+//            }
+//        }
+//    }
     /**
     set the duration
     @param timeInMillis 
@@ -175,6 +175,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //        if (true || millis != 0) {
 //            preserveSeconds = millis; //always save milliseconds
 //        }
+        if (preserveSecondsWhenEditing)
             preserveSecondsAndMillis = timeInMillis % MyDate.MINUTE_IN_MILLISECONDS;; //always save seconds
 //        super.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
         super.setDuration(timeInMillis);
@@ -192,21 +193,20 @@ class MyDurationPicker extends Picker implements SwipeClear {
         fireActionEvent(-99, -99); //-99 used in CN1 Picker to ignore built-in action listener
     }
 
-    public void setDurationXXX(long timeInMinutes) {
-//        if (clearButton != null) {
-////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
-//            clearButton.setVisible(timeInMinutes != 0); //hide clear button when field is cleared
+//    public void setDurationXXX(long timeInMinutes) {
+////        if (clearButton != null) {
+//////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
+////            clearButton.setVisible(timeInMinutes != 0); //hide clear button when field is cleared
+////        }
+////        super.setTime(timeInMinutes);
+//        super.setDuration(((long) timeInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+//        //inform my own MyActionListeners when the field is changed directly via setTime()
+//        for (Object al : getListeners()) {
+//            if (al instanceof MyActionListener) {
+//                ((MyActionListener) al).actionPerformed(null);
+//            }
 //        }
-//        super.setTime(timeInMinutes);
-        super.setDuration(((long) timeInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
-        //inform my own MyActionListeners when the field is changed directly via setTime()
-        for (Object al : getListeners()) {
-            if (al instanceof MyActionListener) {
-                ((MyActionListener) al).actionPerformed(null);
-            }
-        }
-    }
-
+//    }
     @Override
     public long getDuration() {
 //        long millis = editedMillis % 1000;
@@ -214,15 +214,20 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //            editedMillis += preserveSeconds; //add the missing millis back again
 //            preserveSeconds = null;
 //        }
-        long editedMillis = super.getDuration() + preserveSecondsAndMillis;
+        long editedMillis;
+        if (preserveSecondsWhenEditing) {
+            preserveSecondsAndMillis = 0;
+            editedMillis = super.getDuration() + preserveSecondsAndMillis;
+        } else {
+            editedMillis = super.getDuration();
+        }
 //            preserveSeconds = 0;  //DON'T reset, since same picker may be activated multiple times
         return editedMillis;
     }
 
-    public int getDurationMinutesXXX() {
-        return (int) getDuration() / MyDate.MINUTE_IN_MILLISECONDS;
-    }
-
+//    public int getDurationMinutesXXX() {
+//        return (int) getDuration() / MyDate.MINUTE_IN_MILLISECONDS;
+//    }
     /**
     pattern show when zero value, in most screens where there is an edit button, "" is the best pattern, but for example in Timer, "0:00" (or similar localized version) shows that there is an editable/clickable
     @param zeroValuePattern 
@@ -248,21 +253,20 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //        return (int) (getDuration() / MyDate.MINUTE_IN_MILLISECONDS);
 //    }
 //    @Override
-    public void setTimeXXX(int timeInMinutes) {
-//        if (clearButton != null) {
-////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
-//            clearButton.setVisible(timeInMinutes != 0); //hide clear button when field is cleared
+//    public void setTimeXXX(int timeInMinutes) {
+////        if (clearButton != null) {
+//////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
+////            clearButton.setVisible(timeInMinutes != 0); //hide clear button when field is cleared
+////        }
+////        super.setTime(timeInMinutes);
+//        super.setDuration(((long) timeInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
+//        //inform my own MyActionListeners when the field is changed directly via setTime()
+//        for (Object al : getListeners()) {
+//            if (al instanceof MyActionListener) {
+//                ((MyActionListener) al).actionPerformed(null);
+//            }
 //        }
-//        super.setTime(timeInMinutes);
-        super.setDuration(((long) timeInMinutes) * MyDate.MINUTE_IN_MILLISECONDS);
-        //inform my own MyActionListeners when the field is changed directly via setTime()
-        for (Object al : getListeners()) {
-            if (al instanceof MyActionListener) {
-                ((MyActionListener) al).actionPerformed(null);
-            }
-        }
-    }
-
+//    }
     void swipeClear() {
         setDurationAndNotify(0L); //will notify myActionListeners
     }

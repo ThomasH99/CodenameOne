@@ -23,6 +23,7 @@ import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
+import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.util.StringUtil;
 import com.parse4cn1.ParseBatch;
@@ -83,11 +84,15 @@ public class ScreenRepair extends MyForm {
     }
 
     public Form makeShowBuiltinFontsForm() {
-        GridLayout gr = new GridLayout(5);
-        gr.setAutoFit(true);
+//        GridLayout gr = new GridLayout(5);
+        Layout gr =  BoxLayout.y();
+//        gr.setAutoFit(true);
 //        Form hi = new Form("Fonts", gr);
         Form hi = new MyForm("Fonts", ScreenRepair.this, () -> {
         });
+          hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
+
+        hi.setScrollableY(true);
         hi.setLayout(gr);
 
 //        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
@@ -137,9 +142,10 @@ public class ScreenRepair extends MyForm {
 //        if (false) {
         if (true) {
             // requires Handlee-Regular.ttf in the src folder root!
-            Font ttfFont = Font.createTrueTypeFont("Handlee", "Handlee-Regular.ttf").derive(fontSize, Font.STYLE_PLAIN);
+//            Font ttfFont = Font.createTrueTypeFont("Handlee", "Handlee-Regular.ttf").derive(fontSize, Font.STYLE_PLAIN);
 
-            hi.add(createForFont(ttfFont, "Handlee TTF Font")).
+            hi.
+//                    add(createForFont(ttfFont, "Handlee TTF Font")).
                     add(createForFont(smallPlainSystemFont, "smallPlainSystemFont")).
                     add(createForFont(mediumPlainSystemFont, "mediumPlainSystemFont")).
                     add(createForFont(largePlainSystemFont, "largePlainSystemFont")).
@@ -371,32 +377,32 @@ public class ScreenRepair extends MyForm {
         return new Label(Display.getInstance().getProperty(key, "None"));
     }
 
-    private Form showSystemPropertiesXXXX() { //NB!! Already in showDeviceInfo
-//        Form hi = new Form("L10N", new TableLayout(16, 2));
-        Form hi = new MyForm("System Properties", ScreenRepair.this, () -> {
-        });
-        hi.setLayout(new TableLayout(16, 2));
-
-        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
-        //https://www.codenameone.com/javadoc/com/codename1/ui/Display.html
-        //getProperty(String key, String defaultValue)
-        //Returns the property from the underlying platform deployment or the default value if no deployment values are supported. This is equivalent to the getAppProperty from the jad file.
-        //The implementation should be responsible for the following keys to return reasonable valid values for the application:
-        //AppName
-        //User-Agent
-        //AppVersion
-        //Platform - Similar to microedition.platform
-        //OS - returns what is the underlying platform e.g. - iOS, Android, RIM, SE...
-        //OSVer - OS version when available as a user readable string (not necessarily a number e.g: 3.2.1).
-
-        hi.add("AppName").add(getSysProp("AppName")).
-                add("User-Agent").add(getSysProp("User-Agent")).
-                add("AppVersion").add(getSysProp("AppVersion")).
-                add("Platform").add(getSysProp("Platform")).
-                add("OS").add(getSysProp("OS")).
-                add("OSVer").add(getSysProp("OSVer"));
-        return hi;
-    }
+//    private Form showSystemPropertiesXXXX() { //NB!! Already in showDeviceInfo
+////        Form hi = new Form("L10N", new TableLayout(16, 2));
+//        Form hi = new MyForm("System Properties", ScreenRepair.this, () -> {
+//        });
+//        hi.setLayout(new TableLayout(16, 2));
+//
+//        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
+//        //https://www.codenameone.com/javadoc/com/codename1/ui/Display.html
+//        //getProperty(String key, String defaultValue)
+//        //Returns the property from the underlying platform deployment or the default value if no deployment values are supported. This is equivalent to the getAppProperty from the jad file.
+//        //The implementation should be responsible for the following keys to return reasonable valid values for the application:
+//        //AppName
+//        //User-Agent
+//        //AppVersion
+//        //Platform - Similar to microedition.platform
+//        //OS - returns what is the underlying platform e.g. - iOS, Android, RIM, SE...
+//        //OSVer - OS version when available as a user readable string (not necessarily a number e.g: 3.2.1).
+//
+//        hi.add("AppName").add(getSysProp("AppName")).
+//                add("User-Agent").add(getSysProp("User-Agent")).
+//                add("AppVersion").add(getSysProp("AppVersion")).
+//                add("Platform").add(getSysProp("Platform")).
+//                add("OS").add(getSysProp("OS")).
+//                add("OSVer").add(getSysProp("OSVer"));
+//        return hi;
+//    }
 
     private CheckBox uneditableCheck(String t, boolean v) {
         CheckBox c = new CheckBox(t);

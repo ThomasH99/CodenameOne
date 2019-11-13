@@ -75,7 +75,7 @@ import java.util.HashMap;
  * 
  * @author Nir Shabi, Shai Almog
  */
-public class MyBorderLayout extends Layout {
+public class MyBorderLayout extends BorderLayout {
 
     private boolean scaleEdges = true;
 

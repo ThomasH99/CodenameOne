@@ -5,6 +5,7 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.ui.*;
+import com.codename1.components.SpanLabel;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
@@ -12,6 +13,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
@@ -46,7 +48,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //    private ItemList workSlotList;
 //    private Object owner;
     private ItemAndListCommonInterface workSlotListOwner;
-    private long now = new Date().getTime();
+    private long now = new MyDate().getTime();
 //    private List<WorkSlot> workSlotList;
 //    private WorkSlotList workSlotList;
 //    private KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
@@ -544,7 +546,8 @@ public class ScreenListOfWorkSlots extends MyForm {
         } else {
 //                setInlineInsertContainer(new InlineInsertNewItemContainer2(this, null, workSlotList, null, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
 //                return (Container) getInlineInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
-            return BoxLayout.encloseY(new Label("Add a " + WorkSlot.WORKSLOT + " using +"));
+//            return BoxLayout.encloseY(new Label("Add a " + WorkSlot.WORKSLOT + " using +"));
+            return BorderLayout.centerCenter(new SpanLabel("Add a " + WorkSlot.WORKSLOT + " using +"));
         }
 
     }

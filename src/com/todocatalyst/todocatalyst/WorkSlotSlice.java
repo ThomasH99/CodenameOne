@@ -233,13 +233,13 @@ class WorkSlotSlice implements Work {
         return endTime - actualStart; //should always be positive, otherwise error elsewhere
     }
 
-    public ItemAndListCommonInterface getAllocatedToXXX() {
-        return allocatedToXXX;
-    }
+//    public ItemAndListCommonInterface getAllocatedToXXX() {
+//        return allocatedToXXX;
+//    }
 
-    public void setAllocatedToXXX(ItemAndListCommonInterface allocatedTo) {
-        this.allocatedToXXX = allocatedTo;
-    }
+//    public void setAllocatedToXXX(ItemAndListCommonInterface allocatedTo) {
+//        this.allocatedToXXX = allocatedTo;
+//    }
 
     private static Comparator<WorkSlot> getMultipleComparator(Comparator<WorkSlot>[] comparators) {
         Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;

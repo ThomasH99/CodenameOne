@@ -17,52 +17,52 @@ import java.util.Map;
  *
  * @author thomashjelm
  */
-    
-    class MyNumericTextField extends TextField {
-        
-        MyNumericTextField(String hint, ParseIdMap2 parseIdMap, MyForm.GetDouble getValue, MyForm.PutDouble setValue) {
-            super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
+class MyNumericTextField extends TextField {
+
+    MyNumericTextField(String hint, ParseIdMap2 parseIdMap, MyForm.GetDouble getValue, MyForm.PutDouble setValue) {
+        super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
 //                        super("", 1, columns, constraint);
 //            setHint(hint);
-            setGrowByContent(false);
-            setAlignment(Component.RIGHT);
+        putClientProperty("iosHideToolbar", Boolean.FALSE); //TRUE will hide the toolbar and only show Done button
+        setGrowByContent(false);
+        setAlignment(Component.RIGHT);
 //            setSameWidth(new Label("9999"));
-            setAutoDegradeMaxSize(true);
+        setAutoDegradeMaxSize(true);
 //            setGrowLimit(maxRows);
 //            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
 //            setMaxSize(maxTextSize);
-            Double val = getValue.get();
-            if (val != 0) {
+        Double val = getValue.get();
+        if (val != 0) {
 //                this.setText(getValue.get() + "");
 //                DecimalFormat df2 = new DecimalFormat(".##");
 //                String s = df2.format(val);
-                String s = L10NManager.getInstance().format(val, 2);
+            String s = L10NManager.getInstance().format(val, 2);
 //                this.setText(val..get() + "");
-                this.setText(s);
-            }
-//            this.set //TODO how to ensure cursor is positioned at end of entered text and not beginning?
-            if (parseIdMap != null) {
-                parseIdMap.put(this, () -> setValue.accept(getText().equals("") ? 0 : Double.valueOf(getText())));
-            }
+            this.setText(s);
         }
-        
-        MyNumericTextField(String hint) {
-            super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
-            setGrowByContent(false);
-            setAlignment(Component.RIGHT);
+//            this.set //TODO how to ensure cursor is positioned at end of entered text and not beginning?
+        if (parseIdMap != null) {
+            parseIdMap.put(this, () -> setValue.accept(getText().equals("") ? 0 : Double.valueOf(getText())));
+        }
+    }
+
+    MyNumericTextField(String hint) {
+        super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
+        setGrowByContent(false);
+        setAlignment(Component.RIGHT);
 //            setSameWidth(new Label("9999"));
-            setAutoDegradeMaxSize(true);
+        setAutoDegradeMaxSize(true);
 //            setGrowLimit(maxRows);
 //            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
 //            setMaxSize(maxTextSize);
-        }
-        
-        void setVal(double val) {
-            if (val != 0) {
+    }
+
+    void setVal(double val) {
+        if (val != 0) {
 //                DecimalFormat df2 = new DecimalFormat(".##");
 //                String s = df2.format(val);
-                String s = L10NManager.getInstance().format(val, 2);;
-                this.setText(s);
-            }
+            String s = L10NManager.getInstance().format(val, 2);;
+            this.setText(s);
         }
     }
+}

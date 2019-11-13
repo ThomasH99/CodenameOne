@@ -23,7 +23,8 @@ public class Icons {
 
     //TODO smarter pattern for Icons https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
     private static Icons INSTANCE;
-    public static Font iconFont = Font.createTrueTypeFont("myIconFont", "myiconfont.ttf"); //name and filename
+//    public static Font iconFont = Font.createTrueTypeFont("myIconFont", "myiconfont.ttf"); //name and filename
+    public static Font iconFont = Font.createTrueTypeFont("myiconfont", "myiconfont.ttf"); //name and filename, file MUST reside in /src/ root!
     Label label = new Label();
 
     private Icons() {
@@ -225,7 +226,7 @@ public class Icons {
 
 //    final static Image iconFunLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_SENTIMENT_SATISFIED, iconStyle);
     //CLEAR FIELD
-    final static char iconCloseCircle = FontImage.MATERIAL_CLOSE; //or: FontImage.MATERIAL_HIGHLIGHT_OFF
+    final static char iconCloseCircle = FontImage.MATERIAL_CANCEL; //MATERIAL_CLOSE; //or: FontImage.MATERIAL_HIGHLIGHT_OFF
     final static Image iconCloseCircleLabelSty = FontImage.createMaterial(iconCloseCircle, labelStyle);
     final static Image iconCloseCircleLabelStyle = FontImage.createMaterial(iconCloseCircle, labelStyle);
 

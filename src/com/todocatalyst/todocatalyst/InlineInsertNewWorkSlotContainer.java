@@ -173,7 +173,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
             else
                 newWorkSlot.setStartTime(refWorkSlot.getEndTimeD()); //UI: set pinchInserted workslot to start at the end of the previous
         } else
-            newWorkSlot.setStartTime(new Date()); //UI: set pinchInserted workslot to start now
+            newWorkSlot.setStartTime(new MyDate()); //UI: set pinchInserted workslot to start now
 
         //UI: ensure no overlap with *following* workslot:
         if (refWorkSlot != null && refWorkSlot.getOwner() != null && refWorkSlot.getOwner().getWorkSlotListN() != null) {

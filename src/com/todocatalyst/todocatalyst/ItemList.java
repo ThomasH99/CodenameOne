@@ -795,20 +795,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * elements
      */
 //    public static boolean updateListWithDifferences(ItemListModel list, ItemListModel newList) {
-    public boolean updateListWithDifferencesXXX(List newList) {
-        if (getSize() == 0 && newList.size() == 0) {
-            return false;  //do  nothing if both lists are empty
-        }
-        boolean change = false;
-        List addedObjetcs = getAddedItems(newList);
-        List removedObjects = getRemovedItems(newList);
-        if (addedObjetcs.size() != 0 || removedObjects.size() != 0) {
-            addItems(addedObjetcs);
-            removeItems(removedObjects);
-            change = true;
-        }
-        return change;
-    }
+//    public boolean updateListWithDifferencesXXX(List newList) {
+//        if (getSize() == 0 && newList.size() == 0) {
+//            return false;  //do  nothing if both lists are empty
+//        }
+//        boolean change = false;
+//        List addedObjetcs = getAddedItems(newList);
+//        List removedObjects = getRemovedItems(newList);
+//        if (addedObjetcs.size() != 0 || removedObjects.size() != 0) {
+//            addItems(addedObjetcs);
+//            removeItems(removedObjects);
+//            change = true;
+//        }
+//        return change;
+//    }
 
     /**
      * list of all lists for which this list is a sublist. Used to keep track of
@@ -1709,7 +1709,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         if (filter != null)
             filter.softDelete(removeRefs);
 
-        put(Item.PARSE_DELETED_DATE, new Date());
+        put(Item.PARSE_DELETED_DATE, new MyDate());
         DAO.getInstance().saveInBackground((ParseObject) this);
         return true;
     }
@@ -2257,29 +2257,29 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return countUndone;
     }
 
-    static public int getNumberOfUndoneItemsOLD(List list, boolean recurse) {
-        if (list == null || list.size() == 0) {
-            return 0;
-        }
-        int countUndone = 0;
-//        for (Object item : itemList) {
-//        for (E item : itemList) {
-        for (Object item : list) {
-//            if (!((ItemAndListCommonInterface) item).isDone()) {
-            if (item instanceof ItemAndListCommonInterface && !(((ItemAndListCommonInterface) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
-                countUndone++;
-                //only count undone subtasks if project is not done
-//                if (includeSubTasks) {
-////                    countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems();
-//                    countUndone += ((Item) item).getNumberOfUndoneItems();
-//                }
-            }
-            if (recurse && list instanceof ItemAndListCommonInterface) {
-                countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems(true);
-            }
-        }
-        return countUndone;
-    }
+//    static public int getNumberOfUndoneItemsOLD(List list, boolean recurse) {
+//        if (list == null || list.size() == 0) {
+//            return 0;
+//        }
+//        int countUndone = 0;
+////        for (Object item : itemList) {
+////        for (E item : itemList) {
+//        for (Object item : list) {
+////            if (!((ItemAndListCommonInterface) item).isDone()) {
+//            if (item instanceof ItemAndListCommonInterface && !(((ItemAndListCommonInterface) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
+//                countUndone++;
+//                //only count undone subtasks if project is not done
+////                if (includeSubTasks) {
+//////                    countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems();
+////                    countUndone += ((Item) item).getNumberOfUndoneItems();
+////                }
+//            }
+//            if (recurse && list instanceof ItemAndListCommonInterface) {
+//                countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems(true);
+//            }
+//        }
+//        return countUndone;
+//    }
 
     public static int getNumberOfItemsThatWillChangeStatus(List list, boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         if (list == null || list.size() == 0) {
@@ -2373,22 +2373,22 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return getNumberOfItems(onlyUndone, countLeafTasks);
     }
 
-    public int getNumberOfItemsOLD(boolean onlyUndone, boolean countLeafTasks) {
-        int count = 0;
-        for (Object obj : getListFull()) {
-            if (obj instanceof Item) {
-                Item item = (Item) obj;
-                if (countLeafTasks && item.isProject()) {
-                    count += item.getNumberOfItems(onlyUndone, countLeafTasks);
-                } else {
-//                in else case: !countLeafTasks || !item.isProject()
-//                        count += !onlyUndone || !item.isDone() ? 1 : 0;
-                    count += onlyUndone && item.isDone() ? 0 : 1;
-                }
-            }
-        }
-        return count;
-    }
+//    public int getNumberOfItemsOLD(boolean onlyUndone, boolean countLeafTasks) {
+//        int count = 0;
+//        for (Object obj : getListFull()) {
+//            if (obj instanceof Item) {
+//                Item item = (Item) obj;
+//                if (countLeafTasks && item.isProject()) {
+//                    count += item.getNumberOfItems(onlyUndone, countLeafTasks);
+//                } else {
+////                in else case: !countLeafTasks || !item.isProject()
+////                        count += !onlyUndone || !item.isDone() ? 1 : 0;
+//                    count += onlyUndone && item.isDone() ? 0 : 1;
+//                }
+//            }
+//        }
+//        return count;
+//    }
 
     /**
     

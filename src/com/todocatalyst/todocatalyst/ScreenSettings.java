@@ -65,7 +65,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime);
-    
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
 //
@@ -73,16 +73,19 @@ public class ScreenSettings extends ScreenSettingsCommon {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 try {
-                    ParseUser parseUser = ParseUser.getCurrent();
-                    parseUser.logout();
+                    if (false) {
+                        ParseUser parseUser = ParseUser.getCurrent();
+                        parseUser.logout();
+                    }
+                    ScreenLogin.logoutCurrentUser();
                 } catch (ParseException ex) {
                     Log.p(ex.getMessage());
                     Log.e(ex);
                 }
             }
         });
-        content.add(layoutN("Log out of your account (require you to log in next time you start)", logoutButton,"")); 
-       
+        content.add(layoutN("Log out of your account (require you to log in next time you start)", logoutButton, ""));
+
 //
 //        if (!MyPrefs.loginIncognitoMode.getBoolean()) { //DON'T enable logging out in Incognito mode since that would lose the login
 //            content.add(layout("Log out from my account", logoutButton, "After you logout, you must enter your email and password to access your data again.", true));
@@ -110,14 +113,13 @@ public class ScreenSettings extends ScreenSettingsCommon {
                     DAO.getInstance().deleteAllUserDataOnParseServerCannotBeUndone(false);
 //                    DAO.getInstance().resetAndDeleteAndReloadAllCachedData(); //NOT enough since it would leave all local data stored 
                     DAO.getInstance().deleteAllLocalStorage(); //NB! will also delete the login token
-                    DAO.getInstance().resetAndDeleteAndReloadAllCachedData(); 
-                    
-                   
+                    DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
+
 //                    ParseUser parseUser = ParseUser.getCurrent();
 //                    parseUser.delete();
                 }
             });
-            content.add(layoutN("Delete ALL data (tasks etc) permanently", deleteAllData, 
+            content.add(layoutN("Delete ALL data (tasks etc) permanently", deleteAllData,
                     "This will permanently delete all your data (tasks, lists, categories etc) from your account. The deleted data can NOT be restored in any way afterwards (there is .")); //TODO!!! show how many tasks etc, ask to enter email to confirm, add "I confirm I delete all my data and that they cannot be restored [v]"
         }
 //
@@ -137,7 +139,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
                     try {
                         parseUser.logout();
                     } catch (ParseException ex) {
-                        Log.p("error trying to logout user="+parseUser.getUsername()+", email="+parseUser.getEmail());
+                        Log.p("error trying to logout user=" + parseUser.getUsername() + ", email=" + parseUser.getEmail());
                     }
                     new ScreenLogin().go();
                 }

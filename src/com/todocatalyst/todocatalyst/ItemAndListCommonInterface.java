@@ -1200,7 +1200,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
                 && eql(ownValue, potentiallyInheritedValue);
     }
 
-    default public String getUnsavedReferences() {
+    default public String hasReferencesToUnsavedParseObjects() {
         return "";
     }
 

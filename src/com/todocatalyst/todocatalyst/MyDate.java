@@ -1475,7 +1475,7 @@ public class MyDate extends Date {
     }
     
     public static boolean isYesterday(Date date) {
-        long startOfToday = MyDate.getStartOfDay(new Date()).getTime();
+        long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
         long time = date.getTime();
 //        Date startOfYesterday = MyDate.getStartOfDay(new Date(startOfToday.getTime() - MyDate.DAY_IN_MILLISECONDS));
         return time<startOfToday&&time >= startOfToday - MyDate.DAY_IN_MILLISECONDS;
@@ -1488,25 +1488,25 @@ public class MyDate extends Date {
     @return 
      */
     public static boolean isNextcomingWeek(Date date) {
-        long startOfToday = MyDate.getStartOfDay(new Date()).getTime();
+        long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
         long time = date.getTime();
         return time >= startOfToday + DAY_IN_MILLISECONDS && time < startOfToday + DAY_IN_MILLISECONDS * 7;
     }
     
     public static boolean isPreviousWeek(Date date) {
-        long startOfToday = MyDate.getStartOfDay(new Date()).getTime();
+        long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
         long time = date.getTime();
         return time < startOfToday && time >= startOfToday - DAY_IN_MILLISECONDS * 7;
     }
 
     public static boolean isNextcomingYear(Date date) {
-        long startOfToday = MyDate.getStartOfDay(new Date()).getTime();
+        long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
         long time = date.getTime();
         return time >= startOfToday + DAY_IN_MILLISECONDS && time < startOfToday + DAY_IN_MILLISECONDS * 365;
     }
 
     public static boolean isPreviousYear(Date date) {
-        long startOfToday = MyDate.getStartOfDay(new Date()).getTime();
+        long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
         long time = date.getTime();
         return time >= startOfToday + DAY_IN_MILLISECONDS && time < startOfToday + DAY_IN_MILLISECONDS * 365;
     }
@@ -1836,7 +1836,7 @@ public class MyDate extends Date {
     }
     
     public static Date makeDate(int secondsFromNow) {
-        Date date = new Date();
+        Date date = new MyDate();
         date.setTime(date.getTime() + secondsFromNow * SECOND_IN_MILLISECONDS);
         return date;
     }
@@ -1972,7 +1972,7 @@ public class MyDate extends Date {
     }
     
     static Date setDateToTodayKeepTime(Date time) {
-        return setDateToNewDateKeepTime(time, new Date());
+        return setDateToNewDateKeepTime(time, new MyDate());
     }
 
     /**
@@ -2018,7 +2018,7 @@ public class MyDate extends Date {
      * @return
      */
     static Date getStartOfToday() {
-        return getStartOfDay(new Date());
+        return getStartOfDay(new MyDate());
     }
     
     static boolean isToday(Date date) {

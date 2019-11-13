@@ -4,6 +4,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.components.SpanLabel;
 import com.codename1.ui.Command;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.Container;
@@ -14,6 +15,7 @@ import com.codename1.ui.Dialog;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
@@ -247,6 +249,7 @@ public class ScreenListOfItemLists extends MyForm {
     protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode, ExpandedObjects expandedObjects) {
         Container mainCont = new Container(new MyBorderLayout());
         mainCont.setUIID("ItemListContainer");
+//        mainCont.setUIID("ItemListContainer");
         Container leftSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
         Container rightSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 
@@ -344,6 +347,7 @@ public class ScreenListOfItemLists extends MyForm {
 
         }; //use filtered/sorted ItemList for Timer
 //        swipCont.putClientProperty(ScreenListOfItems.DISPLAYED_ELEMENT, itemList);
+//        swipCont.setUIID("ItemListContainer");
 
         if (Config.TEST) {
             swipCont.setName(itemList.getText());
@@ -353,7 +357,7 @@ public class ScreenListOfItemLists extends MyForm {
             keepPos.testItemToKeepInSameScreenPosition(itemList, swipCont);
         }
 
-        Button subTasksButton = new Button();
+        Button expandItemListSubTasksButton = new Button();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //EDIT LIST
 //        Button editItemButton = new Button();// {
@@ -402,11 +406,11 @@ public class ScreenListOfItemLists extends MyForm {
                 swipCont, () -> {
 //                    boolean enabled = ((MyForm)get.isDragAndDropEnabled();
                     boolean enabled = ((MyForm) mainCont.getComponentForm()).isDragAndDropEnabled();
-                    if (enabled && subTasksButton != null) {
+                    if (enabled && expandItemListSubTasksButton != null) {
                         Object e = swipCont.getClientProperty(KEY_EXPANDED);
                         if (e != null && e.equals("true")) { //                            subTasksButton.getCommand().actionPerformed(null);
-                            subTasksButton.pressed();//simulate pressing the button
-                            subTasksButton.released(); //trigger the actionLIstener to collapse
+                            expandItemListSubTasksButton.pressed();//simulate pressing the button
+                            expandItemListSubTasksButton.released(); //trigger the actionLIstener to collapse
                         }
                     }
                     return enabled;
@@ -465,7 +469,8 @@ public class ScreenListOfItemLists extends MyForm {
             );
         }
 
-        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+//        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW)); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
 //        Button subTasksButton = new Button();
 
         if (false && !itemList.getComment().equals("")) {
@@ -496,26 +501,26 @@ public class ScreenListOfItemLists extends MyForm {
 //                Button subTasksButton = new Button();
 //                Command expandSubTasks = new CommandTracked("[" + numberItems + "]", "ExpandSubtasks");// {
 //                    Command expandSubTasks = new CommandTracked("", "ExpandSubtasks");// {
-                    Command expandSubTasks = CommandTracked.create("", null,
+                    Command expandSubTasksCmd = CommandTracked.create("", null,
                             (e) -> {
-                                subTasksButton.setUIID(subTasksButton.getUIID().equals("ListOfItemListsShowItems")
+                                expandItemListSubTasksButton.setUIID(expandItemListSubTasksButton.getUIID().equals("ListOfItemListsShowItems")
                                         ? "ListOfItemListsShowItemsExpanded"
                                         : "ListOfItemListsShowItems");
                             },
                             "ListOfItemListsExpandSubtasks");// {
-                    subTasksButton.setCommand(expandSubTasks);
+                    expandItemListSubTasksButton.setCommand(expandSubTasksCmd);
                     String subTaskStr = numberItems + "";
                     if (MyPrefs.listOfItemListsShowNumberDoneTasks.getBoolean()) {
                         int totalNbTasks = itemList.getNumberOfItems(false, MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean());
                         if (totalNbTasks != 0)
                             subTaskStr += "/" + totalNbTasks;
                     }
-                    subTasksButton.setText(subTaskStr);
+                    expandItemListSubTasksButton.setText(subTaskStr);
 //            subTasksButton.setIcon(Icons.get().iconShowMoreLabelStyle);
-                    subTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(itemList) ? "ListOfItemListsShowItemsExpanded" : "ListOfItemListsShowItems");
+                    expandItemListSubTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(itemList) ? "ListOfItemListsShowItemsExpanded" : "ListOfItemListsShowItems");
 //            swipCont.putClientProperty("subTasksButton", subTasksButton);
-                    swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
-                    if (false) east.addComponent(subTasksButton);
+                    swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandItemListSubTasksButton);
+                    if (false) east.addComponent(expandItemListSubTasksButton);
 //            cont.setLeadComponent(subTasksButton); //ensure events generated by button arrives at main container??? WORKS! Makes the button receive every action from the container
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            subTasksButton.setCommand(new Command("[" + itemList.getSize() + "]") {
@@ -552,10 +557,10 @@ public class ScreenListOfItemLists extends MyForm {
 //                east.addComponent(new Label((remainingEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
 //                        + (workTimeSumMillis != 0 ? ((remainingEffort != 0 ? "/" : "") + MyDate.formatDurationStd(workTimeSumMillis)) : ""),"ListOfItemListsRemainingTime")); //format: "remaining/workTime"
                 east.addComponent(new Label(effortStr, "ListOfItemListsRemainingTime")); //format: "remaining/workTime"
-                east.addComponent(subTasksButton); //format: "remaining/workTime"
+                east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"
                 east.addComponent(editItemListPropertiesButton);
             } else {
-                east.addComponent(subTasksButton); //format: "remaining/workTime"
+                east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"
                 east.addComponent(editItemListPropertiesButton);
             }
         } else { //statisticsMode
@@ -649,7 +654,7 @@ public class ScreenListOfItemLists extends MyForm {
 
     protected static Container buildItemListContainerStatistics(ItemList itemList, KeepInSameScreenPosition keepPos) {
         Container mainCont = new Container(new MyBorderLayout());
-        mainCont.setUIID("ItemListContainer");
+//        mainCont.setUIID("ItemListContainer");
         Container leftSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 
         MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(leftSwipeContainer, null, mainCont) {
@@ -810,41 +815,42 @@ public class ScreenListOfItemLists extends MyForm {
 //            }
 //        };
 //</editor-fold>
-//        if (listOfItemLists != null && listOfItemLists.getList().size() > 0) {
-        MyTree2 cl = new MyTree2(listOfItemLists, expandedObjects,null,null) {
-            @Override
-            protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
-                Container cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItemLists.this, (Item) node, itemOrItemList, category);
-                setIndent(cmp, depth);
-                return cmp;
-            }
+        if (listOfItemLists != null && listOfItemLists.getList().size() > 0) {
+            MyTree2 cl = new MyTree2(listOfItemLists, expandedObjects, null, null) {
+                @Override
+                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+                    Container cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItemLists.this, (Item) node, itemOrItemList, category);
+                    setIndent(cmp, depth);
+                    return cmp;
+                }
 
-            @Override
-            protected Component createNode(Object node, int depth) {
-                Container cmp = null;
-                if (node instanceof Item) {
+                @Override
+                protected Component createNode(Object node, int depth) {
+                    Container cmp = null;
+                    if (node instanceof Item) {
 //                    cmp = buildItemContainer((Item) node, null, () -> isDragAndDropEnabled(), () -> {                    },
 //                    cmp = buildItemContainer((Item) node, null, () -> isDragAndDropEnabled(), () -> refreshAfterEdit(),
 //                            false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??
 //                            null, null, keepPos, expandedObjects, () -> animateMyForm(), false, false); //TODO!!! store expanded itemLists
-                    cmp = buildItemContainer(ScreenListOfItemLists.this, (Item) node, null, null);
-                    if (Config.TEST) cmp.setName(((Item) node).getText());
-                } else if (node instanceof ItemList) {
+                        cmp = buildItemContainer(ScreenListOfItemLists.this, (Item) node, null, null);
+                        if (Config.TEST) cmp.setName(((Item) node).getText());
+                    } else if (node instanceof ItemList) {
 //                      cmp = buildCategoryContainer((Category) node, categoryList, keepPos, ()->refreshAfterEdit());
-                    cmp = buildItemListContainer((ItemList) node, keepPos, false, expandedObjects);
-                    if (Config.TEST) cmp.setName(((ItemList) node).getText());
-                } else {
-                    assert false : "should only be Item or ItemList: node=" + node;
+                        cmp = buildItemListContainer((ItemList) node, keepPos, false, expandedObjects);
+                        if (Config.TEST) cmp.setName(((ItemList) node).getText());
+                    } else {
+                        assert false : "should only be Item or ItemList: node=" + node;
+                    }
+                    setIndent(cmp, depth);
+                    return cmp;
                 }
-                setIndent(cmp, depth);
-                return cmp;
-            }
 
-        };
-        return cl;
-//        } else {
+            };
+            return cl;
+        } else {
 //            return new InsertNewTaskContainer(null, listOfItemLists);
-//        }
+            return BorderLayout.centerCenter(new SpanLabel("Add new lists using +"));
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
 //        cont.setScrollableY(true);

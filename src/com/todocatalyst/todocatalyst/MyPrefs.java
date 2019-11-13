@@ -77,7 +77,7 @@ public class MyPrefs {
                     "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task instead of beginning/end of list"); //"at the end"
 
     static PrefEntry dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList
-            = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks", "dropItemAtBeginningOfUnexpandedCategorySubtaskList", false, "**");
+            = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks", "dropItemAtBeginningOfUnexpandedCategorySubtaskList", true, "**");
 
     static PrefEntry insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList
             //            = new PrefEntry("When tasks are dropped as subtask under a task with unexpanded subtasks, insert it as the last subtask (end of subtask list)", 
@@ -93,8 +93,8 @@ public class MyPrefs {
 
 //    static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
     static PrefEntry dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask
-            = new PrefEntry("Defines the width of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
-                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 12, "**");
+            = new PrefEntry("Approximate width in millimeters of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
+                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 5, "**");
 
 //    static PrefEntry dragDropLeftDropZoneWidth
 //            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
@@ -487,6 +487,7 @@ public class MyPrefs {
     static PrefEntry completionLogInterval = new PrefEntry("rrr", "completionLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_COMPLETION_LOG_TITLE);
     static PrefEntry overdueLogInterval = new PrefEntry("Past days in " + ScreenMain.SCREEN_OVERDUE_TITLE, "overdueLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_OVERDUE_TITLE);
     static PrefEntry touchedLogInterval = new PrefEntry("eee", "touchedLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED);
+    static PrefEntry nextInterval = new PrefEntry("eee", "nextInterval", 30, "How many days ahead in time are included in " + ScreenMain.SCREEN_NEXT_TITLE);
 
     static PrefEntry useSmartdatesForThisManyDaysOverdueDueOrFinishDates = new PrefEntry("Use Smart format for past " + Item.DUE_DATE + " or " + Item.FINISH_WORK_TIME + " when overdue by less than this many days",
             "useSmartdatesForThisManyDaysOverdueDueOrFinishDates", 30, "**Show overdue dates in Smart format, e.g. Wed17h30. This is useful for overdue dates in the near past, but can get confusing for");
@@ -504,6 +505,18 @@ public class MyPrefs {
     static PrefEntry statisticsGroupTasksUnderTheirProject = new PrefEntry("Show subtasks grouped under their project", "statisticsGroupTasksUnderTheirProject", true, "Show completed subtasks grouped under their top-level project");
     static PrefEntry statisticsShowDetailsForAllLists = new PrefEntry("Always show details for statistics", "statisticsShowDetailsForAllLists", false, "**");
     static PrefEntry statisticsShowMostRecentFirst = new PrefEntry("Show most recent first", "statisticsShowMostRecentFirst", true, "**");
+
+    //LIST OF CATEGORIES
+    static PrefEntry listOfCategoriesShowNumberUndoneTasks = new PrefEntry(Format.f("Show number of tasks", ""), "listOfCategoriesShowNumberUndoneTasks", true, "**");
+    static PrefEntry listOfCategoriesShowNumberDoneTasks = new PrefEntry(Format.f("Show number of completed tasks, e.g. 7/23", ""), "listOfCategoriesShowNumberDoneTasks", true, "**");
+    static PrefEntry listOfCategoriesShowRemainingEstimate = new PrefEntry(Format.f("Show sum of Remaining estimates for tasks", ""),
+            "listOfCategoriesShowRemainingEstimate", true, "**"); //, "e.g. 3h20", Only shown if not-zero. NB. May make displaying the list slower for very large lists or slow devices
+    static PrefEntry listOfCategoriesShowTotalTime = new PrefEntry("Show sum of Total time for tasks",
+            "listOfCategoriesShowTotalTime", true, "**");
+    static PrefEntry listOfCategoriesShowWorkTime = new PrefEntry("Show sum of defined work time for the list",
+            "listOfCategoriesShowWorkTime", true, "**"); //"e.g. 1h10/23h12/[4h00]
+   static PrefEntry listOfCategoriesShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects",
+            "listOfCategoriesShowTotalNumberOfLeafTasks", true, "**");
 
     //LIST OF ITEMLISTS
     static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry(Format.f("Show number of tasks", ""), "listOfItemListsShowNumberUndoneTasks", true, "**");

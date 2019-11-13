@@ -271,7 +271,7 @@ public class TimerInstance extends ParseObject {
     }
 
     private final void setStartTimeToNowAndStartNow() {
-        setStartTime(new Date());
+        setStartTime(new MyDate());
     }
 
     public Date getStartTimeD() {

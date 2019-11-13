@@ -3,7 +3,7 @@ package tests;
 import com.codename1.testing.AbstractTest;
 
 import com.codename1.ui.Display;
-import com.todocatalyst.todocatalyst.TodoCatalystParse;
+import com.todocatalyst.todocatalyst.TodoCatalyst;
 
 public class CreateWorkslot extends AbstractTest {
     public boolean runTest() throws Exception {

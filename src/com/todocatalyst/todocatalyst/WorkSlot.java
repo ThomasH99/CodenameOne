@@ -470,24 +470,24 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         }
     }
 
-    public final void setRepeatRuleOLD2(RepeatRuleParseObject newRepeatRule) {
-        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
-        if (newRepeatRule != null) {
-            setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
-            if (oldRepeatRule == null) {
-//                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-                newRepeatRule.createWorkslotsForNewRepeatRule(this);
-            } else {
-//                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
-                oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRule); //update existing rule with updated values
-                oldRepeatRule.updateWorkslotsForEditedRepeatRule(this); //
-            }
-        } else if (oldRepeatRule != null) { //if the user deleted the repeatRule, /* repeatRule == null && */ 
-            if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
-                //            setRepeatRuleNoUpdate(newRepeatRule);
-                setRepeatRuleInParse(null);
-        } //else both old and new RR are null, do nothing
-    }
+//    public final void setRepeatRuleOLD2(RepeatRuleParseObject newRepeatRule) {
+//        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
+//        if (newRepeatRule != null) {
+//            setRepeatRuleInParse(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+//            if (oldRepeatRule == null) {
+////                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//                newRepeatRule.createWorkslotsForNewRepeatRule(this);
+//            } else {
+////                newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this);
+//                oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRule); //update existing rule with updated values
+//                oldRepeatRule.updateWorkslotsForEditedRepeatRule(this); //
+//            }
+//        } else if (oldRepeatRule != null) { //if the user deleted the repeatRule, /* repeatRule == null && */ 
+//            if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
+//                //            setRepeatRuleNoUpdate(newRepeatRule);
+//                setRepeatRuleInParse(null);
+//        } //else both old and new RR are null, do nothing
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public final void setRepeatRuleOLD(RepeatRuleParseObject repeatRule) {
@@ -906,10 +906,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      * time of the slot). If startDate is in the past, return NOW
      * (MyDate.getNow())
      */
-    public long getStartAdjustedXXX() {
-//        return getStartAdjusted(new Date().getTime());
-        return getStartAdjusted(MyDate.currentTimeMillis());
-    }
+//    public long getStartAdjustedXXX() {
+////        return getStartAdjusted(new Date().getTime());
+//        return getStartAdjusted(MyDate.currentTimeMillis());
+//    }
 
     public long getStartAdjusted(long now) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1096,19 +1096,19 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      *
      * @return
      */
-    public long getDurationAdjustedXXX() {
-//        return getDurationAdjusted(new Date().getTime());
-        return getDurationAdjusted(MyDate.currentTimeMillis());
-    }
+//    public long getDurationAdjustedXXX() {
+////        return getDurationAdjusted(new Date().getTime());
+//        return getDurationAdjusted(MyDate.currentTimeMillis());
+//    }
 
-    public long getDurationAdjustedInMinutesXXX() {
-//        return getDurationAdjusted(new Date().getTime()) / MyDate.MINUTE_IN_MILLISECONDS;
-        return getDurationAdjusted(MyDate.currentTimeMillis()) / MyDate.MINUTE_IN_MILLISECONDS;
-    }
+//    public long getDurationAdjustedInMinutesXXX() {
+////        return getDurationAdjusted(new Date().getTime()) / MyDate.MINUTE_IN_MILLISECONDS;
+//        return getDurationAdjusted(MyDate.currentTimeMillis()) / MyDate.MINUTE_IN_MILLISECONDS;
+//    }
 
-    public long getDurationAdjustedInMinutesXXX(long now) {
-        return getDurationAdjusted(now) / MyDate.MINUTE_IN_MILLISECONDS;
-    }
+//    public long getDurationAdjustedInMinutesXXX(long now) {
+//        return getDurationAdjusted(now) / MyDate.MINUTE_IN_MILLISECONDS;
+//    }
 
     public long getDurationAdjusted(long now) {
 // <editor-fold defaultstate="collapsed" desc="comment">
@@ -1380,46 +1380,46 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
 //    @Override
-    public void deleteXX() throws ParseException {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates. 
-    }
+//    public void deleteXX() throws ParseException {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates. 
+//    }
 
-    public void deleteXXX() throws ParseException {
-        RepeatRuleParseObject myRepeatRule = getRepeatRule();
-        if (myRepeatRule != null) {
-//            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this, (ItemList) getOwner());
-            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
-            //TODO!!! if no more workSlots referenced fromrepeatrule, then also delete repeatrule
-            DAO.getInstance().saveInBackground(myRepeatRule);
-        }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        try {
-//            //        ((WorkSlotList) getOwner()).removeItem(this);
-////        ((ItemList) getOwner()).removeItem(this);
-//            super.delete();
-//        } catch (ParseException ex) {
-//            Log.e(ex);
+//    public void deleteXXX() throws ParseException {
+//        RepeatRuleParseObject myRepeatRule = getRepeatRule();
+//        if (myRepeatRule != null) {
+////            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this, (ItemList) getOwner());
+//            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
+//            //TODO!!! if no more workSlots referenced fromrepeatrule, then also delete repeatrule
+//            DAO.getInstance().saveInBackground(myRepeatRule);
 //        }
-//        DAO.getInstance().delete(this);
-//        super.delete();
-//</editor-fold>
-        //remove from owner (but don't remove owner from this workSlot, that allows us to recreate/undelete
-        ItemAndListCommonInterface owner = getOwner();
-        if (owner != null) {
-            WorkSlotList workSlotList = owner.getWorkSlotListN();
-            if (workSlotList != null) {
-                workSlotList.remove(this);
-                owner.setWorkSlotList(workSlotList);
-                DAO.getInstance().saveInBackground((ParseObject) owner);
-            }
-//            owner.removeFromList(this); //TODO implement removeFromList on WorkSlotList?
-            DAO.getInstance().saveInBackground(this);
-        }
-
-//        put(Item.PARSE_DELETED_DATE, new Date());
-        setDeletedDate(new Date());
-        DAO.getInstance().saveInBackground(this);
-    }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        try {
+////            //        ((WorkSlotList) getOwner()).removeItem(this);
+//////        ((ItemList) getOwner()).removeItem(this);
+////            super.delete();
+////        } catch (ParseException ex) {
+////            Log.e(ex);
+////        }
+////        DAO.getInstance().delete(this);
+////        super.delete();
+////</editor-fold>
+//        //remove from owner (but don't remove owner from this workSlot, that allows us to recreate/undelete
+//        ItemAndListCommonInterface owner = getOwner();
+//        if (owner != null) {
+//            WorkSlotList workSlotList = owner.getWorkSlotListN();
+//            if (workSlotList != null) {
+//                workSlotList.remove(this);
+//                owner.setWorkSlotList(workSlotList);
+//                DAO.getInstance().saveInBackground((ParseObject) owner);
+//            }
+////            owner.removeFromList(this); //TODO implement removeFromList on WorkSlotList?
+//            DAO.getInstance().saveInBackground(this);
+//        }
+//
+////        put(Item.PARSE_DELETED_DATE, new Date());
+//        setDeletedDate(new MyDate());
+//        DAO.getInstance().saveInBackground(this);
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
@@ -1658,20 +1658,20 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return unalloc > 0 ? unalloc : 0;
     }
 
-    public long getUnallocatedTimeOLD(long now) {
-        if (getDurationAdjusted(now) == 0) {
-            return 0;
-        }
-        List<Item> items = getItemsInWorkSlot();
-        if (items == null || items.size() == 0) {
-            return 0;
-        } else {
-            //TODO!!!! not sure this algo will work in all cases
-            long unalloc = getEndTime() - items.get(items.size() - 1).getFinishTime(); //may get negative in case last item which got 
-//            return getEndTime() - items.get(items.size() - 1).getFinishTime();
-            return unalloc > 0 ? unalloc : 0; //in
-        }
-    }
+//    public long getUnallocatedTimeOLD(long now) {
+//        if (getDurationAdjusted(now) == 0) {
+//            return 0;
+//        }
+//        List<Item> items = getItemsInWorkSlot();
+//        if (items == null || items.size() == 0) {
+//            return 0;
+//        } else {
+//            //TODO!!!! not sure this algo will work in all cases
+//            long unalloc = getEndTime() - items.get(items.size() - 1).getFinishTime(); //may get negative in case last item which got 
+////            return getEndTime() - items.get(items.size() - 1).getFinishTime();
+//            return unalloc > 0 ? unalloc : 0; //in
+//        }
+//    }
 
     /**
     keep track of which items have been allocated a slide of this workslot
@@ -2010,7 +2010,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         }
 
         //TODO!!!! need to delete in Sources - see comments/thoughts on this in comments inside Item.softDelete()
-        put(Item.PARSE_DELETED_DATE, new Date());
+        put(Item.PARSE_DELETED_DATE, new MyDate());
         DAO.getInstance().saveInBackground((ParseObject) this);
         return true;
     }

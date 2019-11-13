@@ -293,14 +293,14 @@ public class FilterSortDef extends ParseObject {
     /**
      * sets default filter: no sorting, show all tasks
      */
-    void setDefaultsXXX() {
-        setSortFieldId(Item.PARSE_DUE_DATE); //show sort on DUE as default option *if* setting sortOn
-        setSortDescending(false);
-        setSortOn(false); //don't sort by default, 
-//        extractAndSetFilterOptions(FILTER_SHOW_NEW_TASKS + FILTER_SHOW_ONGOING_TASKS + FILTER_SHOW_WAITING_TASKS + FILTER_SHOW_DONE_TASKS + FILTER_SHOW_CANCELLED_TASKS);//when creating filter first time, show all tasks (to avoid that tasks suddenly disappear in the list)
-//        saveCurrentlyActiveFilterOptions();
-        setFilterOptions(FILTER_SHOW_NEW_TASKS + FILTER_SHOW_ONGOING_TASKS + FILTER_SHOW_WAITING_TASKS + FILTER_SHOW_DONE_TASKS + FILTER_SHOW_CANCELLED_TASKS);//when creating filter first time, show all tasks (to avoid that tasks suddenly disappear in the list)
-    }
+//    void setDefaultsXXX() {
+//        setSortFieldId(Item.PARSE_DUE_DATE); //show sort on DUE as default option *if* setting sortOn
+//        setSortDescending(false);
+//        setSortOn(false); //don't sort by default, 
+////        extractAndSetFilterOptions(FILTER_SHOW_NEW_TASKS + FILTER_SHOW_ONGOING_TASKS + FILTER_SHOW_WAITING_TASKS + FILTER_SHOW_DONE_TASKS + FILTER_SHOW_CANCELLED_TASKS);//when creating filter first time, show all tasks (to avoid that tasks suddenly disappear in the list)
+////        saveCurrentlyActiveFilterOptions();
+//        setFilterOptions(FILTER_SHOW_NEW_TASKS + FILTER_SHOW_ONGOING_TASKS + FILTER_SHOW_WAITING_TASKS + FILTER_SHOW_DONE_TASKS + FILTER_SHOW_CANCELLED_TASKS);//when creating filter first time, show all tasks (to avoid that tasks suddenly disappear in the list)
+//    }
 
 //    private static FilterSortDef defaultDoneTasksFilter
 //            = new FilterSortDef(null, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
@@ -371,19 +371,19 @@ public class FilterSortDef extends ParseObject {
      * @param itemList
      * @return
      */
-    static FilterSortDef fetchFilterSortDefXXX(String screenId, ParseObject itemList, FilterSortDef defaultFilter) {
-        FilterSortDef filterSortDef = null;
-        if (itemList instanceof ParseObject && ((ParseObject) itemList).getObjectIdP() != null) {
-//            filterSortDef = DAO.getInstance().getFilterSortDef(screenId, ((ParseObject) itemList).getObjectId());
-            filterSortDef = DAO.getInstance().getFilterSortDefXXX(((ParseObject) itemList).getObjectIdP());
-        }
-        if (filterSortDef == null) {
-//            filterSortDef = new FilterSortDef(screenId, itemList);
-//            DAO.getInstance().save(filterSortDef);
-            filterSortDef = defaultFilter;
-        }
-        return filterSortDef;
-    }
+//    static FilterSortDef fetchFilterSortDefXXX(String screenId, ParseObject itemList, FilterSortDef defaultFilter) {
+//        FilterSortDef filterSortDef = null;
+//        if (itemList instanceof ParseObject && ((ParseObject) itemList).getObjectIdP() != null) {
+////            filterSortDef = DAO.getInstance().getFilterSortDef(screenId, ((ParseObject) itemList).getObjectId());
+//            filterSortDef = DAO.getInstance().getFilterSortDefXXX(((ParseObject) itemList).getObjectIdP());
+//        }
+//        if (filterSortDef == null) {
+////            filterSortDef = new FilterSortDef(screenId, itemList);
+////            DAO.getInstance().save(filterSortDef);
+//            filterSortDef = defaultFilter;
+//        }
+//        return filterSortDef;
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    FilterPredicate filterPredicate = new FilterPredicate();
@@ -764,15 +764,15 @@ public class FilterSortDef extends ParseObject {
             query.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.ONGOING.toString());
         }
         if (!fp.showBeforeHideUntilDate) {
-            query.whereGreaterThanOrEqualTo(Item.PARSE_HIDE_UNTIL_DATE, new Date()); //new Date() <=> now
+            query.whereGreaterThanOrEqualTo(Item.PARSE_HIDE_UNTIL_DATE, new MyDate()); //new Date() <=> now
         }
         if (!fp.showDependingOnUndoneTasks) {
             //TODO!!!!! doesn't work 
             query.whereExists(Item.PARSE_DEPENDS_ON_TASK);
-            query.whereGreaterThanOrEqualTo(Item.PARSE_DEPENDS_ON_TASK, new Date()); //new Date() <=> now
+            query.whereGreaterThanOrEqualTo(Item.PARSE_DEPENDS_ON_TASK, new MyDate()); //new Date() <=> now
         }
         if (!fp.showExpiresOnDate) {
-            query.whereLessThan(Item.PARSE_EXPIRES_ON_DATE, new Date());
+            query.whereLessThan(Item.PARSE_EXPIRES_ON_DATE, new MyDate());
         }
         if (fp.showProjectsOnly) {
             query.whereExists(Item.PARSE_SUBTASKS);
@@ -1212,14 +1212,14 @@ public class FilterSortDef extends ParseObject {
      * @param orgList
      * @return
      */
-    public List filterItemListXXX(List orgList) {
-//        List<Item> filteredList = new ArrayList(filter(orgList.getList())); //filter the underlying list and create a new ItemList
-//        List<Item> filteredList = new ArrayList(filter(orgList)); //filter the underlying list and create a new ItemList
-//        List<Item> filteredList = filter(orgList); //filter the underlying list and create a new ItemList
-        List<Item> filteredList = filterItemList(orgList); //filter the underlying list and create a new ItemList
-//        filteredList.setSourceItemList(orgList);
-        return filteredList;
-    }
+//    public List filterItemListXXX(List orgList) {
+////        List<Item> filteredList = new ArrayList(filter(orgList.getList())); //filter the underlying list and create a new ItemList
+////        List<Item> filteredList = new ArrayList(filter(orgList)); //filter the underlying list and create a new ItemList
+////        List<Item> filteredList = filter(orgList); //filter the underlying list and create a new ItemList
+//        List<Item> filteredList = filterItemList(orgList); //filter the underlying list and create a new ItemList
+////        filteredList.setSourceItemList(orgList);
+//        return filteredList;
+//    }
 
     /**
      * returns a filtered and sorted *copy* of the list
@@ -1526,7 +1526,7 @@ public class FilterSortDef extends ParseObject {
     }
 
     public boolean softDelete(boolean removeReferences) {
-        setDeletedDate(new Date());
+        setDeletedDate(new MyDate());
         DAO.getInstance().saveInBackground(this);
         return true;
     }

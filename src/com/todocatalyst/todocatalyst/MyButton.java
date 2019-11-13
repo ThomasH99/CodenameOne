@@ -15,6 +15,7 @@ import com.codename1.ui.Image;
  */
 public class MyButton extends Button { //TODO!!!! remove this unused class
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    interface MyButtonActiveInterface {
 //
 //        /** returns the text to display for the command in the given context. Returns null if none defined */
@@ -24,6 +25,7 @@ public class MyButton extends Button { //TODO!!!! remove this unused class
 //    }
 //    private MyActiveInterface buttonGenerator;
 //    Object buttonTextSource;
+//</editor-fold>
     /**
      * Constructs a button with an empty string for its text.
      */
@@ -50,10 +52,12 @@ public class MyButton extends Button { //TODO!!!! remove this unused class
         super(cmd);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public MyButton(Command cmd, MyActiveInterface buttonGenerator) { //- use overriding of methods in new instead of using the MyActiveInterface
 //        super(cmd);
 //        this.buttonGenerator = buttonGenerator;
 //    }
+//</editor-fold>
     /**
      * Constructs a button with the specified image.
      *
@@ -73,6 +77,7 @@ public class MyButton extends Button { //TODO!!!! remove this unused class
         super(text, icon);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public MyButton(MyActiveInterface buttonGenerator, Image icon) {
 //        super("", icon);
 //        setActiveGenerator(buttonGenerator);
@@ -91,16 +96,19 @@ public class MyButton extends Button { //TODO!!!! remove this unused class
 //    void setButtonTextSourceObject(Object buttonTextSource) {
 //        this.buttonText = buttonText;
 //    }
+//</editor-fold>
     /**
      * Returns the label text
      *
      * @return the label text
      */
     public String getText() {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (buttonText == null) {
 //        if (buttonGenerator != null) {
 //            setText(buttonGenerator.getText(this));
 //        } else
+//</editor-fold>
         if (getCommand() instanceof MyCommand) {
             setText(((MyCommand) getCommand()).getCommandName());
         }

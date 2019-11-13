@@ -337,19 +337,18 @@ public class KeepInSameScreenPosition {
      *
      * @return the found scrollableContainer or null if none found
      */
-    private static Component findScrollableContainerBelowNXXX(Component newComponent) {
-        if (newComponent != null) { //if we found the new component
-            return MyForm.findScrollableChild(newComponent.getComponentForm().getContentPane());
-        } else { //otherwise we'll simply get the form
-            Form f = Display.getInstance().getCurrent();
-            if (f != null) {
-                return MyForm.findScrollableChild(f);
-            } else {
-                return null;
-            }
-        }
-    }
-
+//    private static Component findScrollableContainerBelowNXXX(Component newComponent) {
+//        if (newComponent != null) { //if we found the new component
+//            return MyForm.findScrollableChild(newComponent.getComponentForm().getContentPane());
+//        } else { //otherwise we'll simply get the form
+//            Form f = Display.getInstance().getCurrent();
+//            if (f != null) {
+//                return MyForm.findScrollableChild(f);
+//            } else {
+//                return null;
+//            }
+//        }
+//    }
     private Component findScrollableContainerN() {
         if (Config.TEST) {
 //            Form currentForm = Display.getInstance().getCurrent();
@@ -463,6 +462,7 @@ public class KeepInSameScreenPosition {
      * @param newComponent
      */
     void setNewScrollYPosition() {
+        if (Config.TEST) Log.p("calling KeepInSameScreenPosition.setNewScrollYPosition(), with KeepInSameScreenPosition=" + this);
         if (newComponent == null) {
             if (false && true) return;
 //            if (scrollY != 0) {
@@ -494,7 +494,7 @@ public class KeepInSameScreenPosition {
 //</editor-fold>
                     ASSERT.that(scrollCont instanceof ContainerScrollY,
                             () -> "KeepInSameScreenPosition: scrollable container not found, must improve findScrollableContainer(), scrollCont not ContainerScrollY: " + scrollCont);
-                    if (false&&Config.TEST_SCROLL_Y) Log.p("KeepInSameScreenPosition-1: scrolling to Y=" + scrollY);
+                    if (false && Config.TEST_SCROLL_Y) Log.p("KeepInSameScreenPosition-1: scrolling to Y=" + scrollY);
                     ((ContainerScrollY) scrollCont).setScrollYPublic(scrollY);
                 }
             } //else //UI: do nothing, no scroll
@@ -511,7 +511,7 @@ public class KeepInSameScreenPosition {
 //            scrollableContainer.setScrollY(Math.max(0, newComponent.getY() - relScroll)); //Math.max since scroll position cannot be maintainer if earlier components shrink
 //                    scrollableContainer.setScrollY(Math.max(0, scrollableComp.getY() - relScroll)); //Math.max since scroll position cannot be maintained if earlier components shrink
 //                        if (Config.TEST_SCROLL_Y) printCoordinateValues("scrollableContainer", scrollableContainer);
-                        if (false&&Config.TEST_SCROLL_Y) printCoordinateValues("scrollableComp", newComponent);
+                        if (false && Config.TEST_SCROLL_Y) printCoordinateValues("scrollableComp", newComponent);
 //                        if (Config.TEST_SCROLL_Y)                         {
                         int scrollableCompY = scrollableComp.getY();
                         int scrollableCompAbsY = scrollableComp.getAbsoluteY();
@@ -521,10 +521,10 @@ public class KeepInSameScreenPosition {
                         int scrollYAbs = Math.max(0, scrollableCompAbsY - relScroll);
                         int scrollY = Math.max(0, scrollableCompY - relScroll);
 //                        if (Config.TEST_SCROLL_Y) Log.p("relScroll="+relScroll+", scrollableCompY="+scrollableCompY+", scrollY="+scrollY);
-                        if (false&&Config.TEST_SCROLL_Y) Log.p("KeepInSameScreenPosition-2: scrolling to Y=" + scrollY + ", relScroll=" + relScroll + ", scrollableCompY=" + scrollableCompY);
+                        if (false && Config.TEST_SCROLL_Y) Log.p("KeepInSameScreenPosition-2: scrolling to Y=" + scrollY + ", relScroll=" + relScroll + ", scrollableCompY=" + scrollableCompY);
                         ((ContainerScrollY) scrollableContainer).setScrollYPublic(scrollY); //Math.max since scroll position cannot be maintained if earlier components shrink
                     } else {
-                        if (false&&Config.TEST_SCROLL_Y) Log.p("KeepInSameScreenPosition-3: scrolling comp=" + newComponent + " to visible");
+                        if (false && Config.TEST_SCROLL_Y) Log.p("KeepInSameScreenPosition-3: scrolling comp=" + newComponent + " to visible");
                         scrollableContainer.scrollComponentToVisible(newComponent); //scroll to show the container of an item when no position was known - //TODO not tested
                     }
 //                scrollableContainer.animateHierarchy(300);

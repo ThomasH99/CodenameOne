@@ -887,7 +887,7 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
         categoriesList.removeFromList(this, removeReferences);
 //        DAO.getInstance().saveInBackground((ParseObject)categoriesList);
 
-        put(Item.PARSE_DELETED_DATE, new Date());
+        put(Item.PARSE_DELETED_DATE, new MyDate());
 //        DAO.getInstance().saveInBackground((ParseObject)this);
         DAO.getInstance().saveInBackground(categoriesList, this); //group the two saves together
         return true;

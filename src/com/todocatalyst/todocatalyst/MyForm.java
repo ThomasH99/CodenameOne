@@ -12,8 +12,6 @@ import com.codename1.components.Switch;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
 import com.codename1.io.NetworkManager;
-import com.codename1.l10n.L10NManager;
-import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
 import static com.codename1.ui.CN.EAST;
 import static com.codename1.ui.CN.WEST;
@@ -23,7 +21,6 @@ import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
-import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 //import com.codename1.ui.Form;
 import com.codename1.ui.Image;
@@ -33,18 +30,17 @@ import com.codename1.ui.SideMenuBar;
 import com.codename1.ui.StickyHeader;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
-import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.animations.ComponentAnimation;
 //import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.Layout;
-import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.ui.util.UITimer;
@@ -52,10 +48,8 @@ import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_OBJECT;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -111,6 +105,8 @@ public class MyForm extends Form {
 
     private String showIfEmptyList = null; //holds Container with actual content, typically MyTree2
 
+    SwipeableContainer openSwipeContainer = null; //stores the currently open SwipeContainer for this screen
+
     public CheckDataIsComplete getCheckIfSaveOnExit() {
         return checkDataIsCompleteBeforeExit;
     }
@@ -151,10 +147,9 @@ public class MyForm extends Form {
         return uniqueFormId != null ? uniqueFormId : (getTitle() != null && getTitle().length() > 0 ? getTitle() : "NoScreenId");
     }
 
-    public String getUniqueFormIdXXX(String extensionStr) {
-        return getUniqueFormId() + extensionStr;
-    }
-
+//    public String getUniqueFormIdXXX(String extensionStr) {
+//        return getUniqueFormId() + extensionStr;
+//    }
     public void setUniqueFormId(String formUniqueId) {
         this.uniqueFormId = formUniqueId;
     }
@@ -264,14 +259,13 @@ public class MyForm extends Form {
     protected static final String REPEAT_RULE_KEY = "$REPEAT_RULE$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
     protected static final String SUBTASK_KEY = "$SUBTASK$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
 
-    public void setAutoSizeModeXXX(boolean on) { //now done when creating dedicated title component
-        if (getToolbar() != null && getToolbar().getTitleComponent() instanceof Label) {
-            ((Label) getToolbar().getTitleComponent()).setAutoSizeMode(true);
-        } else {
-            getTitleComponent().setAutoSizeMode(true);
-        }
-    }
-
+//    public void setAutoSizeModeXXX(boolean on) { //now done when creating dedicated title component
+//        if (getToolbar() != null && getToolbar().getTitleComponent() instanceof Label) {
+//            ((Label) getToolbar().getTitleComponent()).setAutoSizeMode(true);
+//        } else {
+//            getTitleComponent().setAutoSizeMode(true);
+//        }
+//    }
     @Override
     public String toString() {
         return "MyForm " + getTitle() + super.toString();
@@ -343,7 +337,7 @@ public class MyForm extends Form {
         super();
         setTitle(title); //must do here to use overridden version of setTitle()
         this.previousForm = previousForm;
-        setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
+        if (false) setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
 
 //        ReplayLog.getInstance().deleteAllReplayCommandsFromPreviousScreen(title);
         SCREEN_TITLE = title;
@@ -377,7 +371,7 @@ public class MyForm extends Form {
 //            void setup() {
 //        setTactileTouch(true); //enables opening contextmenu on touching a list element??
         setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-        setLayout(new MyBorderLayout()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
+        setLayout(new BorderLayout()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
 //        setLayout(BoxLayout.y()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
         if (false) {
             setLayout(BoxLayout.y());
@@ -439,49 +433,53 @@ public class MyForm extends Form {
 
     @Override
     public void setTitle(String title) {
+        if (false)
+            super.setTitle(title);
+        else {
 //        Label titleComponent = new Label(getTitle(),"FormTitle") {
-        Label titleComponent = new Label(title, "FormTitle") {
-            public void pointerReleased(int x, int y) {
-                super.pointerReleased(x, y);
-                if (doubleTapTitleTimer == null) {
-                    doubleTapTitleTimer = UITimer.timer(TIME_FOR_DOUBLE_TAP, false, getComponentForm(), () -> {
-                        // singleTapEvent();
-                        //scroll list to top
-                        ContainerScrollY cont = findScrollableContYChild(getComponentForm());
-                        if (cont != null) {
-                            Component lastComp = cont.getComponentAt(0); //scroll list to bottom
-                            if (lastComp != null) {
-                                cont.scrollComponentToVisible(lastComp);
-                            }
-                        }
-                        doubleTapTitleTimer = null;
-                    });
-                } else {
-                    doubleTapTitleTimer.cancel();
-                    doubleTapTitleTimer = null;
-                    //doubleTapEvent(); 
-                    //scroll list to bottom //TODO!!! improve so that doubletap scrolls back and forth between top of list and the scroll point
-                    Form f = getComponentForm();
-                    if (f != null) {
-                        ContainerScrollY cont = findScrollableContYChild(getComponentForm());
-                        if (cont != null) {
-                            int idx = cont.getComponentCount() - 1;
-                            if (idx >= 0) {
-                                Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
+            Label titleComponent = new Label(title, "FormTitle") {
+                public void pointerReleased(int x, int y) {
+                    super.pointerReleased(x, y);
+                    if (doubleTapTitleTimer == null) {
+                        doubleTapTitleTimer = UITimer.timer(TIME_FOR_DOUBLE_TAP, false, getComponentForm(), () -> {
+                            // singleTapEvent();
+                            //scroll list to top
+                            ContainerScrollY cont = findScrollableContYChild(getComponentForm());
+                            if (cont != null) {
+                                Component lastComp = cont.getComponentAt(0); //scroll list to bottom
                                 if (lastComp != null) {
                                     cont.scrollComponentToVisible(lastComp);
+                                }
+                            }
+                            doubleTapTitleTimer = null;
+                        });
+                    } else {
+                        doubleTapTitleTimer.cancel();
+                        doubleTapTitleTimer = null;
+                        //doubleTapEvent(); 
+                        //scroll list to bottom //TODO!!! improve so that doubletap scrolls back and forth between top of list and the scroll point
+                        Form f = getComponentForm();
+                        if (f != null) {
+                            ContainerScrollY cont = findScrollableContYChild(getComponentForm());
+                            if (cont != null) {
+                                int idx = cont.getComponentCount() - 1;
+                                if (idx >= 0) {
+                                    Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
+                                    if (lastComp != null) {
+                                        cont.scrollComponentToVisible(lastComp);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-        };
-        titleComponent.setAutoSizeMode(MyPrefs.titleAutoSize.getBoolean());
+            };
+            titleComponent.setAutoSizeMode(MyPrefs.titleAutoSize.getBoolean());
 //        titleComponent.setMinAutoSize(2); //TODO!!!!! pull request to add this to CN1
-        titleComponent.setVerticalAlignment(Component.CENTER);
-        getToolbar().setTitleComponent(titleComponent);
-        getToolbar().setTitleCentered(true);
+            titleComponent.setVerticalAlignment(Component.CENTER);
+            getToolbar().setTitleComponent(titleComponent);
+            getToolbar().setTitleCentered(true);
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -516,6 +514,7 @@ public class MyForm extends Form {
 
 //    private static String KEEP_POS_KEY = "KeepPos";
     protected void restoreKeepPos() {
+        if (Config.TEST) Log.p("calling MyForm.restoreKeepPos(), with keepPos=" + keepPos);
         if (this.keepPos != null) {
             this.keepPos.setNewScrollYPosition();
             this.keepPos = null;
@@ -1233,59 +1232,58 @@ public class MyForm extends Form {
         }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            for (String parseId : parseIdMap2.keySet()) {
-    protected static void putEditedValues2OLD(Map<Object, Runnable> parseIdMap2) {
-////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
-//                parseIdMap.get(parseId).saveEditedValueInParseObject();
-//            }
-        //Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
-        ASSERT.that(parseIdMap2 != null);
-        if (parseIdMap2 != null) {
-            Runnable repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
-//            UpdateField repeatRule = parseIdMap2.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
-            if (false && repeatRule != null) {
-                DAO.getInstance().saveInBackground((ParseObject) repeatRule); //MUST save before saving Item, since item will reference a new repeatRule
-            }
-
-            for (Object parseId : parseIdMap2.keySet()) {
-//            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
-                parseIdMap2.get(parseId).run();
-            }
-            if (repeatRule != null) {
-                repeatRule.run();
-            }
-        }
-    }
-
-//    private static void putEditedValues2(Map<Object, Runnable> parseIdMap2, ParseObject parseObject) {
-    public static void putEditedValues2XXX(Map<Object, Runnable> parseIdMap2) {
-////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
-//                parseIdMap.get(parseId).saveEditedValueInParseObject();
-//            }
-        //Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
+//    protected static void putEditedValues2OLD(Map<Object, Runnable> parseIdMap2) {
+//////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
+////                parseIdMap.get(parseId).saveEditedValueInParseObject();
+////            }
+//        //Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
 //        ASSERT.that(parseIdMap2 != null);
 //        if (parseIdMap2 != null) {
-        Runnable repeatRule = null;
-        if (false) {
-            repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY);
-        } //set a repeatRule aside for execution last (after restoring all fields)
-//            UpdateField repeatRule = parseIdMap2.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
+//            Runnable repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+////            UpdateField repeatRule = parseIdMap2.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
 //            if (false && repeatRule != null) {
 //                DAO.getInstance().saveInBackground((ParseObject) repeatRule); //MUST save before saving Item, since item will reference a new repeatRule
 //            }
-
-        for (Object parseId : parseIdMap2.keySet()) {
-//            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
-            parseIdMap2.get(parseId).run();
-        }
-        if (repeatRule != null) {
-//            if (parseObject != null && parseObject.getObjectIdP() == null)
-//                DAO.getInstance().saveInBackground(parseObject); //if not saved
-            repeatRule.run();
-        }
+//
+//            for (Object parseId : parseIdMap2.keySet()) {
+////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
+//                parseIdMap2.get(parseId).run();
+//            }
+//            if (repeatRule != null) {
+//                repeatRule.run();
+//            }
 //        }
-    }
-
+//    }
+//    private static void putEditedValues2(Map<Object, Runnable> parseIdMap2, ParseObject parseObject) {
+//    public static void putEditedValues2XXX(Map<Object, Runnable> parseIdMap2) {
+//////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
+////                parseIdMap.get(parseId).saveEditedValueInParseObject();
+////            }
+//        //Log.p("putEditedValues2 - saving edited element, parseIdMap2=" + parseIdMap2);
+////        ASSERT.that(parseIdMap2 != null);
+////        if (parseIdMap2 != null) {
+//        Runnable repeatRule = null;
+//        if (false) {
+//            repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY);
+//        } //set a repeatRule aside for execution last (after restoring all fields)
+////            UpdateField repeatRule = parseIdMap2.remove(Item.PARSE_REPEAT_RULE); //set a repeatRule aside for execution last (after restoring all fields)
+////            if (false && repeatRule != null) {
+////                DAO.getInstance().saveInBackground((ParseObject) repeatRule); //MUST save before saving Item, since item will reference a new repeatRule
+////            }
+//
+//        for (Object parseId : parseIdMap2.keySet()) {
+////            put(parseId, parseIdMap.get(parseId).saveEditedValueInParseObject());
+//            parseIdMap2.get(parseId).run();
+//        }
+//        if (repeatRule != null) {
+////            if (parseObject != null && parseObject.getObjectIdP() == null)
+////                DAO.getInstance().saveInBackground(parseObject); //if not saved
+//            repeatRule.run();
+//        }
+////        }
+//    }
 //    protected static void putEditedValues2(Map<Object, Runnable> parseIdMap2) {
 //        putEditedValues2(parseIdMap2, null);
 //    }
@@ -1304,6 +1302,7 @@ public class MyForm extends Form {
 //    protected void putEditedValues2XXX() {
 //        putEditedValues2(parseIdMap2);
 //    }
+//</editor-fold>
     void setUpdateActionOnDone(Runnable updateActionOnDone) {
         this.updateActionOnDone = updateActionOnDone;
     }
@@ -1353,6 +1352,7 @@ public class MyForm extends Form {
             restoreKeepPos();
             if (getStartEditingAsyncTextArea() != null) {
                 getStartEditingAsyncTextArea().startEditingAsync();
+                Log.p("---->>> startEditingAsync() for TextArea named=" + getStartEditingAsyncTextArea().getName());
             }
 //            if (getStartEditingAsyncTextArea() != null) {
 //                getStartEditingAsyncTextArea().startEditingAsync();
@@ -1696,25 +1696,24 @@ public class MyForm extends Form {
 //    }
 //    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
 //</editor-fold>
-    public Command makeDoneUpdateWithParseIdMapCommandOLD(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
-        Command cmd = new Command(title, null) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                //use checkOnExit from parameters if defined, otherwise use the one set for the form if defined
-                if ((getCheckOnExit == null || getCheckOnExit.check()) && (getCheckIfSaveOnExit() == null || getCheckIfSaveOnExit().check())) {
-//                    putEditedValues2(parseIdMap2);
-                    parseIdMap2.update();
-                    if (getUpdateActionOnDone() != null)
-                        getUpdateActionOnDone().run();
-                }
-                showPreviousScreen(callRefreshAfterEdit);
-            }
-        };
-        cmd.setMaterialIcon(icon);
-        cmd.putClientProperty("android:showAsAction", "withText");
-        return cmd;
-    }
-
+//    public Command makeDoneUpdateWithParseIdMapCommandOLD(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
+//        Command cmd = new Command(title, null) {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                //use checkOnExit from parameters if defined, otherwise use the one set for the form if defined
+//                if ((getCheckOnExit == null || getCheckOnExit.check()) && (getCheckIfSaveOnExit() == null || getCheckIfSaveOnExit().check())) {
+////                    putEditedValues2(parseIdMap2);
+//                    parseIdMap2.update();
+//                    if (getUpdateActionOnDone() != null)
+//                        getUpdateActionOnDone().run();
+//                }
+//                showPreviousScreen(callRefreshAfterEdit);
+//            }
+//        };
+//        cmd.setMaterialIcon(icon);
+//        cmd.putClientProperty("android:showAsAction", "withText");
+//        return cmd;
+//    }
     public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
         Command cmd = new Command(title, null) {
             @Override
@@ -1782,20 +1781,19 @@ public class MyForm extends Form {
 //    public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetString canGoBack) {
 //        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit, canGoBack);
 //    }
-    public Command makeDoneCommandWithNoUpdateXXX() {
-        Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-//                previousForm.refreshAfterEdit();
-//                previousForm.showBack();
-//                showPreviousScreenOrDefault(previousForm, false);
-                showPreviousScreen(false);
-            }
-        };
-        cmd.putClientProperty("android:showAsAction", "withText");
-        return cmd;
-    }
-
+//    public Command makeDoneCommandWithNoUpdateXXX() {
+//        Command cmd = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+////                previousForm.refreshAfterEdit();
+////                previousForm.showBack();
+////                showPreviousScreenOrDefault(previousForm, false);
+//                showPreviousScreen(false);
+//            }
+//        };
+//        cmd.putClientProperty("android:showAsAction", "withText");
+//        return cmd;
+//    }
     public Command makeCancelCommand() {
         return makeCancelCommand("Cancel", null);
     }
@@ -2093,6 +2091,18 @@ public class MyForm extends Form {
         return l;
     }
 
+    public Component makeSpacerThin() {
+        Label l = new Label("", "SpacerThin");
+        l.setShowEvenIfBlank(true);
+        return l;
+    }
+
+    public Component makeSpacerThick() {
+        Label l = new Label("", "SpacerThick");
+        l.setShowEvenIfBlank(true);
+        return l;
+    }
+
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////    void restartScreenXXX() {
 ////        //TODO
@@ -2166,6 +2176,7 @@ public class MyForm extends Form {
     }
 
     protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton) {
+        if (label == null) return null;
         Component spanB;
         if (makeSpanButton) {
             spanB = new SpanButton(label, "LabelField");
@@ -2270,42 +2281,36 @@ public class MyForm extends Form {
 //    protected static Component layout(String fieldLabelTxt, Component field) {
 //        return layout(fieldLabelTxt, field, null);
 //    }
-    protected static Component layoutXXX(String fieldLabelTxt, Component field, boolean checkForTooLargeWidth) {
-        return layoutOLD(fieldLabelTxt, field, null, null, checkForTooLargeWidth, false, true);
-    }
-
+//    protected static Component layoutXXX(String fieldLabelTxt, Component field, boolean checkForTooLargeWidth) {
+//        return layoutOLD(fieldLabelTxt, field, null, null, checkForTooLargeWidth, false, true);
+//    }
     protected static Component layout(String fieldLabelTxt, Component field, String help) {
 //        return layoutOLD(fieldLabelTxt, field, help, field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null, true, false, true);
         return new EditFieldContainer(fieldLabelTxt, field, help, (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null), true, false, true, false);
     }
 
-    protected static Component layoutXXX(String fieldLabelTxt, Component field, String help, boolean wrapText) {
-        return layoutOLD(fieldLabelTxt, field, help, field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null, wrapText, true, true);
-    }
-
+//    protected static Component layoutXXX(String fieldLabelTxt, Component field, String help, boolean wrapText) {
+//        return layoutOLD(fieldLabelTxt, field, help, field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null, wrapText, true, true);
+//    }
 //    protected static Component layout(String fieldLabelTxt, Component field, String help, boolean wrapText, boolean makeFieldUneditable) {
 //        return layout(fieldLabelTxt, field, help, null, wrapText, makeFieldUneditable, true);
 //    }
-    protected static Component layoutXXX(String fieldLabelTxt, Component field, String help, boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
-//        return layout(fieldLabelTxt, field, help, (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue(): null), wrapText, makeFieldUneditable, hideEditButton);
-        return layoutOLD(fieldLabelTxt, field, help, null, wrapText, makeFieldUneditable, hideEditButton);
-    }
-
+//    protected static Component layoutXXX(String fieldLabelTxt, Component field, String help, boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
+////        return layout(fieldLabelTxt, field, help, (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue(): null), wrapText, makeFieldUneditable, hideEditButton);
+//        return layoutOLD(fieldLabelTxt, field, help, null, wrapText, makeFieldUneditable, hideEditButton);
+//    }
 //    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear) {
 //        return layout(fieldLabelTxt, field, help, swipeClear, true, false, false);
 //    }
-    protected static Component layoutXXX(String fieldLabelTxt, MyDateAndTimePicker field, String help) {
-        return layoutOLD(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
-    }
-
-    protected static Component layoutXXX(String fieldLabelTxt, MyDatePicker field, String help) {
-        return layoutOLD(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
-    }
-
-    protected static Component layoutXXX(String fieldLabelTxt, MyDurationPicker field, String help) {
-        return layoutOLD(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
-    }
-
+//    protected static Component layoutXXX(String fieldLabelTxt, MyDateAndTimePicker field, String help) {
+//        return layoutOLD(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
+//    }
+//    protected static Component layoutXXX(String fieldLabelTxt, MyDatePicker field, String help) {
+//        return layoutOLD(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
+//    }
+//    protected static Component layoutXXX(String fieldLabelTxt, MyDurationPicker field, String help) {
+//        return layoutOLD(fieldLabelTxt, field, help, () -> field.swipeClear(), true, false, false);
+//    }
 //    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean wrapText) {
 //        return layout(fieldLabelTxt, field, help, swipeClear, wrapText, false, false);
 //    }
@@ -2350,6 +2355,10 @@ public class MyForm extends Form {
         return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
     }
 
+    protected static Component layoutN(boolean visibleEditButton, String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
+        return layoutN(fieldLabelTxt, field, help, null, true, false, visibleEditButton, false);
+    }
+
     protected static Component layoutN(String fieldLabelTxt, MyOnOffSwitch onOffSwitch, String help) { //normal edit field with [>]
         return layoutN(fieldLabelTxt, onOffSwitch, help, null, true, false, false, true);
     }
@@ -2362,6 +2371,11 @@ public class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton) {
         return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help,
+            boolean showAsFieldUneditable, boolean visibleEditButton) {
+        return layoutN(fieldLabelTxt, field, help, null, false, showAsFieldUneditable, visibleEditButton, false);
     }
 
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
@@ -2506,10 +2520,10 @@ public class MyForm extends Form {
         if (field instanceof MyOnOffSwitch) {
 //            field.getAllStyles().setPaddingRight(6);
         } else {
-            if (field instanceof WrapButton) {
+            if (field instanceof MySpanButton) {
 //                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
-                ((WrapButton) field).setTextUIID(makeFieldUneditable ? "LabelFixed" : "LabelValue");
-                ((WrapButton) field).setUIID("Container");
+                ((MySpanButton) field).setTextUIID(makeFieldUneditable ? "LabelFixed" : "LabelValue");
+                ((MySpanButton) field).setUIID("Container");
             } else {
                 field.setUIID(makeFieldUneditable ? "LabelFixed" : "LabelValue");
             }
@@ -2535,7 +2549,7 @@ public class MyForm extends Form {
 //            visibleField = BorderLayout.centerEastWest(null, field, editFieldButton);
 //</editor-fold>
             visibleField = MyBorderLayout.centerEastWest(field, editFieldButton, null);
-            if (field instanceof WrapButton) {
+            if (field instanceof MySpanButton) {
 //                ((Container) visibleField).setLeadComponent(((WrapButton) field).getActualButton());
                 ((Container) visibleField).setLeadComponent(field);
             } else {
@@ -3115,14 +3129,16 @@ public class MyForm extends Form {
     private static String INHERITED = "Inherited";
     private static int INHERITED_LEN = INHERITED.length();
 
-    public static void updateUIIDForInherited(boolean isInherited, Component field) {
+    public static void updateUIIDForInherited(Component field, boolean isInherited) {
 //        if (isInherited.getVal()) {
         String fieldUIID = field.getUIID();
         if (isInherited) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (field.getUIID().equals("LabelValue"))
 //                field.setUIID("LabelValueInherited");
 //        } else if (field.getUIID().equals("LabelValueInherited"))
 //            field.setUIID("LabelValue");
+//</editor-fold>
             if (!fieldUIID.contains(INHERITED))
                 field.setUIID(fieldUIID + INHERITED);
         } else if (fieldUIID.contains(INHERITED)) {
@@ -3214,7 +3230,7 @@ public class MyForm extends Form {
 //                        ((Component) field).setUIID("LabelValue");
                 }
                 if (isInherited != null)
-                    updateUIIDForInherited(isInherited.getVal(), (Component) field);
+                    updateUIIDForInherited((Component) field, isInherited.getVal());
             };
 
             //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
@@ -3238,8 +3254,8 @@ public class MyForm extends Form {
                 ((TextArea) field).addActionListener(al);
             } else if (field instanceof Button) {
                 ((Button) field).addActionListener(al);
-            } else if (field instanceof WrapButton) {
-                ((WrapButton) field).addActionListener(al);
+            } else if (field instanceof MySpanButton) {
+                ((MySpanButton) field).addActionListener(al);
             } else if (field instanceof Switch) {
                 ((Switch) field).addActionListener(al);
             } else if (field instanceof MyComponentGroup) {
@@ -3594,35 +3610,36 @@ public class MyForm extends Form {
         return null;
     }
 
-    protected void createAndAddInsertContainerXXX(String refEltObjId, String eltParseClass, boolean insertBeforeRefElement) {
-        ItemAndListCommonInterface refElement = null;
-        switch (eltParseClass) {
-            case Item.CLASS_NAME:
-//                Item aboveItem = DAO.getInstance().fetchItem(refEltObjId);
-                refElement = DAO.getInstance().fetchItem(refEltObjId);
-                break;
-            case ItemList.CLASS_NAME:
-//                ItemList aboveItemList = DAO.getInstance().fetchItemList(refEltObjId);
-                refElement = DAO.getInstance().fetchItemList(refEltObjId);
-                break;
-            case Category.CLASS_NAME:
-//                ItemList aboveCategory = DAO.getInstance().fetchCategory(refEltObjId);
-                refElement = DAO.getInstance().fetchCategory(refEltObjId);
-                break;
-            case WorkSlot.CLASS_NAME:
-//                ItemList aboveWorkSlot = DAO.getInstance().fetchCategory(refEltObjId);
-                refElement = DAO.getInstance().fetchCategory(refEltObjId);
-                break;
-            default:
-                if (Config.TEST) ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + eltParseClass);
-        }
-//        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane(), refEltObjId);
-        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
-        if (Config.TEST) ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + eltParseClass + ", insertAfter=" + insertBeforeRefElement);
-//        createAndAddInsertContainer(myDDContN, refElement, myDDContN.getDragAndDropCategory(), insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
-        createAndAddInsertContainer(myDDContN, refElement, insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    protected void createAndAddInsertContainerXXX(String refEltObjId, String eltParseClass, boolean insertBeforeRefElement) {
+//        ItemAndListCommonInterface refElement = null;
+//        switch (eltParseClass) {
+//            case Item.CLASS_NAME:
+////                Item aboveItem = DAO.getInstance().fetchItem(refEltObjId);
+//                refElement = DAO.getInstance().fetchItem(refEltObjId);
+//                break;
+//            case ItemList.CLASS_NAME:
+////                ItemList aboveItemList = DAO.getInstance().fetchItemList(refEltObjId);
+//                refElement = DAO.getInstance().fetchItemList(refEltObjId);
+//                break;
+//            case Category.CLASS_NAME:
+////                ItemList aboveCategory = DAO.getInstance().fetchCategory(refEltObjId);
+//                refElement = DAO.getInstance().fetchCategory(refEltObjId);
+//                break;
+//            case WorkSlot.CLASS_NAME:
+////                ItemList aboveWorkSlot = DAO.getInstance().fetchCategory(refEltObjId);
+//                refElement = DAO.getInstance().fetchCategory(refEltObjId);
+//                break;
+//            default:
+//                if (Config.TEST) ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + eltParseClass);
+//        }
+////        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane(), refEltObjId);
+//        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
+//        if (Config.TEST) ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + eltParseClass + ", insertAfter=" + insertBeforeRefElement);
+////        createAndAddInsertContainer(myDDContN, refElement, myDDContN.getDragAndDropCategory(), insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
+//        createAndAddInsertContainer(myDDContN, refElement, insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
+//    }
+//</editor-fold>
     protected static final String SAVE_LOCALLY_REF_ELT_OBJID_KEY = "InlineInsertElementOBJID";
     protected static final String SAVE_LOCALLY_REF_ELT_PARSE_CLASS = "InlineInsertEltParseCLASS";
     protected static final String SAVE_LOCALLY_INSERT_BEFORE_REF_ELT = "InlineInsertBEFORERefElt";
@@ -4046,6 +4063,8 @@ public class MyForm extends Form {
 //        wrappedInsertContainer = createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
 //        makeInlineInsertReplayCmd().actionPerformed(null);
         createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
+        if (getInlineInsertContainer().getTextArea() != null)
+            getInlineInsertContainer().getTextArea().startEditingAsync();
 //        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
@@ -4123,7 +4142,8 @@ public class MyForm extends Form {
      */
     private void pinchInsertFinished() {
         if (Config.TEST_PINCH) Log.p("pinchInsertFinished called");
-        if (true || isPinchInsertEnabled()) { //checked before calling pinchInsertFinished()
+//        if (true || isPinchInsertEnabled()) { //checked before calling pinchInsertFinished()
+        if (pinchInsertInitiated) { //checked before calling pinchInsertFinished()
             Container parentToAnimate = null;
             if (pinchContainer == null) { //no new pinch created
                 if (previousPinchContainer != null) { //if pinched-in previous container
@@ -4322,7 +4342,7 @@ public class MyForm extends Form {
                 y2[1] = Math.min(displayHeight, (displayHeight / 2 - y[0]) + displayHeight / 2); //set simulated y to y mirrored around the middle of the screen
 //                y2[1] = Math.min(displayHeight, y[0] + 140); //80==roughly one workslot container
 //                Log.p("simulating pinch x[0]=" + x[0] + " y[0]=" + y[0] + " simulated x[1]=" + x[1] + " y[1]=" + y[1]);
-                if (false && Config.TEST_PINCH) Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
+                if (Config.TEST_PINCH) Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
                 x = x2; //replace org values with simulatd pair
                 y = y2;
             }
@@ -4598,6 +4618,111 @@ public class MyForm extends Form {
      */
     public ItemAndListCommonInterface getDisplayedElement() {
         assert false;
+        return null;
+    }
+
+    /**
+    if y is within the upper/lower bounds of an adjacent MyDragAndDropSwipeableContainer, then return it
+    @param cmp
+    @param x
+    @param y
+    @return 
+     */
+//    private MyDragAndDropSwipeableContainer findMyDDContAtY(Component cmp, int y) {
+//        if (cmp instanceof MyDragAndDropSwipeableContainer && y >= cmp.getAbsoluteY() && y <= cmp.getAbsoluteY() + cmp.getHeight())
+//            return (MyDragAndDropSwipeableContainer) cmp;
+//        if (cmp instanceof Container) {
+//            Container cont = (Container) cmp;
+//            for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
+//                Component c = cont.getComponentAt(i);
+//                MyDragAndDropSwipeableContainer found = findMyDDContAtY(c, y);
+//                if (found != null)
+//                    return found;
+//            }
+//        }
+//        return null;
+//    }
+    private static Component findDropTargetAtY(Component cmp, int y) {
+        if (y >= cmp.getAbsoluteY() && y < cmp.getAbsoluteY() + cmp.getHeight()) {
+            if (cmp.isDropTarget())
+                return cmp;
+            if (cmp instanceof Container) {
+                Container cont = (Container) cmp;
+                for (int i = 0, size = cont.getComponentCount(); i < size; i++) {
+                    Component c = cont.getComponentAt(i);
+                    Component found = findDropTargetAtY(c, y);
+                    if (found != null)
+                        return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Recursively searches the container hierarchy for a drop target, extended compared to Container.findDropTargetAt(int x, int y) to also
+    search for and return any MyDragAndDropSwipeableContainer which is next to/adjacent to the (x,y) (y is within the upper&lower bounds of the MyDragAndDropSwipeableContainer).
+    This to cover the use case where the dropTarget is indented to the right (expanded subtasks) and the drop is done on the left side of the screen (drop as supertask).
+     * 
+     * @param x position in which we are searching for a drop target
+     * @param y position in which we are searching for a drop target
+     * @return a drop target or null if no drop target could be found at the x/y position
+     */
+    @Override
+    public Component findDropTargetAt(int x, int y) {
+        return findDropTargetAt(this, x, y);
+    }
+
+    static Component findDropTargetAt(Container cont, int x, int y) {
+        int count = cont.getComponentCount();
+//        for (int i = count - 1; i >= 0; i--) {
+        for (int i = 0, size = cont.getComponentCount(); i < size; i++) {
+            Component cmp = cont.getComponentAt(i);
+            if (cmp.contains(x, y)) {
+//                System.out.print("+");
+                if (cmp.isDropTarget()) {
+                    return cmp;
+                }
+                if (cmp instanceof Container) {
+                    Component component = findDropTargetAt((Container) cmp, x, y);
+                    if (component != null) {
+                        return component;
+                    }
+                }
+            } else {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                int absY = cmp.getAbsoluteY();
+//                int absX = cmp.getAbsoluteX();
+//                int absXW = absX + cmp.getWidth();
+//                int h = cmp.getHeight();
+//                int absYH = absY + h;
+//                System.out.print("-");
+//                if (cmp instanceof MyDragAndDropSwipeableContainer) {
+//                if (y >= cmp.getAbsoluteY() && y <= cmp.getAbsoluteY() + cmp.getHeight()) {
+//                    if (cmp.isDropTarget()) {
+//                        return cmp;
+//                    }
+//                    if (cmp instanceof Container) {
+////                    Component component = ((Container) cmp).findDropTargetAt(x, y);
+//                        Component component = findDropTargetAt((Container) cmp, x, y);
+//                        if (component != null) {
+//                            return component;
+//                        }
+//                    }
+//                    System.out.print("=[" + y + ";" + absY + ";" + absYH + "]");
+////                System.out.print("m");
+//                    if (y >= cmp.getAbsoluteY() && y <= cmp.getAbsoluteY() + cmp.getHeight()) {
+////                        Log.p("XXX");
+//                        System.out.print("XXXX");
+//                        return cmp;
+//                    }
+//                }
+//</editor-fold>
+                Component c = findDropTargetAtY(cmp, y);
+                if (c != null)
+                    return c;
+            }
+        }
         return null;
     }
 

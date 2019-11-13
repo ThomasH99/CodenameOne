@@ -73,6 +73,7 @@ public class ScreenListOfAlarms extends MyForm {
     private ScreenListOfAlarms() { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(screenTitle, null, () -> {
         });
+        setShowIfEmptyList("No Reminders to deal with"); //"No Reminders to deal with",
         screenType = ScreenType.ALARMS;
         setUIID("AlarmsForm");
         setUniqueFormId("ScreenListOfAlarms");
@@ -130,9 +131,8 @@ public class ScreenListOfAlarms extends MyForm {
 //        }
 //    }
 //</editor-fold>
-
     public void show(MyForm previousForm) {
-                ASSERT.that(previousForm!=null, "shouldn't be called s previousForm==null");
+        ASSERT.that(previousForm != null, "shouldn't be called s previousForm==null");
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////        List<ExpiredAlarm> expiredAlarms = AlarmHandler.getInstance().getExpiredAlarms(); //need a copy of the list to avoid java.util.ConcurrentModificationException in CancellAll/SnoozeAll loops below
@@ -434,10 +434,10 @@ public class ScreenListOfAlarms extends MyForm {
                 CommandTracked.create("", Icons.iconSnooze, (evt) -> {
                     Date snoozeExpireTimeInMillis;
                     if (MyPrefs.alarmReuseIndividuallySetSnoozeDurationForNormalSnooze.getBoolean() && ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis != 0)
-//                        snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis)); //UI: snooze interval always from the moment you activate snooze
+                        //                        snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis)); //UI: snooze interval always from the moment you activate snooze
                         snoozeExpireTimeInMillis = new Date(MyDate.currentTimeMillis() + ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis); //UI: snooze interval always from the moment you activate snooze
                     else
-//                        snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + snoozePicker.getDuration())); //UI: snooze interval always from the moment you activate snooze
+                        //                        snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + snoozePicker.getDuration())); //UI: snooze interval always from the moment you activate snooze
                         snoozeExpireTimeInMillis = new Date(MyDate.currentTimeMillis() + snoozePicker.getDuration()); //UI: snooze interval always from the moment you activate snooze
                     AlarmHandler.getInstance().snoozeAlarm(expiredAlarm, snoozeExpireTimeInMillis);
                     if (AlarmHandler.getInstance().getExpiredAlarms().isEmpty()) { //exit screen if all alarms are dealt with
@@ -460,25 +460,29 @@ public class ScreenListOfAlarms extends MyForm {
 
     protected Container buildContentPaneForAlarmList(List<ExpiredAlarm> expiredAlarms, MyForm previousForm) {
         parseIdMap2.parseIdMapReset();
+        if (expiredAlarms != null && expiredAlarms.size() > 0) {
 //        Container cont = new Container();
-        Container cont = new ContainerScrollY(BoxLayout.y());
-        cont.setScrollableY(true);
+            Container cont = new ContainerScrollY(BoxLayout.y());
+            cont.setScrollableY(true);
 //        for (int i = 0, size = expiredAlarms.size(); i < size; i++) {
 //            ExpiredAlarm notif = expiredAlarms.get(i);
-        for (ExpiredAlarm notif : expiredAlarms) {
+            for (ExpiredAlarm notif : expiredAlarms) {
 //            ExpiredAlarm notif = expiredAlarms.get(i);
-            if (notif.alarmTime.getTime() <= now) {
-                Item item = DAO.getInstance().fetchItem(notif.objectId);
-                showDetails.add(item);
+                if (notif.alarmTime.getTime() <= now) {
+                    Item item = DAO.getInstance().fetchItem(notif.objectId);
+                    showDetails.add(item);
 //                Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
-                Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
-                        keepPos, previousForm, expandedObjects);
-                cont.add(cmp);
-            } else {
-                break;
+                    Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
+                            keepPos, previousForm, expandedObjects);
+                    cont.add(cmp);
+                } else {
+                    break;
+                }
             }
+            return cont;
+        } else {
+            return BorderLayout.centerCenter(new SpanLabel(getShowIfEmptyList()));
         }
-        return cont;
     }
 
 }

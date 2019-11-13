@@ -4,9 +4,11 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.components.SpanLabel;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.Container;
 import com.codename1.ui.Component;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
 import java.util.List;
@@ -111,7 +113,7 @@ public class ScreenStatistics extends MyForm {
 
     private void reloadData() {
         Date startDate = new Date(MyDate.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
-        Date endDate = new Date();
+        Date endDate = new MyDate();
 //        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
         workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
         itemsSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate);
@@ -119,9 +121,9 @@ public class ScreenStatistics extends MyForm {
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
-        
+
         super.addCommandsToToolbar(toolbar);
-        
+
         if (false) {
             getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
@@ -136,9 +138,9 @@ public class ScreenStatistics extends MyForm {
             });
         }
         //SEARCH
-        if(false) //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
+        if (false) //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
             getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats));
-        
+
         toolbar.addCommandToRightBar(MyReplayCommand.createKeep("Settings", null, Icons.iconSettings, (e) -> {
             int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
             new ScreenSettingsStatistics(ScreenStatistics.this, () -> {
@@ -760,31 +762,36 @@ public class ScreenStatistics extends MyForm {
 //</editor-fold>
     protected Container buildContentPane(ItemList itemListStats) {
         parseIdMap2.parseIdMapReset();
-        MyTree2 cl = new MyTree2(itemListStats, expandedObjects,null,null) {
-            @Override
-            protected Component createNode(Object node, int depth) {
-                Container cmp = null;
-                if (node instanceof Item) {
+        if ((itemListStats != null && itemListStats.size() > 0 )) {
+            MyTree2 cl = new MyTree2(itemListStats, expandedObjects, null, null) {
+                @Override
+                protected Component createNode(Object node, int depth) {
+                    Container cmp = null;
+                    if (node instanceof Item) {
 //                    cmp = buildItemContainer((Item) node, null, () -> isDragAndDropEnabled(), () -> {                    },
 //                    cmp = buildItemContainer((Item) node, null, () -> isDragAndDropEnabled(), () -> refreshAfterEdit(), false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??
 //                            null, null, keepPos, expandedObjects, () -> animateMyForm(), false, false); //TODO!!! store expanded itemLists
 //                    cmp = buildItemContainer(itemList, work);
-                    cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics.this, (Item) node, itemListStats, null);
-                } else if (node instanceof ItemList) {
+                        cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics.this, (Item) node, itemListStats, null);
+                    } else if (node instanceof ItemList) {
 //                      cmp = buildCategoryContainer((Category) node, categoryList, keepPos, ()->refreshAfterEdit());
 //                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node);
 //                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, keepPos);
 //                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, keepPos, true);
-                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true);
-                } else {
-                    assert false : "should only be Item or ItemList";
+                        cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true);
+                    } else {
+                        assert false : "should only be Item or ItemList";
+                    }
+                    setIndent(cmp, depth);
+                    return cmp;
                 }
-                setIndent(cmp, depth);
-                return cmp;
-            }
 
-        };
-        return cl;
+            };
+            return cl;
+        } else {
+//            if (getShowIfEmptyList() != null)
+                return BorderLayout.centerCenter(new SpanLabel("No completed tasks the last " + MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() + " days to show statistics for"));
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -2,22 +2,19 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.components.InfiniteProgress;
 import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
 import com.codename1.nui.NTextField;
 import com.codename1.ui.Button;
-import com.codename1.ui.CN;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Form;
 import com.codename1.ui.TextArea;
-import com.codename1.ui.TextField;
+import com.codename1.ui.TextComponentPassword;
 import com.codename1.ui.layouts.BoxLayout;
-import com.codename1.ui.util.Resources;
 import com.codename1.ui.validation.Constraint;
 import com.codename1.ui.validation.RegexConstraint;
 import com.codename1.util.EasyThread;
@@ -227,7 +224,10 @@ public class ScreenLogin extends MyForm {
         }
 
 //        TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
-        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+//        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+        TextComponentPassword password = new TextComponentPassword(); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+        password.constraint(TextArea.PASSWORD);
+        if (false) password.setUIID("TextField");
 //        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 
 //        BorderLayout b1 = new BorderLayout();
@@ -252,7 +252,6 @@ public class ScreenLogin extends MyForm {
         addComponent(login);
         addComponent(forgottenPassword);
         addComponent(backToSignupSignIn);
-        revalidate(); //ensure correct size of all components
 
         //hide everything except the two first buttons to chose Signin or SIgnUp
         email.setHidden(true);
@@ -275,7 +274,7 @@ public class ScreenLogin extends MyForm {
             animateHierarchy(300);
         }));
 
-        signUp.setCommand(Command.create("Sign up Free", Icons.iconPersonNew, (e2) -> {
+        signUp.setCommand(Command.create("Sign up", Icons.iconPersonNew, (e2) -> {
             signUp.setHidden(true);
             login.setHidden(true);
 
@@ -305,7 +304,7 @@ public class ScreenLogin extends MyForm {
 //            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
 
-        createAccount.setCommand(Command.create("Create my account", Icons.iconPersonNew, (e2) -> {
+        createAccount.setCommand(Command.create("Create account", Icons.iconPersonNew, (e2) -> {
             String errorMsg;
             String cleanEmail = cleanEmail(email.getText());
             if ((errorMsg = createAccount(cleanEmail)) == null) {
@@ -351,6 +350,9 @@ public class ScreenLogin extends MyForm {
                 Dialog.show("Incorrect email", "Please enter a correct email like name@domain.xx", "OK", null);
             }
         }));
+
+        revalidate(); //ensure correct size of all components
+        email.startEditingAsync(); //always start editing email field
 
     }
 
@@ -787,7 +789,7 @@ public class ScreenLogin extends MyForm {
 //    private String CURRENT_USER_USER_NAME = "parseUserName";
 //    private String CURRENT_USER_USER_EMAIL = "parseUserEmail";
 //</editor-fold>
-    private static String CURRENT_USER_SESSION_TOKEN = "parseUserSessionToken";
+    private final static String CURRENT_USER_SESSION_TOKEN = "parseUserSessionToken";
 //    private String CURRENT_USER_PASSWORD = "parseUserPsWd";
 
     private boolean saveCurrentUserSessionToStorage(String sessionToken) {
@@ -817,22 +819,24 @@ public class ScreenLogin extends MyForm {
     }
 
     static public ParseUser getLastUserSessionFromStorage() {
-        String sessionToken = (String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN);
-        Log.p("Retrieved Sessiontoken=" + sessionToken);
-        if (sessionToken == null || sessionToken.equals("")) {
+        String sessionTokenN = (String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN);
+        Log.p("Retrieved Sessiontoken=" + sessionTokenN != null ? sessionTokenN : "<null>");
+        if (sessionTokenN == null || sessionTokenN.equals("")) {
             return null;
-        }
-        try {
-            //        ParseUser parseUser = new ParseUser();
+        } else {
+            try {
+                //        ParseUser parseUser = new ParseUser();
 //        HashMap h = (HashMap) Storage.getInstance().readObject(CURRENT_USER_STORAGE_ID);
 //        return new ParseUser().set(ParseUser) Storage.getInstance().readObject(CURRENT_USER_STORAGE_ID);
 //            return ParseUser.fetchBySession((String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN));
-            ParseUser parseUser = ParseUser.fetchBySession(sessionToken);
-            return parseUser;
-        } catch (ParseException ex) {
-            Log.e(ex); //TODO!!!!!: "your session has expired, please log in again"
+                ParseUser parseUser = ParseUser.fetchBySession(sessionTokenN);
+                return parseUser;
+            } catch (ParseException ex) {
+//                Log.e(ex); //TODO!!!!!: "your session has expired, please log in again"
+                return null;
+            }
         }
-        return null;
+//        return null;
     }
 
     static public void deleteLastUserSessionFromStorage() {
@@ -1080,7 +1084,7 @@ public class ScreenLogin extends MyForm {
         if (currentUser != null) {
             try {
                 currentUser.logout();
-                getLastUserSessionFromStorage();
+                if (false) getLastUserSessionFromStorage();
                 deleteLastUserSessionFromStorage();
                 return null;
             } catch (ParseException ex) {

@@ -146,18 +146,18 @@ public class LocalNotificationsShadowList implements Externalizable {
         return activeLocalNotifsSorted.isEmpty() ? null : activeLocalNotifsSorted.get(0);
     }
 
-    private int getNotificationIndexXXX(String notificationId) {
-//        NotificationShadow notif;
-        for (int i = 0, size = activeLocalNotifsSorted.size(); i < size; i++) {
-//            notif = list.get(i);
-//            if (notif.notificationId.equals(notificationId)) {
-            if (activeLocalNotifsSorted.get(i).notificationId.equals(notificationId)) {
-                return i;
-            }
-//            break;
-        }
-        return -1;
-    }
+//    private int getNotificationIndexXXX(String notificationId) {
+////        NotificationShadow notif;
+//        for (int i = 0, size = activeLocalNotifsSorted.size(); i < size; i++) {
+////            notif = list.get(i);
+////            if (notif.notificationId.equals(notificationId)) {
+//            if (activeLocalNotifsSorted.get(i).notificationId.equals(notificationId)) {
+//                return i;
+//            }
+////            break;
+//        }
+//        return -1;
+//    }
 
     /**
      * return the notification details for the notification with notificationId.

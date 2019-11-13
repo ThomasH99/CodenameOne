@@ -90,26 +90,26 @@ public class MyUtil {
 //</editor-fold>
     }
 
-    public static String removeTrailingPrecedingSpacesNewLinesEtcXXX(String inputStr) {
-        //remove spaces in start of string:
-        if (inputStr == null || inputStr.length() == 0) {
-            return inputStr;
-        }
-        int pos;
-        while ((pos = inputStr.indexOf('\n')) != -1) {
-            inputStr = inputStr.substring(0, pos) + inputStr.substring(pos + 1, inputStr.length());
-        }
-        while (inputStr.charAt(0) == ' ') {
-            inputStr = inputStr.substring(1);
-        }
-//        while (inputStr.charAt(inputStr.length()-1)==' ' || inputStr.charAt(inputStr.length()-1)=='\n')
-        while (inputStr.charAt(inputStr.length() - 1) == ' ') {
-            inputStr = inputStr.substring(0, inputStr.length() - 2);
-        }
-//        inputStr = inputStr.replace("\n",""); //remove 
-//        inputStr = inputStr.replace('\n',""); //remove 
-        return inputStr;
-    }
+//    public static String removeTrailingPrecedingSpacesNewLinesEtcXXX(String inputStr) {
+//        //remove spaces in start of string:
+//        if (inputStr == null || inputStr.length() == 0) {
+//            return inputStr;
+//        }
+//        int pos;
+//        while ((pos = inputStr.indexOf('\n')) != -1) {
+//            inputStr = inputStr.substring(0, pos) + inputStr.substring(pos + 1, inputStr.length());
+//        }
+//        while (inputStr.charAt(0) == ' ') {
+//            inputStr = inputStr.substring(1);
+//        }
+////        while (inputStr.charAt(inputStr.length()-1)==' ' || inputStr.charAt(inputStr.length()-1)=='\n')
+//        while (inputStr.charAt(inputStr.length() - 1) == ' ') {
+//            inputStr = inputStr.substring(0, inputStr.length() - 2);
+//        }
+////        inputStr = inputStr.replace("\n",""); //remove 
+////        inputStr = inputStr.replace('\n',""); //remove 
+//        return inputStr;
+//    }
 
     /**
     clean a string so it can for example be used with Google Analytics

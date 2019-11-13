@@ -168,60 +168,60 @@ public class Format {
         return result.toString();
     }
 
-    public static String f_OLD(String message, String... params) {
-        if (message == null || params == null) {
-            throw new NullPointerException("Template or parameter array is null.");
-        }
-        boolean inside = false;
-        boolean escaped = false;
-        StringBuffer result = new StringBuffer();
-        StringBuffer placeholder = null;
-        char lookingFor = LEFT_PARENTHESIS;
-        char c;
-
-        for (int i = 0; i < message.length(); i++) {
-            c = message.charAt(i);
-            if (c == lookingFor) {
-                if (escaped) {
-                    result.append(c);
-                    escaped = false;
-                    continue;
-                }
-                if (c == LEFT_PARENTHESIS) {
-                    // look ahead for escaped parenthesis
-                    if ((i + 1) < message.length()
-                            && message.charAt(i + 1) == LEFT_PARENTHESIS) {
-                        escaped = true;
-                    } else {
-                        inside = true;
-                        lookingFor = RIGHT_PARENTHESIS;
-                        placeholder = new StringBuffer();
-                    }
-                } else {
-                    inside = false;
-                    lookingFor = LEFT_PARENTHESIS;
-                    // placeholder finished get parameter
-                    try {
-                        if (placeholder.length() > 2) {
-                            throw new IllegalArgumentException(
-                                    "Illegal placeholder.");
-                        }
-                        int index = Integer.parseInt(placeholder.toString());
-                        result.append(params[index]);
-                    } catch (ArrayIndexOutOfBoundsException ie) {
-                        throw new IllegalArgumentException(
-                                "Illegal number of parameters.");
-                    }
-                }
-            } else {
-                if (inside) {
-                    placeholder.append(c);
-                } else {
-                    result.append(c);
-                }
-            }
-        }
-        // for
-        return result.toString();
-    }
+//    public static String f_OLD(String message, String... params) {
+//        if (message == null || params == null) {
+//            throw new NullPointerException("Template or parameter array is null.");
+//        }
+//        boolean inside = false;
+//        boolean escaped = false;
+//        StringBuffer result = new StringBuffer();
+//        StringBuffer placeholder = null;
+//        char lookingFor = LEFT_PARENTHESIS;
+//        char c;
+//
+//        for (int i = 0; i < message.length(); i++) {
+//            c = message.charAt(i);
+//            if (c == lookingFor) {
+//                if (escaped) {
+//                    result.append(c);
+//                    escaped = false;
+//                    continue;
+//                }
+//                if (c == LEFT_PARENTHESIS) {
+//                    // look ahead for escaped parenthesis
+//                    if ((i + 1) < message.length()
+//                            && message.charAt(i + 1) == LEFT_PARENTHESIS) {
+//                        escaped = true;
+//                    } else {
+//                        inside = true;
+//                        lookingFor = RIGHT_PARENTHESIS;
+//                        placeholder = new StringBuffer();
+//                    }
+//                } else {
+//                    inside = false;
+//                    lookingFor = LEFT_PARENTHESIS;
+//                    // placeholder finished get parameter
+//                    try {
+//                        if (placeholder.length() > 2) {
+//                            throw new IllegalArgumentException(
+//                                    "Illegal placeholder.");
+//                        }
+//                        int index = Integer.parseInt(placeholder.toString());
+//                        result.append(params[index]);
+//                    } catch (ArrayIndexOutOfBoundsException ie) {
+//                        throw new IllegalArgumentException(
+//                                "Illegal number of parameters.");
+//                    }
+//                }
+//            } else {
+//                if (inside) {
+//                    placeholder.append(c);
+//                } else {
+//                    result.append(c);
+//                }
+//            }
+//        }
+//        // for
+//        return result.toString();
+//    }
 }

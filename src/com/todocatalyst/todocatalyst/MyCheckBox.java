@@ -57,6 +57,7 @@ public class MyCheckBox extends Button {
      * activate menu to choose status on a single click
      */
     private boolean activateFullMenuOnSingleClick;
+    private boolean inactive;
 
     public MyCheckBox() {
         this(ItemStatus.CREATED, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null);
@@ -67,7 +68,11 @@ public class MyCheckBox extends Button {
     }
 
     public MyCheckBox(ItemStatus itemStatus) {//, IsItemOngoing itemOngoing) {
-        this(itemStatus, null);
+        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null,false);
+    }
+
+    public MyCheckBox(ItemStatus itemStatus, boolean makeInactive) {//, IsItemOngoing itemOngoing) {
+        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null,makeInactive);
     }
 
 //    public MyCheckBox(Item item, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler) {
@@ -76,7 +81,13 @@ public class MyCheckBox extends Button {
 //    }
     public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, //IsItemOngoing itemOngoing,
             String singleIconStyleUIID, String popupIconStyleUIID, String groupStyleUIID) {
+        this(initialItemStatus, activateFullMenuOnSingleClick, statusChangeHandler, singleIconStyleUIID, popupIconStyleUIID, groupStyleUIID, false);
+    }
+
+    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, //IsItemOngoing itemOngoing,
+            String singleIconStyleUIID, String popupIconStyleUIID, String groupStyleUIID, boolean makeInactive) {
         super();
+        inactive = makeInactive;
         setUIID("MyCheckBox");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        String s = ItemStatus.values()[item.getStatus().ordinal()].fullDescription;
@@ -97,6 +108,7 @@ public class MyCheckBox extends Button {
             this.popupIconStyleUIID = "ItemStatusPopupIcon";
         }
         Style s = null;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Style s = UIManager.getInstance().getComponentStyle(singleIconStyle).get; //never returns null
 //        if (iconsPopup == null //if no icons defined
 //                || (popupIconStyleUIID != null && !popupIconStyleUIID.equals(this.popupIconStyleUIID)) //or if no name defined, or style name has changed
@@ -115,13 +127,13 @@ public class MyCheckBox extends Button {
 //            if (s != null && !s.equals(popupIconStyle)) {
 //                this.popupIconStyle = new Style(s);//keep a *copy* of the style (to ensure that CSS refresh works?!
 //            }
-//            
-            iconsPopupChar = new char[ItemStatus.values().length];
-            iconsPopupChar[0] = Icons.iconItemStatusCreated;
-            iconsPopupChar[1] = Icons.iconItemStatusOngoing;
-            iconsPopupChar[2] = Icons.iconItemStatusWaiting;
-            iconsPopupChar[3] = Icons.iconItemStatusDone;
-            iconsPopupChar[4] = Icons.iconItemStatusCancelled;
+//</editor-fold>
+        iconsPopupChar = new char[ItemStatus.values().length];
+        iconsPopupChar[0] = Icons.iconItemStatusCreated;
+        iconsPopupChar[1] = Icons.iconItemStatusOngoing;
+        iconsPopupChar[2] = Icons.iconItemStatusWaiting;
+        iconsPopupChar[3] = Icons.iconItemStatusDone;
+        iconsPopupChar[4] = Icons.iconItemStatusCancelled;
 //        }
 //        if (groupStyle != null && !groupStyle.equals(this.groupStyleName)) {
 //        } else {
@@ -171,37 +183,38 @@ public class MyCheckBox extends Button {
         this.statusChangeHandler = statusChangeHandler;
 
 //Handle single-click
-        addActionListener((evt) -> {
-            if (this.activateFullMenuOnSingleClick) {
-                selectNewStatus();
-            } else {
-                //TODO!! move below logic into static method in Item to avoid duplication
+        if (!inactive)
+            addActionListener((evt) -> {
+                if (this.activateFullMenuOnSingleClick) {
+                    selectNewStatus();
+                } else {
+                    //TODO!! move below logic into static method in Item to avoid duplication
 //                ItemStatus itemStatus = itemStatus.getStatus();
 //                    switch (MyCheckBox.this.itemStatus) { //OLD STATUS
-                switch (itemStatus) { //OLD STATUS
-                    case CREATED:
-                    case WAITING:
-                    case ONGOING:
-                        setStatus(ItemStatus.DONE);
-                        break;
-                    case DONE:
-                    case CANCELLED:
+                    switch (itemStatus) { //OLD STATUS
+                        case CREATED:
+                        case WAITING:
+                        case ONGOING:
+                            setStatus(ItemStatus.DONE);
+                            break;
+                        case DONE:
+                        case CANCELLED:
 //                            if (MyCheckBox.this.itemOngoing.isOngoing()) { //NO LONGER necessary to check if item is ongoing, it will be handled in setStatus (setting to Ongoing)
 //                                setStatus(ItemStatus.ONGOING);
 //                            } else {
 //                                setStatus(ItemStatus.CREATED);
 //                            }
-                        setStatus(ItemStatus.CREATED);
-                        break;
-                    default:
-                        assert false : "unknown ItemStatus=" + itemStatus;
+                            setStatus(ItemStatus.CREATED);
+                            break;
+                        default:
+                            assert false : "unknown ItemStatus=" + itemStatus;
+                    }
                 }
-            }
-        });
+            });
     }
-    
+
     public String toString() {
-        return itemStatus+" "+super.toString();
+        return itemStatus + " " + super.toString();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -243,7 +256,7 @@ public class MyCheckBox extends Button {
         if (itemStatus != this.itemStatus) {
             ItemStatus oldStatus = this.itemStatus;
             this.itemStatus = itemStatus; //update before making call below to avoid infinite loop
-            if (runStatusChangeHandler && statusChangeHandler != null) {
+            if (!inactive && runStatusChangeHandler && statusChangeHandler != null) {
                 statusChangeHandler.processNewStatusValue(oldStatus, itemStatus);
             }
 //            setIcon(ItemStatus.icons[itemStatus.ordinal()]);
@@ -284,6 +297,7 @@ public class MyCheckBox extends Button {
 //        return c;
         return b;
     }
+
     private Button create(String cmdName, char materialIcon, final ActionListener ev) {
         Button b = new Button(new Command(cmdName) {
             @Override
@@ -431,7 +445,8 @@ public class MyCheckBox extends Button {
 //            }
 //        };
 //</editor-fold>
-        selectNewStatus();
+        if (!inactive)
+            selectNewStatus();
 //        fireActionEvent(x, y); //ensure that longPress to select any new status will trigger updates //NECESSARY? Or will the pointerReleased trigger a normal actionEvent?
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        d = new Dialog("Select");
