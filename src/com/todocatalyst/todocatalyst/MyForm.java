@@ -83,7 +83,7 @@ public class MyForm extends Form {
 //    UpdateItemListAfterEditing updateItemListOnDone;
     private Runnable updateActionOnDone;
     private Runnable updateActionOnCancel;
-    protected CheckDataIsComplete checkDataIsCompleteBeforeExit; //used to check if a Screen has defined all needed data and returns error message String if not
+    protected CheckIfDataIsComplete checkDataIsCompleteBeforeExit; //used to check if a Screen has defined all needed data and returns error message String if not
 //    HashSet<ItemAndListCommonInterface> expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
     ExpandedObjects expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
     protected KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
@@ -107,15 +107,17 @@ public class MyForm extends Form {
 
     SwipeableContainer openSwipeContainer = null; //stores the currently open SwipeContainer for this screen
 
-    public CheckDataIsComplete getCheckIfSaveOnExit() {
+    public CheckIfDataIsComplete getCheckIfSaveOnExit() {
         return checkDataIsCompleteBeforeExit;
     }
 
     /**
-    check if data is complete (or otherwise not fit for saving and return the appropriate error message, used to prevent quitting a screen
-    @param showIfEmptyList 
+     * check if data is complete (or otherwise not fit for saving and return the
+     * appropriate error message, used to prevent quitting a screen
+     *
+     * @param showIfEmptyList
      */
-    public void setCheckIfSaveOnExit(CheckDataIsComplete errorMsgIfDataIncomplete) {
+    public void setCheckIfSaveOnExit(CheckIfDataIsComplete errorMsgIfDataIncomplete) {
         this.checkDataIsCompleteBeforeExit = errorMsgIfDataIncomplete;
     }
 
@@ -124,16 +126,20 @@ public class MyForm extends Form {
     }
 
     /**
-    text to show in label shown in empty list. E.g. "Looks like you have no tasks today. Enjoy!" in an empty Today screen. 
-    @param showIfEmptyList 
+     * text to show in label shown in empty list. E.g. "Looks like you have no
+     * tasks today. Enjoy!" in an empty Today screen.
+     *
+     * @param showIfEmptyList
      */
     public void setShowIfEmptyList(String showIfEmptyList) {
         this.showIfEmptyList = showIfEmptyList;
     }
 
     /**
-    set an area will be in active edit mode when the screen is refreshed (eg an inlineInsert container)
-    @param startEditTextArea 
+     * set an area will be in active edit mode when the screen is refreshed (eg
+     * an inlineInsert container)
+     *
+     * @param startEditTextArea
      */
     protected void setStartEditingAsyncTextArea(TextArea startEditTextArea) {
         this.startEditingAsyncTextArea = startEditTextArea;
@@ -187,9 +193,9 @@ public class MyForm extends Form {
 //        }
 //</editor-fold>
         this.inlineInsertContainer = inlineInsertContainer;
-        if (inlineInsertContainer != null)
+        if (inlineInsertContainer != null) {
             setStartEditingAsyncTextArea(inlineInsertContainer.getTextArea()); //set to ensure it starts up in edit-model
-//        if (this.inlineInsertContainer != null)
+        }//        if (this.inlineInsertContainer != null)
 ////            setStartEditingAsync(this.inlineInsertContainer.getTextArea());
 //            setStartEditingAsyncTextArea(inlineInsertContainer.getTextArea()); //set to ensure it starts up in edit-model
     }
@@ -337,8 +343,9 @@ public class MyForm extends Form {
         super();
         setTitle(title); //must do here to use overridden version of setTitle()
         this.previousForm = previousForm;
-        if (false) setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
-
+        if (false) {
+            setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
+        }
 //        ReplayLog.getInstance().deleteAllReplayCommandsFromPreviousScreen(title);
         SCREEN_TITLE = title;
 //        if (false) {
@@ -433,9 +440,9 @@ public class MyForm extends Form {
 
     @Override
     public void setTitle(String title) {
-        if (false)
+        if (false) {
             super.setTitle(title);
-        else {
+        } else {
 //        Label titleComponent = new Label(getTitle(),"FormTitle") {
             Label titleComponent = new Label(title, "FormTitle") {
                 public void pointerReleased(int x, int y) {
@@ -514,7 +521,9 @@ public class MyForm extends Form {
 
 //    private static String KEEP_POS_KEY = "KeepPos";
     protected void restoreKeepPos() {
-        if (Config.TEST) Log.p("calling MyForm.restoreKeepPos(), with keepPos=" + keepPos);
+        if (Config.TEST) {
+            Log.p("calling MyForm.restoreKeepPos(), with keepPos=" + keepPos);
+        }
         if (this.keepPos != null) {
             this.keepPos.setNewScrollYPosition();
             this.keepPos = null;
@@ -531,8 +540,10 @@ public class MyForm extends Form {
     }
 
     /**
-    returns the container in which to add the smallTimer, can be overridden to place the smallTimer in other places than the default South container. 
-    @return 
+     * returns the container in which to add the smallTimer, can be overridden
+     * to place the smallTimer in other places than the default South container.
+     *
+     * @return
      */
     public Container getContainerForSmallTimer() {
         Container containerForSmallTimer = null;
@@ -561,15 +572,17 @@ public class MyForm extends Form {
 
     public Container getSmallTimerCont() {
         Container cont = getContainerForSmallTimer();
-        if (cont == null)
+        if (cont == null) {
             return null;
-        else {
-            if (cont.getComponentCount() == 0)
+        } else {
+            if (cont.getComponentCount() == 0) {
                 return null;
-            else if (cont.getComponentCount() == 1) {
+            } else if (cont.getComponentCount() == 1) {
                 return (Container) cont.getComponentAt(0);
             } else {
-                if (Config.PROD_LOG) ASSERT.that(false, "more than one component in containerForSmallTimer");
+                if (Config.PROD_LOG) {
+                    ASSERT.that(false, "more than one component in containerForSmallTimer");
+                }
             }
         }
         return null;
@@ -645,8 +658,8 @@ public class MyForm extends Form {
     interface UpdateItemListAfterEditing {
 
         /**
-        
-        @param itemList 
+         *
+         * @param itemList
          */
 //        void update(ItemList itemList);
         void update(ItemAndListCommonInterface itemList);
@@ -668,7 +681,7 @@ public class MyForm extends Form {
 //
 //        void run();
 //    }
-    interface CheckDataIsComplete {
+    interface CheckIfDataIsComplete {
 
         /**
          * return error message if data in this screen is not complete,
@@ -1335,7 +1348,9 @@ public class MyForm extends Form {
      * of the entire list)
      */
     public void refreshAfterEdit() {
-        if (false && Config.TEST) ASSERT.that(false, "Calling RefreshAfterEdit");
+        if (false && Config.TEST) {
+            ASSERT.that(false, "Calling RefreshAfterEdit");
+        }
 //        if (editFieldOnShowOrRefresh != null) { // && (testIfEdit == null || testIfEdit.test())) {
         if (false && inlineInsertContainer != null && inlineInsertContainer.getTextArea() != null) { // && (testIfEdit == null || testIfEdit.test())) {
 //            editFieldOnShowOrRefresh.startEditingAsync();
@@ -1358,9 +1373,12 @@ public class MyForm extends Form {
 //                getStartEditingAsyncTextArea().startEditingAsync();
 //            }
         }
-        if (Config.TEST) Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
-        if (previousValues != null && previousValues.getScrollY() != null)
+        if (Config.TEST) {
+            Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
+        }
+        if (previousValues != null && previousValues.getScrollY() != null) {
             previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
+        }
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -1525,36 +1543,39 @@ public class MyForm extends Form {
             previousValues.deleteFile();
 //            previousValues.clear(); //if still accessed
         }
-        if (Config.TEST) ASSERT.that(previousForm != null, "In showPreviousScreenOrDefault() in form=" + getUniqueFormId() + ", previousForm==null!");
+        if (Config.TEST) {
+            ASSERT.that(previousForm != null, "In showPreviousScreenOrDefault() in form=" + getUniqueFormId() + ", previousForm==null!");
+        }
         if (callRefreshAfterEdit) {
             previousForm.refreshAfterEdit();
 
             //if saves are still pending, force a(nother) refresh once they are all done
-            if (!NetworkManager.getInstance().isQueueIdle())
+            if (!NetworkManager.getInstance().isQueueIdle()) {
                 DAO.getInstance().saveInBackground(() -> previousForm.refreshAfterEdit());
+            }
         }
         previousForm.showBack(!(this instanceof ScreenTimer6));  //prevent exiting from ScreenTimer6 to pop the last replayCommand (since ScreenTimer6 is never launched with a replayCommand)
     }
 
     /**
-    checks if any conditions to save the 
-    @return 
+     * checks if any conditions to save the
+     *
+     * @return
      */
-    boolean checkIfSaveOnExit() {
-        return true;
-    }
-
+//    boolean checkIfSaveOnExit() {
+//        return true;
+//    }
     void updateEditedValuesOnExit() {
         parseIdMap2.update();
-        if (getUpdateActionOnDone() != null)
+        if (getUpdateActionOnDone() != null) {
             getUpdateActionOnDone().run();
+        }
     }
 
-    void saveOnExit() {
-//        DAO.getInstance().saveInBackground((Item)this);
-        assert false;
-    }
-
+//    void saveOnExit() {
+////        DAO.getInstance().saveInBackground((Item)this);
+//        assert false;
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
 //        showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit);
@@ -1594,7 +1615,9 @@ public class MyForm extends Form {
                 }
 //                MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(topLevelComp);
                 if (true || topLevelComp != null) //should never be null?!
+                {
                     topLevelComp.remove();
+                }
                 myForm.setInlineInsertContainer(null);
             }
             if (compList != null) {
@@ -1665,7 +1688,9 @@ public class MyForm extends Form {
                 }
 //                MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(topLevelComp);
                 if (true || topLevelComp != null) //should never be null?!
+                {
                     topLevelComp.remove();
+                }
                 myForm.setInlineInsertContainer(null);
             }
             boolean showAll = text == null || text.length() == 0;
@@ -1695,7 +1720,6 @@ public class MyForm extends Form {
 //        return makeDoneUpdateWithParseIdMapCommand(title, icon, true);
 //    }
 //    public Command makeDoneUpdateWithParseIdMapCommand(String title, Image icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
-//</editor-fold>
 //    public Command makeDoneUpdateWithParseIdMapCommandOLD(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
 //        Command cmd = new Command(title, null) {
 //            @Override
@@ -1714,24 +1738,29 @@ public class MyForm extends Form {
 //        cmd.putClientProperty("android:showAsAction", "withText");
 //        return cmd;
 //    }
-    public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit, CheckDataIsComplete getCheckOnExit) {
+//</editor-fold>
+//    public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit, CheckIfDataIsComplete getCheckIfDataIsCompleteOnExit) {
+//        return makeDoneUpdateWithParseIdMapCommand(title, callRefreshAfterEdit, getCheckIfDataIsCompleteOnExit, true);
+//    }
+//    public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit, CheckIfDataIsComplete getCheckOnExit, boolean allowExitOnIncompleteData) {
+    public Command makeDoneUpdateWithParseIdMapCommand(String title, boolean callRefreshAfterEdit,
+            CheckIfDataIsComplete getCheckIfDataIsCompleteOnExit, boolean allowExitOnIncompleteData) {
         Command cmd = new Command(title, null) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                if (getInlineInsertContainer() != null) //if an insertContainer is left when pushing Back, then save the new element if some text was entered
-                    getInlineInsertContainer().done();
                 //use checkOnExit from parameters if defined, otherwise use the one set for the form if defined
-                if (checkIfSaveOnExit()) {
-//                    parseIdMap2.update();
-//                    if (getUpdateActionOnDone() != null)
-//                        getUpdateActionOnDone().run();
+                if ((getCheckIfDataIsCompleteOnExit != null && (getCheckIfDataIsCompleteOnExit.check() || allowExitOnIncompleteData))
+                        || (getCheckIfSaveOnExit() != null && (getCheckIfSaveOnExit().check() || allowExitOnIncompleteData))
+                        || allowExitOnIncompleteData) {
+                    if (getInlineInsertContainer() != null) {//if an insertContainer is left when pushing Back, then save the new element if some text was entered
+                        getInlineInsertContainer().done();
+                    }
                     updateEditedValuesOnExit();
-                    if (false) saveOnExit();
+                    showPreviousScreen(callRefreshAfterEdit);
                 }
-                showPreviousScreen(callRefreshAfterEdit);
             }
         };
-        cmd.setMaterialIcon(icon);
+        cmd.setMaterialIcon(Icons.iconBackToPreviousScreen);
         cmd.putClientProperty("android:showAsAction", "withText");
         return cmd;
     }
@@ -1763,21 +1792,20 @@ public class MyForm extends Form {
 //</editor-fold>
 
     public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit) {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, callRefreshAfterEdit, getCheckIfSaveOnExit());
+//        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, callRefreshAfterEdit, getCheckIfSaveOnExit());
+        return makeDoneUpdateWithParseIdMapCommand("", callRefreshAfterEdit, null, true);
     }
 
     public Command makeDoneUpdateWithParseIdMapCommand() {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, true, getCheckIfSaveOnExit()); //false); //default false since otherwise edited values will be lost
+        return makeDoneUpdateWithParseIdMapCommand("", true, null, true); //false); //default false since otherwise edited values will be lost
     }
 
-    public Command makeDoneUpdateWithParseIdMapCommand(CheckDataIsComplete getCheckOnExit) {
-        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, true, getCheckOnExit);
-    }
-
-    public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit) {
-        return makeDoneUpdateWithParseIdMapCommand(title, icon, callRefreshAfterEdit, getCheckIfSaveOnExit());
-    }
-
+//    public Command makeDoneUpdateWithParseIdMapCommand(CheckIfDataIsComplete getCheckOnExit) {
+//        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, true, getCheckOnExit);
+//    }
+//    public Command makeDoneUpdateWithParseIdMapCommand(String title, char icon, boolean callRefreshAfterEdit) {
+//        return makeDoneUpdateWithParseIdMapCommand(title, icon, callRefreshAfterEdit, getCheckIfSaveOnExit());
+//    }
 //    public Command makeDoneUpdateWithParseIdMapCommand(boolean callRefreshAfterEdit, GetString canGoBack) {
 //        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPrevFormToolbarStyle(), callRefreshAfterEdit, canGoBack);
 //    }
@@ -1818,8 +1846,9 @@ public class MyForm extends Form {
 //        Command cmd = CommandTracked.create(title, icon, (e) -> showPreviousScreenOrDefault(false), "Cancel");
 //        Command cmd = MyReplayCommand.createKeep("Cancel", title, Icons.iconCancel, (e) -> showPreviousScreenOrDefault(false));
         Command cmd = CommandTracked.create(title, Icons.iconCancel, (e) -> {
-            if (getUpdateActionOnCancel() != null)
+            if (getUpdateActionOnCancel() != null) {
                 getUpdateActionOnCancel().run();
+            }
             showPreviousScreen(true); //could probably be false, but just in case always refresh!
         }, "Cancel");
         cmd.putClientProperty("android:showAsAction", "withText");
@@ -1858,18 +1887,20 @@ public class MyForm extends Form {
     }
 
     /**
-    neither swipCont must NOT be null and must be added to a form
-    @param swipCont
-    @param itemOrItemList
-    @param commandTrackId
-    @return 
+     * neither swipCont must NOT be null and must be added to a form
+     *
+     * @param swipCont
+     * @param itemOrItemList
+     * @param commandTrackId
+     * @return
      */
     public static Button makeTimerSwipeButton(SwipeableContainer swipCont, ItemAndListCommonInterface itemOrItemList, String commandTrackId) {
         Button startTimer = new Button(CommandTracked.create(null, Icons.iconLaunchTimer, (ev) -> {
 //            if (swipCont != null) {
             MyForm myForm = (MyForm) swipCont.getComponentForm();
-            if (myForm != null)
+            if (myForm != null) {
                 myForm.setKeepPos(new KeepInSameScreenPosition(itemOrItemList, swipCont));
+            }
             TimerStack.getInstance().startTimerOnItemOrItemList(itemOrItemList, myForm);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
             swipCont.close(); //close before save 
         }, commandTrackId
@@ -2046,10 +2077,12 @@ public class MyForm extends Form {
     }
 
     /**
-    replace the button created in the toolbar for cmd by the newCmdButton (which can for example have a longpress command)
-    @param cmd
-    @param longPressCmd
-    @return true if a button was found for
+     * replace the button created in the toolbar for cmd by the newCmdButton
+     * (which can for example have a longpress command)
+     *
+     * @param cmd
+     * @param longPressCmd
+     * @return true if a button was found for
      */
     boolean addLongPressCmdToToolbarCmdButton(Command cmd, Command longPressCmd) {
         Button oldCmdButton = getToolbar().findCommandComponent(cmd);
@@ -2129,8 +2162,9 @@ public class MyForm extends Form {
     final static int ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR = 500; //based on needing 10s to read 3 1/2 lines of text with 45 chars each = 10s/158 ~ 0,063s
 
     /**
-    show toastbar for the time necessary to read the text
-    @param message 
+     * show toastbar for the time necessary to read the text
+     *
+     * @param message
      */
     static void showToastBar(String message) {
         showToastBar(message, 0);
@@ -2176,13 +2210,16 @@ public class MyForm extends Form {
     }
 
     protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton) {
-        if (label == null) return null;
+        if (label == null) {
+            return null;
+        }
         Component spanB;
         if (makeSpanButton) {
             spanB = new SpanButton(label, "LabelField");
             spanB.setUIID("Container"); //avoid adding additional white space by setting the Container UIID to LabelField
-        } else
+        } else {
             spanB = new Button(label, "LabelField");
+        }
 
         if (helpText != null && !helpText.isEmpty()) {
             return addHelp(spanB, helpText);
@@ -2195,21 +2232,27 @@ public class MyForm extends Form {
     private MyReplayCommand showAlarmsReplayCmd = null;
 
     /**
-    make the replay command to be used when showing, or replaying, the show alarms
-    @return a replay command (which is not used by the returning form, this method is just to add it to the list of replay commands)
+     * make the replay command to be used when showing, or replaying, the show
+     * alarms
+     *
+     * @return a replay command (which is not used by the returning form, this
+     * method is just to add it to the list of replay commands)
      */
     private MyReplayCommand makeAlarmsReplayCmd() {
 //        Form form = Display.getInstance().getCurrent();
 //        if (form instanceof ScreenListOfAlarms)
 //            return null; //if already in alarm screen, don't create a replay command
-        if (this instanceof ScreenListOfAlarms)
+        if (this instanceof ScreenListOfAlarms) {
             return null;
+        }
         MyReplayCommand showOrRefreshScreenListOfAlarms = MyReplayCommand.createKeep(SHOW_ALARM_SCREEN_REPLAY_CMD_ID, 'x', (e) -> {
             MyForm currentForm = MyForm.getCurrentFormAfterClosingDialogOrMenu();
             currentForm = this;
             if (currentForm instanceof ScreenListOfAlarms) {
                 currentForm.refreshAfterEdit();
-                if (Config.TEST) ASSERT.that("shouldn't happen since no LarmsReplayCmd should be generated/added for ScreenListOfAlarms");
+                if (Config.TEST) {
+                    ASSERT.that("shouldn't happen since no LarmsReplayCmd should be generated/added for ScreenListOfAlarms");
+                }
             } else {
                 ScreenListOfAlarms.getInstance().refreshAfterEdit(); //refresh to ensure new list of alarms is shown
                 ScreenListOfAlarms.getInstance().show(currentForm);
@@ -2649,9 +2692,9 @@ public class MyForm extends Form {
         fieldContainer.add(WEST, fieldLabel);
 //        fieldContainer.add(WEST, fieldLabel);
 //        fieldContainer.add(MyBorderLayout.EAST, field);  //label WEST
-        if (field != null)
+        if (field != null) {
             fieldContainer.add(EAST, field);  //label WEST
-
+        }
         return fieldContainer;
     }
 
@@ -3139,8 +3182,9 @@ public class MyForm extends Form {
 //        } else if (field.getUIID().equals("LabelValueInherited"))
 //            field.setUIID("LabelValue");
 //</editor-fold>
-            if (!fieldUIID.contains(INHERITED))
+            if (!fieldUIID.contains(INHERITED)) {
                 field.setUIID(fieldUIID + INHERITED);
+            }
         } else if (fieldUIID.contains(INHERITED)) {
             StringBuilder oldUIID = new StringBuilder(fieldUIID);
             int start = fieldUIID.lastIndexOf(INHERITED);
@@ -3151,17 +3195,17 @@ public class MyForm extends Form {
     }
 
     /**
-    
-    @param fieldIdentifier
-    @param field
-    @param getOrg
-    @param putOrg
-    @param getField
-    @param putField
-    @param isInherited
-    @param actionListener
-    @param previousValues
-    @param parseIdMap2 
+     *
+     * @param fieldIdentifier
+     * @param field
+     * @param getOrg
+     * @param putOrg
+     * @param getField
+     * @param putField
+     * @param isInherited
+     * @param actionListener
+     * @param previousValues
+     * @param parseIdMap2
      */
 //    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
 //            GetBool isInherited, ActionListener actionListener, SaveEditedValuesLocally previousValues, Map<Object, UpdateField> parseIdMap2) {
@@ -3229,8 +3273,9 @@ public class MyForm extends Form {
 //                    } else if (((Component) field).getUIID().equals("LabelValueInherited"))
 //                        ((Component) field).setUIID("LabelValue");
                 }
-                if (isInherited != null)
+                if (isInherited != null) {
                     updateUIIDForInherited((Component) field, isInherited.getVal());
+                }
             };
 
             //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
@@ -3394,17 +3439,19 @@ public class MyForm extends Form {
 //            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
             MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
             //restore scroll position on replay
-            if (previousValues != null)
+            if (previousValues != null) {
                 previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
+            }
             super.show();
             if (ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
                 //if bigTimer was active, and we're not replaying, then show big timer again (from whatever screen was the last in replay)
                 TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
                 if (!(this instanceof ScreenTimer6)
                         //                        && !ReplayLog.getInstance().isReplayInProgress() //THE test above on justFinished should be enough
-                        && timerInstance != null && timerInstance.isFullScreen())
-                    //                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
+                        && timerInstance != null && timerInstance.isFullScreen()) //                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
+                {
                     new ScreenTimer6(MyForm.this, timerInstance).show();
+                }
 //            else
 //                super.show();
             }
@@ -3412,8 +3459,9 @@ public class MyForm extends Form {
     }
 
     public void showBack(boolean popCommand) {
-        if (popCommand)
+        if (popCommand) {
             ReplayLog.getInstance().popCmd(); //pop any previous command
+        }
         super.showBack();
     }
 
@@ -3469,12 +3517,13 @@ public class MyForm extends Form {
     }
 
     /**
-    either list or category
-    @param refElement
-    @param ownerList
-    @param category
-    @param insertBeforeRefElement
-    @return 
+     * either list or category
+     *
+     * @param refElement
+     * @param ownerList
+     * @param category
+     * @param insertBeforeRefElement
+     * @return
      */
     private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface ownerList,
             Category category, boolean insertBeforeRefElement) {//, boolean insertAsSubtask) {
@@ -3525,10 +3574,11 @@ public class MyForm extends Form {
         return insertContainer;
     }
 
-    /**returns true if x is an insertNewContainer or is inside one
-    
-    @param x the component to start the search for insertNewContainer from
-    @return 
+    /**
+     * returns true if x is an insertNewContainer or is inside one
+     *
+     * @param x the component to start the search for insertNewContainer from
+     * @return
      */
     private boolean isInsertNewContainer(Component comp) {
         return (comp instanceof InlineInsertNewItemContainer2
@@ -3538,10 +3588,14 @@ public class MyForm extends Form {
     }
 
     private boolean isOrPartOfInsertNewContainer(Component x) {
-        if (isInsertNewContainer(x)) return true;
+        if (isInsertNewContainer(x)) {
+            return true;
+        }
         Container parent = x.getParent();
         while (parent != null) {
-            if (isInsertNewContainer(x)) return true;
+            if (isInsertNewContainer(x)) {
+                return true;
+            }
             parent = parent.getParent();
         }
         return false;
@@ -3577,15 +3631,16 @@ public class MyForm extends Form {
     private MyDragAndDropSwipeableContainer findMyDDContWithObjIdN(Component comp, String refObjId) {
 //        Container cont = getContentPane();
 //        if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP().equals(refObjId))
-        if (comp instanceof MyDragAndDropSwipeableContainer && refObjId.equals(((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP()))
+        if (comp instanceof MyDragAndDropSwipeableContainer && refObjId.equals(((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP())) {
             return (MyDragAndDropSwipeableContainer) comp;
-        else if (comp instanceof Container) {
+        } else if (comp instanceof Container) {
             Component c = null;
             Container cont = (Container) comp;
             for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
                 c = findMyDDContWithObjIdN(cont.getComponentAt(i), refObjId);
-                if (c instanceof MyDragAndDropSwipeableContainer)
+                if (c instanceof MyDragAndDropSwipeableContainer) {
                     return (MyDragAndDropSwipeableContainer) c;
+                }
             }
         }
         return null;
@@ -3595,15 +3650,16 @@ public class MyForm extends Form {
 //        Container cont = getContentPane();
 //        if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP().equals(refObjId))
         for (Component comp : compList) {
-            if (comp instanceof MyDragAndDropSwipeableContainer && refObjId.equals(((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP()))
+            if (comp instanceof MyDragAndDropSwipeableContainer && refObjId.equals(((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP())) {
                 return (MyDragAndDropSwipeableContainer) comp;
-            else if (comp instanceof Container) {
+            } else if (comp instanceof Container) {
                 Component c = null;
                 Container cont = (Container) comp;
                 for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
                     c = findMyDDContWithObjIdN(cont.getComponentAt(i), refObjId);
-                    if (c instanceof MyDragAndDropSwipeableContainer)
+                    if (c instanceof MyDragAndDropSwipeableContainer) {
                         return (MyDragAndDropSwipeableContainer) c;
+                    }
                 }
             }
         }
@@ -3650,8 +3706,10 @@ public class MyForm extends Form {
     protected static final String SAVE_LOCALLY_INLINE_INSERT_TEXT = "InlineInsertSavedTEXT"; //used to save inline text from within the InlineInsert container
 
     /**
-    if inline insert was active in previous session (SAVE_LOCALLY_REF_ELT_OBJID_KEY points to, then 
-    @return 
+     * if inline insert was active in previous session
+     * (SAVE_LOCALLY_REF_ELT_OBJID_KEY points to, then
+     *
+     * @return
      */
     protected void recreateInlineInsertContainerIfNeeded() {
 //        if (previousValues != null && (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null)) {
@@ -3688,11 +3746,15 @@ public class MyForm extends Form {
                         refElement = DAO.getInstance().fetchCategory(refEltObjId);
                         break;
                     default:
-                        if (Config.TEST) ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + refClass);
+                        if (Config.TEST) {
+                            ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + refClass);
+                        }
                 }
 //        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane(), refEltObjId);
                 MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
-                if (Config.TEST) ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + refClass + ", insertAfter=" + insertBefore);
+                if (Config.TEST) {
+                    ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + refClass + ", insertAfter=" + insertBefore);
+                }
 //        createAndAddInsertContainer(myDDContN, refElement, myDDContN.getDragAndDropCategory(), insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
                 createAndAddInsertContainer(myDDContN, refElement, insertBefore); //NB: createAndAddInsertContainer checks for null values
 
@@ -3733,13 +3795,15 @@ public class MyForm extends Form {
 //</editor-fold>
 
     /**
-    insert container and animate??
-     * three cases: 1) simple: pinching out two siblings => insert between. 2) Pinching out between
-     * a parent (Item project/ItemList/Category) and its expanded subtask => insert new subtask before the
-     * pinched one 3) Pinching out between a subtask and a following task at a higher level => insert new subtask after the subtask.  
-     * 4) Pinching out between a task/subtask and a non-task (list/category/nothing/null) => insert new subtask after pinched one. 
-     * 5) Pinching out between a TOTO: update doc wrt notebook page 151
-     * 
+     * insert container and animate?? three cases: 1) simple: pinching out two
+     * siblings => insert between. 2) Pinching out between a parent (Item
+     * project/ItemList/Category) and its expanded subtask => insert new subtask
+     * before the pinched one 3) Pinching out between a subtask and a following
+     * task at a higher level => insert new subtask after the subtask. 4)
+     * Pinching out between a task/subtask and a non-task
+     * (list/category/nothing/null) => insert new subtask after pinched one. 5)
+     * Pinching out between a TOTO: update doc wrt notebook page 151
+     *
      *
      * @param componentAbove the top-most (visually) pinched object (with the
      * lowest/smallest index if in the same list as componentBelow)
@@ -3785,7 +3849,9 @@ public class MyForm extends Form {
         } else if (compBelow != null) { //if dropComponentAbove==null, then use the container , can happen eg if inserting above top-most item in list (above finger is on toolbar)
             dropComponentBelow = MyDragAndDropSwipeableContainer.findMyDDContStartingFrom(compBelow);
             if (false && dropComponentBelow != null) //false: why set dropComponentAbove if it was originally null (indicating that top finger was on toolbar)?!
+            {
                 dropComponentAbove = MyDragAndDropSwipeableContainer.findPrecedingMyDDCont(dropComponentBelow, null);
+            }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            MyDragAndDropSwipeableContainer test = MyDragAndDropSwipeableContainer.findNextDDCont(dropComponentAbove);
@@ -3822,21 +3888,26 @@ public class MyForm extends Form {
 
                 int idxAbove = MyDragAndDropSwipeableContainer.getPositionInParentContainerScrollY(dropComponentAbove);
                 ASSERT.that(idxAbove != -1);
-                if (idxOldDrop == idxAbove + 1)
-                    //                    return null;
+                if (idxOldDrop == idxAbove + 1) //                    return null;
+                {
                     return;
+                }
             } else if (dropComponentBelow != null) {
                 int idxBelow = MyDragAndDropSwipeableContainer.getPositionInParentContainerScrollY(dropComponentBelow);
                 ASSERT.that(idxBelow != -1);
-                if (idxOldDrop == idxBelow - 1)
-                    //                    return null;
+                if (idxOldDrop == idxBelow - 1) //                    return null;
+                {
                     return;
+                }
             }
         }
 
-        if (Config.TEST_PINCH && itemEltAbove != null) Log.p("PinchAbove=" + itemEltAbove);//.getText());
-        if (Config.TEST_PINCH && itemEltBelow != null) Log.p("PinchBelow=" + itemEltBelow);//.getText());
-//<editor-fold defaultstate="collapsed" desc="comment">
+        if (Config.TEST_PINCH && itemEltAbove != null) {
+            Log.p("PinchAbove=" + itemEltAbove);//.getText());
+        }
+        if (Config.TEST_PINCH && itemEltBelow != null) {
+            Log.p("PinchBelow=" + itemEltBelow);//.getText());
+        }//<editor-fold defaultstate="collapsed" desc="comment">
 //        List objBelowOwnerList = null;
 //        InsertNewElementFunc insertContainer = null;
 
@@ -4056,15 +4127,17 @@ public class MyForm extends Form {
 //            if (dropComponentAbove != null && dropComponentBelow != null
 //                    && itemEltBelow instanceof Item && itemEltAbove.isSubtaskTo((Item) itemEltBelow)) //pinch insert between a project and its first subtask
 //                previousValues.put(SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK, true);
-        if (insertBeforeRefElement)
+        if (insertBeforeRefElement) {
             previousValues.put(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, true);
+        }
 //                previousValues.remove(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE);
 //        }
 //        wrappedInsertContainer = createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
 //        makeInlineInsertReplayCmd().actionPerformed(null);
         createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement);
-        if (getInlineInsertContainer().getTextArea() != null)
+        if (getInlineInsertContainer().getTextArea() != null) {
             getInlineInsertContainer().getTextArea().startEditingAsync();
+        }
 //        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
@@ -4131,23 +4204,30 @@ public class MyForm extends Form {
             };
             pinchCont.add(MyBorderLayout.CENTER, (Component) pinchComponent);
 
-            if (Config.TEST_PINCH) pinchCont.setName("wrapPinchContainer");
+            if (Config.TEST_PINCH) {
+                pinchCont.setName("wrapPinchContainer");
+            }
             return pinchCont;
         }
         return null;
     }
 
     /**
-    called either when two fingers (pointer) are released (pointerReleasea9, or if one finger is released (changing from pinch to drag)
+     * called either when two fingers (pointer) are released (pointerReleasea9,
+     * or if one finger is released (changing from pinch to drag)
      */
     private void pinchInsertFinished() {
-        if (Config.TEST_PINCH) Log.p("pinchInsertFinished called");
+        if (Config.TEST_PINCH) {
+            Log.p("pinchInsertFinished called");
+        }
 //        if (true || isPinchInsertEnabled()) { //checked before calling pinchInsertFinished()
         if (pinchInsertInitiated) { //checked before calling pinchInsertFinished()
             Container parentToAnimate = null;
             if (pinchContainer == null) { //no new pinch created
                 if (previousPinchContainer != null) { //if pinched-in previous container
-                    if (Config.TEST_PINCH) Log.p("[A] removing  pinchContainerPrevious");
+                    if (Config.TEST_PINCH) {
+                        Log.p("[A] removing  pinchContainerPrevious");
+                    }
 //                    if (!minimumPinchSizeReached(pinchDistance, previousPinchContainer)) {
                     if (!minimumPinchSizeReached(pinchDistance, previousPinchContainer)) {
                         parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(previousPinchContainer); //just remove it
@@ -4159,16 +4239,22 @@ public class MyForm extends Form {
             } else { //a new pinch created, pinchContainer != null
                 //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
                 if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
-                    if (Config.TEST_PINCH) Log.p("pinchContainerPrevious left visible");
+                    if (Config.TEST_PINCH) {
+                        Log.p("pinchContainerPrevious left visible");
+                    }
 //                    Container pinchContainerParent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(pinchContainer);
                     if (previousPinchContainer != null && !MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(previousPinchContainer)) {
-                        if (Config.TEST_PINCH) Log.p("!! pinchContainerPrevious not removed correctly");
+                        if (Config.TEST_PINCH) {
+                            Log.p("!! pinchContainerPrevious not removed correctly");
+                        }
                     } //remove previous in one exists
                     previousPinchContainer = pinchContainer; //save just inserted container
                     parentToAnimate = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
                     ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent());
                 } else {
-                    if (Config.TEST_PINCH) Log.p("[B] removing  pinchContainer");
+                    if (Config.TEST_PINCH) {
+                        Log.p("[B] removing  pinchContainer");
+                    }
                     MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(pinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
                 }
             }
@@ -4307,7 +4393,9 @@ public class MyForm extends Form {
 //</editor-fold>
     public void pointerReleased(int[] x, int[] y) {
         if (pinchInsertInitiated) {
-            if (Config.TEST_PINCH) Log.p("pointerReleased(int[] x, int[] y) called!!!!");
+            if (Config.TEST_PINCH) {
+                Log.p("pointerReleased(int[] x, int[] y) called!!!!");
+            }
             pinchInsertFinished();
             return;
         }
@@ -4316,7 +4404,9 @@ public class MyForm extends Form {
 
     public void pointerReleased(int x, int y) {
         if (pinchInsertInitiated) {
-            if (Config.TEST_PINCH) Log.p("pointerReleased(int x, int y) called!!!!");
+            if (Config.TEST_PINCH) {
+                Log.p("pointerReleased(int x, int y) called!!!!");
+            }
             pinchInsertFinished();
             return;
         }
@@ -4342,7 +4432,9 @@ public class MyForm extends Form {
                 y2[1] = Math.min(displayHeight, (displayHeight / 2 - y[0]) + displayHeight / 2); //set simulated y to y mirrored around the middle of the screen
 //                y2[1] = Math.min(displayHeight, y[0] + 140); //80==roughly one workslot container
 //                Log.p("simulating pinch x[0]=" + x[0] + " y[0]=" + y[0] + " simulated x[1]=" + x[1] + " y[1]=" + y[1]);
-                if (Config.TEST_PINCH) Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
+                if (Config.TEST_PINCH) {
+                    Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
+                }
                 x = x2; //replace org values with simulatd pair
                 y = y2;
             }
@@ -4426,7 +4518,9 @@ public class MyForm extends Form {
 //                pinchContainer = createAndInsertPinchContainer(x, y);
                 createAndInsertPinchContainer(x, y);
 
-                if (Config.TEST_PINCH) Log.p("inserted pinchContainer");
+                if (Config.TEST_PINCH) {
+                    Log.p("inserted pinchContainer");
+                }
                 Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
 //                    MyForm.this.animateLayout(300);//.revalidate(); //refresh
                 if (parent != null) {
@@ -4444,8 +4538,9 @@ public class MyForm extends Form {
 //                    }
 //                }
 //                if (pinchContainer != null &&pinchContainer.getParent() != null) 
-                if (pinchContainer.getParent() != null)
+                if (pinchContainer.getParent() != null) {
                     pinchContainer.getParent().revalidateWithAnimationSafety(); //refresh to reflect to new pinched size of pinchContainer
+                }
             }
         }
 //            super.pointerDragged(x, y); //leaving this call will make the screen scroll at the same time if the two fingers move
@@ -4558,7 +4653,9 @@ public class MyForm extends Form {
 //</editor-fold>
     @Override
     public void animateHierarchy(final int duration) {
-        if (Config.TEST_PINCH) Log.p("*******animateHierarchy(" + duration + ") - expensive call");
+        if (Config.TEST_PINCH) {
+            Log.p("*******animateHierarchy(" + duration + ") - expensive call");
+        }
         super.animateHierarchy(duration);
     }
 
@@ -4613,8 +4710,10 @@ public class MyForm extends Form {
     }
 
     /**
-    return the top-level ItemAndListCommonInterface edited or displayed by this Form. Eg if showing a Project or List, return that
-    @return 
+     * return the top-level ItemAndListCommonInterface edited or displayed by
+     * this Form. Eg if showing a Project or List, return that
+     *
+     * @return
      */
     public ItemAndListCommonInterface getDisplayedElement() {
         assert false;
@@ -4622,11 +4721,13 @@ public class MyForm extends Form {
     }
 
     /**
-    if y is within the upper/lower bounds of an adjacent MyDragAndDropSwipeableContainer, then return it
-    @param cmp
-    @param x
-    @param y
-    @return 
+     * if y is within the upper/lower bounds of an adjacent
+     * MyDragAndDropSwipeableContainer, then return it
+     *
+     * @param cmp
+     * @param x
+     * @param y
+     * @return
      */
 //    private MyDragAndDropSwipeableContainer findMyDDContAtY(Component cmp, int y) {
 //        if (cmp instanceof MyDragAndDropSwipeableContainer && y >= cmp.getAbsoluteY() && y <= cmp.getAbsoluteY() + cmp.getHeight())
@@ -4644,15 +4745,17 @@ public class MyForm extends Form {
 //    }
     private static Component findDropTargetAtY(Component cmp, int y) {
         if (y >= cmp.getAbsoluteY() && y < cmp.getAbsoluteY() + cmp.getHeight()) {
-            if (cmp.isDropTarget())
+            if (cmp.isDropTarget()) {
                 return cmp;
+            }
             if (cmp instanceof Container) {
                 Container cont = (Container) cmp;
                 for (int i = 0, size = cont.getComponentCount(); i < size; i++) {
                     Component c = cont.getComponentAt(i);
                     Component found = findDropTargetAtY(c, y);
-                    if (found != null)
+                    if (found != null) {
                         return found;
+                    }
                 }
             }
         }
@@ -4660,13 +4763,18 @@ public class MyForm extends Form {
     }
 
     /**
-     * Recursively searches the container hierarchy for a drop target, extended compared to Container.findDropTargetAt(int x, int y) to also
-    search for and return any MyDragAndDropSwipeableContainer which is next to/adjacent to the (x,y) (y is within the upper&lower bounds of the MyDragAndDropSwipeableContainer).
-    This to cover the use case where the dropTarget is indented to the right (expanded subtasks) and the drop is done on the left side of the screen (drop as supertask).
-     * 
+     * Recursively searches the container hierarchy for a drop target, extended
+     * compared to Container.findDropTargetAt(int x, int y) to also search for
+     * and return any MyDragAndDropSwipeableContainer which is next to/adjacent
+     * to the (x,y) (y is within the upper&lower bounds of the
+     * MyDragAndDropSwipeableContainer). This to cover the use case where the
+     * dropTarget is indented to the right (expanded subtasks) and the drop is
+     * done on the left side of the screen (drop as supertask).
+     *
      * @param x position in which we are searching for a drop target
      * @param y position in which we are searching for a drop target
-     * @return a drop target or null if no drop target could be found at the x/y position
+     * @return a drop target or null if no drop target could be found at the x/y
+     * position
      */
     @Override
     public Component findDropTargetAt(int x, int y) {
@@ -4719,8 +4827,9 @@ public class MyForm extends Form {
 //                }
 //</editor-fold>
                 Component c = findDropTargetAtY(cmp, y);
-                if (c != null)
+                if (c != null) {
                     return c;
+                }
             }
         }
         return null;

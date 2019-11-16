@@ -117,7 +117,7 @@ public class ScreenTimer6 extends MyForm {
 
         super.addCommandsToToolbar(toolbar);
 //        backCommand = makeDoneUpdateWithParseIdMapCommand(true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
-        backCommand = makeDoneUpdateWithParseIdMapCommand(() -> {
+        backCommand = makeDoneUpdateWithParseIdMapCommand("",true,() -> {
             TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
             if (timerInstance != null) {//can be null if exiting after finishing with last timer?!
                 timerInstance.setFullScreen(false);
@@ -130,7 +130,7 @@ public class ScreenTimer6 extends MyForm {
                 Display.getInstance().setScreenSaverEnabled(true); //turn screenSaver back on if it was only disable by the Timer
             }
             return true;
-        }); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+        },true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
         toolbar.setBackCommand(backCommand); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
 
         //Create an interrupt task and start the timer on it

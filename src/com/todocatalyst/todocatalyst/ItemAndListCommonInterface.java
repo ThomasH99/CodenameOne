@@ -25,8 +25,10 @@ import java.util.List;
 public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface> extends MyTreeModel, Iterable {
 
     /**
-    returns true if the task or project is completed, that is either Done (task or subtasks completed) or cancelled or soft-deleted. 
-    @return 
+     * returns true if the task or project is completed, that is either Done
+     * (task or subtasks completed) or cancelled or soft-deleted.
+     *
+     * @return
      */
     public boolean isDone();
 //    boolean isTemplate();
@@ -63,8 +65,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    public WorkSlotList getWorkSlotListN();
 
     /**
-    get list of current & future workslots (exclude all that have expired ie endTime is in the past)
-    @return 
+     * get list of current & future workslots (exclude all that have expired ie
+     * endTime is in the past)
+     *
+     * @return
      */
     default public WorkSlotList getWorkSlotListN() {
 //        return getWorkSlotListN(true);
@@ -74,14 +78,16 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public void setWorkSlotList(WorkSlotList workSlotList);
 
     /**
-    return overlapping workslots, or null if none
-    @param workSlot
-    @return 
+     * return overlapping workslots, or null if none
+     *
+     * @param workSlot
+     * @return
      */
     default public List<WorkSlot> getOverlappingWorkSlots(WorkSlot workSlot) {
         WorkSlotList workSlotList = getWorkSlotListN();
-        if (workSlotList == null || workSlot == null)
+        if (workSlotList == null || workSlot == null) {
             return null;
+        }
         List<WorkSlot> overlapping = new ArrayList<>();
 //        for (WorkSlot ws:(List<WorkSlot>)workSlotList) {
         for (WorkSlot ws : workSlotList.getWorkSlotListFull()) {
@@ -93,8 +99,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    add a new list of workslots to the list and setOwner(this) for them
-    @param workSlot 
+     * add a new list of workslots to the list and setOwner(this) for them
+     *
+     * @param workSlot
      */
     default public void addWorkSlots(List<WorkSlot> workSlots) {
         WorkSlotList workSlotList = getWorkSlotListN();
@@ -126,8 +133,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    remove the workSlot from its owner, and set the workSlot's owner=null
-    @param workSlot 
+     * remove the workSlot from its owner, and set the workSlot's owner=null
+     *
+     * @param workSlot
      */
     default public void removeWorkSlot(WorkSlot workSlot) {
         WorkSlotList workSlotList = getWorkSlotListN();
@@ -207,7 +215,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public ItemAndListCommonInterface getOwner();
 
     /**
-     * will return the list that owns a task/project, or the task that owns a subtask
+     * will return the list that owns a task/project, or the task that owns a
+     * subtask
+     *
      * @return
      */
     default public List<? extends ItemAndListCommonInterface> getOwnersList() {
@@ -299,9 +309,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public void setStatus(ItemStatus itemStatus);
 
     /**
-     * returns the size of the *full* unfiltered list of items owned (subtasks for an Item, items for an
-     * ItemList) CANNOT be used since ItemLists needs to intercept the changes
-     * to handle sublists (for meta-categories)
+     * returns the size of the *full* unfiltered list of items owned (subtasks
+     * for an Item, items for an ItemList) CANNOT be used since ItemLists needs
+     * to intercept the changes to handle sublists (for meta-categories)
      *
      * @return
      */
@@ -314,8 +324,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-     * adds subitem to the beginning or end of the list according to the setting . Makes this Item/ItemList the owner of the inserted
-     * element (except for Categories!). Checks that owner must be null before insert to catch any duplicated inserts!
+     * adds subitem to the beginning or end of the list according to the setting
+     * . Makes this Item/ItemList the owner of the inserted element (except for
+     * Categories!). Checks that owner must be null before insert to catch any
+     * duplicated inserts!
      *
      * @param subItemOrList
      * @return
@@ -325,24 +337,27 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList);
 
     /**
-     * add subItemOrList to the list (for an ItemList or Category) or the list of subtasks (for a project Item) at position index and setsubItemOrList's owner to 'this'.
-    Index is for the full, unfiltered and unsorted, list as it is stored in Parse Server. 
-     * adds subitem to the list (gets the list from Parse, adds the element,
-     * sets the list). Makes this Item/ItemList the owner of the inserted
-     * element. Owner must be null before insert!
+     * add subItemOrList to the list (for an ItemList or Category) or the list
+     * of subtasks (for a project Item) at position index and setsubItemOrList's
+     * owner to 'this'. Index is for the full, unfiltered and unsorted, list as
+     * it is stored in Parse Server. adds subitem to the list (gets the list
+     * from Parse, adds the element, sets the list). Makes this Item/ItemList
+     * the owner of the inserted element. Owner must be null before insert!
      *
      * @param index
      * @param subItemOrList
-     * @return 
-    @ deprecated TOO dangerous to use since index may come from filtered or unfiltered list!
+     * @return
+     * @ deprecated TOO dangerous to use since index may come from filtered or
+     * unfiltered list!
      */
 //    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
     /**
-     * 
+     *
      * @param newElement new item
      * @param refElement the reference item item inserted before/after this one
-     * @param addAfterRefEltOrEndOfList if true, add subItemOrList *after* the position of item
-     * @return 
+     * @param addAfterRefEltOrEndOfList if true, add subItemOrList *after* the
+     * position of item
+     * @return
      */
     public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefEltOrEndOfList);
 
@@ -350,7 +365,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      *
      * @param item
      * @param itemRef if null, item is inserted at the end of the list
-     * @param insertAfterRefOrEndOfList if true, insert after itemRef. If itemRef is null, then true => insert at end of list, false => insert at head of list
+     * @param insertAfterRefOrEndOfList if true, insert after itemRef. If
+     * itemRef is null, then true => insert at end of list, false => insert at
+     * head of list
      */
     default public void moveToPositionOf(E item, E itemRef, boolean insertAfterRefOrEndOfList) {
         //NB. Since just reshuffling the list, no impact on any bags
@@ -361,14 +378,15 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
         int newPos = itemRef == null ? (insertAfterRefOrEndOfList ? listFull.size() : 0) : (listFull.indexOf(itemRef) + (insertAfterRefOrEndOfList ? 1 : 0));
         listFull.remove(oldPos); //must remove *before* adding (and remove(item) won't work if added (again) first)
-        if (oldPos < newPos)
+        if (oldPos < newPos) {
             newPos--;
+        }
 //        int oldPos = listFull.indexOf(item);
-        if (newPos >= 0)
+        if (newPos >= 0) {
             listFull.add(newPos, item); //insert *before* remove so that removing the item doesn't impact the insert index
-        else
+        } else {
             listFull.add(item); //insert *before* remove so that removing the item doesn't impact the insert index
-
+        }
         setList(listFull);
 //        fireDataChangedEvent(DataChangedListener.CHANGED, newPos);
     }
@@ -388,22 +406,29 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    move item from its current position within the ItemList to after/before the refItem's position (or if refItem not found, to beginning/end of list depending
-    on addAfterRefEltOrEndOfList)
-    If item not already in the list, it will do nothing (to avoid adding it if the user had not inserted it in the first place)
-    @param item
-    @param refItem
-    @param addCategoryToItem
-    @param addAfterRefEltOrEndOfList 
+     * move item from its current position within the ItemList to after/before
+     * the refItem's position (or if refItem not found, to beginning/end of list
+     * depending on addAfterRefEltOrEndOfList) If item not already in the list,
+     * it will do nothing (to avoid adding it if the user had not inserted it in
+     * the first place)
+     *
+     * @param item
+     * @param refItem
+     * @param addCategoryToItem
+     * @param addAfterRefEltOrEndOfList
      */
     default public void moveItemInList(Item item, Item refItem, boolean addAfterRefEltOrEndOfList) {
         if (removeFromList(item, false)) //only add if already there
+        {
             addToList(item, refItem, addAfterRefEltOrEndOfList);
+        }
     }
 
     /**
-     * remove this from its owner and set this.owner=null; returns owner (eg so it can be saved)
-     * @return 
+     * remove this from its owner and set this.owner=null; returns owner (eg so
+     * it can be saved)
+     *
+     * @return
      */
     default public ItemAndListCommonInterface removeFromOwner() {
         ItemAndListCommonInterface owner = getOwner();
@@ -424,7 +449,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-     * returns the index of the item or subtask in the *full* unfiltered list of items/subtasks 
+     * returns the index of the item or subtask in the *full* unfiltered list of
+     * items/subtasks
      *
      * @param subItemOrList
      * @return
@@ -432,7 +458,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public int getItemIndex(ItemAndListCommonInterface subItemOrList);
 
     /**
-     * returns the filtered and sorted list of sub-Objects (tasks). Never returns a null list.
+     * returns the filtered and sorted list of sub-Objects (tasks). Never
+     * returns a null list.
      *
      * @return never null
      */
@@ -440,19 +467,22 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public List<E> getList();
 
     /**
-    return the full, unsorted and unfiltered list of 
-    @return 
+     * return the full, unsorted and unfiltered list of
+     *
+     * @return
      */
 //    public List<? extends ItemAndListCommonInterface> getListFull();
     public List<E> getListFull();
-    
-    default public boolean isInList(ItemAndListCommonInterface elt){
-        List elements=getListFull();
+
+    default public boolean isInList(ItemAndListCommonInterface elt) {
+        List elements = getListFull();
         return elements.contains(elt);
     }
 
     /**
-     * sets the *full* list of items owned - MUST never be called with a (filtered) list retrieved via getList() since that would effectively remove all filtered elements definitively!
+     * sets the *full* list of items owned - MUST never be called with a
+     * (filtered) list retrieved via getList() since that would effectively
+     * remove all filtered elements definitively!
      *
      * @param listOfSubObjects
      */
@@ -624,7 +654,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     /**
      * returns true if has future workTime associated with it. either from own
- workSlots or allocated WorkTimeSlices.
+     * workSlots or allocated WorkTimeSlices.
      *
      * @return
      */
@@ -798,9 +828,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface elt);
 //</editor-fold>
     /**
-    return the WorkTimeSlices allocated to elt
-    @param elt
-    @return 
+     * return the WorkTimeSlices allocated to elt
+     *
+     * @param elt
+     * @return
      */
 //    default public WorkTimeSlices getAllocatedWorkTimeN(ItemAndListCommonInterface elt) {
     default public WorkTimeSlices getAllocatedWorkTimeN(Item elt) {
@@ -813,8 +844,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    return the element's own allocated WorkTimeSlices. May come from own worktime, from owner's worktime or from categories... (therefore simplest to always use a WorkTimeAllocator
-    @return 
+     * return the element's own allocated WorkTimeSlices. May come from own
+     * worktime, from owner's worktime or from categories... (therefore simplest
+     * to always use a WorkTimeAllocator
+     *
+     * @return
      */
     default public WorkTimeSlices getAllocatedWorkTimeN() {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -908,9 +942,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-     * returns the calculated finishTime for this item or MyDate.MAX_DATE if none
+     * returns the calculated finishTime for this item or MyDate.MAX_DATE if
+     * none
      *
-     * @return finishTime or MyDate.MAX_DATE if no workTime was available/allocated, or if or insufficient workTime to finish the task was allocated
+     * @return finishTime or MyDate.MAX_DATE if no workTime was
+     * available/allocated, or if or insufficient workTime to finish the task
+     * was allocated
      */
     default public long getFinishTime() {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -931,10 +968,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //            return MyDate.MAX_DATE;
 //</editor-fold>
         WorkTimeSlices workTimeSlices = getAllocatedWorkTimeN();
-        if (workTimeSlices != null)
+        if (workTimeSlices != null) {
             return workTimeSlices.getFinishTime();
-        else
+        } else {
             return MyDate.MAX_DATE;
+        }
 
 //        } 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1066,7 +1104,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    public void forceCalculationOfWorkTime();
 //        @Override
     /**
-    force the calculation of worktime for every subtask - is this really necessary??
+     * force the calculation of worktime for every subtask - is this really
+     * necessary??
      */
     default public void forceCalculationOfWorkTime() {
         List<? extends ItemAndListCommonInterface> subtasks = getList();
@@ -1094,9 +1133,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    return a defined filter, null if none defined, for Items, returns a filter for the subtasks.
-    Will reuse a filter defined by the owner of an item (either its project or list), or the default filter defined at the highest level.
-    @return 
+     * return a defined filter, null if none defined, for Items, returns a
+     * filter for the subtasks. Will reuse a filter defined by the owner of an
+     * item (either its project or list), or the default filter defined at the
+     * highest level.
+     *
+     * @return
      */
     public FilterSortDef getFilterSortDef();
 
@@ -1124,9 +1166,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    for Items: return subtask
-    @param index
-    @return 
+     * for Items: return subtask
+     *
+     * @param index
+     * @return
      */
     public Object get(int index);
 
@@ -1139,9 +1182,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    
-    @param removeReferences if true, will remove references in the element (to eg owner, categories, repeatRules ...) before soft-deleting it. Not sure this is really useful?!
-    @return 
+     *
+     * @param removeReferences if true, will remove references in the element
+     * (to eg owner, categories, repeatRules ...) before soft-deleting it. Not
+     * sure this is really useful?!
+     * @return
      */
     public boolean softDelete(boolean removeReferences);
 
@@ -1151,6 +1196,17 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    public void delete() throws ParseException;
     default public boolean softDelete() {
         return softDelete(false);
+    }
+
+    /**
+     * 'hard' delete eg repeatInstances with no purpose or reason to keep
+     *
+     * @return
+     */
+    default public boolean hardDelete() {
+        boolean delOK = softDelete(true);
+        DAO.getInstance().deleteInBackground((ParseObject) this);
+        return delOK;
     }
 
     default void checkOwners(List<ItemAndListCommonInterface> list) {
@@ -1191,8 +1247,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    returns true if inheritance the value is inherited from it's owner (returns false if the value could be inherited but owner does not define any value)
-    @return 
+     * returns true if inheritance the value is inherited from it's owner
+     * (returns false if the value could be inherited but owner does not define
+     * any value)
+     *
+     * @return
      */
     default public boolean isInherited(Object ownValue, Object potentiallyInheritedValue, boolean inheritanceEnabledForField) {
 //        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
@@ -1209,9 +1268,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-    return true if subtask is a (first-level) task within this list/project (it doesn't not go through entire project tree, only first level directly within list/project)
-    @param subtask
-    @return 
+     * return true if subtask is a (first-level) task within this list/project
+     * (it doesn't not go through entire project tree, only first level directly
+     * within list/project)
+     *
+     * @param subtask
+     * @return
      */
     default public boolean isSubtaskTo(Item subtask) {
         return getListFull().contains(subtask);

@@ -33,29 +33,15 @@ public class ScreenStatistics extends MyForm {
 //    private boolean draggableMode = false;
 //    Command sortOnOff = null;
 //    Command draggableOnOff = null;
-    List<Item> itemsSortedOnDate;
+    List<Item> doneItemsFromParseSortedOnDate;
     ItemList itemListStats;
     WorkSlotList workSlots;
 
     /**
-     * edit a list of categories
+     * edit a list of statistics over recently done tasks
      *
-     * @param title
-     * @param category
-     * @param previousForm
-     * @param category
      */
-//    ScreenListOfItemLists(String title, Category category, MyForm previousForm) { 
-//        this(title==null?screenTitle:title, category, previousForm, 
-//                 (cat) -> {
-//                            cat.setList(cat.getList());
-//                            DAO.getInstance().save(cat);
-//                        });
-//    }
-//    ScreenStatistics(ItemList itemListList, MyForm previousForm, GetItemList updateItemListOnDone) {
-//        this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
-//    }
-//    ScreenStatistics(String title, ItemList itemListList, MyForm previousForm, GetItemList updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+
     ScreenStatistics(String screenTitle, MyForm previousForm, Runnable updateActionOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(screenTitle, previousForm, updateActionOnDone);
 //        this.itemListList = itemListList;
@@ -77,8 +63,8 @@ public class ScreenStatistics extends MyForm {
     public void refreshAfterEdit() {
         getContentPane().removeAll();
         SortStatsOn sortOn = SortStatsOn.valueOfDefault(MyPrefs.statisticsSortBy.getString());
-        sortItems(itemsSortedOnDate, sortOn);
-        itemListStats = buildStatisticsSortedByTime(itemsSortedOnDate, workSlots);
+        sortItems(doneItemsFromParseSortedOnDate, sortOn);
+        itemListStats = buildStatisticsSortedByTime(doneItemsFromParseSortedOnDate, workSlots);
         getContentPane().add(MyBorderLayout.CENTER, buildContentPane(itemListStats));
         revalidate();
         restoreKeepPos();
@@ -86,7 +72,7 @@ public class ScreenStatistics extends MyForm {
     }
 
     private void sortItems() {
-        sortItems(itemsSortedOnDate, SortStatsOn.dateAndTime);
+        sortItems(doneItemsFromParseSortedOnDate, SortStatsOn.dateAndTime);
     }
 
     private static void sortItems(List<Item> itemList, SortStatsOn sortOn) {
@@ -116,7 +102,7 @@ public class ScreenStatistics extends MyForm {
         Date endDate = new MyDate();
 //        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
         workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
-        itemsSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate);
+        doneItemsFromParseSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate);
 //        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
     }
 
@@ -129,10 +115,10 @@ public class ScreenStatistics extends MyForm {
                 String text = (String) e.getSource();
                 Container compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
                 boolean showAll = text == null || text.length() == 0;
-                for (int i = 0, size = this.itemsSortedOnDate.size(); i < size; i++) {
+                for (int i = 0, size = this.doneItemsFromParseSortedOnDate.size(); i < size; i++) {
                     //TODO!!! compare same case (upper/lower)
                     //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                    compList.getComponentAt(i).setHidden(((Item) itemsSortedOnDate.get(i)).getText().toLowerCase().indexOf(text) < 0);
+                    compList.getComponentAt(i).setHidden(((Item) doneItemsFromParseSortedOnDate.get(i)).getText().toLowerCase().indexOf(text) < 0);
                 }
                 compList.animateLayout(150);
             });
@@ -296,7 +282,7 @@ public class ScreenStatistics extends MyForm {
         boolean groupByCategory = sortOn == SortStatsOn.dateThenCategories || sortOn == SortStatsOn.categoriesThenDate;
         boolean groupByProject = MyPrefs.statisticsGroupTasksUnderTheirProject.getBoolean();
 
-        ItemList<ItemList> mainList = new ItemList();
+        ItemList<ItemList> mainList = new ItemList(true);
         ItemList dayList = null; //list of days
         ItemList ownerList = null; //list of lists (to group tasks by their ItemList)
         ItemList categoryList = null; //list of lists (to group tasks by their ItemList)
@@ -318,7 +304,8 @@ public class ScreenStatistics extends MyForm {
                 Date completedDate = item.getCompletedDateD();
                 if (prevCompletedDate == null || newDateGroup(groupBy, completedDate, prevCompletedDate)) {
                     //get and add WorkSlots
-                    dayList = new ItemList(getDateString(groupBy, completedDate), false);
+                    dayList = new ItemList(getDateString(groupBy, completedDate), true);
+//                    dayList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                     addWorkSlotsToItemList(dayList, workSlots, getDateForGroup(groupBy, completedDate, false), getDateForGroup(groupBy, completedDate, true));
                     mainList.add(dayList);
                     prevOwnerList = null; //will ensure that we recalc Owner
@@ -331,9 +318,11 @@ public class ScreenStatistics extends MyForm {
             if (groupByList) {
                 ItemAndListCommonInterface owner = item.getOwner();
                 if (owner == null || !(owner instanceof ItemList)) {
-                    ownerList = new ItemList("Inbox", false);
+                    ownerList = new ItemList("Inbox", true);
+//                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                 } else if (!owner.equals(prevOwnerList)) {
-                    ownerList = new ItemList("List: " + owner.getText(), false);
+                    ownerList = new ItemList("List: " + owner.getText(), true);
+//                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                 } else {
                     //same list as before
                     assert owner.equals(prevOwnerList);
@@ -355,9 +344,11 @@ public class ScreenStatistics extends MyForm {
             if (groupByCategory) { //prevItem==null => first time round
                 Category category = item.getFirstCategory();
                 if (category == null) {
-                    categoryList = new ItemList("No category", false);
+                    categoryList = new ItemList("No category", true);
+//                    categoryList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                 } else if (!category.equals(prevCategory)) {
-                    categoryList = new ItemList("Category: " + category.getText(), false);
+                    categoryList = new ItemList("Category: " + category.getText(), true);
+//                    categoryList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                 } else {
                     assert category.equals(prevCategory);
                 }
@@ -382,7 +373,8 @@ public class ScreenStatistics extends MyForm {
                 if (topLevelProject == null) {
                     projectList = null; //reset list to null if no project (to store tasks directly in the list)
                 } else if (!topLevelProject.equals(prevTopLevelProject)) { //prevTopLevelProject may be null or another project
-                    projectList = new ItemList("Project: " + topLevelProject.getText(), false);
+                    projectList = new ItemList("Project: " + topLevelProject.getText(), true);
+//                    projectList.setFilterSortDef(FilterSortDef.getNeutralFilter());  //neutral is now default
                     //add new list
                     if (categoryList != null) {
                         categoryList.add(projectList);
@@ -772,13 +764,14 @@ public class ScreenStatistics extends MyForm {
 //                    cmp = buildItemContainer((Item) node, null, () -> isDragAndDropEnabled(), () -> refreshAfterEdit(), false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??
 //                            null, null, keepPos, expandedObjects, () -> animateMyForm(), false, false); //TODO!!! store expanded itemLists
 //                    cmp = buildItemContainer(itemList, work);
-                        cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics.this, (Item) node, itemListStats, null);
+                        cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics.this, (Item) node, itemListStats, null,expandedObjects);
                     } else if (node instanceof ItemList) {
 //                      cmp = buildCategoryContainer((Category) node, categoryList, keepPos, ()->refreshAfterEdit());
 //                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node);
 //                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, keepPos);
 //                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, keepPos, true);
-                        cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true);
+//                        cmp = ScreenListOfItemLists.buildItemListContainerStatistics((ItemList) node, null, true,expandedObjects);
+                        cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true,expandedObjects);
                     } else {
                         assert false : "should only be Item or ItemList";
                     }

@@ -439,7 +439,8 @@ public class ScreenListOfItemLists extends MyForm {
 //                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
                         //TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
-                        DAO.getInstance().saveAndWait((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        DAO.getInstance().saveAndWait((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
                         swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
                     } else {
@@ -510,7 +511,7 @@ public class ScreenListOfItemLists extends MyForm {
                             "ListOfItemListsExpandSubtasks");// {
                     expandItemListSubTasksButton.setCommand(expandSubTasksCmd);
                     String subTaskStr = numberItems + "";
-                    if (MyPrefs.listOfItemListsShowNumberDoneTasks.getBoolean()) {
+                    if (!statisticsMode&&MyPrefs.listOfItemListsShowNumberDoneTasks.getBoolean()) { //don't show total in statistics since ALL tasks are done
                         int totalNbTasks = itemList.getNumberOfItems(false, MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean());
                         if (totalNbTasks != 0)
                             subTaskStr += "/" + totalNbTasks;
@@ -569,15 +570,13 @@ public class ScreenListOfItemLists extends MyForm {
             east.addComponent(new Label("Act:" + MyDate.formatDurationStd(actualEffort)));
 //                    + "/E" + MyDate.formatTimeDuration(estimatedEffort)
 //                    + "/W" + MyDate.formatTimeDuration(workTimeSumMillis)));
+            east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"
         }
 
         //DETAILS
         if (statisticsMode) {
 //        Container southDetailsContainer=null;
-            ActionListener detailActionListener = new ActionListener() { //UI: touch task name to show/hide details
-//            itemLabel.addActionListener(new ActionListener() { //UI: touch task name to show/hide details
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            ActionListener detailActionListener = (evt)-> {
                     Container southCont = (Container) ((MyBorderLayout) mainCont.getLayout()).getSouth();
                     if (southCont == null) {
                         //lazy create of details container
@@ -610,7 +609,6 @@ public class ScreenListOfItemLists extends MyForm {
 //                        mainCont.getScrollable().ani300); //not working well (
                         mainCont.getParent().animateLayout(300); //not working well (
                     }
-                }
             };
             itemListLabel.addActionListener(detailActionListener); //UI: touch task name to show/hide details
 
@@ -648,32 +646,34 @@ public class ScreenListOfItemLists extends MyForm {
             }, "InterruptInScreenListOfItemLists" //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             )));
         }
-        rightSwipeContainer.add(makeTimerSwipeButton(swipCont, itemList, "InterruptInScreenListOfItemLists"));
+        if(!statisticsMode) rightSwipeContainer.add(makeTimerSwipeButton(swipCont, itemList, "InterruptInScreenListOfItemLists"));
         return swipCont;
     }
 
-    protected static Container buildItemListContainerStatistics(ItemList itemList, KeepInSameScreenPosition keepPos) {
+    protected static Container buildItemListContainerStatisticsXXX(ItemList itemList, KeepInSameScreenPosition keepPos) {
         Container mainCont = new Container(new MyBorderLayout());
 //        mainCont.setUIID("ItemListContainer");
         Container leftSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 
         MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(leftSwipeContainer, null, mainCont) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
 //            public boolean isValidDropTarget(MyDragAndDropSwipeableContainer draggedObject) {
 ////                return !(draggedObject.getDragAndDropObject() instanceof CategoryList) && draggedObject.getDragAndDropObject() instanceof ItemList
 //                return draggedObject.getDragAndDropObject() instanceof ItemList || draggedObject.getDragAndDropObject() instanceof Item;
 //            }
-
+            
 //            @Override
 //            public ItemAndListCommonInterface getDragAndDropList() {
-////                return ((ItemList) getDragAndDropObject()).getOwnerList().getList(); //returns the owner of 
-//                return itemList.getOwner(); //returns the owner of 
+////                return ((ItemList) getDragAndDropObject()).getOwnerList().getList(); //returns the owner of
+//                return itemList.getOwner(); //returns the owner of
 //            }
 //            @Override
 //            public List getDragAndDropSubList() {
 ////                return getDragAndDropList(); //returns the list of subtasks
 //                return itemList.getList();
 //            }
+//</editor-fold>
             @Override
             public ItemAndListCommonInterface getDragAndDropObject() {
                 return itemList;

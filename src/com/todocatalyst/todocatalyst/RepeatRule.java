@@ -30,7 +30,7 @@ package com.todocatalyst.todocatalyst;
  * Clara, CA 95054 or visit www.sun.com if you need additional
  * information or have any questions.
  */
-/*
+ /*
  * Copyright (C) 2002-2003 PalmSource, Inc.  All Rights Reserved.
  */
 //package javax.microedition.pim;
@@ -303,7 +303,6 @@ public class RepeatRule {
 //        return s;
 //    }
 //#enddebug
-
     //source taget fra: http://jcs.mobile-utopia.com/jcs/2038_FieldEmptyException.java
     // JAVADOC COMMENT ELIDED
     public class FieldEmptyException extends java.lang.RuntimeException {
@@ -521,13 +520,15 @@ public class RepeatRule {
      * DAY_INCREMENT = 86400000l.
      */
 //    private static final long DAY_INCREMENT = 86400000l;
-    private static final long DAY_INCREMENT = 86400000L; /*THHJ: seems correct value is 864000000 (unless the extra 1 serves some purpose in the calculations?!) */
+    private static final long DAY_INCREMENT = 86400000L;
+    /*THHJ: seems correct value is 864000000 (unless the extra 1 serves some purpose in the calculations?!) */
 
     /**
      * DAY_IN_WEEK_MASK = 0x1fc00l.
      */
 //    private static final long DAY_IN_WEEK_MASK = 0x1fc00l;
-    private static final long DAY_IN_WEEK_MASK = SUNDAY | MONDAY | TUESDAY | WEDNESDAY | THURSDAY | FRIDAY | SATURDAY | WEEKDAYS | WEEKENDS; /*THHJ: apparently an error in the mask (the '1' in '001'). Added WEEKDAYS and WEEKENDS  */
+    private static final long DAY_IN_WEEK_MASK = SUNDAY | MONDAY | TUESDAY | WEDNESDAY | THURSDAY | FRIDAY | SATURDAY | WEEKDAYS | WEEKENDS;
+    /*THHJ: apparently an error in the mask (the '1' in '001'). Added WEEKDAYS and WEEKENDS  */
 
     /**
      * WEEK_IN_MONTH_MASK = 0x3ffl.
@@ -592,12 +593,12 @@ public class RepeatRule {
     public Vector<Date> datesAsVector(long startDate, long subsetBeginning, long subsetEnding) {
         if (subsetBeginning > subsetEnding) {
             throw new IllegalArgumentException("Bad range: "
-//                    + new MyDate(subsetBeginning).formatDate(false) + "("
+                    //                    + new MyDate(subsetBeginning).formatDate(false) + "("
                     + new Date(subsetBeginning) + "("
                     //                    + PIMHandler.getInstance().composeDateTime(subsetBeginning)
-//                    + ") to " + new MyDate(subsetEnding).formatDate(false) + "(" //                    + PIMHandler.getInstance().composeDateTime(subsetEnding)
+                    //                    + ") to " + new MyDate(subsetEnding).formatDate(false) + "(" //                    + PIMHandler.getInstance().composeDateTime(subsetEnding)
                     + ") to " + new Date(subsetEnding) + "(" //                    + PIMHandler.getInstance().composeDateTime(subsetEnding)
-                    );
+            );
         }
         Calendar calendar = Calendar.getInstance();
         Date dateObj = new Date(startDate);
@@ -676,7 +677,8 @@ public class RepeatRule {
                                 dayInWeek.intValue());
                     }
                     // increment the week
-                    date += DAY_INCREMENT * 7 * interval; /*THHJ: added " * interval" otherwise weekly frequency repeats every week!*/
+                    date += DAY_INCREMENT * 7 * interval;
+                    /*THHJ: added " * interval" otherwise weekly frequency repeats every week!*/
                     dateObj.setTime(date);
                     calendar.setTime(dateObj);
                     break;
@@ -961,7 +963,7 @@ public class RepeatRule {
                 cal.set(Calendar.DAY_OF_MONTH, 1 + i); //set day of month, starting with first day
 //                if (((days & WEEKDAYS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) & CalendarWeekdays) != 0)
 //                        || ((days & WEEKENDS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) & CalendarWeekendDays) != 0)) {
-                if (((days & WEEKDAYS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) >= Calendar.MONDAY && cal.get(Calendar.DAY_OF_WEEK)<=Calendar.FRIDAY))
+                if (((days & WEEKDAYS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) >= Calendar.MONDAY && cal.get(Calendar.DAY_OF_WEEK) <= Calendar.FRIDAY))
                         || ((days & WEEKENDS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY))) {
                     matchingDaysFound++;
                     if (matchingDaysFound == dayNumberInMonth) {
@@ -975,7 +977,7 @@ public class RepeatRule {
                 cal.set(Calendar.DAY_OF_MONTH, nbDaysInMonth - i); //set day of month, starting with last day
 //                if (((days & WEEKDAYS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) & CalendarWeekdays) != 0)
 //                        || ((days & WEEKENDS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) & CalendarWeekendDays) != 0)) {
-                if (((days & WEEKDAYS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) >= Calendar.MONDAY && cal.get(Calendar.DAY_OF_WEEK)<=Calendar.FRIDAY))
+                if (((days & WEEKDAYS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) >= Calendar.MONDAY && cal.get(Calendar.DAY_OF_WEEK) <= Calendar.FRIDAY))
                         || ((days & WEEKENDS) != 0 && (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY))) {
                     matchingDaysFound--;
                     if (matchingDaysFound == dayNumberInMonth) {
@@ -1436,6 +1438,7 @@ public class RepeatRule {
      * @param obj
      * @return
      */
+//    @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof RepeatRule)) {
             return false;
@@ -1495,9 +1498,10 @@ public class RepeatRule {
                 return false;
             }
         }
-        // check exception dates
-        // normalize the list of exception dates to represent only the date
-        // and not the time of day
+//<editor-fold defaultstate="collapsed" desc="comment">
+// check exception dates
+// normalize the list of exception dates to represent only the date
+// and not the time of day
 //        int[] exceptionDates = new int[exceptions.size()];
 //        for (int i = 0; i < exceptionDates.length; i++) {
 //            Date date = (Date) exceptions.elementAt(i);
@@ -1537,6 +1541,7 @@ public class RepeatRule {
 //                }
 //            }
 //        }
+//</editor-fold>
         return true;
     }
 

@@ -121,6 +121,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         this("", false);
     }
 
+    public ItemList(boolean temporaryNoSaveList) {
+        this("", temporaryNoSaveList);
+    }
+
 //    public ItemList(List<E> list, MySaveFunction mySaveFunction) {
     /**
      *
@@ -809,7 +813,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return change;
 //    }
-
     /**
      * list of all lists for which this list is a sublist. Used to keep track of
      * which lists to update when this list changes. Is updated by the
@@ -1021,13 +1024,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //</editor-fold>
         if ((filterSortDef = getFilterSortDef()) != null) { //no buffer for (see code above for buffer version)
             return (List<E>) filterSortDef.filterAndSortItemList(list);
-        } else
+        } else {
             return list;
+        }
     }
 
     /**
-    returns the full (manually sorted) list, with no sorting or filtering
-    @return never null
+     * returns the full (manually sorted) list, with no sorting or filtering
+     *
+     * @return never null
      */
     public List<E> getListFull() {
 //    public List<? extends ItemAndListCommonInterface> getListFull() {
@@ -1044,7 +1049,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         if (cachedList != null) {
 //                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList); //optimization?? heavy operation, any way (OTHER than caching which does work
-            if (Config.CHECK_OWNERS) checkOwners(cachedList);
+            if (Config.CHECK_OWNERS) {
+                checkOwners(cachedList);
+            }
 //        {
 //            for (E elt : cachedList) {
 //                Item item = (Item)elt;
@@ -1104,11 +1111,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return true;
     }
 
-    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addReferences) {
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner) {
 //        addToList( subItemOrList,MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists));
         addItemAtIndex((E) subItemOrList, addToEndOfList ? getSize() : 0);
-        if (addReferences)
+        if (addAsOwner  && !isNoSave()) { //never override owner temporary lists as owner
             subItemOrList.setOwner(this);
+        }
         return true;
     }
 
@@ -1131,16 +1139,18 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         removeItem(subItemOrList); //TODO: update removeItem to return boolean
 //        assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subItemOrList=" + subItemOrList + ", owner=" + getOwner() + ", list=" + this;
         ASSERT.that(!(this instanceof ItemList) || subItemOrList.getOwner() == this, () -> "list not owner of removed subItemOrList (" + subItemOrList + "), owner=" + getOwner() + ", list=" + this); //
-        if (removeReferences)
+        if (removeReferences) {
             subItemOrList.setOwner(null);
+        }
         return true;
     }
 
     private Bag cacheBag;
 
     public Bag<E> getItemBag() {
-        if (cacheBag != null)
+        if (cacheBag != null) {
             return cacheBag;
+        }
 
         List<E> list = getList(PARSE_ITEM_BAG);
         if (list != null) {
@@ -1590,8 +1600,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public FilterSortDef getFilterSortDef() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
-        if (filterSortDef == null && MyPrefs.useDefaultFilterInItemListsWhenNoneDefined.getBoolean())
+
+        if (filterSortDef == null && !isNoSave() && MyPrefs.useDefaultFilterInItemListsWhenNoneDefined.getBoolean()) {
             return FilterSortDef.getDefaultFilter();
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null) {
 //            return filterSortDef;
@@ -1706,8 +1718,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         DAO.getInstance().saveInBackground((ParseObject) itemListList);
 
         FilterSortDef filter = getFilterSortDef();
-        if (filter != null)
+        if (filter != null) {
             filter.softDelete(removeRefs);
+        }
 
         put(Item.PARSE_DELETED_DATE, new MyDate());
         DAO.getInstance().saveInBackground((ParseObject) this);
@@ -1801,7 +1814,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //</editor-fold>
     /**
      * Adding an item to list at given index. OK to add to a position *after*
-     * the last element (at position getSize()). items will only be added if not already in list!
+     * the last element (at position getSize()). items will only be added if not
+     * already in list!
      *
      * @param item - the item to add
      * @param index - the index position in the list
@@ -1851,11 +1865,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                listFull.add(index, item);
                 listFull.add(indexFull, item);
 //            assert list.indexOf(item) != -1 : "item NOT in list thouygh just added (" + item + " already in list [" + this + "] at pos=" +list.indexOf(item); //if (getItemIndex(item) == -1) {
-                if (Config.TEST) ASSERT.that(listFull.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
-//            setList(editedList);
+                if (Config.TEST) {
+                    ASSERT.that(listFull.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
+                }//            setList(editedList);
                 setList(listFull);
-                if (Config.TEST) ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
-//                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
+                if (Config.TEST) {
+                    ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
+                }//                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
 //                    selectedIndex++;
 //                }
                 int selIdx = getSelectedIndex();
@@ -1891,8 +1907,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         if (hasSubLists() && bag != null) { //if there are sublists and item has already been added at least once (so appears in list)
             bag.remove(oldElement); //no need to test if oldElt is already in list, in either case remove will give right result( item added several timet: count-=1, only once added to list: count=0 (0-1)
 //            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
-            if (bag.getCount(item) > 0)
+            if (bag.getCount(item) > 0) {
                 bag.add(item); //only add to bag if *already* in the list only use bag when an element is added more than once)!
+            }
             setItemBag(bag); //then don't add to list, but just add to bag to keep track of how many times added
         } else {//not previously in bag, setif (!getListFull().contains(item)) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1993,10 +2010,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        if (itemList == null) {
 //            return;
 //        }
-        if (itemList != null)
+        if (itemList != null) {
             for (int i = 0, size = itemList.getSize(); i < size; i++) {
                 addItem(itemList.getItemAt(i));
             }
+        }
     }
 
     /**
@@ -2193,8 +2211,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     /**
-     * removes item from list. If item is not in list, nothing is done.
-    Removes also works with bags/meta-lists
+     * removes item from list. If item is not in list, nothing is done. Removes
+     * also works with bags/meta-lists
      *
      * @param item to remove
      */
@@ -2280,7 +2298,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return countUndone;
 //    }
-
     public static int getNumberOfItemsThatWillChangeStatus(List list, boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         if (list == null || list.size() == 0) {
             return 0;
@@ -2389,12 +2406,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return count;
 //    }
-
     /**
-    
-    @param previousItem
-    @param returnFirstItemIfPreviousNotFound if previousItem is not found, or is null, then return the first item in the list if such one exists (otherwise return null)
-    @return net item or null if no next item
+     *
+     * @param previousItem
+     * @param returnFirstItemIfPreviousNotFound if previousItem is not found, or
+     * is null, then return the first item in the list if such one exists
+     * (otherwise return null)
+     * @return net item or null if no next item
      */
     public static Item getNextItemAfter(List<Item> list, Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
@@ -2418,21 +2436,26 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     /**
-    in the case where previousItem is still in the list, but filtered out, this will still attempt to find an unfiltered item that comes after previousItem in the list
-    @param previousItem
-    @return 
+     * in the case where previousItem is still in the list, but filtered out,
+     * this will still attempt to find an unfiltered item that comes after
+     * previousItem in the list
+     *
+     * @param previousItem
+     * @return
      */
     private E getNextAfterEvenIfFiltered(E previousItem, boolean returnFirstItemIfPreviousNotFound) {
         List<E> list = getList();
         int index = list.indexOf(previousItem);
         if (index >= 0) {
             if (index < list.size() - 1) //if there is an element *after* previousItem in the list
+            {
                 return getList().get(index + 1);
-            else {
-                if (returnFirstItemIfPreviousNotFound && list.size() > 0)
+            } else {
+                if (returnFirstItemIfPreviousNotFound && list.size() > 0) {
                     return list.get(0);
-                else
+                } else {
                     return null; //else: previousItem was found in list, but was the last item
+                }
             }
         } else { //previousItem was NOT dfound in the list, try to find in unfiltered list and return first unfiltered item after it (if any)
             List<E> listFull = getListFull();
@@ -2440,8 +2463,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             if (indexFull >= 0) {
                 //run through the elements in listFull and if return the first one which is in listFiltered  (if any)
                 for (E elt : listFull.subList(indexFull + 1, listFull.size())) { //only working if no duplicates in list!!
-                    if (list.contains(elt))
+                    if (list.contains(elt)) {
                         return elt;
+                    }
                 }
             }
             return null;
@@ -3264,18 +3288,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            return true; //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
 //        }
 //        return (this.getObjectIdP() != null && this.getObjectIdP().equals(o2.getObjectIdP()));
-        if (false) {
-            if (this.getObjectIdP() != null) {
-                return this.getObjectIdP().equals(itemList.getObjectIdP());
-            } else {
-                return (itemList.isNoSave() && isNoSave() && itemList.getText().equals(getText())); //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
-            }
-        }
-
+//        if (false) {
+//            if (this.getObjectIdP() != null) {
+//                return this.getObjectIdP().equals(itemList.getObjectIdP());
+//            } else {
+//                return (itemList.isNoSave() && isNoSave() && itemList.getText().equals(getText())); //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
+//            }
+//        }
         if (getObjectIdP() != null) {//&& itemList.getObjectIdP() != null) {
             //compare isDirty in case we have two instances of the same 
-            if (Config.CHECK_OWNERS) ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(),
+            if (Config.CHECK_OWNERS) {
+                ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(),
                         () -> "comparing dirty and not dirty instance of same object, this=" + this + ", other=" + obj);
+            }
             if (getObjectIdP().equals(itemList.getObjectIdP())) {
                 return true;
             }
@@ -3292,8 +3317,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return false;
     }
 
-    @Override
-    public int hashCode() {
+//    @Override
+    public int hashCodeXXX() {
         int hash = 7;
 //        hash = 89 * hash + this.getObjectId().hashCode(); //doesn't work for unsaved objects
         hash = 89 * hash + this.getText().hashCode();
@@ -3602,7 +3627,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
         if (workslots != null) {
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
-            if (Config.CHECK_OWNERS) checkOwners(workslots);
+            if (Config.CHECK_OWNERS) {
+                checkOwners(workslots);
+            }
             return new WorkSlotList(this, workslots, true);
         } else {
             return null; //new WorkSlotList();
@@ -3639,8 +3666,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     /**
      * use this to check if a WorkTimeDefinition exists *before* calling
- getWorkTimeAllocatorN() since otherwise it will create a new
- WorkTimeDefinition
+     * getWorkTimeAllocatorN() since otherwise it will create a new
+     * WorkTimeDefinition
      *
      * @return true if a WorkTimeDefinition is defined in this list
      */
@@ -3786,9 +3813,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     /**
-    set true if Timer should restart from the list's first element in case the current one is not found. This can be set per itemList since
-    it may be natural/desired to do so for some lists like Today
-    @param restartTimerOnNotFound 
+     * set true if Timer should restart from the list's first element in case
+     * the current one is not found. This can be set per itemList since it may
+     * be natural/desired to do so for some lists like Today
+     *
+     * @param restartTimerOnNotFound
      */
     public void setRestartTimerOnNotFound(boolean restartTimerOnNotFound) {
         if (restartTimerOnNotFound) {

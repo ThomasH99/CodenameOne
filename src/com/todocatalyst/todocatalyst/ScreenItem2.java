@@ -176,7 +176,7 @@ public class ScreenItem2 extends MyForm {
 //        previousValues = new SaveEditedValuesLocally( getUniqueFormId() + item.getObjectIdP());
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(FORM_UNIQUE_ID,this.item);
-        expandedObjects = new ExpandedObjects(getUniqueFormId() + this.item.getObjectIdP());
+        if (false) expandedObjects = new ExpandedObjects(getUniqueFormId() + this.item.getObjectIdP()); //NOT used in this screen
         try {
             //        DAO.getInstance().deleteCategoryFromAllItems(cat);
             if (this.item != null) {
@@ -1541,6 +1541,7 @@ public class ScreenItem2 extends MyForm {
 //                    dueDate.setDate(new Date(locallyEditedRepeatRule.getSpecifiedStartDateD().getTime())); //set dueDate if set in RepeatRule //TODO!!!! or if due date *changed* in RepeatRule?? //NOT necessary as picker is initialized from locallyEdited values
                     previousValues.put(Item.PARSE_DUE_DATE, new Date(locallyEditedRepeatRule.getSpecifiedStartDateD().getTime())); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
                 }
+                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule); //store edited rule (otherwise not persisted in local memory)
                 if (false) mainCont.revalidate(); //enough to update? NO
 //                    }
 //            }, true, dueDate.getDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???

@@ -897,7 +897,8 @@ public class ScreenListOfItems extends MyForm {
         );
 
         //FILTER / SORT
-        if (!optionTemplateEditMode && !optionUnmodifiableFilter) {
+        if (!optionTemplateEditMode && !optionUnmodifiableFilter && itemListOrg.getFilterSortDef()!=null) { //UI: !=null: must define filter before sorting can be turned on/off
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "Edit filter", Icons.iconFilterSettings, (e) -> {
 //                FilterSortDef filterSortDef = itemListOrg.getFilterSortDef() == null ? new FilterSortDef() : itemListOrg.getFilterSortDef();
 //                setKeepPos(new KeepInSameScreenPosition());
@@ -906,10 +907,11 @@ public class ScreenListOfItems extends MyForm {
 //                    itemListOrg.setFilterSortDef(filterSortDef);
 //                    DAO.getInstance().saveInBackground((ParseObject) itemListOrg);
 //                    //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
-//                    refreshAfterEdit(); //TODO optimize the application of a filter? 
+//                    refreshAfterEdit(); //TODO optimize the application of a filter?
 //                }).show();
 //            }
 //            ));
+//</editor-fold>
             toolbar.addCommandToOverflowMenu(makeEditFilterSortCommand(itemListOrg));
 
 //            toolbar.addCommandToOverflowMenu(sortOnOff = new Command("Sort ON/OFF", Icons.iconCmdSortOnOff) { //this title never shown
@@ -960,6 +962,7 @@ public class ScreenListOfItems extends MyForm {
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
                         selectedObjects.invertSelection();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        HashSet invertedSelection = new HashSet();
 //                        //for all visible (top-level - not expanded subtasks)
 ////                        for (Object item : itemListFilteredSorted) {
@@ -974,6 +977,7 @@ public class ScreenListOfItems extends MyForm {
 //                        selectedObjects.addAll(invertedSelection);
 ////                    ScreenListOfItems.this.revalidate();
 ////                    setupList(); //TODO optimize the application of a filter?
+//</editor-fold>
                         refreshAfterEdit(); //TODO optimize the application of a filter?
 //                    myTree.animateLayout(300);
                     }

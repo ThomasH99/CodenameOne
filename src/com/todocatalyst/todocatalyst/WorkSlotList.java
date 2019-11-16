@@ -14,7 +14,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * encapsulates a complete list of workSlots for one ItemList/Category or Item/Project
+ * encapsulates a complete list of workSlots for one ItemList/Category or
+ * Item/Project
+ *
  * @author Thomas
  */
 public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> {
@@ -72,8 +74,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        }//        this.copyOf(list);
         this();
         this.owner = owner;
-        if (list != null)
+        if (list != null) {
             sortedOnStartTimeWorkslotList.addAll(list); //optimization - this makes a copy of the list, is it really necessary??
+        }
         if (!alreadySorted) {
             sortWorkSlotList();
 //            Work.sortWorkSlotList(sortedWorkslotList);
@@ -115,8 +118,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     }
 
     /**
-    for testing purposes
-    @param showAlsoExpiredWorkSlots 
+     * for testing purposes
+     *
+     * @param showAlsoExpiredWorkSlots
      */
     public void setIncludeExpiredWorkSlots(boolean showAlsoExpiredWorkSlots) {
         this.showAlsoExpiredWorkSlotsFOR_TESTING_ONLY = showAlsoExpiredWorkSlots;
@@ -133,8 +137,10 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     }
 
     /**
-    add workSlot *sorted*
-    @param workSlot 
+     * add workSlot *sorted
+     *
+     *
+     * @param workSlot
      */
     public void add(WorkSlot workSlot) {
 ////        workslotList.add(workSlot);
@@ -172,8 +178,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //
 //</editor-fold>
     /**
-    update repeating workSlots, done every time the time ('now') changes. 
-    @return 
+     * update repeating workSlots, done every time the time ('now') changes.
+     *
+     * @return
      */
 //    private boolean updateRepeatingWorkSlots() {
 //        RepeatRuleParseObject repeatRule;
@@ -258,8 +265,10 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //    }
 //</editor-fold>
     /**
-    return valid (future) workslots, meaning they end *after* the 'now' value set for this WorkSlotList
-    @return 
+     * return valid (future) workslots, meaning they end *after* the 'now' value
+     * set for this WorkSlotList
+     *
+     * @return
      */
     public List<WorkSlot> getWorkSlots() {
 //        return getWorkSlots(getNow());
@@ -346,7 +355,11 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
             if (res1 != 0) {
                 return res1;
             }
-            return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+            if (i1.getObjectIdP() != null && i2.getObjectIdP() != null) { //when adding just created workslots, we may compare them before they're saved and have their objId
+                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+            } else {
+                return 0;
+            }
         };
     }
 
@@ -392,11 +405,12 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //            }
 //        };
 //    }
-
     /**
-    sort on startTime, then on duration (put longest timeslots first if several starting at same time), 
-    @param sortOnEndTime
-    @return 
+     * sort on startTime, then on duration (put longest timeslots first if
+     * several starting at same time),
+     *
+     * @param sortOnEndTime
+     * @return
      */
     private static void sortWorkSlotList(List<WorkSlot> sortedWorkslotList) {
 //        boolean sortOnEndTime            }) {
@@ -440,14 +454,13 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //            Collections.sort(sortedOnStartTimeWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
 //        }
 //    }
-
     /**
-     * returns a list with all the workSlots that has some work time between startDate and
-     * endDate (e.g. includes workslots that start *before* startDate but which
-     * endsfor date. assumes that workslotsSortedOnStartDate has not dates
-     * *earlier* than date (ie either the first workslot starts on date, or it
-     * starts on a later date). Doesn't remove the return WorkSlots for the
-     * WorkSlotList.
+     * returns a list with all the workSlots that has some work time between
+     * startDate and endDate (e.g. includes workslots that start *before*
+     * startDate but which endsfor date. assumes that workslotsSortedOnStartDate
+     * has not dates *earlier* than date (ie either the first workslot starts on
+     * date, or it starts on a later date). Doesn't remove the return WorkSlots
+     * for the WorkSlotList.
      *
      * NB! the returned WorkSlots may start *before* the startDate or end
      * *after* the endDate, so each workSlot must be restricted to the given
@@ -492,10 +505,12 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
     }
 
     /**
-    remove workSlots that are expired, used to only calculate finishTime based on current workslots
-    @param workSlotList
-    @param now
-    @return 
+     * remove workSlots that are expired, used to only calculate finishTime
+     * based on current workslots
+     *
+     * @param workSlotList
+     * @param now
+     * @return
      */
 //    public static List<WorkSlot> removePastWorkSlotsXXX(List<WorkSlot> workSlots, long now) {
 //        final int WORKSLOT_LIMIT = 200;
@@ -514,7 +529,6 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        //if we get to here, no workslots had endTime in the past, so we don't have to remove
 //        return workSlots;
 //    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public static WorkSlotList removeWorkSlotsInIntervalXXX(WorkSlotList workSlotList, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
 //        final int WORKSLOT_LIMIT = 200;
@@ -646,8 +660,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
             return itemList; //see JavaDoc of getChildren: null should return the tree roots
         } else if (itemInThisList instanceof MyTreeModel) {
             return ((MyTreeModel) itemInThisList).getChildrenList(null);
-        } else
+        } else {
             return new ArrayList();
+        }
     }
 
     @Override
@@ -660,7 +675,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         if (itemInThisList instanceof Item) {
             List subtasks = ((Item) itemInThisList).getList(); //getList since we use this call to know if there are visible (unfiltered) tasks to expand/show
             return subtasks == null || subtasks.size() == 0;
-        } else return true;
+        } else {
+            return true;
+        }
     }
 
 }

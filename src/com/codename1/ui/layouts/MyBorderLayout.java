@@ -31,28 +31,30 @@ import com.codename1.ui.plaf.Style;
 import java.util.HashMap;
 
 /**
- * <p>A border layout lays out a container, arranging and resizing its 
- * components to fit in five regions: north, south, east, west, and center. 
- * Each region may contain no more than one component, and is identified by a 
- * corresponding constant: NORTH, SOUTH, EAST, WEST, and CENTER. 
- * When adding a component to a container with a border layout, use one of 
- * these five constants.</p>
  * <p>
- * The border layout scales all of the components within it to match the available 
- * constraints. The NORTH &amp; SOUTH components use their preferred height but
- * are stretched to take up the full width available. The EAST &amp; WEST do the same
- * for the reverse axis however they leave room for the NORTH/SOUTH entries if they
- * are defined.<br>
- * The CENTER constraint will take up the rest of the available space regardless of its preferred
- * size. This is normally very useful, however in some cases we would prefer that the center
- * component will actually position itself in the middle of the available space. For this we have
- * the <code>setCenterBehavior</code> method.
+ * A border layout lays out a container, arranging and resizing its components
+ * to fit in five regions: north, south, east, west, and center. Each region may
+ * contain no more than one component, and is identified by a corresponding
+ * constant: NORTH, SOUTH, EAST, WEST, and CENTER. When adding a component to a
+ * container with a border layout, use one of these five constants.</p>
+ * <p>
+ * The border layout scales all of the components within it to match the
+ * available constraints. The NORTH &amp; SOUTH components use their preferred
+ * height but are stretched to take up the full width available. The EAST &amp;
+ * WEST do the same for the reverse axis however they leave room for the
+ * NORTH/SOUTH entries if they are defined.<br>
+ * The CENTER constraint will take up the rest of the available space regardless
+ * of its preferred size. This is normally very useful, however in some cases we
+ * would prefer that the center component will actually position itself in the
+ * middle of the available space. For this we have the
+ * <code>setCenterBehavior</code> method.
  * </p>
  * <p>
- * Because of its scaling behavior scrolling a border layout makes no sense. However it is a 
- * common mistake to apply a border layout to a scrollable container or trying to make a border
- * layout scrollable. That is why the {@link com.codename1.ui.Container} class explicitly blocks
- * scrolling on a BorderLayout.<br>
+ * Because of its scaling behavior scrolling a border layout makes no sense.
+ * However it is a common mistake to apply a border layout to a scrollable
+ * container or trying to make a border layout scrollable. That is why the
+ * {@link com.codename1.ui.Container} class explicitly blocks scrolling on a
+ * BorderLayout.<br>
  * Typical usage of this class:
  * </p>
  * <script src="https://gist.github.com/codenameone/23e642b1a749e2f37e68.js"></script>
@@ -61,18 +63,21 @@ import java.util.HashMap;
  * <p>
  * When defining the center behavior we can get very different results:
  * </p>
- *<script src="https://gist.github.com/codenameone/108aa105386ed7c340ad.js"></script>
+ * <script src="https://gist.github.com/codenameone/108aa105386ed7c340ad.js"></script>
  * <img src="https://www.codenameone.com/img/developer-guide/border-layout-center.png" alt="Border Layout Center" />
- * 
- * <p>Notice that in the case of RTL (right to left language also known as bidi) the
- * EAST and WEST values are implicitly reversed as shown in this image:
+ *
+ * <p>
+ * Notice that in the case of RTL (right to left language also known as bidi)
+ * the EAST and WEST values are implicitly reversed as shown in this image:
  * </p>
  * <img src="https://www.codenameone.com/img/developer-guide/border-layout-RTL.png" alt="Border Layout bidi/RTL" />
- * 
+ *
  * <p>
- * You can read further in the <a href="https://www.codenameone.com/manual/basics.html#_border_layout">BorderLayout section in the developer guide</a>.
+ * You can read further in the
+ * <a href="https://www.codenameone.com/manual/basics.html#_border_layout">BorderLayout
+ * section in the developer guide</a>.
  * </p>
- * 
+ *
  * @author Nir Shabi, Shai Almog
  */
 public class MyBorderLayout extends BorderLayout {
@@ -80,30 +85,35 @@ public class MyBorderLayout extends BorderLayout {
     private boolean scaleEdges = true;
 
     /**
-     * Defines the behavior of the component placed in the center position of the layout, by default it is scaled to the available space
+     * Defines the behavior of the component placed in the center position of
+     * the layout, by default it is scaled to the available space
      */
     public static final int CENTER_BEHAVIOR_SCALE = 0;
     /**
-     * Defines the behavior of the component placed in the center position of the layout, places the component in the center of
-     * the space available to the center component.
+     * Defines the behavior of the component placed in the center position of
+     * the layout, places the component in the center of the space available to
+     * the center component.
      */
     public static final int CENTER_BEHAVIOR_CENTER = 1;
     /**
-     * Defines the behavior of the component placed in the center position of the layout, places the component in the center of
-     * the surrounding container
+     * Defines the behavior of the component placed in the center position of
+     * the layout, places the component in the center of the surrounding
+     * container
      */
     public static final int CENTER_BEHAVIOR_CENTER_ABSOLUTE = 2;
     /**
-     * Deprecated due to spelling mistake, use CENTER_BEHAVIOR_TOTAL_BELOW
-     * The center component takes up the entire screens and the sides are automatically placed on top of it thus creating
-     * a layered effect
-     * @deprecated Deprecated due to spelling mistake, use CENTER_BEHAVIOR_TOTAL_BELOW
+     * Deprecated due to spelling mistake, use CENTER_BEHAVIOR_TOTAL_BELOW The
+     * center component takes up the entire screens and the sides are
+     * automatically placed on top of it thus creating a layered effect
+     *
+     * @deprecated Deprecated due to spelling mistake, use
+     * CENTER_BEHAVIOR_TOTAL_BELOW
      */
     public static final int CENTER_BEHAVIOR_TOTAL_BELLOW = 3;
     /**
-     * The center component takes up the entire screens and the sides are 
-     * automatically placed on top (or below based on z-order) thus creating
-     * a layered effect
+     * The center component takes up the entire screens and the sides are
+     * automatically placed on top (or below based on z-order) thus creating a
+     * layered effect
      */
     public static final int CENTER_BEHAVIOR_TOTAL_BELOW = 3;
 
@@ -117,7 +127,8 @@ public class MyBorderLayout extends BorderLayout {
     private HashMap<String, String> landscapeSwap;
 
     /**
-     * Defines the behavior of the center component to one of the constants defined in this class
+     * Defines the behavior of the center component to one of the constants
+     * defined in this class
      */
     private int centerBehavior;
 
@@ -147,39 +158,49 @@ public class MyBorderLayout extends BorderLayout {
      */
     public static final String OVERLAY = "Overlay";
 
-    /** 
-     * Creates a new instance of BorderLayout 
+    /**
+     * Creates a new instance of BorderLayout
      */
     public MyBorderLayout() {
     }
 
-    /** 
-     * Creates a new instance of BorderLayout  with absolute behavior
-     * @param  behavior identical value as the setCenterBehavior method
+    /**
+     * Creates a new instance of BorderLayout with absolute behavior
+     *
+     * @param behavior identical value as the setCenterBehavior method
      */
     public MyBorderLayout(int behavior) {
         setCenterBehavior(behavior);
     }
 
     /**
-     * Shorthand for {@code new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER)}
-     * @return a new {@code BorderLayout} with {@link  #CENTER_BEHAVIOR_CENTER} constraint applied
+     * Shorthand for
+     * {@code new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER)}
+     *
+     * @return a new {@code BorderLayout} with {@link  #CENTER_BEHAVIOR_CENTER}
+     * constraint applied
      */
     public static MyBorderLayout center() {
         return new MyBorderLayout(CENTER_BEHAVIOR_CENTER);
     }
 
     /**
-     * Shorthand for {@code new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER_ABSOLUTE)}
-     * @return a new {@code BorderLayout} with {@link  #CENTER_BEHAVIOR_CENTER_ABSOLUTE} constraint applied
+     * Shorthand for
+     * {@code new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER_ABSOLUTE)}
+     *
+     * @return a new {@code BorderLayout} with
+     * {@link  #CENTER_BEHAVIOR_CENTER_ABSOLUTE} constraint applied
      */
     public static MyBorderLayout absolute() {
         return new MyBorderLayout(CENTER_BEHAVIOR_CENTER_ABSOLUTE);
     }
 
     /**
-     * Shorthand for {@code new BorderLayout(BorderLayout.CENTER_BEHAVIOR_TOTAL_BELOW)}
-     * @return a new {@code BorderLayout} with {@link  #CENTER_BEHAVIOR_TOTAL_BELOW} constraint applied
+     * Shorthand for
+     * {@code new BorderLayout(BorderLayout.CENTER_BEHAVIOR_TOTAL_BELOW)}
+     *
+     * @return a new {@code BorderLayout} with
+     * {@link  #CENTER_BEHAVIOR_TOTAL_BELOW} constraint applied
      */
     public static MyBorderLayout totalBelow() {
         return new MyBorderLayout(CENTER_BEHAVIOR_TOTAL_BELOW);
@@ -268,7 +289,7 @@ public class MyBorderLayout extends BorderLayout {
 
     /**
      * Returns the component constraint
-     * 
+     *
      * @param comp the component whose constraint is queried
      * @return one of the constraints defined in this class
      */
@@ -292,16 +313,20 @@ public class MyBorderLayout extends BorderLayout {
     }
 
 //    public final static int SIZE_EAST_AND_WEST_TO_PREFERRED = 0;
-    /** give full preferred size to west container before sizing east*/
+    /**
+     * give full preferred size to west container before sizing east
+     */
     public final static int SIZE_WEST_BEFORE_EAST = 1;
-    /** give full preferred size to east container before sizing west - default value*/
+    /**
+     * give full preferred size to east container before sizing west - default value
+     */
     public final static int SIZE_EAST_BEFORE_WEST = 2;
     private int eastWestSizeApproach = SIZE_EAST_BEFORE_WEST;
 
     /**
-    
-    @param eastWestSizeApproach 
-    */
+     *
+     * @param eastWestSizeApproach
+     */
     public void setSizeEastWestMode(int eastWestSizeApproach) {
         this.eastWestSizeApproach = eastWestSizeApproach;
     }
@@ -583,7 +608,7 @@ public class MyBorderLayout extends BorderLayout {
 
     /**
      * Returns the component in the south location
-     * 
+     *
      * @return the component in the constraint
      */
     public Component getSouth() {
@@ -592,7 +617,7 @@ public class MyBorderLayout extends BorderLayout {
 
     /**
      * Returns the component in the center location
-     * 
+     *
      * @return the component in the constraint
      */
     public Component getCenter() {
@@ -601,7 +626,7 @@ public class MyBorderLayout extends BorderLayout {
 
     /**
      * Returns the component in the north location
-     * 
+     *
      * @return the component in the constraint
      */
     public Component getNorth() {
@@ -610,7 +635,7 @@ public class MyBorderLayout extends BorderLayout {
 
     /**
      * Returns the component in the east location
-     * 
+     *
      * @return the component in the constraint
      */
     public Component getEast() {
@@ -619,7 +644,7 @@ public class MyBorderLayout extends BorderLayout {
 
     /**
      * Returns the component in the west location
-     * 
+     *
      * @return the component in the constraint
      */
     public Component getWest() {
@@ -628,6 +653,7 @@ public class MyBorderLayout extends BorderLayout {
 
     /**
      * Returns overlay component.
+     *
      * @return The overlay component.
      */
     public Component getOverlay() {
@@ -642,11 +668,13 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * This method allows swapping positions within the border layout when the layout
-     * orientation changes to landscape or if the layout starts off as landscape.
+     * This method allows swapping positions within the border layout when the
+     * layout orientation changes to landscape or if the layout starts off as
+     * landscape.
      *
-     * @param portraitPosition the position for the component when in portrait (this position
-     * should always be used when adding a component to the layout). One of NORTH/SOUTH/EAST/WEST/CENTER.
+     * @param portraitPosition the position for the component when in portrait
+     * (this position should always be used when adding a component to the
+     * layout). One of NORTH/SOUTH/EAST/WEST/CENTER.
      * @param landscapePosition the destination position to use in landscape
      */
     public void defineLandscapeSwap(String portraitPosition, String landscapePosition) {
@@ -658,8 +686,8 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Returns the landscape swap destination for the given border layout element if such
-     * a destination is defined.
+     * Returns the landscape swap destination for the given border layout
+     * element if such a destination is defined.
      *
      * @param portraitPosition the constraint used when placing the component
      * @return the constraint to use when in landscape or null if undefined
@@ -675,7 +703,8 @@ public class MyBorderLayout extends BorderLayout {
      * {@inheritDoc}
      */
     public boolean equals(Object o) {
-        if (super.equals(o) && centerBehavior == ((MyBorderLayout) o).centerBehavior) {
+        if (super.equals(o) && centerBehavior == ((MyBorderLayout) o).centerBehavior
+                && eastWestSizeApproach == ((MyBorderLayout) o).centerBehavior) {
             if (landscapeSwap == ((MyBorderLayout) o).landscapeSwap) {
                 return true;
             }
@@ -687,8 +716,9 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Indicates that the center shouldn't grow and should be placed exactly in the center of the layout
-     * 
+     * Indicates that the center shouldn't grow and should be placed exactly in
+     * the center of the layout
+     *
      * @return the absoluteCenter
      * @deprecated use center behavior instead
      */
@@ -697,7 +727,8 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Indicates that the center shouldn't grow and should be placed exactly in the center of the layout
+     * Indicates that the center shouldn't grow and should be placed exactly in
+     * the center of the layout
      *
      * @param absoluteCenter the absoluteCenter to set
      * @deprecated use center behavior instead
@@ -711,7 +742,8 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Defines the behavior of the center component to one of the constants defined in this class
+     * Defines the behavior of the center component to one of the constants
+     * defined in this class
      *
      * @return the centerBehavior
      */
@@ -720,7 +752,8 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Defines the behavior of the center component to one of the constants defined in this class
+     * Defines the behavior of the center component to one of the constants
+     * defined in this class
      *
      * @param centerBehavior the centerBehavior to set
      */
@@ -738,6 +771,7 @@ public class MyBorderLayout extends BorderLayout {
 
     /**
      * Stretches the edge components (NORTH/EAST/WEST/SOUTH)
+     *
      * @return the scaleEdges
      */
     public boolean isScaleEdges() {
@@ -746,6 +780,7 @@ public class MyBorderLayout extends BorderLayout {
 
     /**
      * Stretches the edge components (NORTH/EAST/WEST/SOUTH)
+     *
      * @param scaleEdges the scaleEdges to set
      */
     public void setScaleEdges(boolean scaleEdges) {
@@ -767,7 +802,9 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout container and places the given component in the center
+     * Convenience method that creates a border layout container and places the
+     * given component in the center
+     *
      * @param center the center component
      * @return the created component
      */
@@ -776,8 +813,9 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout container and places the given component in the center
-     * east and west respectively
+     * Convenience method that creates a border layout container and places the
+     * given component in the center east and west respectively
+     *
      * @param center the center component
      * @param east component or null to ignore
      * @param west component or null to ignore
@@ -800,8 +838,9 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout absolute center container and places the given component in the center
-     * east and west respectively
+     * Convenience method that creates a border layout absolute center container
+     * and places the given component in the center east and west respectively
+     *
      * @param center the center component
      * @param east component or null to ignore
      * @param west component or null to ignore
@@ -824,8 +863,10 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout center container and places the given component in the center
-     * east and west respectively with the {@link  #CENTER_BEHAVIOR_CENTER} constraint applied
+     * Convenience method that creates a border layout center container and
+     * places the given component in the center east and west respectively with
+     * the {@link  #CENTER_BEHAVIOR_CENTER} constraint applied
+     *
      * @param center the center component
      * @param east component or null to ignore
      * @param west component or null to ignore
@@ -848,8 +889,10 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout center container and places the given component in the center
-     * east and west respectively with the {@link  #CENTER_BEHAVIOR_TOTAL_BELOW} constraint applied
+     * Convenience method that creates a border layout center container and
+     * places the given component in the center east and west respectively with
+     * the {@link  #CENTER_BEHAVIOR_TOTAL_BELOW} constraint applied
+     *
      * @param center the center component
      * @param east component or null to ignore
      * @param west component or null to ignore
@@ -872,8 +915,10 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout container and places the given component in the center
-     * with the {@link  #CENTER_BEHAVIOR_CENTER} constraint applied
+     * Convenience method that creates a border layout container and places the
+     * given component in the center with the {@link  #CENTER_BEHAVIOR_CENTER}
+     * constraint applied
+     *
      * @param center the center component
      * @return the created component
      */
@@ -882,8 +927,10 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout container and places the given component in the center
-     * with the {@link  #CENTER_BEHAVIOR_CENTER_ABSOLUTE} constraint applied
+     * Convenience method that creates a border layout container and places the
+     * given component in the center with the
+     * {@link  #CENTER_BEHAVIOR_CENTER_ABSOLUTE} constraint applied
+     *
      * @param center the center component
      * @return the created component
      */
@@ -892,8 +939,10 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout container and places the given component in the center
-     * with the {@link  #CENTER_BEHAVIOR_TOTAL_BELOW} constraint applied
+     * Convenience method that creates a border layout container and places the
+     * given component in the center with the
+     * {@link  #CENTER_BEHAVIOR_TOTAL_BELOW} constraint applied
+     *
      * @param center the center component
      * @return the created component
      */
@@ -902,7 +951,9 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout container and places the given component in the north
+     * Convenience method that creates a border layout container and places the
+     * given component in the north
+     *
      * @param north the north component
      * @return the created component
      */
@@ -911,7 +962,9 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout container and places the given component in the south
+     * Convenience method that creates a border layout container and places the
+     * given component in the south
+     *
      * @param south the south component
      * @return the created component
      */
@@ -920,7 +973,9 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout container and places the given component in the east
+     * Convenience method that creates a border layout container and places the
+     * given component in the east
+     *
      * @param east the east component
      * @return the created component
      */
@@ -929,7 +984,9 @@ public class MyBorderLayout extends BorderLayout {
     }
 
     /**
-     * Convenience method that creates a border layout container and places the given component in the west
+     * Convenience method that creates a border layout container and places the
+     * given component in the west
+     *
      * @param west the west component
      * @return the created component
      */

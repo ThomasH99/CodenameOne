@@ -546,7 +546,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         if (insertAsSubt) { //add as subtask to previous task, and keep the subtask level
             if (refItem != null) {
                 if (((ParseObject) refItem).getObjectIdP() == null) //save if refItem has not already been saved //UI: if you start adding inlineInsert subtasks to a new project, the project will be saved
-                    DAO.getInstance().saveAndWait(refItem);
+//                    DAO.getInstance().saveAndWait(refItem);
+                    DAO.getInstance().saveInBackground(refItem);
                 refItem.addToList(newItem, true); //UI: add to *end* of subtask list (if already exists)
                 //if adding as subtask, expand mother task and place container the right place in the hierarcy => or rather eliminate swipe support and always create right type of insertContainer on pinchOut?!
                 myForm.expandedObjects.add(refItem); //expand to show subtasks

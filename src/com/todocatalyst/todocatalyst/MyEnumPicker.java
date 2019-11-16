@@ -5,7 +5,9 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.ui.Button;
 import com.codename1.ui.Container;
+import com.codename1.ui.Display;
 import com.codename1.ui.spinner.Picker;
 
 /**
@@ -13,7 +15,7 @@ import com.codename1.ui.spinner.Picker;
  *
  * @author Thomas
  */
-public class MyEnumPicker extends Container {
+public class MyEnumPicker<EnumType> extends Picker {
 
     private Object[] values;
     private String[] strings;
@@ -24,6 +26,9 @@ public class MyEnumPicker extends Container {
     }
 
     MyEnumPicker(Enum enumSelectedValues, String[] strings, Object[] values, EnumPickerOption enumPickerOption) {
+        setType(Display.PICKER_TYPE_STRINGS);
+        setStrings(strings);
+        
         this.values = values;
         this.strings = strings;
         switch (enumPickerOption) {
@@ -34,6 +39,7 @@ public class MyEnumPicker extends Container {
             case asPopupMenu:
                 break;
         }
+        
 
 //        assert enumSelectedValue instanceof Enum;
 //        MyComponentGroup group = new MyComponentGroup(strings, parseIdMap2,

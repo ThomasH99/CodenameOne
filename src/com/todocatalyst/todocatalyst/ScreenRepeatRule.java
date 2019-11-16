@@ -145,16 +145,17 @@ public class ScreenRepeatRule extends MyForm {
 //    }
 //    public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleParseObject repeatRuleEdited,
     /**
-    
-    @param title
-    @param repeatRule
-    @param repeatRuleOriginator
-    @param previousForm
-    @param doneAction
-    @param allowEditingStartDate
-    @param defaultStartDate default starting date (copy of item's due date)
-    @param makeStartDate function to make a new starting date in case it is needed and none was provided by defaultStartDate
-    @param isForWorkSlot 
+     *
+     * @param title
+     * @param repeatRule
+     * @param repeatRuleOriginator
+     * @param previousForm
+     * @param doneAction
+     * @param allowEditingStartDate
+     * @param defaultStartDate default starting date (copy of item's due date)
+     * @param makeStartDate function to make a new starting date in case it is
+     * needed and none was provided by defaultStartDate
+     * @param isForWorkSlot
      */
     public ScreenRepeatRule(String title, RepeatRuleParseObject repeatRule, RepeatRuleObjectInterface repeatRuleOriginator, MyForm previousForm,
             //            UpdateField doneAction, boolean allowEditingStartDate,  GetVal makeStartDate, boolean isForWorkSlot) {
@@ -168,8 +169,9 @@ public class ScreenRepeatRule extends MyForm {
         this.allowEditingStartDate = allowEditingStartDate;
 //        this.myRepeatRule = (RepeatRuleParseObject) value;
         this.repeatRuleEdited = repeatRule;
-        if (repeatRuleEdited == null)
+        if (repeatRuleEdited == null) {
             this.repeatRuleEdited = new RepeatRuleParseObject();
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        this.repeatRuleEdited = this.repeatRuleEdited; //the editable/edited copy of the repeatRule, used to edit only the end-user edtaible fields
 //        if (false) {
@@ -222,7 +224,9 @@ public class ScreenRepeatRule extends MyForm {
         if (errorMsg != null) {
             Dialog.show("Error", errorMsg, "OK", null);
             return false;
-        } else return true;
+        } else {
+            return true;
+        }
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
@@ -255,7 +259,7 @@ public class ScreenRepeatRule extends MyForm {
 //        Command cmd = makeDoneUpdateWithParseIdMapCommand(true);
 //        cmd.putClientProperty("android:showAsAction", "withText");
 //        toolbar.addCommandToLeftBar(cmd);
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
+        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand("", true, () -> checkRepeatRuleIsValid(restoreEditedFieldsToRepeatRule(repeatRuleEdited)), false)); //false: don't refresh ScreenItem when returning from Category selector
 
         //CANCEL
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
@@ -315,10 +319,11 @@ public class ScreenRepeatRule extends MyForm {
             }
         }));
 
-        if (Config.TEST)
+        if (Config.TEST) {
             toolbar.addCommandToOverflowMenu("Run tests", null, (e) -> {
                 RepeatRuleParseObject.testRepeatRules();
             });
+        }
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleSettings", "Settings", Icons.iconSettingsLabelStyle, (e) -> {
             new ScreenSettingsRepeatRules(ScreenRepeatRule.this, () -> {
@@ -336,19 +341,19 @@ public class ScreenRepeatRule extends MyForm {
 //    private int getFreqNumberInstances(int freq) {
 //        return (freq == RepeatRule.DAILY ? MyDate.DAYS_IN_YEAR * 10 : (freq == RepeatRule.WEEKLY ? MyDate.WEEKS_IN_YEAR * 10 : (freq == RepeatRule.MONTHLY ? MyDate.MONTHS_IN_YEAR * 10 : 10)));
 //    }
-    private final int MONTHLY_OPTION_DAY = 0;
-    private final int MONTHLY_OPTION_WEEK_NB = 2;
-    private final int MONTHLY_OPTION_WEEKDAYS = 1;
+    private final static int MONTHLY_OPTION_DAY = 0;
+    private final static int MONTHLY_OPTION_WEEK_NB = 2;
+    private final static int MONTHLY_OPTION_WEEKDAYS = 1;
     //{"day", "month(s)"}, new int[]{0, 1}
-    private final int YEAR_OPTION_DAY_OF_YEAR = 0;
-    private final int YEAR_OPTION_MONTHS = 1;
+    private final static int YEAR_OPTION_DAY_OF_YEAR = 0;
+    private final static int YEAR_OPTION_MONTHS = 1;
     //"forever", "until", "number"}, new int[]{0, 1, 2
     public final static int REPEAT_HOW_LONG_OPTION_FOREVER = 0;
     public final static int REPEAT_HOW_LONG_OPTION_UNTIL = 1;
     public final static int REPEAT_HOW_LONG_OPTION_NUMBER = 2;
     //    showHowMany_InstancesDaysAhead_Combo = new MyToggleButton(new String[]{"instances", "days ahead"}, new int[]{0, 1});
-    private final int SHOW_HOW_MANY_AHEAD_INSTANCES = 0;
-    private final int SHOW_HOW_MANY_AHEAD_DAYS_AHEAD = 1;
+    private final static int SHOW_HOW_MANY_AHEAD_INSTANCES = 0;
+    private final static int SHOW_HOW_MANY_AHEAD_DAYS_AHEAD = 1;
 
     protected void setupLayoutAndFields() {
 //        if (!initialized) {
@@ -443,7 +448,9 @@ public class ScreenRepeatRule extends MyForm {
 //        repeatStartDatePicker = new MyDateAndTimePicker(makeStartDate); //makeStartDate: NOT good: will only set default value once pressed
 //        repeatStartDatePicker = new MyDateAndTimePicker(repeatRuleEdited.getSpecifiedStartDateD().getTime() != 0 ? repeatRuleEdited.getSpecifiedStartDateD() : defaultStartDate); // "<no Start date**>"
         repeatStartDatePicker = new MyDateAndTimePicker(repeatRuleEdited.getSpecifiedStartDateD()); // "<no Start date**>"
-        if (Config.TEST) repeatStartDatePicker.setName("repeatStartDatePicker");
+        if (Config.TEST) {
+            repeatStartDatePicker.setName("repeatStartDatePicker");
+        }
         repeatFrom_NoneCompletedDue_Field.addSelectionListener(refreshSelectionListener);
 //        repeatFrom_NoneCompletedDue_Field.addSelectionListener((oldSel, newSel) -> {
 //            if (oldSel != newSel && newSel == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE && repeatStartDatePicker != null && repeatStartDatePicker.getDate().getTime() == 0) {
@@ -872,15 +879,16 @@ public class ScreenRepeatRule extends MyForm {
 //            repeatStartDatePicker.setHidden(repeatFrom_NoneCompletedDue_Field.getSelectedValue() != RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE || isForWorkSlot); //"due date
             repeatStartDatePicker.setHidden(hideRepeatStartDatePicker); //"due date
             if (!hideRepeatStartDatePicker && repeatStartDatePicker.getDate().getTime() == 0) {
-                if (defaultStartDate == null || defaultStartDate.getTime() == 0)
+                if (defaultStartDate == null || defaultStartDate.getTime() == 0) {
                     Dialog.show("INFO", "No Due date set for task, please set here.", "OK", null); //" + Item.DUE_DATE+"
-//                if (makeStartDate != null && ((Date) makeStartDate.getVal()).getTime() != 0)
-                if (defaultStartDate != null && defaultStartDate.getTime() != 0)
+                }//                if (makeStartDate != null && ((Date) makeStartDate.getVal()).getTime() != 0)
+                if (defaultStartDate != null && defaultStartDate.getTime() != 0) {
                     repeatStartDatePicker.setDate(new Date(defaultStartDate.getTime())); //make copy to avoid reusing eg same value as edited in Picker in ScreenItem2
-                else if (makeStartDate != null)
+                } else if (makeStartDate != null) {
                     repeatStartDatePicker.setDate(((Date) makeStartDate.getVal()));
-                else
+                } else {
                     repeatStartDatePicker.setDate(new Date(MyDate.currentTimeMillis()));
+                }
                 repeatStartDatePicker.setHidden(false);
             }
             showDatesButton.setHidden(repeatFrom_NoneCompletedDue_Field.getSelectedValue() != RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE); //only show for repeat from Due
@@ -1246,7 +1254,6 @@ public class ScreenRepeatRule extends MyForm {
 //            Dialog.show("Error", "Missing selection in one or more choices", "OK", null);
 //        }
 //    }
-
 }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

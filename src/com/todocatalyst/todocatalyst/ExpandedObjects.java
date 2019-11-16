@@ -23,7 +23,8 @@ import java.util.HashSet;
  * @author thomashjelm
  */
 /**
-    encapsulates the list of expanded objects and saves it to local storage on each modification
+ * encapsulates the list of expanded objects and saves it to local storage on
+ * each modification
  */
 class ExpandedObjects {//implements Externalizable {//extends HashSet {
 
@@ -34,8 +35,10 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     private HashSet<String> expandedObjects; // = new HashSet(); //TODO!! save expandedObjects for this screen and the given list. NB visible to allow to expland items when subtasks are added
 
     /**
-    if filename is null or "", then no persistence will be done (e.g. when editing subtask lists)
-    @param uniqueIdForFilename 
+     * if filename is null or "", then no persistence will be done (e.g. when
+     * editing subtask lists)
+     *
+     * @param uniqueIdForFilename
      */
     ExpandedObjects(String uniqueIdForFilename) {
 //        assert uniqueIdForFilename != null && !uniqueIdForFilename.isEmpty();
@@ -59,9 +62,11 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 
 //        ExpandedObjects(String screenId, String objectId) {
     /**
-    just a helper to construct all composed filenames in a simpler fashion and with consistent format
-    @param screenId
-    @param uniqueExtensionId 
+     * just a helper to construct all composed filenames in a simpler fashion
+     * and with consistent format
+     *
+     * @param screenId
+     * @param uniqueExtensionId
      */
     ExpandedObjects(String screenId, String uniqueExtensionId) {
         this(screenId + uniqueExtensionId);
@@ -69,8 +74,9 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     }
 
     /**
-    @param screenId
-    @param parseObject may be null in screens which are 'singletons' (exist only once and are not used with different items)
+     * @param screenId
+     * @param parseObject may be null in screens which are 'singletons' (exist
+     * only once and are not used with different items)
      */
     ExpandedObjects(String screenId, ParseObject parseObject) {
         this(screenId, (parseObject == null || parseObject.getObjectIdP() == null || parseObject.getObjectIdP().isEmpty() ? "NoParseObject" : parseObject.getObjectIdP()));
@@ -81,26 +87,69 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     }
 
     private void save() {
-        if (isValidFilename(filename))
+        if (isValidFilename(filename)) {
             Storage.getInstance().writeObject(filename, expandedObjects);
+        }
     }
 
+    private String getUniqueStr(Object element) {
+        String s = null;
+        if (!((ItemAndListCommonInterface) element).isNoSave()) {
+            s = ((ItemAndListCommonInterface) element).getText(); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
+        } else if (element instanceof WorkSlotList) {
+            s = ((WorkSlotList) element).getOwner().getObjectIdP(); //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
+        } else if (element instanceof ItemAndListCommonInterface) {
+            s = ((ItemAndListCommonInterface) element).getObjectIdP();
+        } else if (Config.TEST) {
+            ASSERT.that(false, "expanding unsupported element=" + element);
+        }
+        return s;
+    }
 //        @Override
+
     /**
-    only add a single instance of each element
-    @param element
-    @return 
+     * only add a single instance of each element
+     *
+     * @param element
+     * @return
      */
     public boolean add(Object element) {
+        boolean result = false;
+        String uniqueStr = getUniqueStr(element);
+
+        if (((ItemAndListCommonInterface) element).isNoSave()) {
+            result = expandedObjects.add(((ItemAndListCommonInterface) element).getText()); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
+        } else if (((ItemAndListCommonInterface) element).getObjectIdP() == null) {
+            DAO.getInstance().saveInBackground(() -> add(element)); //call recursively, may iterate until element is finally saved in background
+            //objId will be effectively added, and expandedObjects saved, to expanded once the element has been saved
+            return true;
+        } else {
+            result = expandedObjects.add(uniqueStr); //a hashset so no need to check if already added
+        }
+
+        if (result) {
+            save(); //only save if modified
+        }
+
+        return result;
+    }
+
+    public boolean addXXX(Object element) {
 //            boolean result = super.add(((ItemAndListCommonInterface) element).getObjectIdP());
 //        boolean result = false;
 //        if (!expandedObjects.contains(element)) { //don't add if already there (to avoid having to 
         boolean result = false;
-        if (Config.TEST) ASSERT.that(element instanceof ItemAndListCommonInterface, "should only expand ItemAndListCommonInterface, not elt=" + element);
-        if (((ItemAndListCommonInterface) element).getObjectIdP() == null) {
-            if (Config.TEST && element instanceof ItemAndListCommonInterface)
-                if (false) ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null, "ERROR expanding an element with no objectId, elt=" + element);
-            //if no ObjId yet, save it later
+        if (element instanceof WorkSlotList) { //ScreenListOfWorkSlots expands WorkSlotList
+            return true;
+        }
+        if (Config.TEST) {
+            ASSERT.that(element instanceof ItemAndListCommonInterface, "should only expand ItemAndListCommonInterface, not elt=" + element);
+        }
+        if (!((ItemAndListCommonInterface) element).isNoSave()) {
+            result = expandedObjects.add(((ItemAndListCommonInterface) element).getText()); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
+        } else if (((ItemAndListCommonInterface) element).getObjectIdP() == null) {
+//             if (false&&Config.TEST && element instanceof ItemAndListCommonInterface) ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null, "ERROR expanding an element with no objectId, elt=" + element);
+            //if no ObjId yet (because just created and save not finished yet), save it later
             DAO.getInstance().saveInBackground(() -> add(element)); //call recursively, may iterate until element is finally saved in background
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                boolean result2 = false;
@@ -117,14 +166,17 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 //</editor-fold>
             return true;
         } else {
-            if (element instanceof ItemAndListCommonInterface) //a hashset so no need to check if already added
+            if (element instanceof ItemAndListCommonInterface) {//a hashset so no need to check if already added
                 result = expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP()); //a hashset so no need to check if already added
-            else if (element instanceof WorkSlotList)
+            } else if (element instanceof WorkSlotList) {
                 result = expandedObjects.add(((WorkSlotList) element).getOwner().getObjectIdP()); //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
-            if (result) save(); //only save if modified
-//        }
+            }
+            if (result) {
+                save(); //only save if modified
+            }//        }
             return result;
         }
+        return result;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -150,15 +202,18 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 //        @Override
     public boolean contains(Object element) {
 //            return super.contains(((ItemAndListCommonInterface) element).getObjectIdP());
-        return expandedObjects.contains(((ItemAndListCommonInterface) element).getObjectIdP());
+//        return expandedObjects.contains(((ItemAndListCommonInterface) element).getObjectIdP());
+        return expandedObjects.contains(getUniqueStr(element));
     }
 
     public void updateExpandedUIID(Component comp, Object element, String normalUIId, String expandedUIID) {
 //            return super.contains(((ItemAndListCommonInterface) element).getObjectIdP());
-        if (expandedObjects.contains(((ItemAndListCommonInterface) element).getObjectIdP())) {
+//        if (expandedObjects.contains(((ItemAndListCommonInterface) element).getObjectIdP())) {
+        if (expandedObjects.contains(getUniqueStr(element))) {
             comp.setUIID(expandedUIID);
-        } else
+        } else {
             comp.setUIID(normalUIId);
+        }
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //

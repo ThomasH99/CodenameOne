@@ -16,7 +16,8 @@ import com.codename1.ui.table.TableLayout;
 import java.util.Map;
 
 /**
-used as basis for all (future) settings screens (one per screen)
+ * used as basis for all (future) settings screens (one per screen)
+ *
  * @author Thomas
  */
 public class ScreenSettingsCommon extends MyForm {
@@ -28,7 +29,7 @@ public class ScreenSettingsCommon extends MyForm {
     TableLayout.Constraint maxDescriptionSize;
     final static int MAX_SETTING_DESCRIPTION_WIDTH_PERCENT = 80; //don't let the setting description label take up more than this percent of the screen width
     protected boolean tableLayout = false;
- protected static String FORM_UNIQUE_ID = "ScreenSettingsCommon"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    protected static String FORM_UNIQUE_ID = "ScreenSettingsCommon"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 //    MyForm mainScreen;
     ScreenSettingsCommon(MyForm previousScreen, Runnable doneAction) {
@@ -90,7 +91,7 @@ public class ScreenSettingsCommon extends MyForm {
 
 //        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
         ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
-        Switch compForActionListener=null;
+        Switch compForActionListener = null;
 //        if (tableLayout) {
 //            cont.add(new SpanLabel(prefEntry.getFieldScription()));
 //            cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
@@ -115,7 +116,7 @@ public class ScreenSettingsCommon extends MyForm {
 //                MyPrefs.setBoolean(prefEntry, b);
 //            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
 //</editor-fold>
-            cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener=new MyOnOffSwitch(parseIdMap2, () -> {
+            cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener = new MyOnOffSwitch(parseIdMap2, () -> {
                 return MyPrefs.getBoolean(prefEntry);
             }, (b) -> {
                 MyPrefs.setBoolean(prefEntry, b);
@@ -142,8 +143,8 @@ public class ScreenSettingsCommon extends MyForm {
             durationPicker.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) durationPicker.getDuration() / MyDate.MINUTE_IN_MILLISECONDS)));
             cont.add(rightAdj, durationPicker);
 
-            String helpText =prefEntry.getHelpText();
-            if (!helpText.equals("")&&!helpText.contains("**")) {
+            String helpText = prefEntry.getHelpText();
+            if (!helpText.equals("") && !helpText.contains("**")) {
                 cont.add(span2Cols, new SpanLabel(helpText));
             }
         } else {
@@ -173,8 +174,8 @@ public class ScreenSettingsCommon extends MyForm {
                 MyPrefs.setInt(prefEntry, i);
             }, minValue, maxValue, step));
 
-            String helpText =prefEntry.getHelpText();
-            if (!helpText.equals("")&&!helpText.contains("**")) {
+            String helpText = prefEntry.getHelpText();
+            if (!helpText.equals("") && !helpText.contains("**")) {
                 cont.add(span2Cols, new SpanLabel(helpText));
             }
         } else {
@@ -208,12 +209,10 @@ public class ScreenSettingsCommon extends MyForm {
         }
     }
 
-//    protected void addSettingEnum(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] displayValues, GetString getEnumStrFromName, PutString putNameAs, boolean unselectAllowed) {
+////    protected void addSettingEnum(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] displayValues, GetString getEnumStrFromName, PutString putNameAs, boolean unselectAllowed) {
 //    protected void addSettingEnumXXX(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, Enum enumValue, String enumClassName, boolean unselectAllowed) {
 //        //http://stackoverflow.com/questions/14846853/passing-a-class-as-an-argument-to-a-method-in-java
 //        //https://www.codenameone.com/javadoc/java/lang/Class.html#asSubclass-java.lang.Class-
-//        if (tableLayout) {
-//        } else {
 ////            enumValue.
 //             Class myClass;
 //             Enum classEnum;
@@ -242,9 +241,9 @@ public class ScreenSettingsCommon extends MyForm {
 //            }, unselectAllowed),
 //                    prefEntry.getHelpText()));
 //
-//        }
 //    }
-    protected void addSettingEnum(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed) {
+
+    protected void addSettingEnumAsCompGroup(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed) {
 
         if (tableLayout) {
         } else {
@@ -266,6 +265,28 @@ public class ScreenSettingsCommon extends MyForm {
                     prefEntry.getHelpText()));
 
         }
+    }
+
+    protected void addSettingEnumAsPickerTODO(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed) {
+
+        
+            cont.add(layoutN(prefEntry.getFieldScription(), new MyComponentGroup(enumValues, parseIdMap2, () -> {
+                for (Object e : enumValues) {
+                    if (((Enum) e).name().equals(prefEntry.getString())) {
+                        return e.toString();
+                    }
+                }
+                return null;
+            }, (s) -> {
+                for (Object e : enumValues) {
+                    if (e.toString().equals(s)) {
+                        MyPrefs.setString(prefEntry, ((Enum) e).name());
+                        return;
+                    }
+                }
+            }, unselectAllowed),
+                    prefEntry.getHelpText()));
+
     }
 
 //    protected void addSettingStringValuesXXX(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, MyEnumInterface enumSetting, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {

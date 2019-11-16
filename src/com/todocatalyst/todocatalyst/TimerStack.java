@@ -1148,7 +1148,8 @@ class TimerStack {
      */
     public boolean isTimerTimingThisNow(Item timedItem) {
         TimerInstance currentTimer = getCurrentTimerInstanceN();
-        return (currentTimer != null && (currentTimer.getTimedItemN() == timedItem || currentTimer.getTimedItemN().equals(timedItem)));
+//        return (currentTimer != null && (currentTimer.getTimedItemN() == timedItem || currentTimer.getTimedItemN().equals(timedItem)));
+        return (currentTimer != null && (currentTimer.getTimedItemN() == timedItem ));
     }
 
     /**
@@ -1161,7 +1162,7 @@ class TimerStack {
             return false;
         for (TimerInstance timerInstance : activeTimers) {
             if (timedItemOrProjectOrItemList == timerInstance.getTimedItemN()
-                    || timedItemOrProjectOrItemList.equals(timerInstance.getTimedItemN())
+//                    || timedItemOrProjectOrItemList.equals(timerInstance.getTimedItemN())
                     || timedItemOrProjectOrItemList == timerInstance.getTimedItemList()) {
                 return true;
             }
@@ -1187,11 +1188,13 @@ class TimerStack {
 
         for (TimerInstance timerInstance : activeTimers) {
 //if re-launcing timer on already timed Item
-            if (timedItemOrProject != null && timedItemOrProject.equals(timerInstance.getTimedItemN())) {
+//            if (timedItemOrProject != null && timedItemOrProject.equals(timerInstance.getTimedItemN())) {
+            if (timedItemOrProject != null && timedItemOrProject==timerInstance.getTimedItemN()) {
                 itemAlreadyTimed = true;
             }
 //or re-launcing timer on already timed ItemList
-            if ((itemList != null && itemList.equals(timerInstance.getTimedItemList()))) {
+//            if ((itemList != null && itemList.equals(timerInstance.getTimedItemList()))) {
+            if ((itemList != null && itemList==timerInstance.getTimedItemList())) {
                 itemListAlreadyTimed = true;
             }
         }
