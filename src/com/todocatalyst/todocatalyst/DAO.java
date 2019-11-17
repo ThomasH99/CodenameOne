@@ -3115,33 +3115,36 @@ public class DAO {
      */
 //    static public void saveBatch(List<ParseObject> listOfParseObjectsToBatchSave) {
     public void saveBatch(List<ParseObject> listCopyOfParseObjectsToBatchSave, boolean saveToCache) {
-        Display.getInstance().callSerially(() -> {
-            if (!listCopyOfParseObjectsToBatchSave.isEmpty()) {
-                if (false) {
-                    for (ParseObject p : listCopyOfParseObjectsToBatchSave) { //LEADS to ConcurrentModificationException
-                        if (!p.isDirty()) { //don't waste bandwidth/time on saving not changed objects
-                            listCopyOfParseObjectsToBatchSave.remove(p);
-                        }
-                    }
-                }
-                Log.p("SAVE-DAO.saveBatch() saving: " + listCopyOfParseObjectsToBatchSave);
-                try {
-                    ParseBatch parseBatch = ParseBatch.create();
-                    parseBatch.addObjects(listCopyOfParseObjectsToBatchSave, ParseBatch.EBatchOpType.UPDATE);
-                    parseBatch.execute();
-                } catch (ParseException ex) {
-                    Log.e(ex);
-                }
-                if (saveToCache) {
-                    for (ParseObject o : listCopyOfParseObjectsToBatchSave) {
-                        cachePut(o);
-                    }
+//        Display.getInstance().callSerially(() -> {
+        if (!listCopyOfParseObjectsToBatchSave.isEmpty()) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (false) {
+//                    for (ParseObject p : listCopyOfParseObjectsToBatchSave) { //LEADS to ConcurrentModificationException
+//                        if (!p.isDirty()) { //don't waste bandwidth/time on saving not changed objects
+//                            listCopyOfParseObjectsToBatchSave.remove(p);
+//                        }
+//                    }
+//                }
+//</editor-fold>
+            Log.p("SAVE-DAO.saveBatch() saving: " + listCopyOfParseObjectsToBatchSave);
+            try {
+                ParseBatch parseBatch = ParseBatch.create();
+                parseBatch.addObjects(listCopyOfParseObjectsToBatchSave, ParseBatch.EBatchOpType.UPDATE);
+                parseBatch.execute();
+            } catch (ParseException ex) {
+                Log.e(ex);
+            }
+            if (saveToCache) {
+                for (ParseObject o : listCopyOfParseObjectsToBatchSave) {
+                    cachePut(o);
                 }
             }
-        });
+        }
+//        });
 //        save(anyParseObject, true);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public void saveBatch(List<ParseObject> listCopyOfParseObjectsToBatchSave) {
 //        saveBatch(listCopyOfParseObjectsToBatchSave, true);
 //    }
@@ -3169,55 +3172,57 @@ public class DAO {
 //    private void saveImpl(ParseObject anyParseObject) {
 //        saveImpl(anyParseObject, true);
 //    }
+//</editor-fold>
     private synchronized void saveAndCacheImpl(ParseObject anyParseObject, boolean saveToCache) {
-        saveAndCacheImpl(anyParseObject, saveToCache, false);
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        saveAndCacheImpl(anyParseObject, saveToCache, false);
+//    }
+//
+//    private synchronized void saveAndCacheImpl(ParseObject anyParseObject, boolean saveToCache, boolean wait) {
+//        if (wait) {
+//            Log.p(">>>SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
+//
+//            if (Config.TEST && anyParseObject instanceof ItemAndListCommonInterface) {
+//                String refErrorStr = ((ItemAndListCommonInterface) anyParseObject).hasReferencesToUnsavedParseObjects();
+//                if (!refErrorStr.isEmpty()) {
+//                    Log.p("    BUT SAVE-DAO.saveAndCacheImpl: anyParseObject=\"" + anyParseObject + "\" has references to unsaved parseObjects:" + refErrorStr);
+//                }
+//            }
+//            try {
+//                anyParseObject.save();
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//            Log.p("    DONE SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
+//            if (anyParseObject.getDate(Item.PARSE_DELETED_DATE) != null) {//if an object is soft-deleted, then remove it from cache (shouldn't strictly be necessary as all pointers should have been removed, but also cleans up local cache)
+//                cacheDelete(anyParseObject);
+//            } else if (saveToCache) {
+//                cachePut(anyParseObject); //must save first to get the objectId before saving to local cache/storage
+//            }
+//        } else {
+//            Display.getInstance().callSerially(() -> {
+//</editor-fold>
+        Log.p(">>>SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
 
-    private synchronized void saveAndCacheImpl(ParseObject anyParseObject, boolean saveToCache, boolean wait) {
-        if (wait) {
-            Log.p(">>>SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
-
-            if (Config.TEST && anyParseObject instanceof ItemAndListCommonInterface) {
-                String refErrorStr = ((ItemAndListCommonInterface) anyParseObject).hasReferencesToUnsavedParseObjects();
-                if (!refErrorStr.isEmpty()) {
-                    Log.p("    BUT SAVE-DAO.saveAndCacheImpl: anyParseObject=\"" + anyParseObject + "\" has references to unsaved parseObjects:" + refErrorStr);
-                }
+        if (Config.TEST && anyParseObject instanceof ItemAndListCommonInterface) {
+            String refErrorStr = ((ItemAndListCommonInterface) anyParseObject).hasReferencesToUnsavedParseObjects();
+            if (!refErrorStr.isEmpty()) {
+                Log.p("    BUT SAVE-DAO.saveAndCacheImpl: anyParseObject=\"" + anyParseObject + "\" has references to unsaved parseObjects:" + refErrorStr);
             }
-            try {
-                anyParseObject.save();
-            } catch (ParseException ex) {
-                Log.e(ex);
-            }
-            Log.p("    DONE SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
-            if (anyParseObject.getDate(Item.PARSE_DELETED_DATE) != null) {//if an object is soft-deleted, then remove it from cache (shouldn't strictly be necessary as all pointers should have been removed, but also cleans up local cache)
-                cacheDelete(anyParseObject);
-            } else if (saveToCache) {
-                cachePut(anyParseObject); //must save first to get the objectId before saving to local cache/storage
-            }
-        } else {
-            Display.getInstance().callSerially(() -> {
-                Log.p(">>>SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
-
-                if (Config.TEST && anyParseObject instanceof ItemAndListCommonInterface) {
-                    String refErrorStr = ((ItemAndListCommonInterface) anyParseObject).hasReferencesToUnsavedParseObjects();
-                    if (!refErrorStr.isEmpty()) {
-                        Log.p("    BUT SAVE-DAO.saveAndCacheImpl: anyParseObject=\"" + anyParseObject + "\" has references to unsaved parseObjects:" + refErrorStr);
-                    }
-                }
-                try {
-                    anyParseObject.save();
-                } catch (ParseException ex) {
-                    Log.e(ex);
-                }
-                Log.p("    DONE SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
-                if (anyParseObject.getDate(Item.PARSE_DELETED_DATE) != null) {//if an object is soft-deleted, then remove it from cache (shouldn't strictly be necessary as all pointers should have been removed, but also cleans up local cache)
-                    cacheDelete(anyParseObject);
-                } else if (saveToCache) {
-                    cachePut(anyParseObject); //must save first to get the objectId before saving to local cache/storage
-                }
-            });
         }
-
+        try {
+            anyParseObject.save();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        Log.p("    DONE SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
+        if (anyParseObject.getDate(Item.PARSE_DELETED_DATE) != null) {//if an object is soft-deleted, then remove it from cache (shouldn't strictly be necessary as all pointers should have been removed, but also cleans up local cache)
+            cacheDelete(anyParseObject);
+        } else if (saveToCache) {
+            cachePut(anyParseObject); //must save first to get the objectId before saving to local cache/storage
+        }
+//            });
+//        }
     }
 
     /**
@@ -3231,18 +3236,18 @@ public class DAO {
      * the preceding objects have been saved
      * @param parseObjects non-null (but possibly empty) list
      */
-    private void addToSaveInBackgroundQueue(List<ParseObject> parseObjects, Runnable postSaveAction) {
+    private void addToSaveQueue(List<ParseObject> parseObjects, Runnable postSaveAction) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        saveImpl(anyParseObject);
 //        Log.p("Calling DAO.saveInBackground() with list=" + parseObjects + ", postSaveAction defined=" + ((Boolean) (postSaveAction != null)).toString());
-        if (false) {
-            Log.p("SAVE-Calling DAO.addToSaveInBackgroundQueue() with list=" + parseObjects + ", postSaveAction=" + postSaveAction);
-        }
-        if (false && (parseObjects == null || parseObjects.size() == 0)) {
-//            Log.p("DAO.saveInBackground() - RETURN doing nothing");
-            ASSERT.that(true, "SAVE-DAO.saveInBackground() - RETURN doing nothing");
-            return;
-        }
-//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            Log.p("SAVE-Calling DAO.addToSaveInBackgroundQueue() with list=" + parseObjects + ", postSaveAction=" + postSaveAction);
+//        }
+//        if (false && (parseObjects == null || parseObjects.size() == 0)) {
+////            Log.p("DAO.saveInBackground() - RETURN doing nothing");
+//            ASSERT.that(true, "SAVE-DAO.saveInBackground() - RETURN doing nothing");
+//            return;
+//        }
 //        for (ParseObject p : parseObjects) {
 //            if (p instanceof ItemAndListCommonInterface) {
 //                ((ItemAndListCommonInterface) p).updateBeforeSave();
@@ -3276,7 +3281,7 @@ public class DAO {
 //            Log.p("BACKGROUND ADDING objects=[" + parseObjects + "]");
 //        Log.p("BACKGROUND GOT Lock");
 //</editor-fold>
-        if (parseObjects != null && parseObjects.size() > 0) {
+        if (parseObjects != null) {
             for (ParseObject p : parseObjects) {
 //                if (p instanceof ItemAndListCommonInterface)
 //                    ((ItemAndListCommonInterface)p).updateBeforeSave();
@@ -3453,8 +3458,10 @@ public class DAO {
                     if (Config.TEST) {
                         Log.p("SAVE-BACKGROUND TimerTask: got LOCK, calling LOCK.notify(). saveList=" + saveList);
                     }
-                    t.cancel();
-                    t = null;
+                    if (t != null) {
+                        t.cancel();
+                        t = null;
+                    }
                     LOCK_SAVELIST.notifyAll();
                 }
             }
@@ -3464,16 +3471,16 @@ public class DAO {
 //        }
     }
 
-    private void addToSaveInBackgroundQueue(List<ParseObject> parseObjects) {
-        addToSaveInBackgroundQueue(parseObjects, null);
+    private void addToSaveQueue(List<ParseObject> parseObjects) {
+        addToSaveQueue(parseObjects, null);
     }
 
-    private void addToSaveInBackgroundQueue(ParseObject parseObject, Runnable postSaveAction) {
-        addToSaveInBackgroundQueue(new ArrayList(Arrays.asList(parseObject)), postSaveAction);
+    private void addToSaveQueue(ParseObject parseObject, Runnable postSaveAction) {
+        addToSaveQueue(new ArrayList(Arrays.asList(parseObject)), postSaveAction);
     }
 
-    private void addToSaveInBackgroundQueue(ParseObject parseObject) {
-        addToSaveInBackgroundQueue(parseObject, null);
+    private void addToSaveQueue(ParseObject parseObject) {
+        addToSaveQueue(parseObject, null);
     }
 
     boolean isSavesPending() {
@@ -3494,8 +3501,60 @@ public class DAO {
             s += "\"" + elt + "\"; ";
             s += "objId=" + (((RepeatRuleParseObject) elt).getObjectIdP() != null ? ((RepeatRuleParseObject) elt).getObjectIdP() : "<null>; ");
             s += "instances={" + (((RepeatRuleParseObject) elt).getListOfUndoneRepeatInstances() + "}; ");
+        } else if (elt instanceof Category) {
+            s += "CATEGORY: ";
+            s += "\"" + elt + "\"; ";
+            s += "objId=" + (((Category) elt).getObjectIdP() != null ? ((Category) elt).getObjectIdP() : "<null>; ");
+            s += "owner=" + (((Category) elt).getOwner() != null ? ((Category) elt).getOwner() : "<null>; ");
+            s += "subtasks={" + (((Category) elt).getListFull() + "}; ");
+        } else if (elt instanceof ItemList) {
+            s += "ITEMLIST: ";
+            s += "\"" + elt + "\"; ";
+            s += "objId=" + (((ItemList) elt).getObjectIdP() != null ? ((ItemList) elt).getObjectIdP() : "<null>; ");
+            s += "owner=" + (((ItemList) elt).getOwner() != null ? ((ItemList) elt).getOwner() : "<null>; ");
+            s += "subtasks={" + (((ItemList) elt).getListFull() + "}; ");
         }
         return s;
+    }
+
+    private void saveRepeatRuleInBackground(RepeatRuleParseObject repeatRule, Runnable postSaveAction) {
+        if (repeatRule == null) {
+            return;
+        }
+        if (Config.TEST) {
+            Log.p("========== DAO.saveRepeatRuleInBackground(elt=" + testShowMissingRefs(repeatRule) + "), ");
+        }
+        if (repeatRule.getObjectIdP() != null) {
+            addToSaveQueue(repeatRule); //save single tasks normally
+        } else {  // if (projectOrItem.isProject()) 
+            // saving a (completely new) repeatRule requires saving in a particular order to avoid problems with references to unsaved parseObjects:
+            //save project first, *without* the potentially unsaved subtasks
+//            List<RepeatRuleObjectInterface> undoneRepeatInstances = repeatRule.getListOfUndoneRepeatInstances();
+            List undoneRepeatInstances = repeatRule.getListOfUndoneRepeatInstances();
+            repeatRule.setListOfUndoneRepeatInstances(null);
+
+            //first save repeatRule (so repeatInstances can reference it)
+            addToSaveQueue(repeatRule, () -> {
+                //then save all referenced repeat instances (recursively)
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            for (RepeatRuleObjectInterface repeatInstance : undoneRepeatInstances) {
+////                        saveProjectInBackground(subtask);
+//                if (repeatInstance instanceof Item) {
+//                    saveInBackground(null, (Item) repeatInstance); //recursive until reaching leaf tasks (handled above in if(!isProject))
+//                } else {
+//                    saveInBackground((Runnable) null, (WorkSlot) repeatInstance); //recursive until reaching leaf tasks (handled above in if(!isProject))
+//                }                //then add the now saved subtasks and save the project again:
+//                repeatRule.setListOfUndoneRepeatInstances(undoneRepeatInstances);
+//                saveInBackground((ParseObject) repeatRule);
+//            }
+//</editor-fold>
+//                addToSaveInBackgroundQueue(undoneRepeatInstances, () -> {//); //don't save here (won't work because eg the initiator item may reference RR and not be saved yet!)
+                saveInBackground(undoneRepeatInstances, () -> {//); //don't save here (won't work because eg the initiator item may reference RR and not be saved yet!)
+                    repeatRule.setListOfUndoneRepeatInstances(undoneRepeatInstances);
+                    addToSaveQueue((ParseObject) repeatRule);
+                });
+            });
+        }
     }
 
     /**
@@ -3518,55 +3577,48 @@ public class DAO {
         if (Config.TEST) {
             Log.p("========== DAO.saveItemInBackground(elt=" + testShowMissingRefs(projectOrItem) + ")");
         }
-        if (false) {
-            ASSERT.that(projectOrItem.getOwner() == null || projectOrItem.getOwner().getObjectIdP() != null, "calling saveProjectInBackgroundImpl for " + projectOrItem + ", but no ObjectId for its owner=" + projectOrItem.getOwner());
-        }
 //        if (!projectOrItem.isProject() && (projectOrItem.getRepeatRule() == null || projectOrItem.getRepeatRule().getObjectIdP() != null)) {
-        if (false && (projectOrItem.getRepeatRule() == null || projectOrItem.getRepeatRule().getObjectIdP() != null)) {
-//            ItemAndListCommonInterface owner = projectOrItem.getOwner();
-//            if (owner.getObjectIdP() == null) {
-//            saveImpl(projectOrItem, true); 
-            //save single tasks normally
-            addToSaveInBackgroundQueue(projectOrItem); //save single tasks normally
-        } else {  // if (projectOrItem.isProject()) 
-            //Saving a (completely new) top-level project requires saving in a particular order to avoid problems with references to unsaved parseObjects:
-            // Basically:
-            // - remove references to (probably/potentially) unsaved subtasks or repeatRules
-            // - save the top-level project
-            // - save subtasks and repeatRules
-            // - re-add subtasks and repeatRules to top-level project and
-            // - save top-level project again
-            //The same approach applies recursively to any sub-projects
-//            CN.callSerially(() -> {
-            if (projectOrItem.getObjectIdP() == null) { //if top-level item not saved yet, do so before saving the subtasks/repeatRule that reference it
+        //Saving a (completely new) top-level project requires saving in a particular order to avoid problems with references to unsaved parseObjects:
+        // Basically:
+        // - remove references to (probably/potentially) unsaved subtasks or repeatRules (with 'back-references' to the projectOrItem)
+        // - save the top-level project
+        // - save subtasks and repeatRules
+        // - re-add subtasks and repeatRules to top-level project and
+        // - save top-level project again
+        //The same approach applies recursively to any sub-projects
 
-                //Handle RepeatRule (NB. the code works even ir RR is not defined/null)
-                RepeatRuleParseObject repeatRule = projectOrItem.getRepeatRule();
-                projectOrItem.setRepeatRuleInParse(null); //temporarily remove repeatRule
+        //if filter not saved, simply save it first and then re-save the projectOrItem (simple approach since filter has no references to projectOrItem)
+        if (projectOrItem.getFilterSortDef() != null && projectOrItem.getFilterSortDef().getObjectIdP() == null
+                && !(projectOrItem.getFilterSortDef().equals(FilterSortDef.getDefaultFilter()))) { //do not save default filters
+            addToSaveQueue(projectOrItem.getFilterSortDef(), () -> saveItemInBackground(projectOrItem, postSaveAction));
+        }
 
-                //Handle subtasks (or sub-projects)
+        if (projectOrItem.getObjectIdP() == null) { //if top-level item not saved yet, do so before saving the subtasks/repeatRule that reference it
+
+            //Handle RepeatRule (NB. the code works even ir RR is not defined/null)
+            RepeatRuleParseObject repeatRule = projectOrItem.getRepeatRule();
+            projectOrItem.setRepeatRuleInParse(null); //temporarily remove repeatRule
+
+            //Handle subtasks (or sub-projects)
 //                List<Item> subtasks = projectOrItem.getListFull();
-                List<ParseObject> subtasks = projectOrItem.getListFull();
-                projectOrItem.setList(null); //temporarily remove subtasks (which may be unsaved)
+            List<ParseObject> subtasks = projectOrItem.getListFull();
+            projectOrItem.setList(null); //temporarily remove subtasks (which may be unsaved)
 
-                //save project first, *without* the potentially unsaved subtasks
-                addToSaveInBackgroundQueue(projectOrItem, () -> {
-                    //NB. Must run this as postsave, otherwise the subtasks/repeatRule is added again before the item without them has had time to be saved)
-                    //then save all subtasks (recursively)
-//                addToSaveInBackgroundQueue(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
-                    saveInBackground(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
-                    projectOrItem.setList(subtasks);
-//                    addToSaveInBackgroundQueue(repeatRule);
-//repeatRule should be saved from whereever it is created?!)
-                    saveRepeatRuleInBackground(repeatRule, () -> {
-                        //then add the now saved repeatRule and subtasks and save the project again:
-                        projectOrItem.setRepeatRuleInParse(repeatRule);
-                        //finally, save the project again, now with its refs to subtasks and repeatrules
-                        addToSaveInBackgroundQueue(projectOrItem, postSaveAction);
-                    });
+            //save project first, *without* the potentially unsaved subtasks
+            addToSaveQueue(projectOrItem, () -> {
+                //NB. Must run this as postsave, otherwise the subtasks/repeatRule is added again before the item without them has had time to be saved)
+                //then save all subtasks (recursively)
+                saveInBackground(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
+                projectOrItem.setList(subtasks);
+                saveRepeatRuleInBackground(repeatRule, () -> {
+                    //then add the now saved repeatRule and subtasks and save the project again:
+                    projectOrItem.setRepeatRuleInParse(repeatRule);
+                    //finally, save the project again, now with its refs to subtasks and repeatrules
+                    addToSaveQueue(projectOrItem, postSaveAction);
                 });
-            } else {
-                //if project has already been saved, we just need to make sure to save the subtasks first:
+            });
+        } else {
+            //if project has already been saved, we just need to make sure to save the subtasks first:
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                List<Item> subtasks = projectOrItem.getListFull();
 //                for (Item subtask : subtasks) {
@@ -3576,55 +3628,85 @@ public class DAO {
 //                }
 //                    saveImpl(projectOrItem, true);
 //</editor-fold>
-                if (true) { //repeatRule should be saved from whereever it is created?!)
-                    saveRepeatRuleInBackground(projectOrItem.getRepeatRule(), null);
-                }
-                List<ParseObject> subtasks = projectOrItem.getListFull();
-                saveInBackground(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
-                addToSaveInBackgroundQueue(projectOrItem, postSaveAction);
-            }
-//            });
+            //repeatRule should be saved from whereever it is created?!)
+            saveRepeatRuleInBackground(projectOrItem.getRepeatRule(), null);
+            List<ParseObject> subtasks = projectOrItem.getListFull();
+            saveInBackground(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
+            addToSaveQueue(projectOrItem, postSaveAction);
         }
     }
 
-    private void saveRepeatRuleInBackground(RepeatRuleParseObject repeatRule, Runnable postSaveAction) {
-        if (repeatRule == null) {
+    private void saveItemListInBackground(ItemList itemList, Runnable postSaveAction) {
+        if (itemList == null) {
             return;
         }
         if (Config.TEST) {
-            Log.p("========== DAO.saveRepeatRuleInBackground(elt=" + testShowMissingRefs(repeatRule) + "), ");
+            Log.p("========== DAO.saveItemListInBackground(elt=" + testShowMissingRefs(itemList) + ")");
         }
-        if (repeatRule.getObjectIdP() != null) {
-            addToSaveInBackgroundQueue(repeatRule); //save single tasks normally
-        } else {  // if (projectOrItem.isProject()) 
-            // saving a (completely new) repeatRule requires saving in a particular order to avoid problems with references to unsaved parseObjects:
-            //save project first, *without* the potentially unsaved subtasks
-//            List<RepeatRuleObjectInterface> undoneRepeatInstances = repeatRule.getListOfUndoneRepeatInstances();
-            List undoneRepeatInstances = repeatRule.getListOfUndoneRepeatInstances();
-            repeatRule.setListOfUndoneRepeatInstances(null);
+        if (itemList.getFilterSortDef() != null && itemList.getFilterSortDef().getObjectIdP() == null) {
+            addToSaveQueue(itemList.getFilterSortDef(), () -> saveItemListInBackground(itemList, postSaveAction));
+        }
 
-            //first save repeatRule (so repeatInstances can reference it)
-            addToSaveInBackgroundQueue(repeatRule, () -> {
-                //then save all referenced repeat instances (recursively)
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            for (RepeatRuleObjectInterface repeatInstance : undoneRepeatInstances) {
-////                        saveProjectInBackground(subtask);
-//                if (repeatInstance instanceof Item) {
-//                    saveInBackground(null, (Item) repeatInstance); //recursive until reaching leaf tasks (handled above in if(!isProject))
-//                } else {
-//                    saveInBackground((Runnable) null, (WorkSlot) repeatInstance); //recursive until reaching leaf tasks (handled above in if(!isProject))
-//                }                //then add the now saved subtasks and save the project again:
-//                repeatRule.setListOfUndoneRepeatInstances(undoneRepeatInstances);
-//                saveInBackground((ParseObject) repeatRule);
-//            }
-//</editor-fold>
-//                addToSaveInBackgroundQueue(undoneRepeatInstances, () -> {//); //don't save here (won't work because eg the initiator item may reference RR and not be saved yet!)
-                saveInBackground(undoneRepeatInstances, () -> {//); //don't save here (won't work because eg the initiator item may reference RR and not be saved yet!)
-                    repeatRule.setListOfUndoneRepeatInstances(undoneRepeatInstances);
-                    addToSaveInBackgroundQueue((ParseObject) repeatRule);
-                });
+        if (itemList.getObjectIdP() == null) { //if top-level item not saved yet, do so before saving the subtasks/repeatRule that reference it
+            //Handle subtasks (or sub-projects)
+//                List<Item> subtasks = projectOrItem.getListFull();
+            List<ParseObject> subtasks = itemList.getListFull();
+            itemList.setList(null); //temporarily remove subtasks (which may be unsaved)
+
+            //save project first, *without* the potentially unsaved subtasks
+            addToSaveQueue((ParseObject) itemList, () -> {
+                //NB. Must run this as postsave, otherwise the subtasks/repeatRule is added again before the item without them has had time to be saved)
+                //then save all subtasks (recursively)
+//                addToSaveInBackgroundQueue(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
+                saveInBackground(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
+                itemList.setList(subtasks);
+                addToSaveQueue((ParseObject) itemList, postSaveAction);
             });
+        } else {
+            //if project has already been saved, we just need to make sure to save the subtasks first:
+            List<ParseObject> subtasks = itemList.getListFull();
+            saveInBackground(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
+            addToSaveQueue((ParseObject) itemList, postSaveAction);
         }
+//            });
+    }
+
+    private void saveCategoryInBackground(Category category, Runnable postSaveAction) {
+        if (category == null) {
+            return;
+        }
+        if (Config.TEST) {
+            Log.p("========== DAO.saveCategoryInBackground(elt=" + testShowMissingRefs(category) + ")");
+        }
+        if (category.getFilterSortDef() != null && category.getFilterSortDef().getObjectIdP() == null) {
+            addToSaveQueue(category.getFilterSortDef(), () -> saveCategoryInBackground(category, postSaveAction));
+        }
+
+        if (category.getObjectIdP() == null) { //if top-level item not saved yet, do so before saving the subtasks/repeatRule that reference it
+            //Handle subtasks (or sub-projects)
+            List<ParseObject> subtasks = category.getListFull();
+            category.setList(null); //temporarily remove subtasks (which may be unsaved)
+
+            //save project first, *without* the potentially unsaved subtasks
+            addToSaveQueue((ParseObject) category, () -> {
+                //NB. Must run this as postsave, otherwise the subtasks/repeatRule is added again before the item without them has had time to be saved)
+                //then save all subtasks (recursively)
+//                addToSaveInBackgroundQueue(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
+                if (false) {
+                    saveInBackground(subtasks); //DON'T save tasks stored in categories, they should be saved elsewhere
+                }
+                category.setList(subtasks);
+                addToSaveQueue((ParseObject) category, postSaveAction);
+            });
+        } else {
+            //if project has already been saved, we just need to make sure to save the subtasks first:
+            if (false) {
+                List<ParseObject> subtasks = category.getListFull();
+                saveInBackground(subtasks);
+            }//recursive until reaching leaf tasks (handled above in if(!isProject))
+            addToSaveQueue((ParseObject) category, postSaveAction);
+        }
+//            });
     }
 
 //    public void saveInBackground(Item projectOrItem) {
@@ -3645,7 +3727,9 @@ public class DAO {
     public void saveInBackground(List<ParseObject> parseObjects, Runnable postSaveAction) {
         if (parseObjects == null || parseObjects.size() == 0) {
 //            assert postSaveAction==null; 
-            addToSaveInBackgroundQueue((List<ParseObject>) null, postSaveAction);
+            if (postSaveAction != null) {
+                addToSaveQueue((List<ParseObject>) null, postSaveAction);
+            }
             return;
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3656,8 +3740,8 @@ public class DAO {
 //        }
 //</editor-fold>
         for (ParseObject anyParseObject : parseObjects) {
-            if (anyParseObject instanceof ItemAndListCommonInterface && ((ItemAndListCommonInterface) anyParseObject).isNoSave()) {
-                continue; //skip all noSave objects
+            if (!anyParseObject.isDirty() || anyParseObject instanceof ItemAndListCommonInterface && ((ItemAndListCommonInterface) anyParseObject).isNoSave()) {
+                continue; //skip all unchanged or noSave objects
             }
 
             if (anyParseObject instanceof ItemAndListCommonInterface) {
@@ -3668,8 +3752,12 @@ public class DAO {
                 saveItemInBackground((Item) anyParseObject, postSaveAction);
             } else if (anyParseObject instanceof RepeatRuleParseObject) {
                 saveRepeatRuleInBackground((RepeatRuleParseObject) anyParseObject, postSaveAction);
-            } else {
-                addToSaveInBackgroundQueue(anyParseObject, postSaveAction);
+            } else if (anyParseObject instanceof Category) {
+                saveCategoryInBackground((Category) anyParseObject, postSaveAction);
+            } else if (anyParseObject instanceof ItemList) {
+                saveItemListInBackground((ItemList) anyParseObject, postSaveAction);
+            } else { //e.g. Category, WorkSlot
+                addToSaveQueue(anyParseObject, postSaveAction);
             }
         }
     }
@@ -4336,6 +4424,7 @@ public class DAO {
 ////        return results;
 ////    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private ParseQuery setupAlarmQuery(ParseQuery queryAlarm, String parseAlarmField, Date timeAfterWhichToFindNextItem, Date lastTimeForNextAlarm) {
 //        return setupAlarmQuery(queryAlarm, parseAlarmField, timeAfterWhichToFindNextItem, lastTimeForNextAlarm, 0);
 //    }
@@ -4426,6 +4515,7 @@ public class DAO {
 //        return null;
 //
 //    }
+//</editor-fold>
     /**
      * retrieve items with future alarms. NB. The future alarm field may be
      * outdated if the item has not been updated after time caught up with a
@@ -4803,6 +4893,7 @@ public class DAO {
 //        return null;
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      *
      * @param screenId
@@ -4850,6 +4941,7 @@ public class DAO {
 //        }
 //        return filterSortDef;
 //    }
+//</editor-fold>
     /**
      * delete the parseObject. Ignore if null
      *
@@ -4956,6 +5048,7 @@ public class DAO {
 
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private void cleanUpDuplicatesInListNOTWORKING(String description, List list) {
 //        //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
 //        //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
@@ -4988,13 +5081,14 @@ public class DAO {
 //                    t++; //since elt isn't removed, we need to advance the pointer to test for further duplicates in the list *after* the first duplicate found
 //                }
 //            }
-////            if (moveToNextIndex) 
+////            if (moveToNextIndex)
 //            i++;
 //        }
 ////        if (executeCleanup) {
 ////            DAO.getInstance().save((ParseObject) list);
 ////        }
 //    }
+//</editor-fold>
     /**
      * find and remove any duplicates in a list
      *

@@ -121,7 +121,7 @@ public class ScreenObjectPicker<E> extends MyForm {
     ScreenObjectPicker(String title, List listOfAllLists, List selectedObjects, MyForm previousForm, Runnable updateOnDone,
             GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
         this(title, listOfAllLists, null, selectedObjects, previousForm, updateOnDone,
-                labelMaker, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
+                labelMaker, 1, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
     }
 //    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllProjects, List listOfAllTasks, List selectedObjects, MyForm previousForm, UpdateField updateOnDone,
 
@@ -129,7 +129,8 @@ public class ScreenObjectPicker<E> extends MyForm {
             MyForm previousForm, Runnable updateOnDone,
             GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected,
             boolean exitWhenMaxObjectsIsSelected) {
-        this(title, listOfAllLists, listOfAllTopLevelProjects, selectedObjects, previousForm, updateOnDone, labelMaker, 1, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
+        this(title, listOfAllLists, listOfAllTopLevelProjects, selectedObjects, previousForm, updateOnDone, 
+                labelMaker, 1, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
     }
 
     ScreenObjectPicker(String title, List listOfAllLists, List listOfAllTopLevelProjects, List selectedObjects,

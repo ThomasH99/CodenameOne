@@ -37,7 +37,7 @@ import java.util.TimeZone;
 //import java.util.Locale;
 
 public class MyDate extends Date {
-    
+
     protected long timeWithFlags;
     final static long dateSetBit = 0x8000000000000000L;
     final static long timeSetBit = 0x4000000000000000L;
@@ -96,10 +96,10 @@ public class MyDate extends Date {
     static final String WEEKENDS_SHORT = "Weekend";
 //    static final String[] DAY_NAMES = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
     static final String[] DAY_NAMES = {SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY};
-    
+
     static final String[] DAY_NAMES_MONDAY_FIRST = {MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY};
     static final String[] DAY_NAMES_MONDAY_FIRST_INCL_WEEKDAYS = {MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, WEEKDAYS, WEEKENDS};
-    
+
     static final String[] DAY_NAMES_MONDAY_FIRST_SHORT = {MONDAY_SHORT, TUESDAY_SHORT, WEDNESDAY_SHORT, THURSDAY_SHORT, FRIDAY_SHORT, SATURDAY_SHORT, SUNDAY_SHORT};
     static final String[] DAY_NAMES_MONDAY_FIRST_INCL_WEEKDAYS_SHORT = {MONDAY_SHORT, TUESDAY_SHORT, WEDNESDAY_SHORT, THURSDAY_SHORT, FRIDAY_SHORT, SATURDAY_SHORT, SUNDAY_SHORT, WEEKDAYS_SHORT, WEEKENDS_SHORT};
 
@@ -112,7 +112,7 @@ public class MyDate extends Date {
     static final int DAYS_IN_YEAR = 365; //TODO: what about skudår??
     static final int WEEKS_IN_YEAR = 52; //TODO: what about skudår??
     static final int MONTHS_IN_YEAR = 12;
-    
+
     final static long MAX_DATE = 253370764800000L; //Human time (GMT): Fri, 01 Jan 9999 00:00:00 GMT, using http://www.epochconverter.com/. NEeded to avoid overflow of json dates
     final static long MIN_DATE = -93692592000000L; //Human time (GMT): Thu, 01 Jan -999 00:00:00 GMT, using http://www.epochconverter.com/. NEeded to avoid overflow of json dates
 
@@ -749,13 +749,13 @@ public class MyDate extends Date {
     static Date getEndOfWeek(Date date) {
         return new Date(getStartOfWeek(date).getTime() + MyDate.DAY_IN_MILLISECONDS * 7 - 1); //end of week is start of week + 7 days -1ms to get the last millisecond in the week
     }
-    
+
     static Date getStartOfMonth(Date date) {
         //http://stackoverflow.com/questions/2937086/how-to-get-the-first-day-of-the-current-week-and-month
 // get today and clear time of day
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        
+
         cal.set(Calendar.HOUR_OF_DAY, 0); // ! clear would not reset the hour of day !
 //        cal.clear(Calendar.MINUTE);
 //        cal.clear(Calendar.SECOND);
@@ -766,10 +766,10 @@ public class MyDate extends Date {
 
 // get start of the month
         cal.set(Calendar.DAY_OF_MONTH, 1);
-        
+
         return cal.getTime();
     }
-    
+
     static Date getEndOfMonth(Date date) {
         //http://stackoverflow.com/questions/2937086/how-to-get-the-first-day-of-the-current-week-and-month
 // get today and clear time of day
@@ -999,7 +999,7 @@ public class MyDate extends Date {
                 return 31;
         }
     }
-    
+
     public static int getDaysInYear(int year) {
         return year % 4 == 0 && year % 100 != 0 ? 366 : 365;
     }
@@ -1011,15 +1011,15 @@ public class MyDate extends Date {
     static String[] getWeekDayNamesMondayFirst() {
         return DAY_NAMES_MONDAY_FIRST;
     }
-    
+
     static String[] getShortWeekDayNamesMondayFirst() {
         return DAY_NAMES_MONDAY_FIRST_SHORT;
     }
-    
+
     static String[] getWeekDayNamesMondayFirstInclWeekdays() {
         return DAY_NAMES_MONDAY_FIRST_INCL_WEEKDAYS;
     }
-    
+
     static String[] getShortWeekDayNamesMondayFirstInclWeekdays() {
         return DAY_NAMES_MONDAY_FIRST_INCL_WEEKDAYS_SHORT;
     }
@@ -1105,7 +1105,7 @@ public class MyDate extends Date {
     public static String format2(int i) {
         return i > 9 ? "" + i : "0" + i;
     }
-    
+
     public static String format4(int i) {
         return i > 1000 ? "" + i : " " + i;
     }
@@ -1382,23 +1382,23 @@ public class MyDate extends Date {
     static public String formatDateNew(long date) {
         return formatDateNew(new Date(date));
     }
-    
+
     static public String formatDateNew(Date date) {
         return formatDateNew(date, false, true, false, false, false);
     }
-    
+
     static public String formatDateTimeNew(Date date) {
         return formatDateNew(date, false, true, true, false, false);
     }
-    
+
     static public String formatDateTimeNew(long date) {
         return formatDateNew(new Date(date), false, true, true, false, false);
     }
-    
+
     static public String formatTimeNew(Date date) {
         return formatDateNew(date, false, false, true, false, false);
     }
-    
+
     private static String formatAsYesterdayTodayTomorrow(Date date) {
         //TODO Internationalize
         Calendar cal = Calendar.getInstance(); //set to now
@@ -1422,7 +1422,7 @@ public class MyDate extends Date {
         }
         return str;
     }
-    
+
     static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate,
             boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat) {
         if (date.getTime() == 0) {
@@ -1473,26 +1473,29 @@ public class MyDate extends Date {
         }
         return str;
     }
-    
+
     public static boolean isYesterday(Date date) {
         long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
         long time = date.getTime();
 //        Date startOfYesterday = MyDate.getStartOfDay(new Date(startOfToday.getTime() - MyDate.DAY_IN_MILLISECONDS));
-        return time<startOfToday&&time >= startOfToday - MyDate.DAY_IN_MILLISECONDS;
+        return time < startOfToday && time >= startOfToday - MyDate.DAY_IN_MILLISECONDS;
     }
 
     /**
-    the week starting tomorrow and the following 7 days. E.g. if today is Monday, next week is from tomorrow Tuesday up to and including the following Monday. 
-    TODO: could it be confusing to include the following weekday which is same as today??
-    @param date
-    @return 
+     * the week starting tomorrow and the following 7 days. E.g. if today is
+     * Monday, next week is from tomorrow Tuesday up to and including the
+     * following Monday. TODO: could it be confusing to include the following
+     * weekday which is same as today??
+     *
+     * @param date
+     * @return
      */
     public static boolean isNextcomingWeek(Date date) {
         long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
         long time = date.getTime();
         return time >= startOfToday + DAY_IN_MILLISECONDS && time < startOfToday + DAY_IN_MILLISECONDS * 7;
     }
-    
+
     public static boolean isPreviousWeek(Date date) {
         long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
         long time = date.getTime();
@@ -1512,19 +1515,21 @@ public class MyDate extends Date {
     }
 
     /**
-    format date and time 'smartly' - readable, short/compact. 
-    "Yesterday 12:34", "13:30" (today), "Mon 11:23" (within nextcoming week), "Jun 23" (within nextcoming year)
-    @param date
-    @return 
+     * format date and time 'smartly' - readable, short/compact. "Yesterday
+     * 12:34", "13:30" (today), "Mon 11:23" (within nextcoming week), "Jun 23"
+     * (within nextcoming year)
+     *
+     * @param date
+     * @return
      */
     static public String formatDateSmart(Date date) {
         return formatDateSmart(date, true, true);
     }
-    
-    static public String formatDateSmart(Date date,boolean alwaysShowTimeOfDay) {
+
+    static public String formatDateSmart(Date date, boolean alwaysShowTimeOfDay) {
         return formatDateSmart(date, alwaysShowTimeOfDay, true);
     }
-    
+
     static public String formatDateSmart(Date date, boolean showTimeOfDay, boolean showPastDatesAsSmart) {
 //        long now = MyDate.currentTimeMillis();
 //        long diff = date.getTime() - now;
@@ -1545,12 +1550,14 @@ public class MyDate extends Date {
 //</editor-fold>
 //        if (date.getTime() < startOfToday.getTime() && date.getTime() >= startOfYesterday.getTime())
         //within today(before midnight/*next 24h*?/till 5 in the morning for night owls?!): "13h14" / "1h14am"
-        if (isToday(date))
-//            return new SimpleDateFormat("HH'h'mm").format(date);
+        if (isToday(date)) //            return new SimpleDateFormat("HH'h'mm").format(date);
+        {
             return new SimpleDateFormat("H'h'mm").format(date);
-        if (isYesterday(date))
+        }
+        if (isYesterday(date)) {
             return "Yesterday" + (showTimeOfDay ? new SimpleDateFormat(" H'h'mm").format(date) : "");
-        
+        }
+
 //        if (dateTime<=MyDate.getEndOfDay(new Date(dateTime+MyDate.DAY_IN_MILLISECONDS)).getTime())
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS) {
 //        if ((date.getTime() >= startOfToday.getTime() && date.getTime() < startOfTomorrow.getTime()) //nextcoming week
@@ -1559,17 +1566,17 @@ public class MyDate extends Date {
 //            return new SimpleDateFormat("EEE HH'h'mm").format(date);
             return new SimpleDateFormat("EEE H'h'mm").format(date);
         }
-        
+
         //within next 365 days: "Jun11"
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS * 365) {
 //            if (date.getTime() < startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * 365) {
         if (isNextcomingYear(date) || (showPastDatesAsSmart && isPreviousYear(date))) {
-            return new SimpleDateFormat("MMM dd"+ (showTimeOfDay ? " H'h'mm" : "")).format(date);
+            return new SimpleDateFormat("MMM dd" + (showTimeOfDay ? " H'h'mm" : "")).format(date);
         }
-        
+
         //beyond 365 days: "Jun'18"???
 //        return new SimpleDateFormat("MMM''yy").format(date); //"Jun'18"
-        return new SimpleDateFormat("dd'/'MM'/'yy"+ (showTimeOfDay ? " H'h'mm" : "")).format(date); //"Jun'18"
+        return new SimpleDateFormat("dd'/'MM'/'yy" + (showTimeOfDay ? " H'h'mm" : "")).format(date); //"Jun'18"
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    private static String formatDateNewXX(MyDate date, MyDate referenceDate) { //, boolean useYesterdayTodayTomorrow) {
@@ -1672,7 +1679,7 @@ public class MyDate extends Date {
     static String formatTimeOfDay(long hoursMinutesInMilliSeconds) {
         return MyDate.formatTimeOfDay(hoursMinutesInMilliSeconds, false, true, false);
     }
-    
+
     static String formatTimeOfDay(long hoursMinutesInMilliSeconds, boolean showSeconds) {
         return MyDate.formatTimeOfDay(hoursMinutesInMilliSeconds, true, true, false);
     }
@@ -1682,15 +1689,16 @@ public class MyDate extends Date {
 //        return MyDate.formatTimeOfDay(hoursMinutesInMilliSeconds, showSeconds, showLeadingZeroForHour, useUSFormat, false);
         return MyDate.formatTimeOfDay(hoursMinutesInMilliSeconds, showSeconds, showLeadingZeroForHour, useUSFormat, true);
     }
-    
+
     static String formatTimeOfDay(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean showLeadingZeroForHour, boolean useUSFormat, boolean noTimeZoneCorrection) {
         java.util.Calendar cal = java.util.Calendar.getInstance();
         TimeZone tz = cal.getTimeZone();
 //        cal.setTime(new Date(System.currentTimeMillis() - tz.getRawOffset()));
-        if (false)
+        if (false) {
             cal.setTime(new Date(hoursMinutesInMilliSeconds - (noTimeZoneCorrection ? 0 : tz.getRawOffset())));
-        else
+        } else {
             cal.setTime(new Date(hoursMinutesInMilliSeconds));
+        }
         DateFormat dtfmt;
         if (useUSFormat) {
             dtfmt = new SimpleDateFormat((showLeadingZeroForHour ? "KK" : "K") + (showSeconds ? "mm:ss a" : "mm a"));
@@ -1699,23 +1707,23 @@ public class MyDate extends Date {
         }
         return dtfmt.format(cal.getTime());
     }
-    
+
     static String formatDuration(long hoursMinutesInMilliSeconds) {
         return MyDate.formatDuration(hoursMinutesInMilliSeconds, false);
     }
-    
+
     static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds) {
         return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, false);
     }
-    
+
     private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean showLeadingZeroForHour) {
         return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, false, showLeadingZeroForHour);
     }
-    
+
     private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour) {
         return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, true);
     }
-    
+
     private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes) {
         return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, showHBtwHoursAndMinutes, true, true);
     }
@@ -1778,10 +1786,12 @@ public class MyDate extends Date {
     }
 
     /**
-    standard duration formatting used everywhere where a 'formal' (not short) duration format is used, e.g. in pickers. 
-    Show as 1h12 = 1:12, 32m = 0:32, 12h01m = 12:01, 
-    @param hoursMinutesInMilliSeconds
-    @return 
+     * standard duration formatting used everywhere where a 'formal' (not short)
+     * duration format is used, e.g. in pickers. Show as 1h12 = 1:12, 32m =
+     * 0:32, 12h01m = 12:01,
+     *
+     * @param hoursMinutesInMilliSeconds
+     * @return
      */
     static String formatDurationStd(long hoursMinutesInMilliSeconds, boolean showSeconds) {
         StringBuilder s = new StringBuilder("");
@@ -1794,28 +1804,32 @@ public class MyDate extends Date {
         int seconds = (int) restAfterMinutes / MyDate.SECOND_IN_MILLISECONDS; //60000;
 
         s.append(hours).append(':');
-        if (minutes >= 10)
+        if (minutes >= 10) {
             s.append(minutes);
-        else
+        } else {
             s.append('0').append(minutes);
+        }
         if (showSeconds) {
             s.append(':');
-            if (seconds >= 10)
+            if (seconds >= 10) {
                 s.append(seconds);
-            else
+            } else {
                 s.append('0').append(seconds);
+            }
         }
         return s.toString();
     }
-    
+
     static String formatDurationStd(long hoursMinutesInMilliSeconds) {
         return formatDurationStd(hoursMinutesInMilliSeconds, false);
     }
 
     /**
-    for duration for short display, eg 1h, 2h30, 17m, 3m. Will not show seconds. Returns empty string for 0 duration
-    @param hoursMinutesInMilliSeconds
-    @return 
+     * for duration for short display, eg 1h, 2h30, 17m, 3m. Will not show
+     * seconds. Returns empty string for 0 duration
+     *
+     * @param hoursMinutesInMilliSeconds
+     * @return
      */
     public static String formatDurationShort(long hoursMinutesInMilliSeconds, boolean showZeroDurationAsZeroMinutes) {
         StringBuilder s = new StringBuilder("");
@@ -1824,36 +1838,40 @@ public class MyDate extends Date {
         int minutes = (int) restAfterHours / MyDate.MINUTE_IN_MILLISECONDS; //60000;
         if (hours > 0) {
             s.append(hours).append('h');
-            if (minutes >= 10) s.append(minutes);
-            else if (minutes > 0) s.append('0').append(minutes);
-        } else if (minutes > 0 || showZeroDurationAsZeroMinutes)
+            if (minutes >= 10) {
+                s.append(minutes);
+            } else if (minutes > 0) {
+                s.append('0').append(minutes);
+            }
+        } else if (minutes > 0 || showZeroDurationAsZeroMinutes) {
             s.append(minutes).append('m');
+        }
         return s.toString();
     }
-    
+
     public static String formatDurationShort(long hoursMinutesInMilliSeconds) {
         return formatDurationShort(hoursMinutesInMilliSeconds, false);
     }
-    
+
     public static Date makeDate(int secondsFromNow) {
         Date date = new MyDate();
         date.setTime(date.getTime() + secondsFromNow * SECOND_IN_MILLISECONDS);
         return date;
     }
-    
+
     private static String formatDateL10NShort(long timeInMilliSeconds, boolean dateOnlyNoTime) {
         return formatDateL10NShort(timeInMilliSeconds); //TODO!!!! write code to return date without time
     }
-    
+
     private static String formatDateL10NShort(long timeInMilliSeconds) {
 //        return L10NManager.getInstance().formatDateShortStyle(new Date(timeInMilliSeconds));
         return formatDateL10NShort(new Date(timeInMilliSeconds));
     }
-    
+
     private static String formatDateL10NShort(Date date) {
         return L10NManager.getInstance().formatDateShortStyle(date);
     }
-    
+
     public static String addNthPostFix(String str) {
         char lastChiffer = str.charAt(str.length() - 1);
         if (Settings.getInstance().getLocale().equals("en")) {
@@ -1873,26 +1891,40 @@ public class MyDate extends Date {
     static long getNow() {
         return System.currentTimeMillis();
     }
-    /**how much should be *added* the System.currentTimeMillis() to get the forced time. Eg to simulate +24h, the value will be 24h in milliseconds */
-    private static long forcedDeltaTime = 0; 
-    
+    /**
+     * how much should be *added* the System.currentTimeMillis() to get the
+     * forced time. Eg to simulate +24h, the value will be 24h in milliseconds
+     */
+    private static long forcedDeltaTime = 0;
+
     static long currentTimeMillis() {
 //        if (forceCurrentTime!=0)
         return System.currentTimeMillis() + forcedDeltaTime;
     }
-    
+
+    static Date currentTimeMillisRoundedToMinutesAsDate() {
+//        if (forceCurrentTime!=0)
+        return roundOfToFullMinutes(new Date(currentTimeMillis()));
+    }
+
+    static long currentTimeMillisRoundedToMinutesAsLong() {
+        return currentTimeMillisRoundedToMinutesAsDate().getTime();
+    }
+
     /**
-    what time do we want to force the current time to be, eg set it to current+24h to simulate tomorrow at same time. 
-    @param forcedTime 
-    */
+     * what time do we want to force the current time to be, eg set it to
+     * current+24h to simulate tomorrow at same time.
+     *
+     * @param forcedTime
+     */
     static void setCurrentTime(long forcedTime) {
         forcedDeltaTime = forcedTime - System.currentTimeMillis();
     }
-    
+
     static void resetCurrentTime() {
         forcedDeltaTime = 0;
     }
-    
+
     static long getCurrentTimeShift() {
         return forcedDeltaTime;
     }
@@ -1942,6 +1974,18 @@ public class MyDate extends Date {
     }
 
     /**
+     * returns time adjusted to 'midnight' to today's date with
+     * hour/minute/second/millisecond set to zero
+     */
+    static Date roundOfToFullMinutes(Date time) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(time);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    /**
      * returns time adjusted to end of the day (1 millisecond before midnight).
      * Use this when actually
      */
@@ -1970,7 +2014,7 @@ public class MyDate extends Date {
         cal.set(Calendar.YEAR, cal2.get(Calendar.YEAR));
         return cal.getTime();
     }
-    
+
     static Date setDateToTodayKeepTime(Date time) {
         return setDateToNewDateKeepTime(time, new MyDate());
     }
@@ -1992,9 +2036,9 @@ public class MyDate extends Date {
     }
 
     /**
-     * round off time to nearest whole minute. E.g. 22:31:47 is rounded down to 22:32:00 and 22:30:27 to 22:30:00.
-     * Used eg to ensure that a snooze alarm starts right at the minute seen by
-     * user and not 45s later.
+     * round off time to nearest whole minute. E.g. 22:31:47 is rounded down to
+     * 22:32:00 and 22:30:27 to 22:30:00. Used eg to ensure that a snooze alarm
+     * starts right at the minute seen by user and not 45s later.
      *
      * @param time
      * @return
@@ -2020,7 +2064,7 @@ public class MyDate extends Date {
     static Date getStartOfToday() {
         return getStartOfDay(new MyDate());
     }
-    
+
     static boolean isToday(Date date) {
         return date.getTime() >= getStartOfToday().getTime() && date.getTime() < getStartOfToday().getTime() + DAY_IN_MILLISECONDS;
     }
@@ -2039,7 +2083,7 @@ public class MyDate extends Date {
         }
         return date1.getTime() >= getStartOfDay(date2).getTime() && date1.getTime() <= getEndOfDay(date2).getTime();
     }
-    
+
     static boolean isSameWeekAndYear(Date date1, Date date2) {
         if (date1 == null || date2 == null) {
             return false;
@@ -2052,23 +2096,23 @@ public class MyDate extends Date {
         SimpleDateFormat dtfmt = new SimpleDateFormat("w yyyy");
         return dtfmt.format(date1).equals(dtfmt.format(date2));
     }
-    
+
     static String getWeekAndYear(Date date1) {
 //        Calendar cal = Calendar.getInstance();
 //        cal.setTime(date1);
 //        return "Week " + cal.get(Calendar.WEEK_OF_YEAR) + " " + cal.get(Calendar.YEAR);
         SimpleDateFormat dtfmt = new SimpleDateFormat("w yyyy"); //should give "Week 51 2017"
         return "Week " + dtfmt.format(date1);
-        
+
     }
-    
+
     static String getMonthAndYear(Date date1) {
         //SimpleDateFormat("EEE, yyyy-MM-dd KK:mm a"); //http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
 //        SimpleDateFormat dtfmt = new SimpleDateFormat("M yyyy"); //gives "7 2017"
         SimpleDateFormat dtfmt = new SimpleDateFormat("MMMM yyyy"); //should give "July 2017"
         return dtfmt.format(date1);
     }
-    
+
     static boolean isSameMonthAndYear(Date date1, Date date2) {
         if (date1 == null || date2 == null) {
             return false;

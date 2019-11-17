@@ -2049,9 +2049,9 @@ public class RepeatRuleParseObject
                 setLatestDateCompletedOrCancelled(null); //no need to reset this, will keeping it make it possible to change the rule back again?!
             }            //            setLastGeneratedDateIfGreaterThanLastDate(null);
 //            if (repeatRuleOriginator.getRepeatStartTime(false).getTime() != 0) {
-            if (repeatRuleOriginator.getRepeatStartTime(true).getTime() != 0) {
+            if (repeatRuleOriginator.getRepeatStartTime(true).getTime() != 0) { //if rpeating from CompletedDate, then no need to start lastGeneratedDate (TODO!!!: only in case the date will be used if converting the RR to another type?!)
 //                setLastGeneratedDate(repeatRuleOriginator.getRepeatStartTime(false)); //initialize LastGeneratedDate to due date of the originator (TODO is this correct?)
-                setLastGeneratedDate(repeatRuleOriginator.getRepeatStartTime(true)); //initialize LastGeneratedDate to due date of the originator (TODO is this correct?)
+                setLastGeneratedDate(repeatRuleOriginator.getRepeatStartTime(true), true); //initialize LastGeneratedDate to due date of the originator (TODO is this correct?)
             }
             if (Config.TEST) {
                 checkRefs();
@@ -4013,15 +4013,20 @@ public class RepeatRuleParseObject
     /**
      * the latest date of any of the instances generated
      */
-    private void setLastGeneratedDate(Date lastGeneratedDate) {
+    private void setLastGeneratedDate(Date lastGeneratedDate, boolean onlyStoreLaterDates) {
         ASSERT.that(getDate(PARSE_LAST_DATE_GENERATED) == null || lastGeneratedDate == null
-                || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime(),
-                "new lastGeneratedDate should always be higher than previous");
-        if (lastGeneratedDate != null && lastGeneratedDate.getTime() != MyDate.MIN_DATE) {
+                || (!onlyStoreLaterDates || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime()),
+                "new lastGeneratedDate should always be higher than previous, lastDate=" + getDate(PARSE_LAST_DATE_GENERATED) + ", newDate=" + lastGeneratedDate);
+        if (lastGeneratedDate != null && lastGeneratedDate.getTime() != MyDate.MIN_DATE
+                && (!onlyStoreLaterDates || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime())) {
             put(PARSE_LAST_DATE_GENERATED, lastGeneratedDate);
         } else {
             remove(PARSE_LAST_DATE_GENERATED);
         }
+    }
+
+    private void setLastGeneratedDate(Date lastGeneratedDate) {
+        setLastGeneratedDate(lastGeneratedDate);
     }
 
 //    public Date getNextcomingDateDXXX() {

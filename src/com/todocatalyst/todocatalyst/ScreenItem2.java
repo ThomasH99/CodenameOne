@@ -399,17 +399,20 @@ public class ScreenItem2 extends MyForm {
                         }
                     }
 //                    new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, DAO.getInstance().getTemplateList(), selectedTemplates, ScreenItem.this, () -> {
-                    new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), selectedTemplates, ScreenItem2.this, () -> {
+                    new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), null, selectedTemplates, ScreenItem2.this, () -> {
                         if (selectedTemplates.size() >= 1) {
                             Item template = (Item) selectedTemplates.get(0);
 //                            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
 //                            template.copyMeInto(item, Item.CopyMode.COPY_FROM_TEMPLATE);
-                            template.copyMeInto(itemCopy, Item.CopyMode.COPY_FROM_TEMPLATE, COPY_EXCLUDE_CATEGORIES | Item.COPY_EXCLUDE_SUBTASKS | Item.COPY_EXCLUDE_REPEAT_RULE);
+                            template.copyMeInto(itemCopy, Item.CopyMode.COPY_FROM_TEMPLATE, 
+                                    Item.COPY_EXCLUDE_CATEGORIES | //categories handled below
+                                            Item.COPY_EXCLUDE_SUBTASKS | 
+                                            Item.COPY_EXCLUDE_REPEAT_RULE);
 //                            if (template.getCategories().size()>0) {
-                            if (previousValues.get(Item.PARSE_CATEGORIES) != null)//if categories already set
-                                Item.addCatObjectIdsListToCategoryList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), template.getCategories()); //add any additional categories in the template
-                            else
-                                previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(template.getCategories())); //set the edited categories to those of the template
+//                            if (previousValues.get(Item.PARSE_CATEGORIES) != null)//if categories already set
+                                Item.addCatObjectIdsListToCategoryList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), template.getCategories()); //*add* any additional categories in the template
+//                            else
+//                                previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(template.getCategories())); //set the edited categories to those of the template
 
                             if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && template.getRepeatRule() != null)
                                 previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(template.getRepeatRule()));
@@ -419,7 +422,7 @@ public class ScreenItem2 extends MyForm {
                                 item.addToList(subtask.copyMeInto(new Item(), Item.CopyMode.COPY_FROM_TEMPLATE, 0)); //UI: template subtasks are permanently (no Cancel possible) added to item
                             }
                             if (false) parseIdMap2.put("SaveSubtasks", () -> DAO.getInstance().saveInBackground(item)); //NECESSARY since if no other edits
-                            if (template.getList().size() > 0) DAO.getInstance().saveInBackground(item); //NECESSARY since if item not saved, or Cancel, the updated subtask list will linger and be saved later
+                            if (false&&template.getList().size() > 0) DAO.getInstance().saveInBackground(item); //NECESSARY since if item not saved, or Cancel, the updated subtask list will linger and be saved later
 
                             if (item.getSource() == null) { //source could already be set, e.g. if repeat copy
                                 itemCopy.setSource(template);
@@ -443,7 +446,7 @@ public class ScreenItem2 extends MyForm {
                         } else {
                             return obj.toString();
                         }
-                    }, 1, true, false, false).show();
+                    },  0, 1, true, false, false).show(); //0: Ok to not select any template => nothing inserted
 //                    if (template != null) {
                 };
             }, "CreateFromTemplate"));
@@ -740,14 +743,15 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
     public static Date makeDefaultDueDate() {
         long defaultDue = MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS;
-        return new Date(defaultDue);
+        return MyDate.roundOfToFullMinutes(new Date(defaultDue));
     }
 
     public static Date makeDefaultAlarmDate(Date dueDate) {
         if (dueDate == null || dueDate.getTime() == 0)
             dueDate = new Date(makeDefaultDueDate().getTime());
         long defaultAlarm = dueDate.getTime() - MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS;
-        return new Date(defaultAlarm);
+        return MyDate.roundOfToFullMinutes(new Date(defaultAlarm)); //round off to remove seconds/milliseconds
+//        return new Date(defaultAlarm); //round off to remove seconds/milliseconds (now done in makeDefaultDueDate())
     }
 
     /**
