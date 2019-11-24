@@ -1507,8 +1507,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return owner;
     }
 
-    @Override
-    public boolean equals(Object obj) {
+//    @Override
+    public boolean equalsXXX(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -1527,8 +1527,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             ASSERT.that(!sameObjId, "equals() comparing two different instances with SAME objectId, this=" + this + ", obj=" + obj);
             return sameObjId; //getObjectIdP().equals(((WorkSlot) obj).getObjectIdP());
         }
-        return false; //this == (WorkSlot) obj;
+        return true; //this == (WorkSlot) obj;
     }
+    
+    
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public static void sortWorkSlotList(List<WorkSlot> workSlots) {

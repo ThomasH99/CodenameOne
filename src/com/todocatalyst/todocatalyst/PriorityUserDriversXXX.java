@@ -12,7 +12,7 @@ import java.util.Hashtable;
  *
  * @author Thomas
  */
-public class PriorityUserDrivers extends Priority {
+public class PriorityUserDriversXXX extends Priority {
 
     class PriorityPair {
         String description="";
@@ -31,11 +31,13 @@ public class PriorityUserDrivers extends Priority {
         return 0;
     }
 
+    @Override
     public void setPriority(int priority) {
         this.priority = priority;
 
     }
 
+    @Override
     public int getPriority() {
         return calcPriority();
     }

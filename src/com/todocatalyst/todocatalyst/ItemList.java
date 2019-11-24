@@ -59,6 +59,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_META_LISTS = "metaLists";
     final static String PARSE_FILTER_SORT_DEF = Item.PARSE_FILTER_SORT_DEF; //"filterSort";
     final static String PARSE_WORKSLOTS = Item.PARSE_WORKSLOTS; //"filterSort";
+    final static String PARSE_SYSTEM_LIST = "system"; 
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
@@ -176,6 +177,24 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         source.copyMeInto(this);
     }
 
+        public boolean isSystemList() {
+        Boolean interruptTask = getBoolean(PARSE_SYSTEM_LIST);
+        return (interruptTask == null) ? false : interruptTask;
+    }
+
+        /**
+         * system lists, e.g. Inbox, Today, etc are predefined and should eg NOT be part of ItemListList
+         * @param isSystemList 
+         */
+    public void setSystemList(boolean isSystemList) {
+        if (isSystemList) {
+            put(PARSE_SYSTEM_LIST, true);
+        } else {
+            remove(PARSE_SYSTEM_LIST);
+        }
+    }
+
+    
     @Override
     public ItemAndListCommonInterface cloneMe(Item.CopyMode copyFieldDefintion) {
         return cloneMe();
@@ -527,7 +546,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public Object set(int index, Object element) {
 //        return setItemAtIndex((E)element, index);
-        return setToList(index, (E) element);
+        List<E> filteredList = getList();
+        int fullIndex = 0;
+        if (filteredList.size() > 0) {
+            fullIndex = filteredList.indexOf(element);
+        }
+//        return setToList(index, (E) element);
+        return setToList(fullIndex, (E) element);
     }
 
     @Override
@@ -768,7 +793,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @return
      */
-    public boolean hasSubLists() {
+    public boolean hasSubListsZZZ() {
 //        return sourceLists != null && sourceLists.size() > 0;
         return has(PARSE_SOURCE_LISTS) && !getSourceLists().isEmpty();
     }
@@ -779,12 +804,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @return
      */
-    public void setSubLists(List sources) {
+    public void setSubListsZZZ(List sources) {
 //        getSubLists().updateListWithDifferences(sources);
         List addedObjetcs = getAddedItems(sources);
         List removedObjects = getRemovedItems(sources);
 //        if (addedObjetcs.getSize() != 0 || removedObjects.getSize() != 0) { //do nothing if no change
-        addItems(addedObjetcs);
+        addItemsZZZ(addedObjetcs);
         removeItems(removedObjects);
 //        }
     }
@@ -922,24 +947,23 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * string
      * @return
      */
-    private E findItemWithText(String text, boolean ignoreCase, boolean containsString) {
-        boolean found = false;
-        for (int i = 0, size = getSize(); i < size; i++) {
-            E item = getItemAt(i);
-//            if (item instanceof E) {
-            if (containsString) {
-                found = ignoreCase ? item.getText().toUpperCase().indexOf(text.toUpperCase()) != -1 : item.getText().indexOf(text) != -1;
-            } else { //exact match
-                found = ignoreCase ? item.getText().equalsIgnoreCase(text) : item.getText().equals(text);
-            }
-            if (found) {
-                return item;
-            }
+//    private E findItemWithTextXXX(String text, boolean ignoreCase, boolean containsString) {
+//        boolean found = false;
+//        for (int i = 0, size = getSize(); i < size; i++) {
+//            E item = getItemAt(i);
+////            if (item instanceof E) {
+//            if (containsString) {
+//                found = ignoreCase ? item.getText().toUpperCase().indexOf(text.toUpperCase()) != -1 : item.getText().indexOf(text) != -1;
+//            } else { //exact match
+//                found = ignoreCase ? item.getText().equalsIgnoreCase(text) : item.getText().equals(text);
 //            }
-        }
-        return null;
-    }
-
+//            if (found) {
+//                return item;
+//            }
+////            }
+//        }
+//        return null;
+//    }
     /**
      * returns the item that matches text. Used to check for duplicate
      * definition of e.g. Categories (to avoid that two different categories
@@ -947,10 +971,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @return
      */
-    E findItemWithText(String text) {
-        return findItemWithText(text, true, false);
-    }
-
+//    E findItemWithTextXXX(String text) {
+//        return findItemWithTextXXX(text, true, false);
+//    }
 //    void setItemList(ItemList itemList) {
     @Override
     public void setList(List itemList) {
@@ -1114,7 +1137,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner) {
 //        addToList( subItemOrList,MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists));
         addItemAtIndex((E) subItemOrList, addToEndOfList ? getSize() : 0);
-        if (addAsOwner  && !isNoSave()) { //never override owner temporary lists as owner
+        if (addAsOwner && !isNoSave()) { //never override owner temporary lists as owner
             subItemOrList.setOwner(this);
         }
         return true;
@@ -1586,9 +1609,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public void setFilterSortDef(FilterSortDef filterSortDef) {
 //        if (filterSortDef != null && filterSortDef != FilterSortDef.getDefaultFilter()) { //only save if not the default filter
         if (filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) { //only save if changed compared to the default filter
-            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved
-                DAO.getInstance().saveInBackground(filterSortDef); //
-            }
+//            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved --> should be done in DAO now
+//                DAO.getInstance().saveInBackground(filterSortDef); //
+//            }
             put(PARSE_FILTER_SORT_DEF, filterSortDef);
         } else {
             remove(PARSE_FILTER_SORT_DEF);
@@ -1601,7 +1624,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
 
-        if (filterSortDef == null && !isNoSave() && MyPrefs.useDefaultFilterInItemListsWhenNoneDefined.getBoolean()) {
+        if (filterSortDef == null && !isNoSave() && MyPrefs.useDefaultFilterInItemListsWhenNoneDefined.getBoolean()) { //!isNoSave() <=> a hack to avoid that temporary, eg Statistics, lists are filtered
             return FilterSortDef.getDefaultFilter();
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1777,31 +1800,28 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     /**
      * @inheritDoc
      */
-    public int getSelectedIndex() {
-        return selectedIndex;
-    }
-
+//    public int getSelectedIndex() {
+//        return selectedIndex;
+//    }
     /**
      * returns true if the current selection is valid (that is: list is
      * non-empty, and selected index is between 0 and list size).
      *
      * @return
      */
-    public boolean isSelectionValid() {
-        return getSelectedIndex() >= 0 && getSize() > 0 && getSelectedIndex() < getSize();
-    }
-
+//    public boolean isSelectionValid() {
+//        return getSelectedIndex() >= 0 && getSize() > 0 && getSelectedIndex() < getSize();
+//    }
     /**
      * returns currently selected item. If list is empty, or no valid selection
      * is set returns null
      *
      * @return
      */
-    public E getSelectedItem() {
-        return isSelectionValid() ? getItemAt(getSelectedIndex()) : null;
-//        return getItemAt(getSelectedIndex());
-    }
-
+//    public E getSelectedItemXXX() {
+//        return isSelectionValid() ? getItemAt(getSelectedIndex()) : null;
+////        return getItemAt(getSelectedIndex());
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    protected void xenforceConsistencyBetweenItemsAndTheirCategories() {
 //        super.enforceConsistencyBetweenItemsAndTheirCategories(); //currently does nothing - just called in case
@@ -1835,7 +1855,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
         Bag updatedBag = getItemBag(); //TODO: 
 //        if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
-        if (hasSubLists() && updatedBag != null && indexFull != -1) { //if there are sublists and item has already been added at least once (so appears in list)
+        if (hasSubListsZZZ() && updatedBag != null && indexFull != -1) { //if there are sublists and item has already been added at least once (so appears in list)
 //            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
             updatedBag.add(item); //item already in list, so add to bag to keep count
             setItemBag(updatedBag); //then don't add to list, but just add to bag to keep track of how many times added
@@ -1874,11 +1894,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                 }//                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
 //                    selectedIndex++;
 //                }
-                int selIdx = getSelectedIndex();
-                if (selIdx >= index && selIdx < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
-                    setSelectedIndex(selIdx + 1);
-                }
-                fireDataChangedEvent(DataChangedListener.ADDED, index);
+//                int selIdx = getSelectedIndex();
+//                if (selIdx >= index && selIdx < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
+//                    setSelectedIndex(selIdx + 1);
+//                }
+//                fireDataChangedEvent(DataChangedListener.ADDED, index);
 //            }
             }
         }
@@ -1904,7 +1924,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         ItemAndListCommonInterface oldElement = list.get(index);
         Bag bag = getItemBag();
 //        if (hasSubLists() && bag != null && bag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
-        if (hasSubLists() && bag != null) { //if there are sublists and item has already been added at least once (so appears in list)
+        if (hasSubListsZZZ() && bag != null) { //if there are sublists and item has already been added at least once (so appears in list)
             bag.remove(oldElement); //no need to test if oldElt is already in list, in either case remove will give right result( item added several timet: count-=1, only once added to list: count=0 (0-1)
 //            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
             if (bag.getCount(item) > 0) {
@@ -1933,7 +1953,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //            int selIdx = index;
 //</editor-fold>
-            fireDataChangedEvent(DataChangedListener.CHANGED, index);
+//            fireDataChangedEvent(DataChangedListener.CHANGED, index);
 //            }
         }
         return oldElement;
@@ -1942,13 +1962,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public boolean setToList(int index, ItemAndListCommonInterface subItemOrList) {
         setItemAtIndex((E) subItemOrList, index);
         ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this
-                || this.equals(subItemOrList.getOwner()), () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+                || this.equals(subItemOrList.getOwner()),
+                () -> (("owner not null or different when adding to list, elt=" + subItemOrList
+                + ", oldOwner=" + subItemOrList.getOwner() + ", newOwner=" + this))
+                + "; oldId=" + System.identityHashCode(subItemOrList.getOwner())
+                + "; newId=" + System.identityHashCode(this)
+        ); //subItemOrList.getOwner()==this may happen when creating repeatInstances
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
         return true;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * inserts item at special position. Used to insert at head/tail of list, or
      * before/after a referenceItem when adding new items to list. If called
@@ -1961,33 +1987,35 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param position ItemList.INSERT_AT_HEAD_OF_LIST, INSERT_AT_END_OF_LIST,
      * INSERT_BEFORE_REFERENCE_ITEM, INSERT_AFTER_REFERENCE_ITEM
      */
-    public void addItemAtSpecialPosition(E item, E referencePositionItem, int position) {
-//        int index;
-//#mdebug
-        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || referencePositionItem != null,
-                () -> "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem==null, list=" + this);
-        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || getItemIndex(referencePositionItem) != -1,
-                () -> "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem=" + referencePositionItem + " not in list=" + this);
-//        ASSERT.that((position != INSERT_BEFORE_REFERENCE_ITEM && position != INSERT_AFTER_REFERENCE_ITEM) || (referenceIndex>=0 && referenceIndex<getSize()), "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referenceIndex="+referenceIndex+" outside bounds of list="+this);
-//#enddebug
-        if (position == Settings.INSERT_AT_HEAD_OF_LIST) {
-            addItemAtIndex(item, 0); //UI: insert new repeatInstance at the end of the list
-        } else if (position == Settings.INSERT_AT_END_OF_LIST) {
-            addItem(item); //UI: insert new repeatInstance at the end of the list
-        } //add new created repeatInstance just before the just finished one
-        else //if (referencePositionItem!=null && (index=getItemIndex(referencePositionItem))!=-1)
-        {
-            if (position == Settings.INSERT_BEFORE_REFERENCE_ITEM) {
-                addItemAtIndex(item, getItemIndex(referencePositionItem)); //UI: insert new repeatInstance at position of previous
-            } else if (position == Settings.INSERT_AFTER_REFERENCE_ITEM) {
-                addItemAtIndex(item, getItemIndex(referencePositionItem) + 1); //UI: insert new repeatInstance at position of previous
-            }
-        }
-    }
-
+//    public void addItemAtSpecialPositionXXX(E item, E referencePositionItem, int position) {
+////        int index;
+////#mdebug
+//        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || referencePositionItem != null,
+//                () -> "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem==null, list=" + this);
+//        ASSERT.that((position != Settings.INSERT_BEFORE_REFERENCE_ITEM && position != Settings.INSERT_AFTER_REFERENCE_ITEM) || getItemIndex(referencePositionItem) != -1,
+//                () -> "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referencePositionItem=" + referencePositionItem + " not in list=" + this);
+////        ASSERT.that((position != INSERT_BEFORE_REFERENCE_ITEM && position != INSERT_AFTER_REFERENCE_ITEM) || (referenceIndex>=0 && referenceIndex<getSize()), "addItemAtSpecialPosition called with Insert_BEFORE/AFTER and referenceIndex="+referenceIndex+" outside bounds of list="+this);
+////#enddebug
+//        if (position == Settings.INSERT_AT_HEAD_OF_LIST) {
+//            addItemAtIndex(item, 0); //UI: insert new repeatInstance at the end of the list
+//        } else if (position == Settings.INSERT_AT_END_OF_LIST) {
+//            addItem(item); //UI: insert new repeatInstance at the end of the list
+//        } //add new created repeatInstance just before the just finished one
+//        else //if (referencePositionItem!=null && (index=getItemIndex(referencePositionItem))!=-1)
+//        {
+//            if (position == Settings.INSERT_BEFORE_REFERENCE_ITEM) {
+//                addItemAtIndex(item, getItemIndex(referencePositionItem)); //UI: insert new repeatInstance at position of previous
+//            } else if (position == Settings.INSERT_AFTER_REFERENCE_ITEM) {
+//                addItemAtIndex(item, getItemIndex(referencePositionItem) + 1); //UI: insert new repeatInstance at position of previous
+//            }
+//        }
+//    }
+//</editor-fold>
     public void addItem(E item) {
-        addItemAtIndex(item, getListFull().size());
-        //only add items if either store multiple instances (!storeOnlySingleInstanceOfItems) OR if the item is not already in the list
+//        addItemAtIndex(item, getListFull().size());
+        addItemAtIndex(item, getSize());
+//<editor-fold defaultstate="collapsed" desc="comment">
+//only add items if either store multiple instances (!storeOnlySingleInstanceOfItems) OR if the item is not already in the list
 //        if (!storeOnlySingleInstanceOfItems || getItemIndex(item) == -1) {
 ////            derivedSumVector.invalidate(getSize()); //not needed to call invalidate here since there will never be a sum value defined for an item added to the end of the itemVector
 //            itemVector.addElement(item);
@@ -1998,25 +2026,27 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            fireDataChangedEvent(DataChangedListener.ADDED, getSize() - 1); //TODO: verify that -1 is appropriate since it is not used in DefaultListModel implementation
 //            changed(new ChangeEvent(this, ChangeValue.CHANGED_ITEMLIST_ITEM_ADDED, getSize(), item, triggerEvent));
 //        }
+//</editor-fold>
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * add all the items in itemList (no check on duplicates, use addItems() for
      * that)
      *
      * @param itemList list of items to add (or null)
      */
-    public void addAllItems(ItemList<E> itemList) {
-//        if (itemList == null) {
-//            return;
+//    public void addAllItemsXXX(ItemList<E> itemList) {
+////        if (itemList == null) {
+////            return;
+////        }
+//        if (itemList != null) {
+//            for (int i = 0, size = itemList.getSize(); i < size; i++) {
+//                addItem(itemList.getItemAt(i));
+//            }
 //        }
-        if (itemList != null) {
-            for (int i = 0, size = itemList.getSize(); i < size; i++) {
-                addItem(itemList.getItemAt(i));
-            }
-        }
-    }
-
+//    }
+//</editor-fold>
     /**
      * add the items (which are not already in this list) in itemList to the end
      * of this list
@@ -2026,7 +2056,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * list (cost: check for each item if it is in the list)
      * @param addToStartOfList add to head of list, if false add to end of list
      */
-    public void addItems(List<E> itemList, boolean addEvenIfAlreadyInList, boolean addToStartOfList) {
+    public void addItemsZZZ(List<E> itemList, boolean addEvenIfAlreadyInList, boolean addToStartOfList) {
         for (int i = 0, size = itemList.size(); i < size; i++) {
             if (addEvenIfAlreadyInList || getItemIndex(itemList.get(i)) == -1) {
                 if (addToStartOfList) {
@@ -2038,13 +2068,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
     }
 
-    public void addItems(List<E> itemList) {
+    public void addItemsZZZ(List<E> itemList) {
 //        for (int i = 0, size = itemList.getSize(); i < size; i++) {
 //            if (getItemIndex(itemList.getItemAt(i)) == -1) {
 //                addItem(itemList.getItemAt(i));
 //            }
 //        }
-        addItems(itemList, false, false);
+        addItemsZZZ(itemList, false, false);
     }
 
     /**
@@ -2065,14 +2095,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * but is handy in ItemListCombined to allow to always insert items in the
      * same way, even though the operation is more complex in ItemListCombined
      */
-    public void insertAfterSelected(E item) {
-        if (isSelectionValid()) {
-            addItemAtIndex(item, getSelectedIndex() + 1); //should be +1(?!). selectedIndex+1 should always be a valid position since we check above
-        } else {
-            addItem(item);
-        }
-    }
-
+//    public void insertAfterSelected(E item) {
+//        if (isSelectionValid()) {
+//            addItemAtIndex(item, getSelectedIndex() + 1); //should be +1(?!). selectedIndex+1 should always be a valid position since we check above
+//        } else {
+//            addItem(item);
+//        }
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public boolean xaddItemTyped(E item) {
 //        if (isBaseType(item.getTypeId())) {
@@ -2121,8 +2150,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return -1;
 //        return getListFull().indexOf(item);
-//        return getListFull().indexOf(item);
-        return getList().indexOf(item);
+        return getListFull().indexOf(item);
+//        return getList().indexOf(item);
     }
 
     /**
@@ -2134,7 +2163,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         if (index < getSize() && index >= 0) {
 //            return itemList.get(index);
 //            return getListFull().get(index);
-            return getList().get(index);
+//            return getList().get(index);
+            return getListFull().get(index);
         }
         return null;
     }
@@ -2161,7 +2191,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
         E item = getItemAt(index);
         Bag<E> itemBag = getItemBag();
-        if (hasSubLists() && itemBag != null && itemBag.getCount(item) > 1) { //if there are sublists, only remove item from list if it has been added one single time
+        if (hasSubListsZZZ() && itemBag != null && itemBag.getCount(item) > 1) { //if there are sublists, only remove item from list if it has been added one single time
             itemBag.remove(item);
             setItemBag(itemBag);
         } else { //else remove normally
@@ -2184,27 +2214,27 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                if (baseItem.getOwnerList() == this) {
 //                    baseItem.setOwnerList(null); //if removed BaseItem has this list as parent, then reset parent to null
 //                }
-                int oldSelectedIndex = selectedIndex;
-                if (index < selectedIndex) {
-                    selectedIndex--; // (2) update to still point to same element as before, no fireSelectionEvent needed
-                } else if (index == selectedIndex) { // selected item is removed (most usual case)
-                    if (selectedIndex == listSize - 1) { // (1) if removed and selected element was the last in the list
-                        if (listSize != 1) {
-                            selectedIndex--; // then update selectedIndex to point to the element preceeding the last
-                            fireSelectionEvent(oldSelectedIndex, selectedIndex);
-                        } else {
-                            // (5) do nothing
-                        }
-                    } else { // index = selectedIndex && selectedIndex != getSize()-1
-                        // (4) do not change selectedIndex since it should point to the element suceeding the selected (and just removed)
-                        fireSelectionEvent(oldSelectedIndex, selectedIndex); // since selectedIndex now points to another element than before
-                    }
-
-                } // else { // (3) do nothing since selectedIndex < index }
+//                int oldSelectedIndex = selectedIndex;
+//                if (index < selectedIndex) {
+//                    selectedIndex--; // (2) update to still point to same element as before, no fireSelectionEvent needed
+//                } else if (index == selectedIndex) { // selected item is removed (most usual case)
+//                    if (selectedIndex == listSize - 1) { // (1) if removed and selected element was the last in the list
+//                        if (listSize != 1) {
+//                            selectedIndex--; // then update selectedIndex to point to the element preceeding the last
+//                            fireSelectionEvent(oldSelectedIndex, selectedIndex);
+//                        } else {
+//                            // (5) do nothing
+//                        }
+//                    } else { // index = selectedIndex && selectedIndex != getSize()-1
+//                        // (4) do not change selectedIndex since it should point to the element suceeding the selected (and just removed)
+//                        fireSelectionEvent(oldSelectedIndex, selectedIndex); // since selectedIndex now points to another element than before
+//                    }
+//
+//                } // else { // (3) do nothing since selectedIndex < index }
 //                if (autoAddRemoveListAsListenerOnInsertedItems) { // && baseItem instanceof BaseItem) { //(baseItem = (BaseItem) getItemAt(index)) instanceof BaseItem) {
 //                    baseItem.removeChangeEventListener(this); // remove this list as changeListener on the object
 //                }
-                fireDataChangedEvent(DataChangedListener.REMOVED, index);
+//                fireDataChangedEvent(DataChangedListener.REMOVED, index);
 //                changed(new ChangeEvent(this, ChangeValue.CHANGED_ITEMLIST_ITEM_REMOVED, index, (BaseItem) obj, triggerEvent));
             }
         }
@@ -2242,11 +2272,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     /**
      * @inheritDoc
      */
-    public void setSelectedIndex(int index) {
-        int oldIndex = this.selectedIndex;
-        this.selectedIndex = index;
-        fireSelectionEvent(oldIndex, selectedIndex);
-    }
+//    public void setSelectedIndexXXX(int index) {
+//        int oldIndex = this.selectedIndex;
+//        this.selectedIndex = index;
+//        fireSelectionEvent(oldIndex, selectedIndex);
+//    }
 
     /**
      * returns the number of Items that are not done. If the list contains
@@ -2275,6 +2305,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return countUndone;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    static public int getNumberOfUndoneItemsOLD(List list, boolean recurse) {
 //        if (list == null || list.size() == 0) {
 //            return 0;
@@ -2298,6 +2329,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return countUndone;
 //    }
+//</editor-fold>
     public static int getNumberOfItemsThatWillChangeStatus(List list, boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         if (list == null || list.size() == 0) {
             return 0;
@@ -2334,6 +2366,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return getCountOfSubtasksWithStatus(getListFull(), recurse, statuses);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public static int getNumberOfItemsThatWillChangeStatusOLD(List list, boolean recurse, ItemStatus newStatus) {
 //        if (list == null || list.size() == 0) {
 //            return 0;
@@ -2350,6 +2383,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //        return nbCountChangeStatus;
 //    }
+//</editor-fold>
     @Override
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         return getNumberOfItemsThatWillChangeStatus(getListFull(), recurse, newStatus, changingFromDone);
@@ -2443,7 +2477,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param previousItem
      * @return
      */
-    private E getNextAfterEvenIfFiltered(E previousItem, boolean returnFirstItemIfPreviousNotFound) {
+    private E getNextAfterEvenIfFilteredXXX(E previousItem, boolean returnFirstItemIfPreviousNotFound) {
         List<E> list = getList();
         int index = list.indexOf(previousItem);
         if (index >= 0) {
@@ -2528,56 +2562,57 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         setAllItemsDone(true, true);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public void addDataChangedListener(DataChangedListener l) {
-        if (dataListener == null) {
-            dataListener = new EventDispatcher();
-        }
-        dataListener.addListener(l);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public void removeDataChangedListener(DataChangedListener l) {
-        if (dataListener != null) {
-            dataListener.removeListener(l);
-        }
-    }
-
-    protected void fireDataChangedEvent(final int status, final int index) {
-        if (dataListener != null) {
-            dataListener.fireDataChangeEvent(index, status);
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public void addSelectionListener(SelectionListener l) {
-        if (selectionListener == null) {
-            selectionListener = new EventDispatcher();
-        }
-        selectionListener.addListener(l);
-
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public void removeSelectionListener(SelectionListener l) {
-        if (selectionListener != null) {
-            selectionListener.removeListener(l);
-        }
-    }
-
-    protected void fireSelectionEvent(int oldIndex, int newIndex) {
-        if (selectionListener != null) {
-            selectionListener.fireSelectionEvent(oldIndex, newIndex);
-        }
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    /**
+//     * @inheritDoc
+//     */
+//    public void addDataChangedListener(DataChangedListener l) {
+//        if (dataListener == null) {
+//            dataListener = new EventDispatcher();
+//        }
+//        dataListener.addListener(l);
+//    }
+//
+//    /**
+//     * @inheritDoc
+//     */
+//    public void removeDataChangedListener(DataChangedListener l) {
+//        if (dataListener != null) {
+//            dataListener.removeListener(l);
+//        }
+//    }
+//
+//    protected void fireDataChangedEvent(final int status, final int index) {
+//        if (dataListener != null) {
+//            dataListener.fireDataChangeEvent(index, status);
+//        }
+//    }
+//
+//    /**
+//     * @inheritDoc
+//     */
+//    public void addSelectionListener(SelectionListener l) {
+//        if (selectionListener == null) {
+//            selectionListener = new EventDispatcher();
+//        }
+//        selectionListener.addListener(l);
+//    }
+//
+//    /**
+//     * @inheritDoc
+//     */
+//    public void removeSelectionListener(SelectionListener l) {
+//        if (selectionListener != null) {
+//            selectionListener.removeListener(l);
+//        }
+//    }
+//
+//    protected void fireSelectionEvent(int oldIndex, int newIndex) {
+//        if (selectionListener != null) {
+//            selectionListener.fireSelectionEvent(oldIndex, newIndex);
+//        }
+//    }
+//</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
@@ -3040,8 +3075,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     /**
-     * returns list of ItemLists (contained in this ItemList) that contains
-     * directly (or indirectly!) obj.
+     * returns list of ItemLists (contained in this *full* ItemList) that
+     * contains directly (or indirectly!) obj.
      *
      * @param obj
      * @return
@@ -3059,7 +3094,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return listOfContainingLists;
 //    }
 //</editor-fold>
-//    @Override
+    @Override
     public boolean contains(Object o) {
         return getItemIndex((ItemAndListCommonInterface) o) != -1;
     }
@@ -3264,8 +3299,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
     }
 
-    @Override
-    public boolean equals(Object obj) {
+//    @Override
+    public boolean equalsXXX(Object obj) {
         if (obj == null) {
             return false;
         }

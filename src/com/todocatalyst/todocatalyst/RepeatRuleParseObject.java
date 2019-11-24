@@ -3759,8 +3759,12 @@ public class RepeatRuleParseObject
 //</editor-fold>
     }
 
-//    @Override
-    public int hashCodeXXX() {
+    /**
+     * https://www.sitepoint.com/how-to-implement-javas-hashcode-correctly/
+     * @return 
+     */
+    @Override
+    public int hashCode() {
         int hash = 7;
         hash = 23 * hash + (int) (this.getSpecifiedStartDate() ^ (this.getSpecifiedStartDate() >>> 32));
         hash = 23 * hash + this.getRepeatType();
@@ -3784,8 +3788,10 @@ public class RepeatRuleParseObject
     }
 
     /**
-     * tests if the repeat parameters are the same, e.g. but does NOT check if
-     * parseObjectId is different
+     * we need a real equals implementation since we use equality to test whether a copy of a repeatRule has been edited by the user. 
+     * Tests if the repeat parameters are the same, e.g. but does NOT check if
+     * parseObjectId is different.
+     * https://www.sitepoint.com/how-to-implement-javas-hashcode-correctly/
      *
      * @param repeatRule
      * @return
@@ -4013,20 +4019,21 @@ public class RepeatRuleParseObject
     /**
      * the latest date of any of the instances generated
      */
-    private void setLastGeneratedDate(Date lastGeneratedDate, boolean onlyStoreLaterDates) {
+    private void setLastGeneratedDate(Date lastGeneratedDate, boolean storeEvenEarlierDates) {
         ASSERT.that(getDate(PARSE_LAST_DATE_GENERATED) == null || lastGeneratedDate == null
-                || (!onlyStoreLaterDates || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime()),
+                || (storeEvenEarlierDates || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime()),
                 "new lastGeneratedDate should always be higher than previous, lastDate=" + getDate(PARSE_LAST_DATE_GENERATED) + ", newDate=" + lastGeneratedDate);
-        if (lastGeneratedDate != null && lastGeneratedDate.getTime() != MyDate.MIN_DATE
-                && (!onlyStoreLaterDates || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime())) {
-            put(PARSE_LAST_DATE_GENERATED, lastGeneratedDate);
+        if (lastGeneratedDate != null && lastGeneratedDate.getTime() != MyDate.MIN_DATE) {
+            if (storeEvenEarlierDates || getDate(PARSE_LAST_DATE_GENERATED)==null || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime()) {
+                put(PARSE_LAST_DATE_GENERATED, lastGeneratedDate);
+            }
         } else {
             remove(PARSE_LAST_DATE_GENERATED);
         }
     }
 
     private void setLastGeneratedDate(Date lastGeneratedDate) {
-        setLastGeneratedDate(lastGeneratedDate);
+        setLastGeneratedDate(lastGeneratedDate, false);
     }
 
 //    public Date getNextcomingDateDXXX() {

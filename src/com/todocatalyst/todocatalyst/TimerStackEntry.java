@@ -264,7 +264,8 @@ public class TimerStackEntry implements Externalizable {
             boolean[] previousItemAlreadyFound = new boolean[]{timedItem == null};
             for (int i = itemListIndex, size = itemList.getSize(); i < size; i++) {
 //                Item tempItem = ((Item) itemList.getItemAt(i)).getNextLeafItemMeetingConditionImpl(timedItem, condition, previousItemAlreadyFound);
-                Item tempItem = ((Item) itemList.getItemAt(i)).getNextLeafItem(timedItem);
+//                Item tempItem = ((Item) itemList.getItemAt(i)).getNextLeafItem(timedItem);
+                Item tempItem = ((Item) itemList.get(i)).getNextLeafItem(timedItem); //use get(), not getItemAt(), to only time filtered values
                 if (tempItem != null) {
                     nextItem = tempItem; //store nextItem for next time
                     itemListIndex = i;//+1; //next time, continue with next index, NO, continue with same item (can be a project)

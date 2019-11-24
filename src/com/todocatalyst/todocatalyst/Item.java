@@ -8031,7 +8031,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      */
 //    @Override
-    public boolean equals(Object obj) {
+    public boolean equalsXXX(Object obj) {
         //TODO!!! extend to complete coverage of all fields (although never used)?
         if (this == obj) {
             return true;
@@ -8054,8 +8054,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 return true;
             }
         }
-        return false; //this == (Item) obj;
+        return false; //if not the same objectId, then by definition not equal, this == (Item) obj;
     }
+    
+    
 
     /**
      * Adds a listener to the switch which will cause an event to dispatch on

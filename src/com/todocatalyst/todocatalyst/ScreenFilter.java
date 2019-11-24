@@ -1,21 +1,12 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
-import com.codename1.components.SpanLabel;
-import com.codename1.ui.ButtonGroup;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
-import com.codename1.ui.Display;
-import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
-import com.codename1.ui.animations.CommonTransitions;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
-import com.codename1.ui.util.Resources;
-//import com.codename1.ui.*;
-import com.codename1.ui.table.TableLayout;
-import com.parse4cn1.ParseQuery;
 
 //import com.codename1.ui.*;
 //import com.codename1.ui.events.ActionEvent;
@@ -38,7 +29,7 @@ public class ScreenFilter extends MyForm {
     //TODO: add support to sorting based on ROI "Value per hour"
 
 //    private static String SCREEN_TITLE = "Which tasks to show";
-    private static String SCREEN_TITLE = "Sort and Filter";
+    private static String SCREEN_TITLE = "Edit Filter/Sort"; //"Sort and Filter";
     FilterSortDef filterSortDef;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public interface Predicate<T> {
@@ -83,7 +74,7 @@ public class ScreenFilter extends MyForm {
         refreshAfterEdit();
 //        getContentPane().setScrollableY(true);
     }
-    
+
     @Override
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
@@ -92,23 +83,25 @@ public class ScreenFilter extends MyForm {
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }
-    
+
     public void addCommandsToToolbar(Toolbar toolbar) {
-        
+
         super.addCommandsToToolbar(toolbar);
         //DONE/BACK
 //        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
-        
+
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
-        
-        toolbar.addCommandToOverflowMenu(new Command("Save**")); //save with name for reuse elsewhere (how useful is it with the current few options??)
-        toolbar.addCommandToOverflowMenu(new Command("Copy existing filter**")); //save with name for reuse elsewhere (how useful is it with the current few options??)
-        toolbar.addCommandToOverflowMenu(new Command("Reset to default**")); //reset to default values
+
+        if (false) { //TODO: implement these features
+            toolbar.addCommandToOverflowMenu(new Command("Save**")); //save with name for reuse elsewhere (how useful is it with the current few options??)
+            toolbar.addCommandToOverflowMenu(new Command("Copy existing filter**")); //save with name for reuse elsewhere (how useful is it with the current few options??)
+            toolbar.addCommandToOverflowMenu(new Command("Reset to default**")); //reset to default values
+        }
     }
-    
+
     private Container sortContainer;
     private Container sortSelectorContainer;
 //    private Label hideSortSelectorContainerLabel = new Label("");
@@ -188,7 +181,7 @@ public class ScreenFilter extends MyForm {
 //        sortContainer = MyBorderLayout.west(new SpanLabel("Manual sorting")).add(MyBorderLayout.EAST, sortOnSwitch);
 //        sortContainer = MyBorderLayout.west(manualSort);
         sortContainer = MyBorderLayout.north(manualSort);
-        
+
         MyStringPicker sortPicker = new MyStringPicker(filterSortDef.getSortOptions(), parseIdMap2, () -> {
             String sortId = filterSortDef.getSortFieldId();
             for (int i = 0, size = filterSortDef.getSortField().length; i < size; i++) {
@@ -210,10 +203,10 @@ public class ScreenFilter extends MyForm {
 //</editor-fold>
             filterSortDef.setSortFieldId(filterSortDef.getSortField()[i]);
         });
-        
+
         Component sortOnOffCont = layoutSetting("Sort", sortPicker, "**");
         Component sortReversed = layoutSetting("Reverse sort order", inverseOrder, "**");
-        
+
         sortSelectorContainer
                 = Container.encloseIn(BoxLayout.y(), sortOnOffCont, sortReversed
                 //                        MyBorderLayout.west(new SpanLabel("Sort on")).add(MyBorderLayout.EAST, sortPicker),
@@ -258,12 +251,12 @@ public class ScreenFilter extends MyForm {
                 () -> filterSortDef.isShowDoneTasks(),
                 (b) -> filterSortDef.setShowDoneTasks(b));
         content.add(layoutSetting("Show " + ItemStatus.DONE.getName() + " tasks", showDone, "**"));
-        
+
         Container c = new Container();
         c.setHidden(filterSortDef.isShowDoneTasks());
         ScreenSettingsCommon.addSettingBoolean(c, parseIdMap2, MyPrefs.keepDoneTasksVisibleTheDayTheyreCompleted);
         content.add(c);
-        
+
         showDone.addActionListener((e) -> {
             c.setHidden(!c.isHidden());
             c.getParent().getParent().animateLayout(300);

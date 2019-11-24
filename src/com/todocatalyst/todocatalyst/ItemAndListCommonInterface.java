@@ -474,7 +474,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    public List<? extends ItemAndListCommonInterface> getListFull();
     public List<E> getListFull();
 
-    default public boolean isInList(ItemAndListCommonInterface elt) {
+    default public boolean containsFull(ItemAndListCommonInterface elt) {
         List elements = getListFull();
         return elements.contains(elt);
     }

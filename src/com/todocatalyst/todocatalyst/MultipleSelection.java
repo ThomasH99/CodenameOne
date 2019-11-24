@@ -97,65 +97,65 @@ public class MultipleSelection {
      */
     static ItemOperation setAnything(Item itemWithValuesToSet) {
         return (item) -> {
-            Item itm = itemWithValuesToSet;
-            if (itm.getAlarmDate() != 0) {
-                item.setAlarmDate(itm.getAlarmDate());
+            Item ref = itemWithValuesToSet;
+            if (ref.getAlarmDate() != 0) {
+                item.setAlarmDate(ref.getAlarmDate());
             }
-            if (itm.getComment() != null && !itm.getComment().equals("")) {
-                item.setComment(Item.addToCommentDefaultPosition(item.getComment(), itm.getComment()));
+            if (ref.getComment() != null && !ref.getComment().equals("")) {
+                item.setComment(Item.addToCommentDefaultPosition(item.getComment(), ref.getComment()));
             }
-            if (itm.isStarred()) {
+            if (ref.isStarred()) {
                 item.setStarred(true); //TODO only works when setting, not unsetting
             }
-            if (itm.getCategories() != null && itm.getCategories().size() > 0) {
+            if (ref.getCategories() != null && ref.getCategories().size() > 0) {
                 List<Category> prevCategories = item.getCategories();
-                for (Category cat : itm.getCategories()) {
+                for (Category cat : ref.getCategories()) {
                     prevCategories.add(cat);
-                    cat.addItemAtIndex(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : cat.getSize());
+                    cat.addItemAtIndex(item, MyPrefs.insertNewCategoriesForItemsInStartOfIList.getBoolean() ? 0 : cat.getSize());
                     DAO.getInstance().saveInBackground((ParseObject)cat);
                 }
                 item.setCategories(prevCategories);
             }
-            if (itm.getEstimate() != 0) {
-                item.setEstimate(itm.getEstimate());
+            if (ref.getEstimate() != 0) {
+                item.setEstimate(ref.getEstimate());
             }
-            if (itm.getRemaining() != 0) {
-                item.setRemaining(itm.getRemaining());
+            if (ref.getRemaining() != 0) {
+                item.setRemaining(ref.getRemaining());
             }
-            if (itm.getActual() != 0) {
-                item.setActual(itm.getActual(), false);
+            if (ref.getActual() != 0) {
+                item.setActual(ref.getActual(), false);
             }
-            if (itm.getHideUntilDateD().getTime() != 0) {
-                item.setHideUntilDate(itm.getHideUntilDateD());
+            if (ref.getHideUntilDateD().getTime() != 0) {
+                item.setHideUntilDate(ref.getHideUntilDateD());
             }
-            if (itm.getStartByDateD().getTime() != 0) {
-                item.setStartByDate(itm.getStartByDateD().getTime());
+            if (ref.getStartByDateD().getTime() != 0) {
+                item.setStartByDate(ref.getStartByDateD().getTime());
             }
-            if (itm.getPriority() != 0) {
-                item.setPriority(itm.getPriority());
+            if (ref.getPriority() != 0) {
+                item.setPriority(ref.getPriority());
             }
-            if (itm.getImportanceN() != null) {
-                item.setImportance(itm.getImportanceN());
+            if (ref.getImportanceN() != null) {
+                item.setImportance(ref.getImportanceN());
             }
-            if (itm.getUrgencyN() != null) {
-                item.setUrgency(itm.getUrgencyN());
+            if (ref.getUrgencyN() != null) {
+                item.setUrgency(ref.getUrgencyN());
             }
-            if (itm.getChallengeN() != null) {
-                item.setChallenge(itm.getChallengeN());
+            if (ref.getChallengeN() != null) {
+                item.setChallenge(ref.getChallengeN());
             }
-            if (itm.getDreadFunValueN() != null) {
-                item.setDreadFunValue(itm.getDreadFunValueN());
+            if (ref.getDreadFunValueN() != null) {
+                item.setDreadFunValue(ref.getDreadFunValueN());
             }
-            if (itm.getEarnedValue() != 0) {
-                item.setEarnedValue(itm.getEarnedValue());
+            if (ref.getEarnedValue() != 0) {
+                item.setEarnedValue(ref.getEarnedValue());
             }
-            if (itm.getStartedOnDate() != 0) {
-                item.setStartedOnDate(itm.getStartedOnDate());
+            if (ref.getStartedOnDate() != 0) {
+                item.setStartedOnDate(ref.getStartedOnDate());
             }
-            if (itm.getCompletedDate() != 0) {
-                item.setCompletedDate(itm.getCompletedDate(), true);
+            if (ref.getCompletedDate() != 0) {
+                item.setCompletedDate(ref.getCompletedDate(), true);
             }
-            if (itm.isInteruptOrInstantTask()) {
+            if (ref.isInteruptOrInstantTask()) {
                 item.setInteruptOrInstantTask(true); //TODO only works when setting, not unsetting
             }
         };
