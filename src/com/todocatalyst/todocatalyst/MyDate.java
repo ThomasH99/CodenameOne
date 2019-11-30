@@ -796,7 +796,8 @@ public class MyDate extends Date {
     int getDayNumberInWeek() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date(getTime()));
-        return (Settings.getInstance().weeksStartOnMondays() ? (cal.get(Calendar.DAY_OF_WEEK) == 1 ? 7 : cal.get(Calendar.DAY_OF_WEEK) - 1) : cal.get(Calendar.DAY_OF_WEEK)); //SUNDAY==1, MONDAY==2 etc.
+//        return (Settings.getInstance().weeksStartOnMondays() ? (cal.get(Calendar.DAY_OF_WEEK) == 1 ? 7 : cal.get(Calendar.DAY_OF_WEEK) - 1) : cal.get(Calendar.DAY_OF_WEEK)); //SUNDAY==1, MONDAY==2 etc.
+        return (MyPrefs.weeksStartOnMondays.getBoolean()? (cal.get(Calendar.DAY_OF_WEEK) == 1 ? 7 : cal.get(Calendar.DAY_OF_WEEK) - 1) : cal.get(Calendar.DAY_OF_WEEK)); //SUNDAY==1, MONDAY==2 etc.
 //        return cal.get(Calendar.DAY_OF_WEEK)+(Settings.getInstance().weeksStartOnMondays()?); //SUNDAY==1, MONDAY==2 etc.
     }
 
@@ -1874,7 +1875,8 @@ public class MyDate extends Date {
 
     public static String addNthPostFix(String str) {
         char lastChiffer = str.charAt(str.length() - 1);
-        if (Settings.getInstance().getLocale().equals("en")) {
+//        if (Settings.getInstance().getLocale().equals("en")) {
+        if (MyPrefs.localeUserSelected.getString().equals("en")) {
             if (str.equals("11") || str.equals("12") || str.equals("13")) {
                 str += "th";
             } else {

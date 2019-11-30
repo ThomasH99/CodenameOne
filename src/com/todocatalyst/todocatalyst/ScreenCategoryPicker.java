@@ -130,51 +130,53 @@ public class ScreenCategoryPicker extends MyForm {
 //        return selectedCategories;
 //    }
 //</editor-fold>
-    void addSearchToTitle() {
-        //TODO update to use standard title bar search
-        //below code from Toolbar section https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#toolbar
-        Toolbar.setGlobalToolbar(true);
-        Style s = UIManager.getInstance().getComponentStyle("Title");
-
-        Form hi = new Form("Toolbar", new BoxLayout(BoxLayout.Y_AXIS));
-        //SEARCH
-        TextField searchField = new TextField("", "Toolbar Search");
-        searchField.getHintLabel().setUIID("Title");
-        searchField.setUIID("Title");
-        searchField.getAllStyles().setAlignment(Component.LEFT);
-        hi.getToolbar().setTitleComponent(searchField);
-        FontImage searchIcon = FontImage.createMaterial(FontImage.MATERIAL_SEARCH, s);
-        searchField.addDataChangeListener((i1, i2) -> {
-            String t = searchField.getText();
-            if (t.length() < 1) {
-                for (Component cmp : hi.getContentPane()) {
-                    cmp.setHidden(false);
-                    cmp.setVisible(true);
-                }
-            } else {
-                t = t.toLowerCase();
-                for (Component cmp : hi.getContentPane()) {
-                    String val = null;
-                    if (cmp instanceof Label) {
-                        val = ((Label) cmp).getText();
-                    } else if (cmp instanceof TextArea) {
-                        val = ((TextArea) cmp).getText();
-                    } else {
-                        val = (String) cmp.getPropertyValue("text");
-                    }
-                    boolean show = val != null && val.toLowerCase().indexOf(t) > -1;
-                    cmp.setHidden(!show);
-                    cmp.setVisible(show);
-                }
-            }
-            hi.getContentPane().animateLayout(250);
-        });
-        hi.getToolbar().addCommandToRightBar("", searchIcon, (e) -> {
-            searchField.startEditingAsync();
-        });
-        //abovecode from Toolbar section https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#toolbar
-
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    void addSearchToTitleXXX() {
+//        //TODO update to use standard title bar search
+//        //below code from Toolbar section https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#toolbar
+//        Toolbar.setGlobalToolbar(true);
+//        Style s = UIManager.getInstance().getComponentStyle("Title");
+//
+//        Form hi = new Form("Toolbar", new BoxLayout(BoxLayout.Y_AXIS));
+//        //SEARCH
+//        TextField searchField = new TextField("", "Toolbar Search");
+//        searchField.getHintLabel().setUIID("Title");
+//        searchField.setUIID("Title");
+//        searchField.getAllStyles().setAlignment(Component.LEFT);
+//        hi.getToolbar().setTitleComponent(searchField);
+//        FontImage searchIcon = FontImage.createMaterial(FontImage.MATERIAL_SEARCH, s);
+//        searchField.addDataChangeListener((i1, i2) -> {
+//            String t = searchField.getText();
+//            if (t.length() < 1) {
+//                for (Component cmp : hi.getContentPane()) {
+//                    cmp.setHidden(false);
+//                    cmp.setVisible(true);
+//                }
+//            } else {
+//                t = t.toLowerCase();
+//                for (Component cmp : hi.getContentPane()) {
+//                    String val = null;
+//                    if (cmp instanceof Label) {
+//                        val = ((Label) cmp).getText();
+//                    } else if (cmp instanceof TextArea) {
+//                        val = ((TextArea) cmp).getText();
+//                    } else {
+//                        val = (String) cmp.getPropertyValue("text");
+//                    }
+//                    boolean show = val != null && val.toLowerCase().indexOf(t) > -1;
+//                    cmp.setHidden(!show);
+//                    cmp.setVisible(show);
+//                }
+//            }
+//            hi.getContentPane().animateLayout(250);
+//        });
+//        hi.getToolbar().addCommandToRightBar("", searchIcon, (e) -> {
+//            searchField.startEditingAsync();
+//        });
+//        //abovecode from Toolbar section https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#toolbar
+//
+//    }
+//</editor-fold>
 
     public void addCommandsToToolbar(Toolbar toolbar) {
         super.addCommandsToToolbar(toolbar);
@@ -221,7 +223,7 @@ public class ScreenCategoryPicker extends MyForm {
             );
         }
 
-        addSearchToTitle();
+//        addSearchToTitle();
 
 //        ADDITIONAL COMMANDS
 //        DONE: Add new category

@@ -2012,6 +2012,48 @@ public class MyForm extends Form {
 
         Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
             Item item = new Item();
+            //first insert owner / category into Item before editing
+            if (itemListOrg instanceof Category) {
+                item.setOwner(Inbox.getInstance());
+                item.addCategoryToItem((Category) itemListOrg, false); //don't add to category until saving, MyPrefs.insertNewCategoriesForItemsInStartOfIList.getBoolean());
+            } else {
+                item.setOwner(itemListOrg);
+            }
+            setKeepPos(new KeepInSameScreenPosition());
+            new ScreenItem2(item, (MyForm) getComponentForm(), () -> {
+//                if (true || item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
+                //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
+                //only save if data (don't save if no relevant data)
+//                if (true) {
+//                    //TODO!!! save directly to Inbox
+////                            addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+//                }
+//                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
+                if (itemListOrg instanceof Category) {
+                    ((Category) itemListOrg).addItemToCategory(item, null, false, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+                    Inbox.getInstance().addToList(item, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+                    DAO.getInstance().saveInBackground(item, Inbox.getInstance()); //must save item since adding it to itemListOrg changes its owner
+                } else {
+                    itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                }
+//                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+//                    }
+//                } else {
+//                    //if no saveable data, do nothing
+////                        itemListOrg.removeFromList(item); //if no saveable data, undo the 
+//                    //TODO!!!! how to remove from eg Categories if finally the task is not saved??
+//                }
+            }, false, null).show(); //false=optionTemplateEditMode
+        });
+        return cmd;
+    }
+
+    public Command makeCommandNewItemSaveToItemListORG(ItemList itemListOrg, String cmdText, char icon) {
+
+        Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
+            Item item = new Item();
             item.setOwner(itemListOrg);
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItem2(item, (MyForm) getComponentForm(), () -> {
@@ -3437,7 +3479,8 @@ public class MyForm extends Form {
         if (!ReplayLog.getInstance().replayCmd(new ActionEvent(this))) { //only show screen is there was no command to replay
             Form prevForm = Display.getInstance().getCurrent();
 //            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
-            MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
+//            MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
+            MyAnalyticsService.visit(getUniqueFormId(), prevForm instanceof MyForm ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
             //restore scroll position on replay
             if (previousValues != null) {
                 previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());

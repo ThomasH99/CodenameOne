@@ -65,7 +65,6 @@ public class MultipleSelection {
 //        };
 //    }
 //</editor-fold>
-
 //    static ItemOperation moveToTopOfList(ItemList newItemList) {
     static ItemOperation moveToTopOfList(ItemAndListCommonInterface newItemList) {
         return (item) -> {
@@ -96,6 +95,7 @@ public class MultipleSelection {
      * @return
      */
     static ItemOperation setAnything(Item itemWithValuesToSet) {
+        //TODO!!! replace this by CopyInto?!
         return (item) -> {
             Item ref = itemWithValuesToSet;
             if (ref.getAlarmDate() != 0) {
@@ -110,9 +110,16 @@ public class MultipleSelection {
             if (ref.getCategories() != null && ref.getCategories().size() > 0) {
                 List<Category> prevCategories = item.getCategories();
                 for (Category cat : ref.getCategories()) {
-                    prevCategories.add(cat);
-                    cat.addItemAtIndex(item, MyPrefs.insertNewCategoriesForItemsInStartOfIList.getBoolean() ? 0 : cat.getSize());
-                    DAO.getInstance().saveInBackground((ParseObject)cat);
+                    ASSERT.that(!cat.contains(ref)); //the ref should normally(?!) be a temporary item
+                    if (!prevCategories.contains(cat)) {
+                        prevCategories.add(cat);
+//                        if (false) {
+//                            cat.addItemAtIndex(item, MyPrefs.insertNewCategoriesForItemsInStartOfIList.getBoolean() ? 0 : cat.getSize());
+//                        }
+                        cat.addItemToCategory(item, true);
+                        ASSERT.that(item.getObjectIdP()!=null); //otherwise the save of cat below will fail
+                        DAO.getInstance().saveInBackground((ParseObject) cat);
+                    }
                 }
                 item.setCategories(prevCategories);
             }

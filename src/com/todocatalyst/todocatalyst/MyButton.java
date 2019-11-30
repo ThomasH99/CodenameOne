@@ -109,9 +109,9 @@ public class MyButton extends Button { //TODO!!!! remove this unused class
 //            setText(buttonGenerator.getText(this));
 //        } else
 //</editor-fold>
-        if (getCommand() instanceof MyCommand) {
-            setText(((MyCommand) getCommand()).getCommandName());
-        }
+//        if (getCommand() instanceof MyCommand) {
+//            setText(((MyCommand) getCommand()).getCommandName());
+//        }
         return super.getText();
     }
 

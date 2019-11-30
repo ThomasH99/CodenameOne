@@ -37,6 +37,10 @@ public class ItemListList extends ItemList {
         }
         return INSTANCE;
     }
+    
+    public String toString(){
+        return "ItemListList"+super.toString();
+    }
 
     Object findItemListWithName(String itemListName) {
         if (itemListName == null || itemListName.length() == 0) {
@@ -102,9 +106,12 @@ public class ItemListList extends ItemList {
         ItemListList temp = DAO.getInstance().getItemListList(forceLoadFromParse, startDate, endDate);
         if (temp != null) {
 //            if (INSTANCE==null)
-            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+            ItemListList current = getInstance();
+//            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+            current.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
             for (ItemAndListCommonInterface elt : temp.getListFull()) {
-                INSTANCE.addItem(elt);
+//                INSTANCE.addItem(elt);
+                current.addItem(elt);
             }
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(this); //
             return true;

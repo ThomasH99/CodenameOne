@@ -558,7 +558,8 @@ public class RepeatRule {
      * THHJ: if true, all weeks are starting from Mondays instead of default (US
      * standard) Sundays
      */
-    private static boolean weekStartsMonday = Settings.getInstance().weeksStartOnMondays();
+//    private static boolean weekStartsMonday = Settings.getInstance().weeksStartOnMondays();
+    private static boolean weekStartsMonday = MyPrefs.weeksStartOnMondays.getBoolean();
     private static int ALL_WEEKDAYS = MONDAY | TUESDAY | WEDNESDAY | THURSDAY | FRIDAY;
     private static int ALL_WEEKEND = SATURDAY | SUNDAY;
 

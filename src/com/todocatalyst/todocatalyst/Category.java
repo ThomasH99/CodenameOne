@@ -973,7 +973,7 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
     }
 
     public String toString() {
-        return getText() + " [" + getList().size() + "]";
+        return getText() + " [" + getListFull().size() + "]";
     }
 
     /**

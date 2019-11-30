@@ -48,9 +48,10 @@ public class MyCacheMapHash {
 //    private Vector storageCacheContentVec;
     private Hashtable storageCacheContentVec;
     private String cachePrefix = "";
+    private String cacheId = "";
     private boolean alwaysStore;
     private int storageKey = -1;
-    private static String CACHE_ID = "$CACHE$";
+    private final static String CACHE_ID = "$CACHE$";
 
 //    private Hashtable getStorageCacheContent() {
 //        if (storageCacheContentVec == null) {
@@ -73,7 +74,8 @@ public class MyCacheMapHash {
      * @param prefix string to prepend to the cache entries in storage
      */
     public MyCacheMapHash(String prefix) {
-        this.cachePrefix = prefix;
+//        this.cachePrefix = prefix;
+        setCachePrefix(prefix);
     }
 
     /**
@@ -134,14 +136,18 @@ public class MyCacheMapHash {
 //            placeInStorageCache(key, lastAccess, value);
 //        }
 //        if (get(key) == null) {
-//</editor-fold>
 //        synchronized (LOCK) {
 //            Object val = memoryCache.get(key);
 //            if (val == null || !val.equals(value)) {
 //                Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value);
 //            }
-            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save to persist changes on device between app activations
-            Object oldVal = memoryCache.put(key, value);
+//            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save to persist changes on device between app activations
+//</editor-fold>
+        if (Config.TEST) {
+            ASSERT.that(key != null, "key==null for value=" + value);
+        }
+        Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
+        Object oldVal = memoryCache.put(key, value);
 //        }
     }
 
@@ -154,14 +160,15 @@ public class MyCacheMapHash {
     synchronized public Object get(Object key) {
         Object val = null;
 //        synchronized (LOCK) {
-            val = memoryCache.get(key);
-            if (val == null) {
-                val = Storage.getInstance().readObject(CACHE_ID + cachePrefix + key.toString());
-                if (val != null) {
+        val = memoryCache.get(key);
+        if (val == null) {
+//                val = Storage.getInstance().readObject(CACHE_ID + cachePrefix + key.toString());
+            val = Storage.getInstance().readObject(cacheId + key.toString());
+            if (val != null) {
 //                    put(key, val); //don't put, since it writes back to storage again, for no purpose
-                    memoryCache.put(key, val);
-                }
+                memoryCache.put(key, val);
             }
+        }
 //        }
         return val;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -241,8 +248,9 @@ public class MyCacheMapHash {
 //        }
 //</editor-fold>
 //        synchronized (LOCK) {
-            memoryCache.remove(key);
-            Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString()); //always remove, even if not in memoryCache
+        memoryCache.remove(key);
+//            Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString()); //always remove, even if not in memoryCache
+        Storage.getInstance().deleteStorageFile(cacheId + key.toString()); //always remove, even if not in memoryCache
 //        }
     }
 
@@ -276,7 +284,7 @@ public class MyCacheMapHash {
 
     synchronized public void clearAllCache(String[] reservedNames) {
         clearMemoryCache();
-        for (String name:reservedNames) {
+        for (String name : reservedNames) {
             delete(name);
         }
 //        clearStorageCache();
@@ -387,7 +395,6 @@ public class MyCacheMapHash {
 ////</editor-fold>
 //        return new Vector(memoryCache.keySet());
 //    }
-
 //    private Vector fetchFromStorageCache(int offset) {
 ////        Vector v = getStorageCacheContent();
 ////        Object[] arr = (Object[]) v.elementAt(offset);
@@ -409,7 +416,6 @@ public class MyCacheMapHash {
 ////            storageCacheContentVec = new Vector();
 ////        }
 //    }
-
     /**
      * Indicates the size of the storage cache after which the cache won't grow
      * further Size is indicated by number of elements stored and not by KB or
@@ -462,7 +468,9 @@ public class MyCacheMapHash {
      * @param cachePrefix the cachePrefix to set
      */
     public void setCachePrefix(String cachePrefix) {
+//        this.cachePrefix = cachePrefix;
         this.cachePrefix = cachePrefix;
+        cacheId = this.cachePrefix + CACHE_ID;
     }
 
     /**

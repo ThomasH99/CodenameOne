@@ -527,6 +527,9 @@ public class DAO {
                 ASSERT.that(val != null, "null element in list from cache:" + list);
             }
             list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
+            if (Config.TEST) {
+                ASSERT.that(list.get(i) != null, "null returned from cache for object=" + val + "; for list=" + list);
+            }
         }
         return list;
     }
@@ -1228,7 +1231,8 @@ public class DAO {
 //                fetchListElementsIfNeededReturnCachedIfAvail(categoryList);
 //                saveAndWait((ParseObject) categoryList); //saveAndWait to ensure an ObjectId is assigned for the cache storage. Always save so new lists can be assigned to it
 //                cachePut(categoryList); //always save so new lists can be assigned to it
-                saveInBackground((ParseObject) categoryList2, () -> cachePut(categoryList2)); //saveAndWait to ensure an ObjectId is assigned for the cache storage. Always save so new lists can be assigned to it
+//                saveInBackground((ParseObject) categoryList2, () -> cachePut(categoryList2)); //saveAndWait to ensure an ObjectId is assigned for the cache storage. Always save so new lists can be assigned to it
+                saveInBackground((ParseObject) categoryList2); //saveAndWait to ensure an ObjectId is assigned for the cache storage. Always save so new lists can be assigned to it
                 return categoryList2;
             }
         } catch (ParseException ex) {
@@ -1448,7 +1452,8 @@ public class DAO {
 //</editor-fold>
 //                saveAndWait((ParseObject) itemListList); //always save so new lists can be assigned to it
 //                cachePut(itemListList); //may fetchFromCacheOnly by objectId via getOwner
-                saveInBackground((ParseObject) itemListList2, () -> cachePut(itemListList2)); //always save so new lists can be assigned to it
+//                saveInBackground((ParseObject) itemListList2, () -> cachePut(itemListList2)); //always save so new lists can be assigned to it
+                saveInBackground((ParseObject) itemListList2); //SAVEINBACKGROUND automatically adds to cache //always save so new lists can be assigned to it
                 return itemListList2;
             }
         } catch (ParseException ex) {
@@ -1615,7 +1620,8 @@ public class DAO {
 //</editor-fold>
 //                saveAndWait((ParseObject) templateList); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
 //                cachePut(templateList); //cache list 
-                saveInBackground((ParseObject) templateList2, () -> cachePut(templateList2)); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
+//                saveInBackground((ParseObject) templateList2, () -> cachePut(templateList2)); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
+                saveInBackground((ParseObject) templateList2); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
                 return templateList2;
             }
 //            cache.put(templateList.getObjectIdP(), templateList);
@@ -1764,10 +1770,13 @@ public class DAO {
 //                saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
                 saveInBackground((ParseObject) newInbox, () -> {
                     cache.put(name, newInbox.getObjectIdP());
-                    cachePut(newInbox); //may fetchFromCacheOnly by objectId via getOwner
+                    if (false) {
+                        cachePut(newInbox); //may fetchFromCacheOnly by objectId via getOwner
+                    }
                 }); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
-                saveInBackground(itemsWithoutOwners); //save all items who now have their Inbox owner assigned
-//                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
+                if (false) {
+                    saveInBackground(itemsWithoutOwners); //save all items who now have their Inbox owner assigned
+                }//                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
 //            saveInBackground((ParseObject)inbox); //always save so new lists can be assigned to it
 //            saveAndWait((ParseObject)inbox); //always save so new lists can be assigned to it
                 return newInbox;
@@ -3756,20 +3765,20 @@ public class DAO {
 //                addToSaveInBackgroundQueue(subtasks); //recursive until reaching leaf tasks (handled above in if(!isProject))
                         saveInBackground(subtasks, () -> { //recursive until reaching leaf tasks (handled above in if(!isProject))
                             projectOrItem.setList(subtasks);
-                            if (categories != null && !categories.isEmpty()) {
-                                saveInBackground(categories, () -> {
-                                    if (repeatRule != null) {
-                                        saveInBackground(repeatRule, () -> {
-                                            //then add the now saved repeatRule and subtasks and save the project again:
-                                            projectOrItem.setRepeatRuleInParse(repeatRule);
-                                            //finally, save the project again, now with its refs to subtasks and repeatrules
-                                            addToSaveQueue(projectOrItem, postSaveAction);
-                                        });
-                                    } else {
-                                        //finally, save the project again, now with its refs to subtasks and repeatrules
-                                        addToSaveQueue(projectOrItem, postSaveAction);
-                                    }
+//                            if (categories != null && !categories.isEmpty()) {
+//                                saveInBackground(categories, () -> {
+                            if (repeatRule != null) {
+                                saveInBackground(repeatRule, () -> {
+                                    //then add the now saved repeatRule and subtasks and save the project again:
+                                    projectOrItem.setRepeatRuleInParse(repeatRule);
+                                    //finally, save the project again, now with its refs to subtasks and repeatrules
+                                    addToSaveQueue(projectOrItem, postSaveAction);
                                 });
+//                                    } else {
+//                                        //finally, save the project again, now with its refs to subtasks and repeatrules
+//                                        addToSaveQueue(projectOrItem, postSaveAction);
+//                                    }
+//                                });
                             } else if (repeatRule != null) {
                                 saveInBackground(repeatRule, () -> {
                                     //then add the now saved repeatRule and subtasks and save the project again:
@@ -3788,10 +3797,10 @@ public class DAO {
                 //if project has already been saved, we just need to make sure to save all the references elements first:
                 saveInBackground(projectOrItem.getRepeatRule(),
                         () -> saveInBackground(projectOrItem.getListFull(),
-                                () -> saveInBackground((List) projectOrItem.getCategories(),
+//                                () -> saveInBackground((List) projectOrItem.getCategories(),
                                         () -> addToSaveQueue(projectOrItem, postSaveAction))
-                        )
-                );
+                        );
+//                );
             }
         }
     }
@@ -3882,6 +3891,9 @@ public class DAO {
             if (postSaveAction != null) {
                 addToSaveQueue((List<ParseObject>) null, postSaveAction);
             }
+            if (Config.TEST) {
+                Log.p("==========>>> DAO.saveCategoryInBackground() SKIPPING null/empty objects =" + parseObjects);
+            }
             return;
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3892,34 +3904,42 @@ public class DAO {
 //        }
 //</editor-fold>
         for (ParseObject anyParseObject : parseObjects) {
-            if (anyParseObject == null || !anyParseObject.isDirty()
-                    || (anyParseObject instanceof ItemAndListCommonInterface && ((ItemAndListCommonInterface) anyParseObject).isNoSave())) {
+//            if (anyParseObject == null || (anyParseObject.getObjectIdP() != null && !anyParseObject.isDirty())
+//                    && (!(anyParseObject instanceof ItemAndListCommonInterface) || ((ItemAndListCommonInterface) anyParseObject).isNoSave())) {
+//                if (postSaveAction != null) {
+//                    addToSaveQueue((List<ParseObject>) null, postSaveAction);
+//                }
+//                continue; //skip all unchanged or noSave objects
+//            }
+            if (anyParseObject != null
+                    && ((anyParseObject.getObjectIdP() == null || anyParseObject.isDirty())
+                    && (!(anyParseObject instanceof ItemAndListCommonInterface) || !((ItemAndListCommonInterface) anyParseObject).isNoSave()))) {
+
+                if (anyParseObject instanceof ItemAndListCommonInterface) {
+                    ((ItemAndListCommonInterface) anyParseObject).updateBeforeSave();
+                }
+
+                if (anyParseObject instanceof Item) {
+                    saveItemInBackground((Item) anyParseObject, postSaveAction);
+                } else if (anyParseObject instanceof Category) {
+                    saveCategoryInBackground((Category) anyParseObject, postSaveAction);
+                } else if (anyParseObject instanceof ItemList) { //also covers ItemListList and CategoryList
+                    saveItemListInBackground((ItemList) anyParseObject, postSaveAction);
+                } else if (anyParseObject instanceof WorkSlot) { //e.g. Category, WorkSlot
+                    saveWorkSlotInBackground((WorkSlot) anyParseObject, postSaveAction);
+                } else if (anyParseObject instanceof RepeatRuleParseObject) {
+                    saveRepeatRuleInBackground((RepeatRuleParseObject) anyParseObject, postSaveAction);
+                } else if (anyParseObject instanceof FilterSortDef) { //e.g. Category, WorkSlot
+                    if (!((FilterSortDef) anyParseObject).isNoSave()) {
+                        addToSaveQueue((FilterSortDef) anyParseObject, postSaveAction);
+                    }
+                } else { //e.g. Category, WorkSlot
+                    addToSaveQueue(anyParseObject, postSaveAction);
+                }
+            } else {
                 if (postSaveAction != null) {
                     addToSaveQueue((List<ParseObject>) null, postSaveAction);
                 }
-                continue; //skip all unchanged or noSave objects
-            }
-
-            if (anyParseObject instanceof ItemAndListCommonInterface) {
-                ((ItemAndListCommonInterface) anyParseObject).updateBeforeSave();
-            }
-
-            if (anyParseObject instanceof Item) {
-                saveItemInBackground((Item) anyParseObject, postSaveAction);
-            } else if (anyParseObject instanceof Category) {
-                saveCategoryInBackground((Category) anyParseObject, postSaveAction);
-            } else if (anyParseObject instanceof ItemList) {
-                saveItemListInBackground((ItemList) anyParseObject, postSaveAction);
-            } else if (anyParseObject instanceof WorkSlot) { //e.g. Category, WorkSlot
-                saveWorkSlotInBackground((WorkSlot) anyParseObject, postSaveAction);
-            } else if (anyParseObject instanceof RepeatRuleParseObject) {
-                saveRepeatRuleInBackground((RepeatRuleParseObject) anyParseObject, postSaveAction);
-            } else if (anyParseObject instanceof FilterSortDef) { //e.g. Category, WorkSlot
-                if (!((FilterSortDef) anyParseObject).isNoSave()) {
-                    addToSaveQueue((FilterSortDef) anyParseObject, postSaveAction);
-                }
-            } else { //e.g. Category, WorkSlot
-                addToSaveQueue(anyParseObject, postSaveAction);
             }
         }
     }
@@ -5718,7 +5738,7 @@ public class DAO {
                 catsWithFilter.put(cat.getFilterSortDef(), cat);
             }
         }
-        
+
         Map<FilterSortDef, ItemList> itemListsWithFilter = new HashMap<>();
 //        for (ItemList itemList : ItemListList.getInstance().getList()) {
         for (Object o : ItemListList.getInstance().getListFull()) {
@@ -5727,7 +5747,7 @@ public class DAO {
                 itemListsWithFilter.put(itemList.getFilterSortDef(), itemList);
             }
         }
-        
+
         //TODO Items do not implement filters yet
         Map<FilterSortDef, Item> itemsWithFilter = new HashMap<>();
         for (Item item : getAllItems()) {
@@ -7374,7 +7394,7 @@ public class DAO {
 
         if (loadingChangedDataFromParseServerForTesting) {
             Dialog ip = null;
-            if (!inBackground) {
+            if (false && !inBackground) { //false since this creates a new Form just to show the infinte progress
                 ip = new InfiniteProgress().showInfiniteBlocking();
             }
             Date now = new MyDate(); //UI: only cache data that was already changed when update was launched
@@ -7397,75 +7417,76 @@ public class DAO {
         return false;
     }
 
-    public boolean cacheLoadDataChangedOnServerInBackground(boolean loadChangedDataFromParseServer) {
-        //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
-//        initAndConfigureCache(); //now done in DAO constructor
-////\        loadCacheToMemory(); //first load 
-        cache.loadCacheToMemory(); //first load 
-
-        if (loadChangedDataFromParseServer) {
-            Date now = new MyDate(); //UI: only cache data that was already changed when update was launched
-            Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
-            if (MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active
-                //get date when local cache was last updated
-                if (Storage.getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH)) {
-                    lastCacheRefreshDate = (Date) Storage.getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH); //read in when initializing the Timer - from here on it is only about saving updates
-                }
-                Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
-            }
-
-            //TODO!!!! run all these queries in parallel and continue when they've all returned
-            Log.p("Caching Items");
-            List<Item> items = getAllItemsFromParse(lastCacheRefreshDate, now);
-            Log.p("Caching Categories");
-            List<Category> categories = getAllCategoriesFromParse(lastCacheRefreshDate, now);
-            Log.p("Caching ItemLists");
-            List<ItemList> itemLists = getAllItemListsFromParse(lastCacheRefreshDate, now);
-            Log.p("Caching WorkSlots");
-            List<WorkSlot> workSlots = getAllWorkSlotsFromParse(lastCacheRefreshDate, now);
-//            WorkSlotList workSlots = getAllWorkSlotsFromParse(lastCacheRefreshDate, now);
-            Log.p("Caching Filters");
-            List<FilterSortDef> filters = getAllFilterSortDefsFromParse(lastCacheRefreshDate, now);
-            Log.p("Caching RepeatRules");
-            List<RepeatRuleParseObject> repeatRules = getAllRepeatRulesFromParse(lastCacheRefreshDate, now);
-            Log.p("Caching CategoryList");
-//            CategoryList categoryList = getCategoryList(true); //will cache the list of Categories
-//            cacheDelete(CategoryList.getInstance().reloadFromParse()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
-            CategoryList.getInstance().reloadFromParse(false, lastCacheRefreshDate, now); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
-            Log.p("Caching ItemListList");
-//            ItemListList itemListList = getItemListList(true); //will cache the list of ItemLists
-//            cacheDelete(ItemListList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
-            ItemListList.getInstance().reloadFromParse(false, lastCacheRefreshDate, now); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
-            Log.p("Caching TemplateList");
-//            TemplateList templateList = getTemplateList(true); //will cache the list of Templates
-//            cacheDelete(TemplateList.getInstance().reloadFromParse()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
-            TemplateList.getInstance().reloadFromParse(false, lastCacheRefreshDate, now); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
-//            Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
-
-            Display.getInstance().callSerially(() -> {
-                cacheList(items);
-                cacheList(categories);
-                cacheList(itemLists);
-                cacheList(workSlots);
-                cacheList(filters);
-                cacheList(repeatRules);
-//                cacheList(categoryList);
-//                cacheList(itemListList);
-//                cacheList(inbox);
-                Form f = Display.getInstance().getCurrent();
-
-                if (f instanceof MyForm) {
-                    Log.p("Refreshing current form after reload of cached lists");
-                    ((MyForm) f).refreshAfterEdit(); //update with new values //TODO!!! show a spinner or sth: "Updating with new data"
-                }
-            });
-
-            return cacheAllData(lastCacheRefreshDate, now);
-        }
-        return false;
-
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public boolean cacheLoadDataChangedOnServerInBackgroundXXX(boolean loadChangedDataFromParseServer) {
+//        //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
+////        initAndConfigureCache(); //now done in DAO constructor
+//////\        loadCacheToMemory(); //first load
+//        cache.loadCacheToMemory(); //first load
+//
+//        if (loadChangedDataFromParseServer) {
+//            Date now = new MyDate(); //UI: only cache data that was already changed when update was launched
+//            Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
+//            if (MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active
+//                //get date when local cache was last updated
+//                if (Storage.getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH)) {
+//                    lastCacheRefreshDate = (Date) Storage.getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH); //read in when initializing the Timer - from here on it is only about saving updates
+//                }
+//                Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
+//            }
+//
+//            //TODO!!!! run all these queries in parallel and continue when they've all returned
+//            Log.p("Caching Items");
+//            List<Item> items = getAllItemsFromParse(lastCacheRefreshDate, now);
+//            Log.p("Caching Categories");
+//            List<Category> categories = getAllCategoriesFromParse(lastCacheRefreshDate, now);
+//            Log.p("Caching ItemLists");
+//            List<ItemList> itemLists = getAllItemListsFromParse(lastCacheRefreshDate, now);
+//            Log.p("Caching WorkSlots");
+//            List<WorkSlot> workSlots = getAllWorkSlotsFromParse(lastCacheRefreshDate, now);
+////            WorkSlotList workSlots = getAllWorkSlotsFromParse(lastCacheRefreshDate, now);
+//            Log.p("Caching Filters");
+//            List<FilterSortDef> filters = getAllFilterSortDefsFromParse(lastCacheRefreshDate, now);
+//            Log.p("Caching RepeatRules");
+//            List<RepeatRuleParseObject> repeatRules = getAllRepeatRulesFromParse(lastCacheRefreshDate, now);
+//            Log.p("Caching CategoryList");
+////            CategoryList categoryList = getCategoryList(true); //will cache the list of Categories
+////            cacheDelete(CategoryList.getInstance().reloadFromParse()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+//            CategoryList.getInstance().reloadFromParse(false, lastCacheRefreshDate, now); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+//            Log.p("Caching ItemListList");
+////            ItemListList itemListList = getItemListList(true); //will cache the list of ItemLists
+////            cacheDelete(ItemListList.getInstance().resetInstance()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+//            ItemListList.getInstance().reloadFromParse(false, lastCacheRefreshDate, now); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+//            Log.p("Caching TemplateList");
+////            TemplateList templateList = getTemplateList(true); //will cache the list of Templates
+////            cacheDelete(TemplateList.getInstance().reloadFromParse()); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+//            TemplateList.getInstance().reloadFromParse(false, lastCacheRefreshDate, now); //reset and remove old instance from cache, next call to getInstance() will removeFromCache an update cache
+////            Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
+//
+//            Display.getInstance().callSerially(() -> {
+//                cacheList(items);
+//                cacheList(categories);
+//                cacheList(itemLists);
+//                cacheList(workSlots);
+//                cacheList(filters);
+//                cacheList(repeatRules);
+////                cacheList(categoryList);
+////                cacheList(itemListList);
+////                cacheList(inbox);
+//                Form f = Display.getInstance().getCurrent();
+//
+//                if (f instanceof MyForm) {
+//                    Log.p("Refreshing current form after reload of cached lists");
+//                    ((MyForm) f).refreshAfterEdit(); //update with new values //TODO!!! show a spinner or sth: "Updating with new data"
+//                }
+//            });
+//
+//            return cacheAllData(lastCacheRefreshDate, now);
+//        }
+//        return false;
+//
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void cacheLoadDataChangedOnServerAndInitIfNecessaryOLD(boolean resetAndDeleteAllCachedData) {
 //        //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?

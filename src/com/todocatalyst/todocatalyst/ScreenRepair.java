@@ -83,12 +83,12 @@ public class ScreenRepair extends MyForm {
         return l;
     }
 
-    public Form makeShowBuiltinFontsForm() {
+    public MyForm makeShowBuiltinFontsForm() {
 //        GridLayout gr = new GridLayout(5);
         Layout gr =  BoxLayout.y();
 //        gr.setAutoFit(true);
 //        Form hi = new Form("Fonts", gr);
-        Form hi = new MyForm("Fonts", ScreenRepair.this, () -> {
+        MyForm hi = new MyForm("Fonts", ScreenRepair.this, () -> {
         });
           hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
 
@@ -178,8 +178,8 @@ public class ScreenRepair extends MyForm {
         return hi;
     }
 
-    private Form showDeviceInfo() {
-        Form hi = new MyForm("Device info", ScreenRepair.this, () -> {
+    private MyForm showDeviceInfo() {
+        MyForm hi = new MyForm("Device info", ScreenRepair.this, () -> {
         });
 //        getToolbar().setBackCommand(Command.create("", null, (e) -> this.show()));
         hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
@@ -344,9 +344,9 @@ public class ScreenRepair extends MyForm {
         return hi;
     }
 
-    private Form showLocalizationInfo() {
+    private MyForm showLocalizationInfo() {
 //        Form hi = new Form("L10N", new TableLayout(16, 2));
-        Form hi = new MyForm("L10N", ScreenRepair.this, () -> {
+        MyForm hi = new MyForm("L10N", ScreenRepair.this, () -> {
         });
         hi.setLayout(new TableLayout(16, 2));
 
@@ -767,7 +767,9 @@ public class ScreenRepair extends MyForm {
 //        }));
 //</editor-fold>
         content.add(new Button(Command.create("Native logs", null, (e9) -> {
-            Form hi = new Form("Native Logs Reader", BoxLayout.y());
+//            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
+            Form hi = new MyForm("Native Logs Reader",null,null);
+
             hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
             String logs = NativeLogs.getNativeLogs();
             TextArea textArea = new TextArea(logs);
@@ -793,7 +795,8 @@ public class ScreenRepair extends MyForm {
             hi.show();
         })));
 
-        content.add(new Button(MyCommand.create("Force current time", null, (e) -> {
+//        content.add(new Button(MyCommand.create("Force current time", null, (e) -> {
+        content.add(new Button(Command.create("Force current time", null, (e) -> {
             MyForm fd = new MyForm("Set current time", ScreenRepair.this, ()->{});
             fd.setLayout( BoxLayout.y());
             fd.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e2) -> ScreenRepair.this.showBack()));
@@ -809,7 +812,8 @@ public class ScreenRepair extends MyForm {
             fd.show();
         })));
         
-        content.add(new Button(MyCommand.create("Repair data menu", null, (e) -> {
+//        content.add(new Button(MyCommand.create("Repair data menu", null, (e) -> {
+        content.add(new Button(Command.create("Repair data menu", null, (e) -> {
             new ScreenRepairData(ScreenRepair.this).show();
         })));
 
@@ -943,7 +947,7 @@ public class ScreenRepair extends MyForm {
         content.add(new Button(new Command("Show local notifications") {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                Form form = new Form("Local notifiations");
+                Form form = new MyForm("Local notifiations",null,null);
                 form.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
                 LocalNotificationsShadowList list = AlarmHandler.getInstance().getLocalNotificationsTEST();
                 for (int i = 0, size = list.size(); i < size; i++) {

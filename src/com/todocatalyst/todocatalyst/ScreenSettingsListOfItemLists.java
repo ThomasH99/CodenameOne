@@ -41,6 +41,7 @@ public class ScreenSettingsListOfItemLists extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowTotalTime);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowWorkTime);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewItemListsInStartOfItemListList);
 
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);

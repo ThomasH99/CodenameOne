@@ -523,7 +523,8 @@ ScreenItemValue {/*used for field labels*/
 
 ScreenItemValueInherited {
     cn1-derive: ScreenItemValue;
-    color: darkgray;
+    /*color: darkgray;*/
+    color: red;
 }
 /*ScreenItemValue {
     cn1-derive: LabelField;

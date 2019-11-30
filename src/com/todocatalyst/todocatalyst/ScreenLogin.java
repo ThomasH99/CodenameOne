@@ -83,7 +83,9 @@ public class ScreenLogin extends MyForm {
 //            boolean refreshDataInBackground = true;
         if (refreshDataInBackground) {
             thread.run((success) -> {
-                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true)) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true)) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), 
+                        MyPrefs.reloadChangedDataInBackground.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
                     success.onSucess(null);
                 }
                 thread.kill();
@@ -106,7 +108,9 @@ public class ScreenLogin extends MyForm {
         } else {
 //            Dialog ip = new InfiniteProgress().showInfiniteBlocking(); //DONE in DAO.cacheLoadDataChangedOnServer
             //TODO!!!! show waiting symbol "loading your tasks..."
-            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), 
+                    MyPrefs.reloadChangedDataInBackground.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            ip.dispose();
         }
         //ALARMS - initialize
@@ -144,7 +148,8 @@ public class ScreenLogin extends MyForm {
                 Log.p("Count of Item in Parse = " + count, Log.DEBUG);
             }
 
-            startUp(true);
+//            startUp(true);
+            startUp(MyPrefs.reloadChangedDataInBackground.getBoolean()); //for now, deactivate
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
 //            EasyThread thread = EasyThread.start("cacheUpdate");
@@ -1005,6 +1010,10 @@ public class ScreenLogin extends MyForm {
 //        boolean passwordDefined = (password == null || password.length() == 0);
         String errorMsg;
 
+        if(Config.TEST&&validEmail.equals("*")) {
+            validEmail="thomas.hjelm@email.com";
+            password="ItsThomas";
+        } 
         if ((errorMsg = validPassword(password)) != null) {
             return errorMsg;
         }

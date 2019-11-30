@@ -21,7 +21,10 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * keeps a shadow copy of the locally activated notifications, seems to be only way to know what was activated, so the every previously set alarm can be updated/cancelled etc
+ * keeps a shadow copy of the locally activated notifications, seems to be only
+ * way to know what was activated, so the every previously set alarm can be
+ * updated/cancelled etc
+ *
  * @author Thomas
  */
 public class LocalNotificationsShadowList implements Externalizable {
@@ -93,7 +96,7 @@ public class LocalNotificationsShadowList implements Externalizable {
         AlarmHandler.getInstance().scheduleLocalNotification(notif.notificationId, titleText, bodyText, notif.alarmTime);
         //if there are too many local notifications set now, then remove exces ones (removing the last = the latest in time)
         while (activeLocalNotifsSorted.size() > MAX_NUMBER_LOCAL_NOTIFICATIONS) {
-            removeAlarmAndRepeatAlarm(activeLocalNotifsSorted.get(activeLocalNotifsSorted.size() - 1).getObjectIdStr(), 
+            removeAlarmAndRepeatAlarm(activeLocalNotifsSorted.get(activeLocalNotifsSorted.size() - 1).getObjectIdStr(),
                     activeLocalNotifsSorted.get(activeLocalNotifsSorted.size() - 1).type);
         }
     }
@@ -104,8 +107,7 @@ public class LocalNotificationsShadowList implements Externalizable {
      * snoozed alarms. If newAlarm is null, simply cancels previous alarms of
      * type.
      */
-    void addOrUpdateOrDeleteAlarmAndRepeat(String objectId, Date newAlarm, AlarmType type,
-            String titleText, String bodyText) {
+    void addOrUpdateOrDeleteAlarmAndRepeat(String objectId, Date newAlarm, AlarmType type, String titleText, String bodyText) {
         //find and delete current alarm (and repeat alarms if any)
         //insert new alarm (if any, and within interval), and if so, find and set repeat alarms
 
@@ -158,7 +160,6 @@ public class LocalNotificationsShadowList implements Externalizable {
 //        }
 //        return -1;
 //    }
-
     /**
      * return the notification details for the notification with notificationId.
      * Used eg to obtain the details on an expired local notification. Returns
@@ -234,8 +235,9 @@ public class LocalNotificationsShadowList implements Externalizable {
     /**
      * remove both the main alarm and/or any associated repeat alarm (and cancel
      * the corresponding local notifications). No need to remove snoozes since
-     * they are mutually exclusive (when snoozing, other alarms are removed and when updating an alarm, snooze alarms are removed???)???. 
-    Called when user cancels an alarm
+     * they are mutually exclusive (when snoozing, other alarms are removed and
+     * when updating an alarm, snooze alarms are removed???)???. Called when
+     * user cancels an alarm
      *
      * @param objectId
      * @param mainType
@@ -247,7 +249,7 @@ public class LocalNotificationsShadowList implements Externalizable {
         while (it.hasNext()) {
             notif = it.next();
 //            notif = list.get(i);
-            if (notif.notificationId.startsWith(objectId)) {
+            if (objectId != null && notif.notificationId.startsWith(objectId)) { //on very first save objectId may be null, so no previous alarm to remove
 
                 if (notif.type == mainType
                         || (mainType == notification && notif.type == notificationRepeat)
@@ -410,8 +412,7 @@ public class LocalNotificationsShadowList implements Externalizable {
                 it.remove();
             } else if (notif.notificationId.startsWith(objId)
                     //remove any repeat but only of same type as alarm itself (if alarm is re-snoozed, the snoze is remove above) 
-                    && (
-                    (type == AlarmType.snoozedNotif||type == AlarmType.snoozedWaiting) //DONE: how to avoid removing a snooze for a waiting alarm?
+                    && ((type == AlarmType.snoozedNotif || type == AlarmType.snoozedWaiting) //DONE: how to avoid removing a snooze for a waiting alarm?
                     || (type == AlarmType.notification && notif.type == AlarmType.notificationRepeat)
                     || (type == AlarmType.notificationRepeat && notif.type == AlarmType.notification)
                     || (type == AlarmType.waiting && notif.type == AlarmType.waitingRepeat)
@@ -488,12 +489,12 @@ public class LocalNotificationsShadowList implements Externalizable {
     void addAlarmAndRepeat(String objectId, Date newAlarm, AlarmType type, String titleText, String bodyText) {
         int repeatInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
 
-        ASSERT.that(type == AlarmType.notification || type == AlarmType.waiting || type == AlarmType.snoozedNotif|| type == AlarmType.snoozedWaiting, () -> "wrong alarmType=" + type);
+        ASSERT.that(type == AlarmType.notification || type == AlarmType.waiting || type == AlarmType.snoozedNotif || type == AlarmType.snoozedWaiting, () -> "wrong alarmType=" + type);
 //        ASSERT.that((getNumberAvailableLocalNotificationSlots() >= (repeatInterval > 0 ? 2 : 1)));
 
         insertAndSetSingleBaseAlarmSorted(objectId, type, newAlarm, titleText, bodyText);
 
-        if (repeatInterval > 0 && (type != AlarmType.snoozedNotif&&type != AlarmType.snoozedWaiting)) {
+        if (repeatInterval > 0 && (type != AlarmType.snoozedNotif && type != AlarmType.snoozedWaiting)) {
             insertAndSetSingleBaseAlarmSorted(objectId, type == AlarmType.notification ? AlarmType.notificationRepeat : AlarmType.waitingRepeat,
                     new Date(newAlarm.getTime() + ((long) repeatInterval) * MyDate.MINUTE_IN_MILLISECONDS),
                     titleText, bodyText);

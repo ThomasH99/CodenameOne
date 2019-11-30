@@ -8264,7 +8264,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
         } else {
             updateNextcomingAlarm();
-            if (mustUpdateAlarms) {
+            if (mustUpdateAlarms) { 
                 AlarmHandler.getInstance().updateAlarmsOrTextForItem(this);
                 mustUpdateAlarms = false;
             }

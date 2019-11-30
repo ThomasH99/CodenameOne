@@ -260,7 +260,8 @@ public class ScreenListOfAlarms extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         super.addCommandsToToolbar(toolbar);
-        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("AlarmSettings", "", Icons.iconSettings, (e) -> {
+//        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("AlarmSettings", "", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("AlarmSettings", "", Icons.iconSettings, (e) -> {
             boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
             int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
 
@@ -283,7 +284,7 @@ public class ScreenListOfAlarms extends MyForm {
             toolbar.addCommandToOverflowMenu(new Command("Show local notifications") {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
-                    Form form = new Form("Local notifiations");
+                    Form form = new MyForm("Local notifiations",null,null);
                     form.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenListOfAlarms.this.showBack()));
                     LocalNotificationsShadowList list = AlarmHandler.getInstance().getLocalNotificationsTEST();
                     for (int i = 0, size = list.size(); i < size; i++) {

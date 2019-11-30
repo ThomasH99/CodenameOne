@@ -59,6 +59,9 @@ public class MyPrefs {
     static PrefEntry insertNewItemsInStartOfLists
             = new PrefEntry("Insert tasks at top of lists", "insertNewItemsInStartOfLists", true, "Always insert new or moved tasks at the beginning of lists (instead of at the end)");
 
+    static PrefEntry insertNewItemListsInStartOfItemListList
+            = new PrefEntry("Insert new lists at the top of lists", "insertNewItemListsInStartOfItemListList", false, "Always insert new lists at the beginning of lists (instead of at the end)");
+
     static PrefEntry insertNewSubtasksInScreenItemInStartOfLists
             = new PrefEntry("**Insert new subtasks created at top of list", "insertNewSubtasksInScreenItemInStartOfLists", false, "**Always insert new subtasks at the beginning of lists (instead of at the end)");
 
@@ -66,8 +69,9 @@ public class MyPrefs {
             = new PrefEntry("**", "itemContinueAddingInlineItems", true, "**");
     //"Insert created at top of list", "Insert new tasks at beginning of list"
 
-    static PrefEntry insertNewCategoriesForItemsInStartOfIList
-            = new PrefEntry("Add new categories to beginning of list**(make this setting public??)", "insertNewCategoriesForItemsInStartOfIList", true, "Always insert added categories at the beginning (makes most recently added categories appear first)");
+//    static PrefEntry insertNewCategoriesForItemsInStartOfIList //NO, confusing, always show in same order as in CategoryList
+//            = new PrefEntry("Add new categories to beginning of list**(make this setting public??)", "insertNewCategoriesForItemsInStartOfIList", false, 
+//                    "Always insert added categories at the beginning (makes most recently added categories appear first)");
 
     static PrefEntry insertNewRepeatInstancesInStartOfLists
             = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
@@ -429,6 +433,9 @@ public class MyPrefs {
     static PrefEntry showDebugInfoInLabelsEtc
             = new PrefEntry("Show debug info, e.g. add ^ to subtask", "showDebugInfoInLabelsEtc", true, "** - NOT END USER");
 
+    static PrefEntry reloadChangedDataInBackground
+            = new PrefEntry("Refresh changed data in background", "reloadChangedDataInBackground", false, "** - NOT END USER");
+
     //ITEMLIST
     static PrefEntry useDefaultFilterInItemListsWhenNoneDefined
             = new PrefEntry("By default, hide Done and Cancelled tasks in lists", "useDefaultFilterInItemListsWhenNoneDefined", true, "**");
@@ -541,6 +548,7 @@ public class MyPrefs {
     static PrefEntry durationPickerMinuteStep = new PrefEntry("Duration picker minute steps", "durationPickerMinuteStep", 1, "Minutes in pickers, chose 1, 5, 10, 15");
     static PrefEntry durationPickerShowSecondsIfLessThanXMinutes = new PrefEntry("Show seconds in time if under N minutes (0 disables)", "durationPickerShowSecondsIfLessThanXMinutes", 1, "**");
     static PrefEntry durationPickerShowSecondsIfLessThan1Minute = new PrefEntry("Show seconds in time if less than 1 minute", "durationPickerShowSecondsIfLessThan1Minute", true, "**");
+    static PrefEntry weeksStartOnMondays = new PrefEntry("Weeks start on Mondays (instead of Sundays)", "weeksStartOnMondays", true, "**");
 
 //LOGIN
     static PrefEntry loginStoreEmail = new PrefEntry("Show email on login", "loginStoreEmail", true, "**");

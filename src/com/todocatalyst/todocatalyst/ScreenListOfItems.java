@@ -311,8 +311,9 @@ public class ScreenListOfItems extends MyForm {
         super(title, previousForm, null);
         setShowIfEmptyList(textIfListEmpty);
         setUniqueFormId("ScreenListOfItems");
-        if (false) setScrollVisible(true); //UI: show scrollbar(?)
-//        super(title, previousForm, null);
+        if (false) {
+            setScrollVisible(true); //UI: show scrollbar(?)
+        }//        super(title, previousForm, null);
         setOptions(options);
         setPinchInsertEnabled(true);
         getComponentForm().getLayeredPane().setLayout(new MyBorderLayout()); //needed for StickyHeaderMod
@@ -328,7 +329,9 @@ public class ScreenListOfItems extends MyForm {
         setUpdateActionOnDone(() -> {
 //            this.itemListOrg = itemListFct.getUpdatedItemList(); //NO - WHY? Must set with edited subtask list
             updateItemListOnDone.update(itemListOrg);
-            if (false) refreshAfterEdit(); //NO point in refreshing this screen when done??!
+            if (false) {
+                refreshAfterEdit(); //NO point in refreshing this screen when done??!
+            }
         });
 //        workSlotList = itemListOrg.getWorkSlotListN(); //expensive operation, only do once for the screen, or after editing WorkSlots
 
@@ -515,8 +518,9 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
 //        setInlineInsertContainerIfMyTree2(contentContainer);
 //        if (contentContainer != null) setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save the previous inlineInsert field
-        if (false) getContentPane().removeAll(); //NOT necessary since getContentPane().add() will remove the previous content. AND it will remove components that are added later...
-
+        if (false) {
+            getContentPane().removeAll(); //NOT necessary since getContentPane().add() will remove the previous content. AND it will remove components that are added later...
+        }
         this.itemListOrg = getItemListFct.getUpdatedItemList();
         itemListOrg.resetWorkTimeDefinition(); //TODO!!!!! find a way to automatically reset wtd each time a list or its elements have been modified -> itemList.save(), or items call update/refresh on owner (and categories!)
 //        getContentPane().scrollComponentToVisible(this);
@@ -536,17 +540,20 @@ public class ScreenListOfItems extends MyForm {
 //        getContentPane().add(CENTER, buildContentPaneForListOfItems(this.itemListFilteredSorted));
 //</editor-fold>
         Container contentContainer = buildContentPaneForListOfItems(itemListOrg);
-        if (contentContainer instanceof MyTree2) setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
-//        if (getInlineInsertContainer()!= null)
+        if (contentContainer instanceof MyTree2) {
+            setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
+        }//        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
         getContentPane().add(MyBorderLayout.CENTER, contentContainer); //NB!!! this doesn't actually replace the old contentPane immediately (in the below calls!!!) meaning recreateInlineInsertContainerIfNeeded() doesn't work
         if (contentContainer != null) {
             ContainerScrollY scrollable = findScrollableContYChild(contentContainer);
-            if (scrollable != null)
+            if (scrollable != null) {
                 scrollable.setScrollVisible(true);
-            if (previousValues != null)
-                //            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
+            }
+            if (previousValues != null) //            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
+            {
                 previousValues.setScrollComponent(scrollable);
+            }
         }
 
         setTitleAnimation(contentContainer); //MUST do this here since we create a new container on each refresh
@@ -606,14 +613,17 @@ public class ScreenListOfItems extends MyForm {
 //            });
 //</editor-fold>
 //        getAnimationManager().addAnimation(null,null); //animation cannot be null!
-        if (false) getAnimationManager().flushAnimation(() -> {
+        if (false) {
+            getAnimationManager().flushAnimation(() -> {
 //            restoreKeepPos();
 //            setStartEditingAsyncIfDefined(contentContainer);
             });
+        }
 
         //check if there was an insertContainer active earlier
-        if (getInlineInsertContainer() == null)
+        if (getInlineInsertContainer() == null) {
             recreateInlineInsertContainerIfNeeded();
+        }
 
         super.refreshAfterEdit();
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -654,8 +664,11 @@ public class ScreenListOfItems extends MyForm {
 //            if (itemListOrg.isNoSave()) {
             toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
 
-            if (itemListOrg instanceof ItemList && !itemListOrg.isNoSave() && !optionTemplateEditMode)
+            if (itemListOrg instanceof Category && !itemListOrg.isNoSave() && !optionTemplateEditMode) {
                 toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrg, "Add task", Icons.iconNew));
+            } else if (itemListOrg instanceof ItemList && !itemListOrg.isNoSave() && !optionTemplateEditMode) {
+                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrg, "Add task", Icons.iconNew));
+            }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            } else {
 ////            Command newCmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle(), (e) -> {
@@ -843,18 +856,19 @@ public class ScreenListOfItems extends MyForm {
             toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditCatListProps", txt, Icons.iconEditProperties, (e) -> {
 //                ItemList itemList = new ItemList();
 //                    setKeepPos(new KeepInSameScreenPosition()); //not needed
-                if (itemListOrg instanceof Category)
+                if (itemListOrg instanceof Category) {
                     new ScreenCategoryProperties((Category) itemListOrg, ScreenListOfItems.this, () -> {
                         DAO.getInstance().saveInBackground((ParseObject) itemListOrg);
                         setTitle(itemListOrg.getText()); //refrehs title of screen after edit of list name
 //                    previousForm.revalidate(); //refresh list to show new items(??)
                     }).show();
-                else
+                } else {
                     new ScreenItemListProperties((ItemList) itemListOrg, ScreenListOfItems.this, () -> {
                         DAO.getInstance().saveInBackground((ParseObject) itemListOrg);
                         setTitle(itemListOrg.getText()); //refrehs title of screen after edit of list name
 //                    previousForm.revalidate(); //refresh list to show new items(??)
                     }).show();
+                }
             }
             ));
         }
@@ -897,7 +911,7 @@ public class ScreenListOfItems extends MyForm {
         );
 
         //FILTER / SORT
-        if (!optionTemplateEditMode && !optionUnmodifiableFilter && itemListOrg.getFilterSortDef()!=null) { //UI: !=null: must define filter before sorting can be turned on/off
+        if (!optionTemplateEditMode && !optionUnmodifiableFilter && itemListOrg.getFilterSortDef() != null) { //UI: !=null: must define filter before sorting can be turned on/off
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "Edit filter", Icons.iconFilterSettings, (e) -> {
 //                FilterSortDef filterSortDef = itemListOrg.getFilterSortDef() == null ? new FilterSortDef() : itemListOrg.getFilterSortDef();
@@ -1082,8 +1096,9 @@ public class ScreenListOfItems extends MyForm {
                         setCommandName(getCommandName().equals("Move ON") ? "Move OFF" : "Move ON");
                     }
                 };
-                if (false) toolbar.addCommandToOverflowMenu(draggableOnOff); //TODO disactivated until implemented
-
+                if (false) {
+                    toolbar.addCommandToOverflowMenu(draggableOnOff); //TODO disactivated until implemented
+                }
 //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
                 toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
                     if (!isSelectionMode()) {
@@ -1092,10 +1107,11 @@ public class ScreenListOfItems extends MyForm {
                         setSelectionMode(true, itemListOrg.getList()); //getList() since we only want to select the visible items
 //                            MyReplayCommand.this.setCommandName("Selection mode OFF");
                         Object source = e.getSource();
-                        if (source instanceof Command)
+                        if (source instanceof Command) {
                             ((Command) source).setCommandName("Select");
-                        else if (source instanceof Button)
+                        } else if (source instanceof Button) {
                             ((Button) source).setText("Exit Select");
+                        }
                         //TODO!! put the selectionCommands into a separate menu (like overflow menu, with same icon as the selection symbol?)
                         toolbar.addCommandToOverflowMenu(cmdSetAnything);
                         toolbar.addCommandToOverflowMenu(cmdMoveSelectedToTopOfList);
@@ -1115,10 +1131,11 @@ public class ScreenListOfItems extends MyForm {
 //                    selectedObjects = null;
                         setSelectionMode(false, null);
                         Object source = e.getSource();
-                        if (source instanceof Command)
+                        if (source instanceof Command) {
                             ((Command) source).setCommandName("Select");
-                        else if (source instanceof Button)
+                        } else if (source instanceof Button) {
                             ((Button) source).setText("Exit Select");
+                        }
                         //TODO!!!! use Toolbar.removeOverflowCommand(Command) once added (see http://stackoverflow.com/questions/39200432/how-to-remove-commands-added-to-overflow-menu)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    ToolbarSideMenu  menuBar = (ToolbarSideMenu )getToolbar().getMenuBar();
@@ -1181,11 +1198,11 @@ public class ScreenListOfItems extends MyForm {
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                if (itemListOrg instanceof ItemList)
+                if (itemListOrg instanceof ItemList) {
                     TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                else if (itemListOrg instanceof Item)
+                } else if (itemListOrg instanceof Item) {
                     TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-//            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+                }//            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             ));
         }
@@ -1197,13 +1214,14 @@ public class ScreenListOfItems extends MyForm {
             toolbar.addCommandToLeftBar(makeInterruptCommand());
         }
 
-        if (!optionTemplateEditMode)
+        if (!optionTemplateEditMode) {
             toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemsSettings", "Settings", Icons.iconSettings, (e) -> {
                 new ScreenSettingsListOfItems(ScreenListOfItems.this, () -> {
                     refreshAfterEdit();
                 }).show();
             }
             ));
+        }
 
         toolbar.addCommandToOverflowMenu(CommandTracked.create("Help", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
             showPreviousScreen(true);
@@ -1212,9 +1230,11 @@ public class ScreenListOfItems extends MyForm {
             showPreviousScreen(true);
         }, "ReportIssue"));
         if (false) //doesn't make sense for a list!
+        {
             toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
                 showPreviousScreen(true);
             }, "Cancel"));
+        }
 
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
@@ -1753,12 +1773,15 @@ public class ScreenListOfItems extends MyForm {
 //            }
 //            openSwipeContainer = swipCont;
 //        });
-        if (false) swipCont.setGrabsPointerEvents(true); //when swiping on task description, it also activated the button to show tasks details
+        if (false) {
+            swipCont.setGrabsPointerEvents(true); //when swiping on task description, it also activated the button to show tasks details
+        }
         if (Config.TEST) {
-            if (true)
+            if (true) {
                 swipCont.setName("Swipe|" + item);
-            else
+            } else {
                 swipCont.setName("list");
+            }
         }
 //        if (Config.TEST) {
 //            swipCont.setName(item.getText());
@@ -1817,22 +1840,27 @@ public class ScreenListOfItems extends MyForm {
                     myTree.expandNode(false, swipCont, true);
 //                    setUIID("ListOfItemsShowSubtasksExpanded");
                 }
-                if (expandedObjects != null)
+                if (expandedObjects != null) {
                     expandedObjects.updateExpandedUIID(this, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
+                }
             }
 
             @Override
             protected void fireActionEvent(int x, int y) {
                 super.fireActionEvent(x, y);
                 //enforce update of UIID *after* expansion etc
-                if (expandedObjects != null)
+                if (expandedObjects != null) {
                     expandedObjects.updateExpandedUIID(this, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
+                }
             }
 //        } : new Button();
         } : null;
-        if (Config.TEST && expandSubTasksButton != null) expandSubTasksButton.setName("ExpandSubtasks-" + item.toString(false));
+        if (Config.TEST && expandSubTasksButton != null) {
+            expandSubTasksButton.setName("ExpandSubtasks-" + item.toString(false));
+        }
         if (expandSubTasksButton != null) {
-            if (false) expandSubTasksButton.addActionListener((evt) -> {
+            if (false) {
+                expandSubTasksButton.addActionListener((evt) -> {
 //                if (expandedObjects!=null && expandedObjects.contains(item))
 ////                if (expandSubTasksButton.getUIID().equals("ListOfItemsShowSubtasks"))
 //                    expandSubTasksButton.setUIID("ListOfItemsShowSubtasksExpanded");
@@ -1841,16 +1869,20 @@ public class ScreenListOfItems extends MyForm {
                     if (expandedObjects != null) {
                         //                    expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
                         expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasksExpanded", "ListOfItemsShowSubtasks"); //NB!! hack: the two values are inversted since this actionListener is called 
-                        if (false) myForm.scrollComponentToVisible(swipCont.getParent()); //tried this, but not working=!
+                        if (false) {
+                            myForm.scrollComponentToVisible(swipCont.getParent()); //tried this, but not working=!
+                        }
                     }
                 });
+            }
 
 //            subTasksButton.setUIID("Label");
 //            expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
-            if (expandedObjects != null)
+            if (expandedObjects != null) {
                 expandedObjects.updateExpandedUIID(expandSubTasksButton, item, "ListOfItemsShowSubtasks", "ListOfItemsShowSubtasksExpanded");
-            else
+            } else {
                 expandSubTasksButton.setUIID("ListOfItemsShowSubtasks");
+            }
 //            subTasksButton.setGrabsPointerEvents(true); //TODO!!! does this work to avoid
 //            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberDoneSubtasks + "]");// {
 //            Command expandSubTasks = new Command("[" + numberUndoneSubtasks + "/" + totalNumberSubtasks + "]");// {
@@ -1946,8 +1978,10 @@ public class ScreenListOfItems extends MyForm {
                         parent = parent.getParent();
                     }
                     if (parent != null && parent.getParent() != null) //the top-level Container is the parent of the top-level MyDragAndDropSwipeableContainer
-                        //                    parent.getParent().getParent().getParent().revalidateWithAnimationSafety();
+                    //                    parent.getParent().getParent().getParent().revalidateWithAnimationSafety();
+                    {
                         parent.getParent().getParent().getParent().animateLayout(150);
+                    }
                 }
 //                mainCont.getParent().getParent().animateLayout(100);
 //                mainCont.getParent().animateLayout(100);
@@ -2071,10 +2105,14 @@ public class ScreenListOfItems extends MyForm {
                 DAO.getInstance().saveInBackground(item);
                 //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
 //                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refreshTimersFromParseServer();}});
-            } else status.setStatus(oldStatus, false);
+            } else {
+                status.setStatus(oldStatus, false);
+            }
         });
         status.setUIID("ListOfItemsMyCheckBox");
-        if (Config.TEST) status.setName("CheckBox");
+        if (Config.TEST) {
+            status.setName("CheckBox");
+        }
         if (oldFormat) {
             west.add(status);
         }
@@ -2142,8 +2180,12 @@ public class ScreenListOfItems extends MyForm {
                 actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
                 actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
                 actualEffortLabel.setUIID("ListOfItemsActualEffort");
-                if (Config.TEST) status.setName("ActualEffort");
-                if (oldFormat) east.addComponent(actualEffortLabel);
+                if (Config.TEST) {
+                    status.setName("ActualEffort");
+                }
+                if (oldFormat) {
+                    east.addComponent(actualEffortLabel);
+                }
             }
         } else { //if task not done, show Actual in details
             if (showInDetails) {
@@ -2180,7 +2222,9 @@ public class ScreenListOfItems extends MyForm {
 //                } else
 //                    finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
 //                            due != 0 && finishTime > due ? "ListOfItemsFinishTimeOverdue" : "ListOfItemsFinishTime");
-                if (oldFormat) east.add(finishTimeLabel);
+                if (oldFormat) {
+                    east.add(finishTimeLabel);
+                }
             } else if (due != 0) {
 //                    dueDateLabel = new Label("D:" + MyDate.formatDateSmart(new Date(due)),Icons.iconSetDueDateToToday(),
 //                dueDateLabel = new Label(MyDate.formatDateSmart(new Date(due)), Icons.iconSetDueDateToToday(),
@@ -2189,8 +2233,12 @@ public class ScreenListOfItems extends MyForm {
                 if (item.isDueDateInherited()) {
                     dueDateLabel.setUIID("ListOfItemsDueDateInherited");
                 }
-                if (Config.TEST) dueDateLabel.setName("Due");
-                if (oldFormat) east.add(dueDateLabel);
+                if (Config.TEST) {
+                    dueDateLabel.setName("Due");
+                }
+                if (oldFormat) {
+                    east.add(dueDateLabel);
+                }
             }
 
             long remainingEffort = item.getRemaining();
@@ -2198,8 +2246,12 @@ public class ScreenListOfItems extends MyForm {
 //                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
                 remainingEffortLabel = new Label(MyDate.formatDurationShort(remainingEffort), "ListOfItemsRemaining");
                 remainingEffortLabel.setMaterialIcon(Icons.iconRemainingEffort);
-                if (Config.TEST) remainingEffortLabel.setName("Remaining");
-                if (oldFormat) east.addComponent(remainingEffortLabel);
+                if (Config.TEST) {
+                    remainingEffortLabel.setName("Remaining");
+                }
+                if (oldFormat) {
+                    east.addComponent(remainingEffortLabel);
+                }
             }
         }
 
@@ -2236,8 +2288,9 @@ public class ScreenListOfItems extends MyForm {
 //                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
             myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
             new ScreenItem2(item, (MyForm) swipCont.getComponentForm(), () -> {
-                if (onExitAction != null)
+                if (onExitAction != null) {
                     onExitAction.actionPerformed(null);
+                }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    KeepInSameScreenPosition keepPos = new KeepInSameScreenPosition(null, swipCont); //TODO!!!!!! porblem with access to this
 //                    KeepInSameScreenPosition keepPos = new KeepInSameScreenPosition(); //TODO!!!!!! porblem with access to this
@@ -2265,7 +2318,9 @@ public class ScreenListOfItems extends MyForm {
 //                        refreshOnItemEdits.launchAction();
 //                    }
 //</editor-fold>
-                if (Config.REFRESH_EVEN_THOUGH_DONE_IN_BACK) myForm.refreshAfterEdit();
+                if (Config.REFRESH_EVEN_THOUGH_DONE_IN_BACK) {
+                    myForm.refreshAfterEdit();
+                }
             }, false, null).show();
 //                new ScreenItem(item, thisScreen).show();
         });
@@ -2278,9 +2333,13 @@ public class ScreenListOfItems extends MyForm {
         editItemButton.setUIID("ListOfItemsEditItemIcon");
         editItemButton.setName("EditTask");
 //        editItemButton.setGrabsPointerEvents(true);
-        if (oldFormat) east.addComponent(editItemButton);
+        if (oldFormat) {
+            east.addComponent(editItemButton);
+        }
 
-        if (oldFormat) mainCont.addComponent(MyBorderLayout.EAST, east);
+        if (oldFormat) {
+            mainCont.addComponent(MyBorderLayout.EAST, east);
+        }
 
         //SOUTH
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2511,8 +2570,10 @@ public class ScreenListOfItems extends MyForm {
         if (item.getEstimate() != 0 && MyPrefs.itemListEffortEstimate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            effortEstimateLabel = new Label("E:" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
-            effortEstimateLabel = new Label(MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
-            effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+            effortEstimateLabel = new Label("E"+MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
+            if (false) { //TODO!!! show once there is a decent Estimate symbol
+                effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+            }
             if (Config.TEST) {
                 effortEstimateLabel.setName("EffortEstimate");
             }
@@ -2575,28 +2636,47 @@ public class ScreenListOfItems extends MyForm {
         westCont.setUIID("ListOfItemsItemDetailsWest");
 //        bottomContent.add(BorderLayout.WEST, BoxLayout.encloseX(prioCont, effortCont, dateCont));
 //        if (prioCont!=null) westCont.add(prioCont);
-        if (priorityLabel != null) westCont.add(priorityLabel);
-        if (impUrgLabel != null) westCont.add(impUrgLabel);
+        if (priorityLabel != null) {
+            westCont.add(priorityLabel);
+        }
+        if (impUrgLabel != null) {
+            westCont.add(impUrgLabel);
+        }
 //        if (effortCont != null) westCont.add(effortCont);
-        if (!isDone && remainingEffortLabel != null) westCont.add(remainingEffortLabel);
-        if (isDone && actualEffortLabel != null) westCont.add(actualEffortLabel);
+        if (!isDone && remainingEffortLabel != null) {
+            westCont.add(remainingEffortLabel);
+        }
+        if (isDone && actualEffortLabel != null) {
+            westCont.add(actualEffortLabel);
+        }
 //        if (dateCont != null) westCont.add(dateCont);
         if (!isDone) //show relevant date in prio order: waitingTill, finishTime or dueDate
-            if (waitingTillLabel != null && item.getStatus() == ItemStatus.WAITING)
+        {
+            if (waitingTillLabel != null && item.getStatus() == ItemStatus.WAITING) {
                 westCont.add(waitingTillLabel);
-            else if (finishTimeLabel != null)
+            } else if (finishTimeLabel != null) {
                 westCont.add(finishTimeLabel);
-            else if (dueDateLabel != null)
+            } else if (dueDateLabel != null) {
                 westCont.add(dueDateLabel);
-        if (isDone && completedDateLabel != null) westCont.add(completedDateLabel);
+            }
+        }
+        if (isDone && completedDateLabel != null) {
+            westCont.add(completedDateLabel);
+        }
         if (alarmLabel != null) {
             southDetailsContainer.addComponent(alarmLabel);
-            if (myForm.screenType == ScreenType.ALARMS)
+            if (myForm.screenType == ScreenType.ALARMS) {
                 myForm.showDetails.add(item); //UI: always show details (with alarm time) in alarm screen
+            }
+        }
+        if (Config.TEST) { //show owner directly in list to facilitate debug
+            myForm.showDetails.add(new Label(item.getOwner() != null ? item.getOwner().getText() : "<owner>"));
         }
         bottomContent.add(MyBorderLayout.WEST, westCont);
 //        bottomContent.add(BorderLayout.EAST, expandSubsCont);
-        if (expandSubTasksButton != null) bottomContent.add(MyBorderLayout.EAST, expandSubTasksButton);
+        if (expandSubTasksButton != null) {
+            bottomContent.add(MyBorderLayout.EAST, expandSubTasksButton);
+        }
         bottomContent.add(MyBorderLayout.SOUTH, southDetailsContainer);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container eastCont = new Container(BoxLayout.x())
@@ -3953,9 +4033,9 @@ refreshAfterEdit();
 //    protected static
 //</editor-fold>
     /**
-    
-    @param listOfItems can be ItemList, Item, or Category
-    @return 
+     *
+     * @param listOfItems can be ItemList, Item, or Category
+     * @return
      */
     Container buildContentPaneForListOfItems(ItemAndListCommonInterface listOfItems) { //, HashSet expandedObjects, ItemAndListCommonInterface itemListOrg, MyForm myForm, KeepInSameScreenPosition keepPos
         parseIdMap2.parseIdMapReset();

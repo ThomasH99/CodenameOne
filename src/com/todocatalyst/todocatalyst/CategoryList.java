@@ -114,9 +114,12 @@ public class CategoryList extends ItemList {
 //        INSTANCE.setList(temp.getList()); //NO good because shortcircuts the addItem logic (bags etc)
         CategoryList temp = DAO.getInstance().getCategoryList(forceLoadFromParse, startDate, endDate);
         if (temp != null) {
-            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+            CategoryList current = getInstance();
+//            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+            current.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
             for (ItemAndListCommonInterface elt : temp.getList()) {
-                INSTANCE.addItem(elt);
+//                INSTANCE.addItem(elt);
+                current.addItem(elt);
             }
             DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(this); //
             return true;
