@@ -1765,7 +1765,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveProjectInBackground((Item) item));
                 parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveInBackground((Item) item));
                 previousForm.refreshAfterEdit(); //necessary to update sum of subtask effort
-            }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
+            }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_TIMER
+                    | ScreenListOfItems.OPTION_NO_WORK_TIME
             ).show();
         }
         ));
@@ -1921,14 +1922,15 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                        oldOwner.removeFromList(item);
 //                    }
 //                    ItemAndListCommonInterface newOwner; // = null;
-                    if (false) {
+                    if (true) {
                         ItemAndListCommonInterface oldOwner = item.removeFromOwner();
                         ItemAndListCommonInterface newOwner = DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0));
                         newOwner.addToList(item);
-                        DAO.getInstance().saveInBackground((ParseObject) oldOwner, (ParseObject) newOwner);
+                        DAO.getInstance().saveInBackground(item, (ParseObject) oldOwner, (ParseObject) newOwner);
+                    } else {
+                        ItemAndListCommonInterface newOwner = DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0));
+                        item.setOwner(newOwner, false); //false: don't update inherited values from owner, they should have been set in this screen
                     }
-                    ItemAndListCommonInterface newOwner = DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0));
-                    item.setOwner(newOwner, false); //false: don't update inherited values from owner, they should have been set in this screen
 //                    item.setOwner();
                 } else {
 //                    ItemAndListCommonInterface oldOwner = item.getOwner();
@@ -2060,7 +2062,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         String remainingTxt = isProject ? Item.EFFORT_REMAINING_PROJECT : Item.EFFORT_REMAINING;
         String remainingHelpTxt = isProject ? Item.EFFORT_REMAINING_PROJECT_HELP : Item.EFFORT_REMAINING_HELP;
         timeCont.add(layoutN(remainingTxt, remainingEffort, remainingHelpTxt));
-        updateUIIDForInherited(remainingEffort, remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()*MyDate.MINUTE_IN_MILLISECONDS); //NB! MUST do *after* layoutN() which sets the UIID
+        updateUIIDForInherited(remainingEffort, remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //NB! MUST do *after* layoutN() which sets the UIID
 
         //ACTUAL************
         //if project, show actual for subtasks

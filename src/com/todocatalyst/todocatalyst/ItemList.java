@@ -965,10 +965,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return null;
 //    }
     /**
-     * returns the item that matches text. Used to check for duplicate
-     * definition of e.g. Categories (to avoid that two different categories
-     * have the same user-visible name)
+     * returns the item that matches text.Used to check for duplicate
+ definition of e.g. Categories (to avoid that two different categories
+ have the same user-visible name)
      *
+     * @param itemList
      * @return
      */
 //    E findItemWithTextXXX(String text) {

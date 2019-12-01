@@ -1360,6 +1360,8 @@ public class MyForm extends Form {
 //        if (true || !(this instanceof ScreenTimer6)) //don't refresh if Timer6 is being shown
 //        if (!ReplayLog.getInstance().isReplayInProgress()) //don't refresh (which may show big timer) if replay is still ongoing
 //        if (!ReplayLog.getInstance().isReplayInProgress() || ReplayLog.getInstance().isReplayAtLastCommand()) //don't refresh (which may show big timer) if replay is still ongoing
+//        TimerStack.getInstance().refreshOrShowTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
+//        TimerStack.getInstance().refreshOrShowSmallTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
         TimerStack.getInstance().refreshOrShowTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
 
         if (true) {
@@ -2032,7 +2034,7 @@ public class MyForm extends Form {
                 if (itemListOrg instanceof Category) {
                     ((Category) itemListOrg).addItemToCategory(item, null, false, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
                     Inbox.getInstance().addToList(item, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-                    DAO.getInstance().saveInBackground(item, Inbox.getInstance()); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveInBackground(item, Inbox.getInstance(), itemListOrg); //must save item since adding it to itemListOrg changes its owner
                 } else {
                     itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
                     DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
@@ -2087,14 +2089,20 @@ public class MyForm extends Form {
 
     public MyReplayCommand makeEditFilterSortCommand(ItemAndListCommonInterface itemListOrItem) {
         return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconFilterSettings, (e) -> {
-            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDef() == null ? new FilterSortDef() : itemListOrItem.getFilterSortDef();
+            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDef() == null ? new FilterSortDef()
+                    : (itemListOrItem.getFilterSortDef().equals(FilterSortDef.getDefaultFilter())
+                    ? new FilterSortDef(itemListOrItem.getFilterSortDef()) : itemListOrItem.getFilterSortDef()); //need this construct due to use in lambda below
+//            if ( filterSortDef.equals(FilterSortDef.getDefaultFilter()))
+//                filterSortDef = new FilterSortDef(filterSortDef);
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenFilter(filterSortDef, MyForm.this, () -> {
-                DAO.getInstance().saveInBackground(filterSortDef);
-                itemListOrItem.setFilterSortDef(filterSortDef);
-                DAO.getInstance().saveInBackground((ParseObject) itemListOrItem);
-                //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
-                refreshAfterEdit(); //TODO optimize the application of a filter? 
+                if (!filterSortDef.equals(itemListOrItem.getFilterSortDef())) { //if filter edited
+                    DAO.getInstance().saveInBackground(filterSortDef); //now done in DAO?
+                    itemListOrItem.setFilterSortDef(filterSortDef);
+                    DAO.getInstance().saveInBackground((ParseObject) itemListOrItem);
+                    //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
+                    refreshAfterEdit(); //TODO optimize the application of a filter? 
+                }
             }).show();
         }
         );
@@ -2322,6 +2330,7 @@ public class MyForm extends Form {
         Item setLastCreatedItem(Item lastCreatedItem);
     }
 
+////<editor-fold defaultstate="collapsed" desc="comment">
 //    protected static Command makeCreateInlineCmd(Item item, Item refItem, CreateItem createNewTask, SetItem lastCreatedItem, SaveEditedValuesLocally previousValues) {
 //        return MyReplayCommand.create("CreateNewItemInline-" + item.getObjectIdP(), "", Icons.iconEdit, (ev) -> {
 //
@@ -2338,15 +2347,12 @@ public class MyForm extends Form {
 //                //TODO!!! replace isDirty() with more fine-grained check on what has been changed and what needs to be refreshed
 ////                            DAO.getInstance().save(newTask);
 //                insertNewTaskAndSaveChanges(newItem);
-////<editor-fold defaultstate="collapsed" desc="comment">
 ////                        if (false && myForm.getEditFieldOnShowOrRefresh() == textEntryField2) {
 ////                            myForm.setEditOnShowOrRefresh(null); //reset the previous editField
 ////                        }
 ////                        myForm.setKeepPos(new KeepInSameScreenPosition(newItem));
-////</editor-fold>
 ////                        lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
 //                lastCreatedItem.setLastCreatedItem(continueAddingNewItems ? newItem : null); //ensures that MyTree2 will create a new insertContainer after newTask
-////<editor-fold defaultstate="collapsed" desc="comment">
 ////                        Container parent = getParent();
 ////                        parent.removeComponent(InlineInsertNewItemContainer2.this);
 ////replace the insert container with the created item, NOT GOOD approach since refrehsAfterEdit will rebuild, and not needed??!!
@@ -2357,7 +2363,6 @@ public class MyForm extends Form {
 ////                                    //                                ScreenListOfItems.buildItemContainer(myForm, newItem, itemOrItemListForNewTasks2, null), MorphTransition.create(300));
 ////                                    ScreenListOfItems.buildItemContainer(myFormXXX, newItem, itemOrItemListForNewTasks, null), null, null, 300); //
 ////                        }
-////</editor-fold>
 //                myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this, -1)); //if editing the new task in separate screen, 
 //                myForm.refreshAfterEdit();  //OK? NOT good, refreshAfterEdit will remove the new 
 //            }).show();
@@ -2369,11 +2374,13 @@ public class MyForm extends Form {
 //    protected static Component layoutXXX(String fieldLabelTxt, Component field, boolean checkForTooLargeWidth) {
 //        return layoutOLD(fieldLabelTxt, field, null, null, checkForTooLargeWidth, false, true);
 //    }
+////</editor-fold>
     protected static Component layout(String fieldLabelTxt, Component field, String help) {
 //        return layoutOLD(fieldLabelTxt, field, help, field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null, true, false, true);
         return new EditFieldContainer(fieldLabelTxt, field, help, (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null), true, false, true, false);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    protected static Component layoutXXX(String fieldLabelTxt, Component field, String help, boolean wrapText) {
 //        return layoutOLD(fieldLabelTxt, field, help, field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null, wrapText, true, true);
 //    }
@@ -2399,6 +2406,7 @@ public class MyForm extends Form {
 //    protected static Component layout(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear, boolean wrapText) {
 //        return layout(fieldLabelTxt, field, help, swipeClear, wrapText, false, false);
 //    }
+//</editor-fold>
     /**
      *
      * @param fieldLabelTxt
@@ -3489,10 +3497,8 @@ public class MyForm extends Form {
             if (ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
                 //if bigTimer was active, and we're not replaying, then show big timer again (from whatever screen was the last in replay)
                 TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
-                if (!(this instanceof ScreenTimer6)
-                        //                        && !ReplayLog.getInstance().isReplayInProgress() //THE test above on justFinished should be enough
-                        && timerInstance != null && timerInstance.isFullScreen()) //                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
-                {
+                if (!(this instanceof ScreenTimer6) && timerInstance != null && timerInstance.isFullScreen()) { //                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
+                    //                        && !ReplayLog.getInstance().isReplayInProgress() //THE test above on justFinished should be enough
                     new ScreenTimer6(MyForm.this, timerInstance).show();
                 }
 //            else

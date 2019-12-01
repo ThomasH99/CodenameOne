@@ -91,6 +91,20 @@ public class ScreenRepairData extends MyForm {
             Dialog.show("Info", "Finished updating cache", "OK", null);
         })));
 
+        content.add(new Button(Command.create("Show all data inconsistencies", null, (e) -> {
+            if (Dialog.show("INFO", "This will report all data inconsistencies and send them in a log file", "OK", "Cancel")) {
+                DAO.getInstance().cleanUpAllBadObjectReferences(false);
+                Log.sendLog();
+            }
+        })));
+
+        content.add(new Button(Command.create("Clean up all data inconsistencies", null, (e) -> {
+            if (Dialog.show("WARNING", "This will log AND repair all data inconsistencies", "OK", "Cancel")) {
+                DAO.getInstance().cleanUpAllBadObjectReferences(true);
+                Log.sendLog();
+            }
+        })));
+
         content.add(new Button(new Command("Show WorkSlots problems") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -139,37 +153,23 @@ public class ScreenRepairData extends MyForm {
                 DAO.getInstance().cleanUpTemplateListInParse(true);
             }
         }));
-        content.add(new Button(new Command("Repair list of Categories") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                DAO.getInstance().setExecuteCleanup(true);
-                DAO.getInstance().cleanUpAllCategoriesFromParse();
-                DAO.getInstance().setExecuteCleanup(false);
-            }
-        }));
-
-        content.add(new Button(new Command("Repair list of ItemLists") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                DAO.getInstance().setExecuteCleanup(true);
-                DAO.getInstance().cleanUpAllItemListsInParse();
-                DAO.getInstance().setExecuteCleanup(false);
-            }
-        }));
-
-        content.add(new Button(Command.create("Show all data inconsistencies", null, (e) -> {
-            if (Dialog.show("INFO", "This will report all data inconsistencies and send them in a log file", "OK", "Cancel")) {
-                DAO.getInstance().cleanUpAllBadObjectReferences(false);
-                Log.sendLog();
-            }
-        })));
-
-        content.add(new Button(Command.create("Clean up all data inconsistencies", null, (e) -> {
-            if (Dialog.show("WARNING", "This will log AND repair all data inconsistencies", "OK", "Cancel")) {
-                DAO.getInstance().cleanUpAllBadObjectReferences(true);
-                Log.sendLog();
-            }
-        })));
+//        content.add(new Button(new Command("Repair list of Categories") {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                DAO.getInstance().setExecuteCleanup(true);
+//                DAO.getInstance().cleanUpAllCategoriesFromParse();
+//                DAO.getInstance().setExecuteCleanup(false);
+//            }
+//        }));
+//
+//        content.add(new Button(new Command("Repair list of ItemLists") {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                DAO.getInstance().setExecuteCleanup(true);
+//                DAO.getInstance().cleanUpAllItemListsInParse();
+//                DAO.getInstance().setExecuteCleanup(false);
+//            }
+//        }));
 
         //add ItemListList as owner of all ItemLists
         content.add(new Button(new Command("Migrate ItemItemList refs to ItemListList test values") {

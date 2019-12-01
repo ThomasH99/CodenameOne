@@ -655,6 +655,11 @@ public class ScreenRepair extends MyForm {
         tl.setGrowHorizontally(true);
         content.setLayout(tl);
 
+//        content.add(new Button(MyCommand.create("Repair data menu", null, (e) -> {
+        content.add(new Button(MyReplayCommand.create("Repair data menu", null, (e) -> {
+            new ScreenRepairData(ScreenRepair.this).show();
+        })));
+
         content.add(new Button(new Command("Refresh cache") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -812,11 +817,6 @@ public class ScreenRepair extends MyForm {
             fd.show();
         })));
         
-//        content.add(new Button(MyCommand.create("Repair data menu", null, (e) -> {
-        content.add(new Button(Command.create("Repair data menu", null, (e) -> {
-            new ScreenRepairData(ScreenRepair.this).show();
-        })));
-
         content.add(new Button(Command.create("xxxRun tests menu", null, (e) -> {
             new ScreenRunTests(ScreenRepair.this).show();
         })));

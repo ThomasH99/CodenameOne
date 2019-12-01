@@ -227,6 +227,19 @@ public class FilterSortDef extends ParseObject {
         setDescription(description);
     }
 
+    public FilterSortDef(FilterSortDef filterToCopy) {
+        this();
+        setSortFieldId(filterToCopy.getSortFieldId());
+        setSortDescending(filterToCopy.isSortDescending());
+        setSortOn(filterToCopy.isSortOn());
+        setFilterOptions(filterToCopy.getFilterOptions());
+        
+        setFilterName(filterToCopy.getFilterName());
+        setDefinition(filterToCopy.getDefinition());
+        setHelp(filterToCopy.getHelp());
+        setDescription(filterToCopy.getDescription());
+    }
+
     @Override
     public String toString() {
         String s = "";

@@ -65,7 +65,7 @@ public class ScreenTimer6 extends MyForm {
     final static String SCREEN_TITLE = "Timer";
 //    final static String TIMER_REPLAY = "StartTimer-";
 
-    private TimerInstance timerInstance;//= new TimerStack();
+//    private TimerInstance timerInstance;//= new TimerStack();
     private Command backCommand = null;
 //    protected static String FORM_UNIQUE_ID = "ScreenTimer"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private Container timerContentainer = new Container(BoxLayout.y());
@@ -76,16 +76,20 @@ public class ScreenTimer6 extends MyForm {
     ScreenTimer6(MyForm previousScreen, TimerInstance timerInstance) {
         this(previousScreen, timerInstance, null);
     }
-
+    
     ScreenTimer6(MyForm previousScreen, TimerInstance timerInstance, SaveEditedValuesLocally previousValues) {//,  Map<Object, UpdateField> parseIdMap2) {
         super(SCREEN_TITLE, previousScreen, () -> {
         });
         setUniqueFormId("ScreenTimer");
         setUIID("BigTimerForm");
-        this.timerInstance = timerInstance;
+        timerInstance.setFullScreen(true); //save full screen state
+        timerInstance.saveMe();
+
+//        this.timerInstance = timerInstance;
         if (!(getLayout() instanceof MyBorderLayout)) {
             setLayout(new MyBorderLayout());
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        addComponent(CN.CENTER, timerInstance.getTimerContainer());
 //        addComponent(CN.CENTER, timerContentainer);
 
@@ -99,6 +103,7 @@ public class ScreenTimer6 extends MyForm {
 //            this.previousValues=new SaveEditedValuesLocally(getUniqueFormId() + "-" + timedItem.getObjectIdP());
 //        }
 //        setScrollable(false);
+//</editor-fold>
         //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
         setScrollableY(true); //since the size of the timer may overflow
         setAlwaysTensile(false); //only make scrollable when bigger than screen //TODO!!! not working!
@@ -114,10 +119,10 @@ public class ScreenTimer6 extends MyForm {
     //****************** UI *********************
     //
     public void addCommandsToToolbar(Toolbar toolbar) {
-
+        
         super.addCommandsToToolbar(toolbar);
 //        backCommand = makeDoneUpdateWithParseIdMapCommand(true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
-        backCommand = makeDoneUpdateWithParseIdMapCommand("",true,() -> {
+        backCommand = makeDoneUpdateWithParseIdMapCommand("", true, () -> {
             TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
             if (timerInstance != null) {//can be null if exiting after finishing with last timer?!
                 timerInstance.setFullScreen(false);
@@ -130,7 +135,7 @@ public class ScreenTimer6 extends MyForm {
                 Display.getInstance().setScreenSaverEnabled(true); //turn screenSaver back on if it was only disable by the Timer
             }
             return true;
-        },true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+        }, true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
         toolbar.setBackCommand(backCommand); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
 
         //Create an interrupt task and start the timer on it
@@ -145,34 +150,45 @@ public class ScreenTimer6 extends MyForm {
         }
         ));
     }
-
+    
     @Override
     public void refreshAfterEdit() {
 //        getContentPane().removeAll(); //clear existing contentPane
 //        buildContentPane(getTimedItemN(), itemList, getContentPane()); //rebuild for new values of item etc
 //        timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
-        Item timedItem = TimerStack.getInstance().getCurrentlyTimedItemN();
-        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+//        Item timedItem = TimerStack.getInstance().getCurrentlyTimedItemN();
+        TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
+        if (timerInstance != null) {
+//        Item timedItem = TimerStack.getInstance().getCurrentlyTimedItemN();
+            Item timedItem = timerInstance.getTimedItemN();
+            ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
 //        TimerStack.buildContentPane(timerInstance.getTimerContainer(), timerInstance, true, previousValues); //also removes previous content of contentPane
-        //clear previous edited values
-        if (previousValues != null) {
-            previousValues.deleteFile();
-        }
+            //clear previous edited values
+            if (previousValues != null) {
+                previousValues.deleteFile();
+            }
 //        if (timerInstance != null) {
-        if (timedItem != null) {
+            if (timedItem != null) {
+                timerInstance.setFullScreen(true); //set full screen state of this timer
+                timerInstance.saveMe();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
 //            previousValues = new SaveEditedValuesLocally("Timer-" + timerInstance.getTimedItemN().getObjectIdP());
 //            previousValues = new SaveEditedValuesLocally("Timer-" + timedItem.getObjectIdP());
 //            initLocalSaveOfEditedValues("Timer-" + timedItem.getObjectIdP());
-            this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + timedItem.getObjectIdP());
+//</editor-fold>
+                this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + timedItem.getObjectIdP());
 //        TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, timerContentainer,  previousValues); //also removes previous content of contentPane
-            Container contentPane = getContentPane();
-            contentPane.removeAll();
-            contentPane.add(MyBorderLayout.CENTER, TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, previousValues)); //also removes previous content of contentPane
-            if (false) super.refreshAfterEdit(); //WILL cause infinite loop when updating ScreenTimer6 via refreshOrShowTimerUI
-            revalidateWithAnimationSafety();
+                Container contentPane = getContentPane();
+                contentPane.removeAll();
+                contentPane.add(MyBorderLayout.CENTER, TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, previousValues)); //also removes previous content of contentPane
+                if (false) {
+                    super.refreshAfterEdit(); //WILL cause infinite loop when updating ScreenTimer6 via refreshOrShowTimerUI
+                }
+                revalidateWithAnimationSafety();
 //            revalidate();
-            revalidateWithAnimationSafety();
+//            revalidateWithAnimationSafety();
+            }
         }
     }
 

@@ -127,6 +127,7 @@ public class ScreenListOfItems extends MyForm {
      * set to true if a fixed filter is passed to the screen, if true user is
      * not allowed to modify the filter, nor will it be saved
      */
+    byte b1 = 0b101; //binary constant/literal, https://docs.oracle.com/javase/8/docs/technotes/guides/language/underscores-literals.html, https://www.javatpoint.com/java-binary-literals
     final static int OPTION_TEMPLATE_EDIT = 1;
     private boolean optionTemplateEditMode;
 
@@ -669,6 +670,7 @@ public class ScreenListOfItems extends MyForm {
             } else if (itemListOrg instanceof ItemList && !itemListOrg.isNoSave() && !optionTemplateEditMode) {
                 toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrg, "Add task", Icons.iconNew));
             }
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            } else {
 ////            Command newCmd = MyReplayCommand.create("CreateNewItem", "", Icons.iconNewToolbarStyle(), (e) -> {
@@ -724,32 +726,31 @@ public class ScreenListOfItems extends MyForm {
 //        }
 //</editor-fold>
 
-            if (optionTemplateEditMode) {
-                Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "Add template", Icons.iconNew, (e) -> {
-                    Item newTemplate = new Item();
-                    newTemplate.setTemplate(true); //always template here
-                    newTemplate.setOwner(itemListOrg);
+        if (optionTemplateEditMode) {
+            Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "Add template", Icons.iconNew, (e) -> {
+                Item newTemplate = new Item();
+                newTemplate.setTemplate(true); //always template here
+                newTemplate.setOwner(itemListOrg);
 //                    addNewTaskToListAndSave(template, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
-                    setKeepPos(new KeepInSameScreenPosition());
-                    new ScreenItem2(newTemplate, ScreenListOfItems.this, () -> {
+                setKeepPos(new KeepInSameScreenPosition());
+                new ScreenItem2(newTemplate, ScreenListOfItems.this, () -> {
 //                        if (template.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
-                        //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
+                    //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
 //                        addNewTaskToListAndSave(template, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
 //                        addNewTaskToListAndSave(newTemplate, null, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
-                        itemListOrg.addToList(newTemplate, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                        DAO.getInstance().saveInBackground((ParseObject) newTemplate, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    itemListOrg.addToList(newTemplate, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+                    DAO.getInstance().saveInBackground((ParseObject) newTemplate, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                            DAO.getInstance().saveInBackground(template); //must save item since adding it to itemListOrg changes its owner
-                        refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+                    refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                        } 
 //                        else {
 //                            itemListOrg.removeFromList(template); //if no saveable data, undo the 
 //                            //TODO!!!! how to remove from eg Categories if finally the task is not saved??
 //                        }
-                    }, optionTemplateEditMode, null).show();
-                }
-                );
-                toolbar.addCommandToOverflowMenu(newCmd);
+                }, optionTemplateEditMode, null).show();
             }
+            );
+            toolbar.addCommandToOverflowMenu(newCmd);
         }
 
         if (false) {
@@ -786,7 +787,8 @@ public class ScreenListOfItems extends MyForm {
         //NEW ITEM from TEMPLATE
         //TODO!!! create template by longpress on (+)
         if (!optionTemplateEditMode) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add from template", Icons.iconAddFromTemplate, (e) -> {
+//            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add from template", Icons.iconAddFromTemplate, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add template", Icons.iconAddFromTemplate, (e) -> {
                 //select appropriate template
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                List<Item> templateList = DAO.getInstance().getAllTemplates();
@@ -1189,19 +1191,25 @@ public class ScreenListOfItems extends MyForm {
         //TIMER
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
         if (!optionTemplateEditMode && !optionNoTimer) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
 //            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
 //            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
-            toolbar.addCommandToLeftBar(CommandTracked.create("", Icons.iconLaunchTimer, (e) -> {
 //            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
 //                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                if (itemListOrg instanceof ItemList) {
-                    TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                } else if (itemListOrg instanceof Item) {
-                    TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+//</editor-fold>
+            toolbar.addCommandToLeftBar(CommandTracked.create("", Icons.iconLaunchTimer, (e) -> {
+                if (TimerStack.getInstance().isTimerRunning()) {
+                    TimerStack.getInstance().refreshOrShowTimerUI(this);
+                } else {
+                    if (itemListOrg instanceof ItemList) {
+                        TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                    } else if (itemListOrg instanceof Item) {
+                        TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                    }
                 }//            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             ));
@@ -2535,6 +2543,7 @@ public class ScreenListOfItems extends MyForm {
                 southDetailsContainer.addComponent(startByLabel);
             }
         }
+
         //EXPIRE BY
         Label expireByLabel = new Label();
         if (item.getExpiresOnDateD().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
@@ -2549,6 +2558,7 @@ public class ScreenListOfItems extends MyForm {
                 southDetailsContainer.addComponent(expireByLabel);
             }
         }
+
         //WAITING
         Label waitingTillLabel = null;//new Label();
         if (item.getWaitingTillDateD().getTime() != 0 && MyPrefs.itemListWaitingTillDate.getBoolean()) {
@@ -2565,12 +2575,13 @@ public class ScreenListOfItems extends MyForm {
                 southDetailsContainer.addComponent(waitingTillLabel);
             }
         }
+
         //ESTIMATE
         Label effortEstimateLabel = null; //new Label();
         if (item.getEstimate() != 0 && MyPrefs.itemListEffortEstimate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            effortEstimateLabel = new Label("E:" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
-            effortEstimateLabel = new Label("E"+MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
+            effortEstimateLabel = new Label("E" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
             if (false) { //TODO!!! show once there is a decent Estimate symbol
                 effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
             }
@@ -2597,6 +2608,7 @@ public class ScreenListOfItems extends MyForm {
 //CATEGORIES
 //                            categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "<set>")); //"<click to set categories>"
 //</editor-fold>
+        //CATEGORIES
         List cats = item.getCategories();
         if (cats != null && cats.size() > 0) {
 //            SpanLabel catsLabel = new SpanLabel("Cat: " + getListAsCommaSeparatedString(cats), "ItemDetailsLabel");
@@ -2670,7 +2682,8 @@ public class ScreenListOfItems extends MyForm {
             }
         }
         if (Config.TEST) { //show owner directly in list to facilitate debug
-            myForm.showDetails.add(new Label(item.getOwner() != null ? item.getOwner().getText() : "<owner>"));
+//            myForm.showDetails.add(new Label(item.getOwner() != null ? ("=:" + item.getOwner().getText()) : "<owner>"));
+            southDetailsContainer.addComponent(new Label(item.getOwner() != null ? ("O:" + item.getOwner().getText()) : "<null>", "ListOfItemsRemaining"));
         }
         bottomContent.add(MyBorderLayout.WEST, westCont);
 //        bottomContent.add(BorderLayout.EAST, expandSubsCont);

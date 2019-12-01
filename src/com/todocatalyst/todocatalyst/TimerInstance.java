@@ -81,6 +81,7 @@ public class TimerInstance extends ParseObject {
                 + (getStartTimeD().getTime() != 0 ? " Start:" + getStartTimeD() : "")
                 + (getElapsedTime() != 0 ? " Duration:" + MyDate.formatDurationShort(getElapsedTime()) : "")
                 + (isRunning() ? " Running" : " Stopped")
+                + (isFullScreen()? " BIG" : " SMALL")
                 + " [" + getObjectIdP() + "]");
 //                +(isAutostart());
     }
