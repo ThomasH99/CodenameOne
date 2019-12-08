@@ -911,7 +911,7 @@ public class MyForm extends Form {
         return dia;
     }
 
-    static void showDialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
+    static void showDialogUpdateRemainingTimeXXXhow(MyDurationPicker remainingTimePicker) {
         if (MyPrefs.timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem.getBoolean()) {
             dialogUpdateRemainingTime(remainingTimePicker).show();
         }
@@ -1362,7 +1362,7 @@ public class MyForm extends Form {
 //        if (!ReplayLog.getInstance().isReplayInProgress() || ReplayLog.getInstance().isReplayAtLastCommand()) //don't refresh (which may show big timer) if replay is still ongoing
 //        TimerStack.getInstance().refreshOrShowTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
 //        TimerStack.getInstance().refreshOrShowSmallTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
-        TimerStack.getInstance().refreshOrShowTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
+        TimerStack.getInstance().refreshOrShowSmallTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
 
         if (true) {
             revalidateWithAnimationSafety();
@@ -3450,15 +3450,17 @@ public class MyForm extends Form {
             if (oldSelectedObjects != null) {
                 oldSelectedObjects.setReferenceSetAndRefreshSelection(referenceSet);
                 selectedObjects = oldSelectedObjects;
-            } else if (previousValues.get(ListSelector.CLASS_NAME) != null) {
-                selectedObjects = new ListSelector(
-                        DAO.getInstance().fetchListOfItemsFromListOfObjectIds((List<String>) previousValues.get(ListSelector.CLASS_NAME)),
-                        true, Integer.MAX_VALUE, true,
-                        (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedObjIds()), true, referenceSet); //put: save selected values locally
-                selectedObjects = (ListSelector) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
-            } else {
-                assert (selectedObjects == null);
-                selectedObjects = new ListSelector(null, true, Integer.MAX_VALUE, true, (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedObjIds()), true, referenceSet); //put: save selected values locally
+            } else if (previousValues != null) {
+                if (previousValues.get(ListSelector.CLASS_NAME) != null) {
+                    selectedObjects = new ListSelector(
+                            DAO.getInstance().fetchListOfItemsFromListOfObjectIds((List<String>) previousValues.get(ListSelector.CLASS_NAME)),
+                            true, Integer.MAX_VALUE, true,
+                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedObjIds()), true, referenceSet); //put: save selected values locally
+                    selectedObjects = (ListSelector) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
+                } else {
+                    assert (selectedObjects == null);
+                    selectedObjects = new ListSelector(null, true, Integer.MAX_VALUE, true, (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedObjIds()), true, referenceSet); //put: save selected values locally
+                }
             }
         } else {
             oldSelectedObjects = selectedObjects; //UI:store selection so it isn't lost between selection sessions
@@ -3546,14 +3548,15 @@ public class MyForm extends Form {
 //    private Component prevComponentAbove;
 //    private Component prevComponentBelow;
 //    private Item pinchItem;
-    private boolean pinchInsertEnabled = false; //TODO!! only true for testing
+    private boolean pinchInsertEnabled = false; //is pinch insert enabled for this screen? TODO!! only true for testing
     private boolean pinchInsertInitiated = false; //tracks whenever a pinch was initiated (to ensure we only finish when it makes sense)
     private int pinchInitialYDistance = Integer.MIN_VALUE;
     private int pinchDistance = Integer.MAX_VALUE;
 //    private boolean pinchOut;
 
     public boolean isPinchInsertEnabled() {
-        return pinchInsertEnabled;
+//        return pinchInsertEnabled;
+        return pinchInsertEnabled && MyPrefs.pinchInsertEnabled.getBoolean();
     }
 
     public void setPinchInsertEnabled(boolean pinchInsertEnabled) {
@@ -4169,15 +4172,17 @@ public class MyForm extends Form {
 //        refComp = dropComponentAbove != null ? dropComponentAbove : (dropComponentBelow != null ? dropComponentBelow : null);
 //        if (true || refComp != null) { //may become null in some edge cases like an empty list with only the initial inline insert container
 //            refElt = refComp.getDragAndDropObject();
-        previousValues.put(SAVE_LOCALLY_REF_ELT_OBJID_KEY, refElt.getObjectIdP());
-        previousValues.put(SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) refElt).getClassName());
+        if (previousValues != null) {
+            previousValues.put(SAVE_LOCALLY_REF_ELT_OBJID_KEY, refElt.getObjectIdP());
+            previousValues.put(SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) refElt).getClassName());
 //            boolean insertBeforeRefElement = (refComp == dropComponentBelow);
 //            insertBeforeRefElement = dropComponentAbove == null && dropComponentBelow != null;
 //            if (dropComponentAbove != null && dropComponentBelow != null
 //                    && itemEltBelow instanceof Item && itemEltAbove.isSubtaskTo((Item) itemEltBelow)) //pinch insert between a project and its first subtask
 //                previousValues.put(SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK, true);
-        if (insertBeforeRefElement) {
-            previousValues.put(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, true);
+            if (insertBeforeRefElement) {
+                previousValues.put(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, true);
+            }
         }
 //                previousValues.remove(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE);
 //        }
@@ -4469,7 +4474,7 @@ public class MyForm extends Form {
         if (testingPinchOnSimulator) {
             int displayHeight = Display.getInstance().getDisplayHeight();
             if (Display.getInstance().isSimulator() && y.length == 1 && x.length == 1
-                    && x[0] >= Display.getInstance().getDisplayWidth() / 100 * (100 - Config.TEST_PINCH_SCR_WIDTH_PERCENT)
+                    && x[0] >= Display.getInstance().getDisplayWidth() * (100 - Config.TEST_PINCH_SCR_WIDTH_PERCENT) / 100
                     && y[0] < displayHeight / 2) {
                 //simulate a pinch by mirroring the y values when dragging on the very right (10%) of the screen
                 int[] y2 = new int[2];

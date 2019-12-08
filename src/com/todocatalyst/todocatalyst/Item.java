@@ -71,7 +71,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    private final static String AFTER_SAVE_TEXT_UPDATE = "Text";
 //    private final static String AFTER_SAVE_ALARM_UPDATE = "AlarmDate";
 //    private final static String ALARM_UPDATE = "UpdateAlarm";
-    private boolean mustUpdateAlarms = false;
+    private boolean mustUpdateAlarmsXXXNotUsed = false; //track changes that will require alarms to be updated
     private boolean noSave = false;
     private FilterSortDef hardcodedFilter = null;
 
@@ -1553,7 +1553,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         if (textChanged) {
 //            afterSaveActions.put(AFTER_SAVE_TEXT_UPDATE, () -> AlarmHandler.getInstance().updateNotificationText(this));
-            mustUpdateAlarms = true;
+            mustUpdateAlarmsXXXNotUsed = true;
         }
     }
 
@@ -2159,6 +2159,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private void softDeleteImpl(Date deleteDate, boolean removeRefs) {
         softDeleteImpl(deleteDate, removeRefs, false);
     }
+
     private void softDeleteImpl(Date deleteDate, boolean removeRefs, boolean deleteAllRepeatInstances) {
         setDeletedDate(deleteDate);
 
@@ -2192,14 +2193,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //TODO!!!! handle repeatRules when deleting an Item
         RepeatRuleParseObject myRepeatRule = getRepeatRule();
         if (myRepeatRule != null) {
-            if(deleteAllRepeatInstances){
+            if (deleteAllRepeatInstances) {
 //                myRepeatRule.deleteAllInstances();
                 myRepeatRule.softDelete(false);
-            }else
-//            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we 
-//            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
-            myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
-            //NB. We don't delete the item's refs to repeatrule
+            } else //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we 
+            //            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
+            {
+                myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+            }            //NB. We don't delete the item's refs to repeatrule
         }
 
         //TODO!!!! remove item from OriginalSource field (from copies of this task) - all these links are one way, so need to search in ParseServer.
@@ -3633,12 +3634,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             remove(PARSE_ALARM_DATE);
         }
-        if (false) {
+        if (true) {
             updateNextcomingAlarm(); //done in save() now
         }//        if (!isTemplate() && oldAlarmDate != null && alarmDate.getTime() != 0) {
         if (!isTemplate() && !oldAlarmDate.equals(alarmDate)) {
 //            afterSaveActions.put(AFTER_SAVE_ALARM_UPDATE, () -> AlarmHandler.getInstance().updateReminderAlarm(this, oldAlarmDate, alarmDate));
-            mustUpdateAlarms = true;
+            mustUpdateAlarmsXXXNotUsed = true;
         }
 //        AlarmServer.getInstance().update(this);
 ////        this.alarmDate = alarmDate;
@@ -3840,12 +3841,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             remove(PARSE_WAITING_ALARM_DATE);
         }
-        if (false) {
+        if (true) {
             updateNextcomingAlarm(); //done in save() now
         }
         if (!isTemplate() && !oldAlarmDate.equals(waitingAlarmDate)) {
 //            afterSaveActions.put("WaitingAlarmDate", () -> AlarmHandler.getInstance().updateWaitingAlarm(this, oldAlarmDate, waitingAlarmDate));
-            mustUpdateAlarms = true;
+            mustUpdateAlarmsXXXNotUsed = true;
 //            AlarmHandler.getInstance().updateAlarmsOrTextForItem(this); //update any existing alarms to the new value
         }
 
@@ -3890,10 +3891,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     void setRepeatRuleInParseAndSave(RepeatRuleParseObject repeatRule) {
         setRepeatRuleInParse(repeatRule);
         if (repeatRule != null && (repeatRule.isDirty() || repeatRule.getObjectIdP() == null)) {
-            if (false&&Config.TEST) { //don't test - normal that repeatRule is not saved (eg when new item+new RR is created)
+            if (false && Config.TEST) { //don't test - normal that repeatRule is not saved (eg when new item+new RR is created)
                 ASSERT.that(repeatRule.getObjectIdP() != null, "Item.setRepeatRuleInParse with new unsaved repeatRule=" + repeatRule + ", item=" + this);
             }
-            if(false) DAO.getInstance().saveInBackground(repeatRule); //save the (possibly new or changed) repeatRule --> do it in DAO now
+            if (false) {
+                DAO.getInstance().saveInBackground(repeatRule); //save the (possibly new or changed) repeatRule --> do it in DAO now
+            }
         }
     }
 
@@ -4316,7 +4319,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
-     * returns a sequential list of all leaf tasks that meet the Condition,
+     * returns a sequential list of all leaf tasks (or the Item itself if not a project) that meet the Condition (null: no filter/all tasks included),
      * starting with the first subtask of the first subtask etc.
      *
      * @param condition condition or null (will match all items)
@@ -4824,6 +4827,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         setStatus(newStatus, true, true, updateDependentFields, new MyDate());
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      *
      * @param newStatus
@@ -4845,7 +4849,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            newStatus = ItemStatus.ONGOING;
 //        }
 //
-//        //if setting Waiting, ask if set 
+//        //if setting Waiting, ask if set
 //        if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
 //            MyForm.dialogSetWaitingDateAndAlarm(this); //only call if we're changing TO Waiting status
 //        }
@@ -4906,15 +4910,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //
 ////        setStatusInParse(newStatus);
 ////        else {
+//</editor-fold>
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////        setStatus(newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), true);
 ////        setStatusImpl(true, newStatus, !Settings.getInstance().changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), !Settings.getInstance().neverChangeProjectsSubtasksWhenChangingProjectStatus.getBoolean());
 ////            setStatusImpl(true, newStatus, !MyPrefs.changeSubtasksStatusWithoutConfirmationXXX.getBoolean(), MyPrefs.neverChangeProjectsSubtasksWhenChangingProjectStatusXXX.getBoolean());
 ////            setStatusImpl(true, newStatus);
-////</editor-fold>
 ////        setStatusImpl(newStatus);
 ////        }
 //    }
+////</editor-fold>
     /**
      * returns true if OK to update status of subtasks (based on new status for
      * mother task). Returns true if either the number of impacted subtasks is
@@ -4941,7 +4946,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
-            mustUpdateAlarms = true; //update alarms
+            mustUpdateAlarmsXXXNotUsed = true; //update alarms
+        }
+
+        if (false && newStatus == ItemStatus.WAITING) { //behaviour too specific to UI/screen in which a task is set waiting, so don't do here
+            MyForm.dialogSetWaitingDateAndAlarm(this); //only call if we're changing TO Waiting status
+//            MyForm.showDialogUpdateRemainingTime(getRemaining());
         }
 
         if (updateSubtasks && isProject()) {
@@ -7163,8 +7173,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     static public List<String> addCatObjectIdsListToCategoryList(List<String> categoryIdList, List<Category> newCategoryList) {
-        if(categoryIdList==null)
+        if (categoryIdList == null) {
             categoryIdList = new ArrayList<>();
+        }
 //        if (categoryIdList != null && newCategoryList != null) {
         if (newCategoryList != null) {
             for (Category c : newCategoryList) {
@@ -8056,8 +8067,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return false; //if not the same objectId, then by definition not equal, this == (Item) obj;
     }
-    
-    
 
     /**
      * Adds a listener to the switch which will cause an event to dispatch on
@@ -8163,79 +8172,93 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public void updateBeforeSave() {
 
-        List<Item> subtasks = getListFull();
-        if (subtasks != null && subtasks.size() > 0) {
-            if (getObjectIdP() == null) { //if project was not saved before
-                //save project first, *without* the potentially unsaved subtasks
-                setList(null);
-                DAO.getInstance().saveInBackground((ParseObject) this);
-
-                //then save all subtasks (recursively) (they will all have the now saved Project as owner)
-                if (false) {
-                    for (Item subtask : subtasks) {
-                        DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        List<Item> subtasks = getListFull();
+//        if (subtasks != null && subtasks.size() > 0) { //now done in DAO
+//            if (getObjectIdP() == null) { //if project was not saved before
+//                //save project first, *without* the potentially unsaved subtasks
+//                setList(null);
+//                DAO.getInstance().saveInBackground((ParseObject) this);
+//
+//                //then save all subtasks (recursively) (they will all have the now saved Project as owner)
+//                if (false) {
+//                    for (Item subtask : subtasks) {
+//                        DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
+//                    }
+//                }
+//            }
+//
+//            //if there are any dependencies btw a task/subtask and another unsaved, then ensure the dependent-on task is saved first!!
+//            //update any subtasks that may be affected by project changes to inherited fields:
+//            if (opsToUpdateSubtasks != null && opsToUpdateSubtasks.size() > 0) {
+//                List<Item> updatedSubtasks = new ArrayList<>();
+//                for (Item subtask : subtasks) {
+//                    if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
+//                        for (UpdateItem f : opsToUpdateSubtasks) {
+//                            if (f.update(subtask)) {
+//                                updatedSubtasks.add(subtask);
+//                            }
+//                        }
+//                    }
+//                }
+//                if (false) {
+//                    DAO.getInstance().saveInBackground((List) updatedSubtasks); //optimization: batch up all subtasks in saveInBackground
+//                }
+//                opsToUpdateSubtasks = null; //reset after all subtasks have updated
+//                opsToUpdateSubtasks = new ArrayList<>(); //reset after all subtasks have updated
+//                //then save all subtasks (recursively) (they will all have the now saved Project as owner)
+//                for (Item subtask : subtasks) {
+//                    DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
+//                }
+//            }
+//            //then add the now saved subtasks and save the project again:
+//            setList(subtasks);
+//        }
+//</editor-fold>
+        if (opsToUpdateSubtasks != null && opsToUpdateSubtasks.size() > 0) {
+            List<Item> subtasks = getListFull();
+            for (Item subtask : subtasks) {
+                if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
+                    for (UpdateItem f : opsToUpdateSubtasks) {
+                        f.update(subtask);
                     }
                 }
             }
-
-            //if there are any dependencies btw a task/subtask and another unsaved, then ensure the dependent-on task is saved first!!
-            //update any subtasks that may be affected by project changes to inherited fields:
-            if (opsToUpdateSubtasks != null && opsToUpdateSubtasks.size() > 0) {
-                List<Item> updatedSubtasks = new ArrayList<>();
-                for (Item subtask : subtasks) {
-                    if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
-                        for (UpdateItem f : opsToUpdateSubtasks) {
-                            if (f.update(subtask)) {
-                                updatedSubtasks.add(subtask);
-                            }
-                        }
-                    }
-                }
-                if (false) {
-                    DAO.getInstance().saveInBackground((List) updatedSubtasks); //optimization: batch up all subtasks in saveInBackground
-                }
-                opsToUpdateSubtasks = null; //reset after all subtasks have updated
-                opsToUpdateSubtasks = new ArrayList<>(); //reset after all subtasks have updated
-                //then save all subtasks (recursively) (they will all have the now saved Project as owner)
-                for (Item subtask : subtasks) {
-                    DAO.getInstance().saveInBackground(subtask); //recursive until reaching leaf tasks (handled above in if(!isProject))
-                }
-            }
-            //then add the now saved subtasks and save the project again:
-            setList(subtasks);
         }
-
-        if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
-            Inbox.getInstance().addToList(this);
-            DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance()); //will/should only be executed *after* this Item is saved (to avoid ObjId reference errors)
-        }
-
-        if (isDone() || getDeletedDateN() != null) {
-            TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this); //stop timer *before* saving to ensure updates to Actual are saved
-        }
-        if (false) {
-            DAO.getInstance().saveInBackground((ParseObject) this); //WHY save again?? We're already saving 'this'
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false && getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+//            Inbox.getInstance().addToList(this);
+//            DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance()); //will/should only be executed *after* this Item is saved (to avoid ObjId reference errors)
+//        }
+//
+//        if (false && (isDone() || getDeletedDateN() != null)) {
+//            TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this); //stop timer *before* saving to ensure updates to Actual are saved
+//        }
+//        if (false) {
+//            DAO.getInstance().saveInBackground((ParseObject) this); //WHY save again?? We're already saving 'this'
+//        }
         //handling of change in owner: if set in ScreenItem2: all values updated there; if this is a copy: all values can be assumed to already have been correctly set; if subtask inserted into new project: 
 //        Runnable repeatRule = (Runnable) saveOps.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
 //        repeatRule.run(); //create or update any repeatInstances 
+//</editor-fold>
         if (opsAfterSubtaskUpdates != null) {
             for (Runnable f : opsAfterSubtaskUpdates) {
                 f.run();
             }
+            opsAfterSubtaskUpdates = null; //must delete 
         }
-        opsAfterSubtaskUpdates=null; //must delete 
-
-        //save dirty Categories:
+//<editor-fold defaultstate="collapsed" desc="comment">
+//save dirty Categories:
 //        for (Category cat : getCategories()) {
 //            if (cat.isDirty())
 //                DAO.getInstance().saveInBackground((ParseObject) cat);
 //        }
 //        DAO.getInstance().saveBatch((List) getCategories()); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories
 //        DAO.getInstance().saveBatch(new ArrayList(getCategories())); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories. Work on copy of list to avoid java.util.ConcurrentModificationException
-        if (false&&getCategories().size() > 0) {
-            DAO.getInstance().saveInBackground(new ArrayList(getCategories())); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories. Work on copy of list to avoid java.util.ConcurrentModificationException
-        }
+//        if (false && getCategories().size() > 0) {
+//            DAO.getInstance().saveInBackground(new ArrayList(getCategories())); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories. Work on copy of list to avoid java.util.ConcurrentModificationException
+//        }
+//</editor-fold>
         if (isDirty()) {
             listeners.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
         }
@@ -8249,7 +8272,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        afterSaveActions.clear();
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
 //            Inbox.getInstance().addToList(this);
@@ -8259,16 +8281,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            super.save();
 //        }
 //</editor-fold>
-        if (isDone()) {
-            AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //remove any future alarms for a Done/Cancelled task
-            TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
-        } else {
-            updateNextcomingAlarm();
-            if (mustUpdateAlarms) { 
-                AlarmHandler.getInstance().updateAlarmsOrTextForItem(this);
-                mustUpdateAlarms = false;
-            }
-        }
+//TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
+        TimerStack.getInstance().updateTimerOnItemStatusChange(this, true, false); //true: move to next, false: don't save 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (isDone()) {
+//            AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //remove any future alarms for a Done/Cancelled task
+//            if (false) {
+//                TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
+//            }
+//        } else {
+////            updateNextcomingAlarm();
+//            if (mustUpdateAlarms) {
+//                AlarmHandler.getInstance().updateAlarmsOrTextForItem(this);
+//                mustUpdateAlarms = false;
+//            }
+//        }
+//</editor-fold>
+        AlarmHandler.getInstance().updateOnItemChange(this);
 
         if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
             Inbox.getInstance().addToList(this);

@@ -34,6 +34,7 @@ import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.plaf.Style;
+import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.EventDispatcher;
 
 /**
@@ -47,7 +48,7 @@ import com.codename1.ui.util.EventDispatcher;
  * @author Shai Almog
  */
 public class MySpanButton extends Container {
-    private Button actualButton;
+     private Button actualButton;
     private TextArea text;
     private boolean shouldLocalize = true;
 
@@ -65,7 +66,7 @@ public class MySpanButton extends Container {
      * @param textUiid the new text UIID
      */
     public MySpanButton(String txt, String textUiid) {
-        this(txt); 
+        this(txt);
         text.setUIID(textUiid);
     }
 
@@ -92,7 +93,6 @@ public class MySpanButton extends Container {
         Container center = BoxLayout.encloseYCenter(text);
         center.getStyle().setMargin(0, 0, 0, 0);
         center.getStyle().setPadding(0, 0, 0, 0);
-//        addComponent(BorderLayout.CENTER, BoxLayout.encloseYCenter(text));
         addComponent(BorderLayout.CENTER, center);
         setLeadComponent(actualButton);
     }
@@ -433,30 +433,28 @@ public class MySpanButton extends Container {
     public void setAutoRelease(boolean autoRelease) {
         this.actualButton.setAutoRelease(autoRelease);
     }
-    
+
     @Override
     protected Dimension calcPreferredSize() {
+        
         int w = getWidth();
         int h = getHeight();
-        Dimension dim = super.calcPreferredSize();
-        setWidth(dim.getWidth());
-        setHeight(dim.getHeight());
-        setShouldCalcPreferredSize(true);
-        
-        dim = super.calcPreferredSize();
+        Dimension d = getLayout().getPreferredSize(this);
+        setWidth(d.getWidth());
+        setHeight(d.getHeight());
+        d = getLayout().getPreferredSize(this);
+        Style style = getStyle();
+        if(style.getBorder() != null && d.getWidth() != 0 && d.getHeight() != 0) {
+            d.setWidth(Math.max(style.getBorder().getMinimumWidth(), d.getWidth()));
+            d.setHeight(Math.max(style.getBorder().getMinimumHeight(), d.getHeight()));
+        }
+        if(UIManager.getInstance().getLookAndFeel().isBackgroundImageDetermineSize() && style.getBgImage() != null) {
+            d.setWidth(Math.max(style.getBgImage().getWidth(), d.getWidth()));
+            d.setHeight(Math.max(style.getBgImage().getHeight(), d.getHeight()));
+        }
         setWidth(w);
         setHeight(h);
-        return dim;
-    }
-    
-//    @Override
-    public void layoutContainerXXX() {
-        // We may need to layout the container twice due to the preferred size calculation
-        // of the TextArea depending on its width at the time of the calculation.
-        // https://github.com/codenameone/CodenameOne/issues/2897
-        super.layoutContainer();
-        setShouldCalcPreferredSize(true);
-        super.layoutContainer();
+        return d;
     }
     
     ////////THJ:

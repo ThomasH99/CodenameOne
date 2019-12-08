@@ -18,10 +18,11 @@ public abstract class Config {
     public static final boolean TEST_CACHE = false && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_SCROLL_Y = true && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST = true && !PRODUCTION_RELEASE; //false;
+    public static final boolean TEST_BACKGR = false && !PRODUCTION_RELEASE; //false;
     public static final boolean CHECK_OWNERS = false && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_DRAG_AND_DROP = true && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_PINCH = true && !PRODUCTION_RELEASE; //false;
-    public final static int TEST_PINCH_SCR_WIDTH_PERCENT = 5; //% of right-hand side of screen where a touch is programatically converted to a pinch
+    public final static int TEST_PINCH_SCR_WIDTH_PERCENT = 10; //% of right-hand side of screen where a touch is programatically converted to a pinch
 
     public static final boolean TEST_SHOW_ITEM_TEXT_AS_OBJECTID = false && !PRODUCTION_RELEASE; //false;
     public static final boolean DEBUG_LOGGING = true && !PRODUCTION_RELEASE; //logs only enabled during 

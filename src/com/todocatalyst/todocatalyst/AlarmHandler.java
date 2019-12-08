@@ -248,7 +248,7 @@ public class AlarmHandler {
         notificationList.save();
     }
 
-    public void updateAlarmsOrTextForItem(Item item) {
+    private void updateAlarmsOrTextForItem(Item item) {
         notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getAlarmDateD(), AlarmType.notification,
                 item.makeNotificationTitleText(AlarmType.notification), item.makeNotificationBodyText(AlarmType.notification));
 
@@ -257,6 +257,14 @@ public class AlarmHandler {
 //        inAppTimer.refreshInAppTimer();
 //        notificationList.save();
         refreshInAppTimerAndSaveNotificationList();
+    }
+
+    public void updateOnItemChange(Item item) {
+        if (item.isDone()) {
+            AlarmHandler.getInstance().deleteAllAlarmsForItem(item); //remove any future alarms for a Done/Cancelled task
+        } else {
+            updateAlarmsOrTextForItem(item);
+        }
     }
 
     //NORMAL (REMINDER) ALARMS

@@ -4,6 +4,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.components.FloatingActionButton;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
@@ -551,7 +552,7 @@ public class ScreenListOfItems extends MyForm {
             if (scrollable != null) {
                 scrollable.setScrollVisible(true);
             }
-            if (previousValues != null) //            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
+            if (true && previousValues != null) //            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
             {
                 previousValues.setScrollComponent(scrollable);
             }
@@ -658,6 +659,13 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
+        FloatingActionButton fab = FloatingActionButton.createFAB(FontImage.MATERIAL_ADD);
+        FloatingActionButton subfabStartTimer = fab.createSubFAB(Icons.iconLaunchTimer, "");
+        FloatingActionButton subfabAddTaskToList = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
+        FloatingActionButton subfabInterrupt = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
+        FloatingActionButton subfabFilter = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
+        fab.bindFabToContainer(getContentPane());
+
         super.addCommandsToToolbar(toolbar);
         //NEW ITEM
 //        Command newCmd = new Command("OldCmd", Icons.iconNewToolbarStyle) {
@@ -725,6 +733,41 @@ public class ScreenListOfItems extends MyForm {
 //            }
 //        }
 //</editor-fold>
+
+        //TIMER
+//        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
+        if (!optionTemplateEditMode && !optionNoTimer) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
+//            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+//            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+//            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
+//                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
+//                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+//                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+//                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+//</editor-fold>
+//            toolbar.addCommandToLeftBar(CommandTracked.create("", Icons.iconLaunchTimer, (e) -> {
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Start Timer on list", Icons.iconLaunchTimer, (e) -> {
+
+//                if (timerInstance.isRunning()) {
+                if (TimerStack.getInstance().isTimerActive()) {
+//                    TimerStack.getInstance().refreshOrShowTimerUI(this);
+//                    TimerStack.getInstance().refreshOrShowUIOnTimerChange(); //should show BigTimer (unless smallTimer is shown?)
+                    TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
+                    timerInstance.setFullScreen(true);
+                    timerInstance.saveMe();
+                    new ScreenTimer6(this).show(); //should show BigTimer (unless smallTimer is shown?)
+                } else { //starting up timer
+                    if (itemListOrg instanceof ItemList) {
+                        TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                    } else if (itemListOrg instanceof Item) {
+                        TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                    }
+                }//            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+            }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+            ));
+        }
 
         if (optionTemplateEditMode) {
             Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "Add template", Icons.iconNew, (e) -> {
@@ -1187,33 +1230,6 @@ public class ScreenListOfItems extends MyForm {
         }
         //BACK
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
-
-        //TIMER
-//        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
-        if (!optionTemplateEditMode && !optionNoTimer) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
-//            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
-//            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
-//            toolbar.addCommandToLeftBar(CommandTracked.create("", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
-//                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
-//                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, filterSortDef, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-//                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-//                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-//</editor-fold>
-            toolbar.addCommandToLeftBar(CommandTracked.create("", Icons.iconLaunchTimer, (e) -> {
-                if (TimerStack.getInstance().isTimerRunning()) {
-                    TimerStack.getInstance().refreshOrShowTimerUI(this);
-                } else {
-                    if (itemListOrg instanceof ItemList) {
-                        TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                    } else if (itemListOrg instanceof Item) {
-                        TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                    }
-                }//            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
-            }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
-            ));
-        }
 
         //INTERRUPT TASK
 //        if (!optionTemplateEditMode && !optionNoInterrupt) {
@@ -2084,10 +2100,10 @@ public class ScreenListOfItems extends MyForm {
 //            status = new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
         status.setStatusChangeHandler((oldStatus, newStatus) -> {
             if (newStatus != oldStatus && item.confirmUpdateOfSubtasks(oldStatus, newStatus)) {
-                if (false) { //stop timer in Item.save() - once all changes to status have been taken into account (whether Done/Cancel/SoftDelete
-                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item); //call this here to avoid triggering if status is changed from within the Timer
-                }
-                boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item); //call this here to avoid triggering if status is changed from within the Timer
+//                if (false) { //stop timer in Item.save() - once all changes to status have been taken into account (whether Done/Cancel/SoftDelete
+//                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item); //call this here to avoid triggering if status is changed from within the Timer
+//                }
+                boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item, false, true, true); //call this here to avoid triggering if status is changed from within the Timer
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 
                 //if setting Done, ask if set actual
@@ -2109,8 +2125,8 @@ public class ScreenListOfItems extends MyForm {
 //                        if (refreshOnItemEdits != null) {
 //                            refreshOnItemEdits.launchAction();
 //                        }
-                myForm.refreshAfterEdit();
                 DAO.getInstance().saveInBackground(item);
+                myForm.refreshAfterEdit(); //refresh after save as it may update sub/supertasks etc
                 //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
 //                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refreshTimersFromParseServer();}});
             } else {

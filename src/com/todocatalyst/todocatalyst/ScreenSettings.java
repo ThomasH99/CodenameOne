@@ -60,6 +60,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //        }
         addSettingBoolean(content, parseIdMap2, MyPrefs.keepScreenAlwaysOnInApp);
         addSettingInt(content, parseIdMap2, MyPrefs.overdueLogInterval, 0, 365, 1);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertEnabled);
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice);
 //        addSettingInt(content, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);

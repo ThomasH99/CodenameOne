@@ -2516,7 +2516,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        } else {
 //            prevIndex = -1;
 //        }
-        int prevIndex = previousItem != null ? prevIndex = list.indexOf(previousItem) : -1;
+//        int prevIndex = previousItem != null ? prevIndex = list.indexOf(previousItem) : -1;
+        int prevIndex = previousItem != null ?  list.indexOf(previousItem) : -1;
 //        int nextIndex;
 //        if (prevIndex < 0 && returnFirstItemIfPreviousNotFound) {
 //            nextIndex = 0;

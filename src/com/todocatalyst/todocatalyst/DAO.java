@@ -3242,19 +3242,23 @@ public class DAO {
 //            Display.getInstance().callSerially(() -> {
 //</editor-fold>
 
-        if (Config.TEST && anyParseObject instanceof ItemAndListCommonInterface) {
+        if (Config.TEST_BACKGR && anyParseObject instanceof ItemAndListCommonInterface) {
             String refErrorStr = ((ItemAndListCommonInterface) anyParseObject).hasReferencesToUnsavedParseObjects();
             if (!refErrorStr.isEmpty()) {
                 Log.p("    BUT SAVE-DAO.saveAndCacheImpl: anyParseObject=\"" + anyParseObject + "\" has references to unsaved parseObjects:" + refErrorStr);
             }
         }
         try {
-            Log.p(">>>>>>> ------ executing parseObject.save()" + anyParseObject);
+            if (Config.TEST_BACKGR) {
+                Log.p(">>>>>>> ------ executing parseObject.save()" + anyParseObject);
+            }
             anyParseObject.save();
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        Log.p(">>>>>>> ------ DONE executing parseObject.save()" + anyParseObject);
+        if (Config.TEST_BACKGR) {
+            Log.p(">>>>>>> ------ DONE executing parseObject.save()" + anyParseObject);
+        }
         if (anyParseObject.getDate(Item.PARSE_DELETED_DATE) != null) {//if an object is soft-deleted, then remove it from cache (shouldn't strictly be necessary as all pointers should have been removed, but also cleans up local cache)
             cacheDelete(anyParseObject);
         } else if (saveToCache) {
@@ -3318,7 +3322,7 @@ public class DAO {
 //            Log.p("BACKGROUND ADDING objects=[" + parseObjects + "]");
 //        Log.p("BACKGROUND GOT Lock");
 //</editor-fold>
-        if (Config.TEST) {
+        if (Config.TEST_BACKGR) {
             Log.p("==========>>>    addToSaveQueue(" + parseObjects + ", " + postSaveAction + ")");
         }
         if (parseObjects != null) {
@@ -3331,32 +3335,32 @@ public class DAO {
                 }
                 if (p.getObjectIdP() == null) { //only save unsaved or dirty objects
                     if (saveList.contains(p)) {
-                        if (Config.TEST) {
+                        if (Config.TEST_BACKGR) {
                             Log.p("==========>>>    ObjId==null, BUT already in savelist(" + saveList.size() + ")=" + saveList);
                         }
                     } else {
                         saveList.add(p);
-                        if (Config.TEST) {
+                        if (Config.TEST_BACKGR) {
                             Log.p("==========>>>    ObjId==null, added to savelist(" + saveList.size() + ")=" + saveList);
                         }
                     }
                 } else if (p.isDirty()) {//only save unsaved or dirty objects
                     if (saveList.contains(p)) {
-                        if (Config.TEST) {
+                        if (Config.TEST_BACKGR) {
                             Log.p("==========>>>    dirty, BUT already in savelist(" + saveList.size() + ")=" + saveList);
                         }
                     } else {
                         saveList.add(p);
-                        if (Config.TEST) {
+                        if (Config.TEST_BACKGR) {
                             Log.p("==========>>>    dirty, added to savelist(" + saveList.size() + ")=" + saveList);
                         }
                     }
                 } else if (saveList.contains(p)) {//only save unsaved or dirty objects
-                    if (Config.TEST) {
+                    if (Config.TEST_BACKGR) {
                         Log.p("==========>>>    !dirty, HAS ObjdId, AND already in savelist(" + saveList.size() + ")=" + saveList);
                     }
                 } else {
-                    if (Config.TEST) {
+                    if (Config.TEST_BACKGR) {
                         Log.p("==========>>>    ERROR !dirty, HAS ObjdId, but NOT already in savelist, p=" + p + " list=(" + saveList.size() + ")=" + saveList);
                     }
                 }
@@ -3364,7 +3368,7 @@ public class DAO {
         }
 
         if (postSaveAction != null) {
-            if (Config.TEST) {
+            if (Config.TEST_BACKGR) {
                 Log.p("==========>>>    adding postSaveAction[" + postSaveAction + "] to savelist(" + saveList.size() + ")=" + saveList);
             }
             saveList.add(postSaveAction);
@@ -3399,13 +3403,13 @@ public class DAO {
                 }
                 while (true) {
                     synchronized (LOCK_SAVELIST) {
-                        if (Config.TEST) {
+                        if (Config.TEST_BACKGR) {
                             Log.p(">>>>>>> BACKGROUND2 backgroundSaveThread - LOCK acquired***********");
                         }
                         while (!saveList.isEmpty()) {
                             if (saveList.get(0) instanceof Runnable) { //execute Runnables
                                 Runnable runnable = (Runnable) saveList.remove(0);
-                                if (Config.TEST) {
+                                if (Config.TEST_BACKGR) {
                                     Log.p(">>>>>>> BACKGROUND3 - executing Runnable [" + runnable + "]");
                                 }
 //                                Display.getInstance().callSeriallyAndWait(runnable);
@@ -3413,9 +3417,8 @@ public class DAO {
 //                                runnable.run();
                             } else if (saveList.get(0) instanceof ParseObject) {
                                 if (((ParseObject) saveList.get(0)).getObjectIdP() == null) { //if previously unsaved, then save alone (not batch ensure references are OK)
-                                    ParseObject parseObject;
-                                    parseObject = (ParseObject) saveList.remove(0);
-                                    if (Config.TEST) {
+                                    ParseObject parseObject = (ParseObject) saveList.remove(0);
+                                    if (Config.TEST_BACKGR) {
                                         Log.p(">>>>>>> BACKGROUND4 - saveAndWait parseObject=" + parseObject);
                                     }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3472,7 +3475,7 @@ public class DAO {
                                     }
 
                                     if (batchSaveList.size() > 1) { //there are multiple parseObjects with same class to batch save
-                                        if (Config.TEST) {
+                                        if (Config.TEST_BACKGR) {
                                             Log.p(">>>>>>> BACKGROUND5 - batchsaveList(" + batchSaveList.size() + ")=" + batchSaveList);
                                         }
 //                                        Display.getInstance().callSeriallyAndWait(() -> saveBatch(batchSaveList, true)); //must save to cache (in case there are new created objects)
@@ -3482,7 +3485,7 @@ public class DAO {
                                         ParseObject parseObject = batchSaveList.remove(0);
                                         if (false && parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave()) {
                                         } else {
-                                            if (Config.TEST) {
+                                            if (Config.TEST_BACKGR) {
                                                 Log.p(">>>>>>> BACKGROUND6 - batchsaveList(" + batchSaveList.size() + ")=" + parseObject);
                                             }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3500,13 +3503,13 @@ public class DAO {
                                 assert false : ">>>>>>> BACKGROUND7 - UNKNOWN type in saveList, object=" + x + ", saveList(" + saveList.size() + ")=" + saveList;
                             }
                         } //while (!saveList.isEmpty())
-                        if (Config.TEST) {
+                        if (Config.TEST_BACKGR) {
                             Log.p(">>>>>>> BACKGROUND8 - LOCK.wait() ************");
                         }
                         try {
                             LOCK_SAVELIST.wait(); //saveList is empty, so wait
                         } catch (InterruptedException e) {
-                            if (Config.TEST) {
+                            if (Config.TEST_BACKGR) {
                                 Log.p(">>>>>>> BACKGROUND9 - InterruptedException = " + e);
                             }
                         }
@@ -3526,7 +3529,7 @@ public class DAO {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                if (Config.TEST) {
+                if (Config.TEST_BACKGR) {
                     Log.p(">>>>>>> TimerTask-run(): trying to get LOCK");
                 }
                 synchronized (LOCK_SAVELIST) {
@@ -3534,14 +3537,14 @@ public class DAO {
                         t.cancel();
                         t = null;
                     }
-                    if (Config.TEST) {
+                    if (Config.TEST_BACKGR) {
                         Log.p(">>>>>>> TimerTask: got LOCK, calling LOCK.notify(). saveList=" + saveList);
                     }
                     LOCK_SAVELIST.notifyAll();
                 }
             }
         };
-        if (Config.TEST) {
+        if (Config.TEST_BACKGR) {
             Log.p(">>>>>>> TimerTask.schedule(timerTask, 200)");
         }
         t.schedule(timerTask, 400); //wait 200ms before initiate saving to 'batch' together as many saves as possible
@@ -3603,7 +3606,7 @@ public class DAO {
         if (workSlot == null) {
             return;
         }
-        if (Config.TEST) {
+        if (Config.TEST_BACKGR) {
             Log.p("==========>>> DAO.saveWorkSlotInBackground(" + testShowMissingRefs(workSlot) + "), ");
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3680,7 +3683,7 @@ public class DAO {
         if (repeatRule == null) {
             return;
         }
-        if (Config.TEST) {
+        if (Config.TEST_BACKGR) {
             Log.p("==========>>> DAO.saveRepeatRuleInBackground(" + testShowMissingRefs(repeatRule) + "), ");
         }
         // saving a (completely new) repeatRule requires saving in a particular order to avoid problems with references to unsaved parseObjects:
@@ -3717,7 +3720,7 @@ public class DAO {
         if (projectOrItem == null) {
             return;
         }
-        if (Config.TEST) {
+        if (Config.TEST_BACKGR) {
             Log.p("==========>>> DAO.saveItemInBackground(elt=" + testShowMissingRefs(projectOrItem) + ")");
         }
         //if filter not saved, simply save it first and then re-save the projectOrItem (simple approach since filter has no references to projectOrItem)
@@ -3809,7 +3812,7 @@ public class DAO {
         if (itemList == null) {
             return;
         }
-        if (Config.TEST) {
+        if (Config.TEST_BACKGR) {
             Log.p("==========>>> DAO.saveItemListInBackground(elt=" + testShowMissingRefs(itemList) + ")");
         }
         //save a filter before saving the element referencing it
@@ -3847,7 +3850,7 @@ public class DAO {
         if (category == null) {
             return;
         }
-        if (Config.TEST) {
+        if (Config.TEST_BACKGR) {
             Log.p("==========>>> DAO.saveCategoryInBackground(elt=" + testShowMissingRefs(category) + ")");
         }
         if (category.getFilterSortDef() != null && !category.getFilterSortDef().isNoSave() && category.getFilterSortDef().getObjectIdP() == null) {
@@ -3891,7 +3894,7 @@ public class DAO {
             if (postSaveAction != null) {
                 addToSaveQueue((List<ParseObject>) null, postSaveAction);
             }
-            if (Config.TEST) {
+            if (Config.TEST_BACKGR) {
                 Log.p("==========>>> DAO.saveCategoryInBackground() SKIPPING null/empty objects =" + parseObjects);
             }
             return;

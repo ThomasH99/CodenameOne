@@ -66,7 +66,7 @@ public class ScreenTimer6 extends MyForm {
 //    final static String TIMER_REPLAY = "StartTimer-";
 
 //    private TimerInstance timerInstance;//= new TimerStack();
-    private Command backCommand = null;
+    Command backCommand = null; //not private since accessed from TimerStack to exit Full screen timer
 //    protected static String FORM_UNIQUE_ID = "ScreenTimer"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private Container timerContentainer = new Container(BoxLayout.y());
 //    private TimerStackEntry entry;
@@ -76,7 +76,11 @@ public class ScreenTimer6 extends MyForm {
     ScreenTimer6(MyForm previousScreen, TimerInstance timerInstance) {
         this(previousScreen, timerInstance, null);
     }
-    
+
+    ScreenTimer6(MyForm previousScreen) {
+        this(previousScreen, TimerStack.getInstance().getCurrentTimerInstanceN(), null);
+    }
+
     ScreenTimer6(MyForm previousScreen, TimerInstance timerInstance, SaveEditedValuesLocally previousValues) {//,  Map<Object, UpdateField> parseIdMap2) {
         super(SCREEN_TITLE, previousScreen, () -> {
         });
@@ -119,7 +123,7 @@ public class ScreenTimer6 extends MyForm {
     //****************** UI *********************
     //
     public void addCommandsToToolbar(Toolbar toolbar) {
-        
+
         super.addCommandsToToolbar(toolbar);
 //        backCommand = makeDoneUpdateWithParseIdMapCommand(true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
         backCommand = makeDoneUpdateWithParseIdMapCommand("", true, () -> {
@@ -129,10 +133,17 @@ public class ScreenTimer6 extends MyForm {
                 timerInstance.saveMe();
             }
             //disable alwaysOn if necessary
-            if (Display.getInstance().isScreenSaverDisableSupported()
-                    && !MyPrefs.keepScreenAlwaysOnInApp.getBoolean()
-                    && MyPrefs.timerKeepScreenAlwaysOnInTimer.getBoolean()) {
-                Display.getInstance().setScreenSaverEnabled(true); //turn screenSaver back on if it was only disable by the Timer
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (Display.getInstance().isScreenSaverDisableSupported() && MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer)) {
+//                Display.getInstance().setScreenSaverEnabled(true); //true enable normal screensaver, false keeps screen on all the time
+//            }
+//</editor-fold>
+            if (Display.getInstance().isScreenSaverDisableSupported()) {
+//                    && !MyPrefs.keepScreenAlwaysOnInApp.getBoolean() && MyPrefs.timerKeepScreenAlwaysOnInTimer.getBoolean()) {
+                boolean screenAlwaysOnInAppButOffInTimer = MyPrefs.keepScreenAlwaysOnInApp.getBoolean() && !MyPrefs.timerKeepScreenAlwaysOnInTimer.getBoolean();
+//                Display.getInstance().setScreenSaverEnabled(true); //turn screenSaver back on if it was only disable by the Timer
+//                Display.getInstance().setScreenSaverEnabled(!screenAlwaysOnInAppButOffInTimer); //turn screenSaver back on if it was only disable by the Timer
+                Display.getInstance().setScreenSaverEnabled(!MyPrefs.keepScreenAlwaysOnInApp.getBoolean()); //turn screenSaver back on if it was only disable by the Timer
             }
             return true;
         }, true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
@@ -150,7 +161,7 @@ public class ScreenTimer6 extends MyForm {
         }
         ));
     }
-    
+
     @Override
     public void refreshAfterEdit() {
 //        getContentPane().removeAll(); //clear existing contentPane
@@ -193,6 +204,7 @@ public class ScreenTimer6 extends MyForm {
     }
 
     // ************************** START TIMER ************************
+//<editor-fold defaultstate="collapsed" desc="comment">
     //
 //    static void showPreviousScreenOrDefaultXXX(MyForm previousForm, boolean callRefreshAfterEdit) {
 //        if (Display.getInstance().isScreenSaverDisableSupported() && MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer)) {
@@ -201,20 +213,22 @@ public class ScreenTimer6 extends MyForm {
 ////        super.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
 //        MyForm.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
 //    }
-    void showPreviousScreen(boolean callRefreshAfterEdit) {
-        if (Display.getInstance().isScreenSaverDisableSupported() && MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer)) {
-            Display.getInstance().setScreenSaverEnabled(true); //true enable normal screensaver, false keeps screen on all the time
-        }
-//        super.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
-        super.showPreviousScreen(callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
-    }
-
+//    void showPreviousScreenXXX(boolean callRefreshAfterEdit) {
+//        //now done (correctly) in Back command
+//        if (Display.getInstance().isScreenSaverDisableSupported() && MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer)) {
+//            Display.getInstance().setScreenSaverEnabled(true); //true enable normal screensaver, false keeps screen on all the time
+//        }
+////        super.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
+//        super.showPreviousScreen(callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
+//    }
+    
 //    static void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
 //        Form f = Display.getInstance().getCurrent();
 //        if (f instanceof MyForm) {
 //            showPreviousScreenOrDefault((MyForm) f, callRefreshAfterEdit);
 //        }
 //    }
+//</editor-fold>
     @Override
     public void show() {
         //only show if an item is (still) timed, otherwisw showback to return to previous screen, check since show can be called during Replay
@@ -226,10 +240,12 @@ public class ScreenTimer6 extends MyForm {
         }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public void showBack() {
 ////        ReplayLog.getInstance().popCmd(); //pop any previous command
 ////        super.showBack();
 //        showBack(false);
 //    }
+//</editor-fold>
 }

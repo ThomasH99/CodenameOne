@@ -72,7 +72,6 @@ public class MyPrefs {
 //    static PrefEntry insertNewCategoriesForItemsInStartOfIList //NO, confusing, always show in same order as in CategoryList
 //            = new PrefEntry("Add new categories to beginning of list**(make this setting public??)", "insertNewCategoriesForItemsInStartOfIList", false, 
 //                    "Always insert added categories at the beginning (makes most recently added categories appear first)");
-
     static PrefEntry insertNewRepeatInstancesInStartOfLists
             = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
 
@@ -205,10 +204,10 @@ public class MyPrefs {
             = new PrefEntry("Allow to swipe-start Timer on any task/project **", "timerCanBeSwipeStartedEvenOnInvalidItem", true,
                     "Start Timer directly on any swiped task or project"); //be force-started on tasks which are normally skipped, e.g. Done, Cancelled or Waiting tasks (depend on settings)**");
     static PrefEntry timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject
-            = new PrefEntry("If the currently timed task is no longer in the timed list or project, then start Timer on first task", "timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject", false,
-                    "**");
+            = new PrefEntry("If the currently timed task is no longer in the timed list or project, then start Timer on first task", "timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject",
+                    false, "**");
     static PrefEntry enableTimerToRestartOnLists
-            = new PrefEntry("Enable Timer to restart over on a timed list, for example if the previously timed task is no longer in the list", 
+            = new PrefEntry("Enable Timer to restart over on a timed list, for example if the previously timed task is no longer in the list",
                     "enableTimerToRestartOnLists", false,
                     "**");
 
@@ -455,6 +454,8 @@ public class MyPrefs {
             = new PrefEntry("**", "disableGoogleAnalytics", false, "diable sending anonymous usage pattern information to Google Analytics (used to help improve TDC");
     static PrefEntry enableRepairCommandsInMenus
             = new PrefEntry("enableRepairCommandsInMenus", "enableRepairCommandsInMenus", true, "**");
+    static PrefEntry pinchInsertEnabled
+            = new PrefEntry("Enable pinch insert in lists", "pinchInsertEnabled", true, "**");
 
     //REPEATRULE
     static PrefEntry repeatMaxInterval = new PrefEntry("repeatMaxInterval**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
@@ -484,12 +485,12 @@ public class MyPrefs {
     static PrefEntry itemListExpiresByDate = new PrefEntry("Show Expires By date", "itemListExpiresByDate", true, "**");
     static PrefEntry itemListWaitingTillDate = new PrefEntry("Show Waiting Till date", "itemListWaitingTillDate", true, "**");
     static PrefEntry itemListShowRemainingEvenIfZero = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", "itemListShowRemainingEvenIfZero", false, "**");
-    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", 
+    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry("In lists of tasks, show even zero [REMAINING]**",
             "itemListShowActualIfNonZeroEvenIfNotDone", false, "**");
     static PrefEntry itemListEffortEstimate = new PrefEntry("Show Effort Estimate in list details**", "itemListEffortEstimate", true, "**");
     static PrefEntry itemListAllowDuplicateListNames = new PrefEntry("Show Effort Estimate in list details**", "itemListAllowDuplicateListNames", false, "**");
     static PrefEntry earnedValueDecimals = new PrefEntry("Number of decimals shown for task Value**", "earnedValueDecimals", 2, "**");
-    static PrefEntry itemListDontShowValueIfEarnedValuePerHourIsNonZero = new PrefEntry("Show Effort Estimate in list details**", 
+    static PrefEntry itemListDontShowValueIfEarnedValuePerHourIsNonZero = new PrefEntry("Show Effort Estimate in list details**",
             "itemListDontShowValueIfEarnedValuePerHourIsNonZero", true, "**");
 
     //
@@ -525,7 +526,7 @@ public class MyPrefs {
             "listOfCategoriesShowTotalTime", true, "**");
     static PrefEntry listOfCategoriesShowWorkTime = new PrefEntry("Show sum of defined work time for the list",
             "listOfCategoriesShowWorkTime", true, "**"); //"e.g. 1h10/23h12/[4h00]
-   static PrefEntry listOfCategoriesShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects",
+    static PrefEntry listOfCategoriesShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects",
             "listOfCategoriesShowTotalNumberOfLeafTasks", true, "**");
 
     //LIST OF ITEMLISTS

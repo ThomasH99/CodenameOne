@@ -16,9 +16,9 @@ import com.codename1.ui.layouts.BoxLayout;
  * Creates a floating action button on the lower right corner of the screen, expands
  * @author Thomas
  */
-public class FloatingActionButton {
+public class FloatingActionButtonXXX {
 
-    FloatingActionButton() {
+    FloatingActionButtonXXX() {
 
 //        Container con = BoxLayout.encloseY(fabNewsletter, fabAdd, fabMark, fabClear);
         Container con = BoxLayout.encloseY();

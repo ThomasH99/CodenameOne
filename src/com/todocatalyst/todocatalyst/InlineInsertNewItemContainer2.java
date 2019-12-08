@@ -134,7 +134,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         textEntryField.setName("inlineItemEditFieldAsync");
         
 //          AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField2, item, 1000, () -> item.setText(textEntryField2.getText())); //normal that this appear as non-used!
-        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
+        if (myForm.previousValues!=null&&myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
             textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
         }
 
@@ -142,8 +142,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 ////            insertAsSubtask = (Boolean) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK);
 //            insertAsSubtask =  myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK)!=null;
 //        }
-        insertAsSubt = myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK) != null;
-        insertLevel = myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_LEVEL) != null ? (int) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_LEVEL) : 0;
+        insertAsSubt = myForm.previousValues!=null&&myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK) != null;
+        insertLevel = myForm.previousValues!=null&&myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_LEVEL) != null ? (int) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_LEVEL) : 0;
 //        this.insertAsSubt = insertAsSubtask;
 
         setUIID(insertAsSubt ? "InlineInsertItemAsSubtask" : "InlineInsertItemAsTask"); //TODO!!!

@@ -1899,7 +1899,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public boolean isNoSave() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return false;
     }
 
 //    @Override
