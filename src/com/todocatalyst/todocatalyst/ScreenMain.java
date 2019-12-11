@@ -160,7 +160,7 @@ public class ScreenMain extends MyForm {
         toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
-        MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle,  Icons.iconMainAlarms/*FontImage.create(" \ue838 ", iconStyle)*/,
+        MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconMainAlarms/*FontImage.create(" \ue838 ", iconStyle)*/,
                 (e) -> {
 //                new ScreenListOfAlarms().show();
 //                   if (false) 
@@ -215,7 +215,7 @@ public class ScreenMain extends MyForm {
                             },
                             //                        ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
                             //                        new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS, false), //FilterSortDef.FILTER_SHOW_DONE_TASKS
-                            ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                            ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON
                             //                        | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
                             | ScreenListOfItems.OPTION_NO_WORK_TIME, (i) -> null /*prevent stickyHeader*/);
                     myForm.setShowIfEmptyList("Looks like you have no tasks today. Enjoy!");
@@ -309,7 +309,7 @@ public class ScreenMain extends MyForm {
 //            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null,
             new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null,
                     () -> {/*no need to removeFromCache workslotlist from DAO since it will be updated within the screen in a consistent way with the parse server list */
-                    }, true).show();
+                    }, true, false).show();
         }
         );
         makeAndAddButtons(workSlots, toolbar, cont, "**");

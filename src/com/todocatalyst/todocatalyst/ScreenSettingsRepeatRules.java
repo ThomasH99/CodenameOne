@@ -38,13 +38,13 @@ public class ScreenSettingsRepeatRules extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule);
         addSettingBoolean(content, parseIdMap2, MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances);
         if (false) {
-        addSettingInt(content, parseIdMap2, MyPrefs.maxNumberRepeatInstancesToDeleteWithoutConfirmation, 1, 1000, 1);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.repeatHidePreviousTasksDetails);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewRepeatInstancesInStartOfLists);
-        addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberOfRepeatsToGenerate, 0, 52, 1);
-        addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxInterval, 0, 731, 1);
-        addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead, 0, 30, 1);
-        addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead, 0, 62, 1);
+            addSettingInt(content, parseIdMap2, MyPrefs.maxNumberRepeatInstancesToDeleteWithoutConfirmation, 1, 1000, 1);
+            addSettingBoolean(content, parseIdMap2, MyPrefs.repeatHidePreviousTasksDetails);
+            addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewRepeatInstancesInStartOfLists);
+            addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberOfRepeatsToGenerate, 0, 52, 1);
+            addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxInterval, 0, 731, 1);
+            addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead, 0, 30, 1);
+            addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead, 0, 62, 1);
         }
     }
 }

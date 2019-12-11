@@ -80,7 +80,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         NONE
     };
 
-    private InsertPositionType newInsertPosition = InsertPositionType.NONE;
+    private InsertPositionType newInsertPosition = InsertPositionType.NONE; //must be global to accessible in dropPlaceholder
 //    private InsertPositionType lastInsertPosition = InsertPositionType.NONE;
     private InsertPositionType lastDropPlaceholderInsertPosition = InsertPositionType.NONE; //where is the current dropPlaceholder situated?
 //    private InsertPositionType insertAs = null; //how to insert on the next dropAction
@@ -171,11 +171,13 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                Log.p("InsertPosition = " + newInsertType + ", inserting SUPERtask dropPlaceholder", Log.DEBUG);
                 insertDropPlaceholderForSupertask.insertDropPlaceholder(dropPlaceholder);
             } else {
-                ASSERT.that("InsertPosition = NONE??!!");
+                if (Config.TEST) {
+                    Log.p("New InsertPosition but no appropropriate dropPlaceholder insert function, Pos=" + newInsertType + ", NOR=" + insertDropPlaceholder + ". SUB=" + insertDropPlaceholderForSubtask + ", SUP=" + insertDropPlaceholderForSupertask);
+                }
             }
-            if (false) {
-                lastDropPlaceholderInsertPosition = newInsertType; //keep track of where dropPlaceholder is situated
-            }
+//            if (false) {
+//                lastDropPlaceholderInsertPosition = newInsertType; //keep track of where dropPlaceholder is situated
+//            }
         }
     }
 
@@ -2062,7 +2064,11 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            InsertPositionType oldInsertPosition = newInsertPosition;
 //            lastInsertPosition = newInsertPosition;
 //            lastDropPlaceholderInsertPosition = newInsertPosition;
-            InsertPositionType newInsertPosition = insertPosition(x);
+//            InsertPositionType newInsertPosition = insertPosition(x);
+            newInsertPosition = insertPosition(x);
+            if (false &&Config.TEST_DRAG_AND_DROP) {
+                Log.p("dropPos=" + newInsertPosition);
+            }
             if (newInsertPosition == lastDropPlaceholderInsertPosition && dropTarget == lastDropTarget) {
                 return; //if we're still above the same target, and in the same newInsertPosition, do nothing
             }//            lastInsertPosition = newInsertPosition;
@@ -2676,9 +2682,9 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                     } else {
                         dropPlaceholder.getParent().animateLayout(300);
                     }
-                }
 //                    formNeedRefresh = true;
-                lastDropPlaceholderInsertPosition = newInsertPosition; //keep track of where dropPlaceholder is situated
+                    lastDropPlaceholderInsertPosition = newInsertPosition; //keep track of where dropPlaceholder is situated
+                }
                 return;
             } else { //dropTarget != null && dropTarget != dropPlaceholder && dropTarget != this
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3474,7 +3480,19 @@ T3
 //                        };
 //</editor-fold>
                         if (draggedElement.getOwner() == beforeElement) {
-                            MyDragAndDropSwipeableContainer beforeOwnerDD = getParentMyDDCont(beforeMyDDCont);
+                                // insert a subtask to A, as a sibling task after A to give A; S1; ...
+//                                ItemAndListCommonInterface beforeOwner = beforeMyDDCont.getDragAndDropObject();
+                                ItemAndListCommonInterface beforeOwner = beforeElement.getOwner();
+                                    dropAsSuperTaskActionCall = () -> {
+                                        moveItemOrItemListAndSave(beforeOwner, draggedElement, beforeElement, true);
+                                    };
+                                    insertDropPlaceholderForSupertask = (dropPh) -> {
+                                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                                    };
+                        }
+                        if (false &&draggedElement.getOwner() == beforeElement) {
+//                            MyDragAndDropSwipeableContainer beforeOwnerDD = getParentMyDDCont(beforeMyDDCont);
+                            MyDragAndDropSwipeableContainer beforeOwnerDD = beforeMyDDCont; //the previous container should be the one?!
                             if (beforeOwnerDD != null) {
                                 // insert a subtask to A, as a sibling task between A and B to give A; S1; B
                                 ItemAndListCommonInterface beforeOwner = beforeOwnerDD.getDragAndDropObject();
@@ -3902,10 +3920,14 @@ before getting to here, we've already covered the following cases where both bef
 //                            dropActionCall.insertDropCont();
 //                        }
 //</editor-fold>
+//                        InsertPositionType test = lastDropPlaceholderInsertPosition; //for testing
+//                        InsertPositionType test2 = newInsertPosition;
+//                        if (MyPrefs.dragDropAsSubtaskEnabled.getBoolean() && newInsertPosition == InsertPositionType.SUBTASK && dropAsSubtaskActionCall != null && insertDropPlaceholderForSubtask != null) {
+//                        if (MyPrefs.dragDropAsSubtaskEnabled.getBoolean() && newlastDropPlaceholderInsertPosition == InsertPositionType.SUBTASK && dropAsSubtaskActionCall != null && insertDropPlaceholderForSubtask != null) {
                         if (MyPrefs.dragDropAsSubtaskEnabled.getBoolean() && newInsertPosition == InsertPositionType.SUBTASK && dropAsSubtaskActionCall != null && insertDropPlaceholderForSubtask != null) {
                             dropAsSubtaskActionCall.doDropAction();
                             Log.p("**********Comp.drop , SUBTASK dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
-                        } else if (MyPrefs.dragDropAsSupertaskEnabled.getBoolean() && newInsertPosition == InsertPositionType.SUPERTASK && dropAsSuperTaskActionCall != null && insertDropPlaceholderForSupertask != null) {
+                        } else if (MyPrefs.dragDropAsSupertaskEnabled.getBoolean() && lastDropPlaceholderInsertPosition == InsertPositionType.SUPERTASK && dropAsSuperTaskActionCall != null && insertDropPlaceholderForSupertask != null) {
                             dropAsSuperTaskActionCall.doDropAction();
                             Log.p("**********Comp.drop , SUPER dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
 //                        } else if (newInsertPosition == InsertPositionType.NORMAL && dropActionCall != null && insertDropPlaceholder != null) {
@@ -4127,8 +4149,9 @@ before getting to here, we've already covered the following cases where both bef
                 }
                 formNeedRefresh = false;
             }
-            lastDropPlaceholderInsertPosition = newInsertPosition; //keep track of where dropPlaceholder is situated
-
+            if (false) {
+                lastDropPlaceholderInsertPosition = newInsertPosition; //keep track of where dropPlaceholder is situated //SHOUDN'T be necessary
+            }
 //            Form form = getComponentForm();
 //            if (formNeedRefresh && form != null)
 //                form.revalidateWithAnimationSafety();
@@ -5338,6 +5361,8 @@ before getting to here, we've already covered the following cases where both bef
         lastY = -1;
         dragImage2 = null;
         lastDragDirection = DragDirection.NONE;
+        lastDropPlaceholderInsertPosition = InsertPositionType.NONE;
+        newInsertPosition = InsertPositionType.NONE;
         setHidden(false); //unhide (set hidden in dragEnter/dragListener) //done in Component.dragFinishedImpl(int x, int y)
         Form f2 = Display.getInstance().getCurrent();
         if (f2 != null) {

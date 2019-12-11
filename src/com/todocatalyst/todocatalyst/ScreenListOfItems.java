@@ -659,25 +659,28 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
+        if (false) { //works, but overlaps with SmallTimer AND with last element in long list (need white space after)
         FloatingActionButton fab = FloatingActionButton.createFAB(FontImage.MATERIAL_ADD);
         FloatingActionButton subfabStartTimer = fab.createSubFAB(Icons.iconLaunchTimer, "");
         FloatingActionButton subfabAddTaskToList = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
         FloatingActionButton subfabInterrupt = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
         FloatingActionButton subfabFilter = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
         fab.bindFabToContainer(getContentPane());
-
+        }
         super.addCommandsToToolbar(toolbar);
         //NEW ITEM
 //        Command newCmd = new Command("OldCmd", Icons.iconNewToolbarStyle) {
         if (!optionNoNewButton) {
 //            if (itemListOrg.isNoSave()) {
-            toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
+//            toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
 
             if (itemListOrg instanceof Category && !itemListOrg.isNoSave() && !optionTemplateEditMode) {
                 toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrg, "Add task", Icons.iconNew));
             } else if (itemListOrg instanceof ItemList && !itemListOrg.isNoSave() && !optionTemplateEditMode) {
                 toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrg, "Add task", Icons.iconNew));
             }
+//            toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
+            toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList(Inbox.getInstance(), "Add task to Inbox", Icons.iconNewTaskToInbox));
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            } else {
@@ -748,23 +751,33 @@ public class ScreenListOfItems extends MyForm {
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //</editor-fold>
 //            toolbar.addCommandToLeftBar(CommandTracked.create("", Icons.iconLaunchTimer, (e) -> {
-            toolbar.addCommandToOverflowMenu(CommandTracked.create("Start Timer on list", Icons.iconLaunchTimer, (e) -> {
-
-//                if (timerInstance.isRunning()) {
-                if (TimerStack.getInstance().isTimerActive()) {
-//                    TimerStack.getInstance().refreshOrShowTimerUI(this);
-//                    TimerStack.getInstance().refreshOrShowUIOnTimerChange(); //should show BigTimer (unless smallTimer is shown?)
-                    TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
-                    timerInstance.setFullScreen(true);
-                    timerInstance.saveMe();
-                    new ScreenTimer6(this).show(); //should show BigTimer (unless smallTimer is shown?)
-                } else { //starting up timer
+            toolbar.addCommandToOverflowMenu(CommandTracked.create(TimerStack.getInstance().isTimerActive()?"Open Timer":"Start Timer on list", 
+                    TimerStack.getInstance().isTimerActive()?Icons.iconLaunchTimerAlreadyRunning:Icons.iconLaunchTimer, 
+                    (e) -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (!TimerStack.getInstance().isTimerActive() //timer not already running
+//                        || (itemListOrg instanceof ItemList && TimerStack.getInstance().getCurrentTimerInstanceN().getTimedItemListN() == itemListOrg) //or already running on this list
+//                        || ((itemListOrg instanceof Item) && TimerStack.getInstance().getCurrentTimerInstanceN().getTimedItemN() == itemListOrg) // or item
+//                        || MyPrefs.timerMayPauseAlreadyRunningTimer.getBoolean() //or setting to ALWAYS interrupt
+//                        || (!MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean() || MyForm.showDialogPauseActiveTimer(itemListOrg))) { //or setting to ask before interrupting
+//                    //starting up timer (interrupt already running timer)
+//                    if (itemListOrg instanceof ItemList) {
+//                        TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+//                    } else if (itemListOrg instanceof Item) {
+//                        TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+//                    }
+//                } else { //just show already running timer
+//                    TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
+//                    timerInstance.setFullScreen(true);
+//                    timerInstance.saveMe();
+//                    new ScreenTimer6(this).show(); //should show BigTimer (unless smallTimer is shown? NO, always show big timer since starting timer first time is handled above)
+//                }
+//</editor-fold>
                     if (itemListOrg instanceof ItemList) {
                         TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
                     } else if (itemListOrg instanceof Item) {
                         TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
                     }
-                }//            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             ));
         }
@@ -1247,14 +1260,14 @@ public class ScreenListOfItems extends MyForm {
             ));
         }
 
-        toolbar.addCommandToOverflowMenu(CommandTracked.create("Help", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+//        toolbar.addCommandToOverflowMenu(CommandTracked.create("Help", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+        toolbar.addCommandToOverflowMenu(CommandTracked.create("Support", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
             showPreviousScreen(true);
         }, "Help"));
-        toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+        if (false)toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
             showPreviousScreen(true);
         }, "ReportIssue"));
-        if (false) //doesn't make sense for a list!
-        {
+        if (false) {//doesn't make sense for a list!
             toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
                 showPreviousScreen(true);
             }, "Cancel"));
@@ -2111,12 +2124,12 @@ public class ScreenListOfItems extends MyForm {
                         && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.WAITING))
                         && !wasTimerRunningForTheTask
                         && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
-                    dialogUpdateActualTime(item);
+                    showDialogUpdateActualTime(item);
                 }
 
                 //if setting Waiting, ask if set waiting date and/or waiting alarm
                 if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
-                    dialogSetWaitingDateAndAlarm(item); //only call if we're changing TO Waiting status
+                    showDialogSetWaitingDateAndAlarm(item); //only call if we're changing TO Waiting status
                 }
 
                 myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change

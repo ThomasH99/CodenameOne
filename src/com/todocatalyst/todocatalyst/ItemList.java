@@ -59,7 +59,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_META_LISTS = "metaLists";
     final static String PARSE_FILTER_SORT_DEF = Item.PARSE_FILTER_SORT_DEF; //"filterSort";
     final static String PARSE_WORKSLOTS = Item.PARSE_WORKSLOTS; //"filterSort";
-    final static String PARSE_SYSTEM_LIST = "system"; 
+    final static String PARSE_SYSTEM_LIST = "system";
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
@@ -177,15 +177,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         source.copyMeInto(this);
     }
 
-        public boolean isSystemList() {
+    public boolean isSystemList() {
         Boolean interruptTask = getBoolean(PARSE_SYSTEM_LIST);
         return (interruptTask == null) ? false : interruptTask;
     }
 
-        /**
-         * system lists, e.g. Inbox, Today, etc are predefined and should eg NOT be part of ItemListList
-         * @param isSystemList 
-         */
+    /**
+     * system lists, e.g. Inbox, Today, etc are predefined and should eg NOT be
+     * part of ItemListList
+     *
+     * @param isSystemList
+     */
     public void setSystemList(boolean isSystemList) {
         if (isSystemList) {
             put(PARSE_SYSTEM_LIST, true);
@@ -194,7 +196,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
     }
 
-    
     @Override
     public ItemAndListCommonInterface cloneMe(Item.CopyMode copyFieldDefintion) {
         return cloneMe();
@@ -558,15 +559,21 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public void add(int index, Object element) {
 //        addItemAtIndex((E) element, index);
-        ASSERT.that(false, "check if below works correctly wrt getListFull etc");
+        ASSERT.that(false, "check if below works correctly wrt getListFull etc --> Seems OK");
 //        addToList(index, (E) element);
-        ItemAndListCommonInterface refElt = getList().get(index); //find the reference element (NB! won't work if multiple copies of same element in the list!)
-        addToList((E) element, refElt, false);
+        List<E> filteredList = getList();
+        int idx = 0;
+        if (filteredList.size() > 0 && index < filteredList.size()) {
+            E refElt = filteredList.get(index); //find the reference element (NB! won't work if multiple copies of same element in the list!)
+            addToList((E) element, refElt, false);
+        } else {
+            addToList((E) element, null, false);
+        }
     }
 
     @Override
     public E remove(int index) {
-        assert false : "check if below works correctly wrt getListFull etc";
+        ASSERT.that(false,  "check if below works correctly wrt getListFull etc");
 //        E obj = getItemAt(index);
         E obj = getList().get(index);
 //        removeItem(index);
@@ -965,9 +972,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return null;
 //    }
     /**
-     * returns the item that matches text.Used to check for duplicate
- definition of e.g. Categories (to avoid that two different categories
- have the same user-visible name)
+     * returns the item that matches text.Used to check for duplicate definition
+     * of e.g. Categories (to avoid that two different categories have the same
+     * user-visible name)
      *
      * @param itemList
      * @return
@@ -2278,7 +2285,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        this.selectedIndex = index;
 //        fireSelectionEvent(oldIndex, selectedIndex);
 //    }
-
     /**
      * returns the number of Items that are not done. If the list contains
      * something else than Items, returns zero
@@ -2517,7 +2523,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            prevIndex = -1;
 //        }
 //        int prevIndex = previousItem != null ? prevIndex = list.indexOf(previousItem) : -1;
-        int prevIndex = previousItem != null ?  list.indexOf(previousItem) : -1;
+        int prevIndex = previousItem != null ? list.indexOf(previousItem) : -1;
 //        int nextIndex;
 //        if (prevIndex < 0 && returnFirstItemIfPreviousNotFound) {
 //            nextIndex = 0;
@@ -2615,7 +2621,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * will move the item at position fromPos to position toPos in one 'atomic'

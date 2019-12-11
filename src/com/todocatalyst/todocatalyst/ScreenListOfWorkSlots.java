@@ -57,6 +57,7 @@ public class ScreenListOfWorkSlots extends MyForm {
     private String stickyStrKeep;
     private MyTree2.StickyHeaderGenerator stickyHeaderGen = MyTree2.makeStickyHeaderGen(WorkSlot.PARSE_START_TIME, () -> stickyStrKeep, (s) -> stickyStrKeep = s); //group workSlots by eg day or week
     private boolean showAlsoExpiredWorkSlots;
+    private boolean enableAddWorkSlots;
 
 //    protected static String FORM_UNIQUE_ID = "ScreenListOfWorkSlots"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     /**
@@ -85,15 +86,14 @@ public class ScreenListOfWorkSlots extends MyForm {
      * @param workSlotList
      * @param owner
      * @param previousForm
-     * @param updateItemListOnDone called to update the workTime for the tasks after the workSlots have been edited to removeFromCache the workTime, e.g. if new slots were added/changed/removed
+     * @param updateItemListOnDone called to update the workTime for the tasks
+     * after the workSlots have been edited to removeFromCache the workTime,
+     * e.g. if new slots were added/changed/removed
      * @param refreshWorkSlotList
      */
 //    ScreenListOfWorkSlots(String nameOfOwner, WorkSlotList workSlotList, ItemAndListCommonInterface owner, MyForm previousForm,
-    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, Runnable updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
-        this(owner, previousForm, null, updateActionOnDone, showOwner);
-    }
-
-    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, FetchWorkSlotList refreshWorkSlotList, Runnable updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, FetchWorkSlotList refreshWorkSlotList, Runnable updateActionOnDone,
+            boolean showOwner, boolean enableAddWorkSlots) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm,
         super(SCREEN_TITLE + ((owner.getText() != null && owner.getText().length() > 0) ? " for " + owner.getText() : ""), previousForm, updateActionOnDone);
@@ -123,15 +123,24 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        addCommandsToToolbar(getToolbar(), theme);
 //        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own scrolling 
 //        getContentPane().setScrollableY(true);
+        getContentPane().setScrollableY(false);
+        expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+        this.enableAddWorkSlots = enableAddWorkSlots;
         addCommandsToToolbar(getToolbar());
 //        setScrollableY(true);
 //        setLayout(BoxLayout.y());
 //        getContentPane().setScrollableY(true);
-        getContentPane().setScrollableY(false);
-        expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
 
 //        getContentPane().add(buildContentPaneForItemList(workSlotList));
         refreshAfterEdit();
+    }
+
+    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, FetchWorkSlotList refreshWorkSlotList, Runnable updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+        this(owner, previousForm, refreshWorkSlotList, updateActionOnDone, showOwner, true);
+    }
+
+    ScreenListOfWorkSlots(ItemAndListCommonInterface owner, MyForm previousForm, Runnable updateActionOnDone, boolean showOwner) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+        this(owner, previousForm, null, updateActionOnDone, showOwner);
     }
 
     @Override
@@ -169,9 +178,9 @@ public class ScreenListOfWorkSlots extends MyForm {
             workSlotListN.setIncludeExpiredWorkSlots(showAlsoExpiredWorkSlots);
         }
         Container contentContainer = buildContentPaneForWorkSlotList(workSlotListN);
-        if (contentContainer instanceof MyTree2)
+        if (contentContainer instanceof MyTree2) {
             setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
-
+        }
         getContentPane().add(MyBorderLayout.CENTER, contentContainer);
 //        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
@@ -194,12 +203,13 @@ public class ScreenListOfWorkSlots extends MyForm {
 
         super.addCommandsToToolbar(toolbar);
         //NEW WORKSLOT
-        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
-            WorkSlot newWorkSlot = new WorkSlot();
-            newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
-            setKeepPos(new KeepInSameScreenPosition());
-            new ScreenWorkSlot(newWorkSlot, workSlotListOwner, ScreenListOfWorkSlots.this, () -> {
-                if (newWorkSlot.hasSaveableData()) {
+        if (enableAddWorkSlots) { //TODO!!!! disable until possible to select owner
+            toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
+                WorkSlot newWorkSlot = new WorkSlot();
+                newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
+                setKeepPos(new KeepInSameScreenPosition());
+                new ScreenWorkSlot(newWorkSlot, workSlotListOwner, ScreenListOfWorkSlots.this, () -> {
+                    if (newWorkSlot.hasSaveableData()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    workSlot.setOwner(owner);
 //                    //set Owner of new workSlot
@@ -213,8 +223,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 ////                        throw RuntimeException("Unknown type of owner");
 //                    } else assert false: "should never happen";
 //</editor-fold>
-                    //save new workSlot
-                    DAO.getInstance().saveInBackground(newWorkSlot); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        //save new workSlot
+                        DAO.getInstance().saveInBackground(newWorkSlot); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    workSlotList.addItemAtIndex(workSlot, 0);
 //save updated owner of workslot //TODO not necessary to save the owners (they are not modified for workslots since these are fetched via a Parse query)??!!
@@ -239,13 +249,14 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                    }
 //                    workSlotList.add(newWorkSlot);
 //                    workSlotListOwner.setWorkSlotList(workSlotList);
-                    workSlotListOwner.addWorkSlot(newWorkSlot);
-                    DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) workSlotListOwner);
-                    refreshAfterEdit();
-                }
-            }).show();
+                        workSlotListOwner.addWorkSlot(newWorkSlot);
+                        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) workSlotListOwner);
+                        refreshAfterEdit();
+                    }
+                }).show();
+            }
+            ));
         }
-        ));
 
         //BACK
 //        toolbar.addCommandToLeftBar(makeDoneCommand("", FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle())));
@@ -308,8 +319,12 @@ public class ScreenListOfWorkSlots extends MyForm {
                 return workSlot;
             }
         };
-        if (Config.TEST) cont.setName("WorkSlotCont:" + workSlot);
-        if (Config.TEST) swipCont.setName("WSltMyDD:" + workSlot);
+        if (Config.TEST) {
+            cont.setName("WorkSlotCont:" + workSlot);
+        }
+        if (Config.TEST) {
+            swipCont.setName("WSltMyDD:" + workSlot);
+        }
         cont.setLayout(new MyBorderLayout());
 //        cont.addComponent(BorderLayout.CENTER, new Button(item.getText()));
         //EDIT items in category
@@ -344,7 +359,9 @@ public class ScreenListOfWorkSlots extends MyForm {
                 DAO.getInstance().saveInBackground(workSlot);
 //                    refreshAfterEdit();
 //                refreshOnItemEdits.launchAction();
-                if (false) myForm.refreshAfterEdit(); //not needed anymore since always called on screen refresh
+                if (false) {
+                    myForm.refreshAfterEdit(); //not needed anymore since always called on screen refresh
+                }
             }).show();
         }
         ));
@@ -537,7 +554,9 @@ public class ScreenListOfWorkSlots extends MyForm {
                         return cmp;
                     } else if (node instanceof Item) {
                         cmp = ScreenListOfItems.buildItemContainer(ScreenListOfWorkSlots.this, (Item) node, null, null);
-                    } else assert false;
+                    } else {
+                        assert false;
+                    }
                     setIndent(cmp, depth);
                     return cmp;
                 }

@@ -76,7 +76,7 @@ public class TimerInstance extends ParseObject {
     private UITimer reloadTimersFromParseServer; //used to determine how often to check if the timer state on the Parse Server has changed (e.g. 
 
     public String toString() {
-        return ((getTimedItemList() != null ? " List:" + getTimedItemList().getText() : "")
+        return ((getTimedItemListN() != null ? " List:" + getTimedItemListN().getText() : "")
                 + (getTimedProject() != null ? " Proj:" + getTimedProject().getText() : "")
                 + (getTimedItemN() != null ? "Task:" + getTimedItemN().getText() : "")
                 + (getStartTimeD().getTime() != 0 ? " Start:" + getStartTimeD() : "")
@@ -224,7 +224,7 @@ public class TimerInstance extends ParseObject {
         }
     }
 
-    public ItemList getTimedItemList() {
+    public ItemList getTimedItemListN() {
         ItemList itemList = (ItemList) getParseObject(PARSE_LIST);
 //        if (itemList != null) {
         itemList = (ItemList) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(itemList);
@@ -815,7 +815,7 @@ public class TimerInstance extends ParseObject {
 
             //if there was no project or no suitable subtask found in project, continue with next in list
             if (nextTimedItem == null) {
-                itemList = getTimedItemList();
+                itemList = getTimedItemListN();
 //                lookForItemAfterThis = previousTimedItem; //NO, lookForItemAfterThis = project above
 
                 if (itemList != null) {
@@ -926,8 +926,8 @@ public class TimerInstance extends ParseObject {
 //        if (update) {
         if (updateAndSave) {
             setTimedItem(nextTimedItem);
-            if (project instanceof Item) {
-                setTimedProject(project); //set project
+            if (true ||project instanceof Item) {
+                setTimedProject(project); //set project (possibly to null to indicate we've finished with the project)
             }//            else if (project instanceof WorkSlot)
 //            setTimedProject(project); //set project
 //        }

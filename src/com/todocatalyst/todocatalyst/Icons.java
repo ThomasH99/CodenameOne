@@ -82,6 +82,7 @@ public class Icons {
         return makeT(FontImage.MATERIAL_TIMER);
     }
     static char iconLaunchTimer = FontImage.MATERIAL_TIMER;
+    static char iconLaunchTimerAlreadyRunning = FontImage.MATERIAL_SHUTTER_SPEED;
 //    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand"));
     final static Image iconTimerSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, labelStyle);
 
@@ -325,10 +326,10 @@ public class Icons {
 //    final static char iconEditSymbol = FontImage.MATERIAL_CHEVRON_RIGHT;
     final static Image iconEditSymbolLabelStyle = FontImage.createMaterial(iconEdit, labelStyle);
 
-    final static char iconNewTask = FontImage.MATERIAL_ADD_CIRCLE_OUTLINE;
+    final static char iconNewTaskToInbox = FontImage.MATERIAL_ADD_CIRCLE_OUTLINE;
 
     static Image iconNewTaskToolbarStyle() {
-        return makeT(iconNewTask);
+        return makeT(iconNewTaskToInbox);
     }
 
     final static char iconNew = FontImage.MATERIAL_ADD;

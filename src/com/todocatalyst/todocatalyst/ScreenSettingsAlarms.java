@@ -34,9 +34,13 @@ public class ScreenSettingsAlarms extends ScreenSettingsCommon {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container cont) {
 //        cont.setScrollableY(true);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice).addActionListener((e) -> {
-            AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //enable/disable all alarms
-        });
+//        addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice).addActionListener((e) -> {
+//            AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //enable/disable all alarms
+//        });
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice,
+                () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(), //enable/disable all alarms
+                () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled() //enable/disable all alarms
+        );
         addSettingInt(cont, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);
         addSettingInt(cont, parseIdMap2, MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes, 0, 120, 1);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);

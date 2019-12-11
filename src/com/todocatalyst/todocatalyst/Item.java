@@ -3905,33 +3905,33 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * needed repeat instances are created/deleted, as well as deleting an old
      * RR if de-activated
      *
-     * @param newRepeatRule a new RR, null, or an edited *copy* of an existing
+     * @param newRepeatRuleN a new RR, null, or an edited *copy* of an existing
      * RR
      */
-    public void setRepeatRule(RepeatRuleParseObject newRepeatRule) {
+    public void setRepeatRule(RepeatRuleParseObject newRepeatRuleN) {
         RepeatRuleParseObject oldRepeatRule = getRepeatRule();
         boolean notTemplate = !isTemplate();
 
         if (oldRepeatRule == null) { //setting a RR for the first time
-            if (newRepeatRule != null && newRepeatRule.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+            if (newRepeatRuleN != null && newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
 //                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null)
 //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
-                setRepeatRuleInParseAndSave(newRepeatRule); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+                setRepeatRuleInParseAndSave(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
                 if (notTemplate) { // newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true);
-                    opsAfterSubtaskUpdates.add(() -> newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true));
+                    opsAfterSubtaskUpdates.add(() -> newRepeatRuleN.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true));
                 }
             } else {
                 //setting null or NO_REPEAT when already null - do nothing
             }
         } else { //oldRepeatRule != null
-            if (newRepeatRule == null || newRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
+            if (newRepeatRuleN == null || newRepeatRuleN.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
 //                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
                 //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
                 setRepeatRuleInParseAndSave(null);
                 opsAfterSubtaskUpdates.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this));
             } else { //newRepeatRule != null and possibly modified (eg. click Edit Rule, then Back
-                if (!newRepeatRule.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
-                    oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRule); //update existing rule with updated values
+                if (!newRepeatRuleN.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
+                    oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
                     if (notTemplate) {
                         opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, false)); //
                     }
@@ -4950,7 +4950,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         if (false && newStatus == ItemStatus.WAITING) { //behaviour too specific to UI/screen in which a task is set waiting, so don't do here
-            MyForm.dialogSetWaitingDateAndAlarm(this); //only call if we're changing TO Waiting status
+            MyForm.showDialogSetWaitingDateAndAlarm(this); //only call if we're changing TO Waiting status
 //            MyForm.showDialogUpdateRemainingTime(getRemaining());
         }
 
@@ -8245,7 +8245,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             for (Runnable f : opsAfterSubtaskUpdates) {
                 f.run();
             }
-            opsAfterSubtaskUpdates = null; //must delete 
+            opsAfterSubtaskUpdates.clear();//clear to avoid having to recreate = null; //must delete 
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //save dirty Categories:
@@ -8299,7 +8299,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         AlarmHandler.getInstance().updateOnItemChange(this);
 
-        if (getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+        if (getOwner() == null &&!isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
             Inbox.getInstance().addToList(this);
 //            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
             DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());

@@ -97,7 +97,7 @@ public class MyPrefs {
 //    static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
     static PrefEntry dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask
             = new PrefEntry("Approximate width in millimeters of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
-                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 5, "**");
+                    "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", 10, "**");
 
 //    static PrefEntry dragDropLeftDropZoneWidth
 //            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
@@ -133,7 +133,7 @@ public class MyPrefs {
             = new PrefEntry("Buzz interval when Timer is running (minutes)", "timerBuzzerInterval", (int) 0, ""); //, "Reminder vibration interval when Timer is running");
 
     static PrefEntry timerUpdateInterval
-            = new PrefEntry("Interval between Timer updates (seconds)", "timerUpdateInterval", (int) 1, ""); //, "Reminder vibration interval when Timer is running");
+            = new PrefEntry("Update Timer elapsed time every N seconds", "timerUpdateInterval", (int) 1, ""); //, "Reminder vibration interval when Timer is running");
 
     static PrefEntry timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds
             = new PrefEntry("Minimum timer threshold (seconds)", "timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds", (int) 5, "Tasks will not be marked ongoing and the time will not be saved until after this number seconds. Useful to avoid that skipping a task in Timer marks it ongoing"); //, "Reminder vibration interval when Timer is running");
@@ -210,6 +210,12 @@ public class MyPrefs {
             = new PrefEntry("Enable Timer to restart over on a timed list, for example if the previously timed task is no longer in the list",
                     "enableTimerToRestartOnLists", false,
                     "**");
+    static PrefEntry timerMayPauseAlreadyRunningTimer
+            = new PrefEntry("Starting Timer on a new task or list will pause an already running timer", "timerMayPauseAlreadyRunningTimer", true,
+                    "**");
+    static PrefEntry timerAskBeforeStartingOnNewElement
+            = new PrefEntry("Ask before starting Timer starts on new task or list always If Possible to start **Always show new timers in current screenshow",
+                    "timerAskBeforeStartingOnNewElement", true, "**");
 
     //COMMENTS
     static PrefEntry commentsAddToBeginningOfComment
@@ -239,6 +245,8 @@ public class MyPrefs {
 
     static PrefEntry alarmSoundFile
             = new PrefEntry("**", "alarmSoundFile", "notification_sound_Cuckoo_bird_sound.mp3", "**");
+    static PrefEntry alarmPlayBuiltinAlarmSound
+            = new PrefEntry("Use built in alarm sound", "alarmPlayBuiltinAlarmSound", true, "When adjusting the snooze time of a task manually, the value is kept as default for other tasks, making it easy to snooze several tasks with the same duration. When not set, the Picker is initialized with the default value"); //alarms activated by default
 
     static PrefEntry alarmIntervalBetweenAlarmsRepeatsMillisInMinutes
             = new PrefEntry("Minutes between reminder notifications", "alarmIntervalBetweenAlarmsRepeatsMillisInMinutes", 1, "Defines the minutes between the repeats of a reminder. Chose 0 to not repeat."); //alarms activated by default

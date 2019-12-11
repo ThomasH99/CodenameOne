@@ -797,7 +797,7 @@ public class MyForm extends Form {
      * @return
      */
 //    static void dialogSetWaitingDateAndAlarm(Item item, Map<Object, UpdateField> parseIdMap2) {
-    static void dialogSetWaitingDateAndAlarm(Item item) {
+    static void showDialogSetWaitingDateAndAlarm(Item item) {
         if (!MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()
                 || (item.getWaitingTillDateD().getTime() != 0 && item.getWaitingAlarmDateD().getTime() != 0)) {
             return; //do nothing if both waiting dates are already set
@@ -848,7 +848,7 @@ public class MyForm extends Form {
 //        return dia;
     }
 
-    static void dialogUpdateActualTime(Item item) {
+    static void showDialogUpdateActualTime(Item item) {
         if (item.isDone()
                 || !(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()
                 || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero.getBoolean() && item.getActual() == 0))) {
@@ -887,7 +887,7 @@ public class MyForm extends Form {
         dia.show();
     }
 
-    static Dialog dialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
+    static Dialog showDialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
         Dialog dia = new Dialog();
         dia.setTitle("Update " + Item.EFFORT_REMAINING + "?");
         dia.setLayout(new BoxLayout(BoxLayout.Y_AXIS));
@@ -913,8 +913,22 @@ public class MyForm extends Form {
 
     static void showDialogUpdateRemainingTimeXXXhow(MyDurationPicker remainingTimePicker) {
         if (MyPrefs.timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem.getBoolean()) {
-            dialogUpdateRemainingTime(remainingTimePicker).show();
+            showDialogUpdateRemainingTime(remainingTimePicker).show();
         }
+    }
+
+    static boolean showDialogPauseActiveTimer(ItemAndListCommonInterface newTimedElt) {
+        TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
+        String timerText = "";
+        if (timerInstance.getTimedItemListN() != null) {
+            timerText = timerInstance.getTimedItemListN().getText();
+        } else if (timerInstance.getTimedItemN() != null) {
+            timerText = timerInstance.getTimedItemN().getText();
+        }
+        if (!timerText.equals("")) {
+            timerText = " for \"" + timerText + "\"";
+        }
+        return Dialog.show("", "Pause timer" + timerText + " and start timing \"" + newTimedElt.getText() + "\"?", "OK", "Cancel");
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1976,7 +1990,7 @@ public class MyForm extends Form {
     public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText) {
 //        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTaskToolbarStyle());
 //        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTaskToolbarStyle());
-        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTask);
+        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTaskToInbox);
     }
 
     public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, Image icon) {
@@ -4473,8 +4487,11 @@ public class MyForm extends Form {
         boolean testingPinchOnSimulator = Config.TEST_PINCH && Display.getInstance().isSimulator();
         if (testingPinchOnSimulator) {
             int displayHeight = Display.getInstance().getDisplayHeight();
+            //when testing in simulatoer, the simulated pinch zone is half the drop target zone
+            int simulatePinchZoneWidthInPixels = Display.getInstance().convertToPixels(MyPrefs.dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask.getInt(), true)/2;
             if (Display.getInstance().isSimulator() && y.length == 1 && x.length == 1
-                    && x[0] >= Display.getInstance().getDisplayWidth() * (100 - Config.TEST_PINCH_SCR_WIDTH_PERCENT) / 100
+//                    && x[0] >= Display.getInstance().getDisplayWidth() * (100 - Config.TEST_PINCH_SCR_WIDTH_PERCENT) / 100
+                    && x[0] >= Display.getInstance().getDisplayWidth() - simulatePinchZoneWidthInPixels
                     && y[0] < displayHeight / 2) {
                 //simulate a pinch by mirroring the y values when dragging on the very right (10%) of the screen
                 int[] y2 = new int[2];

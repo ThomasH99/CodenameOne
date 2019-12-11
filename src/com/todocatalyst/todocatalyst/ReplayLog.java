@@ -11,6 +11,7 @@ import com.codename1.ui.Display;
 import com.codename1.ui.events.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,8 +82,9 @@ public class ReplayLog {
         Map<String, MyReplayCommand> newCmds = new HashMap<>();
         for (String key : screenCommands.keySet()) {
             MyReplayCommand cmd = screenCommands.get(key);
-            if (cmd.isKeep())
+            if (cmd.isKeep()) {
                 newCmds.put(key, cmd);
+            }
         }
         screenCommands = newCmds;
     }
@@ -131,10 +133,15 @@ public class ReplayLog {
                     replayStack.remove(replayStack.size() - 1);
                 } while (!cmdStr.equals(replayCommand.getCmdUniqueID()));
             }
-            replayStack.add(replayCommand.getCmdUniqueID());
-            Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack);
 //            Log.p("ADDED   ReplayCommand: " + replayCommand.getCmdUniqueID()+"; stack="+replayStack);
-            Log.p("ADDED   ReplayCommand: " + replayCommand.getCmdUniqueID()+this);
+            if (Config.TEST) {
+                List stackCopy = new ArrayList(replayStack);
+                replayStack.add(replayCommand.getCmdUniqueID());
+                Log.p("ADDED   ReplayCommand: " + replayCommand.getCmdUniqueID() + "; before" + stackCopy + "; after" + this);
+            } else {
+                replayStack.add(replayCommand.getCmdUniqueID());
+            }
+            Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack);
         }
     }
 
@@ -145,13 +152,16 @@ public class ReplayLog {
 //        if (true) { //deactivate while testing
         if (replayStack.size() > 0) { //while debugging //TODO!!!!! remove DEBUG once ReplayCommands have been added everywhere
             if (Config.TEST) {
+                List stackCopy = new ArrayList(replayStack);
+                String removedCmd = replayStack.remove(replayStack.size() - 1); //TODO!!! add check that logList.size>=1 (not during testing to provoke stacktrace
 //                Log.p("REMOVED ReplayCommand: " + replayStack.get(replayStack.size() - 1)+"; stack="+replayStack);
-                Log.p("REMOVED ReplayCommand: " + replayStack.get(replayStack.size() - 1)+this);
+                Log.p("REMOVED ReplayCommand: " + removedCmd + "; before" + stackCopy + "; after" + this);
+            } else {
+                replayStack.remove(replayStack.size() - 1); //TODO!!! add check that logList.size>=1 (not during testing to provoke stacktrace
             }
-            replayStack.remove(replayStack.size() - 1); //TODO!!! add check that logList.size>=1 (not during testing to provoke stacktrace
+            Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack);
         }
 //        }
-        Storage.getInstance().writeObject(REPLAY_LOG_FILE_NAME, replayStack);
     }
 
     /**
@@ -178,13 +188,15 @@ public class ReplayLog {
                 MyReplayCommand cmd = screenCommands.get(cmdUIID);
                 if (cmd != null) {
                     if (currentIndex == replayStack.size() - 1) //just returned the last command
+                    {
                         justFinishedReplaying = true;
+                    }
                     return cmd;
                 } else {
 //                        +Display.getInstance().getCurrent() instanceof MyForm?((MyForm)Display.getInstance().getCurrent()).SCREEN_TITLE:"<not a MyForm>"Display.getInstance().getCurrent().getTitle());
 //                    in screen" + Display.getInstance().getCurrent().getTitle()
                     ASSERT.that(false, "ERROR  ReplayCommand: \"" + cmdUIID + "\" not defined, "
-                            + (Display.getInstance().getCurrent() != null ? " screen " + ((MyForm) Display.getInstance().getCurrent()).getUniqueFormId()+", " : "")
+                            + (Display.getInstance().getCurrent() != null ? " screen " + ((MyForm) Display.getInstance().getCurrent()).getUniqueFormId() + ", " : "")
                             + " ScreenCmds=" + screenCommands + ", ReplayLog=" + this);
                 }
             }
@@ -223,10 +235,11 @@ public class ReplayLog {
 //    }
 //</editor-fold>
     /**
-    returns false when the last replayCommand has been executed on the call to fetchNextCmdFromReplayLog() 
-    (so after replayCmd() returns 
-    false, isReplayInProgress() will also return false)
-    @return 
+     * returns false when the last replayCommand has been executed on the call
+     * to fetchNextCmdFromReplayLog() (so after replayCmd() returns false,
+     * isReplayInProgress() will also return false)
+     *
+     * @return
      */
     public boolean isReplayInProgress() {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -247,8 +260,9 @@ public class ReplayLog {
     }
 
     /**
-    returns true if last replay command is at the last command
-    @return 
+     * returns true if last replay command is at the last command
+     *
+     * @return
      */
     public boolean isReplayAtLastCommand() {
         return currentIndex == replayStack.size() - 1;
@@ -258,7 +272,9 @@ public class ReplayLog {
         if (justFinishedReplaying) {
             justFinishedReplaying = false;
             return true;
-        } else return false;
+        } else {
+            return false;
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

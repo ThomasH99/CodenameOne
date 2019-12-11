@@ -90,8 +90,10 @@ public class ScreenWorkSlot extends MyForm {
     }
 
     /**
-    validates a workSlot before saving, checks that both startDate and duration are defined and that it doesn't overlap with other of the owner's existing workslots.
-    Returns null if no error, otherwise an error message string to display. 
+     * validates a workSlot before saving, checks that both startDate and
+     * duration are defined and that it doesn't overlap with other of the
+     * owner's existing workslots. Returns null if no error, otherwise an error
+     * message string to display.
      */
     public static boolean checkWorkSlotIsValidForSaving(ItemAndListCommonInterface owner, WorkSlot orgUneditedWorkSlot, Date startByDate, long duration) {
 //    public static boolean checkWorkSlotIsValidForSaving(WorkSlot workSlot, ItemAndListCommonInterface owner) {//, Date startByDate, int duration) {
@@ -116,7 +118,9 @@ public class ScreenWorkSlot extends MyForm {
         if (errorMsg != null) {
             Dialog.show("Error", errorMsg, "OK", null);
             return false;
-        } else return true;
+        } else {
+            return true;
+        }
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {
@@ -323,9 +327,9 @@ public class ScreenWorkSlot extends MyForm {
         content.add(layoutN(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
 
         endByDate.addActionListener(e -> {
-            if (endByDate.getDate().getTime() < startByDate.getDate().getTime())
+            if (endByDate.getDate().getTime() < startByDate.getDate().getTime()) {
                 endByDate.setDate(new Date(startByDate.getDate().getTime()));
-            else {
+            } else {
                 duration.setDuration(endByDate.getDate().getTime() - startByDate.getDate().getTime());
             }
         });
@@ -348,25 +352,6 @@ public class ScreenWorkSlot extends MyForm {
 //        content.add(layout("Start by",startByDate, "**"));
         content.add(layoutN(WorkSlot.END_TIME, endByDate, WorkSlot.END_TIME_HELP));
 
-//        MyTextField workSlotName = new MyTextField("Description", parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s));
-        MyTextField workSlotName = new MyTextField(WorkSlot.DESCRIPTION_HINT, 20, 100, 0, parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s), TextField.RIGHT);
-        workSlotName.addActionListener((e) -> {
-            String text = workSlotName.getText();
-            Item.EstimateResult estim = Item.getEffortEstimateFromTaskText(text);
-            if (estim != null) {
-                text = estim.cleaned;
-                workSlotName.setText(text);
-                if (estim.minutes != 0) duration.setDurationAndNotify(estim.minutes * MyDate.MINUTE_IN_MILLISECONDS); //notify to save local values!
-            }
-            setTitle(text);
-        }
-        ); //update the form title when text is changed
-//        content.add(new Label("Description")).add(workSlotName);
-        content.add(layoutN(WorkSlot.DESCRIPTION, workSlotName, WorkSlot.DESCRIPTION_HELP, null, false, false, false, true));
-//        setEditOnShow(workSlotName); //UI: start editing this field, NO
-
-//        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> workSlot.getComment(), (s) -> workSlot.setComment(s));
-//        content.add(new Label("Description")).add(comment);
 //REPEAT RULE
 //        if (locallyEditedRepeatRule == null)
 //            locallyEditedRepeatRule = workSlot.getRepeatRule();
@@ -568,7 +553,6 @@ public class ScreenWorkSlot extends MyForm {
         }
 
         if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
-
             Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
@@ -579,10 +563,11 @@ public class ScreenWorkSlot extends MyForm {
 //            Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
             WorkSlot workSlotSource = (WorkSlot) workSlot.getSource();
             String text = workSlotSource.getText();
-            if (text == null || text.isEmpty())
+            if (text == null || text.isEmpty()) {
                 text = MyDate.formatDateTimeNew(workSlotSource.getStartTimeD())
                         + " " + MyDate.formatDateTimeNew(workSlotSource.getDurationInMillis())
                         + " [" + workSlotSource.getObjectIdP() + "]";
+            }
             SpanLabel sourceLabel = new SpanLabel(text, "LabelFixed");
 //            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
@@ -590,6 +575,36 @@ public class ScreenWorkSlot extends MyForm {
             content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
         }
 
+//        MyTextField workSlotName = new MyTextField("Description", parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s));
+        MyTextField workSlotName = new MyTextField(WorkSlot.DESCRIPTION_HINT, 20, 100, 0, parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s), TextField.RIGHT);
+        workSlotName.addActionListener((e) -> {
+            String text = workSlotName.getText();
+            Item.EstimateResult estim = Item.getEffortEstimateFromTaskText(text);
+            if (estim != null) {
+                text = estim.cleaned;
+                workSlotName.setText(text);
+                if (estim.minutes != 0) {
+                    duration.setDurationAndNotify(estim.minutes * MyDate.MINUTE_IN_MILLISECONDS); //notify to save local values!
+                }
+            }
+            setTitle(SCREEN_TITLE + (text != null && text.length() > 0 ? " " + text : ""));
+        }
+        ); //update the form title when text is changed
+//        content.add(new Label("Description")).add(workSlotName);
+//        content.add(layoutN(WorkSlot.DESCRIPTION, workSlotName, WorkSlot.DESCRIPTION_HELP, null, false, false, false, true));
+//        content.add(layoutN("", workSlotName, WorkSlot.DESCRIPTION_HELP, null, false, false, false, true));
+        initField(Item.PARSE_TEXT, workSlotName,
+                () -> workSlot.getText(),
+                (t) -> workSlot.setText((String) t),
+                () -> workSlotName.getText(),
+                (t) -> workSlotName.setText((String) t));
+        workSlotName.setUIID("ScreenItemTaskText");
+        content.add(workSlotName);
+        workSlotName.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
+
+//        setEditOnShow(workSlotName); //UI: start editing this field, NO
+//        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> workSlot.getComment(), (s) -> workSlot.setComment(s));
+//        content.add(new Label("Description")).add(comment);
         setCheckIfSaveOnExit(() -> checkWorkSlotIsValidForSaving(ownerObj, workSlot, startByDate.getDate(), duration.getDuration())); //TODO: when owner can be edited, use new/edited one
         return content;
     }

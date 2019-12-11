@@ -44,9 +44,14 @@ public class AlarmHandler {
 //    private final static String WAITING_ALARM_TEXT = "WAITING: ";// reminder for: \n"; "[Waiting]"
 //    private final static String ALARM_TEXT = "";//Reminder for: \n";
 //    private final static String ALARM_REPEAT_STR = "-REP";//Used to create a separate notification ID for a repeat reminder (must also be used to cancel)
-    /** keep a copy of all local notifications set*/
+    /**
+     * keep a copy of all local notifications set
+     */
     LocalNotificationsShadowList notificationList; // = new LocalNotificationsShadowList();
-    /**list of already expired alarms not yet processed by the end-user, to show in AlarmScreen to snooze, cancel etc*/
+    /**
+     * list of already expired alarms not yet processed by the end-user, to show
+     * in AlarmScreen to snooze, cancel etc
+     */
     List<ExpiredAlarm> expiredAlarms;
     AlarmInAppAlarmHandler inAppTimer; // = new AlarmInAppAlarmHandler(notificationList);
 
@@ -122,10 +127,11 @@ public class AlarmHandler {
 //</editor-fold>
     /**
      * Called regularly, eg daily, to set up local notifications for an
-     * additional period, e.g. another day. May (also) be called in background fetchFromCacheOnly, so must
- be completely self-reliant and not eg assume that cache or other things
- have been loaded. Assumes that any changes in the time period for local
- notifications have already been setup are (???).
+     * additional period, e.g. another day. May (also) be called in background
+     * fetchFromCacheOnly, so must be completely self-reliant and not eg assume
+     * that cache or other things have been loaded. Assumes that any changes in
+     * the time period for local notifications have already been setup are
+     * (???).
      */
 //    private void setAlarmsForNewIntervalBackgroundFetch() {
     public void updateLocalNotificationsOnBackgroundFetch() {
@@ -148,7 +154,8 @@ public class AlarmHandler {
     }
 
     /**
-     * Called on app start or if alarms are globally enabled or disabled (via settings)
+     * Called on app start or if alarms are globally enabled or disabled (via
+     * settings)
      */
     public void updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled() {
         if (MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
@@ -228,9 +235,9 @@ public class AlarmHandler {
 //</editor-fold>
     /**
      * called from performBackgroundFetch(long deadline, Callback<Boolean>
- onComplete) to fetchFromCacheOnly additional alarms (in the time interval between the
- last deadline used and end of the interval used, e.g. now+8 days) and
-     * schedule the OS/device local notifications for it.
+     * onComplete) to fetchFromCacheOnly additional alarms (in the time interval
+     * between the last deadline used and end of the interval used, e.g. now+8
+     * days) and schedule the OS/device local notifications for it.
      */
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void updateLocalNotificationsOnBackgroundFetchXXX() {
@@ -307,10 +314,10 @@ public class AlarmHandler {
 
     /**
      * initialization of the alarm handling. Called on each start up of the app.
- Will update local notifications. Also launches timer to handle in-app
- (while app is running) alarms. NB! Initiating the background fetchFromCacheOnly task
- to update local notifications regularly even if app is not activated is
- done in the main start().
+     * Will update local notifications. Also launches timer to handle in-app
+     * (while app is running) alarms. NB! Initiating the background
+     * fetchFromCacheOnly task to update local notifications regularly even if
+     * app is not activated is done in the main start().
      */
     public void setupAlarmHandlingOnAppStart() {
         updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled();
@@ -403,7 +410,7 @@ public class AlarmHandler {
     }
 
     /**
-    eg when an Item is Done/Cancelled
+     * eg when an Item is Done/Cancelled
      */
 //    public void cancelAllFutureAlarms(Item item) {
 //        List<AlarmRecord> futureAlarms = item.getAllFutureAlarmRecordsSorted();
@@ -416,7 +423,7 @@ public class AlarmHandler {
 //        expiredAlarmSave();
 //    }
     /**
-    call eg if alarms are turned off or on on the devices
+     * call eg if alarms are turned off or on on the devices
      */
     public void cancelAllAlarmsXXX() {
 //                    AlarmHandler.getInstance().removeExpiredAlarm(expired);
@@ -430,7 +437,8 @@ public class AlarmHandler {
      * called by inApp timer or from local notification when an alarm expires
      *
      * @param notificationId
-     * @param localNotificationReceived a local (system/iOS) notification was received, otherwise, if false, call was made for an inApp timer
+     * @param localNotificationReceived a local (system/iOS) notification was
+     * received, otherwise, if false, call was made for an inApp timer
      */
     void processExpiredAlarm(String notificationId, boolean localNotificationReceived) {
         AlarmHandler.alarmLog("processExpiredAlarm called with: \"" + notificationId + "\"");
@@ -462,7 +470,9 @@ public class AlarmHandler {
                     if (myForm instanceof ScreenListOfAlarms) {
                         myForm.refreshAfterEdit();
                     } else if ((!Config.PRODUCTION_RELEASE || myForm != null) && myForm.getMyShowAlarmsReplayCmd() != null) //don't risk crash in production release
+                    {
                         myForm.getMyShowAlarmsReplayCmd().actionPerformed(null);
+                    }
                 }
             }
         });
@@ -620,7 +630,8 @@ public class AlarmHandler {
     }
 
     /**
-     * return list of already expired alarms (but not yet processed by the end-user) 
+     * return list of already expired alarms (but not yet processed by the
+     * end-user)
      *
      * @return
      */
@@ -691,19 +702,25 @@ public class AlarmHandler {
         // CN1 doc: https://www.codenameone.com/javadoc/com/codename1/media/Media.html
         // https://www.codenameone.com/blog/open-file-rendering.html
         // https://www.codenameone.com/manual/components.html#sharebutton-section
-        FileSystemStorage fs = FileSystemStorage.getInstance();
-        String soundDir = fs.getAppHomePath(); // + "recordings/"; on simulator="file://home/" 
+        if (MyPrefs.alarmPlayBuiltinAlarmSound.getBoolean()) {
+            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
+        } else {
+            FileSystemStorage fs = FileSystemStorage.getInstance();
+            String soundDir = fs.getAppHomePath(); // + "recordings/"; on simulator="file://home/" 
 //        fs.mkdir(soundDir);
 //        Media media = MediaManager.createBackgroundMedia("file://"+);
-        try {
+            try {
 //            Media m = MediaManager.createMedia(soundDir + "/" + MyPrefs.getString(MyPrefs.alarmSoundFile), false);
 //            Media m = MediaManager.createMedia("file://" + "/" + MyPrefs.getString(MyPrefs.alarmSoundFile), false);
 //            Media m = MediaManager.createMedia( MyPrefs.getString(MyPrefs.alarmSoundFile), false);
-            Media m = MediaManager.createMedia(soundDir + MyPrefs.getString(MyPrefs.alarmSoundFile), false); //in SImulator: put mp3 file in .cn1!
-            m.play();
-        } catch (IOException err) {
-            if (false) Log.e(err);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
+                Media m = MediaManager.createMedia(soundDir + MyPrefs.getString(MyPrefs.alarmSoundFile), false); //in SImulator: put mp3 file in .cn1!
+                m.play();
+            } catch (Exception err) {
+                if (false) {
+                    Log.e(err);
+                }
+                Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
+            }
         }
     }
 }

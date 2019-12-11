@@ -95,7 +95,7 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     private String getUniqueStr(Object element) {
         String s = null;
         if (element instanceof ItemAndListCommonInterface) {
-            if (!((ItemAndListCommonInterface) element).isNoSave()) {
+            if (((ItemAndListCommonInterface) element).isNoSave()) {
                 s = ((ItemAndListCommonInterface) element).getText(); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
             } else {
                 String objId = ((ItemAndListCommonInterface) element).getObjectIdP();
@@ -143,14 +143,14 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
                     save();
                 });
                 //objId will be effectively added, and expandedObjects saved, to expanded once the element has been saved
+            } else {
+                result = expandedObjects.add(uniqueStr); //a hashset so no need to check if already added
             }
-        } else {
-            result = expandedObjects.add(uniqueStr); //a hashset so no need to check if already added
+            if (result) {
+                save(); //only save if modified
+            }
         }
 
-        if (result) {
-            save(); //only save if modified
-        }
         return result;
     }
 

@@ -966,8 +966,8 @@ ListofItemsStarred { /*style for starred icon task text in lists*/
 
 ListOfItemsItemContent { /*style for task - CENTER - between status icon and edit task icon */
     cn1-derive: Container;
-    margin:0mm 0 ;
-    padding: 1mm 0; /*top+bottom right+left*/
+    margin: 0mm 0mm 1px 0mm;
+    padding: 0.5mm 0mm; /*top+bottom right+left*/
     /*border-bottom: 2px solid lightgrey; /*4px solid blueviolet; /*lightgrey; */
     border-bottom: 1px solid darkgray; /*darkslategray/black: too dark, 4px solid blueviolet; /*lightgrey; */
 }
@@ -1331,13 +1331,13 @@ MyDragAndDropSwipeableContainer {
 
 ExpandedList { /* the ScrollY container, CENTER, with all expanded subtasks - indents and add line on the left*/
     cn1-derive: Container;
-    padding:0;
+    padding-left:1mm;
     /*margin: 0 0 0 4mm;
     padding: 0 0 0 4mm; */
     margin-left: 1mm; /*this indents the first indent-line*/
     /*background: lightgrey; /*space btw indent-line and itemContainer */
     /*padding-left: 0.5mm; /*this is space between the indent-line and the ItemContainer*/
-    border-left: 10px solid lightgrey; /*greenyellow; /* expanded line for subtasks!! */
+    border-left: 1mm solid lightgrey; /*greenyellow; /* expanded line for subtasks!! */
 
     /*color: lightgray;*/
     /*border-left: 0.5mm solid green; 

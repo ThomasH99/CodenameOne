@@ -3332,8 +3332,7 @@ public class DAO {
 //                if ((p.getObjectIdP() == null || p.isDirty()) && !saveList.contains(p)) {//only save unsaved or dirty objects
                 if (p instanceof ItemList && ((ItemList) p).isNoSave()) { //only save unsaved or dirty objects
                     //do nothing   
-                }
-                if (p.getObjectIdP() == null) { //only save unsaved or dirty objects
+                } else if (p.getObjectIdP() == null) { //only save unsaved or dirty objects
                     if (saveList.contains(p)) {
                         if (Config.TEST_BACKGR) {
                             Log.p("==========>>>    ObjId==null, BUT already in savelist(" + saveList.size() + ")=" + saveList);
