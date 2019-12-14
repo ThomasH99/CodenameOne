@@ -1043,7 +1043,7 @@ public class ScreenRepair extends MyForm {
                             compList.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
                         }
                     }
-                    compList.animateLayout(150);
+                    compList.animateLayout(ANIMATION_TIME_FAST);
                 });
                 Container c = null;
                 for (String s : list) {

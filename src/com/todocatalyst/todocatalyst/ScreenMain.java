@@ -218,7 +218,7 @@ public class ScreenMain extends MyForm {
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON
                             //                        | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
                             | ScreenListOfItems.OPTION_NO_WORK_TIME, (i) -> null /*prevent stickyHeader*/);
-                    myForm.setShowIfEmptyList("Looks like you have no tasks today. Enjoy!");
+                    myForm.setTextToShowIfEmptyList("Looks like you have no tasks today. Enjoy!");
                     myForm.show();
                 }
         );
@@ -332,7 +332,7 @@ public class ScreenMain extends MyForm {
                     FilterSortDef filterSort = new FilterSortDef(Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, false);
                     MyForm myForm = new ScreenStatistics(SCREEN_STATISTICS, ScreenMain.this, () -> {
                     });
-                    myForm.setShowIfEmptyList("No completed tasks to show statistics for yet");
+                    myForm.setTextToShowIfEmptyList("No completed tasks to show statistics for yet");
                     myForm.show();
                 }
         );
@@ -352,7 +352,7 @@ public class ScreenMain extends MyForm {
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                             | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                     );
-                    myForm.setShowIfEmptyList("No completed tasks the last month");
+                    myForm.setTextToShowIfEmptyList("No completed tasks the last month");
                     myForm.show();
                 }
         );
@@ -369,7 +369,7 @@ public class ScreenMain extends MyForm {
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                             | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
                     );
-                    myForm.setShowIfEmptyList("No tasks created the last month");
+                    myForm.setTextToShowIfEmptyList("No tasks created the last month");
                     myForm.show();
                 }
         );
@@ -386,7 +386,7 @@ public class ScreenMain extends MyForm {
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                             | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
                     );
-                    myForm.setShowIfEmptyList("No tasks have been changed the last month");
+                    myForm.setTextToShowIfEmptyList("No tasks have been changed the last month");
                     myForm.show();
                 }
         );

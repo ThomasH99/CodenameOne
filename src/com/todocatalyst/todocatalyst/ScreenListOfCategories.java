@@ -93,7 +93,8 @@ public class ScreenListOfCategories extends MyForm {
         setPinchInsertEnabled(true);
         expandedObjects = new ExpandedObjects(getUniqueFormId());
         addCommandsToToolbar(getToolbar());
-        if (false) getToolbar().addSearchCommand((e) -> {
+        if (false) {
+            getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
                 Container compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
                 boolean showAll = text == null || text.length() == 0;
@@ -106,6 +107,7 @@ public class ScreenListOfCategories extends MyForm {
 //            compList.animateLayout(150);
                 animateMyForm();
             });
+        }
         getToolbar().addSearchCommand(makeSearchFunctionSimple(categoryList));
 
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.categoryList));
@@ -113,7 +115,7 @@ public class ScreenListOfCategories extends MyForm {
     }
 
     protected void animateMyForm() {
-        ((Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(150);
+        ((Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
     }
 
     @Override
@@ -167,7 +169,8 @@ public class ScreenListOfCategories extends MyForm {
 
         super.addCommandsToToolbar(toolbar);
         //NEW CATEGORY
-        toolbar.addCommandToRightBar(makeNewCategoryCmd(categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
+        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd(categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToRightBar(MyReplayCommand.create("CreateNewCategory", "", Icons.iconNewToolbarStyle(), (e) -> {
 //            Category category = new Category();
 ////                new ScreenCategory(category, ScreenListOfCategories.this, () -> {
@@ -184,7 +187,6 @@ public class ScreenListOfCategories extends MyForm {
 //            }).show();
 //        }
 //        ));
-//<editor-fold defaultstate="collapsed" desc="comment">
 //                new Command("", iconNew) {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
@@ -198,21 +200,19 @@ public class ScreenListOfCategories extends MyForm {
 //            }
 //        });
 //</editor-fold>
-
         //BACK
 //        toolbar.addCommandToLeftBar(makeDoneCommand("", FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle())));
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 
         //INTERRUPT TASK
-        toolbar.addCommandToLeftBar(makeInterruptCommand());
-        
-                toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfCategoriesSettings", "Settings", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
+
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfCategoriesSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsListOfCategories(ScreenListOfCategories.this, () -> {
                 refreshAfterEdit();
             }).show();
         }
         ));
-
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                new Command("", iconDone) {
@@ -248,11 +248,14 @@ public class ScreenListOfCategories extends MyForm {
     static Container buildCategoryContainer(Category category, CategoryList categoryList, KeepInSameScreenPosition keepPos, MyForm.Action refreshOnItemEdits) {
         return buildCategoryContainer(category, categoryList, keepPos, refreshOnItemEdits, null);
     }
+
     static Container buildCategoryContainer(Category category, CategoryList categoryList, KeepInSameScreenPosition keepPos, MyForm.Action refreshOnItemEdits, ExpandedObjects expandedObjects) {
 
         Container mainCont = new Container(new MyBorderLayout());
         mainCont.setUIID("CategoryListContainer");
-        if (Config.TEST) mainCont.setName("CatCont-" + category.getText());
+        if (Config.TEST) {
+            mainCont.setName("CatCont-" + category.getText());
+        }
 
         Container swipCont = new MyDragAndDropSwipeableContainer(null, null, mainCont) {
 
@@ -305,7 +308,9 @@ public class ScreenListOfCategories extends MyForm {
 //            }
 //</editor-fold>
         };
-        if (Config.TEST) swipCont.setName("CatSwip-" + category.getText());
+        if (Config.TEST) {
+            swipCont.setName("CatSwip-" + category.getText());
+        }
 //        swipCont.putClientProperty(ScreenListOfItems.DISPLAYED_ELEMENT, category);
 
         if (keepPos != null) {
@@ -414,7 +419,9 @@ public class ScreenListOfCategories extends MyForm {
         categoryLabel.setTextUIID("CategoryListText");
         categoryLabel.setIconUIID("CategoryListIcon");
 
-        if (Config.TEST) expandCategorySubTasksButton.setName("CatExpand-" + category.getText());
+        if (Config.TEST) {
+            expandCategorySubTasksButton.setName("CatExpand-" + category.getText());
+        }
         mainCont.addComponent(MyBorderLayout.CENTER, categoryLabel);
 
         Button editItemPropertiesButton = new Button();
@@ -443,7 +450,9 @@ public class ScreenListOfCategories extends MyForm {
             }, 0).show();
         }
         ));
-        if (Config.TEST) editItemPropertiesButton.setName("CatEditItem-" + category.getText());
+        if (Config.TEST) {
+            editItemPropertiesButton.setName("CatEditItem-" + category.getText());
+        }
 
 //        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW)); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
@@ -468,45 +477,46 @@ public class ScreenListOfCategories extends MyForm {
                     "CategoryExpandSubtasks");// {
             expandCategorySubTasksButton.setCommand(expandCategorySubTasksCmd);
 
-            expandCategorySubTasksButton.setUIID(expandedObjects != null 
+            expandCategorySubTasksButton.setUIID(expandedObjects != null
                     && expandedObjects.contains(category) ? "CategoryListShowItemsExpanded" : "CategoryListShowItems");
 
             int numberItems = category.getNumberOfUndoneItems(false);
-                                String subTaskStr = numberItems + "";
-                    if (MyPrefs.listOfCategoriesShowNumberDoneTasks.getBoolean()) {
-                        int totalNbTasks = category.getNumberOfItems(false, MyPrefs.listOfCategoriesShowTotalNumberOfLeafTasks.getBoolean());
-                        if (totalNbTasks != 0)
-                            subTaskStr += "/" + totalNbTasks;
-                    }
-                    expandCategorySubTasksButton.setText(subTaskStr);
-            
+            String subTaskStr = numberItems + "";
+            if (MyPrefs.listOfCategoriesShowNumberDoneTasks.getBoolean()) {
+                int totalNbTasks = category.getNumberOfItems(false, MyPrefs.listOfCategoriesShowTotalNumberOfLeafTasks.getBoolean());
+                if (totalNbTasks != 0) {
+                    subTaskStr += "/" + totalNbTasks;
+                }
+            }
+            expandCategorySubTasksButton.setText(subTaskStr);
+
 //            east.addComponent(expandCategorySubTasksButton);
 //            cont.putClientProperty("subTasksButton", subTasksButton);
 //            cont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandCategorySubTasksButton);
         }
-            if (MyPrefs.listOfCategoriesShowRemainingEstimate.getBoolean()) {
+        if (MyPrefs.listOfCategoriesShowRemainingEstimate.getBoolean()) {
 
-                long remainingEffort = category.getRemaining();
-                long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getEstimate() : 0;
-                String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
-                        + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
-             
-                WorkSlotList workSlots = category.getWorkSlotListN();
-                long workTimeSumMillis = workSlots != null ? category.getWorkSlotListN().getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
-        
-                if (workTimeSumMillis != 0)
-                    effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
-                east.addComponent(new Label(effortStr, "CategoryListRemainingTime")); //format: "remaining/workTime"
-                east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
-                east.addComponent(editItemPropertiesButton);
-            } else {
-                east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
-                east.addComponent(editItemPropertiesButton);
+            long remainingEffort = category.getRemaining();
+            long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getEstimate() : 0;
+            String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
+                    + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
+
+            WorkSlotList workSlots = category.getWorkSlotListN();
+            long workTimeSumMillis = workSlots != null ? category.getWorkSlotListN().getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
+
+            if (workTimeSumMillis != 0) {
+                effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
             }
+            east.addComponent(new Label(effortStr, "CategoryListRemainingTime")); //format: "remaining/workTime"
+            east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
+            east.addComponent(editItemPropertiesButton);
+        } else {
+            east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
+            east.addComponent(editItemPropertiesButton);
+        }
 
 //        east.addComponent(editItemPropertiesButton);
-
         if (MyPrefs.showCategoryDescriptionInCategoryList.getBoolean() && !category.getComment().equals("")) {
             mainCont.addComponent(MyBorderLayout.SOUTH,
                     new Container(BoxLayout.x()).add(

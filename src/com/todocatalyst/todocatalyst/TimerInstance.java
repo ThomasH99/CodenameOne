@@ -123,7 +123,7 @@ public class TimerInstance extends ParseObject {
 //        if (!Objects.equals(timedItem, previousItem)) {
         //definition from Objects.equals() => return (a == b) || (a != null && a.equals(b))
 //        if (!((timedItem == previousItem) || timedItem != null && timedItem.equals(previousItem))) { //do not update if timedItem is the same as before (including if was null before and after) changed
-        if (!((timedItem == previousItem) || timedItem != null && timedItem == previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+        if (!(timedItem == previousItem || timedItem != null && timedItem == previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
             //reset both when changing timedItem
             setStartTime(0);
             setElapsedTime(0);

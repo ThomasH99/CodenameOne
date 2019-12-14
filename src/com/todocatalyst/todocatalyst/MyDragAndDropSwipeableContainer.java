@@ -2680,7 +2680,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                             form.revalidateWithAnimationSafety();
                         }
                     } else {
-                        dropPlaceholder.getParent().animateLayout(300);
+                        dropPlaceholder.getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
                     }
 //                    formNeedRefresh = true;
                     lastDropPlaceholderInsertPosition = newInsertPosition; //keep track of where dropPlaceholder is situated
@@ -5348,7 +5348,7 @@ before getting to here, we've already covered the following cases where both bef
 //            f.animateHierarchy(300); //refresh after hiding dropPlaceholder
 //        }
         if (compToAnimate != null && compToAnimate.getComponentForm() != null) {
-            compToAnimate.animateHierarchy(300); //refresh after hiding dropPlaceholder
+            compToAnimate.animateHierarchy(MyForm.ANIMATION_TIME_DEFAULT); //refresh after hiding dropPlaceholder
         }
 
 //        if (!dropSucceeded) {

@@ -22,6 +22,7 @@ import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.plaf.UIManager;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.MyForm.ANIMATION_TIME_FAST;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_OBJECT;
 import com.todocatalyst.todocatalyst.MyTree2.ListAndIndex;
@@ -100,7 +101,7 @@ public class ScreenListOfItems extends MyForm {
 //    private static String screenTitle = "Tasks";
 //    private ItemList<Item> itemListOrg;
 //    private ItemList itemListOrg;
-    private ItemAndListCommonInterface itemListOrg;
+    protected ItemAndListCommonInterface itemListOrg; //accessed when inserting inlinecontainer
     private GetItemListFct getItemListFct;
 //    private ItemList itemListFilteredSorted;
 //    private java.util.List workSlotList;
@@ -303,15 +304,28 @@ public class ScreenListOfItems extends MyForm {
 
     ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
             int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
-        this(title, "", itemListFct, previousForm, updateItemListOnDone, options, stickyHeaderGen);
+        this(title, null, itemListFct, previousForm, updateItemListOnDone, options, stickyHeaderGen);
     }
 
+    /**
+     * 
+     * @param title
+     * @param textIfListEmpty test to show if list is empty, if null, show default text
+     * @param itemListFct
+     * @param previousForm
+     * @param updateItemListOnDone
+     * @param options
+     * @param stickyHeaderGen 
+     */
     ScreenListOfItems(String title, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
             int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListOrg));
         super(title, previousForm, null);
-        setShowIfEmptyList(textIfListEmpty);
+        if (textIfListEmpty!=null)
+        setTextToShowIfEmptyList(textIfListEmpty); else
+                setTextToShowIfEmptyList("Insert new task using + or pinch insert");
+
         setUniqueFormId("ScreenListOfItems");
         if (false) {
             setScrollVisible(true); //UI: show scrollbar(?)
@@ -450,7 +464,7 @@ public class ScreenListOfItems extends MyForm {
                     }
                 }
                 if (compList != null) {
-                    compList.animateLayout(150);
+                    compList.animateLayout(ANIMATION_TIME_FAST);
                 }
             });
         }
@@ -546,14 +560,14 @@ public class ScreenListOfItems extends MyForm {
             setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
         }//        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
-        getContentPane().add(MyBorderLayout.CENTER, contentContainer); //NB!!! this doesn't actually replace the old contentPane immediately (in the below calls!!!) meaning recreateInlineInsertContainerIfNeeded() doesn't work
+//        getContentPane().add(MyBorderLayout.CENTER, contentContainer); //NB!!! this doesn't actually replace the old contentPane immediately (in the below calls!!!) meaning recreateInlineInsertContainerIfNeeded() doesn't work
+        addToContentContainer(contentContainer);
         if (contentContainer != null) {
             ContainerScrollY scrollable = findScrollableContYChild(contentContainer);
             if (scrollable != null) {
                 scrollable.setScrollVisible(true);
             }
-            if (true && previousValues != null) //            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
-            {
+            if (true && previousValues != null) {//            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
                 previousValues.setScrollComponent(scrollable);
             }
         }
@@ -660,12 +674,12 @@ public class ScreenListOfItems extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         if (false) { //works, but overlaps with SmallTimer AND with last element in long list (need white space after)
-        FloatingActionButton fab = FloatingActionButton.createFAB(FontImage.MATERIAL_ADD);
-        FloatingActionButton subfabStartTimer = fab.createSubFAB(Icons.iconLaunchTimer, "");
-        FloatingActionButton subfabAddTaskToList = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
-        FloatingActionButton subfabInterrupt = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
-        FloatingActionButton subfabFilter = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
-        fab.bindFabToContainer(getContentPane());
+            FloatingActionButton fab = FloatingActionButton.createFAB(FontImage.MATERIAL_ADD);
+            FloatingActionButton subfabStartTimer = fab.createSubFAB(Icons.iconLaunchTimer, "");
+            FloatingActionButton subfabAddTaskToList = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
+            FloatingActionButton subfabInterrupt = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
+            FloatingActionButton subfabFilter = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
+            fab.bindFabToContainer(getContentPane());
         }
         super.addCommandsToToolbar(toolbar);
         //NEW ITEM
@@ -737,6 +751,14 @@ public class ScreenListOfItems extends MyForm {
 //        }
 //</editor-fold>
 
+        //INTERRUPT TASK
+//        if (!optionTemplateEditMode && !optionNoInterrupt) {
+        if (!optionNoInterrupt) {
+//            toolbar.addCommandToRightBar(makeInterruptCommand());
+//            toolbar.addCommandToLeftBar(makeInterruptCommand());
+            toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
+        }
+
         //TIMER
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
         if (!optionTemplateEditMode && !optionNoTimer) {
@@ -750,36 +772,39 @@ public class ScreenListOfItems extends MyForm {
 //                    ScreenTimer.getInstance().startTimerOnItemList(itemListOrg, itemListOrg.getFilterSortDef(), ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //                ScreenTimer2.getInstance().startTimerOnItemList(itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
 //</editor-fold>
-//            toolbar.addCommandToLeftBar(CommandTracked.create("", Icons.iconLaunchTimer, (e) -> {
-            toolbar.addCommandToOverflowMenu(CommandTracked.create(TimerStack.getInstance().isTimerActive()?"Open Timer":"Start Timer on list", 
-                    TimerStack.getInstance().isTimerActive()?Icons.iconLaunchTimerAlreadyRunning:Icons.iconLaunchTimer, 
-                    (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                if (!TimerStack.getInstance().isTimerActive() //timer not already running
-//                        || (itemListOrg instanceof ItemList && TimerStack.getInstance().getCurrentTimerInstanceN().getTimedItemListN() == itemListOrg) //or already running on this list
-//                        || ((itemListOrg instanceof Item) && TimerStack.getInstance().getCurrentTimerInstanceN().getTimedItemN() == itemListOrg) // or item
-//                        || MyPrefs.timerMayPauseAlreadyRunningTimer.getBoolean() //or setting to ALWAYS interrupt
-//                        || (!MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean() || MyForm.showDialogPauseActiveTimer(itemListOrg))) { //or setting to ask before interrupting
-//                    //starting up timer (interrupt already running timer)
-//                    if (itemListOrg instanceof ItemList) {
-//                        TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-//                    } else if (itemListOrg instanceof Item) {
-//                        TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-//                    }
-//                } else { //just show already running timer
-//                    TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
-//                    timerInstance.setFullScreen(true);
-//                    timerInstance.saveMe();
-//                    new ScreenTimer6(this).show(); //should show BigTimer (unless smallTimer is shown? NO, always show big timer since starting timer first time is handled above)
-//                }
+//            toolbar.addCommandToLeftBar(CommandTracked.create("", Icons.iconLaunchTimer, (e) -> {
+//            toolbar.addCommandToOverflowMenu(CommandTracked.create(TimerStack.getInstance().isTimerActive() ? "Open Timer" : "Start Timer on list",
+//                    TimerStack.getInstance().isTimerActive() ? Icons.iconLaunchTimerAlreadyRunning : Icons.iconLaunchTimer,
+//                    (e) -> {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (!TimerStack.getInstance().isTimerActive() //timer not already running
+////                        || (itemListOrg instanceof ItemList && TimerStack.getInstance().getCurrentTimerInstanceN().getTimedItemListN() == itemListOrg) //or already running on this list
+////                        || ((itemListOrg instanceof Item) && TimerStack.getInstance().getCurrentTimerInstanceN().getTimedItemN() == itemListOrg) // or item
+////                        || MyPrefs.timerMayPauseAlreadyRunningTimer.getBoolean() //or setting to ALWAYS interrupt
+////                        || (!MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean() || MyForm.showDialogPauseActiveTimer(itemListOrg))) { //or setting to ask before interrupting
+////                    //starting up timer (interrupt already running timer)
+////                    if (itemListOrg instanceof ItemList) {
+////                        TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+////                    } else if (itemListOrg instanceof Item) {
+////                        TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+////                    }
+////                } else { //just show already running timer
+////                    TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
+////                    timerInstance.setFullScreen(true);
+////                    timerInstance.saveMe();
+////                    new ScreenTimer6(this).show(); //should show BigTimer (unless smallTimer is shown? NO, always show big timer since starting timer first time is handled above)
+////                }
+////</editor-fold>
+//                        if (itemListOrg instanceof ItemList) {
+//                            TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+//                        } else if (itemListOrg instanceof Item) {
+//                            TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+//                        }
+//                    }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+//            ));
 //</editor-fold>
-                    if (itemListOrg instanceof ItemList) {
-                        TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                    } else if (itemListOrg instanceof Item) {
-                        TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, ScreenListOfItems.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                    }
-            }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
-            ));
+            toolbar.addCommandToOverflowMenu(makeStartTimerCommand(true,itemListOrg));
         }
 
         if (optionTemplateEditMode) {
@@ -1224,7 +1249,7 @@ public class ScreenListOfItems extends MyForm {
             }
 
             if (Config.TEST && itemListOrg instanceof ItemList) {
-                Command showIssuesInList = new CommandTracked("Show list issues", (Image) null) {
+                Command showIssuesInList = new CommandTracked("Show list issues", Icons.iconRepair) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, false, true);
@@ -1235,6 +1260,7 @@ public class ScreenListOfItems extends MyForm {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
+                        refreshAfterEdit();
                     }
                 };
                 toolbar.addCommandToOverflowMenu(cleanUpList);
@@ -1243,13 +1269,6 @@ public class ScreenListOfItems extends MyForm {
         }
         //BACK
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
-
-        //INTERRUPT TASK
-//        if (!optionTemplateEditMode && !optionNoInterrupt) {
-        if (!optionNoInterrupt) {
-//            toolbar.addCommandToRightBar(makeInterruptCommand());
-            toolbar.addCommandToLeftBar(makeInterruptCommand());
-        }
 
         if (!optionTemplateEditMode) {
             toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemsSettings", "Settings", Icons.iconSettings, (e) -> {
@@ -1264,9 +1283,11 @@ public class ScreenListOfItems extends MyForm {
         toolbar.addCommandToOverflowMenu(CommandTracked.create("Support", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
             showPreviousScreen(true);
         }, "Help"));
-        if (false)toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-            showPreviousScreen(true);
-        }, "ReportIssue"));
+        if (false) {
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+                showPreviousScreen(true);
+            }, "ReportIssue"));
+        }
         if (false) {//doesn't make sense for a list!
             toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
                 showPreviousScreen(true);
@@ -1968,6 +1989,7 @@ public class ScreenListOfItems extends MyForm {
                 + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && TimerStack.getInstance().getCurrentlyTimedItemN() == item ? "[T]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isTemplate() ? "%" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource() != null && item.getSource().isTemplate() ? "/C" : "")
                 //if showing Item
@@ -2017,12 +2039,12 @@ public class ScreenListOfItems extends MyForm {
                     if (parent != null && parent.getParent() != null) //the top-level Container is the parent of the top-level MyDragAndDropSwipeableContainer
                     //                    parent.getParent().getParent().getParent().revalidateWithAnimationSafety();
                     {
-                        parent.getParent().getParent().getParent().animateLayout(150);
+                        parent.getParent().getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_FAST);
                     }
                 }
 //                mainCont.getParent().getParent().animateLayout(100);
 //                mainCont.getParent().animateLayout(100);
-                swipCont.getParent().animateLayout(100);
+                swipCont.getParent().animateLayout(ANIMATION_TIME_FAST);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                parent.animateLayout(150);
 //                if (!south.isHidden()) {
@@ -4241,9 +4263,9 @@ refreshAfterEdit();
             };
             return myTree;
         } else {
-            if (getShowIfEmptyList() != null) {
+            if (getTextToShowIfEmptyList() != null) {
 //                return Container.encloseIn(BoxLayout.y(), new Label(getShowIfEmptyList()));
-                return BorderLayout.centerCenter(new SpanLabel(getShowIfEmptyList()));
+                return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
 //            return new InsertNewTaskContainer(null, listOfItems, ScreenListOfItems.this);
 //            return new InlineInsertNewElementContainer(this, null, listOfItems);
             } else if (listOfItems instanceof Category) {

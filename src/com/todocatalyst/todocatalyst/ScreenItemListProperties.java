@@ -83,7 +83,7 @@ public class ScreenItemListProperties extends MyForm {
 //        String itemListName = itemList.getText();
 //        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
         itemListName = MyUtil.removeTrailingPrecedingSpacesNewLinesEtc(itemListName);
-        if (itemListName.isEmpty())
+        if (itemListName.isEmpty()&&itemList.getObjectIdP()!=null)
             errorMsg = Format.f("{0 category_or_list} name cannot be empty", ItemList.ITEM_LIST);
         else if (ItemListList.getInstance().findItemListWithName(itemListName) != null
                 && ItemListList.getInstance().findItemListWithName(itemListName) != itemList

@@ -404,7 +404,7 @@ public class ScreenRepeatRule extends MyForm {
                 MyPrefs.repeatHidePreviousTasksDetails.flipBoolean();
                 repeatRuleHideableDetailsContainer.setHidden(MyPrefs.repeatHidePreviousTasksDetails.getBoolean());
                 buttonRepeatRuleHistory.setIcon(repeatRuleHideableDetailsContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
-                animateLayout(300);
+                animateLayout(ANIMATION_TIME_DEFAULT);
             });
 //            motherContainer.add(BorderLayout.center(FlowLayout.encloseCenter(new Label(myRepeatRule.getListOfUndoneRepeatInstances().size() + " tasks")))
 //            repeatRuleDetailsContainer = BorderLayout.center(FlowLayout.encloseCenter(new Label(myRepeatRule.getListOfUndoneRepeatInstances().size() + " tasks")))
@@ -983,7 +983,7 @@ public class ScreenRepeatRule extends MyForm {
 //                showDatesButton.setHidden(false);
 //            }
         }
-        getContentPane().animateLayout(400);
+        getContentPane().animateLayout(ANIMATION_TIME_DEFAULT);
     }
 
     /**

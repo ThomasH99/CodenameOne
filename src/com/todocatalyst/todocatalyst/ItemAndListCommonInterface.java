@@ -1279,4 +1279,17 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return getListFull().contains(subtask);
     }
 
+    default public void clear() {
+        setList(null);
+    }
+
+    default public boolean addAll(Collection<? extends E> c) {
+        boolean changed = false;
+        for (E e : c) {
+            if (addToList(e)) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
 }

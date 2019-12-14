@@ -153,7 +153,7 @@ public class ScreenFilter extends MyForm {
 //        if (filterSortDef.sortOptions.length != filterSortDef.sortField.length) {
 //            throw new RuntimeException(); //check that length is the same
 //        }
-        assert filterSortDef.getSortOptions().length == filterSortDef.getSortField().length;
+        assert filterSortDef.getSortOptions().length == filterSortDef.getSortFields().length;
 //        content.add(new Label("Manual sorting"));
         MyOnOffSwitch sortOnSwitch = new MyOnOffSwitch(parseIdMap2,
                 () -> {
@@ -173,7 +173,7 @@ public class ScreenFilter extends MyForm {
 //                sortContainer.replaceAndWait(hideSortSelectorContainerLabel, sortSelectorContainer, CommonTransitions.createFade(300));
 //            }
             sortSelectorContainer.setHidden(!sortSelectorContainer.isHidden());
-            sortSelectorContainer.getParent().getParent().animateLayout(300);
+            sortSelectorContainer.getParent().getParent().animateLayout(ANIMATION_TIME_DEFAULT);
         });
 //        content.add(sortOnSwitch);
 //        sortContainer = Container.encloseIn(BoxLayout.y(), new Label("Manual sorting"), sortOnSwitch);
@@ -184,8 +184,8 @@ public class ScreenFilter extends MyForm {
 
         MyStringPicker sortPicker = new MyStringPicker(filterSortDef.getSortOptions(), parseIdMap2, () -> {
             String sortId = filterSortDef.getSortFieldId();
-            for (int i = 0, size = filterSortDef.getSortField().length; i < size; i++) {
-                if (filterSortDef.getSortField()[i].equals(sortId)) {
+            for (int i = 0, size = filterSortDef.getSortFields().length; i < size; i++) {
+                if (filterSortDef.getSortFields()[i].equals(sortId)) {
                     return i;
                 }
             }
@@ -201,7 +201,7 @@ public class ScreenFilter extends MyForm {
 //                            }
 //                    };
 //</editor-fold>
-            filterSortDef.setSortFieldId(filterSortDef.getSortField()[i]);
+            filterSortDef.setSortFieldId(filterSortDef.getSortFields()[i]);
         });
 
         Component sortOnOffCont = layoutSetting("Sort", sortPicker, "**");
@@ -259,7 +259,7 @@ public class ScreenFilter extends MyForm {
 
         showDone.addActionListener((e) -> {
             c.setHidden(!c.isHidden());
-            c.getParent().getParent().animateLayout(300);
+            c.getParent().getParent().animateLayout(ANIMATION_TIME_DEFAULT);
         });
 
 //                content.add(new SpanLabel(ItemStatus.CANCELLED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {

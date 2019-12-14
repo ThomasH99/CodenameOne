@@ -85,7 +85,7 @@ public class ScreenSettingsCommon extends MyForm {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
 
-        toolbar.addCommandToOverflowMenu(new CommandTracked("Reset to default**")); //reset to default values
+        if (false) toolbar.addCommandToOverflowMenu(new CommandTracked("Reset to default**")); //reset to default values
     }
 
     static Switch addSettingBooleanXXX(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
@@ -187,11 +187,11 @@ public class ScreenSettingsCommon extends MyForm {
                 () -> {
                     settingShowOnActive.setHidden(false);
 //                    settingShowOnActive.getParent().getParent().animateLayout(300);
-                    settingShowOnActive.getParent().animateLayout(300);
+                    settingShowOnActive.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
                 },
                 () -> {
                     settingShowOnActive.setHidden(true);
-                    settingShowOnActive.getParent().animateLayout(300);
+                    settingShowOnActive.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
                 }
         ));
     }

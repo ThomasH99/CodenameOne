@@ -151,10 +151,10 @@ public class ScreenTimer6 extends MyForm {
 
         //Create an interrupt task and start the timer on it
 //        toolbar.addCommandToRightBar(makeInterruptCommand());
-        toolbar.addCommandToLeftBar(makeInterruptCommand()); //left like all other screens
+        toolbar.addCommandToOverflowMenu(makeInterruptCommand(true)); //left like all other screens
 
 //        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("TimerSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
-        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("TimerSettings", null, Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("TimerSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsTimer(ScreenTimer6.this, () -> {
                 refreshAfterEdit();
             }).show();

@@ -274,14 +274,13 @@ TitleSmall {
 TitleCommand { /*the commands in the title bar*/
     cn1-derive: Button;
     /*margin-top: 0.5mm;/**/
-    margin: 1mm 1mm;
+    margin: 1.5mm 1.5mm;
     padding: 0;
-    font-size: 140%;
+    font-size: 180%; /*140%;*/
     background-color: transparent;
     /*color: green;
     /*background-color: red;*/
 }
-
 
 Command { /* the overflow menu commands */
     cn1-derive: Button;
@@ -379,16 +378,26 @@ ScreenAlarmsSnoozeAll { /*icon for snoozing a single alarm*/
 
 /*************** EDIT ITEM - ScreenItem2 ***********/
 
-TextField  { 
+TextFieldXXX  { 
     cn1-derive: Default;
-    font-family :  "native:MainLight"; /*"native:MainRegular";*/
-    padding: 3mm;
-    margin: 2mm 0 0 0;
+    font-family :  "native:MainRegular"; /*"native:MainRegular";*/
+    padding: 2mm;
+    margin: 1mm;
     background-color: white;
-    /*    border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    border: 1pt solid lightgray; /* cn1-pill-border; /*cn1-round-border;*/
     /*border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     color: black;
     /*font-size: 100%;*/
+    text-align: left; kjer
+}
+
+TextField { 
+    cn1-derive: ListOfItemsTextBase;
+    font-family :  "native:MainRegular"; /*"native:MainRegular";*/
+    margin: 1mm;
+    padding: 2mm 1mm 2mm 1mm;
+    border: 1pt solid lightgray; /* cn1-pill-border; /*cn1-round-border;*/
+    color: black;
     text-align: left;
 }
 
@@ -901,14 +910,14 @@ ScreenItemStarredXXX { /*style for starred icon task text in lists*/
 ScreenItemStarredActive { /*style for starred icon task text in lists*/
     cn1-derive: ScreenItemValue;
     color:red; /*blueviolet;/**/
-/*    padding:0 0.5mm 0 0; top+bottom right+left
-    margin:0mm;*/
+    /*    padding:0 0.5mm 0 0; top+bottom right+left
+        margin:0mm;*/
 }
 ScreenItemStarredNotActive { /*style for NOT starred icon task text in lists*/
     cn1-derive: ScreenItemValue; 
-/*    color:red; blueviolet;/*
-    padding:0 0.5mm 0 0; top+bottom right+left
-    margin:0mm;*/
+    /*    color:red; blueviolet;/*
+        padding:0 0.5mm 0 0; top+bottom right+left
+        margin:0mm;*/
 }
 ScreenItemStarredActiveInherited { /*style for *active* starred icon task text in lists*/
     cn1-derive: ScreenItemValue;
@@ -938,7 +947,7 @@ ListOfItemsTextBase { /*style for task text in lists*/
 
 ListOfItemsText { /*style for task text in lists*/
     cn1-derive: ListOfItemsTextBase;/**/
-    font-family :  "native:MainLight"; /*"native:MainLight";*/
+    /*font-family :  "native:MainLight"; "native:MainLight";*/
 }
 
 ListOfItemsTextDone { /*style for DONE task text in lists*/
@@ -1432,17 +1441,17 @@ WorkSlotContainer {
     cn1-derive: ItemContainer;
 }
 WorkSlotStartTime { /*style for task details - SOUTH */
-    cn1-derive: ListOfItemsItemDetails;
+    cn1-derive: ListOfItemsTextBase; 
 }
 WorkSlotStartTimeNow { /*style for task details - SOUTH */
-    cn1-derive: ListOfItemsItemDetails;
+    cn1-derive: ListOfItemsTextBase;
     text-decoration: underline;
 }
 WorkSlotEndTime { /*style for task details - SOUTH */
-    cn1-derive: ListOfItemsItemDetails;
+    cn1-derive: ListOfItemsTextBase;
 }
 WorkSlotDetails { /*style for task details - SOUTH */
-    cn1-derive: ListOfItemsItemDetails;
+    cn1-derive: ListOfItemsTextBase;
 }
 
 ListOfItemsSelected { /*the size of the hidden(?) button below the checkbox)*/

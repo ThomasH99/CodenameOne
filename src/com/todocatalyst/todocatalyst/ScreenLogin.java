@@ -276,7 +276,7 @@ public class ScreenLogin extends MyForm {
             password.setHidden(true);
             backToSignupSignIn.setHidden(true);
             forgottenPassword.setHidden(true);
-            animateHierarchy(300);
+            animateHierarchy(ANIMATION_TIME_DEFAULT);
         }));
 
         signUp.setCommand(Command.create("Sign up", Icons.iconPersonNew, (e2) -> {
@@ -289,7 +289,7 @@ public class ScreenLogin extends MyForm {
             password.setHidden(true);
             forgottenPassword.setHidden(true);
             backToSignupSignIn.setHidden(false);
-            animateHierarchy(300);
+            animateHierarchy(ANIMATION_TIME_DEFAULT);
             email.startEditingAsync();
         }));
 
@@ -304,7 +304,7 @@ public class ScreenLogin extends MyForm {
             password.setHidden(false);
             forgottenPassword.setHidden(false);
             backToSignupSignIn.setHidden(false);
-            animateHierarchy(300);
+            animateHierarchy(ANIMATION_TIME_DEFAULT);
             email.startEditingAsync();
 //            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
@@ -335,7 +335,7 @@ public class ScreenLogin extends MyForm {
             } else {
                 Dialog.show("", errorMsg, "OK", null);
             }
-            ScreenLogin.this.getContentPane().animateLayout(300);
+            ScreenLogin.this.getContentPane().animateLayout(ANIMATION_TIME_DEFAULT);
         }));
 
         forgottenPassword.setCommand(Command.create("Forgot password", null, (ev) -> {

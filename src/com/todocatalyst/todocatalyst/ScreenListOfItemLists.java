@@ -109,7 +109,7 @@ public class ScreenListOfItemLists extends MyForm {
     }
 
     protected void animateMyForm() {
-        ((Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(150);
+        ((Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
     }
 
     @Override
@@ -179,13 +179,13 @@ public class ScreenListOfItemLists extends MyForm {
                     //https://www.codenameone.com/blog/toolbar-search-mode.html:
                     compList.getComponentAt(i).setHidden(((ItemList) this.itemListList.get(i)).getText().toLowerCase().indexOf(text) < 0);
                 }
-                compList.animateLayout(150);
+                compList.animateLayout(ANIMATION_TIME_FAST);
             });
         }
         getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList));
 
-        //NEW TASK
-        toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox()); //put all generic (not specific to current screen) icons on the left
+        //NEW TASK to Inbox
+        toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox()); //put all generic (not specific to current screen) icons on the left
 
         //NEW ITEMLIST
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconNewToolbarStyle(), (e) -> {
@@ -210,7 +210,7 @@ public class ScreenListOfItemLists extends MyForm {
         ));
 
         //INTERRUPT TASK
-        toolbar.addCommandToLeftBar(makeInterruptCommand());
+        toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemListsSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsListOfItemLists(ScreenListOfItemLists.this, () -> {
@@ -618,7 +618,7 @@ public class ScreenListOfItemLists extends MyForm {
                     }
 //                        myForm.animateMyForm();
 //                        mainCont.getScrollable().ani300); //not working well (
-                    mainCont.getParent().animateLayout(300); //not working well (
+                    mainCont.getParent().animateLayout(ANIMATION_TIME_DEFAULT); //not working well (
                 }
             };
             itemListLabel.addActionListener(detailActionListener); //UI: touch task name to show/hide details
@@ -757,7 +757,7 @@ public class ScreenListOfItemLists extends MyForm {
                             myForm.showDetails.add(itemList);
                         }
                     }
-                    mainCont.getParent().animateLayout(300); //not working well (
+                    mainCont.getParent().animateLayout(ANIMATION_TIME_DEFAULT); //not working well (
                 }
             }
         };

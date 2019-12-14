@@ -73,7 +73,7 @@ public class ScreenListOfAlarms extends MyForm {
     private ScreenListOfAlarms() { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(screenTitle, null, () -> {
         });
-        setShowIfEmptyList("No Reminders to deal with"); //"No Reminders to deal with",
+        setTextToShowIfEmptyList("No Reminders to deal with"); //"No Reminders to deal with",
         screenType = ScreenType.ALARMS;
         setUIID("AlarmsForm");
         setUniqueFormId("ScreenListOfAlarms");
@@ -167,8 +167,8 @@ public class ScreenListOfAlarms extends MyForm {
         refreshAfterEdit();
 //        super.showPreviousScreenOrDefault(form instanceof MyForm ? (MyForm) form : null, true);
         if (false) {
-            this.setTransitionInAnimator(CommonTransitions.createCover(CommonTransitions.SLIDE_VERTICAL, false, 300));
-            this.setTransitionOutAnimator(CommonTransitions.createUncover(CommonTransitions.SLIDE_VERTICAL, false, 300));
+            this.setTransitionInAnimator(CommonTransitions.createCover(CommonTransitions.SLIDE_VERTICAL, false, ANIMATION_TIME_DEFAULT));
+            this.setTransitionOutAnimator(CommonTransitions.createUncover(CommonTransitions.SLIDE_VERTICAL, false, ANIMATION_TIME_DEFAULT));
         }
 //        show();
         super.show();
@@ -248,7 +248,7 @@ public class ScreenListOfAlarms extends MyForm {
                     .add(BorderLayout.SOUTH, snoozeTimePicker); //a picker needs to be added to form to work correctly
             getContentPane().add(MyBorderLayout.SOUTH, cancelAllButtonsCont);
 //            alarmCont.animateHierarchy(300); //works??
-            alarmCont.animateLayout(300); //works??
+            alarmCont.animateLayout(ANIMATION_TIME_DEFAULT); //works??
 //            exitOnEmptyAlarmList = false;
 //        revalidate();
 //        restoreKeepPos();
@@ -261,7 +261,7 @@ public class ScreenListOfAlarms extends MyForm {
 
         super.addCommandsToToolbar(toolbar);
 //        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("AlarmSettings", "", Icons.iconSettings, (e) -> {
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("AlarmSettings", "", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("AlarmSettings", "Settings", Icons.iconSettings, (e) -> {
             boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
             int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
 
@@ -483,7 +483,7 @@ public class ScreenListOfAlarms extends MyForm {
             }
             return cont;
         } else {
-            return BorderLayout.centerCenter(new SpanLabel(getShowIfEmptyList()));
+            return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
         }
     }
 

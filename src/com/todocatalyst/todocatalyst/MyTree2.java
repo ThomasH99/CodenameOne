@@ -400,7 +400,7 @@ public class MyTree2 extends ContainerScrollY {
                 // prevent a race condition on node expansion contraction
 //                parent.animateHierarchyAndWait(300);
 //parent.getAnimationManager().
-                parent.animateLayout(300);
+                parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
 //            if (multilineMode) {
 //                revalidate();
 //            }
@@ -558,7 +558,7 @@ public class MyTree2 extends ContainerScrollY {
     }
 
     void collapseNode(Component c, boolean collapseAllLevels) {
-        collapseNode(c, CommonTransitions.createSlide(CommonTransitions.SLIDE_VERTICAL, false, 300), collapseAllLevels);
+        collapseNode(c, CommonTransitions.createSlide(CommonTransitions.SLIDE_VERTICAL, false, MyForm.ANIMATION_TIME_DEFAULT), collapseAllLevels);
     }
 
     /**

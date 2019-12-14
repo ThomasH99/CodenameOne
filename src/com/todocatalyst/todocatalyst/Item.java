@@ -4319,7 +4319,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
-     * returns a sequential list of all leaf tasks (or the Item itself if not a project) that meet the Condition (null: no filter/all tasks included),
+     * returns a sequential list of all leaf tasks (or the Item itself if not a
+     * project) that meet the Condition (null: no filter/all tasks included),
      * starting with the first subtask of the first subtask etc.
      *
      * @param condition condition or null (will match all items)
@@ -8225,6 +8226,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
         }
+        opsToUpdateSubtasks.clear();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
 //            Inbox.getInstance().addToList(this);
@@ -8299,7 +8301,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         AlarmHandler.getInstance().updateOnItemChange(this);
 
-        if (getOwner() == null &&!isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+        if (getOwner() == null && !isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
             Inbox.getInstance().addToList(this);
 //            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
             DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());

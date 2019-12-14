@@ -315,12 +315,12 @@ class TimerStack {
             if (update && nextTimedItem == null) { //only show if we're updating the timer to next task
                 String timedTypeMsg = null;
                 if (timerInstance.getTimedItemListN() != null) {
-                    timedTypeMsg = "list \"" + timerInstance.getTimedItemListN().getText() + "\"";
+                    timedTypeMsg = " in list \"" + timerInstance.getTimedItemListN().getText() + "\"";
                 } else if (timerInstance.getTimedProject() != null) {
-                    timedTypeMsg = "project \"" + timerInstance.getTimedProject().getText() + "\"";
+                    timedTypeMsg = " in project \"" + timerInstance.getTimedProject().getText() + "\"";
                 }
                 if (timedTypeMsg != null) {
-                    MyForm.showToastBar("No more tasks in " + timedTypeMsg + "");
+                    MyForm.showToastBar("No more tasks" + timedTypeMsg + "");
                 }
             }
             currentTimerStackIndex--;
@@ -2114,7 +2114,7 @@ class TimerStack {
                         Container smallTimer = buildContentPaneSmallN(myCurrentForm); //refresh the small container
                         if (smallTimer != null) {
                             myCurrentForm.addSmallTimerCont(smallTimer);
-                            if (smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
+                            if (false&&smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
                                 myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
                             }
                         }
@@ -2301,7 +2301,7 @@ class TimerStack {
                     Container smallTimer = buildContentPaneSmallN(myCurrentForm); //refresh the small container
                     if (smallTimer != null) {
                         myCurrentForm.addSmallTimerCont(smallTimer);
-                        if (smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
+                        if (false&& smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
                             myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
                         }
                     }
@@ -3196,7 +3196,7 @@ class TimerStack {
                     itemHierarchyContainer.setHidden(!itemHierarchyContainer.isHidden()); //inverse visibility
 //                    buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
                     buttonShowItemHierarchy.setMaterialIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess); //switch icon
-                    buttonShowItemHierarchy.getParent().getParent().animateLayout(300);
+                    buttonShowItemHierarchy.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
                 });
 
                 contentPane.add(MyBorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName)))
@@ -3496,7 +3496,7 @@ class TimerStack {
                 MyPrefs.flipBoolean(MyPrefs.timerShowEffortEstimateDetails);
 //                            contentPane.getComponentForm().animateLayout(300);
 //                form.animateLayout(300);
-                estimateTable.getParent().getParent().animateLayout(300);
+                estimateTable.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
             }
             );
 //            Container effortDetailsCont =  LayeredLayout.encloseIn(
@@ -3677,7 +3677,7 @@ class TimerStack {
 //            Container west = BoxLayout.encloseXNoGrow(status);
             Container west = BoxLayout.encloseX(status);
 
-            if (interruptTask) {
+            if (false && interruptTask) { //UI: not relevant to show, you (generally) know if you just launched an interrupt (maybe not if the app is restarted later?!)
                 Label interruptIcon = new Label();
                 interruptIcon.setMaterialIcon(Icons.iconInterrupt);
                 interruptIcon.setUIID("SmallTimerInterruptIcon");
@@ -3689,7 +3689,7 @@ class TimerStack {
 
 //            Component text;
 //            if (timedItem.isInteruptOrInstantTask() && (timedItem.getText() == null || timedItem.getText().isEmpty())) {
-            if (interruptTask || (timedItem.getText() == null || timedItem.getText().isEmpty())) {
+            if (false&&(interruptTask || (timedItem.getText() == null || timedItem.getText().isEmpty()))) {
 //                west.add(description); //only make task text editable if empty interrupt task
 //                contentPane.add(BorderLayout.CENTER, description);
 //                west.add(description);

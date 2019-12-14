@@ -111,25 +111,47 @@ public class CleanUpDataInconsistencies {
      * @param description
      * @param list
      */
-    private boolean cleanUpDuplicatesInList(String description, List list, boolean executeCleanup) {
+//    private boolean cleanUpDuplicatesInList(String description, List list, boolean executeCleanup) {
+    private boolean cleanUpDuplicatesInList(String description, List inputList, boolean executeCleanup) {
         //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
         //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
-        ArrayList cleanList = new ArrayList();
-        for (int i = 0, size = list.size(); i < size; i++) {
-            Object elt = list.get(i);
-
-            if (cleanList.contains(elt)) {
-                Log.p("CLEANUP: " + description + " contains duplicate of \"" + elt + "\" at position " + i + " (list= " + list + ")", logLevel);
-            } else {
-                cleanList.add(elt);
+        if (inputList instanceof ItemList) {
+            ItemList list = (ItemList) inputList;
+            ArrayList cleanList = new ArrayList();
+            int size = list.getSize();
+            for (int i = 0; i < size; i++) {
+                Object elt = list.getItemAt(i);
+                if (cleanList.contains(elt)) {
+                    Log.p("CLEANUP: " + description + " contains duplicate of \"" + elt + "\" at position " + i + " (list= " + list + ")", logLevel);
+                } else {
+                    cleanList.add(elt);
+                }
             }
+            boolean deletes = list.getSize() != cleanList.size();
+            if (executeCleanup) {
+                list.clear();
+                list.addAll(cleanList);
+            }
+            return deletes;
+        } else { //other lists than ItemList
+            ArrayList cleanList = new ArrayList();
+            int size =  inputList.size();
+            for (int i = 0; i < size; i++) {
+                Object elt = inputList.get(i);
+
+                if (cleanList.contains(elt)) {
+                    Log.p("CLEANUP: " + description + " contains duplicate of \"" + elt + "\" at position " + i + " (list= " + inputList + ")", logLevel);
+                } else {
+                    cleanList.add(elt);
+                }
+            }
+            boolean deletes = inputList.size() != cleanList.size();
+            if (executeCleanup) {
+                inputList.clear();
+                inputList.addAll(cleanList);
+            }
+            return deletes;
         }
-        boolean deletes = list.size() != cleanList.size();
-        if (executeCleanup) {
-            list.clear();
-            list.addAll(cleanList);
-        }
-        return deletes;
     }
 
     /**
@@ -1157,9 +1179,8 @@ public class CleanUpDataInconsistencies {
         ArrayList uniqueItems = new ArrayList(); //items that have already been checked
         int index = 0;
 //        for (int i = 0, size = itemListOrCategory.size(); i < size; i++) {
-        while (index < itemListOrCategory.size()) {
-            Item elt = (Item) itemListOrCategory.get(index);
-
+        while (index < itemListOrCategory.getSize()) {
+            Item elt = (Item) itemListOrCategory.getItemAt(index);
             if (uniqueItems.contains(elt)) {
                 //TODO duplicates can be either a second instance of same object, or a copy of it, should check for both and handle separately
                 hasDuplicates = true;
@@ -1202,6 +1223,8 @@ public class CleanUpDataInconsistencies {
                 itemListOrCategory.setOwner(ItemListList.getInstance());
             }
         }
+
+        cleanUpDuplicatesInItemListOrCategory(itemListOrCategory.getText(), itemListOrCategory, executeCleanup);
 
         int i = 0;
 //        List<Item> items = itemListOrCategory.getListFull();

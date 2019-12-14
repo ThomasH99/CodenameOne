@@ -193,7 +193,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 //        if (parent != null && parent.getParent() != null) {
         if (parent != null) {
 //            parent.getParent().animateLayout(300); //parent of parent since pinchcontainer is kept inside a variable height container
-            parent.animateLayout(300); //parent of parent since pinchcontainer is kept inside a variable height container
+            parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT); //parent of parent since pinchcontainer is kept inside a variable height container
         }
     }
 

@@ -192,7 +192,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
             ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
         }
         if (parent != null)
-            parent.animateLayout(300);
+            parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
     }
 
     /**

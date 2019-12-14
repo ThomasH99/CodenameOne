@@ -122,7 +122,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 //                closeInsertNewCategoryContainer(myForm); //close without inserting new task
 //                getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
                 this.remove(); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-                this.myForm.animateLayout(300);
+                this.myForm.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
             }, "EditItemFromInsertNewContainer")));
         }
 
@@ -231,7 +231,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
             ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
         }
         if (parent != null)
-            parent.animateLayout(300);
+            parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void closeInsertNewWorkSlotContainer(MyForm f) {

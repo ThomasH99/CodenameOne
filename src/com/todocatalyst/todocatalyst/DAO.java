@@ -528,7 +528,7 @@ public class DAO {
             }
             list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
             if (Config.TEST) {
-                ASSERT.that(list.get(i) != null, "null returned from cache for object=" + val + "; for list=" + list);
+                ASSERT.that(list.get(i) != null, () -> "null returned from cache for object=" + val + "; for list=" + list);
             }
         }
         return list;
@@ -891,7 +891,7 @@ public class DAO {
 //    }
 //</editor-fold>
 //    public List<ItemAndListCommonInterface> getTodayDueAndOrWaitingOrWorkSlotsItems(boolean includeWaiting, boolean includeStartingToday) {
-    public List<ItemAndListCommonInterface> getToday() {
+    public List<ItemAndListCommonInterface> getToday(List existingListToUpdate) {
 //        ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
 
         List<ParseQuery> queries = new ArrayList<>();
@@ -957,7 +957,14 @@ public class DAO {
             query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
             query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
             List result = query.find();
-            allTodayElements.addAll(result);
+            fetchListElementsIfNeededReturnCachedIfAvail(result);
+            if (existingListToUpdate instanceof List) {
+                //if we already have an existing list (that eg the timer may be running on), then simply update it
+                existingListToUpdate.clear();
+                existingListToUpdate.addAll(result);
+            } else {
+                allTodayElements.addAll(result);
+            }
         } catch (ParseException ex) {
             Log.e(ex);
         }
@@ -975,18 +982,29 @@ public class DAO {
 
             try {
                 List<WorkSlot> resultsWorkSlots = queryWorkSlots.find();
-                allTodayElements.addAll(resultsWorkSlots); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
+                fetchListElementsIfNeededReturnCachedIfAvail(resultsWorkSlots);
+                if (existingListToUpdate instanceof List) {
+                    //if we already have an existing list (that eg the timer may be running on), then simply update it
+//                existingListToUpdate.clear(); //Cleared above
+                    existingListToUpdate.addAll(resultsWorkSlots);
+                } else {
+                    allTodayElements.addAll(resultsWorkSlots); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
+                }
             } catch (ParseException ex) {
                 Log.e(ex);
             }
         }
 
         removeDuplicates(allTodayElements); //TODO!!!: will remove duplicate tasks, but not tasks in workslots, not sure this is an issue?!
-        fetchListElementsIfNeededReturnCachedIfAvail(allTodayElements);
-        return allTodayElements;
+//        fetchListElementsIfNeededReturnCachedIfAvail(allTodayElements);
+        if (existingListToUpdate instanceof List) {
+            return existingListToUpdate;
+        } else {
+            return allTodayElements;
+        }
     }
 
-    public List<Item> getOverdue() {
+    public List<Item> getOverdue(List existingListToUpdate) {
         Date startOfToday = MyDate.getStartOfToday();
         Date startOfOverdueInterval = new Date(startOfToday.getTime() - MyPrefs.overdueLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
 
@@ -1001,7 +1019,14 @@ public class DAO {
         try {
             List<Item> results = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results);
-            return results;
+            if (existingListToUpdate instanceof List) {
+                //if we already have an existing list (that eg the timer may be running on), then simply update it
+                existingListToUpdate.clear();
+                existingListToUpdate.addAll(results);
+                return existingListToUpdate;
+            } else {
+                return results;
+            }
         } catch (ParseException ex) {
             Log.e(ex);
         }
@@ -1028,7 +1053,7 @@ public class DAO {
      *
      * @return
      */
-    public List<Item> getCalendar() {
+    public List<Item> getCalendar(List existingListToUpdate) {
 //        Calendar cal = Calendar.getInstance();
 //        cal.set(Calendar.HOUR_OF_DAY, 0);
 //        cal.set(Calendar.MINUTE, 0);
@@ -1065,24 +1090,32 @@ public class DAO {
                 results = query.find();
 //                fetchAllElementsInSublist(results, false);
                 fetchListElementsIfNeededReturnCachedIfAvail(results);
+                if (existingListToUpdate instanceof List) {
+                    //if we already have an existing list (that eg the timer may be running on), then simply update it
+                    existingListToUpdate.clear();
+                    existingListToUpdate.addAll(results);
+                    return existingListToUpdate;
+                } else {
+                    return results;
+                }
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return results;
+        return new ArrayList();
 //        return (List<Item>) getAll(Item.CLASS_NAME);
-    }
+}
 
-    /**
-     * return number of undone tasks due today (between midnigth and midnight)
-     *
-     * @param onlyDone
-     * @return
-     */
-    public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
+/**
+ * return number of undone tasks due today (between midnigth and midnight)
+ *
+ * @param onlyDone
+ * @return
+ */
+public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
         //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
 //        return getDueAndOrWaitingTodayCount(includeWaiting, includeStartingToday);
-        List<ItemAndListCommonInterface> all = getToday();
+        List<ItemAndListCommonInterface> all = getToday(null);
         int count = 0;
         for (ItemAndListCommonInterface elt : all) {
             if (elt instanceof WorkSlot) {
@@ -1823,7 +1856,7 @@ public class DAO {
             List updatedList = null;
             switch (name) {
                 case OVERDUE:
-                    updatedList = getOverdue();
+                    updatedList = getOverdue((ItemList) temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 //////                    return (ItemList) temp;
@@ -1847,7 +1880,7 @@ public class DAO {
 //                    }
                     break; //unreachable statement!!
                 case TODAY:
-                    updatedList = getToday();
+                    updatedList = getToday((ItemList) temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
 ////                    if ((temp = cacheGet(name)) != null && (MyDate.isToday(temp.getUpdatedAt()))) {
@@ -1874,7 +1907,7 @@ public class DAO {
 //</editor-fold>
                     break; //unreachable statement!!
                 case NEXT:
-                    updatedList = getCalendar();
+                    updatedList = getCalendar((ItemList) temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
@@ -1913,7 +1946,7 @@ public class DAO {
 //</editor-fold>
                     break; //unreachable statement!!
                 case LOG:
-                    updatedList = getCompletionLog();
+                    updatedList = getCompletionLog((ItemList) temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
@@ -1938,7 +1971,7 @@ public class DAO {
 //</editor-fold>
                     break;
                 case DIARY:
-                    updatedList = getCreationLog();
+                    updatedList = getCreationLog((ItemList) temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 ////                    } else {
@@ -1954,7 +1987,7 @@ public class DAO {
 //</editor-fold>
                     break;
                 case TOUCHED:
-                    updatedList = getTouchedLog();
+                    updatedList = getTouchedLog((ItemList) temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 ////                    } else {
@@ -1974,7 +2007,8 @@ public class DAO {
             }
 //            if (temp.getObjectIdP() == null) { //new created list
             if (temp == null) { //create new list (only done on first use or after refreshing cache)
-                temp = new ItemList(visibleName, getTouchedLog());
+//                temp = new ItemList(visibleName, getTouchedLog((ItemList) temp));
+                temp = new ItemList(visibleName, updatedList);
                 ((ItemList) temp).setSystemList(true);
                 ((ItemList) temp).setList(updatedList);
                 if (filterSortDef != null) {
@@ -1983,7 +2017,7 @@ public class DAO {
                 }
 //                saveAndWait(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name 
 //                cache.put(name, temp);
-                ParseObject lambdaCopy = temp;
+//                ParseObject lambdaCopy = temp;
 //                saveInBackground(temp, () -> cache.put(name, lambdaCopy)); //NB. MUST be saveAndWait so an objectId is created before caching based on name 
                 saveInBackground(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name -> now done in backgroundsavethread after call to saveInBackground
 //                cache.put(name, temp);
@@ -2467,7 +2501,7 @@ public class DAO {
      *
      * @return
      */
-    public List<Item> getCompletionLog() {
+    public List<Item> getCompletionLog(List existingListToUpdate) {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         setupItemQueryNotTemplateNotDeletedLimit10000(query);
 
@@ -2483,10 +2517,17 @@ public class DAO {
         try {
             results = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results);
+            if (existingListToUpdate instanceof List) {
+                //if we already have an existing list (that eg the timer may be running on), then simply update it
+                existingListToUpdate.clear();
+                existingListToUpdate.addAll(results);
+            } else {
+                return results;
+            }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return results;
+        return new ArrayList();
 //        return (List<Item>) getAll(Item.CLASS_NAME);
     }
 
@@ -2543,7 +2584,7 @@ public class DAO {
      *
      * @return
      */
-    public List<Item> getTouchedLog() {
+    public List<Item> getTouchedLog(List existingListToUpdate) {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //        query2.include(Item.PARSE_TEXT);
 //        query2.include(Item.PARSE_SUBTASKS);
@@ -2564,10 +2605,18 @@ public class DAO {
         try {
             results = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results);
+            if (existingListToUpdate instanceof List) {
+                //if we already have an existing list (that eg the timer may be running on), then simply update it
+                existingListToUpdate.clear();
+                existingListToUpdate.addAll(results);
+                return existingListToUpdate;
+            } else {
+                return results;
+            }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return results;
+        return new ArrayList();
 //        return (List<Item>) getAll(Item.CLASS_NAME);
     }
 
@@ -2600,7 +2649,7 @@ public class DAO {
      *
      * @return
      */
-    public List<Item> getCreationLog() {
+    public List<Item> getCreationLog(List existingListToUpdate) {
         //TODO!!! implement getting in batches of less than 1000
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //        query2.include(Item.PARSE_TEXT);
@@ -2617,10 +2666,18 @@ public class DAO {
         try {
             results = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results);
+            if (existingListToUpdate instanceof List) {
+                //if we already have an existing list (that eg the timer may be running on), then simply update it
+                existingListToUpdate.clear();
+                existingListToUpdate.addAll(results);
+                return existingListToUpdate;
+            } else {
+                return results;
+            }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return results;
+        return new ArrayList();
 //        return (List<Item>) getAll(Item.CLASS_NAME);
     }
 
@@ -3527,7 +3584,7 @@ public class DAO {
 
         TimerTask timerTask = new TimerTask() {
             @Override
-            public void run() {
+        public void run() {
                 if (Config.TEST_BACKGR) {
                     Log.p(">>>>>>> TimerTask-run(): trying to get LOCK");
                 }

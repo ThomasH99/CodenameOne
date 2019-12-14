@@ -314,7 +314,8 @@ public class MyPrefs {
             = new PrefEntry("Confirm before inserting a template into an existing task", "askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem",
                     false, "**");
     static PrefEntry keepDoneTasksVisibleTheDayTheyreCompleted //TODO!!! No, only ask if overwriting an alreadyd defined value!
-            = new PrefEntry("If Completed tasks are hidden, keep them visible until midnight of the day they were completed", //"Don't hide Completed tasks the day they were completed
+//            = new PrefEntry("If Completed tasks are hidden, keep them visible until midnight of the day they were completed", //"Don't hide Completed tasks the day they were completed
+            = new PrefEntry("Keep just Completed tasks visible until midnight", //"Don't hide Completed tasks the day they were completed
                     "keepDoneTasksVisibleTheDayTheyreCompleted",
                     true, "**");
     static PrefEntry itemDueDateDefaultDaysAheadInTime //TODO!!! No, only ask if overwriting an alreadyd defined value!
@@ -526,9 +527,9 @@ public class MyPrefs {
     static PrefEntry statisticsShowMostRecentFirst = new PrefEntry("Show most recent first", "statisticsShowMostRecentFirst", true, "**");
 
     //LIST OF CATEGORIES
-    static PrefEntry listOfCategoriesShowNumberUndoneTasks = new PrefEntry(Format.f("Show number of tasks", ""), "listOfCategoriesShowNumberUndoneTasks", true, "**");
-    static PrefEntry listOfCategoriesShowNumberDoneTasks = new PrefEntry(Format.f("Show number of completed tasks, e.g. 7/23", ""), "listOfCategoriesShowNumberDoneTasks", true, "**");
-    static PrefEntry listOfCategoriesShowRemainingEstimate = new PrefEntry(Format.f("Show sum of Remaining estimates for tasks", ""),
+    static PrefEntry listOfCategoriesShowNumberUndoneTasks = new PrefEntry("Show number of tasks", "listOfCategoriesShowNumberUndoneTasks", true, "**");
+    static PrefEntry listOfCategoriesShowNumberDoneTasks = new PrefEntry("Show number of completed tasks, e.g. 7/23", "listOfCategoriesShowNumberDoneTasks", true, "**");
+    static PrefEntry listOfCategoriesShowRemainingEstimate = new PrefEntry("Show sum of Remaining estimates for tasks",
             "listOfCategoriesShowRemainingEstimate", true, "**"); //, "e.g. 3h20", Only shown if not-zero. NB. May make displaying the list slower for very large lists or slow devices
     static PrefEntry listOfCategoriesShowTotalTime = new PrefEntry("Show sum of Total time for tasks",
             "listOfCategoriesShowTotalTime", true, "**");
@@ -538,9 +539,9 @@ public class MyPrefs {
             "listOfCategoriesShowTotalNumberOfLeafTasks", true, "**");
 
     //LIST OF ITEMLISTS
-    static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry(Format.f("Show number of tasks", ""), "listOfItemListsShowNumberUndoneTasks", true, "**");
-    static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry(Format.f("Show number of completed tasks, e.g. 7/23", ""), "listOfItemListsShowNumberDoneTasks", true, "**");
-    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry(Format.f("Show sum of Remaining estimates for tasks", ""),
+    static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry("Show number of tasks", "listOfItemListsShowNumberUndoneTasks", true, "**");
+    static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry("Show number of completed tasks, e.g. 7/23", "listOfItemListsShowNumberDoneTasks", true, "**");
+    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry("Show sum of Remaining estimates for tasks",
             "listOfItemListsShowRemainingEstimate", true, "**"); //, "e.g. 3h20", Only shown if not-zero. NB. May make displaying the list slower for very large lists or slow devices
     static PrefEntry listOfItemListsShowTotalTime = new PrefEntry("Show sum of Total time for tasks",
             "listOfItemListsShowTotalTime", true, "**");

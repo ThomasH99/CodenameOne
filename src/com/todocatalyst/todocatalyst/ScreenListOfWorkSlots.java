@@ -47,7 +47,7 @@ public class ScreenListOfWorkSlots extends MyForm {
     static String SCREEN_TITLE = "Work time";
 //    private ItemList workSlotList;
 //    private Object owner;
-    private ItemAndListCommonInterface workSlotListOwner;
+     ItemAndListCommonInterface workSlotListOwner;
     private long now = new MyDate().getTime();
 //    private List<WorkSlot> workSlotList;
 //    private WorkSlotList workSlotList;
@@ -204,7 +204,9 @@ public class ScreenListOfWorkSlots extends MyForm {
         super.addCommandsToToolbar(toolbar);
         //NEW WORKSLOT
         if (enableAddWorkSlots) { //TODO!!!! disable until possible to select owner
-            toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
+//            toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
+//            toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNew, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNew, (e) -> {
                 WorkSlot newWorkSlot = new WorkSlot();
                 newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
                 setKeepPos(new KeepInSameScreenPosition());

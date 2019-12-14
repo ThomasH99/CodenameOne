@@ -97,25 +97,55 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * for worktomedefinition
      */
 //    private ItemList sourceItemList;
-    public ItemList(String listName, boolean temporaryNoSaveList, boolean saveImmediatelyToParse) {
+    protected ItemList(String PARSE_CLASS_NAME) {
+        super(PARSE_CLASS_NAME);
+    }
+
+    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList, boolean saveImmediatelyToParse) {
         super(CLASS_NAME);
         setText(listName);
+        setList(list);
+        setFilterSortDef(filterSortDef);
         setNoSave(temporaryNoSaveList);
         if (!temporaryNoSaveList && saveImmediatelyToParse) {
             DAO.getInstance().saveInBackground((ParseObject) this);
         }
     }
 
-    protected ItemList(String PARSE_CLASS_NAME) {
-        super(PARSE_CLASS_NAME);
+//    public ItemList(String listName, boolean temporaryNoSaveList, boolean saveImmediatelyToParse) {
+//        super(CLASS_NAME);
+//        setText(listName);
+//        setNoSave(temporaryNoSaveList);
+//        if (!temporaryNoSaveList && saveImmediatelyToParse) {
+//            DAO.getInstance().saveInBackground((ParseObject) this);
+//        }
+//    }
+    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
+        this(listName, list, filterSortDef, temporaryNoSaveList, false);
+//        setText(listName);
+//        setList(list);
+//        setFilterSortDef(filterSortDef);
+//        setNoSave(temporaryNoSaveList);
     }
 
     public ItemList(String listName, boolean temporaryNoSaveList) {
-        this(listName, temporaryNoSaveList, false);
+        this(listName, null, null, temporaryNoSaveList, false);
     }
 
     public ItemList(boolean saveImmediatelyToParse, String listName) {
-        this(listName, false, saveImmediatelyToParse);
+        this(listName, null, null, false, saveImmediatelyToParse);
+    }
+
+    public ItemList(String listName, List<E> list) {
+        this(listName, list, null, false);
+    }
+
+    public ItemList(String listName, List<E> list, boolean temporaryNoSaveList) {
+        this(listName, list, null, temporaryNoSaveList);
+    }
+
+    public ItemList(List<E> list, boolean temporaryNoSaveList) {
+        this("", list, temporaryNoSaveList);
     }
 
     public ItemList() {
@@ -124,6 +154,22 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     public ItemList(boolean temporaryNoSaveList) {
         this("", temporaryNoSaveList);
+    }
+
+    public ItemList(List<E> list) {
+//        this();
+//        itemList = new ArrayList(list);
+//        itemList = list;
+//        setList(list);
+        this(list, false);
+    }
+
+    /**
+     * create a new ItemList that is a copy of source
+     */
+    public ItemList(ItemAndListCommonInterface source) {
+        this();
+        source.copyMeInto(this);
     }
 
 //    public ItemList(List<E> list, MySaveFunction mySaveFunction) {
@@ -141,42 +187,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        itemList = list;
 //        setList(list);
 //    }
-    public ItemList(List<E> list) {
-//        this();
-//        itemList = new ArrayList(list);
-//        itemList = list;
-//        setList(list);
-        this(list, false);
-    }
-
-    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
-        this();
-        setText(listName);
-        setList(list);
-        setFilterSortDef(filterSortDef);
-        setNoSave(temporaryNoSaveList);
-    }
-
-    public ItemList(String listName, List<E> list, boolean temporaryNoSaveList) {
-        this(listName, list, null, temporaryNoSaveList);
-    }
-
-    public ItemList(String listName, List<E> list) {
-        this(listName, list, null, false);
-    }
-
-    public ItemList(List<E> list, boolean temporaryNoSaveList) {
-        this("", list, temporaryNoSaveList);
-    }
-
-    /**
-     * create a new ItemList that is a copy of source
-     */
-    public ItemList(ItemAndListCommonInterface source) {
-        this();
-        source.copyMeInto(this);
-    }
-
     public boolean isSystemList() {
         Boolean interruptTask = getBoolean(PARSE_SYSTEM_LIST);
         return (interruptTask == null) ? false : interruptTask;
@@ -573,7 +583,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     @Override
     public E remove(int index) {
-        ASSERT.that(false,  "check if below works correctly wrt getListFull etc");
+        ASSERT.that(false, "check if below works correctly wrt getListFull etc");
 //        E obj = getItemAt(index);
         E obj = getList().get(index);
 //        removeItem(index);
@@ -1042,7 +1052,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         List<E> list = getListFull();
 //        List<? extends ItemAndListCommonInterface> list = getListFull();
 //        FilterSortDef filterSortDef = getFilterSortDef();
-        FilterSortDef filterSortDef;
+        FilterSortDef filterSortDef= getFilterSortDef();
+        if (false&&Config.TEST) {
+            Log.p("Calling getList() for list=" + this.getText()+(filterSortDef!=null?(" Filter defined, options="+filterSortDef.getFilterOptions()):"Filter NOT defined"));// + "; filter=" + getFilterSortDef());
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null && filteredSortedList == null) { //buffer the sorted list
 //        if (filteredSortedList == null && ((filterSortDef = getFilterSortDef()) != null)) { //buffer the sorted list
@@ -1053,7 +1066,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            list = filteredSortedList;
 //        }
 //</editor-fold>
-        if ((filterSortDef = getFilterSortDef()) != null) { //no buffer for (see code above for buffer version)
+        if (filterSortDef  != null) { //no buffer for (see code above for buffer version)
             return (List<E>) filterSortDef.filterAndSortItemList(list);
         } else {
             return list;
@@ -1073,6 +1086,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        if (false&&cachedList != null) {
 //            return cachedList;
 //        }
+
+        if (false&&Config.TEST) {
+            Log.p("Calling getListFull() for list=" + this.getText() );// + "; filter=" + getFilterSortDef());
+        }
+
         List<E> cachedList = getList(PARSE_ITEMLIST);
 
 //            List<E> list = getList(PARSE_ITEMLIST);
@@ -1157,8 +1175,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     public boolean addToList(ItemAndListCommonInterface subItemOrList) {
-        addToList(subItemOrList, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-        return true;
+        return addToList(subItemOrList, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
     }
 
     @Override
@@ -1631,8 +1648,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public FilterSortDef getFilterSortDef() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
-
+        if (false&&Config.TEST && filterSortDef == null) {
+            Log.p("FilterSortDef==null for list=" + this);
+        }
         if (filterSortDef == null && !isNoSave() && MyPrefs.useDefaultFilterInItemListsWhenNoneDefined.getBoolean()) { //!isNoSave() <=> a hack to avoid that temporary, eg Statistics, lists are filtered
+            if (false&&Config.TEST) {
+                Log.p("FilterSortDef - returning DefaultFilter for list=" + this);
+            }
             return FilterSortDef.getDefaultFilter();
         }
 //<editor-fold defaultstate="collapsed" desc="comment">

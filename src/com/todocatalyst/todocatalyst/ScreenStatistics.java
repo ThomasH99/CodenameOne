@@ -120,7 +120,7 @@ public class ScreenStatistics extends MyForm {
                     //https://www.codenameone.com/blog/toolbar-search-mode.html:
                     compList.getComponentAt(i).setHidden(((Item) doneItemsFromParseSortedOnDate.get(i)).getText().toLowerCase().indexOf(text) < 0);
                 }
-                compList.animateLayout(150);
+                compList.animateLayout(ANIMATION_TIME_FAST);
             });
         }
         //SEARCH
