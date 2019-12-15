@@ -376,7 +376,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
             westCont.add(subtaskSupertaskIconsLabel);
             subtaskSupertaskIconsLabel.setVisible(refItem != null);
         }
-        westCont.add(textEnt9cat1tryField);
+        westCont.add(textEntryField);
 
         //Full screen edit of the new task:
         //                                new Button(Command.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {

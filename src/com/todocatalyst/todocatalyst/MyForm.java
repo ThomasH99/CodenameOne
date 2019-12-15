@@ -552,7 +552,8 @@ public class MyForm extends Form {
         Form form = this;
         if ((form instanceof ScreenCategoryPicker || form instanceof ScreenListOfAlarms
                 || form instanceof ScreenLogin || form instanceof ScreenObjectPicker
-                || form instanceof ScreenRepair || form instanceof ScreenTimer6)) {
+                || form instanceof ScreenRepair || form instanceof ScreenTimer6
+                )) {
             return null;
         } else {
             Container formContentPane = form.getContentPane();

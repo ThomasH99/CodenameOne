@@ -891,7 +891,7 @@ public class DAO {
 //    }
 //</editor-fold>
 //    public List<ItemAndListCommonInterface> getTodayDueAndOrWaitingOrWorkSlotsItems(boolean includeWaiting, boolean includeStartingToday) {
-    public List<ItemAndListCommonInterface> getToday(List existingListToUpdate) {
+    public ItemList getToday(ItemList existingListToUpdate) {
 //        ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
 
         List<ParseQuery> queries = new ArrayList<>();
@@ -958,10 +958,10 @@ public class DAO {
             query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
             List result = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(result);
-            if (existingListToUpdate instanceof List) {
+            if (existingListToUpdate instanceof ItemList) {
                 //if we already have an existing list (that eg the timer may be running on), then simply update it
                 existingListToUpdate.clear();
-                existingListToUpdate.addAll(result);
+                existingListToUpdate.addAllNotMakingOwner(result);
             } else {
                 allTodayElements.addAll(result);
             }
@@ -983,10 +983,10 @@ public class DAO {
             try {
                 List<WorkSlot> resultsWorkSlots = queryWorkSlots.find();
                 fetchListElementsIfNeededReturnCachedIfAvail(resultsWorkSlots);
-                if (existingListToUpdate instanceof List) {
+                if (existingListToUpdate instanceof ItemList) {
                     //if we already have an existing list (that eg the timer may be running on), then simply update it
 //                existingListToUpdate.clear(); //Cleared above
-                    existingListToUpdate.addAll(resultsWorkSlots);
+                    existingListToUpdate.addAllNotMakingOwner(resultsWorkSlots);
                 } else {
                     allTodayElements.addAll(resultsWorkSlots); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
                 }
@@ -997,14 +997,14 @@ public class DAO {
 
         removeDuplicates(allTodayElements); //TODO!!!: will remove duplicate tasks, but not tasks in workslots, not sure this is an issue?!
 //        fetchListElementsIfNeededReturnCachedIfAvail(allTodayElements);
-        if (existingListToUpdate instanceof List) {
+        if (existingListToUpdate instanceof ItemList) {
             return existingListToUpdate;
         } else {
-            return allTodayElements;
+            return new ItemList(allTodayElements);
         }
     }
 
-    public List<Item> getOverdue(List existingListToUpdate) {
+    public ItemList getOverdue(ItemList existingListToUpdate) {
         Date startOfToday = MyDate.getStartOfToday();
         Date startOfOverdueInterval = new Date(startOfToday.getTime() - MyPrefs.overdueLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
 
@@ -1019,18 +1019,18 @@ public class DAO {
         try {
             List<Item> results = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results);
-            if (existingListToUpdate instanceof List) {
+            if (existingListToUpdate instanceof ItemList) {
                 //if we already have an existing list (that eg the timer may be running on), then simply update it
                 existingListToUpdate.clear();
-                existingListToUpdate.addAll(results);
+                existingListToUpdate.addAllNotMakingOwner(results);
                 return existingListToUpdate;
             } else {
-                return results;
+                return new ItemList(results);
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return new ArrayList();
+        return new ItemList();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1053,7 +1053,7 @@ public class DAO {
      *
      * @return
      */
-    public List<Item> getCalendar(List existingListToUpdate) {
+    public ItemList getCalendar(ItemList existingListToUpdate) {
 //        Calendar cal = Calendar.getInstance();
 //        cal.set(Calendar.HOUR_OF_DAY, 0);
 //        cal.set(Calendar.MINUTE, 0);
@@ -1090,29 +1090,29 @@ public class DAO {
                 results = query.find();
 //                fetchAllElementsInSublist(results, false);
                 fetchListElementsIfNeededReturnCachedIfAvail(results);
-                if (existingListToUpdate instanceof List) {
+                if (existingListToUpdate instanceof ItemList) {
                     //if we already have an existing list (that eg the timer may be running on), then simply update it
                     existingListToUpdate.clear();
-                    existingListToUpdate.addAll(results);
+                    existingListToUpdate.addAllNotMakingOwner(results);
                     return existingListToUpdate;
                 } else {
-                    return results;
+                    return new ItemList(results);
                 }
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return new ArrayList();
+        return new ItemList();
 //        return (List<Item>) getAll(Item.CLASS_NAME);
-}
+    }
 
-/**
- * return number of undone tasks due today (between midnigth and midnight)
- *
- * @param onlyDone
- * @return
- */
-public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
+    /**
+     * return number of undone tasks due today (between midnigth and midnight)
+     *
+     * @param onlyDone
+     * @return
+     */
+    public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
         //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
 //        return getDueAndOrWaitingTodayCount(includeWaiting, includeStartingToday);
         List<ItemAndListCommonInterface> all = getToday(null);
@@ -1828,6 +1828,7 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
     public final static String DIARY = "Diary";
     public final static String TOUCHED = "Touched";
     private final static String[] RESERVED_LIST_NAMES = {OVERDUE, TODAY, NEXT, LOG, DIARY, TOUCHED};//new ArrayList
+    private final static HashMap<String, ItemList> namedLists = new HashMap<>();
 
 //    public ItemList getNamedItemList(String name) {
 //        return getNamedItemList(name, name); //use fixed name as default
@@ -1837,7 +1838,7 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
 //        return getNamedItemList(name, visibleName, null);
 //    }
     public ItemList getNamedItemList(String name, String visibleName, FilterSortDef filterSortDef) {
-        ParseObject temp = null;
+//        ItemList temp = null;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        String objId;
 //        if (filterSortDef != null) {
@@ -1845,18 +1846,19 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
 //            saveInBackground(temp);
 //        }
 //</editor-fold>
-        if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) { //temp.getUpdatedAt() == null: in case it hasn't been saved to Parse server yet
-//           //temp is cached and updated today
-            return (ItemList) temp;
-        } else {
-            // !((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) <=>
-            // ((temp = cacheGet(name)) == null || !(temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) <=>
-            // ((temp = cacheGet(name)) == null || (temp.getUpdatedAt() != null && !MyDate.isToday(temp.getUpdatedAt())))
+//        if (false && (temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) { //temp.getUpdatedAt() == null: in case it hasn't been saved to Parse server yet
+////           //temp is cached and updated today
+//            return (ItemList) temp;
+//        } else {
+        // !((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) <=>
+        // ((temp = cacheGet(name)) == null || !(temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) <=>
+        // ((temp = cacheGet(name)) == null || (temp.getUpdatedAt() != null && !MyDate.isToday(temp.getUpdatedAt())))
 //            List<ItemAndListCommonInterface> updatedList;
-            List updatedList = null;
-            switch (name) {
-                case OVERDUE:
-                    updatedList = getOverdue((ItemList) temp);
+        ItemList temp = namedLists.get(name); //ensure lists a
+        ItemList updatedList = null;
+        switch (name) {
+            case OVERDUE:
+                updatedList = getOverdue(temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 //////                    return (ItemList) temp;
@@ -1878,9 +1880,9 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
 //                    }
 //</editor-fold>
 //                    }
-                    break; //unreachable statement!!
-                case TODAY:
-                    updatedList = getToday((ItemList) temp);
+                break; //unreachable statement!!
+            case TODAY:
+                updatedList = getToday(temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
 ////                    if ((temp = cacheGet(name)) != null && (MyDate.isToday(temp.getUpdatedAt()))) {
@@ -1905,9 +1907,9 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
 //                    }
 ////                    }
 //</editor-fold>
-                    break; //unreachable statement!!
-                case NEXT:
-                    updatedList = getCalendar((ItemList) temp);
+                break; //unreachable statement!!
+            case NEXT:
+                updatedList = getCalendar(temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
@@ -1944,9 +1946,9 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
 //                    }
 ////                    }
 //</editor-fold>
-                    break; //unreachable statement!!
-                case LOG:
-                    updatedList = getCompletionLog((ItemList) temp);
+                break; //unreachable statement!!
+            case LOG:
+                updatedList = getCompletionLog(temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
@@ -1969,9 +1971,9 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
 //                    }
 //                    }
 //</editor-fold>
-                    break;
-                case DIARY:
-                    updatedList = getCreationLog((ItemList) temp);
+                break;
+            case DIARY:
+                updatedList = getCreationLog(temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 ////                    } else {
@@ -1985,9 +1987,9 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
 //                    }
 ////                    }
 //</editor-fold>
-                    break;
-                case TOUCHED:
-                    updatedList = getTouchedLog((ItemList) temp);
+                break;
+            case TOUCHED:
+                updatedList = getTouchedLog(temp);
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
 ////                    } else {
@@ -2001,42 +2003,50 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
 //                    }
 ////                    }
 //</editor-fold>
-                    break;
+                break;
 //                default:
 //                    break;
             }
+//        updatedList.setSystemList(true);
+        updatedList.setNoSave(true);
+        updatedList.setText(visibleName);
+        updatedList.setFilterSortDef(filterSortDef);
+        namedLists.put(name, updatedList);
+        return updatedList;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (temp.getObjectIdP() == null) { //new created list
-            if (temp == null) { //create new list (only done on first use or after refreshing cache)
-//                temp = new ItemList(visibleName, getTouchedLog((ItemList) temp));
-                temp = new ItemList(visibleName, updatedList);
-                ((ItemList) temp).setSystemList(true);
-                ((ItemList) temp).setList(updatedList);
-                if (filterSortDef != null) {
-                    saveInBackground(filterSortDef);
-                    ((ItemList) temp).setFilterSortDef(filterSortDef);
-                }
-//                saveAndWait(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name 
-//                cache.put(name, temp);
-//                ParseObject lambdaCopy = temp;
-//                saveInBackground(temp, () -> cache.put(name, lambdaCopy)); //NB. MUST be saveAndWait so an objectId is created before caching based on name 
-                saveInBackground(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name -> now done in backgroundsavethread after call to saveInBackground
-//                cache.put(name, temp);
-            } else {
-                ((ItemAndListCommonInterface) temp).setList(updatedList); //refresh the list (important to just update existing list so eg Timer continues on same list!!)
-                saveInBackground(temp);
-            }
-
-//            if (temp != null) {
-//                return (ItemList) temp;
+//            if (temp == null) { //create new list (only done on first use or after refreshing cache)
+////                temp = new ItemList(visibleName, getTouchedLog((ItemList) temp));
+//                temp = new ItemList(visibleName, updatedList);
+//                ((ItemList) temp).setSystemList(true);
+//                ((ItemList) temp).setList(updatedList);
+//                if (filterSortDef != null) {
+//                    saveInBackground(filterSortDef);
+//                    ((ItemList) temp).setFilterSortDef(filterSortDef);
+//                }
+////                saveAndWait(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name
+////                cache.put(name, temp);
+////                ParseObject lambdaCopy = temp;
+////                saveInBackground(temp, () -> cache.put(name, lambdaCopy)); //NB. MUST be saveAndWait so an objectId is created before caching based on name
+//                if (false) saveInBackground(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name -> now done in backgroundsavethread after call to saveInBackground
+////                cache.put(name, temp);
 //            } else {
-//                ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
-//                return null;
+//                ((ItemAndListCommonInterface) temp).setList(updatedList); //refresh the list (important to just update existing list so eg Timer continues on same list!!)
+//                if (false) saveInBackground(temp);
 //            }
-            if (temp == null) {
-                ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
-            }
-            return (ItemList) temp;
-        }
+//
+////            if (temp != null) {
+////                return (ItemList) temp;
+////            } else {
+////                ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
+////                return null;
+////            }
+//            if (temp == null) {
+//                ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
+//            }
+//            return (ItemList) temp;
+////        }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
@@ -2501,7 +2511,7 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
      *
      * @return
      */
-    public List<Item> getCompletionLog(List existingListToUpdate) {
+    public ItemList getCompletionLog(ItemList existingListToUpdate) {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         setupItemQueryNotTemplateNotDeletedLimit10000(query);
 
@@ -2517,17 +2527,18 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
         try {
             results = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results);
-            if (existingListToUpdate instanceof List) {
+            if (existingListToUpdate instanceof ItemList) {
                 //if we already have an existing list (that eg the timer may be running on), then simply update it
                 existingListToUpdate.clear();
-                existingListToUpdate.addAll(results);
+                existingListToUpdate.addAllNotMakingOwner(results);
+                return existingListToUpdate;
             } else {
-                return results;
+                return new ItemList(results);
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return new ArrayList();
+        return new ItemList();
 //        return (List<Item>) getAll(Item.CLASS_NAME);
     }
 
@@ -2584,7 +2595,7 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
      *
      * @return
      */
-    public List<Item> getTouchedLog(List existingListToUpdate) {
+    public ItemList getTouchedLog(ItemList existingListToUpdate) {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //        query2.include(Item.PARSE_TEXT);
 //        query2.include(Item.PARSE_SUBTASKS);
@@ -2605,18 +2616,18 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
         try {
             results = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results);
-            if (existingListToUpdate instanceof List) {
+            if (existingListToUpdate instanceof ItemList) {
                 //if we already have an existing list (that eg the timer may be running on), then simply update it
                 existingListToUpdate.clear();
-                existingListToUpdate.addAll(results);
+                existingListToUpdate.addAllNotMakingOwner(results);
                 return existingListToUpdate;
             } else {
-                return results;
+                return new ItemList(results);
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return new ArrayList();
+        return new ItemList();
 //        return (List<Item>) getAll(Item.CLASS_NAME);
     }
 
@@ -2649,7 +2660,7 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
      *
      * @return
      */
-    public List<Item> getCreationLog(List existingListToUpdate) {
+    public ItemList getCreationLog(ItemList existingListToUpdate) {
         //TODO!!! implement getting in batches of less than 1000
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //        query2.include(Item.PARSE_TEXT);
@@ -2666,18 +2677,18 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
         try {
             results = query.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results);
-            if (existingListToUpdate instanceof List) {
+            if (existingListToUpdate instanceof ItemList) {
                 //if we already have an existing list (that eg the timer may be running on), then simply update it
                 existingListToUpdate.clear();
-                existingListToUpdate.addAll(results);
+                existingListToUpdate.addAllNotMakingOwner(results);
                 return existingListToUpdate;
             } else {
-                return results;
+                return new ItemList(results);
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return new ArrayList();
+        return new ItemList();
 //        return (List<Item>) getAll(Item.CLASS_NAME);
     }
 
@@ -3584,7 +3595,7 @@ public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
 
         TimerTask timerTask = new TimerTask() {
             @Override
-        public void run() {
+            public void run() {
                 if (Config.TEST_BACKGR) {
                     Log.p(">>>>>>> TimerTask-run(): trying to get LOCK");
                 }

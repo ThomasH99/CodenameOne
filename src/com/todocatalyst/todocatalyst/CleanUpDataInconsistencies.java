@@ -31,6 +31,20 @@ public class CleanUpDataInconsistencies {
         this.dao = dao;
     }
 
+        private List removeDuplicates(List list) {
+        List noDups = new ArrayList();
+        for (Object obj : list) {
+            if (!list.contains(obj)) {
+                noDups.add(obj);
+            } else {
+                Log.p("duplicate element="+obj);
+            }
+        }
+        return noDups;
+    }
+
+
+    
     /**
      * returns true if trying to fetch the parseObject from Parse fails (meaning
      * the object does not exists on the server)
@@ -1175,6 +1189,17 @@ public class CleanUpDataInconsistencies {
     private boolean cleanUpDuplicatesInItemListOrCategory(String description, ItemList itemListOrCategory, boolean executeCleanup) {
         //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
         //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
+        List list = itemListOrCategory.getListFull();
+        List cleanedList = removeDuplicates(list);
+        if (executeCleanup) {
+            itemListOrCategory.setList(cleanedList);
+        }
+        return list.size()!=cleanedList.size();
+    }
+
+    private boolean cleanUpDuplicatesInItemListOrCategoryOLD(String description, ItemList itemListOrCategory, boolean executeCleanup) {
+        //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
+        //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
         boolean hasDuplicates = false;
         ArrayList uniqueItems = new ArrayList(); //items that have already been checked
         int index = 0;
@@ -1187,9 +1212,11 @@ public class CleanUpDataInconsistencies {
                 Log.p("CLEANUP: " + description + " contains duplicate of \"" + itemToString(elt) + "\" at position " + index + " (list= " + itemListOrCategory + ")", logLevel);
                 if (executeCleanup) {
                     if (itemListOrCategory instanceof Category) {
-                        ((Category) itemListOrCategory).removeItemFromCategory(elt, false); //
+//                        ((Category) itemListOrCategory).removeItemFromCategory(elt, false); //
+                        ((Category) itemListOrCategory).removeItem(index); //
                     } else {
-                        ((ItemList) itemListOrCategory).removeFromList(elt, false); //
+//                        ((ItemList) itemListOrCategory).removeFromList(elt, false); //
+                        ((ItemList) itemListOrCategory).removeItem(index); //
                     }                    //don't index++ since we've removed the item and next iteration should treat the item now at position index
                 } else {
                     index++;

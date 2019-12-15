@@ -2187,14 +2187,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     /**
      * @inheritDoc
      */
-    public E getItemAt(int index) {
+    public E getItemAt(int indexFull) {
 //        if (index < itemVector.size() && index >= 0) {
 //            return itemVector.elementAt(index);
-        if (index < getSize() && index >= 0) {
+        if (indexFull < getSize() && indexFull >= 0) {
 //            return itemList.get(index);
 //            return getListFull().get(index);
 //            return getList().get(index);
-            return getListFull().get(index);
+            return getListFull().get(indexFull);
         }
         return null;
     }
@@ -2217,9 +2217,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     /**
      * @inheritDoc
      */
-    public void removeItem(int index) {
+    public void removeItem(int indexFull) {
 
-        E item = getItemAt(index);
+        E item = getItemAt(indexFull);
         Bag<E> itemBag = getItemBag();
         if (hasSubListsZZZ() && itemBag != null && itemBag.getCount(item) > 1) { //if there are sublists, only remove item from list if it has been added one single time
             itemBag.remove(item);
@@ -2228,19 +2228,21 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
             int listSize = getSize();
 
-            if (0 <= index && index < listSize) {
-                // if (index < listSize && index >= 0) {
+            if (0 <= indexFull && indexFull < listSize) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+// if (index < listSize && index >= 0) {
 //                E baseItem = getItemAt(index);
 //            itemVector.removeElementAt(index);
 //                super.remove(index);
 //                itemList.remove(index);
 //                List<E> list = getListFull();
+//</editor-fold>
                 List<E> listFull = getListFull();
 //                List<E> list = getList();
-                int indexFull = listFull.indexOf(item);
+//                int indexFull = listFull.indexOf(item);
                 listFull.remove(indexFull);
                 setList(listFull);
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (baseItem.getOwnerList() == this) {
 //                    baseItem.setOwnerList(null); //if removed BaseItem has this list as parent, then reset parent to null
 //                }
@@ -2266,6 +2268,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                }
 //                fireDataChangedEvent(DataChangedListener.REMOVED, index);
 //                changed(new ChangeEvent(this, ChangeValue.CHANGED_ITEMLIST_ITEM_REMOVED, index, (BaseItem) obj, triggerEvent));
+//</editor-fold>
             }
         }
     }
@@ -3298,6 +3301,16 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
         return success;
 //        throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public boolean addAllNotMakingOwner(Collection<ItemAndListCommonInterface> c) {
+        boolean success = true;
+        for (ItemAndListCommonInterface o : c) {
+            if (!addToList(o,true,false)) {
+                success = false;
+            }
+        }
+        return success;
     }
 
 //    @Override

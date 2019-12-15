@@ -47,7 +47,7 @@ public class ScreenListOfWorkSlots extends MyForm {
     static String SCREEN_TITLE = "Work time";
 //    private ItemList workSlotList;
 //    private Object owner;
-     ItemAndListCommonInterface workSlotListOwner;
+    ItemAndListCommonInterface workSlotListOwner;
     private long now = new MyDate().getTime();
 //    private List<WorkSlot> workSlotList;
 //    private WorkSlotList workSlotList;
@@ -123,6 +123,9 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        addCommandsToToolbar(getToolbar(), theme);
 //        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own scrolling 
 //        getContentPane().setScrollableY(true);
+        if (!(getLayout() instanceof MyBorderLayout)) { //enable small timer?!
+            setLayout(new MyBorderLayout());
+        }
         getContentPane().setScrollableY(false);
         expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         this.enableAddWorkSlots = enableAddWorkSlots;

@@ -92,6 +92,8 @@ public class ScreenListOfCategories extends MyForm {
         }
         setPinchInsertEnabled(true);
         expandedObjects = new ExpandedObjects(getUniqueFormId());
+        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId(), true);
+
         addCommandsToToolbar(getToolbar());
         if (false) {
             getToolbar().addSearchCommand((e) -> {

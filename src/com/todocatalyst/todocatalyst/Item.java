@@ -576,6 +576,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         Object getValue();
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * buffers a calculated valuate, to ensure that intensive calculations are
      * only done when needed. First time it is called the value will always be
@@ -604,7 +605,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return value;
 //        }
 //    }
-//<editor-fold defaultstate="collapsed" desc="comment">
 //    private BufferedValueXXX derivedRemainingEffortSubItemsSumBuffered = new BufferedValueXXX(new UpdaterInterface() {
 //        public Object getValue() {
 //            long subItemSum = 0;
@@ -972,9 +972,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_FILTER_SORT_DEF = "filterSort";
     final static String PARSE_WORKSLOTS = "workslots";
     final static String PARSE_RESTART_TIMER = "restartTimer"; //should the Timer be re-started from first element if the currently timed is no longer in the list?
+    final static String PARSE_INHERIT_ENABLED = "inherit"; //should this task inherit values from its owner?
+    final static String PARSE_SUBTASKS_INHERIT = "subtasksInherit"; //should this project push inherited values subtasks? (used to block default inheritance)
 //    final static String PARSE_FINISH_TIME = "finishTimexx"; //NOT a parse field, just used to store the field with
 //    final static String PARSE_ = "";
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * returns an Object containing the value of the given field (Object, since
      * this is used in Expr for filtering)
@@ -1128,6 +1131,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                ASSERT.that("Item.setFilterField: Field Identifier not defined " + fieldId);
 //        }
 //    }
+//</editor-fold>
     @Override
     public boolean isDone() {
         ItemStatus status = getStatus();
@@ -1344,8 +1348,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (newOwnerItem != null) {
 //        ((Item) subtask).updateValuesInheritedFromOwner(this, (oldOwner instanceof Item) ? (Item) oldOwner : null);
 //            if (false && updateInheritedValues) //NO need to update inherited values here
-            if (updateInheritedValues) //YES, must update inherited values here (the individual fields will then be updated via the changes stored in opsOnSubtasks
-            {
+            if (updateInheritedValues) { //YES, must update inherited values here (the individual fields will then be updated via the changes stored in opsOnSubtasks
                 updateValuesInheritedFromOwner(newOwnerItem);
             }
             put(PARSE_OWNER_ITEM, newOwnerItem);
@@ -2378,6 +2381,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private boolean addToList(int index, ItemAndListCommonInterface subtask) {
         boolean status = true;
         List listFull = getListFull();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        List list = getList();
 //        if (listFull.size() == 0)
 //            listFull.add(subtask);
@@ -2389,15 +2393,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                listFull.add(indexFull, subtask);
 //            }
 //        }
+//</editor-fold>
         listFull.add(index, subtask);
         ASSERT.that(subtask.getOwner() == null || this == subtask.getOwner(), "subItemOrList owner not null when adding to list, SUBTASK=" + subtask + ", OLD OWNER=" + subtask.getOwner() + ", NEW OWNER=" + this);
         ItemAndListCommonInterface oldOwner = subtask.getOwner();
         subtask.setOwner(this);
-        if (false) { //now done in setOwner() above
-            ((Item) subtask).removeValuesInheritedFromOwner(oldOwner);
-//        ((Item) subtask).updateValuesInheritedFromOwner(this, (oldOwner instanceof Item) ? (Item) oldOwner : null);
-            ((Item) subtask).updateValuesInheritedFromOwner(this);
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) { //now done in setOwner() above
+//            ((Item) subtask).removeValuesInheritedFromOwner(oldOwner);
+////        ((Item) subtask).updateValuesInheritedFromOwner(this, (oldOwner instanceof Item) ? (Item) oldOwner : null);
+//            ((Item) subtask).updateValuesInheritedFromOwner(this);
+//        }
+//</editor-fold>
         setList(listFull);
         return status;
     }
@@ -2737,9 +2744,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                || getOwnerItem() == null || getOwnerItem().getPriority() != prio)) {
         int oldVal = getPriority();
         if (MyUtil.neql(prio, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_PRIORITY, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getPriority(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getPriority(), oldVal) && subtask.updateInheritedValuesFor(PARSE_PRIORITY)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setPriority(prio);
                     return true;
                 }
@@ -2835,9 +2842,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         Challenge oldVal = getChallengeN();
         if (MyUtil.neql(challenge, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_CHALLENGE, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getChallengeN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getChallengeN(), oldVal) && subtask.updateInheritedValuesFor(PARSE_CHALLENGE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setChallenge(challenge);
                     return true;
                 }
@@ -2947,9 +2954,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (dreadFunValue != null) {// && !dreadFunValue.equals("")) {
         DreadFunValue oldVal = getDreadFunValueN();
         if (MyUtil.neql(dreadFunValue, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_DREAD_FUN_VALUE, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getDreadFunValueN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getDreadFunValueN(), oldVal) && subtask.updateInheritedValuesFor(PARSE_DREAD_FUN_VALUE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setDreadFunValue(dreadFunValue);
                     return true;
                 }
@@ -2971,7 +2978,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         boolean update(Item item); //, Object oldValue, Object newValue);
     }
 
-    private List<UpdateItem> opsToUpdateSubtasks = new ArrayList(); //list of operations to execute 
+//    private List<UpdateItem> opsToUpdateSubtasks = new ArrayList(); //list of operations to execute 
+    private HashMap<String, UpdateItem> opsToUpdateSubtasks = new HashMap<String, UpdateItem>(); //list of operations to execute 
     private List<Runnable> opsAfterSubtaskUpdates = new ArrayList(); //operations to run once all changes to Item's fields have been made, e.g. repeatRules
 //    private List<Runnable> opsPreSave = new ArrayList();
     HashMap<String, Object> saveOps = new HashMap<String, Object>();
@@ -3002,9 +3010,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         HighMediumLow oldVal = getImportanceN();
         if (MyUtil.neql(importance, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_IMPORTANCE, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getImportanceN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getImportanceN(), oldVal) && subtask.updateInheritedValuesFor(PARSE_IMPORTANCE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setImportance(importance);
                     return true;
                 }
@@ -3075,9 +3083,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (urgency != null) {// && !dreadFunValue.equals("")) {
         HighMediumLow oldVal = getUrgencyN();
         if (MyUtil.neql(urgency, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_URGENCY, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getUrgencyN(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getUrgencyN(), oldVal) && subtask.updateInheritedValuesFor(PARSE_URGENCY)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setUrgency(urgency);
                     return true;
                 }
@@ -3366,9 +3374,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         Date oldVal = getExpiresOnDateD();
         if (MyUtil.neql(expiresOnDate, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_EXPIRES_ON_DATE, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getExpiresOnDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getExpiresOnDateD(), oldVal) && subtask.updateInheritedValuesFor(PARSE_EXPIRES_ON_DATE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setExpiresOnDate(expiresOnDate);
                     return true;
                 }
@@ -4961,9 +4969,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
 //            if (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
 //                    || Dialog.show("INFO", "Change " + nbChgStatus + " subtasks to " + newStatus.getDescription() + "?", "OK", "Cancel")) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(Item.STATUS, (subtask) -> {
                 ItemStatus oldSubtaskStatus = subtask.getStatus();
-                if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, oldStatus == ItemStatus.DONE)) { //only change status when transition is allowed
+                if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, oldStatus == ItemStatus.DONE) && subtask.updateInheritedValuesFor(PARSE_STATUS)) { //only change status when transition is allowed
                     subtask.setStatus(newStatus, true, false, true, now); //always update dependent fields for subtasks
                     return true;
                 } else {
@@ -5306,7 +5314,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param oldOwner null or previous owner
      */
     void updateValuesInheritedFromOwner(ItemAndListCommonInterface newOwnerN) {
-        //***Inherited from owner***
+        //UI: ***Inherited from owner***
         //PARSE_DUE_DATE -> subtasks can inherit due date from parent? TODO
         //PARSE_EXPIRES_ON_DATE -> all subtasks are impacted if their project experies, BUT is it enough to act at the project-level? Yes, setting a Proje t CANCELLED will/should also cancel subtasks!! (
         //PARSE_HIDE_UNTIL_DATE -> also hide all subtasks!!
@@ -5377,53 +5385,55 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (newOwnerN instanceof Item && MyPrefs.itemInheritOwnerProjectProperties.getBoolean()) {
 
             Item newOwnerItem = (Item) newOwnerN;
+            if (!isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //don't update inherited values for subtasks that are DONE
 
-            if (MyPrefs.itemInheritOwnerProjectDueDate.getBoolean() && getDueDateD().getTime() == 0) { //getDueDateD().getTime() == 0 =>> only set inherited value if no value has been set manually already
-                setDueDate(newOwnerItem.getDueDateD());
-            }
+                if (MyPrefs.itemInheritOwnerProjectDueDate.getBoolean() && getDueDateD().getTime() == 0) { //getDueDateD().getTime() == 0 =>> only set inherited value if no value has been set manually already
+                    setDueDate(newOwnerItem.getDueDateD());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectExpiresOnDate.getBoolean() && getExpiresOnDateD().getTime() == 0) {
-                setExpiresOnDate(newOwnerItem.getExpiresOnDateD());
-            }
+                if (MyPrefs.itemInheritOwnerProjectExpiresOnDate.getBoolean() && getExpiresOnDateD().getTime() == 0) {
+                    setExpiresOnDate(newOwnerItem.getExpiresOnDateD());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && getWaitingTillDateD().getTime() == 0) {
-                setWaitingTillDate(newOwnerItem.getWaitingTillDateD());
-            }
+                if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && getWaitingTillDateD().getTime() == 0) {
+                    setWaitingTillDate(newOwnerItem.getWaitingTillDateD());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean() && getHideUntilDateD().getTime() == 0) {
-                setHideUntilDate(newOwnerItem.getHideUntilDateD());
-            }
+                if (MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean() && getHideUntilDateD().getTime() == 0) {
+                    setHideUntilDate(newOwnerItem.getHideUntilDateD());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaiting.getBoolean() && getDateWhenSetWaitingD().getTime() == 0) {
-                setDateWhenSetWaiting(newOwnerItem.getDateWhenSetWaitingD());
-            }
+                if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaiting.getBoolean() && getDateWhenSetWaitingD().getTime() == 0) {
+                    setDateWhenSetWaiting(newOwnerItem.getDateWhenSetWaitingD());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectPriority.getBoolean() && getPriority() == 0) {
-                setPriority(newOwnerItem.getPriority());
-            }
+                if (MyPrefs.itemInheritOwnerProjectPriority.getBoolean() && getPriority() == 0) {
+                    setPriority(newOwnerItem.getPriority());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectUrgency.getBoolean() && getUrgencyN() == null) {
-                setUrgency(newOwnerItem.getUrgencyN());
-            }
+                if (MyPrefs.itemInheritOwnerProjectUrgency.getBoolean() && getUrgencyN() == null) {
+                    setUrgency(newOwnerItem.getUrgencyN());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectImportance.getBoolean() && getImportanceN() == null) {
-                setImportance(newOwnerItem.getImportanceN());
-            }
+                if (MyPrefs.itemInheritOwnerProjectImportance.getBoolean() && getImportanceN() == null) {
+                    setImportance(newOwnerItem.getImportanceN());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectChallenge.getBoolean() && getChallengeN() == null) { //false=> challenge is not making a lot of sense to inherit for each subtask (a challenging project may have simply subtasks)
-                setChallenge(newOwnerItem.getChallengeN());
-            }
+                if (MyPrefs.itemInheritOwnerProjectChallenge.getBoolean() && getChallengeN() == null) { //false=> challenge is not making a lot of sense to inherit for each subtask (a challenging project may have simply subtasks)
+                    setChallenge(newOwnerItem.getChallengeN());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean() && getDreadFunValueN() == null) { //false=> challenge is not making a lot of sense to inherit for each subtask (a challenging project may have simply subtasks)
-                setDreadFunValue(newOwnerItem.getDreadFunValueN());
-            }
+                if (MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean() && getDreadFunValueN() == null) { //false=> challenge is not making a lot of sense to inherit for each subtask (a challenging project may have simply subtasks)
+                    setDreadFunValue(newOwnerItem.getDreadFunValueN());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean() && getStartByDateD().getTime() == 0) {
-                setStartByDate(newOwnerItem.getStartByDateD());
-            }
+                if (MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean() && getStartByDateD().getTime() == 0) {
+                    setStartByDate(newOwnerItem.getStartByDateD());
+                }
 
-            if (MyPrefs.itemInheritOwnerProjectTemplate.getBoolean()) {
-                setTemplate(newOwnerItem.isTemplate());
+                if (MyPrefs.itemInheritOwnerProjectTemplate.getBoolean()) {
+                    setTemplate(newOwnerItem.isTemplate());
+                }
             }
         }
     }
@@ -5504,6 +5514,41 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     void removeValuesInheritedFromOwner() {
         removeValuesInheritedFromOwner(getOwnerItem());
+    }
+
+    public boolean isInheritFromOwnerZZZ() {
+        Boolean inherit = getBoolean(PARSE_INHERIT_ENABLED);
+        return inherit != null;
+    }
+
+    public void setInheritFromOwnerZZZ(boolean enableInherit) {
+        if (enableInherit) {
+            put(PARSE_INHERIT_ENABLED, true);
+        } else {
+            remove(PARSE_INHERIT_ENABLED);
+        }
+    }
+
+    public boolean isSubtasksInheritZZZ() {
+        Boolean inherit = getBoolean(PARSE_INHERIT_ENABLED);
+        return inherit != null;
+    }
+
+    public void setSubtasksInheritZZZ(boolean enableInherit) {
+        if (enableInherit) {
+            put(PARSE_INHERIT_ENABLED, true);
+        } else {
+            remove(PARSE_INHERIT_ENABLED);
+        }
+    }
+
+    boolean updateInheritedValuesZZZ() {
+//        return isInheritFromOwner()&&!isDone();
+        return !isDone();
+    }
+
+    boolean updateInheritedValuesFor(String parseIdOfField) {
+        return !isDone() || parseIdOfField.equals(PARSE_STATUS); //always allow update of Status
     }
 
     //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5695,9 +5740,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         Date oldVal = getDueDateD();
         if (MyUtil.neql(dueDate, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_DUE_DATE, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getDueDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getDueDateD(), oldVal) && subtask.updateInheritedValuesFor(PARSE_DUE_DATE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setDueDate(dueDate);
                     return true;
                 }
@@ -5782,9 +5827,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         Date oldVal = getHideUntilDateD();
         if (MyUtil.neql(hideUntil, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_HIDE_UNTIL_DATE, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getHideUntilDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getHideUntilDateD(), oldVal) && subtask.updateInheritedValuesFor(PARSE_HIDE_UNTIL_DATE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setHideUntilDate(hideUntil);
                     return true;
                 }
@@ -5879,9 +5924,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                || getOwnerItem() == null || getOwnerItem().getStartByDateD().getTime() != startByDate.getTime())) {
         Date oldVal = getStartByDateD();
         if (MyUtil.neql(startByDate, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_START_BY_DATE, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getStartByDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getStartByDateD(), oldVal) && subtask.updateInheritedValuesFor(PARSE_START_BY_DATE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setStartByDate(startByDate);
                     return true;
                 }
@@ -6035,9 +6080,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         Date oldVal = getWaitingTillDateD();
         if (MyUtil.neql(waitingTillDate, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_WAITING_TILL_DATE, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getWaitingTillDateD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getWaitingTillDateD(), oldVal) && subtask.updateInheritedValuesFor(PARSE_WAITING_TILL_DATE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setWaitingTillDate(waitingTillDate);
                     return true;
                 }
@@ -6099,9 +6144,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //TODO!!! check that date is set when status is set Waiting
         Date oldVal = getDateWhenSetWaitingD();
         if (MyUtil.neql(waitingLastActivatedDate, oldVal)) {
-            opsToUpdateSubtasks.add((subtask) -> {
+            opsToUpdateSubtasks.put(PARSE_DATE_WHEN_SET_WAITING, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                if (MyUtil.eql(subtask.getDateWhenSetWaitingD(), oldVal)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                if (MyUtil.eql(subtask.getDateWhenSetWaitingD(), oldVal) && subtask.updateInheritedValuesFor(PARSE_DATE_WHEN_SET_WAITING)) { //if old project value equals current subtask value, then update subtasks value to project's new value
                     subtask.setDateWhenSetWaiting(waitingLastActivatedDate);
                     return true;
                 }
@@ -6404,7 +6449,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         long totalRemainingEffort;
         if (isProject()) {
+            long oldRemainingForProjectTaskItselfInParse = getRemainingForProjectTaskItself(false);
             long subtasksRemaining = getRemainingForSubtasks();
+            if (subtasksRemaining != 0 && oldRemainingForProjectTaskItselfInParse == getRemainingDefaultValue()) {
+                setRemainingForProjectTaskItselfInParse(0); //delete default value
+            }
             if (subtasksRemaining > 0 && MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()) {
                 totalRemainingEffort = subtasksRemaining; //getRemainingEffortFromSubtasks();
             } else {
@@ -6496,19 +6545,67 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        long newEffortTotal = effortSubtasks + remainingEffortMillis;
 //        long prevRemainingProjectTask = getRemainingEffortProjectTaskItself();
 //</editor-fold>
-        if (autoUpdateEffortEstimate && getRemainingForProjectTaskItselfFromParse() == 0 //if first time we set Remaining
+        if (autoUpdateEffortEstimate && getRemainingForProjectTaskItselfFromParse() == getRemainingDefaultValue() //if first time we set Remaining
                 && MyPrefs.automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero.getBoolean()
-                && getEstimate() == 0 //and no effort estimate already set
-                ) { //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
+                && getEstimate() == 0) {//and no effort estimate already set
+            //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
             //since we test for 0, no problem if setting Estimate both here and direct
             setEstimate(remainingEffortProjectTaskItselfMillis + getActualForProjectTaskItself(), false); //false to avoid circular updates between setEstimate() and setRemaining()
         }
 
 //        setRemainingEffortInParse(newEffortTotal);// + actualEffortMillis);
-        setRemainingImpl(remainingEffortProjectTaskItselfMillis);// + actualEffortMillis);
+//        setRemainingImpl(remainingEffortProjectTaskItselfMillis);// + actualEffortMillis);
+        long oldRemaining = getRemaining();
+
+        setRemainingForProjectTaskItselfInParse(remainingEffortProjectTaskItselfMillis);
+
+        long totalRemainingEffort;
+        if (isProject()) {
+            long subtasksRemaining = getRemainingForSubtasks();
+            //depending on subtasks' remaining, update project's default remaining
+            if (subtasksRemaining > 0) {
+                if (getRemainingForProjectTaskItselfFromParse() == getRemainingDefaultValue()) {
+                    setRemainingForProjectTaskItselfInParse(0); //delete default value
+                }
+            } else { //subtasksRemaining==0
+                setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue()); //set default value (again)
+            }
+            
+            if (subtasksRemaining > 0 && MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()) {
+                totalRemainingEffort = subtasksRemaining; //getRemainingEffortFromSubtasks();
+            } else { //subtasksRemaining == 0 || MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()
+//                totalRemainingEffort = remainingEffortProjectTaskItselfMillis + subtasksRemaining; //getRemainingEffortFromSubtasks();
+                totalRemainingEffort = getRemainingForProjectTaskItselfFromParse() + subtasksRemaining; //getRemainingEffortFromSubtasks();
+            }
+        } else { //for single task:
+            totalRemainingEffort = remainingEffortProjectTaskItselfMillis;
+        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (totalRemainingEffort != 0) {
+//            put(PARSE_REMAINING_EFFORT, totalRemainingEffort); //update first
+//        } else {
+//            remove(PARSE_REMAINING_EFFORT);
+//        }
+//</editor-fold>
+        setRemainingInParse(totalRemainingEffort);
+//        update();
+        Item owner = getOwnerItem();
+        if (owner != null && oldRemaining != totalRemainingEffort) {
+//            owner.updateRemaining(oldRemaining, totalRemainingEffort);
+            owner.updateRemainingOnSubtaskChange();
+            DAO.getInstance().saveInBackground(owner);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            long currentProjectRemainingEffort = owner.getRemainingEffort();
+//            long currentProjectRemainingEffortInParse = owner.getRemainingEffortFromParse();
+//            if (currentProjectRemainingEffort != currentProjectRemainingEffortInParse) {
+//                owner.setRemainingEffortInParse(currentProjectRemainingEffort);
+//                DAO.getInstance().saveInBackground(owner);
+//            }
+//</editor-fold>
+        }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        setRemainingEffortProjectTaskItselfInParse(remainingEffortMillis);
-
 //        if (newEffortTotal != oldEffortTotal) {
 //            update();
 //        }
@@ -6526,7 +6623,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param oldRemainingSubtaskEffort
      * @param newRemainingSubtaskEffort
      */
-    protected void updateRemaining(long oldRemainingSubtaskEffort, long newRemainingSubtaskEffort) {
+    protected void updateRemainingXXX(long oldRemainingSubtaskEffort, long newRemainingSubtaskEffort) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long currentProjectRemainingEffort = getRemainingEffortProjectTaskFromParse();
 //         currentProjectRemainingEffort = getRemainingEffortProjectTaskItself();
@@ -6538,11 +6635,62 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        long subtaskRemainingEffort = getRemainingEffortFromSubtasks();
 //</editor-fold>
         long currentRemainingEffort = getRemaining();
-//        if (currentProjectRemainingEffort != currentProjectRemainingEffortInParse) {
-//        setRemainingEffortInParse(currentProjectRemainingEffort + subtaskRemainingEffort);
-//        setRemaining(currentRemainingEffort - oldRemainingSubtaskEffort + newRemainingSubtaskEffort);
-        setRemainingInParse(currentRemainingEffort - oldRemainingSubtaskEffort + newRemainingSubtaskEffort);
-        //DAO.getInstance().saveInBackground(this); //save is done in the task calling updateRemaining
+        long newRemainingTotal = currentRemainingEffort - oldRemainingSubtaskEffort + newRemainingSubtaskEffort;
+//        long currentRemainingProjectItself = getRemainingForProjectTaskItself();
+
+        if (newRemainingSubtaskEffort != 0) {
+            if (getRemainingForProjectTaskItself() == getRemainingDefaultValue()) { //if the project only has a default remaining, ignore it/overwrite with subtasks estimates
+                setRemainingForProjectTaskItselfInParse(0);
+            }
+            if (Config.TEST) {
+                ASSERT.that(oldRemainingSubtaskEffort == 0, "oldRemainingSubtaskEffort should normally be 0 if it's the first time we set a Remaining for this project, is=" + MyDate.formatDuration(oldRemainingSubtaskEffort));
+            }
+            setRemainingInParse(newRemainingTotal - oldRemainingSubtaskEffort);
+        } else { //if the subtask change meakes the total Remaing to to 0, then reset the default value
+            if (newRemainingTotal == 0) {
+                if (Config.TEST) {
+                    ASSERT.that(getRemainingForProjectTaskItself() == 0); //only way for new total to become zero 
+                }
+                setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
+                setRemainingInParse(getRemainingDefaultValue());
+            }
+        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (newRemainingTotal != 0) {
+//            if (currentRemainingProjectItself == getRemainingDefaultValue()) { //if the project only has a default remaining, ignore it/overwrite with subtasks estimates
+//                setRemainingForProjectTaskItselfInParse(0);
+//                setRemainingInParse(newRemainingTotal);
+//            } else {
+//                setRemainingInParse(newRemainingTotal);
+//            }
+//        } else { //if the subtask change meakes the total Remaing to to 0, then reset the default value
+//            if (currentRemainingProjectItself == 0) { //if the project only has a default remaining, ignore it/overwrite with subtasks estimates
+//                setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
+//                setRemainingInParse(getRemainingDefaultValue());
+//            } else {
+//                setRemainingInParse(newRemainingTotal);
+//            }
+//        }
+//        xxif(newRemainingSubtaskEffort != 0) {
+//            if (currentRemainingProjectItself == getRemainingDefaultValue()) { //if the project only has a default remaining, ignore it/overwrite with subtasks estimates
+//                setRemainingForProjectTaskItselfInParse(0);
+//                setRemainingInParse(newRemainingSubtaskEffort);
+//            } else {
+////        if (currentProjectRemainingEffort != currentProjectRemainingEffortInParse) {
+//                //        setRemainingEffortInParse(currentProjectRemainingEffort + subtaskRemainingEffort);
+//                //        setRemaining(currentRemainingEffort - oldRemainingSubtaskEffort + newRemainingSubtaskEffort);
+//                setRemainingInParse(newRemainingTotal);
+//            }
+//        }else { //if the subtask change meakes the total Remaing to to 0, then reset the default value
+//            if (newRemainingTotal == 0 && currentRemainingProjectItself == 0) { //if the project only has a default remaining, ignore it/overwrite with subtasks estimates
+//                setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
+//                setRemainingInParse(getRemainingDefaultValue());
+//            } else {
+//                setRemainingInParse(newRemainingTotal);
+//            }
+//        }
+//DAO.getInstance().saveInBackground(this); //save is done in the task calling updateRemaining
+//</editor-fold>
     }
 
     protected void updateRemainingOnSubtaskChange() {
@@ -6581,7 +6729,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public long getRemainingForProjectTaskItself(boolean useDefaultEstimateForZeroEstimates) {
         long effort = getRemainingForProjectTaskItselfFromParse();
-        if (useDefaultEstimateForZeroEstimates && effort == 0) {
+        if (false && useDefaultEstimateForZeroEstimates && effort == 0) { //false: now default estimate is automatically removed if subtasks have their own estimates
             return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
         } else {
             return effort;
@@ -8218,15 +8366,26 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         if (opsToUpdateSubtasks != null && opsToUpdateSubtasks.size() > 0) {
             List<Item> subtasks = getListFull();
+            UpdateItem updateStatus = opsToUpdateSubtasks.remove(Item.STATUS);
             for (Item subtask : subtasks) {
-                if (!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
-                    for (UpdateItem f : opsToUpdateSubtasks) {
-                        f.update(subtask);
-                    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (true||!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
+//                    for (<String,UpdateItem> f : opsToUpdateSubtasks) {
+//                        f.update(subtask);
+//                    }
+//                }
+//</editor-fold>
+                //first deal with item status since changes to this may determine if inherited values are applied
+                if (updateStatus != null) {
+                    updateStatus.update(subtask);
+                }
+                //then update other inherited fields
+                for (Object parseId : opsToUpdateSubtasks.keySet()) {
+                    opsToUpdateSubtasks.get(parseId).update(subtask);
                 }
             }
+            opsToUpdateSubtasks.clear();
         }
-        opsToUpdateSubtasks.clear();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
 //            Inbox.getInstance().addToList(this);

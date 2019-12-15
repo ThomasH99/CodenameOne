@@ -25,6 +25,7 @@ import java.util.Objects;
 public class FilterSortDef extends ParseObject {
 
     private Comparator nonSavedComparator = null;
+    private boolean isNoSave=false;
 //    private static FilterSortDef defaultFilter = null;
 
 //    private static FilterSortDef DEFAULT_FILTER = null; //no good to use an (editable) filter with singleton, since edits will change the original. Must use separate instances and equal() to compare
@@ -210,8 +211,12 @@ public class FilterSortDef extends ParseObject {
         setDescription(description);
     }
 
-    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortDescending) {
+    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortDescending, boolean isNoSave) {
         this(sortParseFieldId, filterOptions, sortDescending, "");
+        this.isNoSave=isNoSave;
+    }
+    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortDescending) {
+        this(sortParseFieldId, filterOptions, sortDescending, false);
     }
 
     public FilterSortDef(Comparator<Item> sorter, String filterOptions, String description) {
@@ -1736,6 +1741,6 @@ public class FilterSortDef extends ParseObject {
      * @return
      */
     public boolean isNoSave() {
-        return equals(FilterSortDef.getDefaultFilter());
+        return equals(FilterSortDef.getDefaultFilter())||isNoSave;
     }
 }

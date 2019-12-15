@@ -375,7 +375,9 @@ public class ScreenListOfItems extends MyForm {
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
 //</editor-fold>
-        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-" + itemListOrg.getObjectIdP(), true);
+
+        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-" 
+                + (itemListOrg.getObjectIdP()!=null?itemListOrg.getObjectIdP():itemListOrg.getText()), true); //use text for unsaved lists like Log/Diary
 
         String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId() + (itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         expandedObjects = new ExpandedObjects(expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
