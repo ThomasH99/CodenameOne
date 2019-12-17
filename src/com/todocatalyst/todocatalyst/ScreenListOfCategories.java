@@ -157,7 +157,7 @@ public class ScreenListOfCategories extends MyForm {
                 if (category.hasSaveableData()) { //UI: do nothing for an empty category, allows user to add category and immediately return if regrests or just pushed wrong button
                     category.setOwner(categoryOwnerList); //TODO should store ordered list of categories
                     DAO.getInstance().saveInBackground((ParseObject) category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                    categoryOwnerList.addItemAtIndex(category, 0);
+                    categoryOwnerList.addItemAtIndex(category, MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean()?0:categoryOwnerList.size());
                     DAO.getInstance().saveInBackground((ParseObject) categoryOwnerList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
 //                        previousForm.revalidate(); //refresh list to show new items(??)
                     refreshOnItemEdits.launchAction();

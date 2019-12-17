@@ -34,7 +34,7 @@ public class CleanUpDataInconsistencies {
         private List removeDuplicates(List list) {
         List noDups = new ArrayList();
         for (Object obj : list) {
-            if (!list.contains(obj)) {
+            if (!noDups.contains(obj)) {
                 noDups.add(obj);
             } else {
                 Log.p("duplicate element="+obj);
@@ -1187,8 +1187,6 @@ public class CleanUpDataInconsistencies {
      * @return
      */
     private boolean cleanUpDuplicatesInItemListOrCategory(String description, ItemList itemListOrCategory, boolean executeCleanup) {
-        //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
-        //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
         List list = itemListOrCategory.getListFull();
         List cleanedList = removeDuplicates(list);
         if (executeCleanup) {

@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * if initiated with an empty filename, e.g. for a new Item with ObjectId==null, also store values so not lost on app restart. 
+ * if initiated with an empty filename, e.g. for a new Item with ObjectId==null,
+ * also store values so not lost on app restart.
+ *
  * @author thomashjelm
  */
 public class SaveEditedValuesLocally {//extends HashMap {
@@ -42,33 +44,39 @@ public class SaveEditedValuesLocally {//extends HashMap {
     private boolean scrollListenerActive;
 
     SaveEditedValuesLocally(MyForm myForm, String filename, boolean activateScrollPositionSave) {
-        if (Config.TEST) ASSERT.that(filename == null || filename.length() > 0, "empty filename");
+        if (Config.TEST) {
+            ASSERT.that(filename == null || filename.length() > 0, "empty filename");
+        }
 //         previousValues = new HashMap<Object, Object>(); //implicit
         this.myForm = myForm;
         this.scrollListenerActive = activateScrollPositionSave;
         if (scrollListenerActive && this.myForm != null) {
             saveScrollTimer = new UITimer(() -> {
-                if (false) Log.p("SaveEditedValuesLocally.saveScrollTimer: SAVING scroll Y=" + scrollY);
+                if (false) {
+                    Log.p("SaveEditedValuesLocally.saveScrollTimer: SAVING scroll Y=" + scrollY);
+                }
                 previousValues.put(SCROLL_VALUE_KEY, scrollY); //only save scroll position after timeout
                 saveFile();
             });
 
             Component scrollable = this.myForm.findScrollableContYChild();
-            if (scrollable != null)
-                //<editor-fold defaultstate="collapsed" desc="comment">
-                //                scrollable.addScrollListener((newX, newY, oldX, oldY) -> {
-                //                    if (newY != oldY) {
-                //                        scrollY = newY;
-                //                        saveScrollTimer.schedule(SCROLL_VALUE_TIMEOUT_MS, false, this.myForm);
-                //                    }
-                //                });
-                //</editor-fold>
+            if (scrollable != null) //<editor-fold defaultstate="collapsed" desc="comment">
+            //                scrollable.addScrollListener((newX, newY, oldX, oldY) -> {
+            //                    if (newY != oldY) {
+            //                        scrollY = newY;
+            //                        saveScrollTimer.schedule(SCROLL_VALUE_TIMEOUT_MS, false, this.myForm);
+            //                    }
+            //                });
+            //</editor-fold>
+            {
                 setScrollComponent(scrollable);
+            }
         }
         if (filename != null) {
 //        if (filename != null && filename.length() > 0) {
-            if (false && (filename == null || filename.length() == 0))
+            if (false && (filename == null || filename.length() == 0)) {
                 filename = "NewItem";
+            }
 //        ASSERT.that(filename != null && !filename.isEmpty());
             this.filename = PREFIX + filename;
             if (Storage.getInstance().exists(this.filename)) {
@@ -86,14 +94,17 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     public void setScrollComponent(Component scrollableN) {
-        if (lastScrollableComponent != null && lastScrollListener != null)
+        if (lastScrollableComponent != null && lastScrollListener != null) {
             lastScrollableComponent.removeScrollListener(lastScrollListener);
+        }
 //        Component scrollable = this.myForm.findScrollableContYChild();
         if (scrollListenerActive && scrollableN != null) {
             lastScrollableComponent = scrollableN;
             lastScrollListener = (newX, newY, oldX, oldY) -> {
-                if (false && Config.TEST) Log.p("SaveEditedValuesLocally.lastScrollListener: called with "
+                if (false && Config.TEST) {
+                    Log.p("SaveEditedValuesLocally.lastScrollListener: called with "
                             + ((newY != oldY) ? "changed Y=" + newY + " (scheduling save)" : "same Y=" + newY));
+                }
                 if (newY != oldY) {
                     scrollY = newY;
                     saveScrollTimer.schedule(500, false, myForm);
@@ -108,18 +119,23 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     /**
-    will scroll the form to the last stored scrollY position (if any) and delete the scrollY position so this is only done once
-    @param scrollableComp 
+     * will scroll the form to the last stored scrollY position (if any) and
+     * delete the scrollY position so this is only done once
+     *
+     * @param scrollableComp
      */
 //    public void scrollToSavedYOnFirstShow(MyForm myForm) {
     public void scrollToSavedYOnFirstShow(ContainerScrollY scrollableComp) {
         Integer scrollY = (Integer) previousValues.get(SCROLL_VALUE_KEY);
         if (scrollY != null) {
 //            ContainerScrollY scrollableComp = this.myForm.findScrollableContYChild(myForm.getContentPane());
-            if (scrollableComp != null) //not sure why it can bcome null but it has happened
+            if (scrollableComp != null) { //not sure why it can bcome null but it has happened
                 scrollableComp.setScrollYPublic(scrollY);
+            }
             previousValues.remove(SCROLL_VALUE_KEY); //we only scroll to this value once, on first show of screen after 
-            if (false && Config.TEST) Log.p("SaveEditedValuesLocally: Scroll to Y=" + scrollY);
+            if (false && Config.TEST) {
+                Log.p("SaveEditedValuesLocally: Scroll to Y=" + scrollY);
+            }
         }
     }
 
@@ -152,12 +168,15 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //</editor-fold>
     public void saveFile() {
 //            Storage.getInstance().writeObject("ScreenItem-" + item.getObjectIdP(), this); //save 
-        if (previousValues != null && filename != null)
+        if (previousValues != null && filename != null) {
             Storage.getInstance().writeObject(filename, previousValues); //save 
+        }
     }
 
     public Object put(Object key, Object value) {
-        if (false && Config.TEST) ASSERT.that(value != null, "SaveEditedValuesLocally: put key=\"" + key + "\" with null value - missing objectIdP??");
+        if (false && Config.TEST) {
+            ASSERT.that(value != null, "SaveEditedValuesLocally: put key=\"" + key + "\" with null value - missing objectIdP??");
+        }
         if (previousValues != null) {
             Object previousValue = previousValues.put(key, value);
             saveFile();
@@ -168,18 +187,20 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     public Object get(Object key) {
-        if (previousValues != null)
+        if (previousValues != null) {
             return previousValues.get(key);
-        else
+        } else {
             return null;
+        }
     }
 
     public Object get(Object key, Object defaultValue) {
         if (previousValues != null) {
             Object val = previousValues.get(key);
             return val != null ? val : defaultValue;
-        } else
+        } else {
             return null;
+        }
     }
 
     public Object remove(Object key) {
@@ -187,13 +208,17 @@ public class SaveEditedValuesLocally {//extends HashMap {
             Object previousValue = previousValues.remove(key);
             saveFile();
             return previousValue;
-        } else return null;
+        } else {
+            return null;
+        }
     }
 
     public boolean containsKey(Object key) {
-        if (previousValues != null)
+        if (previousValues != null) {
             return previousValues.containsKey(key);
-        else return false;
+        } else {
+            return false;
+        }
     }
 
     public void deleteFile() {
@@ -215,10 +240,14 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     /**
-    clear data (use e.g. if previousValues are passed from Timer to ScreenItem which then applies and saves the item after which the old saved values are meaningless and should be deleted. 
+     * clear data (use e.g. if previousValues are passed from Timer to
+     * ScreenItem which then applies and saves the item after which the old
+     * saved values are meaningless and should be deleted.
      */
     private void clear() {
-        if (previousValues == null) return;
+        if (previousValues == null) {
+            return;
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Storage.getInstance().deleteStorageFile("ScreenItem-" + item.getObjectIdP());
 //        if (previousValuesFilename != null && !previousValuesFilename.isEmpty()) {
@@ -238,13 +267,17 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     /**
-    will add the values defined in predefinedValues to those already stored. Used to set predetermined values used for editing. If any key is already defined, it will
-    currently be overwritten (this could be changed to merging the values if needed someday)
-    @param predefinedValues 
+     * will add the values defined in predefinedValues to those already stored.
+     * Used to set predetermined values used for editing. If any key is already
+     * defined, it will currently be overwritten (this could be changed to
+     * merging the values if needed someday)
+     *
+     * @param predefinedValues
      */
     public void addAndOverwrite(SaveEditedValuesLocally predefinedValues) {
-        if (predefinedValues == null)
+        if (predefinedValues == null) {
             return;
+        }
 //        for(Map.Entry<String, HashMap> entry : selects.entrySet()) {
 //    String key = entry.getKey();
 //    HashMap value = entry.getValue();
@@ -260,15 +293,18 @@ public class SaveEditedValuesLocally {//extends HashMap {
 
     public void putCategories(List<Category> categories) {
 //        Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
-        if (categories == null || categories.size() == 0)
+        if (categories == null || categories.size() == 0) {
             remove(Item.PARSE_CATEGORIES);
+        }
         put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(categories));
     }
 
     public List<Category> getCategories() {
-        if (get(Item.PARSE_CATEGORIES) != null)
+        if (get(Item.PARSE_CATEGORIES) != null) {
             return Item.convCatObjectIdsListToCategoryList((List<String>) get(Item.PARSE_CATEGORIES));
-        else return new ArrayList();
+        } else {
+            return new ArrayList();
+        }
     }
 
     public void putOwner(ItemAndListCommonInterface owner) {
@@ -276,10 +312,11 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //        if (owner == null || owner.size() == 0)
 //            previousValues.remove(Item.PARSE_CATEGORIES);
 //        previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(owner));
-        if (owner == null)
+        if (owner == null) {
             previousValues.remove(Item.PARSE_OWNER_ITEM);
-        else
+        } else {
             put(Item.PARSE_OWNER_ITEM, owner.getObjectIdP());
+        }
     }
 
     public ItemAndListCommonInterface getOwner() {

@@ -792,7 +792,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String TASK_HELP = "TASK_HELP";// "Describe your task here";
     final static String DESCRIPTION = "DESCRIPTION"; //"Description"; // "Task text"
     final static String DESCRIPTION_HELP = "DESCRIPTION_HELP"; //"Description"; // "Task text"
-    final static String DESCRIPTION_HINT = "New task"; //DESCRIPTION_HINT"; //Enter New task"; // "Task text"
+    final static String DESCRIPTION_HINT = "Task"; //"New task" DESCRIPTION_HINT"; //Enter New task"; // "Task text"
     //        final static String FIELD_DONE = "Done", Expr.VALUE_FIELD_TYPE_STRING),
     final static String DONE = "DONE"; //"Done";
     final static String DUE_DATE = "Due"; //"DUE_DATE"; //"Due";
@@ -872,11 +872,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String EFFORT_TOTAL = "Total effort";
     final static String CATEGORIES = "Categories";
     final static String INTERRUPT_TASK = "Interrupt task";
+    final static String INSTANT_TASK = "Instant task";
     final static String INTERRUPT_TASK_HELP = "Interrupt task indicates that this task interrupted another one. Is automatically set when using InstantTask** while Timer is running for another task.";
     final static String INTERRUPT_TASK_INTERRUPTED = "Interrupted task";
     final static String INTERRUPT_TASK_INTERRUPTED_HELP = "Interrupted task indicates the task that this task interrupted. This information can be useful to see if for example a particular type of tasks tend to be interrupted more frequently.";
     final static String INTERRUPT_OR_INSTANT_TASK = "Interrupt or Instant task";
-    final static String INSTANT_TASK = "Instant task";
     final static String PRIORITY_IMPORTANCE = "**used??Importance";
     final static String PRIORITY_IMPORTANCE_HELP = "Indicates the Importance of this task, according to the ** principle.";
     final static String PRIORITY_URGENCY = "**used??Urgency";
@@ -916,6 +916,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String TEMPLATE = "Template";
     final static String SUBTASKS = "Subtasks";
     final static String SUBTASKS_HELP = "**";
+    final static String WORTIME = "work time";
+    final static String WORKTIME_HELP = "**";
 
     final static int ITEM_CHANGED_ALARM_DATE = 0;
 

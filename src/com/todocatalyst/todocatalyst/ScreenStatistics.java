@@ -127,7 +127,7 @@ public class ScreenStatistics extends MyForm {
         if (false) //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
             getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats));
 
-        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("Settings", null, Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", null, Icons.iconSettings, (e) -> {
             int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
             new ScreenSettingsStatistics(ScreenStatistics.this, () -> {
                 if (daysInThePast != MyPrefs.statisticsScreenNumberPastDaysToShow.getInt()) {

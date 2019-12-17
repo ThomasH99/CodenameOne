@@ -1010,7 +1010,8 @@ public class ScreenItem2 extends MyForm {
                 //TODO!!!!! call the same actionListener as when EsitmatePicker is changed 
                 //UI: entering an estimate in the text of an item is used to set remaining effort (and not effort estimate) since this is more useful, e.g. as an easy way to update remaining while editing the item
 //                remainingEffort.setTime(res.minutes); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
-                remainingEffort.setDuration(res.minutes * MyDate.MINUTE_IN_MILLISECONDS); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
+//                remainingEffort.setDuration(res.minutes * MyDate.MINUTE_IN_MILLISECONDS); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
+                remainingEffort.setDurationAndNotify(res.minutes * MyDate.MINUTE_IN_MILLISECONDS); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
                 remainingEffort.repaint();
                 description.setText(res.cleaned); //update text after estimate is removed 
                 description.repaint();
@@ -1018,14 +1019,18 @@ public class ScreenItem2 extends MyForm {
 //            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
             setTitle((item.isTemplate() ? "TEMPLATE: " : "") + description.getText());
         }); //update the form title when text is changed
+
+        mainCont.add(makeSpacerThin());
+
         if (!testMoveTextFieldsToOtherTab) {
             mainCont.add(description);
         }
 //        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, item, 5000, () -> item.setText(description.getText())); //normal that this appear as non-used!
         AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, null, null); //normal that this appear as non-used!
 
+        mainCont.add(makeSpacerThin());
         //COMMENT / NOTES
-        MyTextField comment = new MyTextField(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
+        MyTextField comment = new MyTextField(Item.COMMENT_HINT, 20, 2, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
         comment.setSingleLineTextArea(false);
         comment.setUIID("Comment");
         Container commentField = makeCommentContainer(comment);
@@ -1066,6 +1071,8 @@ public class ScreenItem2 extends MyForm {
         if (!testMoveTextFieldsToOtherTab) {
             mainCont.add(commentField);
         }
+        
+        mainCont.add(makeSpacerThin());
 
         //STATUS
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1208,7 +1215,7 @@ public class ScreenItem2 extends MyForm {
 ////            }
 //        }); //"<click to set a due date>"
 //</editor-fold>
-        mainCont.add(makeSpacer());
+        mainCont.add(makeSpacerThin());
 
         MyDateAndTimePicker dueDate = new MyDateAndTimePicker(() -> makeDefaultDueDate());
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1289,7 +1296,7 @@ public class ScreenItem2 extends MyForm {
         mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP)); //, true, false, false));
 //        int remainingIndex = mainCont.getComponentCount() - 1; //store the index at which to insert remainingEffort
         if (true) {
-            mainCont.add(makeSpacer());
+            mainCont.add(makeSpacerThin());
         }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1431,7 +1438,7 @@ public class ScreenItem2 extends MyForm {
             mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, Item.CATEGORIES));
         }
         if (true) {
-            mainCont.add(makeSpacer());
+            mainCont.add(makeSpacerThin());
         }
 
         //REPEAT RULE
@@ -1487,7 +1494,10 @@ public class ScreenItem2 extends MyForm {
             if (item.getRepeatRule() != null && !item.getRepeatRule().isRepeatInstanceInListOfActiveInstances(item)) {
 //                    Dialog.show("INFO", "Once a repeating task has been set " + ItemStatus.DONE + " or " + ItemStatus.CANCELLED + " the " + Item.REPEAT_RULE + " definition cannot be edited anymore", "OK", null);
 //                    Dialog.show("INFO", Format.f("Once a repeating task has been set {0} or {1} the {2} definition cannot be edited from this task anymore", ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
-                Dialog.show("INFO", Format.f("Once a repeating task has been set [DONE] or [CANCELLED] the [REPEAT_RULE] definition cannot be edited from this task anymore"), "OK", null);
+//                Dialog.show("INFO", Format.f("Once a repeating task has been set [DONE] or [CANCELLED] the [REPEAT_RULE] definition cannot be edited from this task anymore"), "OK", null);
+                Dialog.show("INFO", Format.f("Once a repeating {0 work slot} has been set {1 DONE} or {2 CANCELLED} the {3 REPEAT_RULE} definition cannot be edited from this task anymore",
+                        WorkSlot.WORKSLOT, ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
+
                 return;
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1772,7 +1782,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         ));
         mainCont.add(layoutN(Item.SUBTASKS, editSubtasksFullScreen, Item.SUBTASKS_HELP));
 
-        mainCont.add(makeSpacer());
+        mainCont.add(makeSpacerThin());
 
         //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -2131,7 +2141,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         String estimateHelpTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT_HELP : Item.EFFORT_ESTIMATE_HELP;
         timeCont.add(layoutN(estimateTxt, effortEstimate, estimateHelpTxt));
 
-        timeCont.add(makeSpacer());
+        timeCont.add(makeSpacerThin());
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -2382,7 +2392,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP));//, null, false, false, true, true));
         updateUIIDForInherited(dreadFun, itemCopy.isDreadFunInherited(dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null));
 
-        timeCont.add(makeSpacer());
+        timeCont.add(makeSpacerThin());
 
 //        MyNumericTextField earnedValue = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValue(), (d) -> item.setEarnedValue(d));
         MyNumericTextField earnedValue = new MyNumericTextField("");
@@ -2532,6 +2542,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 effortEstimateSetAutomatically = false;
                 effortEstimate.repaint();
             }
+            updateUIIDForInherited(remainingEffort, remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //NB! MUST do *after* layoutN() which sets the UIID
         });
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyActionListener effortEstimateChangeListener = new MyActionListener() {

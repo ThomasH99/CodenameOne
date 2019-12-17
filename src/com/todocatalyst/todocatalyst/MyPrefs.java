@@ -237,6 +237,8 @@ public class MyPrefs {
             = new PrefEntry("**", "showCategoryDescriptionInCategoryList", false, "Show Category description in category lists");
 //    static PrefEntry categoryAllowDuplicateNamesDescriptionInCategoryList
 //            = new PrefEntry("**", "showCategoryDescriptionInCategoryList", false, "Show Category description in category lists");
+    static PrefEntry addNewCategoriesToBeginningOfCategoryList
+            = new PrefEntry("Add new categories to the beginning of the list", "addNewCategoriesToBeginningOfCategoryList", false, "**");
 
     //ALARMS
 //    static PrefEntry alarmLastDateUptoWhichAlarmsHaveBeenSet = new PrefEntry("alarmLastDateUptoWhichAlarmsHaveBeenSet", new Date(0));
@@ -315,7 +317,7 @@ public class MyPrefs {
                     false, "**");
     static PrefEntry keepDoneTasksVisibleTheDayTheyreCompleted //TODO!!! No, only ask if overwriting an alreadyd defined value!
 //            = new PrefEntry("If Completed tasks are hidden, keep them visible until midnight of the day they were completed", //"Don't hide Completed tasks the day they were completed
-            = new PrefEntry("Keep just Completed tasks visible until midnight", //"Don't hide Completed tasks the day they were completed
+            = new PrefEntry("Show just Completed tasks until midnight", //"Don't hide Completed tasks the day they were completed
                     "keepDoneTasksVisibleTheDayTheyreCompleted",
                     true, "**");
     static PrefEntry itemDueDateDefaultDaysAheadInTime //TODO!!! No, only ask if overwriting an alreadyd defined value!
@@ -409,7 +411,7 @@ public class MyPrefs {
             = new PrefEntry("Project properties like [STARTED_ON] shows values from subtasks", "itemProjectPropertiesDerivedFromSubtasks", true, "**");
 
     static PrefEntry workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime
-            = new PrefEntry(Format.f("Prioritize {0} from Categories", "work time"), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime", true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
+            = new PrefEntry(Format.f("Prioritize {0} from Categories", Item.WORTIME), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime", true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
 
     //INTERNAL / TECHNICAL / CACHE
     static PrefEntry backgroundFetchIntervalInSeconds = new PrefEntry("**", "backgroundFetchIntervalInSeconds", 1 * MyDate.HOUR_IN_MILISECONDS / 1000, "interval for updating eg local notifications and badge count when app is in background**");

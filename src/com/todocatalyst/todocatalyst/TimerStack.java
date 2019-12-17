@@ -3559,7 +3559,7 @@ class TimerStack {
             }
 //                        nextTaskCont.add(gotoNextTaskButtonWithItemText);
             if (gotoNextTaskButtonWithItemText != null) {
-                contentPane.add(gotoNextTaskButtonWithItemText);
+                contentPane.add(GridLayout.encloseIn(1,gotoNextTaskButtonWithItemText));
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (false) {

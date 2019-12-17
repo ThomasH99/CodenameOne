@@ -247,6 +247,7 @@ public class MyForm extends Form {
     static final String SCREEN_TOUCHED = "Touched";
     static final String SCREEN_TOUCHED_24H = "Touched last 24h";
     static final String SCREEN_STATISTICS = "Achievements"; //"Statistics", "History"
+    static final String SETTINGS_SCREEN_TITLE = "Settings for "; //"Statistics", "History"
 
     enum ScreenType {
         ALARMS(ScreenListOfAlarms.screenTitle), LISTS(SCREEN_LISTS_TITLE), ALL_TASKS(SCREEN_ALL_TASKS_TITLE), TODAY(SCREEN_TODAY_TITLE), INBOX(SCREEN_INBOX_TITLE),
@@ -1913,6 +1914,7 @@ public class MyForm extends Form {
 //        return CommandTracked.create("", icon, (e) -> {
         return CommandTracked.create(includeText?"Time interrupt":"", Icons.iconInterrupt, (e) -> {
             Item interruptItem = new Item();
+            interruptItem.setRemaining(0);//remove default estimate for interrupt tasks
             interruptItem.setInteruptOrInstantTask(true);
             DAO.getInstance().saveInBackground(interruptItem);
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
@@ -1932,8 +1934,10 @@ public class MyForm extends Form {
     }
 
     public Command makeStartTimerCommand(boolean includeText, ItemAndListCommonInterface itemListOrg) {
-        return CommandTracked.create(TimerStack.getInstance().isTimerActive() ? "Open Timer" : "Start Timer on list",
-                    TimerStack.getInstance().isTimerActive() ? Icons.iconLaunchTimerAlreadyRunning : Icons.iconLaunchTimer,
+//        return CommandTracked.create(TimerStack.getInstance().isTimerActive() ? "Open Timer" : "Start Timer on list",
+        return CommandTracked.create( "Timer" ,
+//                    TimerStack.getInstance().isTimerActive() ? Icons.iconLaunchTimerAlreadyRunning : Icons.iconLaunchTimer,
+                    Icons.iconLaunchTimer,
                     (e) -> {
                         if (itemListOrg instanceof ItemList) {
                             TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, MyForm.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort

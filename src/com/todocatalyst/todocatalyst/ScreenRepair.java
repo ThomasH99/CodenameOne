@@ -85,15 +85,15 @@ public class ScreenRepair extends MyForm {
 
     public MyForm makeShowBuiltinFontsForm() {
 //        GridLayout gr = new GridLayout(5);
-        Layout gr =  BoxLayout.y();
+        Layout gr = BoxLayout.y();
 //        gr.setAutoFit(true);
 //        Form hi = new Form("Fonts", gr);
         MyForm hi = new MyForm("Fonts", ScreenRepair.this, () -> {
         });
-          hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
+        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
 
-        hi.setScrollableY(true);
         hi.setLayout(gr);
+        hi.setScrollableY(true);
 
 //        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
         getToolbar().setBackCommand(makeDoneUpdateWithParseIdMapCommand());
@@ -145,7 +145,7 @@ public class ScreenRepair extends MyForm {
 //            Font ttfFont = Font.createTrueTypeFont("Handlee", "Handlee-Regular.ttf").derive(fontSize, Font.STYLE_PLAIN);
 
             hi.
-//                    add(createForFont(ttfFont, "Handlee TTF Font")).
+                    //                    add(createForFont(ttfFont, "Handlee TTF Font")).
                     add(createForFont(smallPlainSystemFont, "smallPlainSystemFont")).
                     add(createForFont(mediumPlainSystemFont, "mediumPlainSystemFont")).
                     add(createForFont(largePlainSystemFont, "largePlainSystemFont")).
@@ -403,7 +403,6 @@ public class ScreenRepair extends MyForm {
 //                add("OSVer").add(getSysProp("OSVer"));
 //        return hi;
 //    }
-
     private CheckBox uneditableCheck(String t, boolean v) {
         CheckBox c = new CheckBox(t);
         c.setSelected(v);
@@ -614,8 +613,9 @@ public class ScreenRepair extends MyForm {
 
     /**
      * display a container in a meaningful for debug
+     *
      * @param comp
-     * @return 
+     * @return
      */
     private String disp(Component comp) {
         if (comp == null) {
@@ -732,7 +732,7 @@ public class ScreenRepair extends MyForm {
                 pinchForm.setPinchInsertEnabled(false);
                 pinchForm.getContentPane().setName("ContentPane");
                 pinchForm.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
-                
+
                 Container cont = new Container(BoxLayout.y());
                 cont.setScrollableY(true);
                 cont.setName("Container.y");
@@ -773,7 +773,7 @@ public class ScreenRepair extends MyForm {
 //</editor-fold>
         content.add(new Button(Command.create("Native logs", null, (e9) -> {
 //            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
-            Form hi = new MyForm("Native Logs Reader",null,null);
+            Form hi = new MyForm("Native Logs Reader", null, null);
 
             hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
             String logs = NativeLogs.getNativeLogs();
@@ -802,21 +802,28 @@ public class ScreenRepair extends MyForm {
 
 //        content.add(new Button(MyCommand.create("Force current time", null, (e) -> {
         content.add(new Button(Command.create("Force current time", null, (e) -> {
-            MyForm fd = new MyForm("Set current time", ScreenRepair.this, ()->{});
-            fd.setLayout( BoxLayout.y());
+            MyForm fd = new MyForm("Set current time", ScreenRepair.this, () -> {
+            });
+            fd.setLayout(BoxLayout.y());
             fd.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e2) -> ScreenRepair.this.showBack()));
             fd.add(new Label("Current shift:"));
             fd.add(new Label(MyDate.formatDurationStd(MyDate.getCurrentTimeShift())));
             fd.add(new Label("Current time:"));
             MyDateAndTimePicker picker = new MyDateAndTimePicker(new Date(MyDate.currentTimeMillis()));
-            picker.addActionListener(evt->{MyDate.setCurrentTime(picker.getDate().getTime());fd.revalidateWithAnimationSafety();});
+            picker.addActionListener(evt -> {
+                MyDate.setCurrentTime(picker.getDate().getTime());
+                fd.revalidateWithAnimationSafety();
+            });
 //            fd.add(BoxLayout.encloseX(new Label("Current time:"), new Label())picker);
             fd.add(picker);
-            Button reset = new Button(Command.create("Reset to normal time", null, (e3)->{MyDate.resetCurrentTime();fd.revalidateWithAnimationSafety();}));
+            Button reset = new Button(Command.create("Reset to normal time", null, (e3) -> {
+                MyDate.resetCurrentTime();
+                fd.revalidateWithAnimationSafety();
+            }));
             fd.add(reset);
             fd.show();
         })));
-        
+
         content.add(new Button(Command.create("xxxRun tests menu", null, (e) -> {
             new ScreenRunTests(ScreenRepair.this).show();
         })));
@@ -838,13 +845,15 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        if (false)content.add(new Button(Command.create("Test ScreenEdit2", null, (e) -> {
+        if (false) {
+            content.add(new Button(Command.create("Test ScreenEdit2", null, (e) -> {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
-            new ScreenItem2(new Item(), ScreenRepair.this, () -> {
-            },false,null).show();
+                new ScreenItem2(new Item(), ScreenRepair.this, () -> {
+                }, false, null).show();
+            }
+            )));
         }
-        )));
 
         content.add(new Button(new Command("Show files in FileSystemStorage") {
             @Override
@@ -852,7 +861,6 @@ public class ScreenRepair extends MyForm {
                 new ScreenFileSystemTree().show();
             }
         }));
-
 
         content.add(
                 new Button(new Command("Simulate notification", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
@@ -947,7 +955,7 @@ public class ScreenRepair extends MyForm {
         content.add(new Button(new Command("Show local notifications") {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                Form form = new MyForm("Local notifiations",null,null);
+                Form form = new MyForm("Local notifiations", null, null);
                 form.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
                 LocalNotificationsShadowList list = AlarmHandler.getInstance().getLocalNotificationsTEST();
                 for (int i = 0, size = list.size(); i < size; i++) {
@@ -1160,7 +1168,6 @@ public class ScreenRepair extends MyForm {
 //                    }
 //                }
 //                ));
-
 //        Button doubleOwnerButton = new Button(new Command("Showtasks belonging to more than one list") {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {

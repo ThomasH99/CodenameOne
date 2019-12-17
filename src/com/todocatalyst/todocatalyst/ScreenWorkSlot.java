@@ -384,7 +384,9 @@ public class ScreenWorkSlot extends MyForm {
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenWorkSlot", "", null, (e) -> {
 
             if (workSlot.getRepeatRule() != null && !workSlot.getRepeatRule().isRepeatInstanceInListOfActiveInstances(workSlot)) {
-                Dialog.show("INFO", Format.f("Once a repeating task has been set [DONE] or [CANCELLED] the [REPEAT_RULE] definition cannot be edited from this task anymore"), "OK", null);
+//                Dialog.show("INFO", Format.f("Once a repeating task has been set [DONE] or [CANCELLED] the [REPEAT_RULE] definition cannot be edited from this task anymore"), "OK", null);
+                Dialog.show("INFO", Format.f("Once a repeating task has been set {0 DONE} or {1 CANCELLED} the {2 REPEAT_RULE} definition cannot be edited from this task anymore", 
+                        ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
                 return;
             }
 //<editor-fold defaultstate="collapsed" desc="comment">

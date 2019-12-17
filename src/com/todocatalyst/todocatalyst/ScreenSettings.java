@@ -30,7 +30,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
     //DONE support option to update email (and change login id since email is normally used)
     //DONE skip login screen when already logged in
 
-    public final static String SCREEN_TITLE = "Settings";
+    public final static String SCREEN_TITLE = "Global Settings";
 // protected static String FORM_UNIQUE_ID = "ScreenSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 //    MyForm mainScreen;

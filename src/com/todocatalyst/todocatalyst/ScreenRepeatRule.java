@@ -370,7 +370,7 @@ public class ScreenRepeatRule extends MyForm {
 
             Button buttonRepeatRuleHistory = new Button();
             repeatRuleHideableDetailsContainer.setHidden(MyPrefs.repeatHidePreviousTasksDetails.getBoolean()); //UI: default hidden
-            buttonRepeatRuleHistory.setIcon(repeatRuleHideableDetailsContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
+            buttonRepeatRuleHistory.setMaterialIcon(repeatRuleHideableDetailsContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess); //switch icon
             buttonRepeatRuleHistory.addActionListener((e) -> {
                 if (repeatRuleHideableDetailsContainer.getComponentCount() == 0) { //lazy evaluation
                     List<RepeatRuleObjectInterface> list = repeatRuleEdited.getListOfUndoneRepeatInstances();
@@ -403,7 +403,7 @@ public class ScreenRepeatRule extends MyForm {
 //                repeatRuleHideableDetailsContainer.setHidden(!repeatRuleHideableDetailsContainer.isHidden());
                 MyPrefs.repeatHidePreviousTasksDetails.flipBoolean();
                 repeatRuleHideableDetailsContainer.setHidden(MyPrefs.repeatHidePreviousTasksDetails.getBoolean());
-                buttonRepeatRuleHistory.setIcon(repeatRuleHideableDetailsContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
+                buttonRepeatRuleHistory.setMaterialIcon(repeatRuleHideableDetailsContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess); //switch icon
                 animateLayout(ANIMATION_TIME_DEFAULT);
             });
 //            motherContainer.add(BorderLayout.center(FlowLayout.encloseCenter(new Label(myRepeatRule.getListOfUndoneRepeatInstances().size() + " tasks")))

@@ -470,8 +470,8 @@ public class ScreenListOfItems extends MyForm {
                 }
             });
         }
-//</editor-fold>
 //        getToolbar().addSearchCommand(makeSearchFunctionUpperLowerStickyHeaders(itemListOrg));
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (itemList instanceof ParseObject && itemList.getObjectId() != null) {
 //            filterSortDef = DAO.getInstance().getFilterSortDef(SCREEN_ID, itemList.getObjectId());
@@ -484,10 +484,9 @@ public class ScreenListOfItems extends MyForm {
 //        getContentPane().add(CENTER, dragAndDropContainer);
 //        setupList();
 //</editor-fold>
-
         getToolbar().addSearchCommand(makeSearchFunctionUpperLowerStickyHeaders(itemListOrg));
         addCommandsToToolbar(getToolbar());
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                removeShowListener(startAsyncListener);
 //        startAsyncListener = (e) -> {
 //            restoreKeepPos();
@@ -495,6 +494,7 @@ public class ScreenListOfItems extends MyForm {
 //        };
 //        addShowListener(startAsyncListener); //do *after* show (will this make the async editing work?!)
 //getAnimationManager().
+//</editor-fold>
         refreshAfterEdit();
     }
 
@@ -503,6 +503,7 @@ public class ScreenListOfItems extends MyForm {
         return !itemListOrg.isNoSave() && !isSortOn(); //not saved lists like Today etc should not allow pinch insert, sorted lists should not allow (//TODO!!!! find the clever way to insert and keep place in sorted list, e.g. workslots where new starts after previous ends)
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    protected void animateMyForm() {
 ////        myTree.animateLayout(150);
@@ -519,6 +520,7 @@ public class ScreenListOfItems extends MyForm {
 //            this.itemListFilteredSorted = itemListOrg;
 //        }
 //    }
+//</editor-fold>
     @Override
     public void refreshAfterEdit() {
 //    public void setupList() {
@@ -533,19 +535,19 @@ public class ScreenListOfItems extends MyForm {
 //                setInlineInsertContainer(insertNewElementFunc);
 //            }
 //        }
-//</editor-fold>
 //        setInlineInsertContainerIfMyTree2(contentContainer);
 //        if (contentContainer != null) setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save the previous inlineInsert field
+//</editor-fold>
         if (false) {
             getContentPane().removeAll(); //NOT necessary since getContentPane().add() will remove the previous content. AND it will remove components that are added later...
         }
         this.itemListOrg = getItemListFct.getUpdatedItemList();
         itemListOrg.resetWorkTimeDefinition(); //TODO!!!!! find a way to automatically reset wtd each time a list or its elements have been modified -> itemList.save(), or items call update/refresh on owner (and categories!)
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        getContentPane().scrollComponentToVisible(this);
 
 //        refreshItemListFilterSort();
 //        filterSortDef = itemListOrg.getFilterSortDef();
-//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null && !filterSortDef.isNeutral()) {
 //            this.itemListFilteredSorted = filterSortDef.filterAndSortItemList(itemListOrg);
 ////            setupList();  //refresh
@@ -1262,6 +1264,7 @@ public class ScreenListOfItems extends MyForm {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
+                        DAO.getInstance().saveInBackground((ParseObject)itemListOrg);
                         refreshAfterEdit();
                     }
                 };
@@ -2379,7 +2382,7 @@ public class ScreenListOfItems extends MyForm {
 //                        refreshOnItemEdits.launchAction();
 //                    }
 //</editor-fold>
-                if (Config.REFRESH_EVEN_THOUGH_DONE_IN_BACK) {
+                if (false&&Config.REFRESH_EVEN_THOUGH_DONE_IN_BACK) {
                     myForm.refreshAfterEdit();
                 }
             }, false, null).show();

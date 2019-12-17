@@ -59,7 +59,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_META_LISTS = "metaLists";
     final static String PARSE_FILTER_SORT_DEF = Item.PARSE_FILTER_SORT_DEF; //"filterSort";
     final static String PARSE_WORKSLOTS = Item.PARSE_WORKSLOTS; //"filterSort";
-    final static String PARSE_SYSTEM_LIST = "system";
+//    final static String PARSE_SYSTEM_LIST = "system";
+    final static String PARSE_SYSTEM_NAME = "systemName"; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
@@ -188,8 +189,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        setList(list);
 //    }
     public boolean isSystemList() {
-        Boolean interruptTask = getBoolean(PARSE_SYSTEM_LIST);
-        return (interruptTask == null) ? false : interruptTask;
+//        Boolean isSystemList = getBoolean(PARSE_SYSTEM_LIST);
+        String systemName = getString(PARSE_SYSTEM_NAME);
+        return (systemName != null);
     }
 
     /**
@@ -198,11 +200,18 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @param isSystemList
      */
-    public void setSystemList(boolean isSystemList) {
-        if (isSystemList) {
-            put(PARSE_SYSTEM_LIST, true);
+//    public void setSystemList(boolean isSystemList) {
+//        if (isSystemList) {
+//            put(PARSE_SYSTEM_NAME, true);
+//        } else {
+//            remove(PARSE_SYSTEM_NAME);
+//        }
+//    }
+    public void setSystemName(String systemName) {
+        if (systemName != null && !systemName.isEmpty()) {
+            put(PARSE_SYSTEM_NAME, systemName);
         } else {
-            remove(PARSE_SYSTEM_LIST);
+            remove(PARSE_SYSTEM_NAME);
         }
     }
 
@@ -1052,9 +1061,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         List<E> list = getListFull();
 //        List<? extends ItemAndListCommonInterface> list = getListFull();
 //        FilterSortDef filterSortDef = getFilterSortDef();
-        FilterSortDef filterSortDef= getFilterSortDef();
-        if (false&&Config.TEST) {
-            Log.p("Calling getList() for list=" + this.getText()+(filterSortDef!=null?(" Filter defined, options="+filterSortDef.getFilterOptions()):"Filter NOT defined"));// + "; filter=" + getFilterSortDef());
+        FilterSortDef filterSortDef = getFilterSortDef();
+        if (false && Config.TEST) {
+            Log.p("Calling getList() for list=" + this.getText() + (filterSortDef != null ? (" Filter defined, options=" + filterSortDef.getFilterOptions()) : "Filter NOT defined"));// + "; filter=" + getFilterSortDef());
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null && filteredSortedList == null) { //buffer the sorted list
@@ -1066,7 +1075,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            list = filteredSortedList;
 //        }
 //</editor-fold>
-        if (filterSortDef  != null) { //no buffer for (see code above for buffer version)
+        if (filterSortDef != null) { //no buffer for (see code above for buffer version)
             return (List<E>) filterSortDef.filterAndSortItemList(list);
         } else {
             return list;
@@ -1087,8 +1096,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            return cachedList;
 //        }
 
-        if (false&&Config.TEST) {
-            Log.p("Calling getListFull() for list=" + this.getText() );// + "; filter=" + getFilterSortDef());
+        if (false && Config.TEST) {
+            Log.p("Calling getListFull() for list=" + this.getText());// + "; filter=" + getFilterSortDef());
         }
 
         List<E> cachedList = getList(PARSE_ITEMLIST);
@@ -1648,11 +1657,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public FilterSortDef getFilterSortDef() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
-        if (false&&Config.TEST && filterSortDef == null) {
+        if (false && Config.TEST && filterSortDef == null) {
             Log.p("FilterSortDef==null for list=" + this);
         }
         if (filterSortDef == null && !isNoSave() && MyPrefs.useDefaultFilterInItemListsWhenNoneDefined.getBoolean()) { //!isNoSave() <=> a hack to avoid that temporary, eg Statistics, lists are filtered
-            if (false&&Config.TEST) {
+            if (false && Config.TEST) {
                 Log.p("FilterSortDef - returning DefaultFilter for list=" + this);
             }
             return FilterSortDef.getDefaultFilter();
@@ -3306,7 +3315,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public boolean addAllNotMakingOwner(Collection<ItemAndListCommonInterface> c) {
         boolean success = true;
         for (ItemAndListCommonInterface o : c) {
-            if (!addToList(o,true,false)) {
+            if (!addToList(o, true, false)) {
                 success = false;
             }
         }

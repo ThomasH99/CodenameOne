@@ -388,22 +388,23 @@ TextFieldXXX  {
     /*border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     color: black;
     /*font-size: 100%;*/
-    text-align: left; kjer
+    text-align: left; 
 }
 
 TextField { 
     cn1-derive: ListOfItemsTextBase;
-    font-family :  "native:MainRegular"; /*"native:MainRegular";*/
-    margin: 1mm;
-    padding: 2mm 1mm 2mm 1mm;
-    border: 1pt solid lightgray; /* cn1-pill-border; /*cn1-round-border;*/
+    font-family :  "native:MainLight"; /*"native:MainRegular";*/
+    /*margin: 1mm;*/
+    padding: 2mm;
+    /*border: 1pt solid lightgray;  cn1-pill-border; /*cn1-round-border;*/
     color: black;
     text-align: left;
 }
 
 ScreenItemTaskText {
-    cn1-derive: TextField;
-    font-family :  "native:MainRegular"; /*"native:MainRegular";*/
+    cn1-derive: TextField; 
+    /*font-family :  "native:MainThin"; "native:MainRegular";*/
+    /*padding: 2mm;*/
     color: black; /*darkgrey;*/
     /*    padding: 3mm;
         margin: 2mm 0 0 0;
@@ -417,9 +418,9 @@ ScreenItemTaskText {
 
 TextHint { 
     cn1-derive: TextField;/**/
-    /*font-family:  "native:MainThin"; /*"native:MainThin"*/
+    font-family:  "native:MainThin"; /*"native:MainThin"
     /*font-size: 80%;/**/
-    color: lightgray;
+    color: darkgray;
 }
 
 
@@ -447,11 +448,12 @@ Text { /*old UIID for task text*/
 
 Comment { 
     /*cn1-derive: ScreenItemTaskText;/**/
-    cn1-derive: TextField;
+    cn1-derive: LabelField; /*TextField;*/
+    padding: 2mm 4mm 2mm 2mm;
     /*border: 0mm solid red;/**/
-    margin: 0;
+    /*margin: 0;*/
     /*font-family :  "native:MainLight";/**/
-    color: darkslategray;/**/
+    color: darkgray;/**/
     /*font-size: 90%;/**/
     /*margin: 2px 0mm 0 0mm;/**/
 }
@@ -676,7 +678,7 @@ BigTimerBase {
 
 BigTimerForm {
     cn1-derive: Form;
-    background-color: lightblue;
+    background-color: lightblue; /*powderblue; /*lightblue;*/
 }
 
 BigTimerListTitle {
@@ -701,22 +703,29 @@ BigTimerComment {
     /*color: violet;
     background-color: grey; /**/
 }
-BigTimerEffortLabel {
+BigTimerLabels {
     cn1-derive: LabelField;
     text-align: center;
-    color: green;
+    /*color: darkgray;*/
+}
+BigTimerEffortLabel {
+    cn1-derive: BigTimerLabels;
+    text-align: center;
+    /*color: green;*/
+}
+BigTimerEffortValues {
+    cn1-derive: LabelValue;
+    text-align: center;
+    margin-bottom: 2mm;
 }
 BigTimerEffort {
-    cn1-derive: LabelValue;
-    text-align: center;
+    cn1-derive: BigTimerEffortValues;
 }
 BigTimerEstimate {
-    cn1-derive: LabelValue;
-    text-align: center;
+    cn1-derive: BigTimerEffortValues;
 }
 BigTimerTotalActual {
-    cn1-derive: LabelValue;
-    text-align: center;
+    cn1-derive: BigTimerEffortValues;
 }
 
 BigTimerTimer {
@@ -745,6 +754,10 @@ BigTimerInterruptIcon{
 BigTimerCmdButton{
     cn1-derive: Button;
     text-align: center;
+    margin: 1mm;
+    padding: 1mm;
+    border-radius:  1mm;
+    background: lightskyblue; 
 }
 BigTimerExit {
     cn1-derive: BigTimerCmdButton;
@@ -760,12 +773,28 @@ BigTimerNext {
 }
 BigTimerCompleted {
     cn1-derive: BigTimerCmdButton;
+    margin-top: 4mm;
+    /*padding: 2mm;*/
+    /*border: 1pt darkgrey solid;*/ 
+    /*background: lightskyblue;*/ 
+    /*    border-top-left-radius: 1mm;
+        border-top-right-radius: 1mm;
+        border-bottom-left-radius:  1mm;
+        border-bottom-right-radius:  1mm;*/
+    /*border-radius:  1mm;*/
     /*color: limegreen;/**/
 }
 BigTimerNextItemWithText {
     cn1-derive: BigTimerCmdButton;
     /*color: limegreen;/**/
     text-align: left;
+    background: lightblue; 
+    /*margin-top: 2mm;*/
+    /*padding: 1mm;*/
+    margin-top: 2mm;
+/*    margin: 1mm;
+    padding: 1mm;*/
+    border: 1pt lightskyblue solid;
 }
 
 /*************** smallTimer **************/

@@ -63,18 +63,18 @@ public class Icons {
     static Image iconShowMoreLabelStyle() {
         return makeT(FontImage.MATERIAL_EXPAND_MORE);
     }
-    final static char iconShowMoreLabelStyleX = FontImage.MATERIAL_EXPAND_MORE;
-    final static char iconShowMore = FontImage.MATERIAL_EXPAND_LESS; //MATERIAL_EXPAND_MORE
-    final static Image iconShowMoreLabelStyle = FontImage.createMaterial(iconShowMore, labelStyle);
+//    final static char iconShowMoreLabelStyleXXX = FontImage.MATERIAL_EXPAND_MORE; //MORE=v
+    final static char iconShowMore = FontImage.MATERIAL_EXPAND_MORE; //LESS=^MATERIAL_EXPAND_MORE
+//    final static Image iconShowMoreLabelStyleXXX = FontImage.createMaterial(iconShowMore, labelStyle);
 
-    final static char iconShowLess = FontImage.MATERIAL_EXPAND_MORE; //MATERIAL_EXPAND_LESS
-    final static Image iconShowLessLabelStyle = FontImage.createMaterial(iconShowLess, labelStyle);
+    final static char iconShowLess = FontImage.MATERIAL_EXPAND_LESS; //MORE=v, MATERIAL_EXPAND_LESS
+//    final static Image iconShowLessLabelStyle = FontImage.createMaterial(iconShowLess, labelStyle);
 
     final static char iconAddTimeStampToComment = FontImage.MATERIAL_ACCESS_TIME;
-    final static Image iconAddTimeStampToCommentLabelStyle = FontImage.createMaterial(iconAddTimeStampToComment, labelStyle);
+//    final static Image iconAddTimeStampToCommentLabelStyle = FontImage.createMaterial(iconAddTimeStampToComment, labelStyle);
     //drag and drop handle icon
     final static char iconDragHandle = FontImage.MATERIAL_DRAG_HANDLE;
-    final static Image iconDragHandleLabelStyle = FontImage.createMaterial(iconDragHandle, labelStyle);
+//    final static Image iconDragHandleLabelStyle = FontImage.createMaterial(iconDragHandle, labelStyle);
 
     //TIMER
 //    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, toolBarStyle);
