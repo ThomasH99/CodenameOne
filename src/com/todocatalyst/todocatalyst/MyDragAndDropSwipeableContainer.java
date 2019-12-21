@@ -3394,7 +3394,7 @@ T3
 //                        int insertIndex = 0; //when dropping as subtask on an time, always insert at top of list (otherwise insert idrectly in expanded subtask list
 ////                            moveItemOrItemListAndSave(((Item) getDragAndDropObject()).getOwner(), newOwnerPrj, (Item) getDragAndDropObject(), insertIndex);
 //                        moveItemOrItemListAndSave(newOwnerPrj, draggedElement, insertIndex);
-                        moveItemOrItemListAndSave(newOwnerPrj, draggedElement, afterElement, true); //false=insert at head of list
+                        moveItemOrItemListAndSave(newOwnerPrj, draggedElement, afterElement, false); //false=insert at head of list
                     };
                     insertDropPlaceholder = (dropPh) -> {
                         addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);

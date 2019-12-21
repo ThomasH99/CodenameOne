@@ -224,6 +224,7 @@ public class RepeatRuleParseObject
         return repeatRule;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private RepeatRule getRepeatRuleOLD() {
 //        RepeatRule repeatRule = new RepeatRule();
 //        repeatRule.setInt(RepeatRule.FREQUENCY, getFrequency());
@@ -235,7 +236,7 @@ public class RepeatRuleParseObject
 ////        } else if (getEndDate() != Long.MAX_VALUE) {
 //        } else if (getEndDate() != MyDate.MAX_DATE) {
 ////            repeatRule.setDate(RepeatRule.END, getEndDate());
-//            repeatRule.setDate(RepeatRule.END, MyDate.getEndOfDay(getEndDateD()).getTime()); //set to end of day to not miss 
+//            repeatRule.setDate(RepeatRule.END, MyDate.getEndOfDay(getEndDateD()).getTime()); //set to end of day to not miss
 ////            repeatRule.setInt(RepeatRule.COUNT, 0); //0 means repeat forever, or until end date //-necessary when end date is set? (is default count == 0?)
 //        } else if (getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_FROM_COMPLETED_DATE) {
 //            repeatRule.setInt(RepeatRule.COUNT, 1);
@@ -259,6 +260,7 @@ public class RepeatRuleParseObject
 //        }
 //        return repeatRule;
 //    }
+//</editor-fold>
     public void setListOfUndoneRepeatInstances(List list) {
         if (list != null && !list.isEmpty()) {
             put(PARSE_REPEAT_INSTANCE_ITEMLIST, list);
@@ -963,7 +965,7 @@ public class RepeatRuleParseObject
 //            return null;
 //        }
 //</editor-fold>
-        assert dateCompleted.getTime() != 0 : "called before dateCompleted was set on Item/WorkSlot";
+        ASSERT.that(dateCompleted.getTime() != 0, "called before dateCompleted was set on Item/WorkSlot");
         RepeatRule repeatRule = getRepeatRule();
         repeatRule.setInt(RepeatRule.COUNT, 2); //1 or 2 (2 if we generate the last generated date again)
 
@@ -1954,8 +1956,7 @@ public class RepeatRuleParseObject
             numberRepeats = 1; //if infinite repeat, generate just one
         }
         if (numberRepeats > MyPrefs.repeatMaxNumberOfRepeatsToGenerate.getInt() && MyPrefs.repeatMaxNumberOfRepeatsToGenerate.getInt() != 0
-                && !simulateDates) //avoid flooding with too many repeats
-        {
+                && !simulateDates) { //avoid flooding with too many repeats
             numberRepeats = MyPrefs.repeatMaxNumberOfRepeatsToGenerate.getInt() + 1; //+1 because we normally exclude the repeat originator?
         }        //get the last date we've generated so far, Math.min since endDate may get set to larger than 
         List<Date> dates = generateListOfDates(subsetBeginningDate, subsetEndDate, numberRepeats, generateAtLeastOneDate, false);
@@ -2067,17 +2068,19 @@ public class RepeatRuleParseObject
 //                List<RepeatRuleObjectInterface> oldUndoneRepeatInstanceList = new ArrayList<>();  //reuse any existing instances
                 ArrayList newRepeatInstanceList = new ArrayList(); //hold new created instances
 
-                if (this.getObjectIdP() == null) {
-                    if (Config.TEST) {
-                        checkRefs();
+                if (false) {
+                    if (this.getObjectIdP() == null) {
+                        if (Config.TEST) {
+                            checkRefs();
+                        }
+                        DAO.getInstance().saveInBackground(this); //save in case it's a new created repeat rule
                     }
-                    DAO.getInstance().saveInBackground(this); //save in case it's a new created repeat rule
-                }
-                if (((ParseObject) repeatRuleOriginator).getObjectIdP() == null) {
-                    DAO.getInstance().saveInBackground((ParseObject) repeatRuleOriginator); //save in case it's a new created item
+                    if (((ParseObject) repeatRuleOriginator).getObjectIdP() == null) {
+                        DAO.getInstance().saveInBackground((ParseObject) repeatRuleOriginator); //save in case it's a new created item
+                    }
                 }
                 newRepeatInstanceList.add(repeatRuleOriginator);
-                setListOfUndoneRepeatInstances(newRepeatInstanceList);
+                setListOfUndoneRepeatInstances(newRepeatInstanceList); //MUST set the list to ensure the right number of existing instances is used in calcNumberOfRepeats() used below
 
                 Date startRepeatFromTime = getSpecifiedStartDateD();
                 ASSERT.that(startRepeatFromTime != null);
@@ -2086,36 +2089,41 @@ public class RepeatRuleParseObject
                 List<Date> dates = generateListOfDates(startRepeatFromTime, calcSubsetEndDate(startRepeatFromTime), calcNumberOfRepeats(), false, false);
 
                 ItemAndListCommonInterface ownerList = null;
-                RepeatRuleObjectInterface newRepeatInstance;
+                RepeatRuleObjectInterface newRepeatInstance = null;
                 RepeatRuleObjectInterface repeatRefForInsertion = repeatRuleOriginator; //UI: used to insert multiple instances one after the other, to avoid eg if inserting at head of list that they get inserted in decreasing due date order
 
                 for (Date nextRepeatTime : dates) {
                     newRepeatInstance = repeatRuleOriginator.createRepeatCopy(nextRepeatTime);
                     ownerList = repeatRefForInsertion.insertIntoList(newRepeatInstance); //store ownerlist to know if needs to be saved below
-                    repeatRefForInsertion = newRepeatInstance;
+                    repeatRefForInsertion = newRepeatInstance; //ensure we always insert *after* any earlier inserted instances
                     newRepeatInstanceList.add(newRepeatInstance);
                     setLastGeneratedDate(nextRepeatTime); //if at least one additional repeatinstance was used, then use that date
                 }
 
-                if (false && this.getObjectIdP() == null) {
-                    if (Config.TEST) {
-                        checkRefs();
-                    }
-                    DAO.getInstance().saveInBackground(this);
-                } //save repeatRule if not already done, needed so that repeatInstances reference a rule with an ObjectId 
+                if (false) {
+                    if (false && this.getObjectIdP() == null) {
+                        if (Config.TEST) {
+                            checkRefs();
+                        }
+                        DAO.getInstance().saveInBackground(this);
+                    } //save repeatRule if not already done, needed so that repeatInstances reference a rule with an ObjectId 
 
-                DAO.getInstance().saveInBackground(newRepeatInstanceList); //save all instances (including the possibly unsaved Item that created the repeatRule
-
+                    DAO.getInstance().saveInBackground(newRepeatInstanceList); //save all instances (including the possibly unsaved Item that created the repeatRule
+                }
                 setTotalNumberOfInstancesGeneratedSoFar(newRepeatInstanceList.size() - 1); //deduct 1 for the repeatRuleOriginator added above
                 setListOfUndoneRepeatInstances(newRepeatInstanceList);
                 if (Config.TEST) {
                     checkRefs();
                 }
-                DAO.getInstance().saveInBackground(this);
+                if (false) {
+                    DAO.getInstance().saveInBackground(this);
 
-                if (ownerList != null) {
-                    DAO.getInstance().saveInBackground((ParseObject) ownerList); //save list where new instances were inserted
+                    if (ownerList != null) {
+                        DAO.getInstance().saveInBackground((ParseObject) ownerList); //save list where new instances were inserted
+                    }
                 }
+                DAO.getInstance().saveInBackground(newRepeatInstanceList); //save all instances (including the possibly unsaved Item that created the repeatRule
+                DAO.getInstance().saveInBackground((ParseObject) this, (ParseObject) ownerList); //save list where new instances were inserted
             } else { //!firstTime
                 //NOT first time - rule has been changed/edited -> recalculate/regenerate the complete set of future instances
                 //UI: 
@@ -2591,6 +2599,7 @@ public class RepeatRuleParseObject
                 ownerList = item.insertIntoList(repeatInstance); //insert new created instance in appropriate list and save it
 //            if (getRepeatType() == REPEAT_TYPE_FROM_DUE_DATE) {
                 repeatInstanceItemList.add(repeatInstance); //only keep track of instances when Due
+                DAO.getInstance().saveInBackground(repeatInstanceItemList); //save generated repeat instances
                 setLastGeneratedDate(nextRepeatTime); //TODO!!!! doesn't make sense to update this for RepeatFromCompleted
 //            }
                 setTotalNumberOfInstancesGeneratedSoFar(getTotalNumberOfInstancesGeneratedSoFar() + 1);
@@ -2600,14 +2609,14 @@ public class RepeatRuleParseObject
 //            this.delete(); //delete the repeat rule //TODO!! for the moment keep the RepeatRules even when run out (easy to delete on server side if ever necessary)
             }
 
-            DAO.getInstance().saveInBackground(repeatInstanceItemList); //save generated repeat instances
+//            DAO.getInstance().saveInBackground(repeatInstanceItemList); //save generated repeat instances
             setListOfUndoneRepeatInstances(repeatInstanceItemList);
             if (Config.TEST) {
                 checkRefs();
             }
             DAO.getInstance().saveInBackground(this);
             if (ownerList != null) {
-                DAO.getInstance().saveInBackground((ParseObject) ownerList);
+                DAO.getInstance().saveInBackground((ParseObject) ownerList); //save list into which the new repeatCopy was inserted above
             }
 //        return repeatInstance;
         }
@@ -2953,6 +2962,7 @@ public class RepeatRuleParseObject
 //        return newRepeatWorkSlots.size() > 0; //true if any new workslots where created
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public boolean updateWorkslots(WorkSlot workSlot) {
 //        return updateWorkslots(workSlot, false); //false or true, doesn't matter since not used with workSlot!=null
 //    }
@@ -2976,6 +2986,7 @@ public class RepeatRuleParseObject
 ////        }
 //        return updated;
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public RepeatRuleObjectInterface updateRepeatInstancesOnDoneCancelOrDeleteOLD_ITEM(Item repeatInstanceOrg) {
 //
@@ -3705,21 +3716,21 @@ public class RepeatRuleParseObject
             boolean isListOfTypeItems = instanceType.equals(Item.CLASS_NAME);
 
             String objectId;
-            Item item;
-            WorkSlot workSlot;
+            Item item = null;
+            WorkSlot workSlot = null;
             List instanceList = new ArrayList();
             for (int i = 0; i < instancesSize; i++) {
                 objectId = dis.readUTF();
                 if (isListOfTypeItems) { //use !equals since faster than equals
-                    if (false) {
-                        item = DAO.getInstance().fetchItem(objectId); //not needed since will be done in getListOfUndoneRepeatInstances
-                        instanceList.add(item);
+                    if (true) {
+                        item = DAO.getInstance().fetchItem(objectId); //NOOO: not needed since will be done in getListOfUndoneRepeatInstances
                     }
+                    instanceList.add(item);
                 } else {
-                    if (false) {
+                    if (true) {
                         workSlot = DAO.getInstance().fetchWorkSlot(objectId);
-                        instanceList.add(workSlot);
                     }
+                    instanceList.add(workSlot);
                 }
             }
             setListOfUndoneRepeatInstances(instanceList);
@@ -3761,7 +3772,8 @@ public class RepeatRuleParseObject
 
     /**
      * https://www.sitepoint.com/how-to-implement-javas-hashcode-correctly/
-     * @return 
+     *
+     * @return
      */
     @Override
     public int hashCode() {
@@ -3788,9 +3800,10 @@ public class RepeatRuleParseObject
     }
 
     /**
-     * we need a real equals implementation since we use equality to test whether a copy of a repeatRule has been edited by the user. 
-     * Tests if the repeat parameters are the same, e.g. but does NOT check if
-     * parseObjectId is different.
+     * we need a real equals implementation since we use equality to test
+     * whether a copy of a repeatRule has been edited by the user. Tests if the
+     * repeat parameters are the same, e.g. but does NOT check if parseObjectId
+     * is different.
      * https://www.sitepoint.com/how-to-implement-javas-hashcode-correctly/
      *
      * @param repeatRule
@@ -4018,17 +4031,25 @@ public class RepeatRuleParseObject
 //    }
     /**
      * the latest date of any of the instances generated
+     * if lastGeneratedDate==null, then remove old value
      */
     private void setLastGeneratedDate(Date lastGeneratedDate, boolean storeEvenEarlierDates) {
-        ASSERT.that(getDate(PARSE_LAST_DATE_GENERATED) == null || lastGeneratedDate == null
-                || (storeEvenEarlierDates || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime()),
-                "new lastGeneratedDate should always be higher than previous, lastDate=" + getDate(PARSE_LAST_DATE_GENERATED) + ", newDate=" + lastGeneratedDate);
-        if (lastGeneratedDate != null && lastGeneratedDate.getTime() != MyDate.MIN_DATE) {
-            if (storeEvenEarlierDates || getDate(PARSE_LAST_DATE_GENERATED)==null || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime()) {
+        Date oldLastGeneratedDate = getLastGeneratedDateD();
+//        ASSERT.that(getDate(PARSE_LAST_DATE_GENERATED) == null || lastGeneratedDate == null
+//        ASSERT.that(oldLastGeneratedDate.getTime() == 0 || lastGeneratedDate == null
+//                //                || (storeEvenEarlierDates || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime()),
+//                || (storeEvenEarlierDates || lastGeneratedDate.getTime() > oldLastGeneratedDate.getTime()),
+//                "new lastGeneratedDate should always be higher than previous, lastDate=" + getDate(PARSE_LAST_DATE_GENERATED) + ", newDate=" + lastGeneratedDate);
+        ASSERT.that(lastGeneratedDate == null || lastGeneratedDate.getTime() == MyDate.MIN_DATE ||
+                storeEvenEarlierDates || lastGeneratedDate.getTime() > oldLastGeneratedDate.getTime(),
+                "new lastGeneratedDate NOT higher than previous, oldDate=" + oldLastGeneratedDate + ", new=" + lastGeneratedDate);
+        if (lastGeneratedDate == null || lastGeneratedDate.getTime() == MyDate.MIN_DATE) {
+//             if (storeEvenEarlierDates || getDate(PARSE_LAST_DATE_GENERATED)==null || lastGeneratedDate.getTime() > getDate(PARSE_LAST_DATE_GENERATED).getTime()) {
+            remove(PARSE_LAST_DATE_GENERATED);
+        } else {
+            if (storeEvenEarlierDates  || lastGeneratedDate.getTime() > oldLastGeneratedDate.getTime()) {
                 put(PARSE_LAST_DATE_GENERATED, lastGeneratedDate);
             }
-        } else {
-            remove(PARSE_LAST_DATE_GENERATED);
         }
     }
 
@@ -4914,7 +4935,7 @@ public class RepeatRuleParseObject
     }
 
     /**
-     * keep track of the last/most recent (biggest in calendar terms) Due date
+     * keep track of the latest/most recent (biggest in calendar terms) Due date
      * of completed/cancelled tasks (used when recalculating repeat instances in
      * a *modified* rule). Even if tasks are completed/cancelled out of order,
      * only the latest date is stored.

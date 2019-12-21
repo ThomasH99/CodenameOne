@@ -159,8 +159,9 @@ public class MultipleSelection {
             if (ref.getStartedOnDate() != 0) {
                 item.setStartedOnDate(ref.getStartedOnDate());
             }
-            if (ref.getCompletedDate() != 0) {
-                item.setCompletedDate(ref.getCompletedDate(), true);
+            if (ref.getCompletedDateD().getTime() != 0) {
+//                item.setCompletedDate(ref.getCompletedDateD(), true); //true=>update status, e.g. in case ONLY completed date is set
+                item.setCompletedDate(ref.getCompletedDateD(), true,true); //true=>update status, e.g. in case ONLY completed date is set, true=>force this date instead of latest subtask date
             }
             if (ref.isInteruptOrInstantTask()) {
                 item.setInteruptOrInstantTask(true); //TODO only works when setting, not unsetting

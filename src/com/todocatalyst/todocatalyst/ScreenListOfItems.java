@@ -1991,16 +1991,16 @@ public class ScreenListOfItems extends MyForm {
                 item.getText()
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-ID" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getOwner() == null ? "-OWN" : "")
-                + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
-                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && TimerStack.getInstance().getCurrentlyTimedItemN() == item ? "[T]" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && TimerStack.getInstance().getCurrentlyTimedItemN() == item ? " [Timed]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isTemplate() ? "%" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource() != null && item.getSource().isTemplate() ? "/C" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
                 + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
-                )), swipCont, () -> {
+                ), swipCont, () -> {
                     boolean enabled = myForm.isDragAndDropEnabled();
                     if (enabled && expandSubTasksButton != null) {
                         Object e = swipCont.getClientProperty(KEY_EXPANDED);

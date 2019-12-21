@@ -3832,12 +3832,18 @@ public class DAO {
         if (projectOrItem.getFilterSortDef() != null && !projectOrItem.getFilterSortDef().isNoSave() && projectOrItem.getFilterSortDef().getObjectIdP() == null) {
 //                && !(projectOrItem.getFilterSortDef().equals(FilterSortDef.getDefaultFilter()))) { //do not save default filters --> now checked in saveInBackground
             saveInBackground(projectOrItem.getFilterSortDef(), () -> saveItemInBackground(projectOrItem, postSaveAction));
+        }else if (projectOrItem.getSource()!= null && projectOrItem.getSource().getObjectIdP() == null) {
+            saveInBackground(projectOrItem.getSource(), () -> saveItemInBackground(projectOrItem, postSaveAction));
+        }else if (projectOrItem.getDependingOnTask()!= null && projectOrItem.getDependingOnTask().getObjectIdP() == null) {
+            saveInBackground(projectOrItem.getDependingOnTask(), () -> saveItemInBackground(projectOrItem, postSaveAction));
         } else {
             //Filter has no references back to Item, so can always be saved
             saveInBackground(projectOrItem.getFilterSortDef());
+            saveInBackground(projectOrItem.getSource());
+            saveInBackground(projectOrItem.getDependingOnTask());
             if (projectOrItem.getObjectIdP() == null) { //if top-level item not saved yet, do so before saving the subtasks/repeatRule that reference it
 
-                //Handle RepeatRule (NB. the code works even ir RR is not defined/null)
+                //Handle RepeatRule (NB. the code works even if RR is not defined/null)
                 RepeatRuleParseObject repeatRule = projectOrItem.getRepeatRule();
                 if (repeatRule != null && repeatRule.getObjectIdP() == null) {
                     projectOrItem.setRepeatRuleInParse(null); //temporarily remove repeatRule

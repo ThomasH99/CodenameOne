@@ -1882,7 +1882,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             //None of these fields are normally copied
             destination.setStatus(getStatus());
             destination.setStartedOnDate(getStartedOnDate());
-            destination.setCompletedDate(getCompletedDate());
+            destination.setCompletedDate(getCompletedDateD(), true, false); //force the same (possibly set manually) completedDate
 //            destination.setCreatedDate(getCreatedDate());
             destination.setWaitingTillDate(getWaitingTillDateD().getTime());
             destination.setDateWhenSetWaiting(getDateWhenSetWaiting());
@@ -1938,11 +1938,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             } else if (defToTempl) {
                 if (getRepeatRule() != null) {
-                    destination.setRepeatRule((RepeatRuleParseObject) getRepeatRule().cloneMe()); //for templates, make a copy of the RepeatRule, but do NOT create repeat instances
+                    destination.setRepeatRuleInParse((RepeatRuleParseObject) getRepeatRule().cloneMe()); //for templates, make a copy of the RepeatRule, but do NOT create repeat instances
                 }
             } else if (defToRepeatInst) {
                 if (setRepeatRuleWithoutUpdate) {
-                    destination.setRepeatRuleInParseAndSave(getRepeatRule()); //point to existing repeat rule
+                    destination.setRepeatRuleInParse(getRepeatRule()); //point to existing repeat rule
                 } else if (getRepeatRule() != null) {
                     RepeatRuleParseObject repeatRuleCopy = getRepeatRule().cloneMe();
                     DAO.getInstance().saveInBackground(repeatRuleCopy); //save new repeatRule before the new item copy referring it is saved
@@ -1962,32 +1962,34 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private void setRepeatInstanceRelativeDates(Item referenceItem, Date newDueDateTime) {
         long delta = 0;
 
+        setDueDate(newDueDateTime); ///only set a new due date if one was already set
         if (referenceItem.getDueDate() != 0) { //only update if a value is already defined (also for due date since it may not be set, eg for repeat on completed)
             delta = newDueDateTime.getTime() - referenceItem.getDueDate(); //how much later is the referenceTime than the referenceItem's dueDate?
-        }
 
 //        if (true || referenceItem.getDueDate() != 0) { //only update if a value is already defined (also for due date since it may not be set, eg for repeat on completed)
 ////            setDueDate(referenceItem.getDueDate() + deltaTime);
 //            setDueDate(newDueDateTime);
 //        }
-        setDueDate(newDueDateTime);
-
-        if (delta != 0 && MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances.getBoolean()) {
-            //TODO!!!!: what if no DueDate is set, but only an alarmDate or showFromDate? Can this happen (what would the repeatReference date then be?)
-            if (referenceItem.getAlarmDate() != 0) { //only update if a value was defined for the referenceItem
-                setAlarmDate(referenceItem.getAlarmDate() + delta);
-            }
+//        setDueDate(newDueDateTime);
+//        if (delta != 0 && MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances.getBoolean()) {
+            if (MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances.getBoolean()) {
+//                setDueDate(newDueDateTime); ///only set a new due date if one was already set
+                //TODO!!!!: what if no DueDate is set, but only an alarmDate or showFromDate? Can this happen (what would the repeatReference date then be?)
+                if (referenceItem.getAlarmDate() != 0) { //only update if a value was defined for the referenceItem
+                    setAlarmDate(referenceItem.getAlarmDate() + delta);
+                }
 //            if (referenceItem.getShowFromDate() != 0) { //only update if a value was defined for the referenceItem
 //                setShowFromDate(referenceItem.getShowFromDate() + deltaTime);
 //            }
-            if (referenceItem.getHideUntilDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
-                setHideUntilDate(new Date(referenceItem.getHideUntilDateD().getTime() + delta));
-            }
-            if (referenceItem.getStartByDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
-                setStartByDate(referenceItem.getStartByDateD().getTime() + delta);
-            }
-            if (referenceItem.getExpiresOnDate() != 0) { //only update if a value was defined for the referenceItem
-                setExpiresOnDate(referenceItem.getExpiresOnDate() + delta);
+                if (referenceItem.getHideUntilDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
+                    setHideUntilDate(new Date(referenceItem.getHideUntilDateD().getTime() + delta));
+                }
+                if (referenceItem.getStartByDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
+                    setStartByDate(referenceItem.getStartByDateD().getTime() + delta);
+                }
+                if (referenceItem.getExpiresOnDate() != 0) { //only update if a value was defined for the referenceItem
+                    setExpiresOnDate(referenceItem.getExpiresOnDate() + delta);
+                }
             }
         }
     }
@@ -2040,7 +2042,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        copyMeInto(newRepeatCopy, COPY_TO_REPEAT_INSTANCE);
         Item newRepeatCopy = (Item) this.cloneMe(CopyMode.COPY_TO_REPEAT_INSTANCE, 0, true);
 //        newRepeatCopy.updateDatesFromReference(this, referenceTime - getDueDate()); //the delta time to add to copies are the new due time - the due date of the reference item
-        newRepeatCopy.setRepeatInstanceRelativeDates(this, referenceTime); //the delta time to add to copies are the new due time - the due date of the reference item
+        if (referenceTime.getTime() != 0) {
+            newRepeatCopy.setRepeatInstanceRelativeDates(this, referenceTime); //the delta time to add to copies are the new due time - the due date of the reference item
+        }
         return newRepeatCopy;
     }
 
@@ -2053,7 +2057,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public Date getRepeatStartTime(boolean fromCompletedDate) {
         if (fromCompletedDate) {
-            return getCompletedDateD();
+            //UI: if the completed date is *before* the due date (e.g. a repeatInstance is completed before its due date, 
+            //meaning it would repeat again on *same* date if next date was calculated based on completedDate)
+            if (getDueDateD().getTime() > getCompletedDateD().getTime()) {
+                return getDueDateD();
+            } else {
+                return getCompletedDateD();
+            }
         } else {
             return getDueDateD();
         }
@@ -2102,7 +2112,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 case Item.COMPARE_COMPLETED:
                     return isDone() ? (c.isDone() ? 0 : 1) : (c.isDone() ? -1 : 0); // done < not done
                 case Item.COMPARE_COMPLETED_DATE:
-                    return compareLong(getCompletedDate(), c.getCompletedDate());
+//                    return compareLong(getCompletedDate(), c.getCompletedDate());
+                    return compareDate(getCompletedDateD(), c.getCompletedDateD());
                 case Item.COMPARE_CREATED_DATE:
                     return compareLong(getCreatedDate(), c.getCreatedDate());
                 case Item.COMPARE_DUE_DATE:
@@ -2435,6 +2446,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return addToList((ItemAndListCommonInterface) subItemOrList, (ItemAndListCommonInterface) getListFull().get(getListFull().size()), true);
 //</editor-fold>
         return addToList((ItemAndListCommonInterface) subItemOrList, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+    }
+
+    public Item section(String topicText) {
+        Item topic = new Item(topicText);
+        return topic;
+    }
+
+    public Item topic(String topicText) {
+        Item topicTask = new Item(topicText);
+        addToList(topicTask);
+        return this;
     }
 
     @Override
@@ -3898,7 +3920,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    void setRepeatRuleInParseAndSave(RepeatRuleParseObject repeatRule) {
+    void setRepeatRuleInParseAndSaveXXX(RepeatRuleParseObject repeatRule) {
         setRepeatRuleInParse(repeatRule);
         if (repeatRule != null && (repeatRule.isDirty() || repeatRule.getObjectIdP() == null)) {
             if (false && Config.TEST) { //don't test - normal that repeatRule is not saved (eg when new item+new RR is created)
@@ -3926,7 +3948,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (newRepeatRuleN != null && newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
 //                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null)
 //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
-                setRepeatRuleInParseAndSave(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+                setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
                 if (notTemplate) { // newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true);
                     opsAfterSubtaskUpdates.add(() -> newRepeatRuleN.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true));
                 }
@@ -3937,15 +3959,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (newRepeatRuleN == null || newRepeatRuleN.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
 //                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
                 //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
-                setRepeatRuleInParseAndSave(null);
+                setRepeatRuleInParse(null);
                 opsAfterSubtaskUpdates.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this));
             } else { //newRepeatRule != null and possibly modified (eg. click Edit Rule, then Back
                 if (!newRepeatRuleN.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
                     oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
+                    setRepeatRuleInParse(oldRepeatRule);
                     if (notTemplate) {
                         opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, false)); //
                     }
-                    setRepeatRuleInParseAndSave(oldRepeatRule);
 //                setRepeatRuleInParse(oldRepeatRule); //must set again to save?? NO, not necessary, only if the *reference* changes in Item
                     DAO.getInstance().saveInBackground(oldRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
                 }
@@ -3985,7 +4007,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public void setRepeatRuleForRepeatInstance(RepeatRuleParseObject repeatRule) {
-        setRepeatRuleInParseAndSave(repeatRule);
+        setRepeatRuleInParse(repeatRule);
     }
 
     public long getStartedOnDate() {
@@ -4644,20 +4666,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         //CompletedDate: SET set to Now if changing to Done/Cancelled from other state
         //UI: also use Completed date to store date when task was cancelled (for historical data)
-        if (item.getCompletedDate() == 0 && (previousStatus != ItemStatus.DONE && previousStatus != ItemStatus.CANCELLED)
+        if (item.getCompletedDateD().getTime() == 0 && (previousStatus != ItemStatus.DONE && previousStatus != ItemStatus.CANCELLED)
                 && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
             //TODO!!!! should actual effort be reduced to zero?? No, any effort spend should be kept even for Cancelled tasks
-            item.setCompletedDate(now); //UI: also use Completed date to store date when task was cancelled (for historical data)
+            item.setCompletedDate(now, false, false); //UI: also use Completed date to store date when task was cancelled (for historical data)
 //            if (item.getRepeatRule() != null) { //should NOT only be done if we update dependent fields, but in every case!!
 //                item.getRepeatRule().updateRepeatInstancesOnDoneCancelOrDelete(item);
 //            }
         }
         //CompletedDate: RESET if changing from Done/Cancelled to other state
         //CompletedDate: set if changing to Done/Cancelled from other state, set to Now if changing to Done/Cancelled
-        if (item.getCompletedDate() != 0 && (previousStatus == ItemStatus.DONE || previousStatus == ItemStatus.CANCELLED)
+        if (item.getCompletedDateD().getTime() != 0 && (previousStatus == ItemStatus.DONE || previousStatus == ItemStatus.CANCELLED)
                 && (newStatus != ItemStatus.DONE && newStatus != ItemStatus.CANCELLED)) {
             //if item changes from Done/Cancelled to some other value, then reset CompletedDate
-            item.setCompletedDate(0L);
+            item.setCompletedDate(new Date(0), false, false); //false=set date back to last completed subtask date, false=don't change status
         }
 
         //WaitingActivatedDate:
@@ -4990,8 +5012,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             updateFieldsDependingOnStatus(this, oldStatus, newStatus, now);
         }
 
-        if ((oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.CANCELLED)
-                && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) && getRepeatRule() != null) {
+        if (getRepeatRule() != null && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.CANCELLED)
+                && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
             getRepeatRule().updateRepeatInstancesOnDoneCancelOrDelete(this);
         }
 
@@ -5285,11 +5307,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
             ////////////// CompletedDate
             if (isDone()) {
-                Date currentProjectCompletedDate = getCompletedDateD();
-                Date currentProjectCompletedDateInParse = getCompletedDateDInParse();
-                if (currentProjectCompletedDate.getTime() != currentProjectCompletedDateInParse.getTime()) {
-                    setCompletedDateInParse(currentProjectCompletedDate);
-                }
+//                Date currentProjectCompletedDate = getCompletedDateD();
+//                Date currentProjectCompletedDateInParse = getCompletedDateDInParse();
+//                if (currentProjectCompletedDate.getTime() != currentProjectCompletedDateInParse.getTime()) {
+//                    setCompletedDateInParse(currentProjectCompletedDate);
+//                }
+//                setCompletedDateInParse(getLatestSubtaskCompleteDate(), true);
+                setCompletedDate(getLatestSubtaskCompleteDate(), true, false); //false=> do NOT update status of project just because of changes to subtask completedDate
             }
 
             Date currentProjectStartedOnDate = getStartedOnDateD();
@@ -6572,7 +6596,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             } else { //subtasksRemaining==0
                 setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue()); //set default value (again)
             }
-            
+
             if (subtasksRemaining > 0 && MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()) {
                 totalRemainingEffort = subtasksRemaining; //getRemainingEffortFromSubtasks();
             } else { //subtasksRemaining == 0 || MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()
@@ -7553,14 +7577,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 !MyPrefs.getBoolean(MyPrefs.commentsAddToBeginningOfComment));
     }
 
-    public long getCompletedDate() {
-//        return completedDate;
-//        Date date = getDate(PARSE_COMPLETED_DATE);
-//        return (date == null) ? 0L : date.getTime();
-        return getCompletedDateD().getTime();
-    }
-
-    private Date getCompletedDateDInParse() {
+//    public long getCompletedDate() {
+////        return completedDate;
+////        Date date = getDate(PARSE_COMPLETED_DATE);
+////        return (date == null) ? 0L : date.getTime();
+//        return getCompletedDateD().getTime();
+//    }
+    private Date getCompletedDateInParse() {
         Date date = getDate(PARSE_COMPLETED_DATE);
         return (date == null) ? new Date(0) : date;
     }
@@ -7572,30 +7595,127 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
+//    public Date getCompletedDateDOLD() {
+//        //TODO!! whenever saving a (sub-)project, calculate the CompletedDate and save it to allow queries. Really needed? Maybe enough to query on actual leaf-subtasks?
+////        return new Date(getCompletedDate());
+//        if (!isProject()) {
+////            Date date = getDate(PARSE_COMPLETED_DATE);
+////            return (date == null) ? new Date(0) : date;
+//            return getCompletedDateInParse();
+//        } else { //isProject
+//            if (isDone()) {
+//                //TODO!!! //optimization: normally, the project should be set Completed when the *last* subtask is completed, so iterating through subtasks as below shouldn't be necessary?!
+////                Date latestSubTaskCompletedDate = new Date(MyDate.MIN_DATE);
+//                Date latestSubTaskCompletedDate = new Date(0);
+//                for (Object subtask : getListFull()) { //full to ensure we get the latest date, no matter status
+//                    Date subtaskCompletedDate; //getCompletedDate may be expensive (iterated over subtask hierarchy
+//                    if (subtask instanceof Item && (subtaskCompletedDate = ((Item) subtask).getCompletedDateD()).getTime() > latestSubTaskCompletedDate.getTime()) {
+//                        latestSubTaskCompletedDate = subtaskCompletedDate; //((Item) subtask).getCompletedDateD();
+//                    }
+//                }
+//                return latestSubTaskCompletedDate;
+//            } else {
+//                return new Date(0);
+//            }
+//        }
+//    }
     public Date getCompletedDateD() {
-        //TODO!! whenever saving a (sub-)project, calculate the CompletedDate and save it to allow queries. Really needed? Maybe enough to query on actual leaf-subtasks?
-//        return new Date(getCompletedDate());
-        if (!isProject()) {
-//            Date date = getDate(PARSE_COMPLETED_DATE);
-//            return (date == null) ? new Date(0) : date;
-            return getCompletedDateDInParse();
-        } else { //isProject
-            if (isDone()) {
-                //TODO!!! //optimization: normally, the project should be set Completed when the *last* subtask is completed, so iterating through subtasks as below shouldn't be necessary?!
-//                Date latestSubTaskCompletedDate = new Date(MyDate.MIN_DATE);
-                Date latestSubTaskCompletedDate = new Date(0);
-                for (Object item : getListFull()) { //full to ensure we get the latest date, no matter status
-                    if (item instanceof Item && ((Item) item).getCompletedDateD().getTime() > latestSubTaskCompletedDate.getTime()) {
-                        latestSubTaskCompletedDate = ((Item) item).getCompletedDateD();
-                    }
-                }
-                return latestSubTaskCompletedDate;
-            } else {
-                return new Date(0);
+        return getCompletedDateInParse();
+    }
+
+    /**
+     * return the last CompletedDate for subtasks
+     *
+     * @return
+     */
+    private Date getLatestSubtaskCompleteDate() {
+        Date lastCompletedDate = new Date(0);
+        for (Item subtask : (List<Item>) getListFull()) { //full set even for hidden subtasks
+            Date subtaskDate = subtask.getCompletedDateD();
+            if (subtaskDate.getTime() > lastCompletedDate.getTime()) {
+                lastCompletedDate = subtaskDate;
             }
+        }
+        return lastCompletedDate;
+    }
+
+    private void setCompletedDateInParse(Date completedDate) {
+
+        if (completedDate != null && completedDate.getTime() != 0) {
+            put(PARSE_COMPLETED_DATE, completedDate);
+        } else {
+            remove(PARSE_COMPLETED_DATE); //delete when setting to default value
         }
     }
 
+    public void setCompletedDate(Date completedDate, boolean forceToThisInsteadOfLastSubtaskCompletedDate, boolean updateStatus) {
+        //UI: unless you manually edit (and force set) a completedDate, it will be set to the last completedDate of its subtasks
+        Date lastCompletedDate = completedDate;//new Date(0);
+        if (isProject() && !forceToThisInsteadOfLastSubtaskCompletedDate) {
+            lastCompletedDate = getLatestSubtaskCompleteDate();
+        }
+        setCompletedDateInParse(lastCompletedDate); //set the date *before* updating status to ensure status update doesn't set its own date
+        if (updateStatus) {
+//            setDone(completedDate.getTime() != 0);
+            setDone(lastCompletedDate.getTime() != 0);
+        }
+
+        Item owner = getOwnerItem();
+        if (owner != null) {
+            owner.updateValuesDerivedFromSubtasksWhenSubtaskListChange();
+        }
+    }
+//     public void setCompletedDate(Date completedDate) {
+//        setCompletedDateInParse(completedDate);
+//    }
+
+    public void setCompletedDate(Date completedDate) {
+        setCompletedDate(completedDate, false, false);
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void setCompletedDateInParseOLD(Date completedDate) {
+//        if (isProject()) {
+//            Date oldProjectDate = getDate(PARSE_COMPLETED_DATE);
+//            for (Item subtask : (List<Item>) getListFull()) { //full set even for hidden subtasks
+//                Date oldSubtaskDate = subtask.getCompletedDateD();
+////<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
+////                if (oldDate == null) {
+////                    if (subtaskDate == null) {
+////                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                    } else {
+////                        //do nothing: subtask already had a date set before project got one
+////                    }
+////                } else { //oldDate!=null - a previous project date was set
+////                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
+////                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
+////                        //do nothing (subtask had a defined date already and it was different from old project date)
+////                    }
+////                }
+////                if (oldDate == null && subtaskDate == null) {
+////                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
+//////oldDate!=null - a previous project date was set
+////                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                }
+////</editor-fold>
+//                //above expressions are equivalent to this reduced/simplified version:
+//                if ((oldProjectDate == null && oldSubtaskDate == null)
+//                        || (oldSubtaskDate == null || oldSubtaskDate.equals(oldProjectDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
+//                    subtask.setCompletedDate(completedDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+//                }
+//            }
+//        }
+//
+//        if (completedDate != null && completedDate.getTime() != 0) {
+//            put(PARSE_COMPLETED_DATE, completedDate);
+//        } else {
+//            remove(PARSE_COMPLETED_DATE); //delete when setting to default value
+//        }
+////        update();
+//    }
+//</editor-fold>
     /**
      * manually set a completedDate, e.g. if you've set a task to done later
      * than you actually finished it and want the right date for statistics.
@@ -7603,36 +7723,37 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @param completedDate
      */
-    public void setCompletedDate(long completedDate) {
-//        this.completedDate = val;
-//        if (this.completedDate != completedDate) {
-//            long oldVal = this.completedDate;
-//            this.completedDate = completedDate;
-//        if (has(PARSE_COMPLETED_DATE) || completedDate != 0) {
-////            ASSERT.that(completedDate != 0); //OK to set completed to 0 if a task is set undone and there is no actualtime
-//            put(PARSE_COMPLETED_DATE, new Date(completedDate));
-//        }
-//        if (completedDate == 0 && isDone()) { 
-////ignore setting completedDate to 0 unless status!= Done
-//        }else { //
-//        if (completedDate == 0 && isDone()) { 
-//        if (completedDate != 0 || !isDone()) { //ignore setting completedDate to 0 unless status!= Done
-//            setCompletedDateImpl(completedDate);
-//        } // else isDone() || 
-//        //TODO: set task to FIELD_DONE if completedDate was 0 before
-//        if (completedDate != 0L && !isDone()) {
-/////** oldVal == 0L && */
-////                completedDate != 0L && getStatus() != ItemStatus.STATUS_DONE && getStatus() != ItemStatus.STATUS_CANCELLED) {
-//            setDone(true);
-//        }
-        setCompletedDate(new Date(completedDate));
-    }
-
-    public void setCompletedDate(long completedDate, boolean updateStatus) {
-        setCompletedDate(new Date(completedDate), updateStatus);
-    }
-
-    public void setCompletedDate(Date completedDate, boolean updateStatus) {
+//    public void setCompletedDate(long completedDate) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        this.completedDate = val;
+////        if (this.completedDate != completedDate) {
+////            long oldVal = this.completedDate;
+////            this.completedDate = completedDate;
+////        if (has(PARSE_COMPLETED_DATE) || completedDate != 0) {
+//////            ASSERT.that(completedDate != 0); //OK to set completed to 0 if a task is set undone and there is no actualtime
+////            put(PARSE_COMPLETED_DATE, new Date(completedDate));
+////        }
+////        if (completedDate == 0 && isDone()) {
+//////ignore setting completedDate to 0 unless status!= Done
+////        }else { //
+////        if (completedDate == 0 && isDone()) {
+////        if (completedDate != 0 || !isDone()) { //ignore setting completedDate to 0 unless status!= Done
+////            setCompletedDateImpl(completedDate);
+////        } // else isDone() ||
+////        //TODO: set task to FIELD_DONE if completedDate was 0 before
+////        if (completedDate != 0L && !isDone()) {
+///////** oldVal == 0L && */
+//////                completedDate != 0L && getStatus() != ItemStatus.STATUS_DONE && getStatus() != ItemStatus.STATUS_CANCELLED) {
+////            setDone(true);
+////        }
+////</editor-fold>
+//        setCompletedDate(new Date(completedDate));
+//    }
+//    public void setCompletedDate(long completedDate, boolean updateStatus) {
+//        setCompletedDate(new Date(completedDate), updateStatus);
+//    }
+    public void setCompletedDateXXX(Date completedDate, boolean updateStatus) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (has(PARSE_COMPLETED_DATE) || completedDate != 0) {
 //            if (completedDate == 0) {
 //                remove(PARSE_COMPLETED_DATE); //delete when setting to default value
@@ -7652,55 +7773,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //        }
 //        if (completedDate.getTime() != 0) {
-        if (updateStatus) {
-            setDone(completedDate.getTime() != 0);
-        }
-        setCompletedDate(completedDate);
-    }
-
-    public void setCompletedDate(Date completedDate) {
-        setCompletedDateInParse(completedDate);
-    }
-
-    public void setCompletedDateInParse(Date completedDate) {
-        if (isProject()) {
-            Date oldProjectDate = getDate(PARSE_COMPLETED_DATE);
-            for (Item subtask : (List<Item>) getListFull()) { //full set even for hidden subtasks
-                Date oldSubtaskDate = subtask.getCompletedDateD();
-//<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
-//                if (oldDate == null) {
-//                    if (subtaskDate == null) {
-//                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                    } else {
-//                        //do nothing: subtask already had a date set before project got one
-//                    }
-//                } else { //oldDate!=null - a previous project date was set
-//                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
-//                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-//                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
-//                        //do nothing (subtask had a defined date already and it was different from old project date)
-//                    }
-//                }
-//                if (oldDate == null && subtaskDate == null) {
-//                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
-////oldDate!=null - a previous project date was set
-//                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-//                }
 //</editor-fold>
-                //above expressions are equivalent to this reduced/simplified version:
-                if ((oldProjectDate == null && oldSubtaskDate == null) || (oldSubtaskDate == null || oldSubtaskDate.equals(oldProjectDate))) { //subtaskDate==null => maybe inheritance has just been turned on?!
-                    subtask.setCompletedDate(completedDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-                }
-            }
-        }
-
-        if (completedDate != null && completedDate.getTime() != 0) {
-            put(PARSE_COMPLETED_DATE, completedDate);
-        } else {
-            remove(PARSE_COMPLETED_DATE); //delete when setting to default value
-        }
-//        update();
+//        if (updateStatus) {
+//            setDone(completedDate.getTime() != 0);
+//        }
+        setCompletedDate(completedDate, true, updateStatus);
     }
 
     @Override
@@ -7749,7 +7826,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
     }
 
-    public void setCreatedDateNoChangeCall(long val) {
+    public void setCreatedDateNoChangeCallXXX(long val) {
 //        this.createdDate = val;
 //        if (this.createdDate != val) {
 //            this.createdDate = val;
@@ -7757,6 +7834,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public ItemList getListForNewCreatedRepeatInstances() { //TODO: replace with getParent()
 ////        if (this.getParent() instanceof ItemList) {
@@ -7825,6 +7903,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public boolean ignoreSumField() {
 //        return isDone() || getStatus() == ItemStatus.CANCELLED;  //ignore the sum of Done Items
 //    }
+//</editor-fold>
     /**
      * returns expected total effort for this task. If the task is done, and
      * actual<>0, returns Actual, otherwise Estimate (ensures ROI can be
@@ -7866,8 +7945,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     long getTimeSpan() {
-        if (getCompletedDate() != 0) {
-            return getCompletedDate() - getStartedOnDate();
+        if (getCompletedDateD().getTime() != 0) {
+            return getCompletedDateD().getTime() - getStartedOnDate();
         } else {
             return 0;
         }
@@ -7958,6 +8037,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * if earliest=true returns the earlist finish time for this Item (assuming
      * it belongs to several different lists each with WorkTime defined). If
@@ -7969,7 +8049,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public long getFinishTimeTODO(boolean earliest) {
 //        return 0;
 //    }
-//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * if the Item's owner has a WorkTimeDefinition associated with it, then
      * returns the time when this task can start. If no owner, or owner is not
@@ -8087,7 +8166,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        return fieldsOfType;
 //    }
-//</editor-fold>
     /**
      * the order of the fields in this String array determines the order of
      * fields displayed in the editor screens, e.g. FilterDefScreen
@@ -8175,6 +8253,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                        ? getItemList().countTasksWhereStatusWillBeChanged(newStatus, recurseOverSubtasks)
 //                        : 0);
 //    }
+//</editor-fold>
     @Override
     public String toString() {
         return toString(true);
@@ -8315,6 +8394,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+    private boolean updateSubtaskOngoing = false;
+
     /**
      * when saving, first update all values and save all, THEN create repeat
      * instances.
@@ -8322,7 +8403,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @throws ParseException
      */
     public void updateBeforeSave() {
-
+        if (!updateSubtaskOngoing) {
+            updateSubtaskOngoing = true;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        List<Item> subtasks = getListFull();
 //        if (subtasks != null && subtasks.size() > 0) { //now done in DAO
@@ -8366,10 +8448,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            setList(subtasks);
 //        }
 //</editor-fold>
-        if (opsToUpdateSubtasks != null && opsToUpdateSubtasks.size() > 0) {
-            List<Item> subtasks = getListFull();
-            UpdateItem updateStatus = opsToUpdateSubtasks.remove(Item.STATUS);
-            for (Item subtask : subtasks) {
+            if (opsToUpdateSubtasks != null && opsToUpdateSubtasks.size() > 0) {
+                List<Item> subtasks = getListFull();
+                UpdateItem updateStatus = opsToUpdateSubtasks.remove(Item.STATUS);
+                for (Item subtask : subtasks) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (true||!subtask.isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //UI: don't update inherited values for finished subtasks! (leave them in the same state as when they were closed, even if projet changes
 //                    for (<String,UpdateItem> f : opsToUpdateSubtasks) {
@@ -8377,17 +8459,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    }
 //                }
 //</editor-fold>
-                //first deal with item status since changes to this may determine if inherited values are applied
-                if (updateStatus != null) {
-                    updateStatus.update(subtask);
+                    //first deal with item status since changes to this may determine if inherited values are applied
+                    if (updateStatus != null) {
+                        updateStatus.update(subtask);
+                    }
+                    //then update other inherited fields
+//                for (Object parseId : opsToUpdateSubtasks.keySet()) {
+                    Object parseId;
+                    Set<String> keyset = opsToUpdateSubtasks.keySet();
+                    while (!keyset.isEmpty()) {
+                        parseId = keyset.remove(0);
+                        UpdateItem updateSubtask = opsToUpdateSubtasks.remove(parseId);
+                        updateSubtask.update(subtask);
+                    }
                 }
-                //then update other inherited fields
-                for (Object parseId : opsToUpdateSubtasks.keySet()) {
-                    opsToUpdateSubtasks.get(parseId).update(subtask);
-                }
+//            opsToUpdateSubtasks.clear();
             }
-            opsToUpdateSubtasks.clear();
-        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
 //            Inbox.getInstance().addToList(this);
@@ -8400,16 +8487,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (false) {
 //            DAO.getInstance().saveInBackground((ParseObject) this); //WHY save again?? We're already saving 'this'
 //        }
-        //handling of change in owner: if set in ScreenItem2: all values updated there; if this is a copy: all values can be assumed to already have been correctly set; if subtask inserted into new project: 
+            //handling of change in owner: if set in ScreenItem2: all values updated there; if this is a copy: all values can be assumed to already have been correctly set; if subtask inserted into new project: 
 //        Runnable repeatRule = (Runnable) saveOps.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
 //        repeatRule.run(); //create or update any repeatInstances 
 //</editor-fold>
-        if (opsAfterSubtaskUpdates != null) {
-            for (Runnable f : opsAfterSubtaskUpdates) {
-                f.run();
+            if (opsAfterSubtaskUpdates != null) {
+//            for (Runnable f : opsAfterSubtaskUpdates) {
+//                f.run();
+//            }
+                while (!opsAfterSubtaskUpdates.isEmpty()) {
+                    Runnable f = opsAfterSubtaskUpdates.remove(0); //ensures that each operation is only called once, even if iterating (the run() calls an operation which calls saveInBackground triggering 
+                    f.run();
+                }
+//            opsAfterSubtaskUpdates.clear();//clear to avoid having to recreate = null; //must delete 
             }
-            opsAfterSubtaskUpdates.clear();//clear to avoid having to recreate = null; //must delete 
-        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //save dirty Categories:
 //        for (Category cat : getCategories()) {
@@ -8422,9 +8513,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            DAO.getInstance().saveInBackground(new ArrayList(getCategories())); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories. Work on copy of list to avoid java.util.ConcurrentModificationException
 //        }
 //</editor-fold>
-        if (isDirty()) {
-            listeners.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
-        }
+            if (isDirty()) {
+                listeners.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
+            }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (afterSaveActions.containsKey(AFTER_SAVE_ALARM_UPDATE)) {
 //            afterSaveActions.remove(AFTER_SAVE_TEXT_UPDATE); //if we're updating alarms due to time change, we can ignore any changed to the text
@@ -8445,7 +8536,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
 //TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
-        TimerStack.getInstance().updateTimerOnItemStatusChange(this, true, false); //true: move to next, false: don't save 
+            TimerStack.getInstance().updateTimerOnItemStatusChange(this, true, false); //true: move to next, false: don't save 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (isDone()) {
 //            AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //remove any future alarms for a Done/Cancelled task
@@ -8460,13 +8551,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //        }
 //</editor-fold>
-        AlarmHandler.getInstance().updateOnItemChange(this);
+            AlarmHandler.getInstance().updateOnItemChange(this);
 
-        if (getOwner() == null && !isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
-            Inbox.getInstance().addToList(this);
+            if (getOwner() == null && !isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+                Inbox.getInstance().addToList(this);
 //            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
-            DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());
+                DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());
+            }
         }
+        updateSubtaskOngoing = false;
     }
 
     @Override
@@ -9183,7 +9276,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (toCSV) {
                     list.add(MyDate.formatDateNew(getCompletedDateD()));
                 } else {
-                    setCompletedDate((Date) val);
+                    setCompletedDate((Date) val, true, true);
                 }
                 break;
             case PARSE_IMPORTANCE:

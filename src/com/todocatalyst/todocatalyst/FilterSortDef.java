@@ -1309,8 +1309,10 @@ public class FilterSortDef extends ParseObject {
                         : (i1, i2) -> compareDate(i2.getCreatedAt(), i1.getCreatedAt());
             case Item.PARSE_COMPLETED_DATE:
                 return sortDescending
-                        ? (i1, i2) -> compareLong(i1.getCompletedDate(), i2.getCompletedDate()) //oldest first
-                        : (i1, i2) -> compareLong(i2.getCompletedDate(), i1.getCompletedDate());
+//                        ? (i1, i2) -> compareLong(i1.getCompletedDate(), i2.getCompletedDate()) //oldest first
+                        ? (i1, i2) -> compareDate(i1.getCompletedDateD(), i2.getCompletedDateD()) //oldest first
+//                        : (i1, i2) -> compareLong(i2.getCompletedDate(), i1.getCompletedDate());
+                        : (i1, i2) -> compareDate(i2.getCompletedDateD(), i1.getCompletedDateD());
             case Item.PARSE_TEXT:
                 return sortDescending
                         ? (i1, i2) -> i2.getText().compareTo(i1.getText()) //show alphabetically, lowest value at top

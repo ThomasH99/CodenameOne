@@ -547,6 +547,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 if (false) {
                     myForm.refreshAfterEdit();  //OK? NOT good, refreshAfterEdit will remove the new 
                 }//            }, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false), isTemplate, predefinedValues);
+                if (false) closeInsertContainer(false); //NO, keep iserting even when returning from editing details of new item
             }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), isTemplate, predefinedValues);
             screenItem2.show();
         }, "InlineEditItem");
