@@ -1904,13 +1904,13 @@ public class MyDate extends Date {
         return System.currentTimeMillis() + forcedDeltaTime;
     }
 
-    static Date currentTimeMillisRoundedToMinutesAsDate() {
+    static Date currentTimeMillisRoundedDownToMinutesAsDate() {
 //        if (forceCurrentTime!=0)
-        return roundOfToFullMinutes(new Date(currentTimeMillis()));
+        return roundDownToFullMinutes(new Date(currentTimeMillis()));
     }
 
-    static long currentTimeMillisRoundedToMinutesAsLong() {
-        return currentTimeMillisRoundedToMinutesAsDate().getTime();
+    static long currentTimeMillisRoundedDownToMinutesAsLong() {
+        return currentTimeMillisRoundedDownToMinutesAsDate().getTime();
     }
 
     /**
@@ -1979,7 +1979,7 @@ public class MyDate extends Date {
      * returns time adjusted to 'midnight' to today's date with
      * hour/minute/second/millisecond set to zero
      */
-    static Date roundOfToFullMinutes(Date time) {
+    static Date roundDownToFullMinutes(Date time) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(time);
         cal.set(Calendar.SECOND, 0);

@@ -253,7 +253,8 @@ public class LocalNotificationsShadowList implements Externalizable {
 
                 if (notif.type == mainType
                         || (mainType == notification && notif.type == notificationRepeat)
-                        || (mainType == waiting && notif.type == waitingRepeat) //                        || mainType == AlarmType.snooze  //remove snooze just in case?!
+                        || (mainType == waiting && notif.type == waitingRepeat) //                        
+                        || mainType == snooze  //remove snooze just in case?!
                         ) {
 //                        list.remove(i);
 //                        cancelLocalNotification(notif.notificationId); //cancel the corresponding alarm

@@ -274,6 +274,8 @@ public class MyPrefs {
 
     static PrefEntry alarmDaysAheadToFetchFutureAlarms
             = new PrefEntry("**", "alarmDaysAheadToFetchFutureAlarms", 30, "**"); //10 = 10 minutes after midnight
+    static PrefEntry alarmRoundSnoozeTimeDownToMinutes
+            = new PrefEntry("", "alarmDaysAheadToFetchFutureAlarms", true, "**"); //mainly for testing?!
 
     //ITEM
     static PrefEntry checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress

@@ -8464,16 +8464,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                         updateStatus.update(subtask);
                     }
                     //then update other inherited fields
-//                for (Object parseId : opsToUpdateSubtasks.keySet()) {
-                    Object parseId;
-                    Set<String> keyset = opsToUpdateSubtasks.keySet();
-                    while (!keyset.isEmpty()) {
-                        parseId = keyset.remove(0);
-                        UpdateItem updateSubtask = opsToUpdateSubtasks.remove(parseId);
+                    for (Object parseId : opsToUpdateSubtasks.keySet()) {
+//                    String parseId;
+//                    Set<String> keyset = opsToUpdateSubtasks.keySet();
+//                    while (!keyset.isEmpty()) {
+//                        parseId = keyset.remove(0);
+                        UpdateItem updateSubtask = opsToUpdateSubtasks.get(parseId); //remove ensure each operation is only eexcuted once, even if same item is saved multiple times
                         updateSubtask.update(subtask);
                     }
                 }
-//            opsToUpdateSubtasks.clear();
+                opsToUpdateSubtasks.clear();
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)

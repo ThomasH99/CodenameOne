@@ -13,7 +13,7 @@ public abstract class Config {
     /**
      * set to true during testing. Setting false will remove test code from the app. 
      */
-    public static final boolean PRODUCTION_RELEASE = false; //f
+    public static final boolean PRODUCTION_RELEASE = true; //f
     public static final boolean PROD_LOG = true; //log to keep in production
     public static final boolean TEST_CACHE = false && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_SCROLL_Y = true && !PRODUCTION_RELEASE; //false;

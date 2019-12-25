@@ -250,7 +250,7 @@ public class MyForm extends Form {
     static final String SETTINGS_SCREEN_TITLE = "Settings for "; //"Statistics", "History"
 
     enum ScreenType {
-        ALARMS(ScreenListOfAlarms.screenTitle), LISTS(SCREEN_LISTS_TITLE), ALL_TASKS(SCREEN_ALL_TASKS_TITLE), TODAY(SCREEN_TODAY_TITLE), INBOX(SCREEN_INBOX_TITLE),
+        NOT_INIT("Not initialized"), ALARMS(ScreenListOfAlarms.screenTitle), LISTS(SCREEN_LISTS_TITLE), ALL_TASKS(SCREEN_ALL_TASKS_TITLE), TODAY(SCREEN_TODAY_TITLE), INBOX(SCREEN_INBOX_TITLE),
         PROJECTS(SCREEN_PROJECTS_TITLE), TEMPLATES(SCREEN_TEMPLATES_TITLE),
         COMPLETION_LOG(SCREEN_COMPLETION_LOG_TITLE), CREATION_LOG(SCREEN_CREATION_LOG_TITLE),
         NEXT(SCREEN_NEXT_TITLE), OVERDUE(SCREEN_OVERDUE_TITLE), TOUCHED(SCREEN_TOUCHED), STATISTICS(SCREEN_STATISTICS);
@@ -542,6 +542,14 @@ public class MyForm extends Form {
         ASSERT.that(true, "REVALIDATE for form=" + getUniqueFormId());
     }
 
+    protected ScreenType getScreenType() {
+        return screenType == null ? ScreenType.NOT_INIT : screenType; //avoid returning null
+    }
+
+    protected void setScreenType(ScreenType screenType) {
+         this.screenType =screenType;
+    }
+
     /**
      * returns the container in which to add the smallTimer, can be overridden
      * to place the smallTimer in other places than the default South container.
@@ -553,8 +561,7 @@ public class MyForm extends Form {
         Form form = this;
         if ((form instanceof ScreenCategoryPicker || form instanceof ScreenListOfAlarms
                 || form instanceof ScreenLogin || form instanceof ScreenObjectPicker
-                || form instanceof ScreenRepair || form instanceof ScreenTimer6
-                )) {
+                || form instanceof ScreenRepair || form instanceof ScreenTimer6)) {
             return null;
         } else {
             Container formContentPane = form.getContentPane();
@@ -1912,7 +1919,7 @@ public class MyForm extends Form {
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
 //        return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
 //        return CommandTracked.create("", icon, (e) -> {
-        return CommandTracked.create(includeText?"Time interrupt":"", Icons.iconInterrupt, (e) -> {
+        return CommandTracked.create(includeText ? "Time interrupt" : "", Icons.iconInterrupt, (e) -> {
             Item interruptItem = new Item();
             interruptItem.setRemaining(0);//remove default estimate for interrupt tasks
             interruptItem.setInteruptOrInstantTask(true);
@@ -1935,17 +1942,17 @@ public class MyForm extends Form {
 
     public Command makeStartTimerCommand(boolean includeText, ItemAndListCommonInterface itemListOrg) {
 //        return CommandTracked.create(TimerStack.getInstance().isTimerActive() ? "Open Timer" : "Start Timer on list",
-        return CommandTracked.create( "Timer" ,
-//                    TimerStack.getInstance().isTimerActive() ? Icons.iconLaunchTimerAlreadyRunning : Icons.iconLaunchTimer,
-                    Icons.iconLaunchTimer,
-                    (e) -> {
-                        if (itemListOrg instanceof ItemList) {
-                            TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, MyForm.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                        } else if (itemListOrg instanceof Item) {
-                            TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, MyForm.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
-                        }
-                    }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
-            );
+        return CommandTracked.create("Timer",
+                //                    TimerStack.getInstance().isTimerActive() ? Icons.iconLaunchTimerAlreadyRunning : Icons.iconLaunchTimer,
+                Icons.iconLaunchTimer,
+                (e) -> {
+                    if (itemListOrg instanceof ItemList) {
+                        TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, MyForm.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                    } else if (itemListOrg instanceof Item) {
+                        TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, MyForm.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                    }
+                }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+        );
     }
 
     /**
@@ -3738,7 +3745,7 @@ public class MyForm extends Form {
         pinchContainer = wrappedInsertContainer;
     }
 
-    private void createAndAddInsertIntoEmptyContainer(Container insertIntoContainer, ItemAndListCommonInterface typeElement, 
+    private void createAndAddInsertIntoEmptyContainer(Container insertIntoContainer, ItemAndListCommonInterface typeElement,
             ItemAndListCommonInterface owner, Category category) {
         InsertNewElementFunc insertContainer = createInsertContainer(typeElement, null, owner, category, false);//, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
         Container wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
@@ -3877,28 +3884,29 @@ public class MyForm extends Form {
 //                createAndAddInsertContainer(refEltObjId, refClass, insertBefore);
 
                 ItemAndListCommonInterface refElement = null;
-                if(refClass!=null)
-                switch (refClass) {
-                    case Item.CLASS_NAME:
+                if (refClass != null) {
+                    switch (refClass) {
+                        case Item.CLASS_NAME:
 //                Item aboveItem = DAO.getInstance().fetchItem(refEltObjId);
-                        refElement = DAO.getInstance().fetchItem(refEltObjId);
-                        break;
-                    case ItemList.CLASS_NAME:
+                            refElement = DAO.getInstance().fetchItem(refEltObjId);
+                            break;
+                        case ItemList.CLASS_NAME:
 //                ItemList aboveItemList = DAO.getInstance().fetchItemList(refEltObjId);
-                        refElement = DAO.getInstance().fetchItemList(refEltObjId);
-                        break;
-                    case Category.CLASS_NAME:
+                            refElement = DAO.getInstance().fetchItemList(refEltObjId);
+                            break;
+                        case Category.CLASS_NAME:
 //                ItemList aboveCategory = DAO.getInstance().fetchCategory(refEltObjId);
-                        refElement = DAO.getInstance().fetchCategory(refEltObjId);
-                        break;
-                    case WorkSlot.CLASS_NAME:
+                            refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                            break;
+                        case WorkSlot.CLASS_NAME:
 //                ItemList aboveWorkSlot = DAO.getInstance().fetchCategory(refEltObjId);
-                        refElement = DAO.getInstance().fetchCategory(refEltObjId);
-                        break;
-                    default:
-                        if (Config.TEST) {
-                            ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + refClass);
-                        }
+                            refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                            break;
+                        default:
+                            if (Config.TEST) {
+                                ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + refClass);
+                            }
+                    }
                 }
 //        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane(), refEltObjId);
                 MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
@@ -4634,9 +4642,9 @@ public class MyForm extends Form {
                 int[] x2 = new int[2];
                 y2[0] = y[0];
                 x2[0] = x[0];
-                int x0=x[0];
+                int x0 = x[0];
 //                int x1=x[1];
-                int y0=y[0];
+                int y0 = y[0];
 //                int y1=y[1];
 
                 x2[1] = x[0]; //set simulated x for other finger to same value as first finger
@@ -4653,12 +4661,12 @@ public class MyForm extends Form {
 //                    } else {
 //                        simulY = initY - dist;
 //                    }
-                        simulY = initY + dist;
+                    simulY = initY + dist;
                     y2[1] = Math.min(displayHeight, Math.max(0, simulY)); //set simulated y to y mirrored around the middle of the screen
                 }
 //                y2[1] = Math.min(displayHeight, y[0] + 140); //80==roughly one workslot container
 //                Log.p("simulating pinch x[0]=" + x[0] + " y[0]=" + y[0] + " simulated x[1]=" + x[1] + " y[1]=" + y[1]);
-                if (false&&Config.TEST_PINCH) {
+                if (false && Config.TEST_PINCH) {
                     Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
                 }
                 x = x2; //replace org values with simulatd pair
@@ -4726,7 +4734,9 @@ public class MyForm extends Form {
             }
 //                pinchDistance = Math.max(0, newYDist - pinchInitialYDistance); //not allowed to become negative
             pinchDistance = newYDist - pinchInitialYDistance; //not allowed to become negative
-               if (false&&Config.TEST) Log.p("PointerDragged pinchInitialYDistance="+pinchInitialYDistance+"; newYDist="+newYDist+"; pinchDistance=" + pinchDistance + ", y[0]=" + y[0] + ", y[1]=" + y[1]);
+            if (false && Config.TEST) {
+                Log.p("PointerDragged pinchInitialYDistance=" + pinchInitialYDistance + "; newYDist=" + newYDist + "; pinchDistance=" + pinchDistance + ", y[0]=" + y[0] + ", y[1]=" + y[1]);
+            }
 
             if (pinchContainer == null) { // && pinchDistance > 0) { if we wait till pinchDistance is >0, then the finger may already have moved in to another item than the one we started in(?!)
 //DONE!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size

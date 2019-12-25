@@ -7,6 +7,9 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Vector;
 
 //import com.codename1.ui.*;
 //import com.codename1.ui.events.ActionEvent;
@@ -337,7 +340,7 @@ public class ScreenFilter extends MyForm {
 
         //Depending on tasks
 //        content.add(new SpanLabel("Tasks depending on other tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutSetting("Show tasks depending on other tasks", new MyOnOffSwitch(parseIdMap2,
+        if (false) content.add(layoutSetting("Show tasks depending on other tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowDependingOnUndoneTasks();
                 },
@@ -346,6 +349,13 @@ public class ScreenFilter extends MyForm {
                     filterSortDef.setShowDependingOnUndoneTasks(b);
                 }
         ), "**")); //if show hidden tasks, then no add'l query constraint
+
+        if (false) {
+//        Vector v=new Vector(new ArrayList.[]{1,3});
+            Vector v = new Vector(Arrays.asList(1, 3));
+            MyToggleButtonList t = new MyToggleButtonList(new String[]{"A", "B", "C"}, new int[]{1, 2, 3}, v);
+            content.add(t);
+        }
 
 //        ButtonGroup taskStatusSwitches = new ButtonGroup(); //TODO mutually exclusive choices (necessary??)
         //SAVE filter

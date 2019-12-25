@@ -754,15 +754,16 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
     public static Date makeDefaultDueDate() {
         long defaultDue = MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS;
-        return MyDate.roundOfToFullMinutes(new Date(defaultDue));
+        return MyDate.roundDownToFullMinutes(new Date(defaultDue));
     }
 
     public static Date makeDefaultAlarmDate(Date dueDate) {
         if (dueDate == null || dueDate.getTime() == 0) {
             dueDate = new Date(makeDefaultDueDate().getTime());
         }
-        long defaultAlarm = dueDate.getTime() - MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS;
-        return MyDate.roundOfToFullMinutes(new Date(defaultAlarm)); //round off to remove seconds/milliseconds
+        long defaultAlarm = Math.max(dueDate.getTime() - MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS,
+                MyDate.getNow()+MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: when setting an alarm for a past due date, use now as reference
+        return MyDate.roundDownToFullMinutes(new Date(defaultAlarm)); //round off to remove seconds/milliseconds
 //        return new Date(defaultAlarm); //round off to remove seconds/milliseconds (now done in makeDefaultDueDate())
     }
 

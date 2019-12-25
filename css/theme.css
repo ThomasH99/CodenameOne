@@ -699,9 +699,9 @@ BigTimerItemText{
 }
 BigTimerComment {
     cn1-derive: Comment;
-    /*background-color: #e3fefe;
+    background-color: white;
     /*color: violet;
-    background-color: grey; /**/
+    background-color: grey; /*
 }
 BigTimerLabels {
     cn1-derive: LabelField;
@@ -759,7 +759,7 @@ BigTimerCmdButton{
     border-radius:  1mm;
     background: lightskyblue; 
 }
-BigTimerExit {
+BigTimerExit { 
     cn1-derive: BigTimerCmdButton;
     /*color: limegreen;/**/
 }
@@ -774,6 +774,8 @@ BigTimerNext {
 BigTimerCompleted {
     cn1-derive: BigTimerCmdButton;
     margin-top: 4mm;
+    padding-top: 3mm;
+    padding-bottom: 3mm;
     /*padding: 2mm;*/
     /*border: 1pt darkgrey solid;*/ 
     /*background: lightskyblue;*/ 

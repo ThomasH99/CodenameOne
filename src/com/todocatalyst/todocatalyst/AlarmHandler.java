@@ -261,6 +261,10 @@ public class AlarmHandler {
 
         notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getWaitingAlarmDateD(), AlarmType.waiting,
                 item.makeNotificationTitleText(AlarmType.waiting), item.makeNotificationBodyText(AlarmType.waiting));
+
+        if (false) {
+            removeExpiredAlarm(null);
+        }
 //        inAppTimer.refreshInAppTimer();
 //        notificationList.save();
         refreshInAppTimerAndSaveNotificationList();
@@ -307,6 +311,7 @@ public class AlarmHandler {
         //delete all possible alarms set for this item
 //        notificationList.removeAllAlarms(item.getObjectId());
         notificationList.removeALLAlarmsForItem(item.getObjectIdP());
+        cancelExpiredAlarms(item); //remove any already expired alarms
 //        inAppTimer.refreshInAppTimer();
 //        notificationList.save();
         refreshInAppTimerAndSaveNotificationList();
@@ -405,6 +410,18 @@ public class AlarmHandler {
 //                    AlarmHandler.getInstance().removeExpiredAlarm(expired);
         while (!expiredAlarms.isEmpty()) {
             expiredAlarms.remove(0);
+        }
+        expiredAlarmSave();
+    }
+
+    public void cancelExpiredAlarms(Item item) {
+        Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
+        while (it.hasNext()) {
+            ExpiredAlarm expiredAlarm = it.next();
+            if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
+//                expiredAlarms.remove(expiredAlarm);
+                it.remove();
+            }
         }
         expiredAlarmSave();
     }

@@ -299,7 +299,7 @@ public class ScreenListOfItems extends MyForm {
 
     ScreenListOfItems(ScreenType screenType, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, int options) {
         this(screenType.getTitle(), itemListFct, previousForm, updateItemListOnDone, options, null);
-        this.screenType = screenType;
+        setScreenType(screenType);
     }
 
     ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
@@ -308,23 +308,26 @@ public class ScreenListOfItems extends MyForm {
     }
 
     /**
-     * 
+     *
      * @param title
-     * @param textIfListEmpty test to show if list is empty, if null, show default text
+     * @param textIfListEmpty test to show if list is empty, if null, show
+     * default text
      * @param itemListFct
      * @param previousForm
      * @param updateItemListOnDone
      * @param options
-     * @param stickyHeaderGen 
+     * @param stickyHeaderGen
      */
     ScreenListOfItems(String title, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
             int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListOrg));
         super(title, previousForm, null);
-        if (textIfListEmpty!=null)
-        setTextToShowIfEmptyList(textIfListEmpty); else
-                setTextToShowIfEmptyList("Insert new task using + or pinch insert");
+        if (textIfListEmpty != null) {
+            setTextToShowIfEmptyList(textIfListEmpty);
+        } else {
+            setTextToShowIfEmptyList("Insert new task using + or pinch insert");
+        }
 
         setUniqueFormId("ScreenListOfItems");
         if (false) {
@@ -376,8 +379,8 @@ public class ScreenListOfItems extends MyForm {
 //        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
 //</editor-fold>
 
-        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-" 
-                + (itemListOrg.getObjectIdP()!=null?itemListOrg.getObjectIdP():itemListOrg.getText()), true); //use text for unsaved lists like Log/Diary
+        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-"
+                + (itemListOrg.getObjectIdP() != null ? itemListOrg.getObjectIdP() : itemListOrg.getText()), true); //use text for unsaved lists like Log/Diary
 
         String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId() + (itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         expandedObjects = new ExpandedObjects(expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
@@ -808,7 +811,7 @@ public class ScreenListOfItems extends MyForm {
 //                    }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
 //            ));
 //</editor-fold>
-            toolbar.addCommandToOverflowMenu(makeStartTimerCommand(true,itemListOrg));
+            toolbar.addCommandToOverflowMenu(makeStartTimerCommand(true, itemListOrg));
         }
 
         if (optionTemplateEditMode) {
@@ -1264,7 +1267,7 @@ public class ScreenListOfItems extends MyForm {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
-                        DAO.getInstance().saveInBackground((ParseObject)itemListOrg);
+                        DAO.getInstance().saveInBackground((ParseObject) itemListOrg);
                         refreshAfterEdit();
                     }
                 };
@@ -2382,7 +2385,7 @@ public class ScreenListOfItems extends MyForm {
 //                        refreshOnItemEdits.launchAction();
 //                    }
 //</editor-fold>
-                if (false&&Config.REFRESH_EVEN_THOUGH_DONE_IN_BACK) {
+                if (false && Config.REFRESH_EVEN_THOUGH_DONE_IN_BACK) {
                     myForm.refreshAfterEdit();
                 }
             }, false, null).show();
@@ -2733,7 +2736,7 @@ public class ScreenListOfItems extends MyForm {
         }
         if (alarmLabel != null) {
             southDetailsContainer.addComponent(alarmLabel);
-            if (myForm.screenType == ScreenType.ALARMS) {
+            if (myForm.getScreenType() == ScreenType.ALARMS) {
                 myForm.showDetails.add(item); //UI: always show details (with alarm time) in alarm screen
             }
         }
@@ -3060,7 +3063,8 @@ refreshAfterEdit();
         }
 
         //UPDATE DUE DATE
-        if (!item.isTemplate() && !isDone && (myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE) || myForm.getTitle().equals(MyForm.SCREEN_OVERDUE_TITLE))) { //UI: only show in Today view
+//        if (!item.isTemplate() && !isDone && myForm.getTitle()!=null&& (myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE) || myForm.getTitle().equals(MyForm.SCREEN_OVERDUE_TITLE))) { //UI: only show in Today view
+        if (!item.isTemplate() && !isDone && (myForm.getScreenType() == ScreenType.TODAY || myForm.getScreenType() == ScreenType.OVERDUE)) { //UI: only show in Today view
 //            setDueDateToToday = new Button(null, Icons.iconSetDueDateToToday());
             setDueDateToToday = new Button();
             setDueDateToToday.setMaterialIcon(Icons.iconSetDueDateToTodayMaterial);

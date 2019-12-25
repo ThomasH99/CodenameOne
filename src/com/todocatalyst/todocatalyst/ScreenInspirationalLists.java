@@ -1,8 +1,8 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
-
 import com.codename1.ui.Button;
+import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.Toolbar;
@@ -25,7 +25,6 @@ import com.codename1.ui.table.TableLayout;
 //import com.codename1.ui.table.TableLayout;
 //import com.todocatalyst.todocatalyst.MyForm;
 //import java.util.List;
-
 //import com.codename1.ui.*;
 //import com.codename1.ui.events.ActionEvent;
 //import com.codename1.ui.layouts.BoxLayout;
@@ -47,9 +46,9 @@ public class ScreenInspirationalLists extends MyForm {
     //TODO Settings option to log out
     //DONE support option to update email (and change login id since email is normally used)
     //DONE skip login screen when already logged in
-    
-   public final static String SCREEN_TITLE = "Inspirational lists";
-   
+
+    public final static String SCREEN_TITLE = "Inspirational lists";
+
 //    MyForm mainScreen;
     ScreenInspirationalLists(MyForm mainScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, mainScreen, () -> {
@@ -79,7 +78,6 @@ public class ScreenInspirationalLists extends MyForm {
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 
 //        toolbar.addCommandToOverflowMenu(makeCancelCommand());
-
 //        toolbar.addCommandToOverflowMenu(new Command("Reset to default")); //reset to default values
     }
 
@@ -110,11 +108,37 @@ public class ScreenInspirationalLists extends MyForm {
 //            }
 //        });
 //        content.add(doubleOwnerButton);
-
-
         //TODO!!! Add an explanation to each of these (definition + why/when work on it)
         //TODO!! check old filters from first version of TodoCatalyst
-        content.add(new Button(MyReplayCommand.create("Highest earned ROI relative to remaining time")));  //the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)
+        //the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)
+        content.add(new Button(
+                MyReplayCommand.create(InspirationalLists.ROIoverRemaining_X.getCmdUniqueId(), InspirationalLists.ROIoverRemaining_X.getDefinition(), Icons.iconInspiration, (e) -> {
+                    MyForm myForm = new ScreenListOfItems(InspirationalLists.ROIoverRemaining_X.getFilterName(), "No tasks",
+                            () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(), InspirationalLists.ROIoverRemaining_X, true),
+                            ScreenInspirationalLists.this, (i) -> {
+                            },
+                            ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                            | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
+                    );
+                    myForm.setTextToShowIfEmptyList("No tasks created the last month");
+                    myForm.show();
+                })));
+
+        content.add(new Button(
+                MyReplayCommand.create(InspirationalLists.UrgentByCreated.getCmdUniqueId(), InspirationalLists.UrgentByCreated.getDefinition(), Icons.iconInspiration, (e) -> {
+                    MyForm myForm = new ScreenListOfItems(InspirationalLists.UrgentByCreated.getFilterName(), "No tasks",
+                            () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(), InspirationalLists.UrgentByCreated, true),
+                            ScreenInspirationalLists.this, (i) -> {
+                            },
+                            ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                            | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
+                    );
+                    myForm.setTextToShowIfEmptyList("No tasks created the last month");
+                    myForm.show();
+                })));
+
+        content.add(new Button(MyReplayCommand.create("What's urgent")));  //Urgent tasks, sorted by due date(?)
+        content.add(new Button(MyReplayCommand.create("What's important and forgotten")));  //Important tasks not touched/worked on since a long time
         content.add(new Button(MyReplayCommand.create("Warm up")));  //quick easy tasks to get that dopamine flowing
         content.add(new Button(MyReplayCommand.create("What never gets done: Important, not Urgent and Challenging or time consuming")));  //take on challenging/difficult, dreaded tasks, important
 
@@ -134,11 +158,11 @@ public class ScreenInspirationalLists extends MyForm {
         content.add(new Button(MyReplayCommand.create("Deadline coming up")));  //by due date
         content.add(new Button(MyReplayCommand.create("Fast and easy")));  //low challenge, low estimate
         content.add(new Button(MyReplayCommand.create("Almost finished"))); //lowest percentage remaining compared to total effort (actual+remaining)
-        content.add(new Button(MyReplayCommand.create("Instance gratification")));  
+        content.add(new Button(MyReplayCommand.create("Instance gratification")));
         content.add(new Button(MyReplayCommand.create("High value for the effort"))); //highest total value divided by remaining effort
-        content.add(new Button(MyReplayCommand.create("Important and Urgent"))); 
+        content.add(new Button(MyReplayCommand.create("Important and Urgent")));
         content.add(new Button(MyReplayCommand.create("Important and Fast"))); //sort by lowest effort
-        content.add(new Button(MyReplayCommand.create("Urgent"))); 
+        content.add(new Button(MyReplayCommand.create("Urgent")));
         content.add(new Button(MyReplayCommand.create("Dusty/Moldy/Clean up"))); //oldest created tasks still not started
         content.add(new Button(MyReplayCommand.create("Stalled"))); //still incomplete tasks by age of 'last worked on' (last update or last time timer was used or actuals updated)
         content.add(new Button(MyReplayCommand.create("Better start early")));  //projects that it might be a good idea to look at early (e.g. large effort, challenging, due date approaching)

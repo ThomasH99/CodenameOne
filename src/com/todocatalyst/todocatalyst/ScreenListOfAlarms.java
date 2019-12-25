@@ -52,7 +52,9 @@ public class ScreenListOfAlarms extends MyForm {
     private static String screenHelp = "Shows past reminders that have not yet been cancelled or snoozed. Starting Timer on a task or editing it will cancel the reminder";
 //    private LocalNotificationsShadowList notificationList;
     private long now; //represent 'now' wrt latest update of the screen <8eg to ensure that an alarm that expires just after the screen is updated may be cancelled w/o being shown/seen
-    /**store and possibly reuse the latest manually adjusted snooze time*/
+    /**
+     * store and possibly reuse the latest manually adjusted snooze time
+     */
     private long individuallySetSnoozeTimeMillis = MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS; //initialize to default value for first time use
 //    private KeepInSameScreenPosition keepPos; // = new KeepInSameScreenPosition();
 //    private List<ExpiredAlarm> expiredAlarms;
@@ -74,7 +76,7 @@ public class ScreenListOfAlarms extends MyForm {
         super(screenTitle, null, () -> {
         });
         setTextToShowIfEmptyList("No Reminders to deal with"); //"No Reminders to deal with",
-        screenType = ScreenType.ALARMS;
+        setScreenType(ScreenType.ALARMS);
         setUIID("AlarmsForm");
         setUniqueFormId("ScreenListOfAlarms");
 
@@ -284,7 +286,8 @@ public class ScreenListOfAlarms extends MyForm {
             toolbar.addCommandToOverflowMenu(new Command("Show local notifications") {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
-                    Form form = new MyForm("Local notifiations",null,null);
+                    Form form = new MyForm("Local notifiations", null, null);
+                    form.setLayout(BoxLayout.y());
                     form.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenListOfAlarms.this.showBack()));
                     LocalNotificationsShadowList list = AlarmHandler.getInstance().getLocalNotificationsTEST();
                     for (int i = 0, size = list.size(); i < size; i++) {
@@ -363,12 +366,13 @@ public class ScreenListOfAlarms extends MyForm {
                     //then cancel the expired Alarms
                     AlarmHandler.getInstance().removeExpiredAlarm(expiredAlarm);
 //                    myForm.exitOnEmptyAlarmList = true; //TOO late to call here
-                    if (false)
+                    if (false) {
                         if (AlarmHandler.getInstance().getExpiredAlarms().isEmpty()) { //exit screen if all alarms are dealt with
                             myForm.showPreviousScreen(true);
                         } else {
                             refreshAfterItemEdit.launchAction();
                         }
+                    }
                 }
             }
             refreshAfterItemEdit.launchAction();
@@ -405,7 +409,9 @@ public class ScreenListOfAlarms extends MyForm {
         snoozePicker.addActionListener(e -> {
             //popup picker and snooze and exit screen this was the last/only alarm in the screen
 //            Date snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + snoozePicker.getDuration())); //UI: snooze interval always from the moment you activate snooze
-            Date snoozeExpireTimeInMillis = new Date(MyDate.currentTimeMillis() + snoozePicker.getDuration()); //UI: snooze interval always from the moment you activate snooze
+            Date snoozeExpireTimeInMillis = new Date(
+                    (MyPrefs.alarmRoundSnoozeTimeDownToMinutes.getBoolean() ? MyDate.currentTimeMillisRoundedDownToMinutesAsLong() : MyDate.currentTimeMillis())
+                    + snoozePicker.getDuration()); //UI: snooze interval always from the moment you activate snooze
             AlarmHandler.getInstance().snoozeAlarm(expiredAlarm, snoozeExpireTimeInMillis);
             if (MyPrefs.alarmReuseIndividuallySetSnoozeDurationForLongPress.getBoolean()) {
                 ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis = snoozePicker.getDuration();
@@ -435,12 +441,13 @@ public class ScreenListOfAlarms extends MyForm {
         Button snoozeAlarm = new MyButtonLongPress(
                 CommandTracked.create("", Icons.iconSnooze, (evt) -> {
                     Date snoozeExpireTimeInMillis;
-                    if (MyPrefs.alarmReuseIndividuallySetSnoozeDurationForNormalSnooze.getBoolean() && ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis != 0)
-                        //                        snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis)); //UI: snooze interval always from the moment you activate snooze
+                    if (MyPrefs.alarmReuseIndividuallySetSnoozeDurationForNormalSnooze.getBoolean() && ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis != 0) //                        snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis)); //UI: snooze interval always from the moment you activate snooze
+                    {
                         snoozeExpireTimeInMillis = new Date(MyDate.currentTimeMillis() + ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis); //UI: snooze interval always from the moment you activate snooze
-                    else
-                        //                        snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + snoozePicker.getDuration())); //UI: snooze interval always from the moment you activate snooze
+                    } else //                        snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + snoozePicker.getDuration())); //UI: snooze interval always from the moment you activate snooze
+                    {
                         snoozeExpireTimeInMillis = new Date(MyDate.currentTimeMillis() + snoozePicker.getDuration()); //UI: snooze interval always from the moment you activate snooze
+                    }
                     AlarmHandler.getInstance().snoozeAlarm(expiredAlarm, snoozeExpireTimeInMillis);
                     if (AlarmHandler.getInstance().getExpiredAlarms().isEmpty()) { //exit screen if all alarms are dealt with
 //                        showPreviousScreenOrDefault(previousForm, true);

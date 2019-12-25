@@ -158,6 +158,7 @@ public class Icons {
     final static char iconMainInspirationLists = FontImage.MATERIAL_FAVORITE_BORDER; //TOUCH_APP
     final static char iconMainWeb = FontImage.MATERIAL_WEB;
     final static char iconMainAlarms = FontImage.MATERIAL_NOTIFICATIONS_ACTIVE; //TODO: MATERIAL_NOTIFICATION_IMPORTANT
+    final static char iconInspiration = FontImage.MATERIAL_HIGHLIGHT; 
 
 //    final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
     final static Image iconSettingsLabelStyle = FontImage.createMaterial(iconSettings, labelStyle);

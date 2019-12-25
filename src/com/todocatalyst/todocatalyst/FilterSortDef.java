@@ -19,13 +19,15 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- *
+ * Requirements: Filter any field and any value => store list of values to show in a text string per field. 
+ * Create expressions with AND/OR etc (find old code). 
  * @author Thomas
  */
 public class FilterSortDef extends ParseObject {
 
     private Comparator nonSavedComparator = null;
     private boolean isNoSave=false;
+    private String cmdUniqueId=null;
 //    private static FilterSortDef defaultFilter = null;
 
 //    private static FilterSortDef DEFAULT_FILTER = null; //no good to use an (editable) filter with singleton, since edits will change the original. Must use separate instances and equal() to compare
@@ -250,6 +252,19 @@ public class FilterSortDef extends ParseObject {
         setDescription(filterToCopy.getDescription());
     }
 
+    public FilterSortDef(String cmdUniqueId, String definition, String helpText) {
+       this();
+        setDefinition(definition);
+        setHelp(helpText);
+        setCmdUniqueId(cmdUniqueId);
+    }
+    
+    public void setCmdUniqueId(String cmdUniqueId) {
+        this.cmdUniqueId=cmdUniqueId;
+    }
+    public String getCmdUniqueId() {
+        return cmdUniqueId;
+    }
     @Override
     public String toString() {
         String s = "";
@@ -264,137 +279,6 @@ public class FilterSortDef extends ParseObject {
 //        setFilterName(description);
 //        setDescription(description);
 //    }
-
-    /**
-     * _X means that it cannot (currently) be created as a user-defined filter,
-     * e.g. because it involves formulaes between fields or similar
-     */
-    enum PredefinedFilters {
-        ROIoverRemaining_X, ProgressNoActuals, WarmUp_X, LastLittleEffort_X, zz, WaitingForTooLong_X, xx, yy, tt, vv, ImportantNeverGetsDone;
-    }
-
-    public static FilterSortDef makeFilter(PredefinedFilters predefinedFilter, String description, String helpTxt) {
-        FilterSortDef filter = null;
-        switch (predefinedFilter) {
-            case ROIoverRemaining_X:
-                filter = new FilterSortDef() {
-                    public boolean test(Item item) {
-                        return true;
-                    }
-
-                    Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDouble(i1.getEarnedValuePerHour() / i1.getRemaining(), i2.getEarnedValue() / i2.getRemaining());
-                    }
-                };
-                filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
-                filter.setDescription("Highest earned ROI relative to remaining time");
-                filter.setHelp("the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                break;
-
-            case ProgressNoActuals:
-                filter = new FilterSortDef() {
-                    public boolean test(Item item) {
-                        return item.getStatus() == ItemStatus.ONGOING && item.getActual() == 0;
-                    }
-
-                    Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDate(i1.getUpdatedAt(), i2.getUpdatedAt());
-                    }
-                };
-                filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
-                filter.setDescription("Tasks in progress but without any actual time recorded");
-                filter.setHelp("the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("Status is ONGOING, Actual is zero, sorted with most recent last");
-                break;
-            case WarmUp_X:
-                filter = new FilterSortDef() {
-                    public boolean test(Item item) {
-                        return (item.getStatus() == ItemStatus.CREATED || item.getStatus() == ItemStatus.ONGOING)
-                                && item.getRemaining() <= 10 * MyDate.MINUTE_IN_MILLISECONDS
-                                && (item.getChallengeN() != null && (item.getChallengeN() == Challenge.VERY_EASY || item.getChallengeN() == Challenge.EASY));
-                    }
-
-                    Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareLong(i1.getRemaining(), i2.getRemaining());
-                    }
-                };
-                filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
-                filter.setDescription("quick easy tasks to get that dopamine flowing");
-                filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("**Status is ONGOING, Actual is zero, sorted with most recent last");
-                break;
-            case LastLittleEffort_X:
-                filter = new FilterSortDef() {
-                    public boolean test(Item item) {
-                        return (item.getStatus() == ItemStatus.CREATED || item.getStatus() == ItemStatus.ONGOING);
-                    }
-
-                    Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareLong(i1.getRemaining() / i1.getActual(), i2.getRemaining() / i2.getActual());
-                    }
-                };
-                filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
-                filter.setDescription("Just a last little effort to finish");
-                filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("**Sort tasks/projects on ratio of remaining effort over total time already worked");
-                break;
-            case WaitingForTooLong_X:
-                filter = new FilterSortDef() {
-                    public boolean test(Item item) {
-                        return (item.getStatus() == ItemStatus.WAITING
-                                && ((item.getWaitingTillDateD().getTime() < MyDate.currentTimeMillis())
-                                || item.getDateWhenSetWaitingD() == null && item.getDateWhenSetWaitingD().getTime() < MyDate.currentTimeMillis()));
-                    }
-
-                    Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDate(i1.getWaitingTillDateD() != null ? i1.getWaitingTillDateD() : i1.getDateWhenSetWaitingD(),
-                                i2.getWaitingTillDateD() != null ? i2.getWaitingTillDateD() : i2.getDateWhenSetWaitingD()); //waiting the longest first
-                    }
-                };
-                filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
-                filter.setDescription("Waiting for too long");
-                filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("Sort Waiting tasks/projects where either Waiting Till date is passed or which were set Waiting a long time ago");
-                break;
-            case ImportantNeverGetsDone:
-                filter = new FilterSortDef() {
-                    public boolean test(Item item) {
-                        return (item.getStatus() == ItemStatus.CREATED || item.getStatus() == ItemStatus.ONGOING || item.getStatus() == ItemStatus.WAITING)
-                                && ((item.getImportanceN() == HighMediumLow.HIGH)
-                                && (item.getUrgencyN() == null || item.getUrgencyN() == HighMediumLow.LOW || item.getUrgencyN() == HighMediumLow.MEDIUM))
-                                && (item.getChallengeN() == null || item.getChallengeN() == Challenge.VERY_HARD || item.getChallengeN() == Challenge.HARD)
-                                && (item.getActual() == 0 || item.getActual() > 40 * MyDate.HOUR_IN_MILISECONDS)
-                                && (item.getDueDateD() != null && item.getDueDateD().getTime() < MyDate.currentTimeMillis() //overdue
-                                || (item.getUpdatedAt() != null && item.getUpdatedAt().getTime() < MyDate.currentTimeMillis() - 90 * MyDate.DAY_IN_MILLISECONDS)); //or not touched since 90 days
-                    }
-
-                    Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDate(i1.getWaitingTillDateD() != null ? i1.getWaitingTillDateD() : i1.getDateWhenSetWaitingD(),
-                                i2.getWaitingTillDateD() != null ? i2.getWaitingTillDateD() : i2.getDateWhenSetWaitingD()); //waiting the longest first
-                    }
-                };
-                filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
-                filter.setDescription("Important but never gets done");
-                filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("What never gets done: Important, not Urgent and Challenging or time consuming");
-                break;
-        }
-        return filter;
-    }
-
-    public static FilterSortDef makeFilterSort(String predefinedFilter) {
-        switch (predefinedFilter) {
-            case "":
-//                return new FilterSortDef(Item.PARSE_COMPLETED_DATE, MyPrefs.statisticsShowMostRecentFirst.getBoolean(), 
-//                        "Highest earned ROI relative to remaining time");
-                break;
-            case "x":
-//                return FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_COMPLETED_DATE, Item.PARSE_OWNER_LIST}, new boolean[]{false, false});
-            default:
-
-        }
-        return null;
-    }
 
     /**
      * sets default filter: no sorting, show all tasks
