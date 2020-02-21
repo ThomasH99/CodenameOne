@@ -81,7 +81,8 @@ public class MultipleSelection {
         return (item) -> {
 //            item.delete();
 //            DAO.getInstance().delete(item);
-            item.softDelete();
+//            item.softDelete();
+            DAO.getInstance().delete(item, true, true);
         };
     }
 
@@ -117,8 +118,8 @@ public class MultipleSelection {
 //                            cat.addItemAtIndex(item, MyPrefs.insertNewCategoriesForItemsInStartOfIList.getBoolean() ? 0 : cat.getSize());
 //                        }
                         cat.addItemToCategory(item, true);
-                        ASSERT.that(item.getObjectIdP()!=null); //otherwise the save of cat below will fail
-                        DAO.getInstance().saveInBackground((ParseObject) cat);
+                        ASSERT.that(item.getObjectIdP() != null); //otherwise the save of cat below will fail
+                        DAO.getInstance().saveNew((ParseObject) cat,false); //no trigger of save since categories will be saved when item is saved
                     }
                 }
                 item.setCategories(prevCategories);
@@ -161,7 +162,7 @@ public class MultipleSelection {
             }
             if (ref.getCompletedDateD().getTime() != 0) {
 //                item.setCompletedDate(ref.getCompletedDateD(), true); //true=>update status, e.g. in case ONLY completed date is set
-                item.setCompletedDate(ref.getCompletedDateD(), true,true); //true=>update status, e.g. in case ONLY completed date is set, true=>force this date instead of latest subtask date
+                item.setCompletedDate(ref.getCompletedDateD(), true, true); //true=>update status, e.g. in case ONLY completed date is set, true=>force this date instead of latest subtask date
             }
             if (ref.isInteruptOrInstantTask()) {
                 item.setInteruptOrInstantTask(true); //TODO only works when setting, not unsetting
@@ -178,25 +179,29 @@ public class MultipleSelection {
      */
 //    static void performOnAll(List<Item> items, ItemOperation operation) {
 //    static void performOnAll(ListSelector<Item> items, ItemOperation operation) {
-    static void performOnAll(List<Item> items, ItemOperation operation) {
+    static void performOnAllAndSave(List<Item> items, ItemOperation operation) {
         for (Item item : items) {
 //        for (int i=0, size=items.size(); i<size;i++) {
 //            Item item=items.get(i);
             operation.execute(item);
 //            DAO.getInstance().save(item);
+            DAO.getInstance().saveNew(item, false); //don't save until all are updated
         }
+        DAO.getInstance().triggerParseUpdate();
     }
 
 //    static void performMultipleOperationsOnAll(ListSelector<Item> items, List<ItemOperation> operations) {
-    static void performMultipleOperationsOnAll(List<Item> items, List<ItemOperation> operations) {
+    static void performMultipleOperationsOnAllAndSave(List<Item> items, List<ItemOperation> operations) {
 //        for (Item item : items) {
-        for (int i = 0, size = items.size(); i < size; i++) {
-            Item item = items.get(i);
+//        for (int i = 0, size = items.size(); i < size; i++) {
+//            Item item = items.get(i);
+        for (Item item : items) {
             for (ItemOperation operation : operations) {
                 operation.execute(item);
             }
-            DAO.getInstance().saveInBackground(item);
+            DAO.getInstance().saveNew(item, false); //don't save until all are updated. appropriate here (or triggered where this method is called)
         }
+        DAO.getInstance().triggerParseUpdate();
     }
 
 }

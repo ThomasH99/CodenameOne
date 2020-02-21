@@ -118,6 +118,21 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         setWorkSlotList(workSlotList);
     }
 
+    /**
+     * add a new list of workslots to the list and setOwner(this) for them
+     *
+     * @param workSlot
+     */
+    default public void removeWorkSlots(List<WorkSlot> workSlots) {
+        WorkSlotList workSlotList = getWorkSlotListN();
+        if (workSlotList == null) {
+            for (WorkSlot workSlot : workSlots) {
+                workSlotList.remove(workSlot); //adds *sorted*!
+            }
+        }
+        setWorkSlotList(workSlotList);
+    }
+
     default public void addWorkSlot(WorkSlot workSlot) {
 //        WorkSlotList workSlotList = getWorkSlotListN();
 //        if (workSlotList == null) {
@@ -138,11 +153,13 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param workSlot
      */
     default public void removeWorkSlot(WorkSlot workSlot) {
-        WorkSlotList workSlotList = getWorkSlotListN();
-        if (workSlotList != null) {
-            workSlotList.remove(workSlot);
-            workSlot.setOwner(null);
-            setWorkSlotList(workSlotList);
+        if (workSlot != null) {
+            WorkSlotList workSlotList = getWorkSlotListN();
+            if (workSlotList != null) {
+                workSlotList.remove(workSlot);
+                workSlot.setOwner(null);
+                setWorkSlotList(workSlotList);
+            }
         }
     }
 
@@ -1173,12 +1190,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     public Object get(int index);
 
-    public void setDeletedDate(Date deletedDate);
+    public void setSoftDeletedDate(Date deletedDate);
 
-    public Date getDeletedDateN();
+    public Date getSoftDeletedDateN();
 
-    default public boolean isDeleted() {
-        return getDeletedDateN() != null;
+    default public boolean isSoftDeleted() {
+        return getSoftDeletedDateN() != null;
     }
 
     /**
@@ -1186,28 +1203,35 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param removeReferences if true, will remove references in the element
      * (to eg owner, categories, repeatRules ...) before soft-deleting it. Not
      * sure this is really useful?!
-     * @return
+     * @return true if delete succeeded
      */
-    public boolean softDelete(boolean removeReferences);
-
+//    public boolean delete(boolean removeReferences,  boolean hardDelete);
     /**
      * deletes this instance
      */
 //    public void delete() throws ParseException;
-    default public boolean softDelete() {
-        return softDelete(false);
-    }
-
+//    default public boolean softDelete() {
+//        return delete(false,false);
+//    }
     /**
      * 'hard' delete eg repeatInstances with no purpose or reason to keep
      *
      * @return
      */
-    default public boolean hardDelete() {
-        boolean delOK = softDelete(true);
-        DAO.getInstance().deleteInBackground((ParseObject) this);
-        return delOK;
-    }
+//    default public boolean hardDelete() {
+////        boolean delOK = softDelete(true,true);
+////        DAO.getInstance().deleteInBackground((ParseObject) this);
+////        return delOK;
+//        return delete(true,true);
+//    }
+    /**
+     * prepare for deletion (remove references to the element etc) but don't
+     * actually delete it in Parse server
+     *
+     * @param deletedDate
+     * @return
+     */
+    public boolean deletePrepare(Date deletedDate);
 
     default void checkOwners(List<ItemAndListCommonInterface> list) {
         if (list != null) {
@@ -1263,8 +1287,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return "";
     }
 
+    /**
+     * update at the very last moment, just before saving, so that all other changes to an element have been effectuated
+     */
     default public void updateBeforeSave() {
-
+//        assert false; //Do nothing unless specified by specialized object
     }
 
     /**

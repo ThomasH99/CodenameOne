@@ -64,7 +64,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
     /**
      * create a new Container and a new Item
      *
-     * @param myForm 
+     * @param myForm
      * @param refWorkSlot2
      */
 //    public InlineInsertNewWorkSlotContainer(MyForm myForm, WorkSlot refWorkSlot2, boolean insertBeforeRefElement) {
@@ -106,8 +106,9 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
             }
         });
 
-        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null)
+        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
             textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
+        }
         AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
         contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
@@ -164,25 +165,27 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         String text = textEntryField.getText();
         WorkSlot newWorkSlot = new WorkSlot(); //true: interpret textual values
         newWorkSlot.setText(text); //will interpret a textual duration like "5m" as 5 minutes
-        if (newWorkSlot.getDurationInMillis() == 0)
+        if (newWorkSlot.getDurationInMillis() == 0) {
             newWorkSlot.setDurationInMinutes(MyPrefs.workSlotDefaultDurationInMinutes.getInt()); //UI: if no textual definition, use normal default value
-//        if (true || createEvenIfNoTextInField || (text != null && text.length() > 0)) {
+        }//        if (true || createEvenIfNoTextInField || (text != null && text.length() > 0)) {
         if (refWorkSlot != null && refWorkSlot.getStartTimeD() != null) {
-            if (insertBeforeRefElement)
+            if (insertBeforeRefElement) {
                 newWorkSlot.setStartTime(new Date(refWorkSlot.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis())); //UI: set pinchInserted workslot to start 'duration' before the startTime of the next workslot
-            else
+            } else {
                 newWorkSlot.setStartTime(refWorkSlot.getEndTimeD()); //UI: set pinchInserted workslot to start at the end of the previous
-        } else
+            }
+        } else {
             newWorkSlot.setStartTime(new MyDate()); //UI: set pinchInserted workslot to start now
-
+        }
         //UI: ensure no overlap with *following* workslot:
         if (refWorkSlot != null && refWorkSlot.getOwner() != null && refWorkSlot.getOwner().getWorkSlotListN() != null) {
             List workslots = refWorkSlot.getOwner().getWorkSlotListN().getWorkSlotListFull();
             int refIndex = refWorkSlot.getOwner().getWorkSlotListN().getWorkSlotListFull().indexOf(refWorkSlot);
             if (refIndex >= 0 && refIndex + 1 < workslots.size()) {
                 WorkSlot nextWorkSlot = (WorkSlot) workslots.get(refIndex + 1);
-                if (newWorkSlot.getStartTime() > nextWorkSlot.getEndTime())
+                if (newWorkSlot.getStartTime() > nextWorkSlot.getEndTime()) {
                     newWorkSlot.setEndTime(nextWorkSlot.getStartTime()); //UI: reduce a pinchinserted workslot overlapping with the next one, to end when the next one starts
+                }
             }
         }
 //        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, newWorkSlot, refWorkSlot.getStartTimeD(), refWorkSlot.getDurationInMillis())) {
@@ -190,7 +193,9 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(refWorkSlot.getOwner(), null, newWorkSlot.getStartTimeD(), newWorkSlot.getDurationInMillis())) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             return newWorkSlot;
-        } else return null;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -213,8 +218,8 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 //        workSlotList.add(newWorkSlot); //no need to insert sorted, workSlotLists are sorted by workSlot.startDate
         workSlotListOwner.addWorkSlot(newWorkSlot); //no need to insert sorted, workSlotLists are sorted by workSlot.startDate
 //        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) refWorkSlot);
-        DAO.getInstance().saveInBackground(newWorkSlot, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP()));
-        DAO.getInstance().saveInBackground((ParseObject) workSlotListOwner);
+        DAO.getInstance().saveNew(newWorkSlot, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP()));
+        DAO.getInstance().saveNew((ParseObject) workSlotListOwner, true);
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
@@ -230,8 +235,9 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
             myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
             ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
         }
-        if (parent != null)
+        if (parent != null) {
             parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+        }
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void closeInsertNewWorkSlotContainer(MyForm f) {

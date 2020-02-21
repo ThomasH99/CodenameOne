@@ -178,7 +178,7 @@ public class ScreenCategoryProperties extends MyForm {
 //            previousForm.showBack(); //drop any changes
 //            showPreviousScreenOrDefault(previousForm, true);
 //</editor-fold>
-            category.softDelete();
+            DAO.getInstance().delete(category,false,true);
             showPreviousScreen(true);
         }));
         if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {

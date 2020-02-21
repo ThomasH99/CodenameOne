@@ -34,6 +34,7 @@ import com.parse4cn1.util.ParseRegistry;
 import static com.todocatalyst.todocatalyst.ScreenLogin.getLastUserSessionFromStorage;
 import static com.todocatalyst.todocatalyst.ScreenLogin.setDefaultACL;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
 import net.informaticalibera.cn1.nativelogreader.NativeLogs;
@@ -508,9 +509,11 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         } else {
             locale = MyPrefs.localeUserSelected.getString();
         }
-        if (localizationTheme != null)
+        if (localizationTheme != null) {
             UIManager.getInstance().setBundle(localizationTheme.getL10N("LocalizationBundle", locale));
-        else ASSERT.that("localizationTheme is null?!");
+        } else {
+            ASSERT.that("localizationTheme is null?!");
+        }
         Log.p("Locale (Display.getInstance().getLocalizationManager().getLocale()) = " + Display.getInstance().getLocalizationManager().getLocale());
         Log.p("TimeZone (TimeZone.getDefault()) = " + TimeZone.getDefault());
 
@@ -722,7 +725,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //</editor-fold>
         Icons.get(); //Init singleton for icons
 
-        if (!Config.PARSE_OFFLINE)
+        if (!Config.PARSE_OFFLINE) {
             NetworkManager.getInstance().addErrorListener((e) -> {
                 Log.p("NetworkManager error=" + e);
                 //"There was a network error, would you like to retry?"
@@ -744,6 +747,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            e.consume();
 //</editor-fold>
             });
+        }
 
         // will return true for desktops as well...
 //        if (Display.getInstance().isTablet()) { //TODO!!!! is not working
@@ -792,7 +796,6 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         InfiniteProgress.setDefaultMaterialDesignMode(true);
 
 //        ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
-
 //        new ScreenMainP(resources).show();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) { //test subtasks
@@ -870,12 +873,15 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         //if not logged in, show window to create account or log in. NB! Must init user before starting the login process since the init of first screen may read the TimerStack which becomes empty if user is not logged in
         ParseUser parseUser = getLastUserSessionFromStorage();
         Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
-        if (parseUser != null) setDefaultACL(parseUser);
+        if (parseUser != null) {
+            setDefaultACL(parseUser);
+        }
 
         Log.p("init() - DONE - go to login screen...");
 
         new ScreenLogin().go();
     }
+
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    public void initx(Object context) {
     //        try {
@@ -934,6 +940,16 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                 current = Display.getInstance().getCurrent();
             }
             current.show();
+        }
+
+        if (false) {
+            Item item = new Item();
+            item.setFilterSortDef(new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, true));
+            item.setRepeatRule(new RepeatRuleParseObject());
+            ItemList itemList = new ItemList();
+            itemList.addItem(item);
+            itemList.addToList(item);
+            DAO.getInstance().saveNew(true, item, itemList);
         }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1131,6 +1147,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
      * This method will be called in the background by the platform. Note: This
      * only runs when the app is in the background.
      * https://www.codenameone.com/manual/push.html
+     *
      * @param deadline
      * @param onComplete
      */
@@ -1149,10 +1166,12 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        Log.p("performBackgroundFetch finished=");
         Log.p("performBackgroundFetch finished, time=" + new Date());
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
 
     /**
      * Invoked when the push notification occurs
      * https://www.codenameone.com/manual/push.html
+     *
      * @param value the value of the push notification
      */
 //    @Override
@@ -1161,9 +1180,11 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //    }
 
     /**
-     * Invoked when push registration is complete to pass the device ID to the application.
-     * https://www.codenameone.com/manual/push.html
-     * @param deviceId OS native push id you should not use this value and instead use <code>Push.getPushKey()</code>
+     * Invoked when push registration is complete to pass the device ID to the
+     * application. https://www.codenameone.com/manual/push.html
+     *
+     * @param deviceId OS native push id you should not use this value and
+     * instead use <code>Push.getPushKey()</code>
      * @see Push#getPushKey()
      */
 //    @Override
@@ -1172,9 +1193,10 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        //store locally
 //        //add to central list for user to be able to send push messages to other devices
 //    }
-
     /**
-     * Invoked to indicate an error occurred during registration for push notification
+     * Invoked to indicate an error occurred during registration for push
+     * notification
+     *
      * @param error descriptive error string
      * @param errorCode an error code
      */
@@ -1209,7 +1231,6 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //                .wnsAuth(WNS_SID, WNS_CLIENT_SECRET)
 //                .send();
 //    }
-
 //    @Override
 //    public PushActionCategory[] getPushActionCategoriesZZZ() {
 //        //https://www.codenameone.com/blog/rich-push-notification-improved.html
@@ -1219,12 +1240,12 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //                new PushAction("yes", "Yes"),
 //                new PushAction("no", "No"),
 //                new PushAction("maybe", "Maybe", null, "Enter reason", "Reply")
-//           
+//
 //})
 //
 //        };
 //    }
-
+//</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    void setNotification(Date time) {
@@ -1262,6 +1283,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
     @Override
     public void localNotificationReceived(String notificationId) {
         AlarmHandler.getInstance().localNotificationReceived(notificationId);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        PushContent res = PushContent.get(); //won't work: see discussion here: https://www.codenameone.com/blog/rich-push-notification-improved.html
 //        if (!Dialog.show(notificationId, notificationId, "Cancel", "Continue")) {
 //            Display.getInstance().cancelLocalNotification("demo-notification");
@@ -1272,6 +1294,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 ////            public void actionPerformed(ActionEvent evt) {
 ////                Display.getInstance().setBadgeNumber(0);
 //        }
+//</editor-fold>
     }
 
 }

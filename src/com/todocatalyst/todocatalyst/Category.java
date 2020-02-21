@@ -853,53 +853,57 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
 ////#enddebug
 //        }
 //    }// </editor-fold>
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public String toString() {
 //        return getText();
 //    }
-    public boolean softDelete(boolean removeReferences) { //throws ParseException {
-        if (Config.TEST) ASSERT.that(!isDeleted());
-
-        // remove category from all items 
-        List<ParseObject> updatedElements = new ArrayList<>();
-        for (Item item : (List<Item>) getListFull()) {
-            if (Config.TEST) ASSERT.that(item.getCategories().contains(this));
-            item.removeCategoryFromItem(this, removeReferences); //remove references to this item from the category before deleting it (false: but keep the item's categories)
-            updatedElements.add(item);
-        }
-        DAO.getInstance().saveInBackground(updatedElements);
-
-        //remove category from meta-categories (all categories to which it is a subcategory)
-        updatedElements.clear();
-//        for (Category category : (List<Category>)CategoryList.getInstance()) {
-        for (Category category : (List<Category>) getMetaList()) {
-            //remove this category as a subCategory (as well as any items added to the meta-lists)
-            if (category.removeSubList(this)) {
-                updatedElements.add(category);
-            }
-        }
-        DAO.getInstance().saveInBackground(updatedElements);
-
-        //remove category from categorylist ==owner)
-        CategoryList categoriesList = CategoryList.getInstance();
-        if (Config.TEST) ASSERT.that(categoriesList.getListFull().contains(this));
-        categoriesList.removeFromList(this, removeReferences);
-//        DAO.getInstance().saveInBackground((ParseObject)categoriesList);
-
-        put(Item.PARSE_DELETED_DATE, new MyDate());
-//        DAO.getInstance().saveInBackground((ParseObject)this);
-        DAO.getInstance().saveInBackground(categoriesList, this); //group the two saves together
-        return true;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        deleteAllItemsInList(true); //by default, delete only items owned by this list
-//        itemList = null; //help garbage collector
-//        remainingEffortSumVector = null;
-//        workTimeDefinition = null; //help garbage collector
-//        dataListener = null; //help GC
-//        selectionListener = null; //help GC
+//    public boolean softDeleteXXX(boolean removeReferences) { //throws ParseException {
+//        if (Config.TEST) ASSERT.that(!isSoftDeleted());
+//
+//        // remove category from all items
+//        List<ParseObject> updatedItems = new ArrayList<>();
+//        for (Item item : (List<Item>) getListFull()) {
+//            if (Config.TEST) ASSERT.that(item.getCategories().contains(this));
+//            item.removeCategoryFromItem(this, removeReferences); //remove references to this item from the category before deleting it (false: but keep the item's categories)
+//            updatedItems.add(item);
+//        }
+////        DAO.getInstance().saveInBackground(updatedItems);
+//
+//        List<ParseObject> updatedCategories = new ArrayList<>();
+//        //remove category from meta-categories (all categories to which it is a subcategory)
+////        updatedItems.clear();
+////        for (Category category : (List<Category>)CategoryList.getInstance()) {
+//        for (Category category : (List<Category>) getMetaList()) {
+//            //remove this category as a subCategory (as well as any items added to the meta-lists)
+//            if (category.removeSubList(this)) {
+//                updatedCategories.add(category);
+//            }
+//        }
+////        DAO.getInstance().saveInBackground(updatedItems);
+//
+//        //remove category from categorylist ==owner)
+//        CategoryList categoriesList = CategoryList.getInstance();
+//        if (Config.TEST) ASSERT.that(categoriesList.getListFull().contains(this));
+//        categoriesList.removeFromList(this, removeReferences);
+////        DAO.getInstance().saveInBackground((ParseObject)categoriesList);
+//
+//        put(Item.PARSE_DELETED_DATE, new MyDate());
+////        DAO.getInstance().saveInBackground((ParseObject)this);
+//        DAO.getInstance().saveNew(updatedItems);
+//        DAO.getInstance().saveNew(updatedCategories);
+//        DAO.getInstance().saveNew(true,categoriesList, this); //group the two saves together
+//        return true;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        deleteAllItemsInList(true); //by default, delete only items owned by this list
+////        itemList = null; //help garbage collector
+////        remainingEffortSumVector = null;
+////        workTimeDefinition = null; //help garbage collector
+////        dataListener = null; //help GC
+////        selectionListener = null; //help GC
+////</editor-fold>
+//    }
 //</editor-fold>
-    }
 
     public void addItemToCategory(Item item, boolean addCategoryToItem) {
         addItemToCategory(item, getSize(), addCategoryToItem); //add to end of category list by default

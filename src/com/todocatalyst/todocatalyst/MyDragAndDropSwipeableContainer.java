@@ -214,12 +214,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
             oldOwner.moveToPositionOf(itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
 //            DAO.getInstance().saveInBackground((ParseObject) oldList, (ParseObject) itemOrItemList);
-            DAO.getInstance().saveInBackground((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
+            DAO.getInstance().saveNew((ParseObject) oldOwner, false); //no need to save itemOrItemList since owner is the same
         } else {
             oldOwner.removeFromList(itemOrItemList);
 //            newOwner.addToList(newPos, itemOrItemList);
             newOwner.addToList(itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
-            DAO.getInstance().saveInBackground((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList);
+            DAO.getInstance().saveNew(false, (ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
         }
     }
 
@@ -345,21 +345,21 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            }
 //</editor-fold>
             oldCategory.moveToPositionOf(item, refItem, insertAfterOrEndOfList);
-            DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) item); //only save list once
+            DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) item); //only save list once
         } else { //oldCategory != newCategory || oldCategory == null
             if (oldCategory != null && newCategory != null) { //different categories, but both non-null: remove from old and add to new at newPos (~'normal' case)
                 oldCategory.removeItemFromCategory(item, true);
 //                newCategory.addItemToCategory(item, newPos, true);
                 newCategory.addItemToCategory(item, refItem, true, insertAfterOrEndOfList);
-                DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
             } else if (newCategory != null) { //item was dragged into a category, but not from another category (e.g. a subtask of a project) (~not very intuitive since the dragged item will be added to the category, but also stay in place where it was before, but I guess OK - "what you do is what you get")
 //                newCategory.addItemToCategory(item, newPos, true);
                 newCategory.addItemToCategory(item, refItem, true, insertAfterOrEndOfList);
-                DAO.getInstance().saveInBackground((ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveNew(false, (ParseObject) newCategory, (ParseObject) item);
             } else if (false && oldCategory != null) { //item was eg dragged from category into a subtask of an expanded project (in an expanded category)
                 //should this case even be supported? Visible effect: drag from an expanded Category into a subtask, and it disappears from the Category
                 oldCategory.removeItemFromCategory(item, true);
-                DAO.getInstance().saveInBackground((ParseObject) oldCategory, (ParseObject) item);
+                DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) item);
             }
         }
     }
@@ -2066,7 +2066,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            lastDropPlaceholderInsertPosition = newInsertPosition;
 //            InsertPositionType newInsertPosition = insertPosition(x);
             newInsertPosition = insertPosition(x);
-            if (false &&Config.TEST_DRAG_AND_DROP) {
+            if (false && Config.TEST_DRAG_AND_DROP) {
                 Log.p("dropPos=" + newInsertPosition);
             }
             if (newInsertPosition == lastDropPlaceholderInsertPosition && dropTarget == lastDropTarget) {
@@ -3480,17 +3480,17 @@ T3
 //                        };
 //</editor-fold>
                         if (draggedElement.getOwner() == beforeElement) {
-                                // insert a subtask to A, as a sibling task after A to give A; S1; ...
+                            // insert a subtask to A, as a sibling task after A to give A; S1; ...
 //                                ItemAndListCommonInterface beforeOwner = beforeMyDDCont.getDragAndDropObject();
-                                ItemAndListCommonInterface beforeOwner = beforeElement.getOwner();
-                                    dropAsSuperTaskActionCall = () -> {
-                                        moveItemOrItemListAndSave(beforeOwner, draggedElement, beforeElement, true);
-                                    };
-                                    insertDropPlaceholderForSupertask = (dropPh) -> {
-                                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
-                                    };
+                            ItemAndListCommonInterface beforeOwner = beforeElement.getOwner();
+                            dropAsSuperTaskActionCall = () -> {
+                                moveItemOrItemListAndSave(beforeOwner, draggedElement, beforeElement, true);
+                            };
+                            insertDropPlaceholderForSupertask = (dropPh) -> {
+                                addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                            };
                         }
-                        if (false &&draggedElement.getOwner() == beforeElement) {
+                        if (false && draggedElement.getOwner() == beforeElement) {
 //                            MyDragAndDropSwipeableContainer beforeOwnerDD = getParentMyDDCont(beforeMyDDCont);
                             MyDragAndDropSwipeableContainer beforeOwnerDD = beforeMyDDCont; //the previous container should be the one?!
                             if (beforeOwnerDD != null) {
@@ -3937,6 +3937,7 @@ before getting to here, we've already covered the following cases where both bef
                         } else {
                             Log.p("**********Comp.drop , NO ACTION!!! dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
                         }
+                        DAO.getInstance().triggerParseUpdate();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                dragged.dropSucceeded = true;
 //                                getComponentForm().animateHierarchy(300);

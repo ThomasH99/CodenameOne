@@ -517,11 +517,11 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 
                 lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
 //                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                DAO.getInstance().saveInBackground(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                DAO.getInstance().saveNew(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
 
                 if (category2 != null && newItem.getCategories().contains(category2)) {//contains(): only move item within category if the user has not removed the category during manual editing
                     category2.moveItemInCategory(newItem, refItem, false, this.insertBeforeElement); //if category was not removed during manual editing, then move the item to the right position wrt refItem
-                    DAO.getInstance().saveInBackground((ParseObject) category2); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                    DAO.getInstance().saveNew((ParseObject) category2,false); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 }
 
                 //ensure that any manuale edits to the item's preset owner are taken into account when saving it
@@ -529,14 +529,14 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                     if (myForm.expandedObjects != null) {
                         myForm.expandedObjects.add(refItem); //If inserted as subtask, expand the project to keep it visible
                     }
-                    DAO.getInstance().saveInBackground((ParseObject) refItem); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                    DAO.getInstance().saveNew((ParseObject) refItem,false); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                     insertAsSubt = false; //remove the subtask property so next task does not become a subtask to the subtask
                     myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK);
                 }
 
                 if (itemOrItemListForNewElements != null && newItem.getOwner() == itemOrItemListForNewElements) {
                     itemOrItemListForNewElements.moveItemInList(newItem, refItem, !this.insertBeforeElement); //add after item, unless insertBeforeElement is true, then insert *before* element
-                    DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                    DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewElements,false); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 }
 //                myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, false); //always insert *after* just created inline item
                 myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
@@ -547,7 +547,10 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 if (false) {
                     myForm.refreshAfterEdit();  //OK? NOT good, refreshAfterEdit will remove the new 
                 }//            }, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, false), isTemplate, predefinedValues);
-                if (false) closeInsertContainer(false); //NO, keep iserting even when returning from editing details of new item
+                if (false) {
+                    closeInsertContainer(false); //NO, keep iserting even when returning from editing details of new item
+                }
+                DAO.getInstance().triggerParseUpdate();
             }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), isTemplate, predefinedValues);
             screenItem2.show();
         }, "InlineEditItem");
@@ -568,16 +571,16 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 if (((ParseObject) refItem).getObjectIdP() == null) //save if refItem has not already been saved //UI: if you start adding inlineInsert subtasks to a new project, the project will be saved
                 //                    DAO.getInstance().saveAndWait(refItem);
                 {
-                    DAO.getInstance().saveInBackground(refItem);
+//                    DAO.getInstance().saveInBackground(refItem);
                 }
                 refItem.addToList(newItem, true); //UI: add to *end* of subtask list (if already exists)
                 //if adding as subtask, expand mother task and place container the right place in the hierarcy => or rather eliminate swipe support and always create right type of insertContainer on pinchOut?!
                 myForm.expandedObjects.add(refItem); //expand to show subtasks
-                DAO.getInstance().saveInBackground(newItem, () -> {
+                DAO.getInstance().saveNew(newItem, () -> {
                     saveKeys(newItem);
                     myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP());
-                });
-                DAO.getInstance().saveInBackground(refItem);
+                }, false);
+                DAO.getInstance().saveNew(refItem, true);
                 refItem = newItem; //now start inserting below just added subtask
                 insertAsSubt = false; //remove the subtask property so next task does not become a subtask to the subtask
                 myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK);
@@ -597,8 +600,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 }
 //                category2.addItemToCategory(newItem, false); //add newItem to cateogory (but NOT category to newItem since that is done below in itemOrItemListForNewTasks.addToList(newItem))
 //                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                DAO.getInstance().saveInBackground(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                DAO.getInstance().saveInBackground((ParseObject) category2); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                DAO.getInstance().saveNew(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                DAO.getInstance().saveNew((ParseObject) category2, true); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 //UI: if inserting tasks directly into a category, they will be added to the Inbox list
             } else if (true || insertLevel == 0) { //itrue=always insert below itemOrItemListForNewElements (may be the owner of a subtask) after refItem
                 if (itemOrItemListForNewElements != null && !itemOrItemListForNewElements.isNoSave()) {
@@ -619,8 +622,8 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                     }
 //                DAO.getInstance().saveInBackground((ParseObject) newItem, (ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
 //                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                    DAO.getInstance().saveInBackground(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                    DAO.getInstance().saveInBackground((ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                    DAO.getInstance().saveNew(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                    DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewElements, true); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 } else {
                     ASSERT.that(false, "pinchInsert with no category and no itemList??!! Saving item in Inbox");
 //                DAO.getInstance().saveInBackground((ParseObject) newItem); //task only 'inserted' into inbox, no need to save here, already done above //UI: in xx case, inserted into Inbox
@@ -828,7 +831,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 //            return new InlineInsertNewItemContainer2((MyForm) getComponentForm(), (Item) element, targetList, null);
 //            return new InlineInsertNewItemContainer2((MyForm) getComponentForm(), (Item) element, targetList, category, false);
 //            return new InlineInsertNewItemContainer2(null, (Item) element, targetList, category, false);
-            return new InlineInsertNewItemContainer2(myForm, (Item) element, targetList instanceof Category?null:targetList, category, false); //targetList instanceof Category?null: otherwise we may use category as ownerlist
+            return new InlineInsertNewItemContainer2(myForm, (Item) element, targetList instanceof Category ? null : targetList, category, false); //targetList instanceof Category?null: otherwise we may use category as ownerlist
         }
         return null;
     }

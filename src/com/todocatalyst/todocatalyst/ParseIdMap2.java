@@ -45,14 +45,14 @@ public class ParseIdMap2 {//extends HashMap {
 
     void update() {
         Runnable repeatRule = null;
-        if (false) {
+        if (true) { //need to execute this after updating the element, since it will be added to list of done/undone in RR and logic won't work if all fields not set before generating repeat instances!
             repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
         }
 
         for (Object parseId : parseIdMap2.keySet()) {
             parseIdMap2.get(parseId).run();
         }
-        if (false)
+        if (true)
             if (repeatRule != null) {
                 repeatRule.run();
             }

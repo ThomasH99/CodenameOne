@@ -36,8 +36,8 @@ public class ScreenWorkSlot extends MyForm {
     ItemAndListCommonInterface owner;
     static String SCREEN_TITLE = "Workslot";
     private String FILE_LOCAL_EDITED_WORKSLOT = "ScreenWorkSlot-EditedItem";
-    private RepeatRuleParseObject locallyEditedRepeatRule;
-    private RepeatRuleParseObject repeatRuleCopyBeforeEdit;
+//    private RepeatRuleParseObject locallyEditedRepeatRule;
+//    private RepeatRuleParseObject repeatRuleCopyBeforeEdit;
     protected static String FORM_UNIQUE_ID = "ScreenEditWorkSlot"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
 
@@ -200,7 +200,8 @@ public class ScreenWorkSlot extends MyForm {
 ////            previousForm.revalidate();
 //            previousForm.showBack(); //drop any changes
 //</editor-fold>
-            workSlot.softDelete();
+//            workSlot.softDelete();
+            DAO.getInstance().delete(workSlot, false, true);
             showPreviousScreen(true);
         });
 
@@ -353,16 +354,13 @@ public class ScreenWorkSlot extends MyForm {
         content.add(layoutN(WorkSlot.END_TIME, endByDate, WorkSlot.END_TIME_HELP));
 
 //REPEAT RULE
-//        if (locallyEditedRepeatRule == null)
-//            locallyEditedRepeatRule = workSlot.getRepeatRule();
-//        SpanButton repeatRuleButton = new SpanButton();
-//        MySpanButton repeatRuleButton = new MySpanButton();
         WrapButton repeatRuleButton = new WrapButton();
         repeatRuleButton.setName("RepeatBut");
         repeatRuleButton.getTextComponent().setName("RepeatBut");
 
-        Object locallyEditedRepeatRule1 = previousValues.get(Item.PARSE_REPEAT_RULE);
+        //set text for edit-RR button
         ActionListener refreshRepeatRuleButton = e -> {
+            RepeatRuleParseObject locallyEditedRepeatRule1 = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
             String repeatRuleButtonStr;
             if (locallyEditedRepeatRule1 == null) { //no edits
                 if (workSlot.getRepeatRule() != null) {
@@ -374,103 +372,69 @@ public class ScreenWorkSlot extends MyForm {
                 repeatRuleButtonStr = "";
             } else { //if (editedRepeatRule instanceof RepeatRuleParseObject) { //NB instanceof RepeatRuleParseObject is only option possible
                 assert locallyEditedRepeatRule1 instanceof RepeatRuleParseObject;
-                repeatRuleButtonStr = ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)).getText();
-                ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)).setSpecifiedStartDate(startByDate.getDate()); //update RR to same startTime as set for the WorkSlot
+                repeatRuleButtonStr = locallyEditedRepeatRule1.getText();
+//                ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)).setSpecifiedStartDate(startByDate.getDate()); //update RR to same startTime as set for the WorkSlot
             }
             repeatRuleButton.setText(repeatRuleButtonStr);
         };
 
-//        Command repeatRuleEditCmd = new Command("<click to set repeat>NOT SHOWN?!") {
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenWorkSlot", "", null, (e) -> {
 
-            if (workSlot.getRepeatRule() != null && !workSlot.getRepeatRule().isRepeatInstanceInListOfActiveInstances(workSlot)) {
-//                Dialog.show("INFO", Format.f("Once a repeating task has been set [DONE] or [CANCELLED] the [REPEAT_RULE] definition cannot be edited from this task anymore"), "OK", null);
-                Dialog.show("INFO", Format.f("Once a repeating task has been set {0 DONE} or {1 CANCELLED} the {2 REPEAT_RULE} definition cannot be edited from this task anymore", 
+            if (workSlot.getRepeatRule() != null && !workSlot.getRepeatRule().canRepeatRuleBeEdited(workSlot)) {
+                Dialog.show("INFO", Format.f("Once a repeating task has been set {0 DONE} or {1 CANCELLED} the {2 REPEAT_RULE} definition cannot be edited from this task anymore",
                         ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
                 return;
             }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (locallyEditedRepeatRule == null) {
-//                locallyEditedRepeatRule = new RepeatRuleParseObject();
-//            }
-//
-////                if (!locallyEditedRepeatRule.isRepeatInstanceInListOfActiveInstances(workSlot)) {
-//            if (!locallyEditedRepeatRule.canRepeatRuleBeEdited(workSlot)) {
-//                Dialog.show("INFO", "Once a repeating " + WorkSlot.WORKSLOT + " is in the past, the " + WorkSlot.REPEAT_DEFINITION + " definition cannot be edited anymore", "OK", null);
-//                return;
-//            }
-//
-//            if (repeatRuleCopyBeforeEdit == null && workSlot.getRepeatRule() != null) {
-////                repeatRuleCopyBeforeEdit = workSlot.getRepeatRule().cloneMe(); //make a copy of the *original* repeatRule
-//                repeatRuleCopyBeforeEdit = new RepeatRuleParseObject(workSlot.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
-//
-//            }
-//</editor-fold>
-            RepeatRuleParseObject locallyEditedRepeatRule;
-            if (previousValues.get(Item.PARSE_REPEAT_RULE) == null || previousValues.get(Item.PARSE_REPEAT_RULE).equals(REPEAT_RULE_DELETED_MARKER)) {
-                locallyEditedRepeatRule = new RepeatRuleParseObject(workSlot.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
-            } else {
-                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
+            //only allow editing RR if startDate is set
+//            if (workSlot.getStartTimeD().getTime() == 0) {
+            if (startByDate.getDate().getTime() == 0) {
+                Dialog.show("INFO", Format.f("Please set {0 start date} before editing the {1 REPEAT_RULE} definition",
+                        WorkSlot.START_TIME, Item.REPEAT_RULE), "OK", null);
+                return;
             }
 
-            ASSERT.that(workSlot.getRepeatRule() == null || (repeatRuleCopyBeforeEdit.equals(locallyEditedRepeatRule) && locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)),
-                    "problem in cloning repeatRule");
+            RepeatRuleParseObject locallyEditedRepeatRuleCopy;
+            RepeatRuleParseObject localRR = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
 
-            new ScreenRepeatRule(Item.REPEAT_RULE + " " + WorkSlot.WORKSLOT, locallyEditedRepeatRule, workSlot, ScreenWorkSlot.this, () -> {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-//                if (false) { //now done when exiting via parseIdMap2 below
-//                    workSlot.setRepeatRule(locallyEditedRepeatRule);
-//                    DAO.getInstance().saveInBackground(locallyEditedRepeatRule);
-//                }
-////                    repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
-//                if (false) { //not currentlynecessary because whole ScreenWorkSlot is redrawn after editing the repeatRule
-//                    repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-//                    repeatRuleButton.revalidate();
-//                }
-//                }, false, startByDate.getDate(), true).show(); //TODO false<=>editing startdate not allowed - correct???
-//</editor-fold>
-                if (locallyEditedRepeatRule.equals(workSlot.getRepeatRule())) {
-                    previousValues.remove(Item.PARSE_REPEAT_RULE);
-                } else if (locallyEditedRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
-                    previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
+            if (localRR != null) {// || previousValues.get(Item.PARSE_REPEAT_RULE).equals(REPEAT_RULE_DELETED_MARKER)) {
+                locallyEditedRepeatRuleCopy = localRR;
+            } else {
+//                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
+                if (workSlot.getRepeatRule() == null) {
+                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
+//                    locallyEditedRepeatRuleCopy.addOriginatorToRule(workSlot); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
                 } else {
-                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
+                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(workSlot.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
+                    ASSERT.that(workSlot.getRepeatRule() == null || (workSlot.getRepeatRule().equals(locallyEditedRepeatRuleCopy) && locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRule())), "problem in cloning repeatRule");
                 }
+                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy);
+            }
+
+            new ScreenRepeatRule(Item.REPEAT_RULE + " " + WorkSlot.WORKSLOT, locallyEditedRepeatRuleCopy, workSlot, ScreenWorkSlot.this, () -> {
+                if (false) {
+                    if (locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRule())) {
+                        previousValues.remove(Item.PARSE_REPEAT_RULE);
+                    } else if (locallyEditedRepeatRuleCopy.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+                        previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
+                    } else {
+                        previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy);
+                    }
+                }
+                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
 
             }, false, startByDate.getDate(), makeDefaultWorkSlotStartDate, true).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
 
-//        parseIdMap2.put("REPEAT_RULE", () -> {
-        parseIdMap2.put(REPEAT_RULE_KEY, () -> {
-//            if (locallyEditedRepeatRule != null && !locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)) { //if rule was edited //NO need to test here, item.setRepeatRule() will check if the rule has changed
-            if (locallyEditedRepeatRule != null && !locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit) //if rule was edited
-                    && !(workSlot.getRepeatRule() != null && repeatRuleCopyBeforeEdit == null)) { //test if repeatRule exists but was not edited (repeatRuleCopyBeforeEdit==null if rule was not edited)
-                DAO.getInstance().saveInBackground(locallyEditedRepeatRule); //save first to enable saving repeatInstances
-                workSlot.setRepeatRule(locallyEditedRepeatRule);  //TODO!! optimize and see if there's a way to check if rule was just opened in editor but not changed
-//                    repeatRuleButton.setText(getDefaultIfStrEmpty(item.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
-//                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-//            }
-            }
-        });
-
         repeatRuleButton.setCommand(repeatRuleEditCmd);
         refreshRepeatRuleButton.actionPerformed(null);
-//        repeatRuleButton.setText(getDefaultIfStrEmpty(workSlot.getRepeatRule() != null ? workSlot.getRepeatRule().toString() : null, "")); //"<click to make task/project repeat>"
-//        repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "")); //"<click to make task/project repeat>"
 
         parseIdMap2.put(REPEAT_RULE_KEY, () -> {
-//            if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
-//                    previousValues.remove(Item.PARSE_REPEAT_RULE);
-//                    repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
-//                } else {
-            Object repeatRuleVal = previousValues.get(Item.PARSE_REPEAT_RULE);
-            if (repeatRuleVal instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
-                workSlot.setRepeatRule((RepeatRuleParseObject) repeatRuleVal);
-            } else if (repeatRuleVal != null && repeatRuleVal.equals(REPEAT_RULE_DELETED_MARKER)) {
-                workSlot.setRepeatRule(null); //delete repeatRule (if any, if null before, no change)
-            } //else: ==null => do nothing (either no RR was defined before/after editing, or the rule was not changed
+            Object editedRule = previousValues.get(Item.PARSE_REPEAT_RULE);
+            if (editedRule instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
+                ((RepeatRuleParseObject) editedRule).addOriginatorToRule(workSlot); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
+                workSlot.setRepeatRule((RepeatRuleParseObject) editedRule);
+            }
         });
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -545,36 +509,40 @@ public class ScreenWorkSlot extends MyForm {
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
             content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
         }
+        if (workSlot.getObjectIdP() != null) { //don't show for a new created workslot
 //        content.add(layoutN("Unallocated time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
-        content.add(layoutN("Available time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
-                true, true, false));
+            content.add(layoutN("Available time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
+                    true, true, false));
+        }
 
         if (Config.WORKTIME_TEST) {
             content.add(layoutN("WorkTimeAllocator (TEST)", new Label(workSlot.getWorkSlotAllocationsAsStringForTEST()), "**",
                     true, true, false));
         }
 
-        if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
+        if ((Config.TEST || MyPrefs.showObjectIdsInEditScreens.getBoolean()) && workSlot.getObjectIdP() != null) {
             Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
         //ORIGINAL SOURCE
-        if (workSlot.getSource() != null && MyPrefs.showSourceWorkSlotInEditScreens.getBoolean()) { //don't show unless defined
-            //TODO!! what happens if source is set to template or other item, then saved locally on app exit and THEN recreated via Replay???
+        if (Config.TEST) { //hide source except when testing since purpose has to be clarified  
+            if (workSlot.getSource() != null && MyPrefs.showSourceWorkSlotInEditScreens.getBoolean()) { //don't show unless defined
+                //TODO!! what happens if source is set to template or other item, then saved locally on app exit and THEN recreated via Replay???
 //            Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
-            WorkSlot workSlotSource = (WorkSlot) workSlot.getSource();
-            String text = workSlotSource.getText();
-            if (text == null || text.isEmpty()) {
-                text = MyDate.formatDateTimeNew(workSlotSource.getStartTimeD())
-                        + " " + MyDate.formatDateTimeNew(workSlotSource.getDurationInMillis())
-                        + " [" + workSlotSource.getObjectIdP() + "]";
-            }
-            SpanLabel sourceLabel = new SpanLabel(text, "LabelFixed");
+                WorkSlot workSlotSource = (WorkSlot) workSlot.getSource();
+                String text = workSlotSource.getText();
+                if (text == null || text.isEmpty()) {
+                    text = MyDate.formatDateTimeNew(workSlotSource.getStartTimeD())
+                            + " " + MyDate.formatDuration(workSlotSource.getDurationInMillis(), true)
+                            + " [" + workSlotSource.getObjectIdP() + "]";
+                }
+                SpanLabel sourceLabel = new SpanLabel(text, "LabelFixed");
 //            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-            content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+                content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            }
         }
 
 //        MyTextField workSlotName = new MyTextField("Description", parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s));

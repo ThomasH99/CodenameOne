@@ -701,7 +701,7 @@ BigTimerComment {
     cn1-derive: Comment;
     background-color: white;
     /*color: violet;
-    background-color: grey; /*
+    background-color: grey; */
 }
 BigTimerLabels {
     cn1-derive: LabelField;
@@ -794,8 +794,8 @@ BigTimerNextItemWithText {
     /*margin-top: 2mm;*/
     /*padding: 1mm;*/
     margin-top: 2mm;
-/*    margin: 1mm;
-    padding: 1mm;*/
+    /*    margin: 1mm;
+        padding: 1mm;*/
     border: 1pt lightskyblue solid;
 }
 
@@ -1504,8 +1504,10 @@ ListOfItemsEditItemIcon {
 
 ItemStatusPopup {
     font-size: 180%;
-    margin: 0 0 0 2mm;
-    padding: 0 0 0 2mm;
+/*    margin: 0 0 0 2mm;
+    padding: 0 0 0 2mm;*/
+    margin: 2mm;
+    padding: 2mm;
     text-align: right;
     color:green;
 }
@@ -1530,18 +1532,6 @@ ItemStatusPopupIcon {
     color:#666666;
 }
 
-GroupElement{
-
-}
-GroupElementFirst{
-
-}
-GroupElementLast{
-
-}
-GroupElementOnly{
-
-}
 ToggleButton {
     cn1-derive: LabelValue; /*Button; RadioButton;*/
 
@@ -1611,37 +1601,65 @@ ToggleButtonLast {
     border-bottom-right-radius:  1mm;
 }
 
+GroupElement{
+    cn1-derive: ToggleButton;
+}
+GroupElementFirst{
+    cn1-derive: ToggleButton;
+    border-top-left-radius: 1mm;
+    border-top-right-radius:  1mm;
+
+}
+GroupElementLast{
+    cn1-derive: ToggleButton;
+    border-bottom-right-radius: 1mm;
+    border-bottom-left-radius:  1mm;
+
+}
+GroupElementOnly{
+    cn1-derive: ToggleButtonOnly;
+}
+
+
 MyComponentGroupxx {
     margin:1mm 1mm;
     padding:0 1.5mm; /*top+bottom right+left*/
 }
 
 ComponentGroup {
-    margin:1mm 2mm 1mm 0 ;
+    margin:1mm 1mm 1mm 0 ;
 }
 
 ButtonGroup { /*popup menu to select item status */
     font-family :  "native:MainRegular";
     font-size: 140%;
     color: darkgrey;
+    background: white;
+    padding: 1mm;
     /*background: green;*/
 }
 
 ButtonGroupFirst {
     cn1-derive: ButtonGroup;
-    /*color: yellow;*/
+    border-top-left-radius: 1mm;
+    border-top-right-radius:  1mm;
 }
 
 ButtonGroupLast {
     cn1-derive: ButtonGroup;
-    /*color: blue;*/
+    border-bottom-right-radius: 1mm;
+    border-bottom-left-radius:  1mm;
 }
 
 ButtonGroupOnly {
     cn1-derive: ButtonGroup;
-    /*color: violet;*/
+    border-top-left-radius: 1mm;
+    border-top-right-radius:  1mm;
+    border-bottom-right-radius: 1mm;
+    border-bottom-left-radius:  1mm;
+/*    margin: 2mm;
+    padding: 2mm;*/
 }
-
 
 ManualSorting {
     color: violet;

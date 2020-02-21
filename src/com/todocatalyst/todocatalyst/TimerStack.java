@@ -926,7 +926,7 @@ class TimerStack {
         activeTimers.add(newTimerInstance); //add last as definitely the most recent instance
 //        DAO.getInstance().saveInBackground(newTimerInstance);
         if (save) {
-            DAO.getInstance().saveInBackground(newTimerInstance);
+            DAO.getInstance().saveTimerInstanceInBackground(newTimerInstance);
         }
 //        DAO.getInstance().save(newTimerInstance,false);
     }
@@ -1052,7 +1052,7 @@ class TimerStack {
                     alreadyRunningTimerInstance.setWasRunningWhenInterrupted(true, true); //pause and save!
                     if (interruptOrInstantTask) {
                         newTimedItemOrProject.setTaskInterrupted(alreadyTimedItem); //only set if timer was actually running, otherwise does not qualify as an interrupt but only as an InstantTask
-                        DAO.getInstance().saveInBackground(newTimedItemOrProject);
+                        DAO.getInstance().saveNew(true, newTimedItemOrProject);
                     }
 //                    MyForm.showToastBar("Already running Timer paused for \"" + previousTimerInstance.getTimedItemN().getText() + "\", will continue after this "
                     MyForm.showToastBar("Timer paused for \"" + alreadyTimedItem.getText()
@@ -2114,7 +2114,7 @@ class TimerStack {
                         Container smallTimer = buildContentPaneSmallN(myCurrentForm); //refresh the small container
                         if (smallTimer != null) {
                             myCurrentForm.addSmallTimerCont(smallTimer);
-                            if (false&&smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
+                            if (false && smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
                                 myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
                             }
                         }
@@ -2301,7 +2301,7 @@ class TimerStack {
                     Container smallTimer = buildContentPaneSmallN(myCurrentForm); //refresh the small container
                     if (smallTimer != null) {
                         myCurrentForm.addSmallTimerCont(smallTimer);
-                        if (false&& smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
+                        if (false && smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
                             myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
                         }
                     }
@@ -2356,7 +2356,7 @@ class TimerStack {
             {
                 timedItem.setStartedOnDate(timerStartedOn);
             }
-            DAO.getInstance().saveInBackground(timedItem); //ongoing value
+            DAO.getInstance().saveNew(timedItem, true); //ongoing value
         }
     }
 
@@ -2939,7 +2939,7 @@ class TimerStack {
 //                model.gotoNext(timerInstance, timedItem, ItemStatus.DONE);
 //                model.updateTimedTaskSetStatusAndGotoNext(ItemStatus.DONE);
                 getInstance().getCurrentlyTimedItemN().setStatus(ItemStatus.DONE); //updating the timed item will automatically update the Timer
-                DAO.getInstance().saveInBackground(getInstance().getCurrentlyTimedItemN());
+                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
                 getInstance().refreshOrShowUIOnTimerChange();
             }
         };
@@ -2978,7 +2978,7 @@ class TimerStack {
 //                model.gotoNext(timerInstance, timedItem, ItemStatus.WAITING);
 //                model.updateTimedTaskSetStatusAndGotoNext(ItemStatus.WAITING);
                 getInstance().getCurrentlyTimedItemN().setStatus(ItemStatus.WAITING); //updating the timed item will automatically update the Timer
-                DAO.getInstance().saveInBackground(getInstance().getCurrentlyTimedItemN());
+                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
                 getInstance().refreshOrShowUIOnTimerChange();
             }
         };
@@ -3015,7 +3015,7 @@ class TimerStack {
 //                model.gotoNext(timerInstance, timedItem, ItemStatus.WAITING);
 //                model.updateTimedTaskSetStatusAndGotoNext(ItemStatus.CANCELLED);
                 getInstance().getCurrentlyTimedItemN().setStatus(ItemStatus.CANCELLED); //updating the timed item will automatically update the Timer
-                DAO.getInstance().saveInBackground(getInstance().getCurrentlyTimedItemN());
+                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
                 getInstance().refreshOrShowUIOnTimerChange();
             }
         };
@@ -3054,7 +3054,7 @@ class TimerStack {
 //                model.gotoNext(timerInstance, timedItem, ItemStatus.WAITING);
 //                model.updateTimedTaskSetStatusAndGotoNext(ItemStatus.ONGOING);
                 getInstance().getCurrentlyTimedItemN().setStatus(ItemStatus.ONGOING); //updating the timed item will automatically update the Timer
-                DAO.getInstance().saveInBackground(getInstance().getCurrentlyTimedItemN());
+                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
                 getInstance().refreshOrShowUIOnTimerChange();
             }
         };
@@ -3120,9 +3120,9 @@ class TimerStack {
                 }
                 //moved from status.actionListener: 
 //                timedItem.setStatus(status.getStatus());
-                if (false) {
-                    DAO.getInstance().saveInBackground(timedItem); //done in the commands
-                }
+//                if (false) {
+//                    DAO.getInstance().saveInBackground(timedItem); //done in the commands
+//                }
             } else {
                 status.setStatus(oldStatus, false); //if user regrest changing status of so many subtasks, change visible status back again
             }
@@ -3156,7 +3156,7 @@ class TimerStack {
             comment.setSingleLineTextArea(false);
             comment.addActionListener((e) -> {
                 timedItem.setComment(comment.getText());
-                DAO.getInstance().saveInBackground(timedItem);
+                DAO.getInstance().saveNew(timedItem, true);
             });
 
 //            UITimer commentSaveTimer = new UITimer(() -> {
@@ -3254,11 +3254,11 @@ class TimerStack {
 
         description.addActionListener((e) -> {
             timedItem.setText(description.getText());
-            DAO.getInstance().saveInBackground(timedItem);
+            DAO.getInstance().saveNew(timedItem, true);
         });
         description.setDoneListener((e) -> {
             timedItem.setText(description.getText());
-            DAO.getInstance().saveInBackground(timedItem);
+            DAO.getInstance().saveNew(timedItem, true);
         });
 //        UITimer descriptionSaveTimer = new UITimer(() -> {
 //            if (description.isEditing()) {
@@ -3273,12 +3273,12 @@ class TimerStack {
 
 //            MyForm.initField(Item.PARSE_STATUS, status, () -> timedItem.getStatus(), (t) -> timedItem.setStatus((ItemStatus) t),
 //                    () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t), previousValues, parseIdMap2);
-        if (false) {
-            status.addActionListener((e) -> { //is NOT called when status Button's text is changed! BUT when clicked, so must keep!
-                timedItem.setStatus(status.getStatus());
-                DAO.getInstance().saveInBackground(timedItem);
-            });
-        }
+//        if (false) {
+//            status.addActionListener((e) -> { //is NOT called when status Button's text is changed! BUT when clicked, so must keep!
+//                timedItem.setStatus(status.getStatus());
+//                DAO.getInstance().saveInBackground(timedItem);
+//            });
+//        }
 //        editItemButton = new Button(MyReplayCommand.create("EditItemFromTimer-", timedItem.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle,
         editItemButton = new Button(MyReplayCommand.create("EditItemFromTimer-", timedItem.getObjectIdP(), "", Icons.iconEdit,
                 (e) -> {
@@ -3315,7 +3315,7 @@ class TimerStack {
                             }
                         }
 
-                        DAO.getInstance().saveInBackground(timedItem); //save edited values
+                        DAO.getInstance().saveNew(timedItem, true); //save edited values
 //                        }
 
                         refreshTotalActualEffort.actionPerformed(null); //refresh screen
@@ -3430,7 +3430,7 @@ class TimerStack {
                     effort.setDuration(estimate.getDuration());
                     effort.repaint();
                 }
-                DAO.getInstance().saveInBackground(timedItem);
+                DAO.getInstance().saveNew(timedItem, true);
 //                effortEstimateBeingAutoupdated=false;
             });
 
@@ -3444,7 +3444,7 @@ class TimerStack {
                     estimate.setDuration(effort.getDuration());
                     estimate.repaint();
                 }
-                DAO.getInstance().saveInBackground(timedItem);
+                DAO.getInstance().saveNew(timedItem, true);
 //                remainingEstimateBeingAutoupdated=false;
             });
 
@@ -3559,7 +3559,7 @@ class TimerStack {
             }
 //                        nextTaskCont.add(gotoNextTaskButtonWithItemText);
             if (gotoNextTaskButtonWithItemText != null) {
-                contentPane.add(GridLayout.encloseIn(1,gotoNextTaskButtonWithItemText));
+                contentPane.add(GridLayout.encloseIn(1, gotoNextTaskButtonWithItemText));
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (false) {
@@ -3645,7 +3645,7 @@ class TimerStack {
             exitTimer.setText(""); //remove text in small timer
             nextTask.setText("");
 //                Container swipeable = new SwipeableContainer(BoxLayout.encloseX(nextTask,exitTimer), null, contentPane);
-            SwipeableContainer swipeable = new SwipeableContainer(null, BoxLayout.encloseX(exitTimer,nextTask), contentPane) {
+            SwipeableContainer swipeable = new SwipeableContainer(null, BoxLayout.encloseX(exitTimer, nextTask), contentPane) {
 //                public void fireActionEvent(ActionEvent ev) {
                 public void actionPerformed(ActionEvent evt) {
                     evt.consume();
@@ -3689,7 +3689,7 @@ class TimerStack {
 
 //            Component text;
 //            if (timedItem.isInteruptOrInstantTask() && (timedItem.getText() == null || timedItem.getText().isEmpty())) {
-            if (false&&(interruptTask || (timedItem.getText() == null || timedItem.getText().isEmpty()))) {
+            if (false && (interruptTask || (timedItem.getText() == null || timedItem.getText().isEmpty()))) {
 //                west.add(description); //only make task text editable if empty interrupt task
 //                contentPane.add(BorderLayout.CENTER, description);
 //                west.add(description);

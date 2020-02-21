@@ -32,7 +32,7 @@ public class AutoSaveTimer extends UITimer {
                 if (update != null) 
                     update.run(); //timedItem.setText(textField.getText());
                 if (parseObject != null) 
-                    DAO.getInstance().saveInBackground(parseObject);
+                    DAO.getInstance().saveNew(parseObject,true);
             }
         });
         textField.addDataChangedListener((chgType, index) -> {

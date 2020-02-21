@@ -246,7 +246,7 @@ public class ScreenListOfAlarms extends MyForm {
             snoozeAll.setUIID("ScreenAlarmsSnoozeAll");
 //            cancelAllButtonsCont.add(MyBorderLayout.EAST, Container.encloseIn(BoxLayout.x(), snoozeTimePicker, snoozeAll));
 
-            Container cancelAllButtonsCont = BorderLayout.north(GridLayout.encloseIn(cancelAll, snoozeAll))
+            Container cancelAllButtonsCont = BorderLayout.north(GridLayout.encloseIn(2, cancelAll, snoozeAll))
                     .add(BorderLayout.SOUTH, snoozeTimePicker); //a picker needs to be added to form to work correctly
             getContentPane().add(MyBorderLayout.SOUTH, cancelAllButtonsCont);
 //            alarmCont.animateHierarchy(300); //works??
@@ -303,7 +303,7 @@ public class ScreenListOfAlarms extends MyForm {
                     Item testItem = new Item("Alarm test task, created " + new Date(now) + ", alarm=" + new Date(now));
                     testItem.setAlarmDate(now + MyDate.SECOND_IN_MILLISECONDS * 5);
 //                    DAO.getInstance().saveAndWait(testItem);
-                    DAO.getInstance().saveInBackground(testItem);
+                    DAO.getInstance().saveNew(testItem, true);
 //                    DAO.getInstance().saveInBackground(testItem);
                     Log.p("testItem created=" + testItem + ", alarm=" + new Date(now));
                 }

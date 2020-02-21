@@ -229,7 +229,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                    } else assert false: "should never happen";
 //</editor-fold>
                         //save new workSlot
-                        DAO.getInstance().saveInBackground(newWorkSlot); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        DAO.getInstance().saveNew(newWorkSlot); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    workSlotList.addItemAtIndex(workSlot, 0);
 //save updated owner of workslot //TODO not necessary to save the owners (they are not modified for workslots since these are fetched via a Parse query)??!!
@@ -255,7 +255,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                    workSlotList.add(newWorkSlot);
 //                    workSlotListOwner.setWorkSlotList(workSlotList);
                         workSlotListOwner.addWorkSlot(newWorkSlot);
-                        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) workSlotListOwner);
+                        DAO.getInstance().saveNew(true, newWorkSlot, (ParseObject) workSlotListOwner);
+
                         refreshAfterEdit();
                     }
                 }).show();
@@ -361,7 +362,7 @@ public class ScreenListOfWorkSlots extends MyForm {
             new ScreenWorkSlot(workSlot, workSlot.getOwner(), myForm, () -> {
                 //TODO!!! add same check as when creating a new WorkSlot (if both StartDate and Duration deleted, delete the workslot)??
 //                            workSlot.setList(itemList.getList());
-                DAO.getInstance().saveInBackground(workSlot);
+                DAO.getInstance().saveNew(workSlot, true);
 //                    refreshAfterEdit();
 //                refreshOnItemEdits.launchAction();
                 if (false) {

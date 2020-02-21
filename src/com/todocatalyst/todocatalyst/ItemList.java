@@ -109,7 +109,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         setFilterSortDef(filterSortDef);
         setNoSave(temporaryNoSaveList);
         if (!temporaryNoSaveList && saveImmediatelyToParse) {
-            DAO.getInstance().saveInBackground((ParseObject) this);
+            DAO.getInstance().saveNew((ParseObject) this, true);
         }
     }
 
@@ -1750,7 +1750,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * items, like the sub-tasks of a task, should the sub-items be deleted.
      *
      */
-    public boolean softDelete(boolean removeRefs) {
+    public boolean deletePrepare(Date deleteDate) {
 
         //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
         TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
@@ -1758,7 +1758,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         //since we're deleting the list, and thus soft-deleting all its tasks (and their subtasks, recursively), we don't need to remove the list as the tasks' owner!
         List<? extends ItemAndListCommonInterface> tasks = getListFull();
         for (Item item : (List<Item>) getListFull()) {
-            item.softDelete(removeRefs);
+            item.deletePrepare(deleteDate);
         }
 
         //remove itemList from meta-itemLists (all itemLists to which it is a sub-itemList)
@@ -1772,20 +1772,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                     updatedMetaLists.add(itemList);
                 }
             }
-            DAO.getInstance().saveInBackground(updatedMetaLists);
+            DAO.getInstance().saveNew(updatedMetaLists);
         }
 
-        ItemListList itemListList = ItemListList.getInstance();
-        itemListList.remove(this);
-        DAO.getInstance().saveInBackground((ParseObject) itemListList);
+        ItemListList.getInstance().remove(this);
+        DAO.getInstance().saveNew((ParseObject) ItemListList.getInstance(), false);
 
         FilterSortDef filter = getFilterSortDef();
         if (filter != null) {
-            filter.softDelete(removeRefs);
+            filter.delete(deleteDate);
+            DAO.getInstance().delete(filter);
         }
 
-        put(Item.PARSE_DELETED_DATE, new MyDate());
-        DAO.getInstance().saveInBackground((ParseObject) this);
+        setSoftDeletedDate(deleteDate);
         return true;
     }
 
@@ -1999,14 +1998,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     public boolean setToList(int index, ItemAndListCommonInterface subItemOrList) {
+        if (Config.TEST) ASSERT.that(subItemOrList!=null);
         setItemAtIndex((E) subItemOrList, index);
-        ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this
-                || this.equals(subItemOrList.getOwner()),
-                () -> (("owner not null or different when adding to list, elt=" + subItemOrList
-                + ", oldOwner=" + subItemOrList.getOwner() + ", newOwner=" + this))
-                + "; oldId=" + System.identityHashCode(subItemOrList.getOwner())
-                + "; newId=" + System.identityHashCode(this)
-        ); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        if (Config.TEST) {
+            ItemAndListCommonInterface oldOwner = subItemOrList.getOwner();
+            ASSERT.that(oldOwner == null || oldOwner == this
+                    || this.equals(oldOwner)
+                    || !this.getObjectIdP().equals(oldOwner.getObjectIdP()),
+                    () -> (("owner not null or different when adding to list, elt=" + subItemOrList
+                    + ", oldOwner=" + (oldOwner == null ? "<null>" : oldOwner) + ", newOwner=" + this))
+                    + (oldOwner == null ? "" : "; oldId=" + System.identityHashCode(oldOwner))
+                    + "; newId=" + System.identityHashCode(this)
+            ); //subItemOrList.getOwner()==this may happen when creating repeatInstances
+        }
 //        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
         subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
@@ -3883,7 +3887,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public void setDeletedDate(Date dateDeleted) {
+    public void setSoftDeletedDate(Date dateDeleted) {
         if (dateDeleted != null && dateDeleted.getTime() != 0) {
             put(PARSE_DELETED_DATE, dateDeleted);
         } else {
@@ -3892,7 +3896,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public Date getDeletedDateN() {
+    public Date getSoftDeletedDateN() {
         Date date = getDate(PARSE_DELETED_DATE);
 //        return (date == null) ? new Date(0) : date;
         return date; //return null to indicate NOT deleted

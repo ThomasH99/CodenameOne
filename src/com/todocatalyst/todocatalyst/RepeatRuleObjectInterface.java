@@ -54,7 +54,6 @@ public interface RepeatRuleObjectInterface {
      * deletes the repeatInstance
      */
 //    void deleteRepeatInstance();
-
     /**
      * sets the repeat rule (eg if new or changed)
      *
@@ -69,7 +68,6 @@ public interface RepeatRuleObjectInterface {
      * @return
      */
 //    boolean isNoLongerRelevant();
-
     /**
      * returns the list into which insert new repeat instances generated from
      * this. Typically the owner.
@@ -78,15 +76,58 @@ public interface RepeatRuleObjectInterface {
      */
 //    List getInsertNewRepeatInstancesIntoList();
     /**
-     * add the new repeatCopy to the right place in the owner list and return the owner list so it can be saved
+     * add the new repeatCopy to the right place in the owner list and return
+     * the owner list so it can be saved
      *
      * @param newRepeatRuleInstance
-     * @return 
+     * @return
      */
 //    void saveInsertList();
 //    void insertIntoListAndSaveList(RepeatRuleObjectInterface repeatRuleObject);
-//public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject);    
+//public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject);   
+    public static int INSERT_HEAD_OF_OWNER_LIST = 0;
+    public static int INSERT_TAIL_OF_OWNER_LIST = 1;
+    public static int INSERT_BEFORE_REF_ELEMENT = 2;
+    public static int INSERT_AFTER_REF_ELEMENT = 3;
+
+    public enum RepatInsertPosition {
+        INSERT_HEAD_OF_OWNER_LIST,
+        INSERT_TAIL_OF_OWNER_LIST, INSERT_BEFORE_REF_ELEMENT, INSERT_AFTER_REF_ELEMENT
+    }
+
     public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance);
+//    default public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance, RepatInsertPosition insertPosition);
+
+    default public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance, RepeatRuleObjectInterface.RepatInsertPosition insertPosition) {
+//        ItemAndListCommonInterface owner = getOwner();
+        ItemAndListCommonInterface owner = null;
+        if (this instanceof ItemAndListCommonInterface) {
+            owner = ((ItemAndListCommonInterface) this).getOwner();
+        }
+        if (owner != null && newRepeatRuleInstance instanceof ItemAndListCommonInterface) {
+            ItemAndListCommonInterface refElt = (ItemAndListCommonInterface) newRepeatRuleInstance;
+            switch (insertPosition) {
+                case INSERT_HEAD_OF_OWNER_LIST:
+                    owner.addToList(owner, false);
+                    break;
+                case INSERT_TAIL_OF_OWNER_LIST:
+                    owner.addToList(owner, true);
+                    break;
+                case INSERT_BEFORE_REF_ELEMENT:
+                    owner.addToList(owner, refElt, false);
+                    break;
+                case INSERT_AFTER_REF_ELEMENT:
+                    owner.addToList(owner, refElt, true);
+                    break;
+            }
+        }
+//        if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
+//            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
+//        } else {
+//            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+//        }
+        return owner;
+    }
 
     /**
      *

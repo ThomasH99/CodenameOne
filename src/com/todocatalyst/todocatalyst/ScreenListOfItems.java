@@ -827,7 +827,7 @@ public class ScreenListOfItems extends MyForm {
 //                        addNewTaskToListAndSave(template, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
 //                        addNewTaskToListAndSave(newTemplate, null, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
                     itemListOrg.addToList(newTemplate, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                    DAO.getInstance().saveInBackground((ParseObject) newTemplate, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew(true, (ParseObject) newTemplate, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                            DAO.getInstance().saveInBackground(template); //must save item since adding it to itemListOrg changes its owner
                     refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                        } 
@@ -916,21 +916,21 @@ public class ScreenListOfItems extends MyForm {
 //                            newTemplateInstance.setOwner(itemListOrg); //works for any type of owner
 //                            DAO.getInstance().save(newTemplateInstance); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            itemListOrg.addItemAtIndex(newTemplateInstance, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize()); //UI: add to top of list
-                        if (false) {
-                            DAO.getInstance().saveInBackground(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner
-                            if (itemListOrg != null && itemListOrg.getObjectIdP() != null && !optionTemplateEditMode) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
-                                //if creating new template instances within the TemplateList, then don't save it into template list
-//                                itemListOrg.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), newTemplateInstantiation); //UI: add to top of list
-                                itemListOrg.addToList(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                                DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                            } else {
-                                assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
-                            }
-                        }
+//                        if (false) {
+//                            DAO.getInstance().saveInBackground(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner
+//                            if (itemListOrg != null && itemListOrg.getObjectIdP() != null && !optionTemplateEditMode) { //if no itemList is defined (e.g. if editing list of tasks obtained directly from server
+//                                //if creating new template instances within the TemplateList, then don't save it into template list
+////                                itemListOrg.addToList(MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), newTemplateInstantiation); //UI: add to top of list
+//                                itemListOrg.addToList(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+//                                DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                            } else {
+//                                assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
+//                            }
+//                        }
                         newTemplateInstantiation.setTemplate(false);
 //                        addNewTaskToListAndSave(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), itemListOrg);
                         itemListOrg.addToList(newTemplateInstantiation, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                        DAO.getInstance().saveInBackground((ParseObject) newTemplateInstantiation, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                        DAO.getInstance().saveNew(true, (ParseObject) newTemplateInstantiation, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 
                         setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation)); //scroll to position of new item, whereever it is inserted
                         refreshAfterEdit();
@@ -948,13 +948,13 @@ public class ScreenListOfItems extends MyForm {
 //                    setKeepPos(new KeepInSameScreenPosition()); //not needed
                 if (itemListOrg instanceof Category) {
                     new ScreenCategoryProperties((Category) itemListOrg, ScreenListOfItems.this, () -> {
-                        DAO.getInstance().saveInBackground((ParseObject) itemListOrg);
+                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
                         setTitle(itemListOrg.getText()); //refrehs title of screen after edit of list name
 //                    previousForm.revalidate(); //refresh list to show new items(??)
                     }).show();
                 } else {
                     new ScreenItemListProperties((ItemList) itemListOrg, ScreenListOfItems.this, () -> {
-                        DAO.getInstance().saveInBackground((ParseObject) itemListOrg);
+                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
                         setTitle(itemListOrg.getText()); //refrehs title of screen after edit of list name
 //                    previousForm.revalidate(); //refresh list to show new items(??)
                     }).show();
@@ -1127,7 +1127,7 @@ public class ScreenListOfItems extends MyForm {
                         setKeepPos(new KeepInSameScreenPosition());
                         new ScreenItem2(itemWithNewValues, ScreenListOfItems.this, () -> {
 //                        MultipleSelection.performOnAll(itemListFilteredSorted, MultipleSelection.setAnything(itemWithNewValues));
-                            MultipleSelection.performOnAll(selectedObjects.getSelected(), MultipleSelection.setAnything(itemWithNewValues));
+                            MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.setAnything(itemWithNewValues));
                             refreshAfterEdit();
                         }, false, null).show();
                     }
@@ -1140,7 +1140,10 @@ public class ScreenListOfItems extends MyForm {
                     //TODO!!! warning that this cannot be undone!!
                     if (isSelectionMode()) {
                         setKeepPos(new KeepInSameScreenPosition());
-                        MultipleSelection.performOnAll(selectedObjects.getSelected(), MultipleSelection.delete());
+//                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.delete());
+                        List deleteList = selectedObjects.getSelected(); //get around type error
+//                        DAO.getInstance().deleteAll((List<ItemAndListCommonInterface>)selectedObjects.getSelected(),false,true);
+                        DAO.getInstance().deleteAll(deleteList, false, true);
                         selectedObjects.clear(); //remove deleted items from the selection
 //                    setupList(); //TODO optimize the application of a filter?
                         refreshAfterEdit(); //TODO optimize the application of a filter?
@@ -1155,10 +1158,10 @@ public class ScreenListOfItems extends MyForm {
 //                    if (isSelectionMode()&&!isSortOn()) {
                     if (isSelectionMode()) {
 //                        setKeepPos(new KeepInSameScreenPosition()); //NOT needed, natural to move to top of list
-                        MultipleSelection.performOnAll(selectedObjects.getSelected(), MultipleSelection.moveToTopOfList(itemListOrg));
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToTopOfList(itemListOrg));
 //                    selectedObjects.clear(); //DO NOT unselect objects to allow for additional operations on selection
 //                    setupList(); //TODO optimize the application of a filter?
-                        DAO.getInstance().saveInBackground((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg); //save after having moved items around
                         refreshAfterEdit(); //TODO optimize the application of a filter?
                     } else {
 //                        ToastBar.showErrorMessage("Move to top not possible when list is shown sorted");
@@ -1267,7 +1270,7 @@ public class ScreenListOfItems extends MyForm {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
-                        DAO.getInstance().saveInBackground((ParseObject) itemListOrg);
+                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
                         refreshAfterEdit();
                     }
                 };
@@ -1994,7 +1997,8 @@ public class ScreenListOfItems extends MyForm {
                 item.getText()
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-ID" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getOwner() == null ? "-OWN" : "")
-                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null ? "*" : "")
+                + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRule() != null)
+                ? (item.getRepeatRule().getListOfUndoneInstances().contains(item) ? "*" : "(*)") : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && TimerStack.getInstance().getCurrentlyTimedItemN() == item ? " [Timed]" : "")
@@ -2168,7 +2172,7 @@ public class ScreenListOfItems extends MyForm {
 //                        if (refreshOnItemEdits != null) {
 //                            refreshOnItemEdits.launchAction();
 //                        }
-                DAO.getInstance().saveInBackground(item);
+                DAO.getInstance().saveNew(true, item);
                 myForm.refreshAfterEdit(); //refresh after save as it may update sub/supertasks etc
                 //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
 //                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refreshTimersFromParseServer();}});
@@ -2320,6 +2324,18 @@ public class ScreenListOfItems extends MyForm {
                     east.addComponent(remainingEffortLabel);
                 }
             }
+        } else {
+            long due = item.getDueDate();
+            if (due != 0) {
+                dueDateLabel = new Label(MyDate.formatDateSmart(new Date(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
+                dueDateLabel.setMaterialIcon(Icons.iconSetDueDateToTodayFontImageMaterial);
+                if (item.isDueDateInherited()) {
+                    dueDateLabel.setUIID("ListOfItemsDueDateInherited");
+                }
+                if (Config.TEST) {
+                    dueDateLabel.setName("Due");
+                }
+            }
         }
 
         //TODO!!!! define lambde functions to refreshTimersFromParseServer the parts of an Item container that may change when the 
@@ -2375,7 +2391,7 @@ public class ScreenListOfItems extends MyForm {
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                     myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 }
-                DAO.getInstance().saveInBackground(item);
+                DAO.getInstance().saveNew(true, item);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //NB. replacing swipCont will work even if swipCont is not updated since each container that replaces creates its own new
 //                    swipCont.getParent().replace(swipCont, buildTreeOrSingleItemContainer(item, motherItemList, isDragEnabled), null); //update the container with edited content
@@ -2721,14 +2737,17 @@ public class ScreenListOfItems extends MyForm {
             westCont.add(actualEffortLabel);
         }
 //        if (dateCont != null) westCont.add(dateCont);
-        if (!isDone) //show relevant date in prio order: waitingTill, finishTime or dueDate
-        {
+        if (!isDone) { //show relevant date in prio order: waitingTill, finishTime or dueDate
             if (waitingTillLabel != null && item.getStatus() == ItemStatus.WAITING) {
                 westCont.add(waitingTillLabel);
             } else if (finishTimeLabel != null) {
                 westCont.add(finishTimeLabel);
             } else if (dueDateLabel != null) {
                 westCont.add(dueDateLabel);
+            }
+        } else { //isDone
+            if (dueDateLabel != null) {
+                southDetailsContainer.addComponent(dueDateLabel);
             }
         }
         if (isDone && completedDateLabel != null) {
@@ -3018,7 +3037,7 @@ refreshAfterEdit();
                 Item newTemplateInstantiation = new Item();
                 item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
                 new ScreenItem2(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
-                    DAO.getInstance().saveInBackground(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
+                    DAO.getInstance().saveNew(newTemplateInstantiation, true); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
                     ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation));
 //                            refreshOnItemEdits.launchAction(); //NOT necessary, since item not saved in list of templates
                 }, false, null).show();
@@ -3055,7 +3074,7 @@ refreshAfterEdit();
                     swipCont.close(); //close before save 
 //                        myForm.revalidate();
                     swipCont.revalidate();
-                    DAO.getInstance().saveInBackground(item);
+                    DAO.getInstance().saveNew(item, true);
                 });
                 starredSwipeableButton.setUIID(item.isStarred() ? "SwipeButtonStarActive" : "SwipeButtonStarInactive");
                 buttonSwipeContainer.add(starredSwipeableButton);
@@ -3084,7 +3103,7 @@ refreshAfterEdit();
 //                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date())); //UI: if due is NOT already today, then set due day to today
                     item.setDueDate(MyDate.setDateToTodayKeepTime(item.getDueDateD())); //UI: if due is NOT already today, then set due day to today
                 }                    //update and save the item
-                DAO.getInstance().saveInBackground(item);
+                DAO.getInstance().saveNew(item, true);
                 swipCont.close();
 //                    refreshOnItemEdits.launchAction(); //optimize, eg ?? (is likely to affect work time)
                 myForm.refreshAfterEdit();//optimize, eg ?? (is likely to affect work time)

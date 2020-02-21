@@ -509,8 +509,10 @@ public class MyForm extends Form {
 //</editor-fold>
     protected void setTitleAnimation(Container scrollableComponent) {
         //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One:
+        if (false) {
         ComponentAnimation title2 = getToolbar().getTitleComponent().createStyleAnimation("TitleSmall", 200);
         getAnimationManager().onTitleScrollAnimation(scrollableComponent, title2);
+    }
     }
 
     protected void setKeepPos(KeepInSameScreenPosition keepPos) {
@@ -547,7 +549,7 @@ public class MyForm extends Form {
     }
 
     protected void setScreenType(ScreenType screenType) {
-         this.screenType =screenType;
+        this.screenType = screenType;
     }
 
     /**
@@ -1602,9 +1604,9 @@ public class MyForm extends Form {
             previousForm.refreshAfterEdit();
 
             //if saves are still pending, force a(nother) refresh once they are all done
-            if (!NetworkManager.getInstance().isQueueIdle()) {
-                DAO.getInstance().saveInBackground(() -> previousForm.refreshAfterEdit());
-            }
+//            if (!NetworkManager.getInstance().isQueueIdle()) {
+//                DAO.getInstance().saveInBackground(() -> previousForm.refreshAfterEdit());
+//            }
         }
         previousForm.showBack(!(this instanceof ScreenTimer6));  //prevent exiting from ScreenTimer6 to pop the last replayCommand (since ScreenTimer6 is never launched with a replayCommand)
     }
@@ -1920,10 +1922,10 @@ public class MyForm extends Form {
 //        return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
 //        return CommandTracked.create("", icon, (e) -> {
         return CommandTracked.create(includeText ? "Time interrupt" : "", Icons.iconInterrupt, (e) -> {
-            Item interruptItem = new Item();
-            interruptItem.setRemaining(0);//remove default estimate for interrupt tasks
-            interruptItem.setInteruptOrInstantTask(true);
-            DAO.getInstance().saveInBackground(interruptItem);
+            Item newInterruptItem = new Item();
+            newInterruptItem.setRemaining(0);//remove default estimate for interrupt tasks
+            newInterruptItem.setInteruptOrInstantTask(true);
+            DAO.getInstance().saveNew(newInterruptItem, true);
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItemN());
@@ -1931,7 +1933,7 @@ public class MyForm extends Form {
 //                ScreenTimer.getInstance().startTimer(item, MyForm.this);
 //            ScreenTimer2.getInstance().startInterrupt(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
 //            TimerStack.getInstance().startInterruptOrInstantTask(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
-            TimerStack.getInstance().startInterruptOrInstantTask(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
+            TimerStack.getInstance().startInterruptOrInstantTask(newInterruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
             //TODO Allow to pick a common (predefined/template) interrupt task (long-press??)
             //Open it up in editing mode with timer running
 //            setupTimerForItem(item, 0);
@@ -2062,7 +2064,7 @@ public class MyForm extends Form {
                     }
 //                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                     itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                    DAO.getInstance().saveInBackground((ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew(true, (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
@@ -2101,10 +2103,10 @@ public class MyForm extends Form {
                 if (itemListOrg instanceof Category) {
                     ((Category) itemListOrg).addItemToCategory(item, null, false, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
                     Inbox.getInstance().addToList(item, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-                    DAO.getInstance().saveInBackground(item, Inbox.getInstance(), itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew(true, item, Inbox.getInstance(), itemListOrg); //must save item since adding it to itemListOrg changes its owner
                 } else {
                     itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew(true, item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
                 }
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
                 refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
@@ -2135,7 +2137,7 @@ public class MyForm extends Form {
                     }
 //                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                     itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                    DAO.getInstance().saveInBackground((ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew(true, (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
@@ -2164,9 +2166,9 @@ public class MyForm extends Form {
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenFilter(filterSortDef, MyForm.this, () -> {
                 if (!filterSortDef.equals(itemListOrItem.getFilterSortDef())) { //if filter edited
-                    DAO.getInstance().saveInBackground(filterSortDef); //now done in DAO?
+                    DAO.getInstance().saveNew(filterSortDef,false); //now done in DAO?
                     itemListOrItem.setFilterSortDef(filterSortDef);
-                    DAO.getInstance().saveInBackground((ParseObject) itemListOrItem);
+                    DAO.getInstance().saveNew((ParseObject) itemListOrItem, true);
                     //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
                     refreshAfterEdit(); //TODO optimize the application of a filter? 
                 }

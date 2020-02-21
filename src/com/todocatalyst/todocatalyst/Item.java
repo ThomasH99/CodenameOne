@@ -80,7 +80,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      */
     private EventDispatcher dispatcher = new EventDispatcher();
-    private EventDispatcher listeners = new EventDispatcher();
+    private EventDispatcher listenersXXX = new EventDispatcher();
 
 //    private List<WorkSlot> workSlotListBuffer;
 //    private WorkSlotList workSlotListBuffer;
@@ -142,7 +142,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         Item.this.setRemaining(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS, true);
         setDueDate(dueDate);
         if (saveToDAO) {
-            DAO.getInstance().saveInBackground(this);
+            DAO.getInstance().saveNew(this, true);
         }
     }
 
@@ -371,6 +371,35 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
         }
 //        DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, (ParseObject) owner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+        return owner;
+    }
+
+//    @Override
+    public ItemAndListCommonInterface insertIntoListIN_INTERFACE_NOW_XXX(RepeatRuleObjectInterface newRepeatRuleInstance, RepeatRuleObjectInterface.RepatInsertPosition insertPosition) {
+
+        ItemAndListCommonInterface owner = getOwner();
+        if (owner != null && newRepeatRuleInstance instanceof ItemAndListCommonInterface) {
+            ItemAndListCommonInterface refElt = (ItemAndListCommonInterface) newRepeatRuleInstance;
+            switch (insertPosition) {
+                case INSERT_HEAD_OF_OWNER_LIST:
+                    owner.addToList(owner, false);
+                    break;
+                case INSERT_TAIL_OF_OWNER_LIST:
+                    owner.addToList(owner, true);
+                    break;
+                case INSERT_BEFORE_REF_ELEMENT:
+                    owner.addToList(owner, refElt, false);
+                    break;
+                case INSERT_AFTER_REF_ELEMENT:
+                    owner.addToList(owner, refElt, true);
+                    break;
+            }
+        }
+        if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
+            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
+        } else {
+            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+        }
         return owner;
     }
 
@@ -1844,9 +1873,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     copy.setOwnerItem(destination, false); //set owner for subtask copy (MUST be done before to ensure repeatCopies are inserted in right place)
                     orgSubtasks.get(i).copyMeInto(copy, copyFieldDefintion, copyExclusions);
                     //TODO!!!!! how to avoid saving subtasks, so we can Cancel the creation of a template instance??? (it is not acceptable to accumulate dangling subtasks which would be visible to the user in some view)!
-                    if (false) {
-                        DAO.getInstance().saveInBackground(copy); //need to save copies as we go along, otherwise cannot save owner (Porject) due to "unable to encode an association with an unsaved ParseObject" //DAO now saves a new project correctly wrt references
-                    }                    //Keep everything in memory and add a special lambda function to save everything created from the template *if* it is saved!
+//                    if (false) {
+//                        DAO.getInstance().saveInBackground(copy); //need to save copies as we go along, otherwise cannot save owner (Porject) due to "unable to encode an association with an unsaved ParseObject" //DAO now saves a new project correctly wrt references
+//                    }                    //Keep everything in memory and add a special lambda function to save everything created from the template *if* it is saved!
                     subtaskCopy.add(copy);
                 }
 //                destination.setList(subtaskCopy); //NO, OVERWRITES any existing subtasks!
@@ -1945,7 +1974,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     destination.setRepeatRuleInParse(getRepeatRule()); //point to existing repeat rule
                 } else if (getRepeatRule() != null) {
                     RepeatRuleParseObject repeatRuleCopy = getRepeatRule().cloneMe();
-                    DAO.getInstance().saveInBackground(repeatRuleCopy); //save new repeatRule before the new item copy referring it is saved
+//                    DAO.getInstance().saveInBackground(repeatRuleCopy); //save new repeatRule before the new item copy referring it is saved
 //                    destination.setRepeatRule((RepeatRuleParseObject) getRepeatRule().cloneMe()); //for templates, make a copy of the RepeatRule, but do NOT create repeat instances
                     destination.setRepeatRule(repeatRuleCopy); //for templates, make a copy of the RepeatRule, but do NOT create repeat instances
                 }
@@ -2172,26 +2201,27 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return ""; //BaseItemTypes.toString(getTypeId()) + "\"" + getText() + "\"";
 //    }
 //</editor-fold>
-    private void softDeleteImpl(Date deleteDate, boolean removeRefs) {
-        softDeleteImpl(deleteDate, removeRefs, false);
-    }
-
-    private void softDeleteImpl(Date deleteDate, boolean removeRefs, boolean deleteAllRepeatInstances) {
-        setDeletedDate(deleteDate);
+//    private void softDeleteImpl(Date deleteDate, boolean removeRefs) {
+//        delete(deleteDate);
+//    }
+    @Override
+    public boolean deletePrepare(Date deleteDate) {
 
         //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
         List<Item> itemsSubtasksOfThisItem = getListFull();
         for (Item item : itemsSubtasksOfThisItem) {
-            item.softDeleteImpl(deleteDate, removeRefs); //let each item delete itself properly, will recurse down the project hierarchy
+            item.deletePrepare(deleteDate); //let each item delete itself properly, will recurse down the project hierarchy
         }
 
         //TODO!!! (?)anything to do to handle case where subtasks are created and saved, but where the new mother task is finally not saved?
         //DELETE IN CATEGORIES
         // remove item from all categories before deleting it
-        for (Category cat : getCategories()) {
-            ((Category) cat).removeItemFromCategory(this, removeRefs); //remove references to this item from the category before deleting it (false: but keep the item's categories)
-            DAO.getInstance().saveInBackground((ParseObject) cat);
+        List<Category> categories = getCategories();
+        for (Category cat : categories) {
+            ((Category) cat).removeItemFromCategory(this, false); //remove references to this item from the category before deleting it (false: but keep the item's categories)
+//            DAO.getInstance().saveInBackground((ParseObject) cat);n//now done in DAO.save
         }
+        DAO.getInstance().saveList(categories, null);//now done in DAO.save
 
         //DELETE IN OWNERS/PROJECTS
         ItemAndListCommonInterface owner = getOwner();
@@ -2203,20 +2233,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            DAO.getInstance().saveInBackground((ParseObject) owner);
 //        }
 //        if (owner!=null) //don't test, better to get a null ref error if an object doesnt' have an owner
-        owner.removeFromList(this, removeRefs); //
-
+        if (owner != null) {
+            owner.removeFromList(this, false); //
+            DAO.getInstance().saveNew((ParseObject) owner, false);
+        }
         //handle repeatrule
         //TODO!!!! handle repeatRules when deleting an Item
         RepeatRuleParseObject myRepeatRule = getRepeatRule();
         if (myRepeatRule != null) {
-            if (deleteAllRepeatInstances) {
-//                myRepeatRule.deleteAllInstances();
-                myRepeatRule.softDelete(false);
-            } else //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we 
-            //            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
-            {
-                myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
-            }            //NB. We don't delete the item's refs to repeatrule
+//            if (deleteAllRepeatInstances) {
+////                myRepeatRule.deleteAllInstances();
+//                myRepeatRule.softDelete(false);
+//            } else //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we 
+//            //            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
+//            {
+//                myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+//            }            //NB. We don't delete the item's refs to repeatrule
+            myRepeatRule.updateItemsOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+            DAO.getInstance().saveNew(myRepeatRule, false);
+        }
+
+        FilterSortDef filter = getFilterSortDef();
+        if (filter != null) {
+            filter.delete(deleteDate);
+            DAO.getInstance().delete(filter);
         }
 
         //TODO!!!! remove item from OriginalSource field (from copies of this task) - all these links are one way, so need to search in ParseServer.
@@ -2225,6 +2265,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //this could make it very slow!!!!
         //ALARMS remove any active alarms
         AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
+
+        setSoftDeletedDate(deleteDate);
+        return true;
     }
 
     /**
@@ -2233,88 +2276,87 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * must decide if only to delete this instance or all instances.
      *
      */
-    @Override
-    public boolean softDelete() { //throws ParseException {
-        return softDelete(false); //false=leave references from softDeleted objects to other elements (Categories, owner Item/ItemList etc) - easier to restore
-    }
-
-    @Override
-    public boolean softDelete(boolean removeRefs) { //throws ParseException {
-
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
-//        List<Item> itemsSubtasksOfThisItem = getListFull();
-//        for (Item item : itemsSubtasksOfThisItem) {
-//            item.softDelete(removeRefs); //let each item delete itself properly, will recurse down the project hierarchy
-//        }
+//    @Override
+//    public boolean softDelete() { //throws ParseException {
+//        return softDelete(false); //false=leave references from softDeleted objects to other elements (Categories, owner Item/ItemList etc) - easier to restore
+//    }
 //
-//        //TODO!!! (?)anything to do to handle case where subtasks are created and saved, but where the new mother task is finally not saved?
-//        //DELETE IN CATEGORIES
-//        // remove item from all categories before deleting it
-//        for (Category cat : getCategories()) {
-//            ((Category) cat).removeItemFromCategory(this, removeRefs); //remove references to this item from the category before deleting it (false: but keep the item's categories)
-//            DAO.getInstance().saveInBackground((ParseObject) cat);
-//        }
+//    @Override
+//    public boolean softDelete(boolean removeRefs) { //throws ParseException {
 //
-//        //DELETE IN OWNERS/PROJECTS
-//        ItemAndListCommonInterface owner = getOwner();
-//        if (owner instanceof Item) {
-//            ((Item) owner).removeFromList(this, removeRefs); //
-//            DAO.getInstance().saveInBackground((ParseObject) owner);
-//        } else {
-//            owner.removeFromList(this);
-//            DAO.getInstance().saveInBackground((ParseObject) owner);
-//        }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
+////        List<Item> itemsSubtasksOfThisItem = getListFull();
+////        for (Item item : itemsSubtasksOfThisItem) {
+////            item.softDelete(removeRefs); //let each item delete itself properly, will recurse down the project hierarchy
+////        }
+////
+////        //TODO!!! (?)anything to do to handle case where subtasks are created and saved, but where the new mother task is finally not saved?
+////        //DELETE IN CATEGORIES
+////        // remove item from all categories before deleting it
+////        for (Category cat : getCategories()) {
+////            ((Category) cat).removeItemFromCategory(this, removeRefs); //remove references to this item from the category before deleting it (false: but keep the item's categories)
+////            DAO.getInstance().saveInBackground((ParseObject) cat);
+////        }
+////
+////        //DELETE IN OWNERS/PROJECTS
+////        ItemAndListCommonInterface owner = getOwner();
+////        if (owner instanceof Item) {
+////            ((Item) owner).removeFromList(this, removeRefs); //
+////            DAO.getInstance().saveInBackground((ParseObject) owner);
+////        } else {
+////            owner.removeFromList(this);
+////            DAO.getInstance().saveInBackground((ParseObject) owner);
+////        }
+////
+////        //handle repeatrule
+////        //TODO!!!! handle repeatRules when deleting an Item
+////        RepeatRuleParseObject myRepeatRule = getRepeatRule();
+////        if (myRepeatRule != null) {
+//////            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we
+//////            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
+////            myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+////            //NB. We don't delete the item's refs to repeatrule
+////        }
+////
+////        //TODO!!!! remove item from OriginalSource field (from copies of this task) - all these links are one way, so need to search in ParseServer.
+////        //if deleting them, maybe replace the ObjectId link by the text of the original task??
+////        //or better simply to leave them and add a mechanism to ignore soft-deleted sources?? The mechanism would likely have to check the server each time, so
+////        //this could make it very slow!!!!
+////        //ALARMS remove any active alarms
+////        AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
+////</editor-fold>
+//        softDeleteImpl(new MyDate(), true);
+////        setDeletedDate(new Date());
+//        DAO.getInstance().saveNew(this, true);
 //
-//        //handle repeatrule
-//        //TODO!!!! handle repeatRules when deleting an Item
-//        RepeatRuleParseObject myRepeatRule = getRepeatRule();
-//        if (myRepeatRule != null) {
+//        return true;
+//        //TODO: any other references to an item??
+///////////////////////////////////////////////////////
+////<editor-fold defaultstate="collapsed" desc="comment">
+//////        super.deleteRuleAndAllRepeatInstancesExceptThis(); //delete the list in DAO, call changelisteners
+////
+////        TimerServer.getInstance().stopTimerIfRunningForThisItem(this); //TODO!!!!: make TimerScreen a listener on the timed item to be notified if its deleted
+////
+////        //do nothing for RepeatRules since they get a callback when an item is deleted
+////        MyRepeatRule myRepeatRule = getRepeatRule();
+////        if (myRepeatRule != null) {
+//////            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this, (ItemList) getOwner());
 ////            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we
-////            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
-//            myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
-//            //NB. We don't delete the item's refs to repeatrule
-//        }
+////        }
+////        if (subitems != null) {
+////            subitems.deleteAllItemsInList(pushToCalendardOnCompleted);
+////            subitems = null; //help GC
+////        }
+////        // TODO: remove any active alarms!!
+////        AlarmServer.getInstance().remove(this); //TODO!!!! should happen automatically via delete change event?
+////</editor-fold>
+//    }
 //
-//        //TODO!!!! remove item from OriginalSource field (from copies of this task) - all these links are one way, so need to search in ParseServer.
-//        //if deleting them, maybe replace the ObjectId link by the text of the original task??
-//        //or better simply to leave them and add a mechanism to ignore soft-deleted sources?? The mechanism would likely have to check the server each time, so
-//        //this could make it very slow!!!!
-//        //ALARMS remove any active alarms
-//        AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
-//</editor-fold>
-        softDeleteImpl(new MyDate(), true);
-//        setDeletedDate(new Date());
-        DAO.getInstance().saveInBackground(this);
-
-        return true;
-        //TODO: any other references to an item??
-/////////////////////////////////////////////////////
-//<editor-fold defaultstate="collapsed" desc="comment">
-////        super.deleteRuleAndAllRepeatInstancesExceptThis(); //delete the list in DAO, call changelisteners
-//
-//        TimerServer.getInstance().stopTimerIfRunningForThisItem(this); //TODO!!!!: make TimerScreen a listener on the timed item to be notified if its deleted
-//
-//        //do nothing for RepeatRules since they get a callback when an item is deleted
-//        MyRepeatRule myRepeatRule = getRepeatRule();
-//        if (myRepeatRule != null) {
-////            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this, (ItemList) getOwner());
-//            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we
-//        }
-//        if (subitems != null) {
-//            subitems.deleteAllItemsInList(pushToCalendardOnCompleted);
-//            subitems = null; //help GC
-//        }
-//        // TODO: remove any active alarms!!
-//        AlarmServer.getInstance().remove(this); //TODO!!!! should happen automatically via delete change event?
-//</editor-fold>
-    }
-
-    public void deleteXXX() throws ParseException {
-        softDeleteImpl(new MyDate(), false); //ONLY soft-delete is supported, softDeleteImpl() won't handle a deep hard-delete!
-        super.delete();
-    }
-
+//    public void deleteXXX() throws ParseException {
+//        softDeleteImpl(new MyDate(), false); //ONLY soft-delete is supported, softDeleteImpl() won't handle a deep hard-delete!
+//        super.delete();
+//    }
     /**
      * use this call to check if a subitems list has been created, rather than
      * getItemList.getSize() which will just create an unnecessary empty list
@@ -2604,7 +2646,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
             put(PARSE_SUBTASKS, listOfSubtasks);
         }
-        updateValuesDerivedFromSubtasksWhenSubtaskListChange(); //update eg if added first subtasks, meaning ActualEffort must be updated
+        updateAllValuesDerivedFromSubtasksWhenSubtaskListChange(); //update eg if added first subtasks, meaning ActualEffort must be updated
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (getItemListSize() == 0 && itemList.isEmpty()) // this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
 //        {
@@ -3920,18 +3962,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    void setRepeatRuleInParseAndSaveXXX(RepeatRuleParseObject repeatRule) {
-        setRepeatRuleInParse(repeatRule);
-        if (repeatRule != null && (repeatRule.isDirty() || repeatRule.getObjectIdP() == null)) {
-            if (false && Config.TEST) { //don't test - normal that repeatRule is not saved (eg when new item+new RR is created)
-                ASSERT.that(repeatRule.getObjectIdP() != null, "Item.setRepeatRuleInParse with new unsaved repeatRule=" + repeatRule + ", item=" + this);
-            }
-            if (false) {
-                DAO.getInstance().saveInBackground(repeatRule); //save the (possibly new or changed) repeatRule --> do it in DAO now
-            }
-        }
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    void setRepeatRuleInParseAndSaveXXX(RepeatRuleParseObject repeatRule) {
+//        setRepeatRuleInParse(repeatRule);
+//        if (repeatRule != null && (repeatRule.isDirty() || repeatRule.getObjectIdP() == null)) {
+//            if (false && Config.TEST) { //don't test - normal that repeatRule is not saved (eg when new item+new RR is created)
+//                ASSERT.that(repeatRule.getObjectIdP() != null, "Item.setRepeatRuleInParse with new unsaved repeatRule=" + repeatRule + ", item=" + this);
+//            }
+//            if (false) {
+//                DAO.getInstance().saveInBackground(repeatRule); //save the (possibly new or changed) repeatRule --> do it in DAO now
+//            }
+//        }
+//    }
+//</editor-fold>
     /**
      * sets or updates the repeatRule and ensures that additional or no longer
      * needed repeat instances are created/deleted, as well as deleting an old
@@ -3950,7 +3993,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
                 setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
                 if (notTemplate) { // newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true);
-                    opsAfterSubtaskUpdates.add(() -> newRepeatRuleN.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true));
+                    opsAfterSubtaskUpdates.add(() -> newRepeatRuleN.updateItemsWhenRuleCreatedOrEdited(this, true)); //will also save RR
                 }
             } else {
                 //setting null or NO_REPEAT when already null - do nothing
@@ -3960,16 +4003,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
                 //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
                 setRepeatRuleInParse(null);
-                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this));
+                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)); //will also save RR
             } else { //newRepeatRule != null and possibly modified (eg. click Edit Rule, then Back
                 if (!newRepeatRuleN.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
                     oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
                     setRepeatRuleInParse(oldRepeatRule);
                     if (notTemplate) {
-                        opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, false)); //
+                        opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateItemsWhenRuleCreatedOrEdited(this, false)); //will also save RR
                     }
 //                setRepeatRuleInParse(oldRepeatRule); //must set again to save?? NO, not necessary, only if the *reference* changes in Item
-                    DAO.getInstance().saveInBackground(oldRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+//                    DAO.getInstance().saveInBackground(oldRepeatRule); //NOW done in DAO.save. must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
                 }
             }
         }
@@ -4020,19 +4063,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     protected static Date getSubtasksStartedOnDateD(Item item) {
         List<Item> subtasks = item.getListFull(); //full to include even done/filtered tasks
         long startTime = 0;
-        if (subtasks.size() > 0) {
-            for (Item it : subtasks) {
+        for (Item it : subtasks) {
 //                Date startT = it.getStartedOnDateD();
-                Date startT = it.getSubtasksStartedOnDateD(it);
-                if (startT != null && startT.getTime() != 0) {
-                    startTime = Math.min(startTime, startT.getTime());
-                }
-
+            Date startT = it.getSubtasksStartedOnDateD(it); //getSubtasksStartedOnDateD will never return null
+//            if (startT != null && startT.getTime() != 0) {
+            if (startT.getTime() != 0) {
+                startTime = Math.min(startTime, startT.getTime());
             }
+
+        }
 //            if (startTime != 0) {
 //                return new Date(startTime);
 //            } 
-        }
 //        return null;
         return new Date(startTime);
     }
@@ -5014,14 +5056,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         if (getRepeatRule() != null && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.CANCELLED)
                 && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
-            getRepeatRule().updateRepeatInstancesOnDoneCancelOrDelete(this);
+            getRepeatRule().updateItemsOnDoneCancelOrDelete(this);
         }
 
         if (updateSupertasks) { //must call *after* creating repeat instances to update project correctly based on new subtasks
             Item owner = getOwnerItem();
             if (owner != null) {// && owner.getStatus() != newStatus) {
                 owner.updateStatusOnSubtaskStatusChange(this, oldStatus, newStatus, now);
-                DAO.getInstance().saveInBackground(owner);
+//                DAO.getInstance().saveInBackground(owner); //now done in DAO.save...
             }
         }
     }
@@ -5254,7 +5296,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * owner.updateDerivedValues() whenever a field that affects the owner is
      * modified (e.g.
      */
-    private void updateValuesDerivedFromSubtasksWhenSubtaskListChange() {
+    private void updateAllValuesDerivedFromSubtasksWhenSubtaskListChange() {
         //**Impacting** data (derived/depending on/calculated based on from subtasks):
         //PARSE_STATUS
         //PARSE_REMAINING_EFFORT, PARSE_ACTUAL_EFFORT -> 
@@ -5271,6 +5313,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
 
             ////////////// ActualEffort
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            long currentProjectActualEffortFromSubtasks = getActualForSubtasks();
 //            long currentProjectActualEffortProjectTaskItself = getActualForProjectTaskItself();
 //            long currentTotal = getActualFromParse();
@@ -5281,9 +5324,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setActualImpl(newTotalActual, false);
 //            }
 //            updateActualOnSubtaskChange();
-            updateActualOnSubtaskChange();
+//</editor-fold>
+            updateActualOnSubtaskChange(0);
 
             ////////////// RemainingEffort
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            long oldTotalRemaining = getRemaining();
 ////            long currentRemainingEffortSubtasks = getRemainingEffortFromSubtasks();
 ////            long currentProjectRemainingEffortInParse = getRemainingEffortProjectTaskItself();
@@ -5293,9 +5338,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setRemaining(newTotalRemaining);
 //            }
 //            setRemaining(getRemainingForProjectTaskItself(), true); //this should be enough to refresh the total remaining with updated subtasks
+//</editor-fold>
             updateRemainingOnSubtaskChange();
 
             ////////////// EffortEstimate
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            long oldProjectEffortEstimate = getEstimate();
 //            long currentProjectEffortEstimateProjectItself = getEstimateForProjectTaskItself();
 //            long currentProjectEffortSutasks = getEstimateForSubtasks();
@@ -5303,28 +5350,31 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            if (newTotalEffortEstimate != oldProjectEffortEstimate) {
 //                setEstimateImpl(newTotalEffortEstimate);
 //            }
+//</editor-fold>
             updateEstimateOnChangeInSubtasks();
 
             ////////////// CompletedDate
             if (isDone()) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                Date currentProjectCompletedDate = getCompletedDateD();
 //                Date currentProjectCompletedDateInParse = getCompletedDateDInParse();
 //                if (currentProjectCompletedDate.getTime() != currentProjectCompletedDateInParse.getTime()) {
 //                    setCompletedDateInParse(currentProjectCompletedDate);
 //                }
 //                setCompletedDateInParse(getLatestSubtaskCompleteDate(), true);
+//</editor-fold>
                 setCompletedDate(getLatestSubtaskCompleteDate(), true, false); //false=> do NOT update status of project just because of changes to subtask completedDate
             }
 
-            Date currentProjectStartedOnDate = getStartedOnDateD();
+            Date currentProjectStartedOnDate = getStartedOnDateD(); //get last startedOn for subtasks
             Date currentProjectStartedOnInParse = getStartedOnDateDInParse();
             if (currentProjectStartedOnDate.getTime() != currentProjectStartedOnInParse.getTime()) {
                 setStartedOnDateInParse(currentProjectStartedOnDate);
             }
 
-            if (false) {
-                DAO.getInstance().saveInBackground(this); //NOT needed sine updateValues is (at least currently) only called when setting the subtask list, in which case it needs to be saved at a higher level anyway
-            }
+//            if (false) {
+//                DAO.getInstance().saveInBackground(this); //NOT needed sine updateValues is (at least currently) only called when setting the subtask list, in which case it needs to be saved at a higher level anyway
+//            }
         }
     }
 
@@ -6242,8 +6292,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 owner.updateEstimateOnChangeInSubtasks();
 //                DAO.getInstance().saveInBackgroundOnTimeout(this);
 //                DAO.getInstance().saveInBackground(this);
-                DAO.getInstance().saveInBackground(owner);
-//                DAO.getInstance().saveInBackground(owner);
+//                DAO.getInstance().saveInBackground(owner); //NOW done in DAO.save
             }
         }
     }
@@ -6468,7 +6517,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        update();
     }
 
-    private void setRemainingImpl(long remainingEffortProjectTaskItselfMillis) {
+    private void setRemainingImplXXX(long remainingEffortProjectTaskItselfMillis) {
         long oldRemaining = getRemaining();
 
         setRemainingForProjectTaskItselfInParse(remainingEffortProjectTaskItselfMillis);
@@ -6501,7 +6550,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (owner != null && oldRemaining != totalRemainingEffort) {
 //            owner.updateRemaining(oldRemaining, totalRemainingEffort);
             owner.updateRemainingOnSubtaskChange();
-            DAO.getInstance().saveInBackground(owner);
+//            DAO.getInstance().saveInBackground(owner);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            long currentProjectRemainingEffort = owner.getRemainingEffort();
 //            long currentProjectRemainingEffortInParse = owner.getRemainingEffortFromParse();
@@ -6619,7 +6668,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (owner != null && oldRemaining != totalRemainingEffort) {
 //            owner.updateRemaining(oldRemaining, totalRemainingEffort);
             owner.updateRemainingOnSubtaskChange();
-            DAO.getInstance().saveInBackground(owner);
+//            DAO.getInstance().saveInBackground(owner);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            long currentProjectRemainingEffort = owner.getRemainingEffort();
 //            long currentProjectRemainingEffortInParse = owner.getRemainingEffortFromParse();
@@ -6649,7 +6698,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param oldRemainingSubtaskEffort
      * @param newRemainingSubtaskEffort
      */
-    protected void updateRemainingXXX(long oldRemainingSubtaskEffort, long newRemainingSubtaskEffort) {
+    private void updateRemainingXXX(long oldRemainingSubtaskEffort, long newRemainingSubtaskEffort) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long currentProjectRemainingEffort = getRemainingEffortProjectTaskFromParse();
 //         currentProjectRemainingEffort = getRemainingEffortProjectTaskItself();
@@ -6719,7 +6768,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
     }
 
-    protected void updateRemainingOnSubtaskChange() {
+    private void updateRemainingOnSubtaskChange() {
         setRemaining(getRemainingForProjectTaskItselfFromParse(), true);
     }
 
@@ -6940,7 +6989,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            ((Item) ownerProject).updateActualOnSubtaskChange(oldActualEffort, actualEffortTotalMillis);
             ((Item) ownerProject).updateActualOnSubtaskChange(actualIncrease);
 //            ((Item) ownerProject).updateActualOnSubtaskChange();
-            DAO.getInstance().saveInBackground(ownerProject);
+//            DAO.getInstance().saveInBackground(ownerProject);
         }
 //        }
 //        update(); //DONE at the caller
@@ -7020,7 +7069,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * recalculate actual for a project, eg when there any kind of change in the
      * subtasks
      */
-    private void updateActualOnSubtaskChange() {
+    private void updateActualOnSubtaskChangeXXX() {
         setActualImpl(getActualForProjectTaskItself() + getActualForSubtasks(), true);
     }
 //    private void updateActualOnSubtaskChange() {
@@ -7662,7 +7711,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         Item owner = getOwnerItem();
         if (owner != null) {
-            owner.updateValuesDerivedFromSubtasksWhenSubtaskListChange();
+            owner.updateAllValuesDerivedFromSubtasksWhenSubtaskListChange();
         }
     }
 //     public void setCompletedDate(Date completedDate) {
@@ -7781,7 +7830,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     @Override
-    public void setDeletedDate(Date dateDeleted) {
+    public void setSoftDeletedDate(Date dateDeleted) {
         if (dateDeleted != null && dateDeleted.getTime() != 0) {
 //            if (isProject()) //NO, not here, is done in softDeleteImpl()
 //                for (Item subtask : (List<Item>) getListFull()) { //full set even for hidden subtasks
@@ -7794,7 +7843,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     @Override
-    public Date getDeletedDateN() {
+    public Date getSoftDeletedDateN() {
         Date date = getDate(PARSE_DELETED_DATE);
 //        return (date == null) ? new Date(0) : date;
         return date; //return null to indicate NOT deleted
@@ -8347,7 +8396,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      *
      */
-    private void fireActionEvent() {
+    private void fireActionEventXXX() {
         dispatcher.fireActionEvent(new ActionEvent(this, ActionEvent.Type.PointerPressed));
         Display d = Display.getInstance();
         if (d.isBuiltinSoundsEnabled()) {
@@ -8369,8 +8418,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @param d the listener
      */
-    public void addDataChangeListener(DataChangedListener d) {
-        listeners.addListener(d);
+    public void addDataChangeListenerXXX(DataChangedListener d) {
+        listenersXXX.addListener(d);
     }
 
     /**
@@ -8378,8 +8427,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @param d the listener
      */
-    public void removeDataChangeListener(DataChangedListener d) {
-        listeners.removeListener(d);
+    public void removeDataChangeListenerXXX(DataChangedListener d) {
+        listenersXXX.removeListener(d);
     }
 
     /**
@@ -8388,9 +8437,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param type the event type: Added, Removed or Change
      * @param index cursor location of the event
      */
-    public void fireDataChanged(int type, int index) {
-        if (listeners != null) {
-            listeners.fireDataChangeEvent(index, type);
+    public void fireDataChangedXXX(int type, int index) {
+        if (listenersXXX != null) {
+            listenersXXX.fireDataChangeEvent(index, type);
         }
     }
 
@@ -8475,6 +8524,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
                 opsToUpdateSubtasks.clear();
             }
+        }
+        updateSubtaskOngoing = false;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && getOwner() == null) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
 //            Inbox.getInstance().addToList(this);
@@ -8487,20 +8538,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (false) {
 //            DAO.getInstance().saveInBackground((ParseObject) this); //WHY save again?? We're already saving 'this'
 //        }
-            //handling of change in owner: if set in ScreenItem2: all values updated there; if this is a copy: all values can be assumed to already have been correctly set; if subtask inserted into new project: 
+        //handling of change in owner: if set in ScreenItem2: all values updated there; if this is a copy: all values can be assumed to already have been correctly set; if subtask inserted into new project: 
 //        Runnable repeatRule = (Runnable) saveOps.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
 //        repeatRule.run(); //create or update any repeatInstances 
 //</editor-fold>
-            if (opsAfterSubtaskUpdates != null) {
-//            for (Runnable f : opsAfterSubtaskUpdates) {
-//                f.run();
-//            }
-                while (!opsAfterSubtaskUpdates.isEmpty()) {
-                    Runnable f = opsAfterSubtaskUpdates.remove(0); //ensures that each operation is only called once, even if iterating (the run() calls an operation which calls saveInBackground triggering 
-                    f.run();
-                }
-//            opsAfterSubtaskUpdates.clear();//clear to avoid having to recreate = null; //must delete 
-            }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //save dirty Categories:
 //        for (Category cat : getCategories()) {
@@ -8513,9 +8554,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            DAO.getInstance().saveInBackground(new ArrayList(getCategories())); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories. Work on copy of list to avoid java.util.ConcurrentModificationException
 //        }
 //</editor-fold>
-            if (isDirty()) {
-                listeners.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
+        if (false&&isDirty()) {
+            listenersXXX.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
+        }
+
+        if (true|| opsAfterSubtaskUpdates != null) { //never null
+//            for (Runnable f : opsAfterSubtaskUpdates) {
+//                f.run();
+//            }
+            while (!opsAfterSubtaskUpdates.isEmpty()) {
+                Runnable f = opsAfterSubtaskUpdates.remove(0); //ensures that each operation is only called once, even if iterating (the run() calls an operation which calls saveInBackground triggering 
+                f.run();
             }
+//            opsAfterSubtaskUpdates.clear();//clear to avoid having to recreate = null; //must delete 
+        }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (afterSaveActions.containsKey(AFTER_SAVE_ALARM_UPDATE)) {
 //            afterSaveActions.remove(AFTER_SAVE_TEXT_UPDATE); //if we're updating alarms due to time change, we can ignore any changed to the text
@@ -8536,7 +8589,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
 //TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
-            TimerStack.getInstance().updateTimerOnItemStatusChange(this, true, false); //true: move to next, false: don't save 
+        TimerStack.getInstance().updateTimerOnItemStatusChange(this, true, false); //true: move to next, false: don't save 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (isDone()) {
 //            AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //remove any future alarms for a Done/Cancelled task
@@ -8551,15 +8604,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //        }
 //</editor-fold>
-            AlarmHandler.getInstance().updateOnItemChange(this);
+        AlarmHandler.getInstance().updateOnItemChange(this);
 
-            if (getOwner() == null && !isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
-                Inbox.getInstance().addToList(this);
+        if (getOwner() == null && !isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+            Inbox.getInstance().addToList(this);
 //            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
-                DAO.getInstance().saveInBackground((ParseObject) Inbox.getInstance());
-            }
+            DAO.getInstance().saveNew((ParseObject) Inbox.getInstance(), false); //no trigger, will be saved together with new item
         }
-        updateSubtaskOngoing = false;
+
     }
 
     @Override
@@ -9332,9 +9384,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_DELETED_DATE:
                 if (toCSV) {
-                    list.add(MyDate.formatDateNew(getDeletedDateN()));
+                    list.add(MyDate.formatDateNew(getSoftDeletedDateN()));
                 } else {
-                    setDeletedDate((Date) val);
+                    setSoftDeletedDate((Date) val);
                 }
                 break;
         }
@@ -10371,14 +10423,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
     public void setFilterSortDef(FilterSortDef filterSortDef) {
 //        if (filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) { //only save filter for subtasks if modified!
-        if (//filterSortDef == null || //if filter is deleted 
-                filterSortDef.equals(getDefaultFilterSortDef()) //if new filter is 'just' default filter
+        if (filterSortDef == null //if filter is deleted 
+                || filterSortDef.equals(getDefaultFilterSortDef()) //if new filter is 'just' default filter
                 || isFilterSortDefInherited(filterSortDef)) { //or if filter is the same as the inherited filter (either edited back to same value or just not changed)
             remove(PARSE_FILTER_SORT_DEF);
         } else {
 //            if (!isNoSave())  //otherwise temporary filters for e.g. Overdue will be saved //NO, now Overdue will be a saved (temporarily) list, but other lists (Statistics?) may still be temporary
             if (filterSortDef.getObjectIdP() == null && !isNoSave()) {
-                DAO.getInstance().saveInBackground(filterSortDef); //
+//                DAO.getInstance().saveInBackground(filterSortDef); //NOW done in DAO.save...
             }
             put(PARSE_FILTER_SORT_DEF, filterSortDef);
         }

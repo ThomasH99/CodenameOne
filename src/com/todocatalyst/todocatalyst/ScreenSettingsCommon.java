@@ -374,7 +374,7 @@ public class ScreenSettingsCommon extends MyForm {
 //                    prefEntry.getHelpText()));
 //
 //    }
-    protected void addSettingEnumAsCompGroup(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed) {
+    protected void addSettingEnumAsCompGroup(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed, boolean verticalLayout) {
 
         if (tableLayout) {
         } else {
@@ -392,7 +392,7 @@ public class ScreenSettingsCommon extends MyForm {
                         return;
                     }
                 }
-            }, unselectAllowed),
+            }, unselectAllowed,verticalLayout),
                     prefEntry.getHelpText()));
 
         }

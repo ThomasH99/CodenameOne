@@ -17,12 +17,12 @@ import java.util.Map;
  * @author Thomas
  */
 /**
-cannot select multiple values!
- * stores the index of the string array in Parse. E.g. ["str1", "str2", "str3"]
- * and str2 selected will store 1, str1 will store 0.
+ * cannot select multiple values! stores the index of the string array in Parse.
+ * E.g. ["str1", "str2", "str3"] and str2 selected will store 1, str1 will store
+ * 0.
  */
 /**
- * 
+ *
  * @author Thomas
  */
 class MyComponentGroup extends ComponentGroup {
@@ -32,15 +32,16 @@ class MyComponentGroup extends ComponentGroup {
     private EventDispatcher dispatcher = new EventDispatcher();
 
     /**
-     * 
-     * @param values either an array of String or an array of Objects for which toString() will be used
+     *
+     * @param values either an array of String or an array of Objects for which
+     * toString() will be used
      * @param selectedString
-     * @param unselectAllowed 
+     * @param unselectAllowed
      */
-    MyComponentGroup(Object[] values, String selectedString, boolean unselectAllowed) {
+    MyComponentGroup(Object[] values, String selectedString, boolean unselectAllowed, boolean verticalLayout) {
         super();
         this.values = values;
-        this.setHorizontal(true);
+        this.setHorizontal(!verticalLayout);
         buttonGroup = new ButtonGroup();
         ActionListener buttonListener = (e) -> {
             dispatcher.fireActionEvent(e);
@@ -81,13 +82,45 @@ class MyComponentGroup extends ComponentGroup {
         }
     }
 
+    MyComponentGroup(Object[] values, String selectedString, boolean unselectAllowed) {
+        this(values, selectedString, unselectAllowed, false);
+    }
+
     MyComponentGroup(Object[] values, boolean unselectAllowed) {
         this(values, "", unselectAllowed);
     }
 
+    MyComponentGroup(String[] values, int selectedStringIndex, boolean unselectAllowed) {
+        this(values, values[selectedStringIndex], unselectAllowed);
+    }
+
+    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed, boolean verticalLayout) {
+//        this(values, get.get(), unselectAllowed);
+        this(values, get.get(), unselectAllowed, verticalLayout);
+        parseIdMap.put(this, () -> {
+            int size = this.getComponentCount();
+            for (int i = 0; i < size; i++) {
+                if (((RadioButton) this.getComponentAt(i)).isSelected()) {
+                    set.accept(((RadioButton) this.getComponentAt(i)).getText()); //store the index of the selected string
+                    return;
+                }
+            }
+            set.accept("");
+        });
+    }
+
+    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {
+        this(values, parseIdMap, get, set, unselectAllowed, false);
+    }
+
+    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set) {
+        this(values, parseIdMap, get, set, true);
+    }
+
     /**
-     * Adds a listener to the button which will cause an event to dispatch on click
-     * 
+     * Adds a listener to the button which will cause an event to dispatch on
+     * click
+     *
      * @param l implementation of the action listener interface
      */
     public void addActionListener(ActionListener l) {
@@ -96,7 +129,7 @@ class MyComponentGroup extends ComponentGroup {
 
     /**
      * Removes the given action listener from the button
-     * 
+     *
      * @param l implementation of the action listener interface
      */
     public void removeActionListener(ActionListener l) {
@@ -104,9 +137,11 @@ class MyComponentGroup extends ComponentGroup {
     }
 
     /**
-    any previous selected value will become unselected, an illegal string, not in the list, will lead to all being deselected
-    @param selectedString 
-    */
+     * any previous selected value will become unselected, an illegal string,
+     * not in the list, will lead to all being deselected
+     *
+     * @param selectedString
+     */
     public void select(String selectedString) {
         if (selectedString == null || selectedString.isEmpty()) {
             return;
@@ -122,8 +157,9 @@ class MyComponentGroup extends ComponentGroup {
     }
 
     /**
-    
-    @param selectedIndex an illegal value, e.g. -1, will lead to all being unselected
+     *
+     * @param selectedIndex an illegal value, e.g. -1, will lead to all being
+     * unselected
      */
     public void select(int selectedIndex) {
         int size = this.getComponentCount();
@@ -136,8 +172,9 @@ class MyComponentGroup extends ComponentGroup {
     }
 
     /**
-    returns selected index, or -1 if none
-    @return 
+     * returns selected index, or -1 if none
+     *
+     * @return
      */
     public int getSelectedIndex() {
         int size = this.getComponentCount();
@@ -150,38 +187,17 @@ class MyComponentGroup extends ComponentGroup {
     }
 
     /**
-    returns selected String, or null if none
-    @return 
+     * returns selected String, or null if none
+     *
+     * @return
      */
     public String getSelectedString() {
         int selected = getSelectedIndex();
         int size = this.getComponentCount();
-        if (selected >= 0 && selected < size ) {
+        if (selected >= 0 && selected < size) {
             return ((RadioButton) this.getComponentAt(selected)).getText();
         }
         return null;
-    }
-
-    MyComponentGroup(String[] values, int selectedStringIndex, boolean unselectAllowed) {
-        this(values, values[selectedStringIndex], unselectAllowed);
-    }
-
-    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set) {
-        this(values, parseIdMap, get, set, true);
-    }
-
-    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {
-        this(values, get.get(), unselectAllowed);
-        parseIdMap.put(this, () -> {
-            int size = this.getComponentCount();
-            for (int i = 0; i < size; i++) {
-                if (((RadioButton) this.getComponentAt(i)).isSelected()) {
-                    set.accept(((RadioButton) this.getComponentAt(i)).getText()); //store the index of the selected string
-                    return;
-                }
-            }
-            set.accept("");
-        });
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">

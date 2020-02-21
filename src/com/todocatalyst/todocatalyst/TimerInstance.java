@@ -90,7 +90,7 @@ public class TimerInstance extends ParseObject {
 //    private List<ScreenTimer2> timers = new ArrayList();
 //    @Override
     public void saveMe() {
-        DAO.getInstance().saveInBackground(this);
+        DAO.getInstance().saveTimerInstanceInBackground(this);
     }
 
     private void showNoMoreTasksDialogWhenRelevant(Item item, ItemList itemList) {
@@ -543,7 +543,7 @@ public class TimerInstance extends ParseObject {
             if (timedItemN != null) {
                 timedItemN.setActual(timedItemN.getActualForProjectTaskItself() + getElapsedTime(), false); //false: don't auto-update startedOn time (done when status is set?!)
                 if (saveUpdatedItem) {
-                    DAO.getInstance().saveInBackground(timedItemN);
+                    DAO.getInstance().saveNew(timedItemN,true);
                 }
             }
 //            timerInstance.setElapsedTime(0); //reset elapsed time since it's now been added to Item's actual & saved
@@ -1064,6 +1064,6 @@ public class TimerInstance extends ParseObject {
      * delete this timer when it's done
      */
     public void deleteInstance() {
-        DAO.getInstance().deleteInBackground(this);
+        DAO.getInstance().delete(this);
     }
 }

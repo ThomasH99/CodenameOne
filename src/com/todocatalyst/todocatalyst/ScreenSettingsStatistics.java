@@ -40,9 +40,9 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
 //                false);
         
 //        addSettingStringValues(cont, parseIdMap2, MyPrefs.statisticsSortBy, ScreenStatistics.SortStatsOn.values(), false);
-        addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsSortBy, ScreenStatistics.SortStatsOn.values(), false);
+        addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsSortBy, ScreenStatistics.SortStatsOn.values(), false, true);
 //        addSettingStringValues(cont, parseIdMap2, MyPrefs.statisticsGroupBy, ScreenStatistics.ShowGroupedBy.values(), false);
-        addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsGroupBy, ScreenStatistics.ShowGroupedBy.values(), false);
+        addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsGroupBy, ScreenStatistics.ShowGroupedBy.values(), false, true);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsGroupTasksUnderTheirProject);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsShowDetailsForAllLists);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsShowMostRecentFirst);

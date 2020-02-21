@@ -363,7 +363,7 @@ public class ScreenItem2 extends MyForm {
                 parseIdMap2.update(); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
                 Item template = new Item();
                 item.copyMeInto(template, Item.CopyMode.COPY_TO_TEMPLATE);
-                DAO.getInstance().saveInBackground(template);
+                DAO.getInstance().saveNew(template, false);
 //                TemplateList templateList = DAO.getInstance().getTemplateList();
                 TemplateList templateList = TemplateList.getInstance();
                 if (MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists)) {
@@ -371,7 +371,7 @@ public class ScreenItem2 extends MyForm {
                 } else {
                     templateList.add(template);
                 }
-                DAO.getInstance().saveInBackground((ParseObject) templateList);
+                DAO.getInstance().saveNew((ParseObject) templateList, true);
 //                ip.dispose();
 //                if (Dialog.show("INFO", "Do you want to edit the template now? You can find and edit it later under Templates.", "Yes", "No")) {
 //                    new ScreenItem(template, ScreenItem.this, () -> {
@@ -427,12 +427,12 @@ public class ScreenItem2 extends MyForm {
 //                                item.addToList(subtask); //UI: template subtasks are permanently (no Cancel possible) added to item
                                 item.addToList(subtask.copyMeInto(new Item(), Item.CopyMode.COPY_FROM_TEMPLATE, 0)); //UI: template subtasks are permanently (no Cancel possible) added to item
                             }
-                            if (false) {
-                                parseIdMap2.put("SaveSubtasks", () -> DAO.getInstance().saveInBackground(item)); //NECESSARY since if no other edits
-                            }
-                            if (false && template.getList().size() > 0) {
-                                DAO.getInstance().saveInBackground(item); //NECESSARY since if item not saved, or Cancel, the updated subtask list will linger and be saved later
-                            }
+//                            if (false) {
+//                                parseIdMap2.put("SaveSubtasks", () -> DAO.getInstance().saveInBackground(item)); //NECESSARY since if no other edits
+//                            }
+//                            if (false && template.getList().size() > 0) {
+//                                DAO.getInstance().saveInBackground(item); //NECESSARY since if item not saved, or Cancel, the updated subtask list will linger and be saved later
+//                            }
                             if (item.getSource() == null) { //source could already be set, e.g. if repeat copy
                                 itemCopy.setSource(template);
                                 parseIdMap2.put("SetSource", () -> item.setSource(template)); //NECESSARY since if no other edits
@@ -441,9 +441,9 @@ public class ScreenItem2 extends MyForm {
 //                            DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
 //                            DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
 //                            DAO.getInstance().saveProjectInBackground(item);
-                            if (false) {
-                                DAO.getInstance().saveInBackground(item);
-                            }
+//                            if (false) {
+//                                DAO.getInstance().saveInBackground(item);
+//                            }
 //                            locallyEditedCategories = null; //HACK needed to force update of locallyEditedCategories (which shouldn't be refreshed when eg editing subtasks to avoid losing the edited categories) 
 //                            ip.dispose();
 //                            refreshAfterEdit(); //DONE on Back from ScreenObjectPicker
@@ -475,7 +475,8 @@ public class ScreenItem2 extends MyForm {
 //            item.delete();
 //            DAO.getInstance().delete(item);
 //</editor-fold>
-            item.softDelete();
+//            item.softDelete();
+            DAO.getInstance().delete(item, false, true);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            previousForm.refreshAfterEdit();
 ////            previousForm.revalidate();
@@ -762,7 +763,7 @@ public class ScreenItem2 extends MyForm {
             dueDate = new Date(makeDefaultDueDate().getTime());
         }
         long defaultAlarm = Math.max(dueDate.getTime() - MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS,
-                MyDate.getNow()+MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: when setting an alarm for a past due date, use now as reference
+                MyDate.getNow() + MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: when setting an alarm for a past due date, use now as reference
         return MyDate.roundDownToFullMinutes(new Date(defaultAlarm)); //round off to remove seconds/milliseconds
 //        return new Date(defaultAlarm); //round off to remove seconds/milliseconds (now done in makeDefaultDueDate())
     }
@@ -1072,7 +1073,7 @@ public class ScreenItem2 extends MyForm {
         if (!testMoveTextFieldsToOtherTab) {
             mainCont.add(commentField);
         }
-        
+
         mainCont.add(makeSpacerThin());
 
         //STATUS
@@ -1443,14 +1444,10 @@ public class ScreenItem2 extends MyForm {
         }
 
         //REPEAT RULE
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        WrapButton repeatRuleButton = new WrapButton(repeatVal!= null && !repeatVal.equals(REPEAT_RULE_DELETED_MARKER)
-//                ? ((RepeatRuleParseObject) previousValues.get(Item.REPEAT_RULE)).getText()
-//                : item.getRepeatRule() != null ? item.getRepeatRule().getText() : "");
-//</editor-fold>
         WrapButton repeatRuleButton = new WrapButton();
-        Object editedRepeatRule = previousValues.get(Item.PARSE_REPEAT_RULE);
-        ActionListener refreshRepeatRuleButton = e -> {
+        //set text for edit-RR button
+        ActionListener refreshRepeatRuleButtonText = e -> {
+            RepeatRuleParseObject editedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
             String repeatRuleButtonStr;
             if (editedRepeatRule == null) { //no edits
                 if (item.getRepeatRule() != null) {
@@ -1460,167 +1457,49 @@ public class ScreenItem2 extends MyForm {
                 }
             } else if (editedRepeatRule.equals(REPEAT_RULE_DELETED_MARKER)) {
                 repeatRuleButtonStr = "";
-            } else { //if (editedRepeatRule instanceof RepeatRuleParseObject) { //NB instanceof RepeatRuleParseObject is only option possible
+            } else { //stored a locally edited RR
                 assert editedRepeatRule instanceof RepeatRuleParseObject;
-                repeatRuleButtonStr = ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)).getText();
+                repeatRuleButtonStr =editedRepeatRule.getText();
             }
             repeatRuleButton.setText(repeatRuleButtonStr);
         };
 
+        //Cmd for editing RR
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenEditItem", "", null, (e) -> {
-//<editor-fold defaultstate="collapsed" desc="comment">
-            //DONE!!!! by making this a ReplayCommand, it is also necessary to store the edited values within the screen, otherwise the user is returned, but the values are lost => annoying!
-//DON'T set a string since SpanButton shows both Command string and SpanLabel string
-//                if (Display)
-//                if (locallyEditedCategories == null) {
-//                    locallyEditedCategories = new ArrayList(item.getCategories()); //create a copy of the categories that we can edit locally in this screen; only initialize once to keep value between calling categoryPicker
-//                }
-//                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem.this);
-//                screenCatPicker.setUpdateActionOnDone(() -> {
-//                    repeatRuleButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "<click to set categories>"));
-//                    parseIdMap2.put("EditedCategories", () -> {
-//                        item.updateCategories(locallyEditedCategories);
-//                    });
-//                    ScreenItem.this.revalidate();
-//                });
-//                screenCatPicker.show();
-//                if (dueDate.getDate().getTime() == 0) {
-//                    Dialog.show("INFO", "Please define " + Item.DUE_DATE + " first", "OK", null);
-//                    return;
-//                }
-//            if (orgRepeatRule == null) {
-//                orgRepeatRule = item.getRepeatRule(); //only do this the very first time
-//            }
-//</editor-fold>
-            if (item.getRepeatRule() != null && !item.getRepeatRule().isRepeatInstanceInListOfActiveInstances(item)) {
-//                    Dialog.show("INFO", "Once a repeating task has been set " + ItemStatus.DONE + " or " + ItemStatus.CANCELLED + " the " + Item.REPEAT_RULE + " definition cannot be edited anymore", "OK", null);
-//                    Dialog.show("INFO", Format.f("Once a repeating task has been set {0} or {1} the {2} definition cannot be edited from this task anymore", ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
-//                Dialog.show("INFO", Format.f("Once a repeating task has been set [DONE] or [CANCELLED] the [REPEAT_RULE] definition cannot be edited from this task anymore"), "OK", null);
-                Dialog.show("INFO", Format.f("Once a repeating {0 work slot} has been set {1 DONE} or {2 CANCELLED} the {3 REPEAT_RULE} definition cannot be edited from this task anymore",
-                        WorkSlot.WORKSLOT, ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
-
+                        //check if OK to edit RR, return if not
+//            if (item.getRepeatRule() != null && !locallyEditedRepeatRuleCopy.isRepeatInstanceInListOfActiveInstances(item)) {
+            if (item.getRepeatRule() != null && !item.getRepeatRule().canRepeatRuleBeEdited(item)) {
+                Dialog.show("INFO", Format.f("Once a repeating {0 task or workslot} has been set {1 DONE} or {2 CANCELLED} the {3 REPEAT_RULE} definition cannot be edited from this task anymore",
+                        Item.TASK, ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
                 return;
             }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            RepeatRuleParseObject locallyEditedRepeatRule
-//                    = previousValues.get(Item.PARSE_REPEAT_RULE) != null
-//                    ? ((RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE)) //fetch previously edited instance/copy of the repeat Rule
-//                    : new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if returns null, creates a fresh RR
-//</editor-fold>
-            RepeatRuleParseObject locallyEditedRepeatRule;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (previousValues.get(Item.PARSE_REPEAT_RULE) == null || previousValues.get(Item.PARSE_REPEAT_RULE).equals(REPEAT_RULE_DELETED_MARKER)) {
-//                locallyEditedRepeatRule = new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
-//            } else {
-//                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
-//            }
-//</editor-fold>
-            if (previousValues.get(Item.PARSE_REPEAT_RULE) != null) {
-                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
-            } else {
-                locallyEditedRepeatRule = new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
-                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
+
+            RepeatRuleParseObject locallyEditedRepeatRuleCopy; //NB - must set locallyEditedRepeatRule like it's done to allow use in lambda fct below
+            RepeatRuleParseObject localRR=(RepeatRuleParseObject)previousValues.get(Item.PARSE_REPEAT_RULE);
+            
+            if (localRR != null) {
+                locallyEditedRepeatRuleCopy = localRR;
+            }else{
+                if (item.getRepeatRule() == null) {
+                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
+//                    locallyEditedRepeatRuleCopy.addOriginatorToRule(item); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
+                } else {
+                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(item.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
+                }
+                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //save new value locally
             }
-//            if (locallyEditedRepeatRule.getSpecifiedStartDateD().getTime() == 0 && dueDate.getDate().getTime() != 0)
-//                locallyEditedRepeatRule.setSpecifiedStartDate(new Date(dueDate.getDate().getTime())); //if RR has no startDate, then set startDate to value from Due picker (if set) //new Date() needed to avoid referring to the SAME Date object in Picker and RR
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                if (orgRepeatRule == null && editedRepeatRuleCopy == null) {
-//                    editedRepeatRuleCopy = new RepeatRuleParseObject(); //if no rule exists already, create a fresh one
-//                } else {
-////                    editedRepeatRuleCopy = item.getRepeatRule().cloneMe(); //make a copy of the *original* repeatRule
-//                    editedRepeatRuleCopy = new RepeatRuleParseObject(); //make a copy of the *original* repeatRule
-//                    item.getRepeatRule().copyMeInto(editedRepeatRuleCopy, true); //make a full (hence 'true') copy of the *original* repeatRule
-//                }//                repeatRuleCopyBeforeEdit = locallyEditedRepeatRule.cloneMe(); //used to check if the original rule has been edited
-//            if (orgRepeatRule == null) { //no previous repeatRule
-//                if (locallyEditedRepeatRule == null) {
-//                    locallyEditedRepeatRule = new RepeatRuleParseObject(); //if no rule exists already, create a fresh one
-//                }
-//            } else {
-//                if (locallyEditedRepeatRule == null) {
-////                    editedRepeatRuleCopy = item.getRepeatRule().cloneMe(); //make a copy of the *original* repeatRule
-//                    locallyEditedRepeatRule = new RepeatRuleParseObject(); //make a copy of the *original* repeatRule
-//                    item.getRepeatRule().copyMeInto(locallyEditedRepeatRule, true); //make a full (hence 'true') copy of the *original* repeatRule
-//                }
-//            }//                repeatRuleCopyBeforeEdit = locallyEditedRepeatRule.cloneMe(); //used to check if the original rule has been edited
-//                if (repeatRuleCopyForEdited == null && item.getRepeatRule() != null) {
-//                    repeatRuleCopyForEdited = item.getRepeatRule().cloneMe(); //make a copy of the *original* repeatRule
-//                }
-//            ASSERT.that(orgRepeatRule == null
-//                    || (locallyEditedRepeatRule.equals(orgRepeatRule)
-//                    && orgRepeatRule.equals(locallyEditedRepeatRule)), "problem in cloning repeatRule");
-//                putEditedValues2(parseIdMap2);
-//            new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
-//            new ScreenRepeatRule(Item.REPEAT_RULE, (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE), item, ScreenItem2.this, () -> {
-//            new ScreenRepeatRule(Item.REPEAT_RULE, item.getRepeatRule(), locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
-//</editor-fold>
-            new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRule, item, ScreenItem2.this, () -> {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
-//                    previousValues.remove(Item.PARSE_REPEAT_RULE);
-//                    if (false) repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
-//                } else if (locallyEditedRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
-//                    previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
-//                    if (false) repeatRuleButton.setText(""); //"<click to make task/project repeat>"
-//                } else {
-//                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule);
-//                    if (locallyEditedRepeatRule.getSpecifiedStartDateD()!=null && dueDate.getDate().getTime()==0)
-//                        dueDate.setDate(locallyEditedRepeatRule.getSpecifiedStartDateD());
-//                    if (false) repeatRuleButton.setText(locallyEditedRepeatRule.getText());
-//                }
-//</editor-fold>
-                if (false) {
-                    repeatRuleButton.revalidate();
-                }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (dueDate.getDate().getTime() == 0
-//                            && locallyEditedRepeatRule.getSpecifiedStartDateD().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
-//                dueDate.setDate(locallyEditedRepeatRule.getSpecifiedStartDateD()); //set dueDate if set in RepeatRule //TODO!!!! or if due date *changed* in RepeatRule??
-//                        dueDate.repaint(); //enough to removeFromCache on screen?? NO
-//                        refreshAfterEdit(); //optimize!!
-//                revalidate(); //enough to update? YES //needed to allow space for additional text on RR button?!
-//                repeatRuleButton.revalidate(); //enough to update? NO (overwrites label text on left)
-//                repeatRuleButton.getParent().revalidate(); //enough to update? NO
-//</editor-fold>
+            
+            new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRuleCopy, item, ScreenItem2.this, () -> {
                 //if a startDate was set in the RR, and none is set for the item, use RR startDate as due date. *unless* the dueDate was reset to 0 (hence the test on item.getDueDateD())
-                if (/*itemCopy.getDueDateD().getTime() == 0 &&*/dueDate.getDate().getTime() == 0
-                        && locallyEditedRepeatRule.getSpecifiedStartDateD().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
-//                    dueDate.setDate(new Date(locallyEditedRepeatRule.getSpecifiedStartDateD().getTime())); //set dueDate if set in RepeatRule //TODO!!!! or if due date *changed* in RepeatRule?? //NOT necessary as picker is initialized from locallyEdited values
-                    previousValues.put(Item.PARSE_DUE_DATE, new Date(locallyEditedRepeatRule.getSpecifiedStartDateD().getTime())); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
+                if (dueDate.getDate().getTime() == 0 && locallyEditedRepeatRuleCopy.getSpecifiedStartDate().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
+                    previousValues.put(Item.PARSE_DUE_DATE, new Date(locallyEditedRepeatRuleCopy.getSpecifiedStartDate().getTime())); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
                 }
-                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRule); //store edited rule (otherwise not persisted in local memory)
-                if (false) {
-                    mainCont.revalidate(); //enough to update? NO
-                }//                    }
-//            }, true, dueDate.getDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
+                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
             }, true, dueDate.getDate(), () -> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        parseIdMap2.put("REPEAT_RULE", () -> {
-//        parseIdMap2.put(REPEAT_RULE_KEY, () -> {
-//            if (localSave) {
-//                saveNewRepeatRule(locallyEditedRepeatRule);
-//            } else {
-////            if (locallyEditedRepeatRule != null && !locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)) { //if rule was edited //NO need to test here, item.setRepeatRule() will check if the rule has changed
-////            if (locallyEditedRepeatRule != null && !locallyEditedRepeatRule.equals(repeatRuleCopyBeforeEdit)) { //if rule was edited
-//                if (locallyEditedRepeatRule != null && !locallyEditedRepeatRule.equals(new RepeatRuleParseObject()) && !locallyEditedRepeatRule.equals(orgRepeatRule)) { //if rule was edited
-////                DAO.getInstance().save(locallyEditedRepeatRule); //save first to enable saving repeatInstances -NOW done in setRepeatRule
-//                    if (orgRepeatRule != null) { //keep the original RR (a ParseObject so don't want to recreate new objects with every edit)
-//                        locallyEditedRepeatRule.copyMeInto(orgRepeatRule, false);
-//                    } else {
-//                        orgRepeatRule = locallyEditedRepeatRule;
-//                    }
-//                    //TODO ensure that repeatrule is not triggered when saving locally on app exit
-//                    item.setRepeatRule(orgRepeatRule);  //TODO!! optimize and see if there's a way to check if rule was just opened in editor but not changed
-////                    repeatRuleButton.setText(getDefaultIfStrEmpty(item.getRepeatRule().toString(), "<set>")); //"<click to make task/project repeat>"
-////                repeatRuleButton.setText(getDefaultIfStrEmpty(locallyEditedRepeatRule != null ? locallyEditedRepeatRule.toString() : null, "<set>")); //"<click to make task/project repeat>"
-////            }
-//                }
-//            }
-//        });
-//</editor-fold>
         repeatRuleButton.setCommand(repeatRuleEditCmd);
-        refreshRepeatRuleButton.actionPerformed(null);
+        refreshRepeatRuleButtonText.actionPerformed(null);
 
         /*
 Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
@@ -1630,52 +1509,29 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
          */
 //        parseIdMap2.put(Item.PARSE_REPEAT_RULE, () -> {
         parseIdMap2.put(REPEAT_RULE_KEY, () -> {
-//            if (locallyEditedRepeatRule.equals(item.getRepeatRule())) {
-//                    previousValues.remove(Item.PARSE_REPEAT_RULE);
-//                    repeatRuleButton.setText(item.getRepeatRule().getText()); //set to old repeatRule
-//                } else {
             Object editedRule = previousValues.get(Item.PARSE_REPEAT_RULE);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (repeatRuleVal instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
-//                item.setRepeatRule((RepeatRuleParseObject) repeatRuleVal);
-//            } else if (repeatRuleVal != null && repeatRuleVal.equals(REPEAT_RULE_DELETED_MARKER)) {
-//                item.setRepeatRule(null); //delete repeatRule (if any, if null before, no change)
-//            } //else: ==null => do nothing (either no RR was defined before/after editing, or the rule was not changed
-//</editor-fold>
             if (editedRule instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
+                ((RepeatRuleParseObject) editedRule).addOriginatorToRule(item); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
                 item.setRepeatRule((RepeatRuleParseObject) editedRule);
             }
-//            else if (editedRule != null && editedRule.equals(REPEAT_RULE_DELETED_MARKER)) {
-//                item.setRepeatRule(null); //delete repeatRule (if any, if null before, no change)
-//            } //else: ==null => do nothing (either no RR was defined before/after editing, or the rule was not changed
         });
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        initField(Item.PARSE_REPEAT_RULE, repeatRuleButton, () -> {
-//            if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && item.getRepeatRule() == null) {
-//                return new RepeatRuleParseObject(); //if no previous RR, create a fresh one to edit
-//            } else {
-//                return new RepeatRuleParseObject(item.getRepeatRule()); //edit a *copy* of the item's RR
-//            }
-//        }, (repRule) -> item.setRepeatRule((RepeatRuleParseObject) repRule),
-//                () -> previousValues.get(Item.PARSE_REPEAT_RULE), (repRule) -> previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject((RepeatRuleParseObject) repRule)));
 
-//        repeatRuleButton.setText(getDefaultIfStrEmpty(itemLS.getRepeatRule() != null ? itemLS.getRepeatRule().toString() : null, "")); //"<set>", "<click to make task/project repeat>"
-//        repeatRuleButton.setUIID("TextField");
-//        mainCont.add(layout(Item.REPEAT_RULE, makeContainerWithClearButton(repeatRuleButton, () -> {
-//            orgRepeatRule = null;
-//            repeatRuleButton.setText("<set>"); //TODO!!!! temporary hack!
-//        }), "**"));
-//        mainCont.add(layout(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> item.setRepeatRule(null), false, false, false));
-//        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> item.setRepeatRule(null)));
-//        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, () -> {
-//            previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
-//            repeatRuleButton.setText("");
-//        }));
-//        mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, null));
-//</editor-fold>
+        Component repeatRuleContainer = layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP);
+//        if (false && (editedRepeatRule == null || editedRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT)) {
+//            repeatRuleContainer.setHidden(true); //hide as long as no due date is set (like Apple Reminders)
+//        }
         if (!testMoveTextFieldsToOtherTab) {
-            mainCont.add(layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP));
+            mainCont.add(repeatRuleContainer);
         }
+
+        dueDate.addActionListener(e -> {
+            if (false) { //de-activate for now since repeatOnCompletion need this
+                boolean hide = dueDate.getDate().getTime() == 0;
+                repeatRuleContainer.setHidden(hide);
+                animateMyForm();
+            }
+        });
+
         //TODO deleting should not delete in item but delete editcopy and when saving via parseIdMap
         //<editor-fold defaultstate="collapsed" desc="comment">
         //        if (false) {
@@ -1737,7 +1593,6 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //                    new Label(MyDate.formatTimeDuration(subtasksItemList.getRemainingEffort()))));
         //        }
         //</editor-fold>
-
 //SUBTASKS
         //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, ScreenItem.this, item, templateEditMode));
 //        if (false) {
@@ -1774,7 +1629,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 editSubtasksFullScreen.setText(totalNumberSubtasks2 == 0 ? "" : "" + numberUndoneSubtasks2 + "/" + totalNumberSubtasks2);
 //                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveTemplateCopyWithSubtasksInBackground((Item) item));
 //                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveProjectInBackground((Item) item));
-                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveInBackground((Item) item));
+                parseIdMap2.put(SUBTASK_KEY, () -> DAO.getInstance().saveNew((Item) item, true));
                 previousForm.refreshAfterEdit(); //necessary to update sum of subtask effort
             }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_TIMER
                     | ScreenListOfItems.OPTION_NO_WORK_TIME
@@ -1937,7 +1792,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                         ItemAndListCommonInterface oldOwner = item.removeFromOwner();
                         ItemAndListCommonInterface newOwner = DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0));
                         newOwner.addToList(item);
-                        DAO.getInstance().saveInBackground(item, (ParseObject) oldOwner, (ParseObject) newOwner);
+                        DAO.getInstance().saveNew(false, item, (ParseObject) oldOwner, (ParseObject) newOwner);
                     } else {
                         ItemAndListCommonInterface newOwner = DAO.getInstance().fetchItemOwner(((List<String>) previousValues.get(Item.PARSE_OWNER_ITEM)).get(0));
                         item.setOwner(newOwner, false); //false: don't update inherited values from owner, they should have been set in this screen
@@ -1949,7 +1804,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                        oldOwner.removeFromList(item);
 //                    }
                     ItemAndListCommonInterface oldOwner = item.removeFromOwner();
-                    DAO.getInstance().saveInBackground((ParseObject) oldOwner);
+                    DAO.getInstance().saveNew((ParseObject) oldOwner, false);
 //                    item.setOwner(null);
                 }
             }

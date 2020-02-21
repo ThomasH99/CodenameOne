@@ -199,7 +199,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                    itemListList.addItemAtIndex(itemList, 0);
 //                    itemListList.addToList(0, itemList);
                     itemListList.addToList(itemList, !MyPrefs.insertNewItemListsInStartOfItemListList.getBoolean()); //TODO: why always add to start of list?! Make it a setting like elsewhere?
-                    DAO.getInstance().saveInBackground((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    DAO.getInstance().saveNew(true,(ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
@@ -445,7 +445,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
                         //TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
 //                        DAO.getInstance().saveAndWait((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        DAO.getInstance().saveNew((ParseObject) itemList,true); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
                         swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
                     } else {
@@ -860,7 +860,7 @@ public class ScreenListOfItemLists extends MyForm {
                             cmp.setName(((ItemList) node).getText());
                         }
                     } else {
-                        assert false : "should only be Item or ItemList: node=" + node;
+                        ASSERT.that( false , "node should only be Item or ItemList: node=" + node);
                     }
                     setIndent(cmp, depth);
                     return cmp;

@@ -144,7 +144,6 @@ public class TimerStackEntry implements Externalizable {
 ////        }
 //        this.itemList = orgItemList;
 //    }
-
     /**
      * reset values before launching the timer on the next subtask/task in list
      * (same stack entry, new item)
@@ -347,7 +346,7 @@ public class TimerStackEntry implements Externalizable {
     public void externalize(DataOutputStream out) throws IOException {
 
         if (timedItem != null && timedItem.getObjectIdP() == null) {
-            DAO.getInstance().saveInBackground(timedItem); //if needed, save temporary item (interupt task) so it is kept if app is closed and can be recovered on startup (and possibly deleted if Timer exited using Cancelled)
+            DAO.getInstance().saveNew(timedItem, true); //if needed, save temporary item (interupt task) so it is kept if app is closed and can be recovered on startup (and possibly deleted if Timer exited using Cancelled)
             timedItemSavedLocallyInTimer = true;
         } else {
             timedItemSavedLocallyInTimer = false;

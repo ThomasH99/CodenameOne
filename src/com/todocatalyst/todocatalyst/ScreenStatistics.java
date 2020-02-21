@@ -149,23 +149,28 @@ public class ScreenStatistics extends MyForm {
      */
     enum SortStatsOn {
 //        dateAndTime("Dates"), //dateAndTime
-        dateAndTime("Dat"), //dateAndTime
+        dateAndTime("Dat","Date and time"), //dateAndTime
         //        dateThenLists("Lists"), //dateThenLists Lists
-        dateThenLists("Lis"), //dateThenLists Lists
+        dateThenLists("Lis","Date, then lists"), //dateThenLists Lists
         //        dateThenCategories("Categories"), //dateThenCategories Categories
-        dateThenCategories("Cat"), //dateThenCategories Categories
+        dateThenCategories("Cat","Date, then category"), //dateThenCategories Categories
         //        listsThenDates("Lists-Dates"), //listsThenDates Lists_Date
-        listsThenDates("LisD"), //listsThenDates Lists_Date
+        listsThenDates("LisD","List, then date"), //listsThenDates Lists_Date
         //        categoriesThenDate("Categories-Dates"); //categoriesThenDate Cat_Date
-        categoriesThenDate("CatD"); //categoriesThenDate Cat_Date
+        categoriesThenDate("CatD","Category, then date"); //categoriesThenDate Cat_Date
         String str;
+        String longStr;
 
-        SortStatsOn(String stri) {
+        SortStatsOn(String stri, String longStr) {
             this.str = stri;
+            this.longStr = longStr;
         }
+//        SortStatsOn(String stri) {
+//            this(stri,stri);
+//        }
 
         public String toString() {
-            return str;
+            return longStr;
         }
 
         public static SortStatsOn valueOfDefault(String s) {

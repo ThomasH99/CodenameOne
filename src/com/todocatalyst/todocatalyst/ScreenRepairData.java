@@ -172,18 +172,18 @@ public class ScreenRepairData extends MyForm {
 //        }));
 
         //add ItemListList as owner of all ItemLists
-        content.add(new Button(new Command("Migrate ItemItemList refs to ItemListList test values") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                List<ItemList> itemLists = (List<ItemList>) DAO.getInstance().getAllItemListsFromParse();
-                for (ItemList itemList : itemLists) {
-                    itemList.setOwner(ItemListList.getInstance());
-                    DAO.getInstance().saveInBackground((ParseObject)itemList);
-                }
-                ItemListList.getInstance().setList(itemLists);
-                DAO.getInstance().saveInBackground((ParseObject)ItemListList.getInstance());
-            }
-        }));
+//        content.add(new Button(new Command("Migrate ItemItemList refs to ItemListList test values") {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                List<ItemList> itemLists = (List<ItemList>) DAO.getInstance().getAllItemListsFromParse();
+//                for (ItemList itemList : itemLists) {
+//                    itemList.setOwner(ItemListList.getInstance());
+//                    DAO.getInstance().saveInBackground((ParseObject)itemList);
+//                }
+//                ItemListList.getInstance().setList(itemLists);
+//                DAO.getInstance().saveInBackground((ParseObject)ItemListList.getInstance());
+//            }
+//        }));
 
         return content;
     }

@@ -1610,15 +1610,15 @@ public class FilterSortDef extends ParseObject {
         return getDeletedDate() != null;
     }
 
-    public boolean softDelete(boolean removeReferences) {
-        setDeletedDate(new MyDate());
-        DAO.getInstance().saveInBackground(this);
+    public boolean delete(Date deletedDate) {
+        setDeletedDate(deletedDate);
+//        DAO.getInstance().saveNew(this,true);
         return true;
     }
 
-    public boolean softDelete() {
-        return softDelete(true);
-    }
+//    public boolean softDelete() {
+//        return softDelete(true);
+//    }
 
     /**
      * for now, any filter equal to the default will not be saved. If edited, it

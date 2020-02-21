@@ -83,8 +83,8 @@ public class MyDate extends Date {
     static final String THURSDAY = "Thursday";
     static final String FRIDAY = "Friday";
     static final String SATURDAY = "Saturday";
-    static final String WEEKDAYS = "Weekday"; //"Workday"
-    static final String WEEKENDS = "Weekend"; //"Weekend day"
+    static final String WEEKDAYS = "Week day"; //"Weekday"; "Workday"
+    static final String WEEKENDS = "Weekend day"; //"Weekend day"
     static final String SUNDAY_SHORT = "Sun";
     static final String MONDAY_SHORT = "Mon";
     static final String TUESDAY_SHORT = "Tue";
@@ -92,8 +92,8 @@ public class MyDate extends Date {
     static final String THURSDAY_SHORT = "Thu";
     static final String FRIDAY_SHORT = "Fri";
     static final String SATURDAY_SHORT = "Sat";
-    static final String WEEKDAYS_SHORT = "Weekday";
-    static final String WEEKENDS_SHORT = "Weekend";
+    static final String WEEKDAYS_SHORT = "Week day";
+    static final String WEEKENDS_SHORT = "Weekend day";
 //    static final String[] DAY_NAMES = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
     static final String[] DAY_NAMES = {SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY};
 
@@ -797,7 +797,7 @@ public class MyDate extends Date {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date(getTime()));
 //        return (Settings.getInstance().weeksStartOnMondays() ? (cal.get(Calendar.DAY_OF_WEEK) == 1 ? 7 : cal.get(Calendar.DAY_OF_WEEK) - 1) : cal.get(Calendar.DAY_OF_WEEK)); //SUNDAY==1, MONDAY==2 etc.
-        return (MyPrefs.weeksStartOnMondays.getBoolean()? (cal.get(Calendar.DAY_OF_WEEK) == 1 ? 7 : cal.get(Calendar.DAY_OF_WEEK) - 1) : cal.get(Calendar.DAY_OF_WEEK)); //SUNDAY==1, MONDAY==2 etc.
+        return (MyPrefs.weeksStartOnMondays.getBoolean() ? (cal.get(Calendar.DAY_OF_WEEK) == 1 ? 7 : cal.get(Calendar.DAY_OF_WEEK) - 1) : cal.get(Calendar.DAY_OF_WEEK)); //SUNDAY==1, MONDAY==2 etc.
 //        return cal.get(Calendar.DAY_OF_WEEK)+(Settings.getInstance().weeksStartOnMondays()?); //SUNDAY==1, MONDAY==2 etc.
     }
 
@@ -1043,6 +1043,91 @@ public class MyDate extends Date {
         calendar.set(Calendar.MONTH, month - 1);
         calendar.set(Calendar.YEAR, year);
         return calendar.get(Calendar.DAY_OF_WEEK);
+    }
+
+    /**
+     * return the day in month, 1..31, of the date
+     *
+     * @param date
+     * @return
+     */
+    public static int getDayInMonthNatural(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int v = calendar.get(Calendar.DAY_OF_MONTH);
+        return v;
+    }
+
+    public static int getWeekInMonthNatural(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int v = calendar.get(Calendar.WEEK_OF_MONTH);
+        return v;
+    }
+
+    /**
+     * Field number for get and set indicating the day of the week. This field
+     * takes values SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, and
+     * SATURDAY.
+     *
+     * @param date
+     * @return
+     */
+    public static int getDayInWeek(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int v = calendar.get(Calendar.DAY_OF_WEEK);
+        v = calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+        return v;
+    }
+
+    /**
+     * Returns 1 for the first 7 days of the month, 2 for the next 7 and so
+     * forth.
+     *
+     * Field number for get and set indicating the ordinal number of the day of
+     * the week within the current month. Together with the DAY_OF_WEEK field,
+     * this uniquely specifies a day within a month. Unlike WEEK_OF_MONTH and
+     * WEEK_OF_YEAR, this field's value does not depend on getFirstDayOfWeek()
+     * or getMinimalDaysInFirstWeek(). DAY_OF_MONTH 1 through 7 always
+     * correspond to DAY_OF_WEEK_IN_MONTH 1; 8 through 14 correspond to
+     * DAY_OF_WEEK_IN_MONTH 2, and so on. DAY_OF_WEEK_IN_MONTH 0 indicates the
+     * week before DAY_OF_WEEK_IN_MONTH 1. Negative values count back from the
+     * end of the month, so the last Sunday of a month is specified as
+     * DAY_OF_WEEK = SUNDAY, DAY_OF_WEEK_IN_MONTH = -1. Because negative values
+     * count backward they will usually be aligned differently within the month
+     * than positive values. For example, if a month has 31 days,
+     * DAY_OF_WEEK_IN_MONTH -1 will overlap DAY_OF_WEEK_IN_MONTH 5 and the end
+     * of 4.
+     *
+     * @param date
+     * @return
+     */
+    public static int getWeekInMonth(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int v = calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+        return v;
+    }
+
+    /**
+     * Return the week of the date, where week is a week starting with Sunday or Monday till the following Sun/Mon (so 1st and last week can be just one day long).
+     * 
+     * Field number for get and set indicating the week number within the
+     * current month. The first week of the month, as defined by
+     * getFirstDayOfWeek() and getMinimalDaysInFirstWeek(), has value 1.
+     * Subclasses define the value of WEEK_OF_MONTH for days before the first
+     * week of the month.
+     *
+     * @param date
+     * @return
+     */
+    public static int getWeekOfMonth(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+                
+        int v = calendar.get(Calendar.WEEK_OF_MONTH);
+        return v;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -79,7 +79,7 @@ public class MyDate extends Date {
     static final String THURSDAY = "Thursday";
     static final String FRIDAY = "Friday";
     static final String SATURDAY = "Saturday";
-    static final String WEEKDAYS = "Weekday";
+    static final String WEEKDAYS = "Week day";
     static final String WEEKENDS = "Weekend day";
     static final String SUNDAY_SHORT = "Sun";
     static final String MONDAY_SHORT = "Mon";

@@ -72,13 +72,6 @@ public class MyPrefs {
 //    static PrefEntry insertNewCategoriesForItemsInStartOfIList //NO, confusing, always show in same order as in CategoryList
 //            = new PrefEntry("Add new categories to beginning of list**(make this setting public??)", "insertNewCategoriesForItemsInStartOfIList", false, 
 //                    "Always insert added categories at the beginning (makes most recently added categories appear first)");
-    static PrefEntry insertNewRepeatInstancesInStartOfLists
-            = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
-
-    static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
-            = new PrefEntry("Insert new repeat instances after the original ",
-                    "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task instead of beginning/end of list"); //"at the end"
-
     static PrefEntry dropItemAtBeginningOfUnexpandedCategoryOrItemListSubtaskList
             = new PrefEntry("When dragging a task to a Category, insert at the top of its list of tasks", "dropItemAtBeginningOfUnexpandedCategorySubtaskList", true, "**");
 
@@ -474,6 +467,8 @@ public class MyPrefs {
     static PrefEntry repeatMaxInterval = new PrefEntry("repeatMaxInterval**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
     static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead
             = new PrefEntry("repeatMaxNumberFutureInstancesToGenerateAhead", "repeatMaxNumberFutureInstancesToGenerateAhead", 10, "0 disables - TODO**");
+    static PrefEntry repeatMaxNumberOfRepeatsAllowed
+            = new PrefEntry("Max number of repeats enabled in picker", "repeatMaxNumberOfRepeatsAllowed", 100, "**");
     static PrefEntry repeatMaxNumberFutureDaysToGenerateAhead = new PrefEntry("repeatMaxNumberFutureDaysToGenerateAhead**", "repeatMaxNumberFutureDaysToGenerateAhead", 31, "**");
     static PrefEntry maxNumberRepeatInstancesToDeleteWithoutConfirmation
             = new PrefEntry("Ask for confirmation if deleting more repeat instances that this", "maxNumberRepeatInstancesToDeleteWithoutConfirmation", 3, "**");
@@ -488,9 +483,22 @@ public class MyPrefs {
     static PrefEntry repeatMaxNumberOfRepeatsToGenerate
             = new PrefEntry("To avoid that too many repeats get generated and overflod the server or the app, 0 disables", "repeatMaxNumberOfRepeatsToGenerate", 20,
                     "more of an internal limitation for now**"); //TODO: what happens if the max is reached? Will the algorithms still work?
-    static PrefEntry repeatCancelNotDeleteSuperflousInstancesWhenUpdatingRule
-            = new PrefEntry("When changing a repeat rule, Cancel, not Delete, future instances with recorded work time that are removed due to the change", "repeatCancelNotDeleteSuperflousInstancesWhenUpdatingRule", true,
+    static PrefEntry repeatCancelNotDeleteSuperflousInstancesWithActualRecorded
+            = new PrefEntry("When changing a repeat rule, if any repeat instances have already had work time recorded, "
+                    + "then don't delete them, but just Cancel to keep the work time for statistics", "repeatCancelNotDeleteSuperflousInstancesWithActualRecorded", true,
                     "This ensures that any recorded work time is not lost, e.g. for statistics**"); //TODO: what happens if the max is reached? Will the algorithms still work?
+    static PrefEntry repeatShowInternalDataInRepeatScreen
+            = new PrefEntry("Show internal RepeatRule data", "repeatShowInternalDataInRepeatScreen", true, "**");
+    static PrefEntry repeatInsertAfterLastDueDateInstanceInsteadOfJustCompleted
+            = new PrefEntry("Show internal RepeatRule data", "repeatInsertAfterLastDueDateInstanceInsteadOfJustCompleted", true, "**");
+        static PrefEntry insertNewRepeatInstancesInStartOfLists
+            = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
+
+    static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
+            = new PrefEntry("Insert new repeat instances after the original ",
+                    "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task instead of beginning/end of list"); //"at the end"
+
+
 
     //ITEMS IN LIST
     static PrefEntry itemListAlwaysShowHideUntilDate = new PrefEntry("Show Hide Until date", "itemListAlwaysShowHideUntilDate", true, "**");

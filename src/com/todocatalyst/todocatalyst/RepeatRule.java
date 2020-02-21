@@ -591,7 +591,12 @@ public class RepeatRule {
      * instances. Throws: java.lang.IllegalArgumentException - if beginning is
      * greater than ending.
      */
-    public Vector<Date> datesAsVector(long startDate, long subsetBeginning, long subsetEnding) {
+//    public Vector<Date> datesAsVector(long startDate, long subsetBeginning, long subsetEnding) {
+    public Vector<Date> datesAsVector(Date startDateD, Date subsetBeginningD, Date subsetEndingD) {
+        long startDate = startDateD.getTime();
+        long subsetBeginning = subsetBeginningD.getTime();
+        long subsetEnding = subsetEndingD.getTime();
+
         if (subsetBeginning > subsetEnding) {
             throw new IllegalArgumentException("Bad range: "
                     //                    + new MyDate(subsetBeginning).formatDate(false) + "("
@@ -755,9 +760,9 @@ public class RepeatRule {
         return dates;
     }
 
-    public Enumeration dates(long startDate, long subsetBeginning, long subsetEnding) {
-        return datesAsVector(startDate, subsetBeginning, subsetEnding).elements();
-    }
+//    public Enumeration datesXXX(long startDate, long subsetBeginning, long subsetEnding) {
+//        return datesAsVector(startDate, subsetBeginning, subsetEnding).elements();
+//    }
 
     /**
      * Stores a date.
