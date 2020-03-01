@@ -335,7 +335,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, new Button(item.getText()));
         //EDIT items in category
 //        Button editItemButton = new Button(new Command(workSlot.getText()) {
-        Button editWorkSlotButton = new Button(Icons.iconEditSymbolLabelStyle);
+//        Button editWorkSlotButton = new Button(Icons.iconEditSymbolLabelStyle);
+        Button editWorkSlotButton = new Button(Icons.iconEditSymbol );
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        editWorkSlotButton.addActionListener(new ActionListener() {
 //            @Override
@@ -353,7 +354,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 //            }
 //        });
 //</editor-fold>
-        editWorkSlotButton.setCommand(MyReplayCommand.create("EditWorkSLot-", workSlot.getObjectIdP(), null, Icons.iconEditSymbolLabelStyle, (e) -> {
+//        editWorkSlotButton.setCommand(MyReplayCommand.create("EditWorkSLot-", workSlot.getObjectIdP(), null, Icons.iconEditSymbolLabelStyle, (e) -> {
+        editWorkSlotButton.setCommand(MyReplayCommand.create("EditWorkSLot-", workSlot.getObjectIdP(), null, Icons.iconEditSymbol, (e) -> {
 //                keepPos.setKeepPos(new KeepInSameScreenPosition());
 //            ((MyForm) cont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(workSlot, cont));
             myForm.setKeepPos(new KeepInSameScreenPosition(workSlot, cont));
@@ -409,9 +411,9 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        String startTimeStr = MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
 //</editor-fold>
         String startTimeStr = MyDate.formatDateSmart(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
-        Label startTimeLabel = new Label(startTimeStr, Icons.iconWorkSlotLabelStyle,
+        Label startTimeLabel = new Label(startTimeStr,
                 workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime");
-
+ startTimeLabel.setMaterialIcon(Icons.iconWorkSlot);
 //        String endTimeStr = "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
         String endTimeStr = " " + MyDate.formatDurationShort(workSlot.getDurationAdjusted(now))
                 + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"

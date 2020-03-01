@@ -94,7 +94,7 @@ public class CategoryList extends ItemList {
      * @param categoryName
      * @return
      */
-    Object findCategoryWithName(String categoryName) {
+    Category findCategoryWithName(String categoryName) {
         if (categoryName == null || categoryName.length() == 0) {
             return null;
         }

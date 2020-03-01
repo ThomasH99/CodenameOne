@@ -10,6 +10,7 @@ import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import com.parse4cn1.util.Logger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,20 +32,18 @@ public class CleanUpDataInconsistencies {
         this.dao = dao;
     }
 
-        private List removeDuplicates(List list) {
+    private List removeDuplicates(List list) {
         List noDups = new ArrayList();
         for (Object obj : list) {
             if (!noDups.contains(obj)) {
                 noDups.add(obj);
             } else {
-                Log.p("duplicate element="+obj);
+                Log.p("duplicate element=" + obj);
             }
         }
         return noDups;
     }
 
-
-    
     /**
      * returns true if trying to fetch the parseObject from Parse fails (meaning
      * the object does not exists on the server)
@@ -149,7 +148,7 @@ public class CleanUpDataInconsistencies {
             return deletes;
         } else { //other lists than ItemList
             ArrayList cleanList = new ArrayList();
-            int size =  inputList.size();
+            int size = inputList.size();
             for (int i = 0; i < size; i++) {
                 Object elt = inputList.get(i);
 
@@ -225,7 +224,7 @@ public class CleanUpDataInconsistencies {
         }
         if (itemList instanceof ParseObject && executeCleanup) {
             itemList.setList(itemsInList);
-            dao.saveNew((ParseObject) itemList,false);
+            dao.saveNew((ParseObject) itemList, false);
         }
 
     }
@@ -252,7 +251,7 @@ public class CleanUpDataInconsistencies {
         }
         if (category instanceof ParseObject && executeCleanup) {
             category.setList(itemsInCategory);
-            dao.saveNew((ParseObject) category,false);
+            dao.saveNew((ParseObject) category, false);
         }
 
     }
@@ -325,14 +324,14 @@ public class CleanUpDataInconsistencies {
                     Log.p("CLEANUP: Parent not template: Template \"" + item.getText() + "\" wrongfully marked as Template although no parent task is a template", logLevel);
                     if (executeCleanup) {
                         item.setTemplate(false);
-                        dao.saveNew(item,false);
+                        dao.saveNew(item, false);
                     }
                 }
                 i++;
             }
         }
         if (list instanceof ParseObject && executeCleanup) {
-            dao.saveNew((ParseObject) list,false);
+            dao.saveNew((ParseObject) list, false);
         }
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
@@ -359,7 +358,7 @@ public class CleanUpDataInconsistencies {
         cleanUpDuplicatesInList("ItemList " + ((ItemAndListCommonInterface) itemList).getText(), items, executeCleanup);
         if (executeCleanup) {
             itemList.setList(items);
-            dao.saveNew((ParseObject) itemList,false);
+            dao.saveNew((ParseObject) itemList, false);
         }
     }
 
@@ -372,7 +371,7 @@ public class CleanUpDataInconsistencies {
                     Log.p("CLEANUP: non-template \"" + item + "\" inside template \"" + item + " parseId=" + ((ParseObject) item).getObjectIdP());
                     if (executeCleanup) {
                         item.setTemplate(true);
-                        dao.saveNew(item,false);
+                        dao.saveNew(item, false);
                     }
                 }
                 makeAllSubTaskTemplatesAndRemoveDuplicates(item, executeCleanup); //iterate down the hierarchy
@@ -429,7 +428,7 @@ public class CleanUpDataInconsistencies {
                     Log.p("CLEANUP: template Item in TemplateList is not a template \"" + template + " objId=" + ((ParseObject) template).getObjectIdP());
                     if (executeCleanup) {
                         ((Item) template).setTemplate(true);
-                        dao.saveNew((Item) template,false                        );
+                        dao.saveNew((Item) template, false);
                     }
                 }
                 //check that full hierarchy of subtasks below top-level template are also marked as templates
@@ -448,7 +447,7 @@ public class CleanUpDataInconsistencies {
         cleanUpDuplicatesInList("Templates " + ((ItemAndListCommonInterface) templateList).getText(), templateList, executeCleanup);
         if (executeCleanup) {
 //            templateList.setList(templateList);
-            dao.saveNew((ParseObject) templateList,false);
+            dao.saveNew((ParseObject) templateList, false);
         }
     }
 
@@ -468,7 +467,7 @@ public class CleanUpDataInconsistencies {
         cleanUpDuplicatesInList("Category " + ((ItemAndListCommonInterface) category).getText(), items, executeCleanup);
         if (executeCleanup) {
             category.setList(items);
-            dao.saveNew((ParseObject) category,false);
+            dao.saveNew((ParseObject) category, false);
         }
     }
 
@@ -512,7 +511,7 @@ public class CleanUpDataInconsistencies {
             }
         }
         if (executeCleanup) {
-            dao.saveNew((ParseObject) listOfList, false            );
+            dao.saveNew((ParseObject) listOfList, false);
         }
     }
 
@@ -557,18 +556,18 @@ public class CleanUpDataInconsistencies {
 //</editor-fold>
                 if (executeCleanup) {
                     cat.setOwner(categoryList);
-                    dao.saveNew((ParseObject) cat,false);
+                    dao.saveNew((ParseObject) cat, false);
                     categoryList.add(cat);
-                    dao.saveNew((ParseObject) categoryList,false);
+                    dao.saveNew((ParseObject) categoryList, false);
                 }
             } else if (!categoryList.contains(cat)) { //add missing categories to CategoryList
                 Log.p("CLEANUP: Category not referenced: Category \"" + cat.getText() + " not in CategoryList" + categoryList, logLevel);
 
                 if (executeCleanup) {
                     cat.setOwner(categoryList);
-                    dao.saveNew((ParseObject) cat,false);
+                    dao.saveNew((ParseObject) cat, false);
                     categoryList.add(cat);
-                    dao.saveNew((ParseObject) categoryList,false);
+                    dao.saveNew((ParseObject) categoryList, false);
                 }
             }
             //check that all items in category also reference category
@@ -579,7 +578,7 @@ public class CleanUpDataInconsistencies {
                     if (executeCleanup) {
 //                        cat.addItemToCategory(item, false);
                         item.addCategoryToItem(cat, false);
-                        dao.saveNew((ParseObject) item,false);
+                        dao.saveNew((ParseObject) item, false);
                     }
                 }
             }
@@ -592,24 +591,26 @@ public class CleanUpDataInconsistencies {
 //        Log.p("CLEANUP: number ItemLIsts in ItemListList = " + itemListList.size(), logLevel); // don't call size here, becuase it loads list which may be wrong
         for (int i = 0, size = itemListsFromParse.size(); i < size; i++) {
             ItemList itemList = itemListsFromParse.get(i);
-
             if (itemList.getOwner() == null) {
                 if (itemList.isSystemList()) {
+                    if (itemList.getOwner() != null) {
+                        itemList.removeFromOwner();
+                    }
                 } else {
                     if (itemListList.contains(itemList)) {
                         Log.p("CLEANUP: ItemList doesn't reference owner: Missing owner (ItemListList) in ItemList \"" + itemList.getText() + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") to its owner ListOfItemLists (which contains=" + itemListList + ")", logLevel);
                         if (executeCleanup) {
                             itemList.setOwner(itemListList);
-                            dao.saveNew((ParseObject) itemList,false);
+                            dao.saveNew((ParseObject) itemList, false);
                         }
                     } else if (itemList.getListFull().size() == 0) { //a lost ItemList, empty, not visible to user, so probably safe to delete
                         if (executeCleanup) {
-                            dao.saveNew((ParseObject)itemList,false); //nothing in ItemList, safe to delete
+                            dao.saveNew((ParseObject) itemList, false); //nothing in ItemList, safe to delete
                         }
                     } else if (executeCleanup) { //not in ItemListList, not empty, keep
                         itemList.setOwner(itemListList);
                         itemListList.add(itemList);
-                        dao.saveNew(false,itemListList, itemList);
+                        dao.saveNew(false, itemListList, itemList);
                     }
                 }
             } else if (!itemList.getOwner().equals(itemListList) && !itemList.isSystemList()) {
@@ -617,12 +618,12 @@ public class CleanUpDataInconsistencies {
                 if (itemListList.contains(itemList)) {
                     if (executeCleanup) { //correct to right owner
                         itemList.setOwner(itemListList);
-                        dao.saveNew((ParseObject) itemList,false);
+                        dao.saveNew((ParseObject) itemList, false);
                     }
                 } else if (executeCleanup) { //force owner to ItemListList anyway //TODO may not be the right solution if one day ItemLists of ItemLists is supported
                     Log.p("CLEANUP: ItemList wrong owner: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
                     itemList.setOwner(itemListList);
-                    dao.saveNew((ParseObject) itemList,false);
+                    dao.saveNew((ParseObject) itemList, false);
                 }
             } else if (!itemListList.contains(itemList) && !itemList.isSystemList()) {
                 Log.p("CLEANUP: ItemList not in ItemListList: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") has owner ItemListList but ItemListList does not reference it", logLevel);
@@ -631,7 +632,7 @@ public class CleanUpDataInconsistencies {
                 }
             }
             if (executeCleanup) {
-                dao.saveNew((ParseObject) itemListList,false);
+                dao.saveNew((ParseObject) itemListList, false);
             }
         }
     }
@@ -639,7 +640,8 @@ public class CleanUpDataInconsistencies {
     public void cleanUpAllItemListsInParse() {
 //        ItemListList itemListList = getItemListList();
         ItemListList itemListList = ItemListList.getInstance();
-        cleanUpAllItemListsFromParse(dao.getAllItemListsFromParse(), itemListList); //repair raw list of Categories first (will attach any non-empty categories to CategoryList before cleaning up those categories
+//        cleanUpAllItemListsFromParse(dao.getAllItemListsFromParse(), itemListList); //repair raw list of Categories first (will attach any non-empty categories to CategoryList before cleaning up those categories
+        cleanUpAllItemListsFromParse(dao.getAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE), false), itemListList); //repair raw list of Categories first (will attach any non-empty categories to CategoryList before cleaning up those categories
         cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(itemListList); //Clean up links to removed Categories
     }
 
@@ -746,7 +748,7 @@ public class CleanUpDataInconsistencies {
                 Log.p("CLEANUP: WorkSlot no owner: workSLot=" + workSlot + ") with null as Owner.", logLevel);
 //                try {
                 if (executeCleanup) {
-                    dao.delete(workSlot,true,false); //delete filters without ref to both objectId and Screen
+                    dao.delete(workSlot, true, false); //delete filters without ref to both objectId and Screen
                 }//                } catch (ParseException ex) {
 //                    Log.e(ex);
 //                }
@@ -802,7 +804,7 @@ public class CleanUpDataInconsistencies {
 
                 if (executeCleanup) {
                     repeatRule.setListOfUndoneInstances(repeatInstanceList);
-                    dao.saveNew(repeatRule,false);
+                    dao.saveNew(repeatRule, false);
                 }
             }
         }
@@ -855,8 +857,8 @@ public class CleanUpDataInconsistencies {
             if (executeCleanup) {
                 //an item's listed owner takes precedence (so, objects determine their owner, it is not (one of) the owner that changes the item's owner to themselve
                 Inbox.getInstance().addToList(item);
-                owner.addToList(item);
-                dao.saveNew((ParseObject) Inbox.getInstance(),false);
+//                owner.addToList(item);
+                dao.saveNew((ParseObject) Inbox.getInstance(), false);
             }
         }
 
@@ -937,7 +939,7 @@ public class CleanUpDataInconsistencies {
                 Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has owner==null", logLevel);
                 if (executeCleanup) {
                     subtask.setOwner(item);
-                    dao.saveNew(subtask,false);
+                    dao.saveNew(subtask, false);
                 }
 //                i++;
 //            } else if (!subtask.getOwner().equals(item)) {
@@ -962,7 +964,7 @@ public class CleanUpDataInconsistencies {
         //finally save
         if (executeCleanup) {
             item.setList(subtasks);
-            dao.saveNew(item,false);
+            dao.saveNew(item, false);
         }
 
         //Workslots : WorkSlots point to their owner, NOT the other way around, so nothing to clean up here 
@@ -1086,7 +1088,7 @@ public class CleanUpDataInconsistencies {
                 Log.p("CLEANUP: Item \"" + item + "\"'s subtask \"" + subtask + "\" has owner==null", logLevel);
                 if (executeCleanup) {
                     subtask.setOwner(item);
-                    dao.saveNew(subtask,false);
+                    dao.saveNew(subtask, false);
                 }
 //                i++;
 //            } else if (!subtask.getOwner().equals(item)) {
@@ -1097,7 +1099,7 @@ public class CleanUpDataInconsistencies {
 //                    subtasks.remove(subtask); //
                     subtask.setOwner(item); //force owner of subtask to this item
 //                    item.setList(subtasks); //no need to setList since subtask is already in list of subtasks, so no change
-                    dao.saveNew(subtask,false); //save new owner
+                    dao.saveNew(subtask, false); //save new owner
 //                } else {
                 }
 //                    i++;
@@ -1113,7 +1115,7 @@ public class CleanUpDataInconsistencies {
         //finally save
         if (executeCleanup) {
             item.setList(subtasks);
-            dao.saveNew(item,false);
+            dao.saveNew(item, false);
         }
 
         //Workslots : WorkSlots point to their owner, NOT the other way around, so nothing to clean up here 
@@ -1157,7 +1159,7 @@ public class CleanUpDataInconsistencies {
                     workSlot.setOwner(owner);
                 } else if (workSlot.getOwner() != owner) {
                     workSlot.setOwner(owner);
-                    dao.saveNew(workSlot,false);
+                    dao.saveNew(workSlot, false);
                 }
                 //repeatRule
                 RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
@@ -1169,7 +1171,7 @@ public class CleanUpDataInconsistencies {
             }
         }
         owner.setWorkSlotList(workSlotList);
-        dao.saveNew((ParseObject) owner,false);
+        dao.saveNew((ParseObject) owner, false);
         return hasDuplicates;
     }
 
@@ -1189,7 +1191,7 @@ public class CleanUpDataInconsistencies {
         if (executeCleanup) {
             itemListOrCategory.setList(cleanedList);
         }
-        return list.size()!=cleanedList.size();
+        return list.size() != cleanedList.size();
     }
 
     private boolean cleanUpDuplicatesInItemListOrCategoryOLD(String description, ItemList itemListOrCategory, boolean executeCleanup) {
@@ -1288,7 +1290,7 @@ public class CleanUpDataInconsistencies {
                             Log.p(prefix + " references Item " + itemText + " but not in its categories (" + item.getCategories() + ")");
                             if (executeCleanup) {
                                 item.addCategoryToItem((Category) itemListOrCategory, false); //add missing ref
-                                dao.saveNew(item,false);
+                                dao.saveNew(item, false);
                             }
                             issuesFound = true;
                         }
@@ -1300,7 +1302,7 @@ public class CleanUpDataInconsistencies {
                             Log.p(prefix + " references Item " + itemText + " but is has no Owner (owner=null)");
                             if (executeCleanup) {
                                 item.setOwner((ItemList) itemListOrCategory); //if null, add ItemList as owner
-                                dao.saveNew(item,false);
+                                dao.saveNew(item, false);
                             }
                         } else if (item.getOwner() != itemListOrCategory) {
                             Log.p(prefix + " references Item " + itemText + " which has another owner=" + item.getOwner());
@@ -1310,7 +1312,7 @@ public class CleanUpDataInconsistencies {
 //                                itemListOrCategory.removeItem(i); //if another is owner, remove item from this list
                                 item.removeFromOwner(); //if another is owner, remove that one before assigning to this one
                                 itemListOrCategory.addItem(item); //it is more visible to end-user that item is in list, so keep it in this list
-                                dao.saveNew(item,false);
+                                dao.saveNew(item, false);
                                 moveToNextIndex = false;
                             }
                         }
@@ -1356,7 +1358,7 @@ public class CleanUpDataInconsistencies {
 
         //TODO calculate all values in the list derived from the elements (currently none in ItemList nor Category)
         if (issuesFound && executeCleanup) {
-            dao.saveNew((ParseObject) itemListOrCategory,false);
+            dao.saveNew((ParseObject) itemListOrCategory, false);
         }
         return issuesFound;
     }
@@ -1378,11 +1380,11 @@ public class CleanUpDataInconsistencies {
             //TODO: if item has a (non-existant) owner, then create a list named with that ObjectId and store all lost items together there (quite complicated to develop)
         }
         if (executeCleanup && lostItems.size() > 0) {
-            dao.saveNew((ParseObject) lostItems,false); //first save new list to have a valid objectId!!
-            dao.saveNew(lostItems.getListFull(),false); //THEN save all updated items
+            dao.saveNew((ParseObject) lostItems, false); //first save new list to have a valid objectId!!
+            dao.saveNew(lostItems.getListFull(), false); //THEN save all updated items
 //            ItemListList.getInstance().addToList(0, lostItems); //add to beginning of lists
             ItemListList.getInstance().addToList(lostItems, false); //add to beginning of lists
-            dao.saveNew((ParseObject) ItemListList.getInstance(),false);
+            dao.saveNew((ParseObject) ItemListList.getInstance(), false);
         }
         return issuesFound;
     }

@@ -10,17 +10,29 @@ package com.todocatalyst.todocatalyst;
  * @author Thomas
  */
 enum AlarmType {
-    notification("-[ALARM]"),
-    waiting("-[WAITING]"),
-    notificationRepeat("-[ALARM-REP]"),
-    waitingRepeat("-[WAITING-REP]"),
-    snooze("-[ALM-SNOOZE]"),
-    snoozedNotif("-[ALM-SNOOZE]"),
-    snoozedWaiting("-[WAI-SNOOZE]");
+    notification("-[ALARM]"), //normal alarm/reminder
+    waiting("-[WAITING]"), //Waiting alarm/reminder
+    notificationRepeat("-[ALARM-REP]"), //repeat of normal alarm/reminder
+    waitingRepeat("-[WAITING-REP]"), //repeat of Waiting alarm/reminder
+    //    snooze("-[ALM-SNOOZE]"), //NOT USED?!snooze of normal alarm/reminder
+    snoozedNotif("-[ALM-SNOOZE]"), //snooze of normal alarm/reminder
+    snoozedWaiting("-[WAI-SNOOZE]"); //snooze of Waiting alarm/reminder
     String text; //the text (eg "-[ALARM]") added to objectIds to get notificationId
 
     private AlarmType(String text) {
         this.text = text;
+    }
+
+    boolean isSnooze() {
+        return this == snoozedNotif || this == snoozedWaiting;
+    }
+
+    boolean isReminder() {
+        return this == notification || this == notificationRepeat;
+    }
+
+    boolean isWaitingReminder() {
+        return this == waiting || this == waitingRepeat;
     }
 
     /**
@@ -62,28 +74,31 @@ enum AlarmType {
     }
 
     /**
-    return the right type of snooze for a given alarm type
-    @param alarm
-    @return 
+     * return the right type of snooze for a given alarm type
+     *
+     * @param alarm
+     * @return
      */
     static AlarmType getSnoozedN(AlarmType alarm) {
-        if (alarm == notification || alarm == notificationRepeat)
+        if (alarm == notification || alarm == notificationRepeat) {
             return snoozedNotif;
-        else if (alarm == waiting || alarm == waitingRepeat)
+        } else if (alarm == waiting || alarm == waitingRepeat) {
             return snoozedWaiting;
-        else if (alarm == snoozedNotif || alarm == snoozedWaiting)
+        } else if (alarm == snoozedNotif || alarm == snoozedWaiting) {
             return alarm; //return the same type for already snoozed alarm
-        else
+        } else {
             return null;
+        }
     }
 
     static AlarmType getAlarmTypeFromSnoozedN(AlarmType snoozed) {
-        if (snoozed == snoozedNotif )
+        if (snoozed == snoozedNotif) {
             return notification;
-        else if (snoozed == snoozedWaiting)
+        } else if (snoozed == snoozedWaiting) {
             return waiting;
-        else
+        } else {
             return null;
+        }
     }
 
     static String getObjectIdStrWithoutTypeStr(String str, AlarmType type) {

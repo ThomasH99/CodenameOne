@@ -194,6 +194,10 @@ public class MyReplayCommand extends CommandTracked {
         return create(cmdUniqueID, "", commandName, icon, ev, keep, () -> true);
     }
 
+    public static MyReplayCommand create(String cmdUniqueID, String commandName, char icon, final ActionListener ev, boolean keep) {
+        return create(cmdUniqueID, "", commandName, icon, ev, keep, () -> true);
+    }
+
     public static MyReplayCommand createKeep(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, MyForm.GetBool pushCmd) {
         return create(cmdUniqueID, "", commandName, icon, ev, true, pushCmd);
     }

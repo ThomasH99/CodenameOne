@@ -342,7 +342,7 @@ public class ScreenRepeatRule extends MyForm {
             });
         }
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleSettings", "Settings", Icons.iconSettingsLabelStyle, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsRepeatRules(ScreenRepeatRule.this, () -> {
                 refreshAfterEdit();
             }).show();
@@ -350,7 +350,7 @@ public class ScreenRepeatRule extends MyForm {
         ));
 
         if (Config.TEST) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ShowInternals", "Show internal data", Icons.iconSettingsLabelStyle, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ShowInternals", "Show internal data", Icons.iconSettings, (e) -> {
                 MyPrefs.repeatShowInternalDataInRepeatScreen.flipBoolean();
             }
             ));

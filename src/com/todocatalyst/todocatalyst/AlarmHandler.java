@@ -486,7 +486,7 @@ public class AlarmHandler {
 //                    if ((Config.PRODUCTION_RELEASE && myForm != null) || !Config.PRODUCTION_RELEASE)
                     if (myForm instanceof ScreenListOfAlarms) {
                         myForm.refreshAfterEdit();
-                    } else if ((!Config.PRODUCTION_RELEASE || myForm != null) && myForm.getMyShowAlarmsReplayCmd() != null) //don't risk crash in production release
+                    } else if ((!Config.PRODUCTION_RELEASE || myForm != null) && (myForm != null&&myForm.getMyShowAlarmsReplayCmd() != null)) //don't risk crash in production release
                     {
                         myForm.getMyShowAlarmsReplayCmd().actionPerformed(null);
                     }

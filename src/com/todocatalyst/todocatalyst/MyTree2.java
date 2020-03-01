@@ -31,7 +31,6 @@ import com.codename1.ui.Display;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.StickyHeader;
-import com.codename1.ui.TextArea;
 //import com.codename1.ui.StickyHeader;
 import com.codename1.ui.animations.CommonTransitions;
 import com.codename1.ui.animations.Transition;
@@ -39,12 +38,9 @@ import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.util.EventDispatcher;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 //import com.todocatalyst.todocatalyst.InlineInsertNewElementContainer.InsertNewElementFunc;
 
@@ -184,7 +180,7 @@ public class MyTree2 extends ContainerScrollY {
         this.stickyHeaderGen = stickyHeaderGen;
 
         FilterSortDef itemListFilteredSorted;
-        if (this.stickyHeaderGen == null) {
+        if (MyPrefs.hideStickyHeadersForSortedLists.getBoolean() && this.stickyHeaderGen == null) {
             if (this.model instanceof ItemList
                     && (itemListFilteredSorted = ((ItemList) this.model).getFilterSortDef()) != null
                     && itemListFilteredSorted.isSortOn()) {
@@ -428,7 +424,7 @@ public class MyTree2 extends ContainerScrollY {
     //else create new container:
         ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
         dest.setUIID("ExpandedList");
-        parent.addComponent(MyBorderLayout.CENTER, dest);
+        parent.addComponent(BorderLayout.CENTER, dest);
         return dest;
     }
 
@@ -479,7 +475,7 @@ public class MyTree2 extends ContainerScrollY {
         for (int iter = 0; iter < cc; iter++) {
             Component current = parent.getComponentAt(iter);
             if (current instanceof Container) {
-                MyBorderLayout bl = (MyBorderLayout) ((Container) current).getLayout();
+                BorderLayout bl = (BorderLayout) ((Container) current).getLayout();
 
                 // the tree component is always at north expanded or otherwise
                 current = bl.getNorth();
@@ -503,7 +499,7 @@ public class MyTree2 extends ContainerScrollY {
         for (int iter = 0; iter < cc; iter++) {
             Component current = parent.getComponentAt(iter);
             if (isExpanded(current)) {
-                MyBorderLayout bl = (MyBorderLayout) ((Container) current).getLayout();
+                BorderLayout bl = (BorderLayout) ((Container) current).getLayout();
 
                 // the tree component is always at north expanded or otherwise
                 current = bl.getNorth();
@@ -693,10 +689,10 @@ public class MyTree2 extends ContainerScrollY {
 ////                bindNodeListener(new Handler(current), nodeComponent);
 //            } else {
 //</editor-fold>
-            Container componentArea = new Container(new MyBorderLayout());
+            Container componentArea = new Container(new BorderLayout());
             componentArea.setUIID("TreeContainer"); //wraps a possibly expanded task
 
-            componentArea.addComponent(MyBorderLayout.NORTH, nodeComponent);
+            componentArea.addComponent(BorderLayout.NORTH, nodeComponent);
             if (Config.TEST) componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 
             destination.addComponent(componentArea);
 
@@ -1148,6 +1144,20 @@ public class MyTree2 extends ContainerScrollY {
 
         void put(String str);
     }
+    
+    private static String makeHeader(String fieldName, String fieldStr, Object fieldValue, Object undefinedValue) {
+        if (fieldValue==null||fieldValue.equals(undefinedValue))
+            return MyPrefs.listDefaultHeaderForUndefinedValue.getString();
+        StringBuilder s = new StringBuilder(fieldName);
+        s.append(" ").append(fieldStr);
+        return s.toString();
+    }
+    private static String makeHeader(String fieldName, Object fieldValue, Object undefinedValue) {
+        return makeHeader(fieldName, fieldValue.toString(), fieldValue, undefinedValue);
+    }
+    private static String makeHeader(String fieldName, Object fieldValue) {
+        return makeHeader(fieldName, fieldValue.toString(), fieldValue, null);
+    }
 
     /**
      * will calculate if a (new) StickyHeader is needed and if so, return it for
@@ -1168,43 +1178,71 @@ public class MyTree2 extends ContainerScrollY {
                 switch (parseId) {
                     case Item.PARSE_PRIORITY:
 //                        newStr = getDiffStr(newStickyStr, "Priority " + item.getPriority());
-                        newStr = getDiffStr(previousStickyStr, Item.PRIORITY + " " + item.getPriority());
+//                        newStr = getDiffStr(previousStickyStr, Item.PRIORITY + " " + item.getPriority());
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.PRIORITY , item.getPriority(),0));
                         break;
                     case Item.PARSE_STATUS:
 //                        newStr = getDiffStr(newStickyStr, "Status " + item.getStatus().getName());
-                        newStr = getDiffStr(previousStickyStr, Item.STATUS + " " + item.getStatus().getName());
+//                        newStr = getDiffStr(previousStickyStr, Item.STATUS + " " + item.getStatus().getName());
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.STATUS ,item.getStatus().getName())); //no undefined value exists for ItemStatus
                         break;
                     case Item.PARSE_REMAINING_EFFORT:
-                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_REMAINING + " " + newTimeString(item.getRemaining()));
+//                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_REMAINING + " " + newTimeString(item.getRemaining()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EFFORT_REMAINING , newTimeString(item.getRemaining()),item.getRemaining(),0));
                         break;
                     case Item.PARSE_ACTUAL_EFFORT:
-                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_ACTUAL + " " + newTimeString(item.getActual()));
+//                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_ACTUAL + " " + newTimeString(item.getActual()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EFFORT_ACTUAL , newTimeString(item.getActual()),item.getActual(),0));
                         break;
                     case Item.PARSE_EFFORT_ESTIMATE:
-                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_ESTIMATE + " " + newTimeString(item.getEstimate()));
+//                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_ESTIMATE + " " + newTimeString(item.getEstimate()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EFFORT_ESTIMATE , newTimeString(item.getEstimate()),item.getEstimate(),0));
                         break;
                     case Item.PARSE_UPDATED_AT:
-                        newStr = getDiffStr(previousStickyStr, Item.UPDATED_DATE + " " + MyDate.formatDateNew(item.getUpdatedAt()));
+//                        newStr = getDiffStr(previousStickyStr, Item.UPDATED_DATE + " " + MyDate.formatDateNew(item.getUpdatedAt()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.UPDATED_DATE , MyDate.formatDateNew(item.getUpdatedAt()),item.getUpdatedAt(),new MyDate(0)));
                         break;
                     case Item.PARSE_COMPLETED_DATE:
-                        newStr = getDiffStr(previousStickyStr, Item.COMPLETED_DATE + " " + MyDate.formatDateNew(item.getCompletedDateD()));
+//                        newStr = getDiffStr(previousStickyStr, Item.COMPLETED_DATE + " " + MyDate.formatDateNew(item.getCompletedDateD()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.COMPLETED_DATE , MyDate.formatDateNew(item.getCompletedDateD()),item.getCompletedDateD(),new MyDate(0)));
                         break;
                     case Item.PARSE_CREATED_AT:
-                        newStr = getDiffStr(previousStickyStr, Item.CREATED_DATE + " " + MyDate.formatDateNew(item.getCreatedAt()));
+//                        newStr = getDiffStr(previousStickyStr, Item.CREATED_DATE + " " + MyDate.formatDateNew(item.getCreatedAt()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.CREATED_DATE , MyDate.formatDateNew(item.getCreatedAt()),item.getCreatedAt(),new MyDate(0)));
+                        break;
+                    case Item.PARSE_STARTED_ON_DATE:
+//                        newStr = getDiffStr(previousStickyStr, Item.STARTED_ON_DATE + " " + MyDate.formatDateNew(item.getStartedOnDate()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.STARTED_ON_DATE , MyDate.formatDateNew(item.getStartedOnDate()),item.getStartedOnDate(),new MyDate(0)));
+                        break;
+                    case Item.PARSE_START_BY_DATE:
+//                        newStr = getDiffStr(previousStickyStr, Item.START_BY_TIME + " " + MyDate.formatDateNew(item.getStartByDateD()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.START_BY_TIME , MyDate.formatDateNew(item.getStartByDateD()),item.getStartByDateD(),new MyDate(0)));
                         break;
                     case Item.PARSE_DUE_DATE:
-                        newStr = getDiffStr(previousStickyStr, Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDateD()));
+//                        newStr = getDiffStr(previousStickyStr, Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDateD()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.DUE_DATE , MyDate.formatDateNew(item.getDueDateD()),item.getDueDateD(),new MyDate(0)));
                         break;
                     case Item.PARSE_WAITING_TILL_DATE:
-                        newStr = getDiffStr(previousStickyStr, Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDateD()));
+//                        newStr = getDiffStr(previousStickyStr, Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDateD()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.WAIT_UNTIL_DATE ,MyDate.formatDateNew(item.getWaitingTillDateD()),item.getWaitingTillDateD(),new MyDate(0)));
                         break;
                     case Item.PARSE_IMPORTANCE_URGENCY:
-                        newStr = getDiffStr(previousStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
+//                        newStr = getDiffStr(previousStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.IMPORTANCE_URGENCY , item.getImpUrgPrioValue(),0));
+                        break;
+                    case Item.PARSE_IMPORTANCE:
+//                        newStr = getDiffStr(previousStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.IMPORTANCE , item.getImportanceN(),null));
+                        break;
+                    case Item.PARSE_URGENCY:
+//                        newStr = getDiffStr(previousStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.URGENCY , item.getUrgencyN(),null));
                         break;
                     case Item.PARSE_CHALLENGE:
-                        newStr = getDiffStr(previousStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
+//                        newStr = getDiffStr(previousStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.CHALLENGE ,item.getChallengeN(),null));
                         break;
-                    case Item.PARSE_TEXT: //no header for text, could do a letter 'A' but not valuable
+                    case Item.PARSE_TEXT: //no header for text, could do a letter 'A' but not valuable //TODO - add the right-side menu with letters to jump directly to tasks starting with that letter
 //                        newStr = getDiffStr(newStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
                         break;
                     case FilterSortDef.FILTER_SORT_TODAY_VIEW:
@@ -1246,8 +1284,9 @@ public class MyTree2 extends ContainerScrollY {
                         }
                         break;
                     default:
-                        assert false : "Unhandled parseId in StickyHeader = " + parseId;
+                        ASSERT.that( false , "Unhandled parseId in StickyHeader = " + parseId);
                 }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (newStr != null && !newStr.equals(previousStickyStr)) {
 ////                    newStickyStr = newStr;
 //                    stringPut.put(newStr); //store to compare next time
@@ -1262,6 +1301,7 @@ public class MyTree2 extends ContainerScrollY {
 ////                    if (false) headerLbl.putClientProperty("STICKY_HEADER", true);
 //                    return headerLbl;
 //                }
+//</editor-fold>
             } else if (current instanceof WorkSlot) {
                 WorkSlot workSlot = (WorkSlot) current;
                 switch (parseId) {

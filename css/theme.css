@@ -230,7 +230,7 @@ StatusBar {
     /*cn1-derive: Button;/**/
     /*cn1-derive: Container;/**/
     /*color: blue;/**/
-    padding-top: 2mm; 
+    /*padding-top: 2mm;  /*no longer needed on iphone 10 with safeArea*/
     padding-bottom: 3mm; 
     background-color: transparent;
 }
@@ -276,7 +276,7 @@ TitleCommand { /*the commands in the title bar*/
     /*margin-top: 0.5mm;/**/
     margin: 1.5mm 1.5mm;
     padding: 0;
-    font-size: 180%; /*140%;*/
+    font-size: 160%; /*140%;*/
     background-color: transparent;
     /*color: green;
     /*background-color: red;*/
@@ -429,6 +429,7 @@ ScreenItemTaskTextStarred {
     cn1-derive: ScreenItemTaskText;
     color: red; /*blueviolet;*/
 }
+
 ScreenItemTaskTextStarredInherited {
     cn1-derive: ScreenItemTaskTextStarred;
     color: indianred; /*blueviolet;*/
@@ -535,7 +536,7 @@ ScreenItemValue {/*used for field labels*/
 ScreenItemValueInherited {
     cn1-derive: ScreenItemValue;
     /*color: darkgray;*/
-    color: red;
+    color: #999;/*red;*/[Overdue]
 }
 /*ScreenItemValue {
     cn1-derive: LabelField;
@@ -820,8 +821,8 @@ SmallTimerContainer {
 
 SmallTimerItemStatus {
     cn1-derive: SmallTimerBase;
-    padding-left: 1mm;
-    padding-right: 1.5mm;
+    padding-left: 2mm;
+    padding-right: 2mm;
     text-align: right;
 }
 
@@ -868,6 +869,8 @@ SmallTimerEditItem {
     cn1-derive: SmallTimerBase;
     color: white;
     text-align: right;
+    padding-left: 2mm;
+    padding-right: 2mm;
 }
 
 
@@ -1434,7 +1437,12 @@ SwipeButtonNewFromTemplate {
 
 SwipeButtonSetDueToToday {
     cn1-derive: SwipeButtonCommonBase;
-    background-color:greenyellow;
+    background-color:darkseagreen;
+}
+
+SwipeButtonSetFutureDueToToday {
+    cn1-derive: SwipeButtonCommonBase;
+    background-color:darkseagreen;
 }
 
 SwipeButtonStarInactive {

@@ -1459,14 +1459,14 @@ public class ScreenItem2 extends MyForm {
                 repeatRuleButtonStr = "";
             } else { //stored a locally edited RR
                 assert editedRepeatRule instanceof RepeatRuleParseObject;
-                repeatRuleButtonStr =editedRepeatRule.getText();
+                repeatRuleButtonStr = editedRepeatRule.getText();
             }
             repeatRuleButton.setText(repeatRuleButtonStr);
         };
 
         //Cmd for editing RR
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenEditItem", "", null, (e) -> {
-                        //check if OK to edit RR, return if not
+            //check if OK to edit RR, return if not
 //            if (item.getRepeatRule() != null && !locallyEditedRepeatRuleCopy.isRepeatInstanceInListOfActiveInstances(item)) {
             if (item.getRepeatRule() != null && !item.getRepeatRule().canRepeatRuleBeEdited(item)) {
                 Dialog.show("INFO", Format.f("Once a repeating {0 task or workslot} has been set {1 DONE} or {2 CANCELLED} the {3 REPEAT_RULE} definition cannot be edited from this task anymore",
@@ -1475,11 +1475,11 @@ public class ScreenItem2 extends MyForm {
             }
 
             RepeatRuleParseObject locallyEditedRepeatRuleCopy; //NB - must set locallyEditedRepeatRule like it's done to allow use in lambda fct below
-            RepeatRuleParseObject localRR=(RepeatRuleParseObject)previousValues.get(Item.PARSE_REPEAT_RULE);
-            
+            RepeatRuleParseObject localRR = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
+
             if (localRR != null) {
                 locallyEditedRepeatRuleCopy = localRR;
-            }else{
+            } else {
                 if (item.getRepeatRule() == null) {
                     locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
 //                    locallyEditedRepeatRuleCopy.addOriginatorToRule(item); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
@@ -1488,7 +1488,7 @@ public class ScreenItem2 extends MyForm {
                 }
                 previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //save new value locally
             }
-            
+
             new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRuleCopy, item, ScreenItem2.this, () -> {
                 //if a startDate was set in the RR, and none is set for the item, use RR startDate as due date. *unless* the dueDate was reset to 0 (hence the test on item.getDueDateD())
                 if (dueDate.getDate().getTime() == 0 && locallyEditedRepeatRuleCopy.getSpecifiedStartDate().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
@@ -2542,7 +2542,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "" : MyDate.formatDateTimeNew(item.getLastModifiedDate()));
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**", true, true, true));
-            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true));
+            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true));
         }
 
 //        MyDateAndTimePicker startedOnDate = new MyDateAndTimePicker("<set>", parseIdMap2, () -> item.getStartedOnDateD(), (d) -> item.setStartedOnDate(d));
@@ -2554,10 +2554,14 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        statusCont.add(layout(Item.STARTED_ON_DATE, startedOnDate.makeContainerWithClearButton(), "Set automatically when using the timer")); //"click to set date when started"
 //        statusCont.add(layout(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP)); //"click to set date when started"
 //</editor-fold>
-        initField(Item.PARSE_STARTED_ON_DATE, startedOnDate, () -> item.getStartedOnDateD(), (s) -> item.setStartedOnDate((Date) s, true),
-                () -> startedOnDate.getDate(), (s) -> startedOnDate.setDate((Date) s));
-
-        statusCont.add(layoutN(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP)); //"click to set date when started"
+        if (item.isProject()) {
+            Label startedOnDateLabel = new Label(item.getStartedOnDateD().getTime() == 0 ? "" : MyDate.formatDateTimeNew(item.getStartedOnDateD()));
+            statusCont.add(layoutN(Item.STARTED_ON_DATE, startedOnDateLabel, Item.STARTED_ON_DATE_HELP, true));
+        } else {
+            initField(Item.PARSE_STARTED_ON_DATE, startedOnDate, () -> item.getStartedOnDateD(), (s) -> item.setStartedOnDate((Date) s, true),
+                    () -> startedOnDate.getDate(), (s) -> startedOnDate.setDate((Date) s));
+            statusCont.add(layoutN(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP)); //"click to set date when started"
+        }
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(startedOnDate.)).add(new SpanLabel("Set automatically when using the timer"));
 
 //        MyDateAndTimePicker completedDate = new MyDateAndTimePicker("<set>", parseIdMap2, () -> item.getCompletedDateD(), (d) -> item.setCompletedDate(d));

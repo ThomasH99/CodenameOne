@@ -20,6 +20,7 @@ import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionEvent.Type;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.Layout;
 import com.parse4cn1.ParseObject;
@@ -639,8 +640,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                && !((north = ((BorderLayout) layout).getNorth()) instanceof MyDragAndDropSwipeableContainer))) {
         while (beforeParentParent != null) {
             layout = beforeParentParent.getLayout();
-            if (layout instanceof MyBorderLayout) {
-                north = ((MyBorderLayout) layout).getNorth();
+            if (layout instanceof BorderLayout) {
+                north = ((BorderLayout) layout).getNorth();
                 if ((north instanceof MyDragAndDropSwipeableContainer && north != cont) //north != cont special case for when dragged is over itself (otherwise it returns itself)
                         || beforeParentParent instanceof MyTree2) { //top-level MyTree2 is NOT in a north container like lower-level elements
                     break;
@@ -677,8 +678,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         Layout layout = null;
         //iterate up the container hierarchy to find BorderLayout container with a MyDragAndDropSwipeableContainer in the North position
         while (parent != null) {
-            if ((layout = parent.getLayout()) instanceof MyBorderLayout) {
-                north = ((MyBorderLayout) layout).getNorth();
+            if ((layout = parent.getLayout()) instanceof BorderLayout) {
+                north = ((BorderLayout) layout).getNorth();
                 if (north instanceof MyDragAndDropSwipeableContainer) { //north could contain some other container than MyDragAndDropSwipeableContainer
                     topLevelMyDD = (MyDragAndDropSwipeableContainer) north;
                 }
@@ -981,8 +982,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         Container contParent = cont.getParent();
         Layout layout;
         Component center;
-        if (contParent != null && (layout = contParent.getLayout()) instanceof MyBorderLayout
-                && (center = ((MyBorderLayout) layout).getCenter()) instanceof ContainerScrollY
+        if (contParent != null && (layout = contParent.getLayout()) instanceof BorderLayout
+                && (center = ((BorderLayout) layout).getCenter()) instanceof ContainerScrollY
                 && (((ContainerScrollY) center)).getComponentCount()
                 //                > (0 + getPositionInContainerScrollY(((ContainerScrollY) center), dragged) >= 0 ? 1 : 0)) {
                 > (0 + (draggedOrNull != null ? getPositionInContainerScrollY(((ContainerScrollY) center), draggedOrNull) : 0) >= 0 ? 1 : 0)) {
@@ -997,8 +998,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         Component center;
         Container contParent = cont.getParent();
 
-        if (contParent != null && (layout = contParent.getLayout()) instanceof MyBorderLayout
-                && (center = ((MyBorderLayout) layout).getCenter()) instanceof ContainerScrollY
+        if (contParent != null && (layout = contParent.getLayout()) instanceof BorderLayout
+                && (center = ((BorderLayout) layout).getCenter()) instanceof ContainerScrollY
                 && (((ContainerScrollY) center)).getComponentCount() > 0) {
             //if dragged hidden container is the only one in center, then there must be at least 2 elements in container to return it, this is ensured by this expression: getPositionInContainerScrollY(((ContainerScrollY) center), this) >= 0 ? 1 : 0)
             return (ContainerScrollY) center;
@@ -1017,8 +1018,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         Layout layout;
         Component north;
 //        if (cont != null && (layout = cont.getParent().getLayout()) instanceof BorderLayout
-        if (cont != null && (layout = cont.getLayout()) instanceof MyBorderLayout
-                && (north = ((MyBorderLayout) layout).getNorth()) instanceof MyDragAndDropSwipeableContainer) {
+        if (cont != null && (layout = cont.getLayout()) instanceof BorderLayout
+                && (north = ((BorderLayout) layout).getNorth()) instanceof MyDragAndDropSwipeableContainer) {
             return (MyDragAndDropSwipeableContainer) north;
 //        } else if (cont instanceof MyDragAndDropSwipeableContainer) { //case for list of WorkSlots, will it cause trouble for task lists??
 //            return (MyDragAndDropSwipeableContainer) cont;
@@ -3460,7 +3461,7 @@ T3
                         };
                         insertDropPlaceholder = (dropPh) -> {
                             //insert as a subtask container
-                            MyBorderLayout borderLayout = (MyBorderLayout) beforeMyDDCont.getParent().getLayout(); //if dragged is already a subtask of previous, then we can assume the center container for subtasks already exists
+                            BorderLayout borderLayout = (BorderLayout) beforeMyDDCont.getParent().getLayout(); //if dragged is already a subtask of previous, then we can assume the center container for subtasks already exists
                             Container centerCont = (Container) borderLayout.getCenter();
                             centerCont.addComponent(dropPh); //add to end of center list (to avoid changing the index of original hidden container)
                         };

@@ -106,7 +106,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         super(CLASS_NAME);
         setText(listName);
         setList(list);
-        setFilterSortDef(filterSortDef);
+        if (temporaryNoSaveList && filterSortDef != null) {
+            setFilterSortDef(filterSortDef, true);
+        }
         setNoSave(temporaryNoSaveList);
         if (!temporaryNoSaveList && saveImmediatelyToParse) {
             DAO.getInstance().saveNew((ParseObject) this, true);
@@ -213,6 +215,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else {
             remove(PARSE_SYSTEM_NAME);
         }
+    }
+
+    public String getSystemName() {
+        String systemName = getString(PARSE_SYSTEM_NAME);
+        return systemName != null ? systemName : "";
     }
 
     @Override
@@ -1639,10 +1646,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      *
      * @param filterSortDef
      */
-    @Override
-    public void setFilterSortDef(FilterSortDef filterSortDef) {
+    public void setFilterSortDef(FilterSortDef filterSortDef, boolean saveEvenDefaultFilter) {
 //        if (filterSortDef != null && filterSortDef != FilterSortDef.getDefaultFilter()) { //only save if not the default filter
-        if (filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) { //only save if changed compared to the default filter
+        if ((filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) || saveEvenDefaultFilter) { //only save if changed compared to the default filter
 //            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved --> should be done in DAO now
 //                DAO.getInstance().saveInBackground(filterSortDef); //
 //            }
@@ -1651,6 +1657,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             remove(PARSE_FILTER_SORT_DEF);
         }
 //        filteredSortedList = null;
+    }
+
+    @Override
+    public void setFilterSortDef(FilterSortDef filterSortDef) {
+        setFilterSortDef(filterSortDef, false);
     }
 
     @Override
@@ -1998,7 +2009,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     public boolean setToList(int index, ItemAndListCommonInterface subItemOrList) {
-        if (Config.TEST) ASSERT.that(subItemOrList!=null);
+        if (Config.TEST) {
+            ASSERT.that(subItemOrList != null);
+        }
         setItemAtIndex((E) subItemOrList, index);
         if (Config.TEST) {
             ItemAndListCommonInterface oldOwner = subItemOrList.getOwner();

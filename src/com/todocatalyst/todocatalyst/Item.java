@@ -947,6 +947,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String SUBTASKS_HELP = "**";
     final static String WORTIME = "work time";
     final static String WORKTIME_HELP = "**";
+    final static String SYSTEM_NAME = "System name"; //system name for list (e.g. Today etc
+    final static String SNOOZED_TILL = "Snoozed till";
 
     final static int ITEM_CHANGED_ALARM_DATE = 0;
 
@@ -1270,7 +1272,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    private Item getTopLevelProject() {
+    public Item getTopLevelProject() {
 //        Item ownerItem = (Item) getParseObject(PARSE_OWNER_ITEM);
         Item topLevelProject = (Item) getOwnerItem();
 //        topLevelProject = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(topLevelProject); //NO, done in getOwnerItem
@@ -1344,6 +1346,35 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             hierarchy.add(ownerItem);
             ownerItem.getOwnerHierarchyImpl(hierarchy);
         }
+    }
+
+    /**
+     * returns the top-level project for a subtask (or null if none)
+     */
+    public Item getOwnerTopLevelProject() {
+        Item owner;
+        if ((owner = getOwnerItem()) != null) {
+            Item ownersOwner = owner.getOwnerTopLevelProject(); //recurse
+            return ownersOwner == null ? owner : ownersOwner;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * returns the top-level project for a subtask (or null if none)
+     */
+    public ItemList getOwnerTopLevelList() {
+        ItemAndListCommonInterface owner = getOwner();
+
+        if (owner instanceof ItemList) {
+            return (ItemList) owner;
+        } else if (owner instanceof Item) {
+            return ((Item) owner).getOwnerTopLevelList();
+        } else {
+            ASSERT.that(false, "no appropriate ownerList for item=" + this);
+        }
+        return null;
     }
 
     /**
@@ -1514,19 +1545,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
         return ownerText;
-    }
-
-    /**
-     * returns the top-level project for a subtask (or null if none)
-     */
-    public Item getOwnerTopLevelProject() {
-        Item owner;
-        if ((owner = getOwnerItem()) != null) {
-            Item ownersOwner = owner.getOwnerTopLevelProject();
-            return ownersOwner == null ? owner : ownersOwner;
-        } else {
-            return null;
-        }
     }
 
     /**
@@ -1910,7 +1928,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (defAll || defCopyPaste) {
             //None of these fields are normally copied
             destination.setStatus(getStatus());
-            destination.setStartedOnDate(getStartedOnDate());
+            destination.setStartedOnDate(getStartedOnDateD());
             destination.setCompletedDate(getCompletedDateD(), true, false); //force the same (possibly set manually) completedDate
 //            destination.setCreatedDate(getCreatedDate());
             destination.setWaitingTillDate(getWaitingTillDateD().getTime());
@@ -2406,7 +2424,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     @Override
 //    public List<Item> getList() {
     public List getList() {
-        return getListFull(); //TODO!!!! implement filter/sort
+//        return getListFull(); //TODO!!!! implement filter/sort
+        List<Item> list = getListFull();
+        FilterSortDef filterSortDef = getFilterSortDef();
+        if (filterSortDef != null) { //no buffer for (see code above for buffer version)
+            return filterSortDef.filterAndSortItemList(list);
+        } else {
+            return list;
+        }
+
     }
 
     /**
@@ -4081,9 +4107,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public Date getStartedOnDateD() {
         Date date = getStartedOnDateDInParse();
-        if (date.getTime() == 0 && MyPrefs.itemProjectPropertiesDerivedFromSubtasks.getBoolean()) { //UI: for projects, startedOn date is the date the first subtask was started (if any), the date can be overwritten by setting any desired date for the mother project
-            return getSubtasksStartedOnDateD(this);
-        }
+//        if (date.getTime() == 0 && MyPrefs.itemProjectPropertiesDerivedFromSubtasks.getBoolean()) { //UI: for projects, startedOn date is the date the first subtask was started (if any), the date can be overwritten by setting any desired date for the mother project
+//            return getSubtasksStartedOnDateD(this);
+//        }
         return date;
     }
 
@@ -4100,27 +4126,29 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @param date
      */
-    public void setStartedOnDate(long startedOnDate) {
-//        if (this.startedOnDate != 0 && this.startedOnDate != date) {
-//            this.startedOnDate = date;
-//        }
-//        if (has(PARSE_STARTED_ON_DATE) || startedOnDate != 0) {
-//            put(PARSE_STARTED_ON_DATE, new Date(startedOnDate));
-//        }
-//        if (startedOnDate != 0) {
-//            put(PARSE_STARTED_ON_DATE, new Date(startedOnDate));
-//        } else {
-//            remove(PARSE_STARTED_ON_DATE);
-//        }
-        setStartedOnDate(new Date(startedOnDate));
-    }
-
+//    public void setStartedOnDate(long startedOnDate) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (this.startedOnDate != 0 && this.startedOnDate != date) {
+////            this.startedOnDate = date;
+////        }
+////        if (has(PARSE_STARTED_ON_DATE) || startedOnDate != 0) {
+////            put(PARSE_STARTED_ON_DATE, new Date(startedOnDate));
+////        }
+////        if (startedOnDate != 0) {
+////            put(PARSE_STARTED_ON_DATE, new Date(startedOnDate));
+////        } else {
+////            remove(PARSE_STARTED_ON_DATE);
+////        }
+////</editor-fold>
+//        setStartedOnDate(new Date(startedOnDate));
+//    }
     public void setStartedOnDate(Date startedOnDate) {
         setStartedOnDate(startedOnDate, false);
     }
 
     public void setStartedOnDate(Date startedOnDate, boolean forceToNewValue) {
-        if (forceToNewValue || getStartedOnDate() == 0) { //only set it once, don't overwrite it later
+        if (startedOnDate == null || forceToNewValue || getStartedOnDate() == 0) { //only set it once, don't overwrite it later (but reset if null (eg status set back to Created
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (startedOnDate != null && startedOnDate.getTime() != 0) {
 //                put(PARSE_STARTED_ON_DATE, startedOnDate);
 ////            setStatus(ItemStatus.ONGOING);  //Better move this into the UI
@@ -4130,45 +4158,72 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////                setStatus(ItemStatus.CREATED);
 ////            }
 //            }
+//</editor-fold>
             setStartedOnDateInParse(startedOnDate);
         }
+    }
 
+    /**
+     * returns the first startedOn date for all subtasks, or 0 if no subtask has
+     * a startedOn date, or null if no subtasks
+     *
+     * @return
+     */
+    private Date getStartedOnDateFromSubtasksN() {
+//            Date startedOn = new Date(MyDate.MIN_DATE);
+        Date startedOn = null;
+        List<Item> subtasks = (List<Item>) getListFull();
+        if (subtasks.isEmpty()) {
+            return getStartedOnDateD();
+        } else {
+            for (Item subtask : (List<Item>) getListFull()) { //Full list since startedOn for Completed tasks should also be counted (except for Cancelled tasks!)
+                if (subtask.getStatus() != ItemStatus.CANCELLED) {
+                    Date subtaskStartDate = subtask.getStartedOnDateFromSubtasksN();
+                    if (startedOn == null || subtaskStartDate.getTime() < startedOn.getTime()) {
+                        startedOn = subtaskStartDate;
+                    }
+                }
+            }
+            return startedOn;
+        }
     }
 
     public void setStartedOnDateInParse(Date startedOnDate) {
-        if (false && isProject()) { //subtasks should never inherit their project's start date??
-            Date oldProjectDate = getDate(PARSE_STARTED_ON_DATE);
-            for (Item subtask : (List<Item>) getList()) {
-                Date oldSubtaskDate = subtask.getStartedOnDateD();
-//<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
-//                if (oldDate == null) {
-//                    if (subtaskDate == null) {
-//                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                    } else {
-//                        //do nothing: subtask already had a date set before project got one
-//                    }
-//                } else { //oldDate!=null - a previous project date was set
-//                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
-//                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-//                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
-//                        //do nothing (subtask had a defined date already and it was different from old project date)
-//                    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false && isProject()) { //subtasks should never inherit their project's start date??
+//            Date oldProjectDate = getDate(PARSE_STARTED_ON_DATE);
+//            for (Item subtask : (List<Item>) getList()) {
+//                Date oldSubtaskDate = subtask.getStartedOnDateD();
+////<editor-fold defaultstate="collapsed" desc="fully developed decision tree for when to update subtasks">
+////                if (oldDate == null) {
+////                    if (subtaskDate == null) {
+////                        subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                    } else {
+////                        //do nothing: subtask already had a date set before project got one
+////                    }
+////                } else { //oldDate!=null - a previous project date was set
+////                    if (oldDate.equals(subtaskDate) || subtaskDate == null) { //subtaskDate==null => maybe inheritance has just been turned on?!
+////                        subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                    } else { // !oldDate.equals(subtaskDate) && subtaskDate!=null
+////                        //do nothing (subtask had a defined date already and it was different from old project date)
+////                    }
+////                }
+////                if (oldDate == null && subtaskDate == null) {
+////                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
+////                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
+//////oldDate!=null - a previous project date was set
+////                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
+////                }
+////</editor-fold>
+//                //above expressions are equivalent to this reduced/simplified version:
+//                if ((oldProjectDate == null && oldSubtaskDate == null)
+//                        || oldSubtaskDate == null
+//                        || oldSubtaskDate.equals(oldProjectDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
+//                    subtask.setStartedOnDate(startedOnDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
 //                }
-//                if (oldDate == null && subtaskDate == null) {
-//                    subtask.setDueDate(dueDate); //no previous project date was set, no subtask date was set, so update subtask to new (inherited) project date
-//                } else if (subtaskDate == null || subtaskDate.equals(oldDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
-////oldDate!=null - a previous project date was set
-//                    subtask.setDueDate(dueDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-//                }
+//            }
+//        }
 //</editor-fold>
-                //above expressions are equivalent to this reduced/simplified version:
-                if ((oldProjectDate == null && oldSubtaskDate == null)
-                        || oldSubtaskDate == null
-                        || oldSubtaskDate.equals(oldProjectDate)) { //subtaskDate==null => maybe inheritance has just been turned on?!
-                    subtask.setStartedOnDate(startedOnDate); //if dueDate==null (meanining project date is deleted, then all subtask dates equal to old project date will also be deleted
-                }
-            }
-        }
         if (startedOnDate != null && startedOnDate.getTime() != 0) {
 //            setStatus(ItemStatus.ONGOING,false, false, false);
             put(PARSE_STARTED_ON_DATE, startedOnDate);
@@ -4176,6 +4231,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_STARTED_ON_DATE);
         }
 //        update();
+    }
+
+    private void updateStartedOnDateOnSubtaskChange() {
+        Date subtaskStartedOn = getStartedOnDateFromSubtasksN();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Date currentProjectStartedOnDate = getStartedOnDateD(); //get last startedOn for subtasks
+//        Date currentProjectStartedOnInParse = getStartedOnDateDInParse();
+//        if (currentProjectStartedOnDate.getTime() != currentProjectStartedOnInParse.getTime()) {
+//            setStartedOnDateInParse(currentProjectStartedOnDate);
+//        }
+//</editor-fold>
+        setStartedOnDateInParse(subtaskStartedOn);
     }
 
 //    public void setStartedOnDateUpdateStatus(Date startedOnDate) {
@@ -4704,6 +4771,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            setStartedOnDate(System.currentTimeMillis());
             item.setStartedOnDate(now);
         }
+        if (item.getStartedOnDate() != 0 && newStatus == ItemStatus.CREATED) { //if setting back, reset startedOn date
+            item.setStartedOnDate(null);
+        }
         //UI: StartedOnDate RESET: not relevant, always keep the first set StartedOnDate (unless manually deleted)
 
         //CompletedDate: SET set to Now if changing to Done/Cancelled from other state
@@ -4881,9 +4951,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
 //</editor-fold>
-    protected void updateStatusOnSubtaskStatusChange(Item subtask, ItemStatus oldStatus, ItemStatus newStatus, Date now) {
+//    protected void updateStatusOnSubtaskStatusChange(Item subtask, ItemStatus oldStatus, ItemStatus newStatus, Date now) {
+    protected void updateStatusOnSubtaskStatusChange(Date now) {
         ItemStatus subtaskStatus = getStatusFromSubtasks();
         setStatus(subtaskStatus, false, true, true, now);
+    }
+
+    protected void updateStatusOnSubtaskStatusChange() {
+        updateStatusOnSubtaskStatusChange(new Date(MyDate.currentTimeMillis()));
     }
 
     /**
@@ -5051,6 +5126,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         setStatusInParse(newStatus); //must set *before* updating supertasks
 
         if (updateDependentFields) { //must call this *before* creating repeat instances to e.g. set CompletedDate for repeatFromCompleted
+//            updateFieldsDependingOnStatus(this, oldStatus, newStatus, now);
             updateFieldsDependingOnStatus(this, oldStatus, newStatus, now);
         }
 
@@ -5062,7 +5138,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (updateSupertasks) { //must call *after* creating repeat instances to update project correctly based on new subtasks
             Item owner = getOwnerItem();
             if (owner != null) {// && owner.getStatus() != newStatus) {
-                owner.updateStatusOnSubtaskStatusChange(this, oldStatus, newStatus, now);
+//                owner.updateStatusOnSubtaskStatusChange(this, oldStatus, newStatus, now);
+                owner.updateStatusOnSubtaskStatusChange(now);
 //                DAO.getInstance().saveInBackground(owner); //now done in DAO.save...
             }
         }
@@ -5304,13 +5381,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //PARSE_COMPLETED_DATE -> the date of the last subtask completed
 
         if (isProject()) {
-
-            ItemStatus currentProjectStatusFromSubtasks = getStatusFromSubtasks();
-            ItemStatus currentTaskStatusInParse = getStatusFromParse();
-            if (currentProjectStatusFromSubtasks != currentTaskStatusInParse
-                    && !(currentProjectStatusFromSubtasks == ItemStatus.CREATED && currentTaskStatusInParse == ItemStatus.ONGOING)) { //do not set a project which is Ongoing to Created just because the subtasks are all created (e.g. Actual could have been captured on project task already, or it could have been set Ongoing manually)
-                setStatusInParse(currentProjectStatusFromSubtasks);
-            }
+            //STATUS
+//            ItemStatus currentProjectStatusFromSubtasks = getStatusFromSubtasks();
+//            ItemStatus currentTaskStatusInParse = getStatusFromParse();
+//            if (currentProjectStatusFromSubtasks != currentTaskStatusInParse
+//                    && !(currentProjectStatusFromSubtasks == ItemStatus.CREATED && currentTaskStatusInParse == ItemStatus.ONGOING)) { //do not set a project which is Ongoing to Created just because the subtasks are all created (e.g. Actual could have been captured on project task already, or it could have been set Ongoing manually)
+//                setStatusInParse(currentProjectStatusFromSubtasks); NOmustsetStatusNormallyForProjectToTriggerEgRepeat;
+//            }
+            updateStatusOnSubtaskStatusChange();
 
             ////////////// ActualEffort
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5354,23 +5432,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             updateEstimateOnChangeInSubtasks();
 
             ////////////// CompletedDate
-            if (isDone()) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                Date currentProjectCompletedDate = getCompletedDateD();
-//                Date currentProjectCompletedDateInParse = getCompletedDateDInParse();
-//                if (currentProjectCompletedDate.getTime() != currentProjectCompletedDateInParse.getTime()) {
-//                    setCompletedDateInParse(currentProjectCompletedDate);
-//                }
-//                setCompletedDateInParse(getLatestSubtaskCompleteDate(), true);
-//</editor-fold>
-                setCompletedDate(getLatestSubtaskCompleteDate(), true, false); //false=> do NOT update status of project just because of changes to subtask completedDate
-            }
-
-            Date currentProjectStartedOnDate = getStartedOnDateD(); //get last startedOn for subtasks
-            Date currentProjectStartedOnInParse = getStartedOnDateDInParse();
-            if (currentProjectStartedOnDate.getTime() != currentProjectStartedOnInParse.getTime()) {
-                setStartedOnDateInParse(currentProjectStartedOnDate);
-            }
+//            if (isDone()) { //NOT necessary, done above in updateStatusOnSubtaskStatusChange() if ever project is completed
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                Date currentProjectCompletedDate = getCompletedDateD();
+////                Date currentProjectCompletedDateInParse = getCompletedDateDInParse();
+////                if (currentProjectCompletedDate.getTime() != currentProjectCompletedDateInParse.getTime()) {
+////                    setCompletedDateInParse(currentProjectCompletedDate);
+////                }
+////                setCompletedDateInParse(getLatestSubtaskCompleteDate(), true);
+////</editor-fold>
+//                setCompletedDate(getLatestSubtaskCompleteDate(), true, false); //false=> do NOT update status of project just because of changes to subtask completedDate
+//            }
+//            Date currentProjectStartedOnDate = getStartedOnDateD(); //get last startedOn for subtasks
+//            Date currentProjectStartedOnInParse = getStartedOnDateDInParse();
+//            if (currentProjectStartedOnDate.getTime() != currentProjectStartedOnInParse.getTime()) {
+//                setStartedOnDateInParse(currentProjectStartedOnDate);
+//            };movedToOwnProcedure;
+            updateStartedOnDateOnSubtaskChange();
 
 //            if (false) {
 //                DAO.getInstance().saveInBackground(this); //NOT needed sine updateValues is (at least currently) only called when setting the subtask list, in which case it needs to be saved at a higher level anyway
@@ -7050,7 +7128,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        setActualForProjectTaskItselfInParse(actualEffortProjectTaskItselfMillis);
 //</editor-fold>
         setActualForProjectTaskItselfInParse(actualEffortProjectTaskItselfMillis);
-        setActualImpl(actualEffortProjectTaskItselfMillis + getActualForSubtasks(), true); //adjust totoal effort, avoids recalculating sum of subtasks
+//        setActualImpl(actualEffortProjectTaskItselfMillis + getActualForSubtasks(), true); //adjust totoal effort, avoids recalculating sum of subtasks
+        setActualImpl(actualEffortProjectTaskItselfMillis + getActualForSubtasks(), autoUpdateStatusAndStartedOnDate); //adjust totoal effort, avoids recalculating sum of subtasks
     }
 
 //    private void updateActualOnSubtaskChange(long oldTotalActual, long newTotalActual) {
@@ -7689,12 +7768,41 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     private void setCompletedDateInParse(Date completedDate) {
-
         if (completedDate != null && completedDate.getTime() != 0) {
             put(PARSE_COMPLETED_DATE, completedDate);
         } else {
             remove(PARSE_COMPLETED_DATE); //delete when setting to default value
         }
+    }
+
+    /**
+     * returns the first startedOn date for all subtasks, or 0 if no subtask has
+     * a startedOn date, or null if no subtasks
+     *
+     * @return
+     */
+    private Date getCompletedOnDateFromSubtasksN() {
+//            Date startedOn = new Date(MyDate.MIN_DATE);
+        Date completedOn = null;
+        List<Item> subtasks = (List<Item>) getListFull();
+        if (subtasks.isEmpty()) {
+            return getCompletedDateD();
+        } else {
+            for (Item subtask : (List<Item>) getListFull()) { //Full list since startedOn for Completed tasks should also be counted (except for Cancelled tasks!)
+                if (subtask.getStatus() != ItemStatus.CANCELLED) {
+                    Date completedOnDate = subtask.getCompletedOnDateFromSubtasksN();
+                    if (completedOn == null || completedOnDate.getTime() < completedOn.getTime()) {
+                        completedOn = completedOnDate;
+                    }
+                }
+            }
+            return completedOn;
+        }
+    }
+
+    private void updateCompletedOnSubtaskChange() {
+        Date subtaskCompletedOn = getCompletedOnDateFromSubtasksN();
+        setCompletedDateInParse(subtaskCompletedOn);
     }
 
     public void setCompletedDate(Date completedDate, boolean forceToThisInsteadOfLastSubtaskCompletedDate, boolean updateStatus) {
@@ -7709,9 +7817,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             setDone(lastCompletedDate.getTime() != 0);
         }
 
-        Item owner = getOwnerItem();
-        if (owner != null) {
-            owner.updateAllValuesDerivedFromSubtasksWhenSubtaskListChange();
+        Item ownerItem = getOwnerItem();
+        if (ownerItem != null) {
+//            owner.updateAllValuesDerivedFromSubtasksWhenSubtaskListChange();xxjustupdateCompletedDate;
+            ownerItem.updateCompletedOnSubtaskChange();
         }
     }
 //     public void setCompletedDate(Date completedDate) {
@@ -8554,11 +8663,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            DAO.getInstance().saveInBackground(new ArrayList(getCategories())); //save *after* saving this item to avoid reference errors. saveBatch will remove non-changed categories. Work on copy of list to avoid java.util.ConcurrentModificationException
 //        }
 //</editor-fold>
-        if (false&&isDirty()) {
+        if (false && isDirty()) {
             listenersXXX.fireDataChangeEvent(DataChangedListener.CHANGED, -1); //TODO optimize and only send change even on relevant changes (e.g. status change, remaining/actual/effort changes)
         }
 
-        if (true|| opsAfterSubtaskUpdates != null) { //never null
+        if (true || opsAfterSubtaskUpdates != null) { //never null
 //            for (Runnable f : opsAfterSubtaskUpdates) {
 //                f.run();
 //            }
@@ -9127,12 +9236,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     String makeNotificationBodyText(AlarmType alarmType) {
-        Date due = getDueDateD();
-        if (MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean() && due.getTime() != 0) {
-            return "Due: " + MyDate.formatDateTimeNew(due);
-        } else {
-            return "";
+        String s = "";
+
+        if (alarmType.isReminder() && MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean() && getDueDateD().getTime() != 0) {
+            s += (s.isEmpty() ? "" : "\n") + Item.DUE_DATE + ": " + MyDate.formatDateTimeNew(getDueDateD());
         }
+
+        if (alarmType.isReminder() && MyPrefs.alarmShowAlarmTimeAtEndOfNotificationText.getBoolean() && getAlarmDateD().getTime() != 0) {
+            s += (s.isEmpty() ? "" : "\n") + Item.ALARM_DATE + ": " + MyDate.formatDateTimeNew(getAlarmDateD());
+        }
+
+        if (alarmType.isWaitingReminder()) {
+            if (MyPrefs.alarmShowWaitingTimeAtEndOfNotificationText.getBoolean() && getWaitingTillDateD().getTime() != 0) {
+                s += (s.isEmpty() ? "" : "\n") + Item.WAIT_UNTIL_DATE + ": " + MyDate.formatDateTimeNew(getWaitingTillDateD());
+            }
+            if (MyPrefs.alarmShowWaitingAlarmTimeAtEndOfNotificationText.getBoolean() && getWaitingAlarmDateD().getTime() != 0) {
+                s += (s.isEmpty() ? "" : "\n") + Item.WAIT_UNTIL_DATE + ": " + MyDate.formatDateTimeNew(getWaitingAlarmDateD());
+            }
+        }
+
+        if (alarmType.isSnooze() && MyPrefs.alarmShowSnoozeUntilTimeAtEndOfNotificationText.getBoolean() && getSnoozeAlarmRecord().alarmTime.getTime() != 0) {
+            s += (s.isEmpty() ? "" : "\n") + Item.SNOOZED_TILL + ": " + MyDate.formatDateTimeNew(getSnoozeAlarmRecord().alarmTime.getTime());
+        }
+
+        return s;
     }
 
     @Override

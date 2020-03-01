@@ -48,6 +48,7 @@ public class FilterSortDef extends ParseObject {
     private static String PARSE_FILTER_DESCRIPTION = "description"; //longer text description the *purpose*/*benefit* of the filter
     private static String PARSE_FILTER_HELP = "help"; //help text
     private static String PARSE_FILTER_DEFINITION = "definition"; //short *definition* (how exactly is it calculate) of the filter
+     static String PARSE_SYSTEM_NAME = ItemList.PARSE_SYSTEM_NAME; //systemname for filters for e.g. Next, Inbox, Alltasks, ...
 //    private static String PARSE_FILTER_PREDEFINED = "predefined";
 //    public static String PARSE_SORT_FILTER_ID = "filterId"; //name of screen and objectId of object displayed
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
@@ -351,22 +352,57 @@ public class FilterSortDef extends ParseObject {
 //        "Task text", "Importance/Urgency", "Status"};
 //</editor-fold>
     private static String[] sortOptions = new String[]{
-        Item.PRIORITY, Item.DUE_DATE, Item.EFFORT_REMAINING,
-        Item.EFFORT_ESTIMATE, Item.EFFORT_ACTUAL,
-        Item.CHALLENGE, Item.FUN_DREAD, Item.EARNED_VALUE,
-        Item.START_BY_TIME, Item.STARTED_ON_DATE, Item.UPDATED_DATE,
-        Item.CREATED_DATE, Item.COMPLETED_DATE, Item.WAIT_UNTIL_DATE,
+        Item.PRIORITY, 
+        Item.DUE_DATE, 
+        Item.EFFORT_REMAINING,
+        
+        Item.EFFORT_ESTIMATE, 
+        Item.EFFORT_ACTUAL,
+        Item.CHALLENGE, 
+        
+        Item.FUN_DREAD, 
+        Item.EARNED_VALUE,
+        Item.START_BY_TIME, 
+        
+        Item.STARTED_ON_DATE, 
+        Item.UPDATED_DATE,
+        Item.CREATED_DATE, 
+        
+        Item.COMPLETED_DATE, 
+        Item.WAIT_UNTIL_DATE,
         Item.DESCRIPTION,
-        Item.IMPORTANCE_URGENCY, Item.STATUS};
+        
+        Item.IMPORTANCE_URGENCY, 
+        Item.IMPORTANCE, 
+        Item.URGENCY, 
+        Item.STATUS};
 
     private static String[] sortFields = new String[]{
-        Item.PARSE_PRIORITY, Item.PARSE_DUE_DATE, Item.PARSE_REMAINING_EFFORT,
-        Item.PARSE_EFFORT_ESTIMATE, Item.PARSE_ACTUAL_EFFORT,
-        Item.PARSE_CHALLENGE, Item.PARSE_DREAD_FUN_VALUE, Item.PARSE_EARNED_VALUE,
-        Item.PARSE_START_BY_DATE, Item.PARSE_STARTED_ON_DATE, Item.PARSE_UPDATED_AT,
-        Item.PARSE_CREATED_AT, Item.PARSE_COMPLETED_DATE, Item.PARSE_WAITING_TILL_DATE,
+        Item.PARSE_PRIORITY, 
+        Item.PARSE_DUE_DATE, 
+        Item.PARSE_REMAINING_EFFORT,
+        
+        Item.PARSE_EFFORT_ESTIMATE, 
+        Item.PARSE_ACTUAL_EFFORT,
+        Item.PARSE_CHALLENGE, 
+        
+        Item.PARSE_DREAD_FUN_VALUE, 
+        Item.PARSE_EARNED_VALUE,
+        Item.PARSE_START_BY_DATE, 
+        
+        Item.PARSE_STARTED_ON_DATE, 
+        Item.PARSE_UPDATED_AT,
+        Item.PARSE_CREATED_AT, 
+        
+        Item.PARSE_COMPLETED_DATE, 
+        Item.PARSE_WAITING_TILL_DATE,
         Item.PARSE_TEXT,
-        Item.PARSE_IMPORTANCE_URGENCY, Item.PARSE_STATUS};
+        
+        Item.PARSE_IMPORTANCE_URGENCY, 
+        Item.PARSE_IMPORTANCE, 
+        Item.PARSE_URGENCY, 
+        
+        Item.PARSE_STATUS};
 
     /**
      * fetches a filter from Parse or returns default filter if none is stored
@@ -1205,6 +1241,14 @@ public class FilterSortDef extends ParseObject {
                 return sortDescending
                         ? (i1, i2) -> compareInt(i1.getImpUrgPrioValue(), i2.getImpUrgPrioValue()) //show highest values at top
                         : (i1, i2) -> compareInt(i2.getImpUrgPrioValue(), i1.getImpUrgPrioValue());
+            case Item.PARSE_IMPORTANCE:
+                return sortDescending
+                        ? (i1, i2) -> compareNullValueLast(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
+                        : (i1, i2) -> compareNullValueLast(i2.getImportanceN(), i1.getImportanceN());
+            case Item.PARSE_URGENCY:
+                return sortDescending
+                        ? (i1, i2) -> compareNullValueLast(i1.getUrgencyN(), i2.getUrgencyN()) //show highest values at top
+                        : (i1, i2) -> compareNullValueLast(i2.getUrgencyN(), i1.getUrgencyN());
             case FILTER_SORT_TODAY_VIEW:
 //                                return (i1, i2) -> 0; //no sorting, arrive sorted from parse query
                 return (i1, i2) -> i1.getTodaySortOrder().compareTo(i2.getTodaySortOrder());
@@ -1320,6 +1364,7 @@ public class FilterSortDef extends ParseObject {
         super.save();
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * @return the showAll
      */
@@ -1350,6 +1395,7 @@ public class FilterSortDef extends ParseObject {
 //        this.showDefault = showDefault;
 //        saveCurrentlyActiveFilterOptions();
 //    }
+//</editor-fold>
     /**
      * @return the showNewTasks
      */

@@ -39,6 +39,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListAllowDuplicateListNames);
         addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewItemsInStartOfLists);
         
+        content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListAlwaysShowHideUntilDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListAlwaysShowStartByDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListExpiresByDate);
@@ -46,12 +47,18 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowRemainingEvenIfZero);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListEffortEstimate);
 
+        content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.dragDropAsSubtaskEnabled);
         addSettingBoolean(content, parseIdMap2, MyPrefs.dragDropAsSupertaskEnabled);
         addSettingInt(content, parseIdMap2, MyPrefs.useSmartdatesForThisManyDaysOverdueDueOrFinishDates, 0, 60, 1);
         addSettingInt(content, parseIdMap2, MyPrefs.dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask, 5, 25, 1);
         addSettingInt(content, parseIdMap2, MyPrefs.earnedValueDecimals, 0, 2, 1);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListDontShowValueIfEarnedValuePerHourIsNonZero);
+        
+        content.add(makeSpacer());
+        addSettingBoolean(content, parseIdMap2, MyPrefs.hideStickyHeadersForSortedLists);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingDown);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.titleAutoSize);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);
     }

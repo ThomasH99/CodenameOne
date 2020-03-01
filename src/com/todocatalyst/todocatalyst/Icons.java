@@ -31,15 +31,15 @@ public class Icons {
 
     }
 
-    public static Icons get() {
-        if (INSTANCE == null) {
-
-//            iconInsertNewTaskExdend = iconInsertNewTaskIndent.flipHorizontally(true); //flip the above image
-            INSTANCE = new Icons();
-//            Display.getInstance().set
-        }
-        return INSTANCE;
-    }
+//    public static Icons get() {
+//        if (INSTANCE == null) {
+//
+////            iconInsertNewTaskExdend = iconInsertNewTaskIndent.flipHorizontally(true); //flip the above image
+//            INSTANCE = new Icons();
+////            Display.getInstance().set
+//        }
+//        return INSTANCE;
+//    }
 
     public static Image makeT(char material) {
 //        return FontImage.createMaterial(material, UIManager.getInstance().getComponentStyle("TitleCommand"));
@@ -55,14 +55,14 @@ public class Icons {
         return FontImage.createMaterial(material, UIManager.getInstance().getComponentStyle(styleUIID));
     }
 
-    private final static Style labelStyle = new Label().getStyle();
-    private final static Style toolBarStyle = new Toolbar().getStyle();
+//    private final static Style labelStyle = new Label().getStyle();
+//    private final static Style toolBarStyle = new Toolbar().getStyle();
     //TODO!!! CN1 uses style "TitleCommand" for toolbar commands
 //    private Style toolbarStyle = (getnew Label()).getStyle();
 
-    static Image iconShowMoreLabelStyle() {
-        return makeT(FontImage.MATERIAL_EXPAND_MORE);
-    }
+//    static Image iconShowMoreLabelStyle() {
+//        return makeT(FontImage.MATERIAL_EXPAND_MORE);
+//    }
 //    final static char iconShowMoreLabelStyleXXX = FontImage.MATERIAL_EXPAND_MORE; //MORE=v
     final static char iconShowMore = FontImage.MATERIAL_EXPAND_MORE; //LESS=^MATERIAL_EXPAND_MORE
 //    final static Image iconShowMoreLabelStyleXXX = FontImage.createMaterial(iconShowMore, labelStyle);
@@ -78,50 +78,56 @@ public class Icons {
 
     //TIMER
 //    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, toolBarStyle);
-    static Image iconTimerSymbolToolbarStyle() {
-        return makeT(FontImage.MATERIAL_TIMER);
-    }
+//    static Image iconTimerSymbolToolbarStyle() {
+//        return makeT(FontImage.MATERIAL_TIMER);
+//    }
     static char iconLaunchTimer = FontImage.MATERIAL_TIMER;
     static char iconLaunchTimerAlreadyRunning = FontImage.MATERIAL_SHUTTER_SPEED;
 //    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand"));
-    final static Image iconTimerSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, labelStyle);
+//    final static Image iconTimerSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, labelStyle);
 
-    static Image iconTimerOffToolbarStyle() {
-        return makeT(FontImage.MATERIAL_TIMER_OFF);
-    }
+//    static Image iconTimerOffToolbarStyle() {
+//        return makeT(FontImage.MATERIAL_TIMER_OFF);
+//    }
 //    final static Image iconTimerOffToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER_OFF, toolBarStyle);
 
-    static Image iconTimerAutoStartTimerOnNextTaskToolbarStyle() {
-        return makeT(FontImage.MATERIAL_HISTORY);
-    }
+//    static Image iconTimerAutoStartTimerOnNextTaskToolbarStyle() {
+//        return makeT(FontImage.MATERIAL_HISTORY);
+//    }
 //    final static Image iconTimerAutoStartTimerOnNextTaskToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_HISTORY, toolBarStyle); //History: clock with arrow around
 //    final static Image iconTimerAutoStartTimerOnNextTaskToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_AUTORENEW, toolBarStyle); //Autorenew: two circular arrows
-    final static Image iconTimerAutoGotoNextTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_FILLED, labelStyle);
-    final static Image iconTimerStartLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PLAY_CIRCLE_OUTLINE, labelStyle);
-    final static Image iconTimerPauseLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_FILLED, labelStyle);
+//    final static Image iconTimerAutoGotoNextTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_FILLED, labelStyle);
+//    final static Image iconTimerAutoGotoNextTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_FILLED, labelStyle);
+//    final static Image iconTimerStartLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PLAY_CIRCLE_OUTLINE, labelStyle);
+    final static char iconTimerStart = FontImage.MATERIAL_PLAY_CIRCLE_OUTLINE;
+//    final static Image iconTimerPauseLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_FILLED, labelStyle);
+    final static char iconTimerPause = FontImage.MATERIAL_PAUSE_CIRCLE_FILLED;
 //    final static Image iconTimerBuzzerOnOffLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_TRENDING_FLAT, labelStyle); //Trending flat = long right arrow
-    final static Image iconTimerBuzzerOnOffLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_FAST_FORWARD, labelStyle); //Fast Forward = Play next, 
-    final static Image iconTimerScreenAlwaysOnLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_LIGHTBULB_OUTLINE, labelStyle); //Fast Forward = Play next, 
-    final static Image iconTimerInterruptedTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_FLASH_OFF, labelStyle); //Warning: triangle with '!', or use Flash Off to show it was interrupted
+//    final static Image iconTimerBuzzerOnOffLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_FAST_FORWARD, labelStyle); //Fast Forward = Play next, 
+//    final static Image iconTimerScreenAlwaysOnLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_LIGHTBULB_OUTLINE, labelStyle); //Fast Forward = Play next, 
+//    final static Image iconTimerInterruptedTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_FLASH_OFF, labelStyle); //Warning: triangle with '!', or use Flash Off to show it was interrupted
     final static char iconTimerStopExitTimer = FontImage.MATERIAL_STOP; //Warning: triangle with '!', or use Flash Off to show it was interrupted
-    final static Image iconTimerStopExitTimerLabelStyle = FontImage.createMaterial(iconTimerStopExitTimer, labelStyle); //Warning: triangle with '!', or use Flash Off to show it was interrupted
+//    final static Image iconTimerStopExitTimerLabelStyle = FontImage.createMaterial(iconTimerStopExitTimer, labelStyle); //Warning: triangle with '!', or use Flash Off to show it was interrupted
     final static char iconTimerNextTask = FontImage.MATERIAL_SKIP_NEXT; //like skip to next song
-    final static Image iconTimerNextTaskLabelStyle = FontImage.createMaterial(iconTimerNextTask, labelStyle); //like skip to next song
+//    final static Image iconTimerNextTaskLabelStyle = FontImage.createMaterial(iconTimerNextTask, labelStyle); //like skip to next song
 
     //ALARM
     final static char iconSnooze = FontImage.MATERIAL_SNOOZE;
-    final static Image iconSnoozeLabelStyle = FontImage.createMaterial(iconSnooze, labelStyle);
+//    final static Image iconSnoozeLabelStyle = FontImage.createMaterial(iconSnooze, labelStyle);
     final static char iconAlarmOff = FontImage.MATERIAL_ALARM_OFF;
-    final static Image iconAlarmOffLabelStyle = FontImage.createMaterial(iconAlarmOff, labelStyle);
+//    final static Image iconAlarmOffLabelStyle = FontImage.createMaterial(iconAlarmOff, labelStyle);
+    final static char iconAlarmEdit = FontImage.MATERIAL_NOTIFICATIONS_NONE;
 
     //ITEM
 //    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, labelStyle);
-    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_NOTIFICATIONS, labelStyle);
+//    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_NOTIFICATIONS, labelStyle);
     final static char iconAlarmDate = FontImage.MATERIAL_NOTIFICATIONS_NONE;
     final static char iconAlarmTriggered = FontImage.MATERIAL_NOTIFICATIONS_ACTIVE;
 
     final static char iconFilterSettings = FontImage.MATERIAL_LOW_PRIORITY;
     final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
+    final static char iconHideDoneTasks = FontImage.MATERIAL_CHECK_CIRCLE;
+    final static char iconShowDoneTasks = FontImage.MATERIAL_CHECK_CIRCLE_OUTLINE;
     final static char iconEditProperties = FontImage.MATERIAL_EDIT;
     final static char iconAddFromTemplate = FontImage.MATERIAL_FLIP_TO_FRONT; //FontImage.MATERIAL_ADD_BOX;
     final static char iconSaveAsTemplate = FontImage.MATERIAL_FLIP_TO_BACK;
@@ -161,22 +167,22 @@ public class Icons {
     final static char iconInspiration = FontImage.MATERIAL_HIGHLIGHT; 
 
 //    final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
-    final static Image iconSettingsLabelStyle = FontImage.createMaterial(iconSettings, labelStyle);
+//    final static Image iconSettingsLabelStyle = FontImage.createMaterial(iconSettings, labelStyle);
 
-    final static Image iconSettingsApplicationLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_SETTINGS_APPLICATIONS, labelStyle);
+//    final static Image iconSettingsApplicationLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_SETTINGS_APPLICATIONS, labelStyle);
 
-    final static Image iconLowPriorityLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_WATCH_LATER, labelStyle);
+//    final static Image iconLowPriorityLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_WATCH_LATER, labelStyle);
 
     final static char iconStarUnselected = FontImage.MATERIAL_STAR_BORDER;
 //    final static char iconStarUnselectedLabelStyleMaterial = FontImage.MATERIAL_STAR_BORDER;
-    final static Image iconStarUnselectedLabelStyle = FontImage.createMaterial(iconStarUnselected, labelStyle);
+//    final static Image iconStarUnselectedLabelStyle = FontImage.createMaterial(iconStarUnselected, labelStyle);
 
     final static char iconStarSelected = FontImage.MATERIAL_STAR;
-    final static Image iconStarSelectedLabelStyle = FontImage.createMaterial(iconStarSelected, labelStyle);
+//    final static Image iconStarSelectedLabelStyle = FontImage.createMaterial(iconStarSelected, labelStyle);
 //    final static Image iconSelectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_RADIO_BUTTON_CHECKED, labelStyle, 2); //3mm
 
     final static char iconSelected = FontImage.MATERIAL_CHECK_BOX;
-    final static Image iconSelectedLabelStyle = FontImage.createMaterial(iconSelected, labelStyle, 2); //3mm
+//    final static Image iconSelectedLabelStyle = FontImage.createMaterial(iconSelected, labelStyle, 2); //3mm
 
     final static char iconSelectAll = FontImage.MATERIAL_DONE_ALL; //TODO: find better symbol (with unchecked boxes)
     final static char iconSetMultiple = FontImage.MATERIAL_VIEW_LIST; //TODO: find better symbol (with unchecked boxes)
@@ -188,13 +194,13 @@ public class Icons {
 
     final static char iconSelectedLabelStyleMaterial = FontImage.MATERIAL_CHECK_BOX; //3mm
 //    final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED, labelStyle, 2);
-    final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK, labelStyle, 2);
+//    final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK, labelStyle, 2);
     final static char iconUnselectedLabelStyleMaterial = FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK;
-    final static Image iconTemplateStatusSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_DO_NOT_DISTURB_ALT, labelStyle);
+//    final static Image iconTemplateStatusSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_DO_NOT_DISTURB_ALT, labelStyle);
 
-    static Image iconSetDueDateToToday() {
-        return makeT(FontImage.MATERIAL_TODAY);
-    }
+//    static Image iconSetDueDateToToday() {
+//        return makeT(FontImage.MATERIAL_TODAY);
+//    }
     static char iconSetDueDateToTodayMaterial = FontImage.MATERIAL_TODAY;
     static char iconSetDueDateToTodayFontImageMaterial = FontImage.MATERIAL_TODAY;
 //    final static Image iconSetDueDateToToday = FontImage.createMaterial(FontImage.MATERIAL_TODAY, labelStyle);
@@ -209,28 +215,29 @@ public class Icons {
 //    static Image iconInsertNewTaskExdend; //init in constructor above // = iconInsertNewTaskIndent.flipHorizontally(true); //flip the above image
 //    static Image iconInsertNewTaskExdend= iconInsertNewTaskIndent.rotate180Degrees(true); //flip the above image
 
-    final static Image iconCreateSubTask = FontImage.createMaterial(FontImage.MATERIAL_PLAYLIST_PLAY, labelStyle);
+//    final static Image iconCreateSubTask = FontImage.createMaterial(FontImage.MATERIAL_PLAYLIST_PLAY, labelStyle);
 
     //TEMPLATE
-    final static char iconNewItemFromTemplateMaterial = FontImage.MATERIAL_LIBRARY_ADD;
-    final static Image iconNewItemFromTemplate = FontImage.createMaterial(iconNewItemFromTemplateMaterial, labelStyle);
+    final static char iconNewItemFromTemplate = FontImage.MATERIAL_LIBRARY_ADD;
+//    final static Image iconNewItemFromTemplateImage = FontImage.createMaterial(iconNewItemFromTemplate, labelStyle);
 
     //COMMANDS
     final static char iconCmdSortOnOff = FontImage.MATERIAL_SORT;
-    final static Image iconCmdSortOnOffToolbarStyle = FontImage.createMaterial(iconCmdSortOnOff, toolBarStyle);
+//    final static Image iconCmdSortOnOffToolbarStyle = FontImage.createMaterial(iconCmdSortOnOff, toolBarStyle);
+    
 
     final static char iconCmdShowTaskDetails = FontImage.MATERIAL_SUBTITLES;
-    final static Image iconCmdShowTaskDetailsLabelStyle = FontImage.createMaterial(iconCmdShowTaskDetails, toolBarStyle);
+//    final static Image iconCmdShowTaskDetailsLabelStyle = FontImage.createMaterial(iconCmdShowTaskDetails, toolBarStyle);
 
     //FUTURE
-    final static Image iconEncryptedSecurityLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_SECURITY, labelStyle); //mark encrypted tasks
-    final static Image iconGraphsLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_POLL, labelStyle); //mark encrypted tasks
+//    final static Image iconEncryptedSecurityLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_SECURITY, labelStyle); //mark encrypted tasks
+//    final static Image iconGraphsLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_POLL, labelStyle); //mark encrypted tasks
 
 //    final static Image iconFunLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_SENTIMENT_SATISFIED, iconStyle);
     //CLEAR FIELD
     final static char iconCloseCircle = FontImage.MATERIAL_CANCEL; //MATERIAL_CLOSE; //or: FontImage.MATERIAL_HIGHLIGHT_OFF
-    final static Image iconCloseCircleLabelSty = FontImage.createMaterial(iconCloseCircle, labelStyle);
-    final static Image iconCloseCircleLabelStyle = FontImage.createMaterial(iconCloseCircle, labelStyle);
+//    final static Image iconCloseCircleLabelSty = FontImage.createMaterial(iconCloseCircle, labelStyle);
+//    final static Image iconCloseCircleLabelStyle = FontImage.createMaterial(iconCloseCircle, labelStyle);
 
     //TASK STATUS
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -247,22 +254,22 @@ public class Icons {
     final static char iconItemStatusOngoing = FontImage.MATERIAL_TIMELAPSE;
     final static char iconItemStatusDone = FontImage.MATERIAL_CHECK_CIRCLE; //TODO: should be MATERIAL_CHECK_CIRCLE_OUTLINE but not in CN1
     final static char iconItemStatusWaiting = FontImage.MATERIAL_PAUSE_CIRCLE_OUTLINE;
-    final static Image iconCheckboxCreatedLabelStyle = FontImage.createMaterial(iconItemStatusCreated, labelStyle); //TODO NOT GOOD - same symbol as multiple selection
+//    final static Image iconCheckboxCreatedLabelStyle = FontImage.createMaterial(iconItemStatusCreated, labelStyle); //TODO NOT GOOD - same symbol as multiple selection
 //    final static Image iconCheckboxCancelled = FontImage.createMaterial(FontImage.MATERIAL_INDETERMINATE_CHECK_BOX, labelStyle);
-    final static Image iconCheckboxCancelledLabelStyle = FontImage.createMaterial(iconItemStatusCancelled, labelStyle); //dark circle to illustrate 'done with'
+//    final static Image iconCheckboxCancelledLabelStyle = FontImage.createMaterial(iconItemStatusCancelled, labelStyle); //dark circle to illustrate 'done with'
 //    final static Image iconCheckboxDone = FontImage.createMaterial(FontImage.MATERIAL_CHECK_BOX, labelStyle);
-    final static Image iconCheckboxOngoingLabelStyle = FontImage.createMaterial(iconItemStatusOngoing, labelStyle);
+//    final static Image iconCheckboxOngoingLabelStyle = FontImage.createMaterial(iconItemStatusOngoing, labelStyle);
 //    final static char iconCheckboxDone = iconItemStatusDone;
-    final static Image iconCheckboxDoneLabelStyle = FontImage.createMaterial(iconItemStatusDone, labelStyle);
+//    final static Image iconCheckboxDoneLabelStyle = FontImage.createMaterial(iconItemStatusDone, labelStyle);
 //    final static Image iconCheckboxWaiting = FontImage.createMaterial(FontImage.MATERIAL_ACCOUNT_BOX, iconStyle);
 //    final static Image iconCheckboxWaiting = FontImage.createMaterial(FontImage.MATERIAL_HOURGLASS_FULL, labelStyle);
-    final static Image iconCheckboxWaitingLabelStyle = FontImage.createMaterial(iconItemStatusWaiting, labelStyle);
+//    final static Image iconCheckboxWaitingLabelStyle = FontImage.createMaterial(iconItemStatusWaiting, labelStyle);
 
     final static char iconCommentTimeStamp = FontImage.MATERIAL_SCHEDULE;
 
     final static char iconWaitingAlarm = FontImage.MATERIAL_PAUSE;
     final static char iconWaitingDateMaterial = FontImage.MATERIAL_PAUSE;
-    final static Image iconWaitingDate = FontImage.createMaterial(iconWaitingDateMaterial, labelStyle);
+//    final static Image iconWaitingDate = FontImage.createMaterial(iconWaitingDateMaterial, labelStyle);
 
     final static char iconHideUntilDate = FontImage.MATERIAL_VISIBILITY_OFF;
     final static char iconStartByDate = FontImage.MATERIAL_PRESENT_TO_ALL; //FontImage.MATERIAL_EXIT_TO_APP;
@@ -282,21 +289,21 @@ public class Icons {
     final static char iconEarnedValuePerHour = FontImage.MATERIAL_MONETIZATION_ON;
 
     final static char iconWorkSlot = FontImage.MATERIAL_WORK;
-    final static Image iconWorkSlotLabelStyle = FontImage.createMaterial(iconWorkSlot, labelStyle);
+//    final static Image iconWorkSlotLabelStyle = FontImage.createMaterial(iconWorkSlot, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_DONE, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT, labelStyle);
     final static char iconFinishDateMaterial = FontImage.MATERIAL_EVENT_AVAILABLE;
-    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
+//    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
 
 //    final static char iconEstimateMaterial = FontImage.MATERIAL_SETTINGS_BACKUP_RESTORE;
     final static char iconEstimateMaterial = FontImage.MATERIAL_HOURGLASS_FULL;
 //    final static char iconEstimateMaterial = FontImage.MATERIAL_RESTORE;
 //    final static Image iconActualEffort = FontImage.createMaterial(FontImage.MATERIAL_TIMELAPSE, labelStyle);
     final static char iconActualEffort = FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
-    final static Image iconActualEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_HOURGLASS_FULL, labelStyle);
+//    final static Image iconActualEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_HOURGLASS_FULL, labelStyle);
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_TIMELAPSE;
     final static char iconRemainingEffort = FontImage.MATERIAL_HOURGLASS_EMPTY; //MATERIAL_EVENT_AVAILABLE;
-    final static Image iconRemainingEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
+//    final static Image iconRemainingEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_EVENT_AVAILABLE;
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_RESTORE;
 
@@ -306,81 +313,85 @@ public class Icons {
 
     final static char iconBackToPreviousScreen = FontImage.MATERIAL_ARROW_BACK; //MATERIAL_EVENT_AVAILABLE;
 
-    static Image iconBackToPrevFormToolbarStyle() {
-        return makeT(iconBackToPreviousScreen);
-    }
+//    static Image iconBackToPrevFormToolbarStyle() {
+//        return makeT(iconBackToPreviousScreen);
+//    }
 
-    static Image iconBackToPrevFormLabelStyle() {
-        return makeL(iconBackToPreviousScreen);
-    }
-    final static Image iconBackToPrevFormToolbarStyle = FontImage.createMaterial(iconBackToPreviousScreen, toolBarStyle);
+//    static Image iconBackToPrevFormLabelStyle() {
+//        return makeL(iconBackToPreviousScreen);
+//    }
+//    final static Image iconBackToPrevFormToolbarStyle = FontImage.createMaterial(iconBackToPreviousScreen, toolBarStyle);
 
     final static char iconEdit = FontImage.MATERIAL_CHEVRON_RIGHT;
     final static char iconEditMyFont = '\ue809';
 
-    static Image iconEditPropertiesToolbarStyle() {
-        return makeT(iconEdit);
-    }
-    final static Image iconEditPropertiesToolbarStyle = FontImage.createMaterial(iconEdit, toolBarStyle);
-    final static Image iconEditPropertiesLabelStyle = FontImage.createMaterial(iconEdit, labelStyle);
+//    static Image iconEditPropertiesToolbarStyle() {
+//        return makeT(iconEdit);
+//    }
+//    final static Image iconEditPropertiesToolbarStyle = FontImage.createMaterial(iconEdit, toolBarStyle);
+//    final static Image iconEditPropertiesLabelStyle = FontImage.createMaterial(iconEdit, labelStyle);
 //    static Image iconNewTaskToolbarStyle(){return makeT(FontImage.MATERIAL_ADD_CIRCLE);}
 //    final static char iconEditSymbol = FontImage.MATERIAL_CHEVRON_RIGHT;
-    final static Image iconEditSymbolLabelStyle = FontImage.createMaterial(iconEdit, labelStyle);
+//    final static Image iconEditSymbolLabelStyle = FontImage.createMaterial(iconEdit, labelStyle);
+    final static char iconEditSymbol = FontImage.MATERIAL_CHEVRON_RIGHT;
 
     final static char iconNewTaskToInbox = FontImage.MATERIAL_ADD_CIRCLE_OUTLINE;
 
-    static Image iconNewTaskToolbarStyle() {
-        return makeT(iconNewTaskToInbox);
-    }
+//    static Image iconNewTaskToolbarStyle() {
+//        return makeT(iconNewTaskToInbox);
+//    }
 
     final static char iconNew = FontImage.MATERIAL_ADD;
 
-    static Image iconNewToolbarStyle() {
-        return makeT(iconNew);
-    }
+//    static Image iconNewToolbarStyle() {
+//        return makeT(iconNew);
+//    }
 //    final static Image iconNewToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_ADD, toolBarStyle);
 
-    static Image iconInterruptToolbarStyle() {
-        return makeT(FontImage.MATERIAL_FLASH_ON);
-    }
+//    static Image iconInterruptToolbarStyle() {
+//        return makeT(FontImage.MATERIAL_FLASH_ON);
+//    }
     final static char iconInterrupt = FontImage.MATERIAL_FLASH_ON;
-    final static Image iconInterruptToolbarStyle = FontImage.createMaterial(iconInterrupt, toolBarStyle);
-    final static Image iconEditSymbolToolbarStyle = FontImage.createMaterial(iconEdit, toolBarStyle);
+//    final static Image iconInterruptToolbarStyle = FontImage.createMaterial(iconInterrupt, toolBarStyle);
+//    final static Image iconEditSymbolToolbarStyle = FontImage.createMaterial(iconEdit, toolBarStyle);
     //TASK STATUS
 //    final static Image iconCheckedTaskToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_CIRCLE, toolBarStyle);
 //    final static Image iconUncheckedTaskToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_CIRCLE, toolBarStyle);
 //    final static Image iconCheckMarkToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_CIRCLE, toolBarStyle);
-    final static Image iconAlarmSetToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, toolBarStyle);
+//    final static Image iconAlarmSetToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, toolBarStyle);
     //EXPAND lists
-    final static Image iconShowMoreToolbarStyle = FontImage.createMaterial(iconShowMore, toolBarStyle);
-    final static Image iconShowLessToolbarStyle = FontImage.createMaterial(iconShowLess, toolBarStyle);
-    final static Image iconMoveUpDownToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_SWAP_VERT, toolBarStyle);
+//    final static Image iconShowMoreToolbarStyle = FontImage.createMaterial(iconShowMore, toolBarStyle);
+//    final static Image iconShowLessToolbarStyle = FontImage.createMaterial(iconShowLess, toolBarStyle);
+//    final static Image iconMoveUpDownToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_SWAP_VERT, toolBarStyle);
+    final static char iconMoveUpDown = FontImage.MATERIAL_SWAP_VERT;
 
     //LOGIN
-    final static Image iconPerson = FontImage.createMaterial(FontImage.MATERIAL_PERSON, toolBarStyle);
-    final static Image iconPersonNew = FontImage.createMaterial(FontImage.MATERIAL_PERSON_ADD, toolBarStyle);
-    final static Image iconPersonIngocnito = FontImage.createMaterial(FontImage.MATERIAL_HELP, toolBarStyle);
+//    final static Image iconPerson = FontImage.createMaterial(FontImage.MATERIAL_PERSON, toolBarStyle);
+    final static char iconPerson = FontImage.MATERIAL_PERSON;
+//    final static Image iconPersonNew = FontImage.createMaterial(FontImage.MATERIAL_PERSON_ADD, toolBarStyle);
+    final static char iconPersonNew = FontImage.MATERIAL_PERSON_ADD;
+//    final static Image iconPersonIngocnito = FontImage.createMaterial(FontImage.MATERIAL_HELP, toolBarStyle);
 
     //OTHER
-    final static Image iconLightBulb = FontImage.createMaterial(FontImage.MATERIAL_LIGHTBULB_OUTLINE, toolBarStyle); //submit ideas, suggestions or bugs
-    final static Image iconFeedback = FontImage.createMaterial(FontImage.MATERIAL_FEEDBACK, toolBarStyle); //feedback speach bubble (could be used for submit ideas, suggestions or bugs)
+//    final static Image iconLightBulb = FontImage.createMaterial(FontImage.MATERIAL_LIGHTBULB_OUTLINE, toolBarStyle); //submit ideas, suggestions or bugs
+//    final static Image iconFeedback = FontImage.createMaterial(FontImage.MATERIAL_FEEDBACK, toolBarStyle); //feedback speach bubble (could be used for submit ideas, suggestions or bugs)
 
-    static Image getCheckBoxIcon(ItemStatus itemStatus) {
-        switch (itemStatus) {
-            case CREATED:
-                return iconCheckboxCreatedLabelStyle;
-            case DONE:
-                return iconCheckboxDoneLabelStyle;
-            case ONGOING:
-                return iconCheckboxOngoingLabelStyle;
-            case WAITING:
-                return iconCheckboxWaitingLabelStyle;
-            case CANCELLED:
-                return iconCheckboxCancelledLabelStyle;
-            default:
-                assert false : "undefined task status";
-        }
-        return null;
-    }
+//    static Image getCheckBoxIcon(ItemStatus itemStatus) {
+//        switch (itemStatus) {
+//            case CREATED:
+//                return iconCheckboxCreatedLabelStyle;
+//            case DONE:
+//                return iconCheckboxDoneLabelStyle;
+//            case ONGOING:
+//                return iconCheckboxOngoingLabelStyle;
+//            case WAITING:
+//                return iconCheckboxWaitingLabelStyle;
+//            case CANCELLED:
+//                return iconCheckboxCancelledLabelStyle;
+//            default:
+//                assert false : "undefined task status";
+//        }
+//        return null;
+//    }
 
 }

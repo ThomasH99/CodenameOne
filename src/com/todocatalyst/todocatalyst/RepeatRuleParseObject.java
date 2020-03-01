@@ -4409,19 +4409,18 @@ public class RepeatRuleParseObject
         List elementsToDelete = new ArrayList();
         Set ownersToUpdate = new HashSet();
         while (undone.size() > 0) { //use while since callback events may delete other items, e.g. subtasks that were also added to same category as project
-            ItemAndListCommonInterface element = (ItemAndListCommonInterface) undone.get(0);
+            ItemAndListCommonInterface element = (ItemAndListCommonInterface) undone.remove(0);
             ItemAndListCommonInterface ownerN =  element.removeFromOwner(); //also removed the element from the owner's list
             if (ownerN != null) {
                 ownersToUpdate.add(ownerN);
             } else {
                 ASSERT.that(false, "owner of a deleted element in RepeatRule is null");
             }
-            undone.remove(0);
+//            undone.remove(0);
             if (element != null && !element.equals(keepThisRepeatInstance)) {
                 elementsToDelete.add(element);
             }
         }
-        review;
         setListOfUndoneInstances(undone); //update list (just in case, shouldn't really be necessary since we're deleting the RR
         DAO.getInstance().deleteAll(elementsToDelete, true, false); //trigger will be called from the editing of the workslot/item itself
 //        this.delete();

@@ -485,7 +485,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         });
 //</editor-fold>
 
-        MyAnalyticsService.init("UA-133276111-1", "todocatalyst.com");
+        MyAnalyticsService.init("UA-133276111-1", "www.todocatalyst.com");
         MyAnalyticsService.setAppsMode(true);
 
         //THEME
@@ -723,7 +723,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            e.printStackTrace();
 //        }
 //</editor-fold>
-        Icons.get(); //Init singleton for icons
+//        Icons.get(); //Init singleton for icons
 
         if (!Config.PARSE_OFFLINE) {
             NetworkManager.getInstance().addErrorListener((e) -> {
@@ -866,7 +866,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Display.getInstance().setProperty("iosHideToolbar", "true"); //prevent ttoolbar over keyboard to show (Done/Next button): https://stackoverflow.com/questions/48727116/codename-one-done-button-of-ios-virtual-keyboard
 
         if (Display.getInstance().canForceOrientation()) {
-            Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+            Display.getInstance().lockOrientation(!Config.TEST); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
         }
 
         //Check if already logged in, if so, removeFromCache cache
@@ -1067,10 +1067,15 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
     //    }
 //</editor-fold>
 
-    private void setBadgeCount() {
+    private void refreshBadgeCount() {
         //set the app icon badge count
         if (Display.getInstance().isBadgingSupported() || Display.getInstance().isSimulator()) {
-            Display.getInstance().setBadgeNumber(DAO.getInstance().getBadgeCount(true, true));
+            long t1 = MyDate.currentTimeMillis();
+            int badgeCount = DAO.getInstance().getBadgeCount(true, true);
+            if (Config.TEST) {
+                Log.p("Time for query to get badgeCount = " + (MyDate.currentTimeMillis() - t1) + "ms");
+            }
+            Display.getInstance().setBadgeNumber(badgeCount);
 //            Display.getInstance().setBadgeNumber(99);
         }
     }
@@ -1116,10 +1121,12 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        }
 //        setNotification(new Date(System.currentTimeMillis() + 10 * 1000));
 //</editor-fold>
+        long now = System.currentTimeMillis();
+        Log.p("entering stop()"); //do before updating badgeCount which calls network and may be too slow and get killed
         current = Display.getInstance().getCurrent(); //do first in case of issues
-        Log.p("stop()"); //do before updating badgeCount which calls network and may be too slow and get killed
         //set the app icon badge count
-        setBadgeCount();
+        refreshBadgeCount();
+        Log.p("exiting stop(), duration =" + (System.currentTimeMillis() - now) + "ms"); //do before updating badgeCount which calls network and may be too slow and get killed
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (Display.getInstance().isBadgingSupported()) {
 //            Display.getInstance().setBadgeNumber(DAO.getInstance().getBadgeCount(true));
@@ -1159,12 +1166,14 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        NetworkManager.getInstance().addToQueueAndWait(rss);
 //        records = rss.getResults();
 //        System.out.println(records);
-        Log.p("performBackgroundFetch called, time=" + new Date() + ", deadline=" + deadline + ", date(deadline)=" + new Date(deadline));
+        long t1 = System.currentTimeMillis();
+        Log.p("performBackgroundFetch called, time=" + new Date() + ", deadline=" + deadline + ", date(deadline)="
+                + new Date(deadline) + "; deadline value=" + deadline + "ms; deadline vs now=" + (deadline - System.currentTimeMillis()));
         AlarmHandler.getInstance().updateLocalNotificationsOnBackgroundFetch();
 //        System.out.println("performBackgroundFetch/deadline=" + deadline);
         onComplete.onSucess(Boolean.TRUE);
 //        Log.p("performBackgroundFetch finished=");
-        Log.p("performBackgroundFetch finished, time=" + new Date());
+        Log.p("performBackgroundFetch finished, time=" + new Date() + "; duration in ms=" + (System.currentTimeMillis() - t1));
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 
@@ -1178,7 +1187,6 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //    public void pushZZZ(String value) {
 //        System.out.println("Received push message: " + value);
 //    }
-
     /**
      * Invoked when push registration is complete to pass the device ID to the
      * application. https://www.codenameone.com/manual/push.html

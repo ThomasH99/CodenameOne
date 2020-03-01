@@ -1787,17 +1787,20 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public long getRemaining() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return 0;
     }
 
     @Override
     public long getEstimate() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return 0;
     }
 
     @Override
     public long getActual() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return 0;
     }
 
 //    @Override
@@ -1811,12 +1814,16 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public int getNumberOfUndoneItems(boolean includeSubTasks) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ItemList.getNumberOfUndoneItems(getItemsInWorkSlot(), false); //count undone tasks within workslot (//UI: only first level, not leaf-tasks
+//        return 0; //done to circumvent a problem where Today lsit got added to Lists (I think)
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public int getNumberOfItems(boolean onlyUndone, boolean countLeafTasks) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getItemsInWorkSlot().size(); //count tasks within workslot
+
     }
 
     @Override
@@ -1826,7 +1833,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public String getComment() {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return "";
     }
 
     @Override

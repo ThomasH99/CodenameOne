@@ -292,19 +292,28 @@ public class ScreenListOfItems extends MyForm {
         this(title, itemListFct, previousForm, updateItemListOnDone, options, null);
     }
 
+    ScreenListOfItems(ScreenType screenType, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, int options) {
+        this(screenType, "", textIfListEmpty, itemListFct, previousForm, updateItemListOnDone, options, null);
+//        setShowIfEmptyList(textIfListEmpty);
+    }
+
     ScreenListOfItems(String title, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, int options) {
         this(title, textIfListEmpty, itemListFct, previousForm, updateItemListOnDone, options, null);
 //        setShowIfEmptyList(textIfListEmpty);
     }
 
     ScreenListOfItems(ScreenType screenType, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone, int options) {
-        this(screenType.getTitle(), itemListFct, previousForm, updateItemListOnDone, options, null);
-        setScreenType(screenType);
+        this(screenType, null, itemListFct, previousForm, updateItemListOnDone, options, null);
     }
 
     ScreenListOfItems(String title, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
             int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
         this(title, null, itemListFct, previousForm, updateItemListOnDone, options, stickyHeaderGen);
+    }
+
+    ScreenListOfItems(ScreenType screenType, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
+            int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
+        this(screenType, "", textIfListEmpty, itemListFct, previousForm, updateItemListOnDone, options, stickyHeaderGen);
     }
 
     /**
@@ -320,9 +329,15 @@ public class ScreenListOfItems extends MyForm {
      */
     ScreenListOfItems(String title, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
             int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
+        this(null, title, textIfListEmpty, itemListFct, previousForm, updateItemListOnDone, options, stickyHeaderGen);
+    }
+
+    ScreenListOfItems(ScreenType screenType, String title, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
+            int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListOrg));
-        super(title, previousForm, null);
+        super(screenType == null ? title : screenType.getTitle(), previousForm, null);
+        setScreenType(screenType);
         if (textIfListEmpty != null) {
             setTextToShowIfEmptyList(textIfListEmpty);
         } else {
@@ -1036,6 +1051,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
                     FilterSortDef filterSortDef = itemListOrg.getFilterSortDef();
                     filterSortDef.setSortOn(!filterSortDef.isSortOn());
+                    DAO.getInstance().saveNew(filterSortDef, true);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    sortOnOff.setCommandName("Sort " + ((itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "ON" : "OFF"));
 //                itemList = filterSortDef.filterAndSortItemList(itemListOrg); //refresh list
@@ -1052,10 +1068,35 @@ public class ScreenListOfItems extends MyForm {
                 public String getCommandName() {
 //                    return "Sort " + ((filterSortDef == null || !filterSortDef.isSortOn()) ? "ON" : "OFF");
 //                    return "Sort " + ((itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "ON" : "OFF");
-                    return (itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "Show sorted" : "Show manual sort";
+                    return (itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "Show sorted" : "Show unsorted"; //"Show manual sort"
                 }
             };
             toolbar.addCommandToOverflowMenu(sortOnOff);
+
+            Command hideShowDone = new CommandTracked("", Icons.iconShowDoneTasks, "HideShowDoneTasks") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    FilterSortDef filterSortDef = itemListOrg.getFilterSortDef();
+                    filterSortDef.setShowDoneTasks(!filterSortDef.isShowDoneTasks());
+                    Button b = (Button) e.getComponent();
+                    b.setMaterialIcon((itemListOrg.getFilterSortDef().isShowDoneTasks() ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks));
+//                    b.updateCommand();
+                    DAO.getInstance().saveNew(filterSortDef, true);
+                    refreshAfterEdit();
+                    super.actionPerformed(e);
+                }
+            };
+//            Button hideShowDoneButton = new Button(hideShowDone);
+            toolbar.addCommandToRightBar(hideShowDone);
+//            toolbar.addMaterialCommandToRightBar("",itemListOrg.getFilterSortDef().isShowDoneTasks() ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks,(e)-> {
+//                    FilterSortDef filterSortDef = itemListOrg.getFilterSortDef();
+//                    filterSortDef.setShowDoneTasks(!filterSortDef.isShowDoneTasks());
+//                    setMaterialIcon((itemListOrg.getFilterSortDef().isShowDoneTasks() ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks));
+////                    updateCommand();
+//                    DAO.getInstance().saveNew(filterSortDef, true);
+//                    refreshAfterEdit();
+//                    super.actionPerformed(e);
+//                });
         }
 
         //SELECTION MODE
@@ -1105,7 +1146,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdUnselectAll = new CommandTracked("Unselect All", Icons.iconSelectedLabelStyle) {
+            Command cmdUnselectAll = new CommandTracked("Unselect All", Icons.iconSelected) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
@@ -1174,7 +1215,8 @@ public class ScreenListOfItems extends MyForm {
 
             if (true) {
 //            Button draggableOnOff = new Button();
-                Command draggableOnOff = new CommandTracked("Move ON", Icons.iconMoveUpDownToolbarStyle) {
+//                Command draggableOnOff = new CommandTracked("Move ON", Icons.iconMoveUpDownToolbarStyle) {
+                Command draggableOnOff = new CommandTracked("Move ON", Icons.iconMoveUpDown) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         Container cont = getComponentForm().getContentPane();
@@ -2222,8 +2264,6 @@ public class ScreenListOfItems extends MyForm {
         final Button starredSwipeableButton = new Button();
         starredSwipeableButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselected);
 
-        final Button setDueDateToToday;// = new Button(null, Icons.iconSetDueDateToToday());
-
         Date finishTimeD = item.getFinishTimeD();
         long finishTime = finishTimeD.getTime();
 //        if (!item.isDone() && finishTime != 0) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
@@ -3003,6 +3043,53 @@ refreshAfterEdit();
 //        }
 //</editor-fold>
 //        } //else {
+        //UPDATE DUE DATE
+//        if (!item.isTemplate() && !isDone && myForm.getTitle()!=null&& (myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE) || myForm.getTitle().equals(MyForm.SCREEN_OVERDUE_TITLE))) { //UI: only show in Today view
+        if (!item.isTemplate() && !isDone && (myForm.getScreenType() == ScreenType.TODAY || myForm.getScreenType() == ScreenType.OVERDUE)) { //UI: only show in Today view
+//            setDueDateToToday = new Button(null, Icons.iconSetDueDateToToday());
+            final Button setDueDateToToday = new Button();
+            setDueDateToToday.setMaterialIcon(Icons.iconSetDueDateToTodayMaterial);
+            setDueDateToToday.addActionListener((e) -> {
+//                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //NB keeping the position of item doesn't make sense since this command can make it disappear (e.g. in Overdue screen)
+//                myForm.setKeepPos(new KeepInSameScreenPosition(swipCont)); //ASSERT since swipCont not ScrollableY
+                myForm.setKeepPos(new KeepInSameScreenPosition()); //try to keep same scroll position as before 
+//                Date tomorrow = new Date(new Date().getTime() + MyDate.DAY_IN_MILLISECONDS);
+                if (MyDate.isToday(item.getDueDateD())) {
+//                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
+                    item.setDueDate((new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow same time as it was today
+                } else if (MyDate.isToday(item.getWaitingTillDateD())) {
+                    item.setWaitingTillDate((new Date(item.getWaitingTillDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if WaitingTillDate is today, then set to tomorrow
+                } else if (MyDate.isToday(item.getStartByDateD())) {
+                    item.setStartByDate((new Date(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if startBy is today, then set due day to tomorrow
+                } else {
+//                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date())); //UI: if due is NOT already today, then set due day to today
+                    item.setDueDate(MyDate.setDateToTodayKeepTime(item.getDueDateD())); //UI: if due is NOT already today, then set due day to today
+                }                    //update and save the item
+                DAO.getInstance().saveNew(item, true);
+                swipCont.close();
+//                    refreshOnItemEdits.launchAction(); //optimize, eg ?? (is likely to affect work time)
+                myForm.refreshAfterEdit();//optimize, eg ?? (is likely to affect work time)
+            });
+            setDueDateToToday.setUIID("SwipeButtonSetDueToToday");
+            buttonSwipeContainer.add(setDueDateToToday);
+        }
+
+        //Move next-coming items to Today view (up the Due Date)
+        if (myForm.getScreenType() == ScreenType.NEXT) { //UI: only show in NEXT view
+            final Button setFutureDueToToday = new Button();
+            setFutureDueToToday.setMaterialIcon(Icons.iconSetDueDateToTodayMaterial);
+            setFutureDueToToday.addActionListener((e) -> {
+                myForm.setKeepPos(new KeepInSameScreenPosition()); //try to keep same scroll position as before 
+                //TODO: add test to ensure dueDate is actually in the future - shouldn't be needed for tasks in Next
+                item.setDueDate(MyDate.setDateToTodayKeepTime(item.getDueDateD())); //UI: if due is NOT already today, then set due day to today
+                DAO.getInstance().saveNew(item, true);
+                swipCont.close();
+                myForm.refreshAfterEdit();//optimize, eg ?? (is likely to affect work time)
+            });
+            setFutureDueToToday.setUIID("SwipeButtonSetFutureDueToToday");
+            buttonSwipeContainer.add(setFutureDueToToday);
+        }
+
         //TIMER
 //<editor-fold defaultstate="collapsed" desc="comment">
 //only add swipe buttons when NOT in projectEditMode
@@ -3043,7 +3130,7 @@ refreshAfterEdit();
                 }, false, null).show();
                 swipCont.close(); //close before save 
             }));
-            newFromTemplate.setMaterialIcon(Icons.iconNewItemFromTemplateMaterial);
+            newFromTemplate.setMaterialIcon(Icons.iconNewItemFromTemplate);
 //                    newFromTemplate.setUIID("SwipeButton");
             newFromTemplate.setUIID("SwipeButtonNewFromTemplate");
             buttonSwipeContainer.add(newFromTemplate);
@@ -3060,6 +3147,7 @@ refreshAfterEdit();
                     itemLabel.setTextUIID((item.isStarred() ? "ListOfItemsTextStarred" : "ListOfItemsText"));
 
                     //update the starred button
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                    starButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
 //                    if (false) {
 //                        starButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselectedLabelStyleMaterial);
@@ -3071,6 +3159,7 @@ refreshAfterEdit();
 //                        //update the starredSwipeable button
 ////            starredSwipeable.repaint();
 //                    }
+//</editor-fold>
                     swipCont.close(); //close before save 
 //                        myForm.revalidate();
                     swipCont.revalidate();
@@ -3081,38 +3170,7 @@ refreshAfterEdit();
             }
         }
 
-        //UPDATE DUE DATE
-//        if (!item.isTemplate() && !isDone && myForm.getTitle()!=null&& (myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE) || myForm.getTitle().equals(MyForm.SCREEN_OVERDUE_TITLE))) { //UI: only show in Today view
-        if (!item.isTemplate() && !isDone && (myForm.getScreenType() == ScreenType.TODAY || myForm.getScreenType() == ScreenType.OVERDUE)) { //UI: only show in Today view
-//            setDueDateToToday = new Button(null, Icons.iconSetDueDateToToday());
-            setDueDateToToday = new Button();
-            setDueDateToToday.setMaterialIcon(Icons.iconSetDueDateToTodayMaterial);
-            setDueDateToToday.addActionListener((e) -> {
-//                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //NB keeping the position of item doesn't make sense since this command can make it disappear (e.g. in Overdue screen)
-//                myForm.setKeepPos(new KeepInSameScreenPosition(swipCont)); //ASSERT since swipCont not ScrollableY
-                myForm.setKeepPos(new KeepInSameScreenPosition()); //try to keep same scroll position as before 
-//                Date tomorrow = new Date(new Date().getTime() + MyDate.DAY_IN_MILLISECONDS);
-                if (MyDate.isToday(item.getDueDateD())) {
-//                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
-                    item.setDueDate((new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow same time as it was today
-                } else if (MyDate.isToday(item.getWaitingTillDateD())) {
-                    item.setWaitingTillDate((new Date(item.getWaitingTillDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if WaitingTillDate is today, then set to tomorrow
-                } else if (MyDate.isToday(item.getStartByDateD())) {
-                    item.setStartByDate((new Date(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if startBy is today, then set due day to tomorrow
-                } else {
-//                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date())); //UI: if due is NOT already today, then set due day to today
-                    item.setDueDate(MyDate.setDateToTodayKeepTime(item.getDueDateD())); //UI: if due is NOT already today, then set due day to today
-                }                    //update and save the item
-                DAO.getInstance().saveNew(item, true);
-                swipCont.close();
-//                    refreshOnItemEdits.launchAction(); //optimize, eg ?? (is likely to affect work time)
-                myForm.refreshAfterEdit();//optimize, eg ?? (is likely to affect work time)
-            });
-            setDueDateToToday.setUIID("SwipeButtonSetDueToToday");
-            buttonSwipeContainer.add(setDueDateToToday);
-        }
 //        }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && projectEditMode) {
 //            //make a task a subtask by swiping right, and a sister task by swiping left - //TODO!!! not currently usted

@@ -20,6 +20,7 @@ import com.codename1.ui.TextArea;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.geom.Dimension;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
@@ -90,7 +91,7 @@ public class ScreenRepair extends MyForm {
 //        Form hi = new Form("Fonts", gr);
         MyForm hi = new MyForm("Fonts", ScreenRepair.this, () -> {
         });
-        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
+        hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> this.showBack()));
 
         hi.setLayout(gr);
         hi.setScrollableY(true);
@@ -182,7 +183,7 @@ public class ScreenRepair extends MyForm {
         MyForm hi = new MyForm("Device info", ScreenRepair.this, () -> {
         });
 //        getToolbar().setBackCommand(Command.create("", null, (e) -> this.show()));
-        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
+        hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> this.showBack()));
 //        hi.getToolbar().addCommandToLeftBar(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
         Display d = Display.getInstance();
         String density = "";
@@ -350,7 +351,7 @@ public class ScreenRepair extends MyForm {
         });
         hi.setLayout(new TableLayout(16, 2));
 
-        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> this.showBack()));
+        hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> this.showBack()));
 
         L10NManager l10n = L10NManager.getInstance();
         hi.add("format(double)").add(l10n.format(11.11)).
@@ -728,10 +729,10 @@ public class ScreenRepair extends MyForm {
                         labelInfo.repaint();
                     }
                 };
-                pinchForm.setLayout(MyBorderLayout.center());
+                pinchForm.setLayout(BorderLayout.center());
                 pinchForm.setPinchInsertEnabled(false);
                 pinchForm.getContentPane().setName("ContentPane");
-                pinchForm.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
+                pinchForm.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
 
                 Container cont = new Container(BoxLayout.y());
                 cont.setScrollableY(true);
@@ -740,17 +741,17 @@ public class ScreenRepair extends MyForm {
                     new Item("item4 3h", true), new Item("item5 5min", true)}) {
                     Component itemCont = ScreenListOfItems.buildItemContainer(ScreenRepair.this, item, null, null);
                     itemCont.setName("itemCont:" + item.getText());
-                    Container contCont = new Container(MyBorderLayout.center());
+                    Container contCont = new Container(BorderLayout.center());
                     contCont.setName("WrapContNorth (" + item.getText() + ")");
-                    contCont.addComponent(MyBorderLayout.NORTH, itemCont);
+                    contCont.addComponent(BorderLayout.NORTH, itemCont);
                     cont.addComponent(contCont);
                 }
-                pinchForm.addComponent(MyBorderLayout.CENTER, cont);
+                pinchForm.addComponent(BorderLayout.CENTER, cont);
 
                 Container south = new Container(BoxLayout.y());
                 south.setName("SouthCont");
                 south.addAll(labelCoord, labelInfo);
-                pinchForm.addComponent(MyBorderLayout.SOUTH, south);
+                pinchForm.addComponent(BorderLayout.SOUTH, south);
                 labelCoord.setName("LabelCoord");
                 labelInfo.setName("LabelInfo");
                 pinchForm.show();
@@ -775,7 +776,7 @@ public class ScreenRepair extends MyForm {
 //            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
             Form hi = new MyForm("Native Logs Reader", null, null);
 
-            hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
+            hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
             String logs = NativeLogs.getNativeLogs();
             TextArea textArea = new TextArea(logs);
             hi.add(textArea);
@@ -805,7 +806,7 @@ public class ScreenRepair extends MyForm {
             MyForm fd = new MyForm("Set current time", ScreenRepair.this, () -> {
             });
             fd.setLayout(BoxLayout.y());
-            fd.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e2) -> ScreenRepair.this.showBack()));
+            fd.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e2) -> ScreenRepair.this.showBack()));
             fd.add(new Label("Current shift:"));
             fd.add(new Label(MyDate.formatDurationStd(MyDate.getCurrentTimeShift())));
             fd.add(new Label("Current time:"));
@@ -956,7 +957,7 @@ public class ScreenRepair extends MyForm {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 Form form = new MyForm("Local notifiations", null, null);
-                form.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle(), (e) -> ScreenRepair.this.showBack()));
+                form.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
                 LocalNotificationsShadowList list = AlarmHandler.getInstance().getLocalNotificationsTEST();
                 for (int i = 0, size = list.size(); i < size; i++) {
                     form.addComponent(new SpanLabel(list.get(i).toString()));
@@ -972,7 +973,8 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        content.add(new Button(new Command("Show error log", Icons.get().iconSettingsLabelStyle) {
+//        content.add(new Button(new Command("Show error log", Icons.get().iconSettingsLabelStyle) {
+        content.add(new Button(new Command("Show error log", Icons.iconSettings) {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1067,7 +1069,7 @@ public class ScreenRepair extends MyForm {
         ));
 
         content.add(
-                new Button(new Command("Send error log", Icons.get().iconSettingsLabelStyle) {
+                new Button(new Command("Send error log", Icons.iconSettings) {
                     @Override
                     public void actionPerformed(ActionEvent evt
                     ) {
@@ -1129,7 +1131,7 @@ public class ScreenRepair extends MyForm {
 //                }
 //                ));
         content.add(
-                new Button(new Command("Delete all local storage", Icons.get().iconSettingsLabelStyle) {
+                new Button(new Command("Delete all local storage", Icons.iconSettings) {
                     @Override
                     public void actionPerformed(ActionEvent evt
                     ) {

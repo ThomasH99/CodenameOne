@@ -60,7 +60,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
      * @param myForm
      * @param refItemList
      */
-    public InlineInsertNewItemListContainer(MyForm form, ItemList refItemList, boolean insertBeforeRefElement) {
+    public InlineInsertNewItemListContainer(MyForm form, ItemList refItemList, ItemListList ownerList, boolean insertBeforeRefElement) {
 //        this(myForm, ItemListList.getInstance(), refItemList, insertBeforeRefElement);
 //    }
 //
@@ -68,7 +68,14 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
         this.myForm = form;
         this.refItemList = refItemList;
         ASSERT.that(refItemList != null, () -> "why itemOrItemListForNewTasks2==null here?");
-        this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
+//        this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
+        
+        if (ownerList != null) {
+            this.itemOrItemListForNewItemLists = ownerList;
+        } else if (refItemList != null) {
+            this.itemOrItemListForNewItemLists = (ItemListList)refItemList.getOwner();
+        }
+        
         this.insertBeforeRefElement = insertBeforeRefElement;
 
         Container contForTextEntry = new Container(new MyBorderLayout());
@@ -88,8 +95,8 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
                     myForm.setKeepPos(new KeepInSameScreenPosition(refItemList, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
 //                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : element, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                 }
-                closeInsertNewItemListContainer(true);
                 insertNewItemListAndSaveChanges(newItemList);
+                closeInsertNewItemListContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
                 myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });

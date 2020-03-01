@@ -1136,21 +1136,26 @@ public class DAO {
     public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
         //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
 //        return getDueAndOrWaitingTodayCount(includeWaiting, includeStartingToday);
-        List<ItemAndListCommonInterface> all = getToday(null);
-        int count = 0;
-        for (ItemAndListCommonInterface elt : all) {
-            if (elt instanceof WorkSlot) {
-                count += ((WorkSlot) elt).getItemsInWorkSlot().size();
-            } else if (elt instanceof Item) {
-                Item item = (Item) elt;
-                if (item.isProject()) {
-                    count += item.getLeafTasksAsList((itm) -> !itm.isDone()).size();
+        if (true) {
+            List<ItemAndListCommonInterface> all = getToday(null);
+            int count = 0;
+            for (ItemAndListCommonInterface elt : all) {
+                if (elt instanceof WorkSlot) {
+                    count += ((WorkSlot) elt).getItemsInWorkSlot().size();
+                } else if (elt instanceof Item) {
+                    Item item = (Item) elt;
+                    if (item.isProject()) {
+                        count += item.getLeafTasksAsList((itm) -> !itm.isDone()).size();
+                    }
+                } else {
+                    count++;
                 }
-            } else {
-                count++;
             }
+            return count;
+        } else {
+            List todayList = getToday(null);
+            return todayList.size();
         }
-        return count;
     }
 
 //<editor-fold defaultstate="collapsed" desc="//<editor-fold defaultstate="collapsed" desc="comment">
@@ -1815,6 +1820,32 @@ public class DAO {
 //        }
     }
 
+    /**
+     * get
+     *
+     * @param systemName
+     * @return
+     */
+    public FilterSortDef getSystemFilterSortFromParse(String systemName) {
+        ParseQuery<FilterSortDef> query = ParseQuery.getQuery(FilterSortDef.CLASS_NAME);
+        query.whereEqualTo(FilterSortDef.PARSE_SYSTEM_NAME, systemName);
+        List<FilterSortDef> results = null;
+        try {
+            results = query.find();
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        if (Config.TEST) {
+            int s = results.size();
+            ASSERT.that(results.size() <= 1, () -> "too many filters (" + s + ") with reserved name: " + systemName);
+        }
+        if (results.size() > 0) {
+            return (FilterSortDef) fetchIfNeededReturnCachedIfAvail(results.get(0));
+        } else {
+            return FilterSortDef.getDefaultFilter();
+        }
+    }
+
     public ItemList getInbox(String name, String visibleName) {
 //        if (!forceFromParse && (inbox = (Inbox) cacheGet(Inbox.CLASS_NAME)) != null) {
 //            return inbox;
@@ -2353,10 +2384,21 @@ public class DAO {
     }
 
     public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks, boolean onlyWithoutOwner, boolean fetchFromScratch) {
+        return getAllItems(includeTemplates, onlyLeafTasks, onlyLeafTasks, onlyWithoutOwner, fetchFromScratch);
+    }
+
+    public List<Item> getAllItems(boolean includeTemplates, boolean onlyLeafTasks, boolean onlyTopLevelProjects, boolean onlyWithoutOwner, boolean fetchFromScratch) {
 
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         if (!includeTemplates) {
             query.whereDoesNotExist(Item.PARSE_TEMPLATE); //exclude if has subtasks
+        }
+        if (onlyTopLevelProjects) {
+            if (Config.TEST) {
+                ASSERT.that(!onlyLeafTasks, "incompatible options, onlyTopLevelProjects==true; onlyLeafTasks==true");
+            }
+            onlyLeafTasks = false;
+            query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude subtasks (==owned by an Item)
         }
         if (onlyLeafTasks) {
             query.whereDoesNotExist(Item.PARSE_SUBTASKS); //exclude if has subtasks
@@ -3421,7 +3463,6 @@ public class DAO {
 //        addToSaveQueueXXX(projectOrItem); //first save repeatRule (so repeatInstances can reference it)
 //    }
 //</editor-fold>
-
     private List<ParseObject> batchCreateList = new ArrayList<>();
     private List<Runnable> batchRunAfterCreation = new ArrayList<>();
     List<ParseObject> batchUpdateList = new ArrayList<>();
@@ -3542,6 +3583,9 @@ public class DAO {
         if (hardDelete) {
             addToBatchDelete((ParseObject) parseObject);
         } else {
+            if (parseObject.getSoftDeletedDateN() == null) {
+                parseObject.setSoftDeletedDate(new MyDate());
+            }
             addToBatchUpdate((ParseObject) parseObject);
         }
         if (triggerUpdate) {
@@ -4185,7 +4229,7 @@ public class DAO {
         }
 
         WorkSlot source = workSlot.getSource(); //source of Item is necessarily an Item itself
-        if (source!=null&&source.getObjectIdP() == null) {
+        if (source != null && source.getObjectIdP() == null) {
             workSlot.setSource(null);
             saveWorkSlotNew2(source, () -> {
                 workSlot.setSource(source);
@@ -4255,7 +4299,6 @@ public class DAO {
 //        }
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void saveWorkSlotInBackground(WorkSlot workSlot, Runnable postSaveAction) {
 //        if (workSlot == null) {
@@ -4287,7 +4330,6 @@ public class DAO {
 //        addToSaveQueueXXX(workSlot, postSaveAction);
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void saveWorkSlotInBackgroundOLD(WorkSlot workSlot, Runnable postSaveAction) {
 //        if (workSlot == null) {
@@ -4366,7 +4408,6 @@ public class DAO {
 //        }
 //    }
 //</editor-fold>
-
     /**
      *
      * @param list of items, workslots or categories
@@ -4399,7 +4440,6 @@ public class DAO {
 //        }
 //    }
 //</editor-fold>
-
     public void saveList(List list, Runnable postSaveAction) {
         if (list != null) {
             for (Object o : list) {
@@ -4465,7 +4505,6 @@ public class DAO {
 //        addToSaveQueueXXX(repeatRule, postSaveAction);
 //    }
 //</editor-fold>
-
     private void saveRepeatRuleNew2(RepeatRuleParseObject repeatRule, Runnable postSaveActionN) {
         if (repeatRule == null) {
             return;
@@ -4526,7 +4565,6 @@ public class DAO {
 //        });
 //    }
 //</editor-fold>
-
     private void saveFilterSortDefNew2(FilterSortDef filter, Runnable postSaveActionN) {
         if (filter.getObjectIdP() == null) {
             addToBatchCreate(filter, postSaveActionN);
@@ -4565,7 +4603,7 @@ public class DAO {
                     item.setOwnerItem(null, false, false);
                     saveItemNew2((Item) owner, () -> {
 //                        if (owner != null) { //NO NEED to test since above tests ensure owner can never be null
-                            item.setOwnerItem((Item) owner, false, false);
+                        item.setOwnerItem((Item) owner, false, false);
 //                        }
                         addToBatchUpdate(item);
                     });
@@ -4578,7 +4616,7 @@ public class DAO {
                     item.setOwner(null, false);
                     saveItemListNew2((ItemList) owner, () -> {
 //                        if (owner != null) {
-                            item.setOwner(owner);
+                        item.setOwner(owner);
 //                        }
                         addToBatchUpdate(item);
                     });
@@ -4601,7 +4639,7 @@ public class DAO {
 //            });
 //</editor-fold>
                 saveFilterSortDefNew2(filter, () -> {
-                        item.setFilterSortDef(filter);
+                    item.setFilterSortDef(filter);
                     addToBatchUpdate(item);
                 });
             } else {
@@ -5356,7 +5394,6 @@ public class DAO {
 //        saveInBackground(new ArrayList(), postSaveAction);
 //    }
 //</editor-fold>
-
     private void saveNewImpl(Collection<ParseObject> parseObjects, Runnable postSaveAction, boolean triggerSave) {
         if (parseObjects == null || parseObjects.size() == 0) {
 //            assert postSaveAction==null; 
@@ -6822,8 +6859,8 @@ public class DAO {
         return cacheAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
     }
 
-    public List<ItemList> getAllItemListsFromParse() {
-        return getAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
+    public List<ItemList> getAllItemListsFromParse(boolean includeSystemLists) {
+        return getAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE), includeSystemLists);
     }
 
 //    public List<ItemList> getAllItemListsFromParseXXX(Date reloadAfterThisDate, Date reloadUpToAndIncludingThisDate) {
@@ -6842,13 +6879,16 @@ public class DAO {
 //        }
 //        return null;
 //    }
-    public List<ItemList> getAllItemListsFromParse(Date reloadUpdateAfterThis, Date reloadUpToAndIncludingThisDate) {
+    public List<ItemList> getAllItemListsFromParse(Date reloadUpdateAfterThis, Date reloadUpToAndIncludingThisDate, boolean includeSystemLists) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
         query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, reloadUpToAndIncludingThisDate);
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        if (!includeSystemLists) {
+            query.whereDoesNotExist(ItemList.PARSE_SYSTEM_NAME);
+        }
 
         List<ItemList> results = null;
         try {
@@ -6860,7 +6900,7 @@ public class DAO {
     }
 
     private boolean cacheAllItemListsFromParse(Date reloadUpdateAfterThis, Date now) {
-        List<ItemList> results = getAllItemListsFromParse(reloadUpdateAfterThis, now);
+        List<ItemList> results = getAllItemListsFromParse(reloadUpdateAfterThis, now, true);
         cacheList(results);
         return !results.isEmpty();
     }

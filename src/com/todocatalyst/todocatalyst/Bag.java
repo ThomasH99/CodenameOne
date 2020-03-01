@@ -54,6 +54,17 @@ public class Bag<E> {//implements Map  { Map.size() is costly with this implemen
 //        }
         addAll(itemList);
     }
+    
+    @Override
+    public String toString() {
+        String s="";
+        String sep="";
+        for (E e:map.keySet()) {
+            s+=sep+e+"->"+map.get(e);
+            sep="; ";
+        }
+        return s;
+    }
 
     public boolean add(E e) {
         Integer v = map.get(e);

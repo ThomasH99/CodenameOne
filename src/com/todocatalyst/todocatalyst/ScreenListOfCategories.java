@@ -149,7 +149,9 @@ public class ScreenListOfCategories extends MyForm {
 
     static Command makeNewCategoryCmd(CategoryList categoryOwnerList, MyForm previousForm, MyForm.Action refreshOnItemEdits) { //static since reused in other screens
         //NEW CATEGORY
-        return MyReplayCommand.create("CreateNewCategory", "", Icons.iconNewToolbarStyle(), (e) -> {
+//public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, boolean keep) {
+        return MyReplayCommand.create("CreateNewCategory", "New Category", Icons.iconNew, (e) -> {
+//        return MyReplayCommand.create("CreateNewCategory", "", Icons.iconNew, (e) -> {
             Category category = new Category();
 //                new ScreenCategory(category, ScreenListOfCategories.this, () -> {
             previousForm.setKeepPos(new KeepInSameScreenPosition());

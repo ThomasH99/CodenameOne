@@ -4,6 +4,7 @@ import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.Toolbar;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 //import java.util.function.*;
 
@@ -90,8 +91,8 @@ public class ScreenTimer6 extends MyForm {
         timerInstance.saveMe();
 
 //        this.timerInstance = timerInstance;
-        if (!(getLayout() instanceof MyBorderLayout)) {
-            setLayout(new MyBorderLayout());
+        if (!(getLayout() instanceof BorderLayout)) {
+            setLayout(new BorderLayout());
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        addComponent(CN.CENTER, timerInstance.getTimerContainer());
@@ -192,7 +193,7 @@ public class ScreenTimer6 extends MyForm {
 //        TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, timerContentainer,  previousValues); //also removes previous content of contentPane
                 Container contentPane = getContentPane();
                 contentPane.removeAll();
-                contentPane.add(MyBorderLayout.CENTER, TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, previousValues)); //also removes previous content of contentPane
+                contentPane.add(BorderLayout.CENTER, TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, previousValues)); //also removes previous content of contentPane
                 if (false) {
                     super.refreshAfterEdit(); //WILL cause infinite loop when updating ScreenTimer6 via refreshOrShowTimerUI
                 }

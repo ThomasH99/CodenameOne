@@ -3,18 +3,12 @@ package com.todocatalyst.todocatalyst;
 //import com.codename1.io.Log;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.Switch;
-import com.codename1.io.Log;
-import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.Toolbar;
-import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.events.ActionListener;
-import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
-import java.util.Map;
 
 /**
  * used as basis for all (future) settings screens (one per screen)

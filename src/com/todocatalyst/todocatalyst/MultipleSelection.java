@@ -158,7 +158,7 @@ public class MultipleSelection {
                 item.setEarnedValue(ref.getEarnedValue());
             }
             if (ref.getStartedOnDate() != 0) {
-                item.setStartedOnDate(ref.getStartedOnDate());
+                item.setStartedOnDate(ref.getStartedOnDateD());
             }
             if (ref.getCompletedDateD().getTime() != 0) {
 //                item.setCompletedDate(ref.getCompletedDateD(), true); //true=>update status, e.g. in case ONLY completed date is set

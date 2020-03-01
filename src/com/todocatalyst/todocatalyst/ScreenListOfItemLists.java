@@ -95,8 +95,8 @@ public class ScreenListOfItemLists extends MyForm {
         setUniqueFormId("ScreenListOfItemLists");
         this.itemListList = itemListList;
         setScrollable(false);
-        if (!(getLayout() instanceof MyBorderLayout)) {
-            setLayout(new MyBorderLayout());
+        if (!(getLayout() instanceof BorderLayout)) {
+            setLayout(new BorderLayout());
         }
         setPinchInsertEnabled(true);
         this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + itemListList.getObjectIdP());
@@ -109,7 +109,7 @@ public class ScreenListOfItemLists extends MyForm {
     }
 
     protected void animateMyForm() {
-        ((Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
+        ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class ScreenListOfItemLists extends MyForm {
             getContentPane().removeAll(); //NOT necessary since getContentPane().add() will remove the previous content. AND it will remove components that are added later...
         }
         Container cont = buildContentPaneForItemList(itemListList);
-        getContentPane().add(MyBorderLayout.CENTER, cont);
+        getContentPane().add(BorderLayout.CENTER, cont);
         if (cont instanceof MyTree2) {
 //            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
             InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
@@ -149,7 +149,8 @@ public class ScreenListOfItemLists extends MyForm {
 
         //MOVE mode
         if (false) { //causes a problem in the animation (out of bounds array
-            toolbar.addCommandToOverflowMenu(draggableOnOff = new Command("Move ON", Icons.iconMoveUpDownToolbarStyle) {
+//            toolbar.addCommandToOverflowMenu(draggableOnOff = new Command("Move ON", Icons.iconMoveUpDownToolbarStyle) {
+            toolbar.addCommandToOverflowMenu(draggableOnOff = new Command("Move ON", Icons.iconMoveUpDown) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     draggableMode = !draggableMode;
@@ -172,7 +173,7 @@ public class ScreenListOfItemLists extends MyForm {
         if (false) {
             getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
-                Container compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
+                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
                 boolean showAll = text == null || text.length() == 0;
                 for (int i = 0, size = this.itemListList.getSize(); i < size; i++) {
                     //TODO!!! compare same case (upper/lower)
@@ -188,7 +189,7 @@ public class ScreenListOfItemLists extends MyForm {
         toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox()); //put all generic (not specific to current screen) icons on the left
 
         //NEW ITEMLIST
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconNewToolbarStyle(), (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconNew, (e) -> {
             ItemList itemList = new ItemList();
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
@@ -641,7 +642,7 @@ public class ScreenListOfItemLists extends MyForm {
         if (false) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
 //            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, "SwipeLaunchTimerOnItemList", Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(CommandTracked.create("", Icons.iconNewItemFromTemplateMaterial, (e) -> {
+            leftSwipeContainer.add(new Button(CommandTracked.create("", Icons.iconNewItemFromTemplate, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    Item newTemplateInstantiation = new Item();
 //                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);

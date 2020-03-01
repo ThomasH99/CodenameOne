@@ -31,7 +31,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 //    private WorkSlotList workSlotList;
     private ItemAndListCommonInterface workSlotListOwner;
     private MyForm myForm;
-    private WorkSlot refWorkSlot;
+    private WorkSlot refWorkSlotN;
     private WorkSlot newWorkSlot;
     private boolean insertBeforeRefElement;
     private boolean continueAddingNewWorkSlots = true;
@@ -65,19 +65,23 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
      * create a new Container and a new Item
      *
      * @param myForm
-     * @param refWorkSlot2
+     * @param refWorkSlot2N
      */
 //    public InlineInsertNewWorkSlotContainer(MyForm myForm, WorkSlot refWorkSlot2, boolean insertBeforeRefElement) {
 //        this(myForm, new ItemList(), refWorkSlot2, insertBeforeRefElement);
 //    }
 //    public InlineInsertNewWorkSlotContainer(MyForm myForm, ItemList itemList2, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeRefElement) {
-    public InlineInsertNewWorkSlotContainer(MyForm form, WorkSlot refWorkSlot2, boolean insertBeforeRefElement) {
+    public InlineInsertNewWorkSlotContainer(MyForm form, WorkSlot refWorkSlot2N, ItemAndListCommonInterface workSlotListOwner, boolean insertBeforeRefElement) {
         this.myForm = form;
 //        this.workSlotList = workSlotList2;
-        this.workSlotListOwner = refWorkSlot2.getOwner();
+//        ASSERT.that(refWorkSlot2N != null, "why itemOrItemListForNewTasks2==null here?");
+        if (workSlotListOwner != null) {
+            this.workSlotListOwner = workSlotListOwner;
+        } else if (refWorkSlot2N != null) {
+            this.workSlotListOwner = refWorkSlot2N.getOwner();
+        }
 //        WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
-        this.refWorkSlot = refWorkSlot2;
-        ASSERT.that(refWorkSlot != null, "why itemOrItemListForNewTasks2==null here?");
+        this.refWorkSlotN = refWorkSlot2N;
         this.insertBeforeRefElement = insertBeforeRefElement;
         continueAddingNewWorkSlots = MyPrefs.workSlotContinueAddingInlineWorkslots.getBoolean();
 
@@ -100,8 +104,8 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
                     lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //store new task for use when recreating next insert container
 
                 }
-                closeInsertContainer(true);
                 insertNewAndSaveChanges(newWorkSlot);
+                closeInsertContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
                 this.myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });
@@ -116,7 +120,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         //close insert container
         contForTextEntry.add(MyBorderLayout.WEST, westCont);
 //        if (refWorkSlot != null && refWorkSlot.size() > 0) { //only add close button if in a non-empty list
-        if (refWorkSlot != null) { //only add close button if in a non-empty list, which is the case if there is a refWorkSlot
+        if (refWorkSlotN != null) { //only add close button if in a non-empty list, which is the case if there is a refWorkSlot
             westCont.add(new Button(CommandTracked.create(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
 //                myForm.lastInsertNewElementContainer = null;
@@ -168,19 +172,19 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         if (newWorkSlot.getDurationInMillis() == 0) {
             newWorkSlot.setDurationInMinutes(MyPrefs.workSlotDefaultDurationInMinutes.getInt()); //UI: if no textual definition, use normal default value
         }//        if (true || createEvenIfNoTextInField || (text != null && text.length() > 0)) {
-        if (refWorkSlot != null && refWorkSlot.getStartTimeD() != null) {
+        if (refWorkSlotN != null && refWorkSlotN.getStartTimeD() != null) {
             if (insertBeforeRefElement) {
-                newWorkSlot.setStartTime(new Date(refWorkSlot.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis())); //UI: set pinchInserted workslot to start 'duration' before the startTime of the next workslot
+                newWorkSlot.setStartTime(new Date(refWorkSlotN.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis())); //UI: set pinchInserted workslot to start 'duration' before the startTime of the next workslot
             } else {
-                newWorkSlot.setStartTime(refWorkSlot.getEndTimeD()); //UI: set pinchInserted workslot to start at the end of the previous
+                newWorkSlot.setStartTime(refWorkSlotN.getEndTimeD()); //UI: set pinchInserted workslot to start at the end of the previous
             }
         } else {
             newWorkSlot.setStartTime(new MyDate()); //UI: set pinchInserted workslot to start now
         }
         //UI: ensure no overlap with *following* workslot:
-        if (refWorkSlot != null && refWorkSlot.getOwner() != null && refWorkSlot.getOwner().getWorkSlotListN() != null) {
-            List workslots = refWorkSlot.getOwner().getWorkSlotListN().getWorkSlotListFull();
-            int refIndex = refWorkSlot.getOwner().getWorkSlotListN().getWorkSlotListFull().indexOf(refWorkSlot);
+        if (refWorkSlotN != null && refWorkSlotN.getOwner() != null && refWorkSlotN.getOwner().getWorkSlotListN() != null) {
+            List workslots = refWorkSlotN.getOwner().getWorkSlotListN().getWorkSlotListFull();
+            int refIndex = refWorkSlotN.getOwner().getWorkSlotListN().getWorkSlotListFull().indexOf(refWorkSlotN);
             if (refIndex >= 0 && refIndex + 1 < workslots.size()) {
                 WorkSlot nextWorkSlot = (WorkSlot) workslots.get(refIndex + 1);
                 if (newWorkSlot.getStartTime() > nextWorkSlot.getEndTime()) {
@@ -190,7 +194,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         }
 //        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, newWorkSlot, refWorkSlot.getStartTimeD(), refWorkSlot.getDurationInMillis())) {
 //        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, null, newWorkSlot.getStartTimeD(), newWorkSlot.getDurationInMillis())) {
-        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(refWorkSlot.getOwner(), null, newWorkSlot.getStartTimeD(), newWorkSlot.getDurationInMillis())) {
+        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(refWorkSlotN.getOwner(), null, newWorkSlot.getStartTimeD(), newWorkSlot.getDurationInMillis())) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             return newWorkSlot;
         } else {
@@ -273,7 +277,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
     @Override
     public InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
         if (element == lastCreatedWorkSlot && element instanceof WorkSlot) {
-            return new InlineInsertNewWorkSlotContainer(myForm, (WorkSlot) lastCreatedWorkSlot, false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
+            return new InlineInsertNewWorkSlotContainer(myForm, (WorkSlot) lastCreatedWorkSlot, workSlotListOwner, false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
         }
         return null;
     }

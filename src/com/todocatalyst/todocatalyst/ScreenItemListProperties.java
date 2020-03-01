@@ -74,7 +74,7 @@ public class ScreenItemListProperties extends MyForm {
     }
 
     /**
-    return true if (possibly modified) category can be saved
+     * return true if (possibly modified) category can be saved
      */
 //    public  boolean checkItemListIsValidForSaving(ItemList itemList) {
     public static boolean checkItemListIsValidForSaving(String itemListName, ItemList itemList) {
@@ -83,20 +83,23 @@ public class ScreenItemListProperties extends MyForm {
 //        String itemListName = itemList.getText();
 //        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
         itemListName = MyUtil.removeTrailingPrecedingSpacesNewLinesEtc(itemListName);
-        if (itemListName.isEmpty()&&itemList.getObjectIdP()!=null)
+        if (itemListName.isEmpty() && itemList.getObjectIdP() != null) {
             errorMsg = Format.f("{0 category_or_list} name cannot be empty", ItemList.ITEM_LIST);
-        else if (ItemListList.getInstance().findItemListWithName(itemListName) != null
+        } else if (ItemListList.getInstance().findItemListWithName(itemListName) != null
                 && ItemListList.getInstance().findItemListWithName(itemListName) != itemList
-                && !MyPrefs.itemListAllowDuplicateListNames.getBoolean())
-            //                return "Category \"" + description.getText() + "\" already exists";
-            //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
-            //            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", ItemList.ITEM_LIST, itemListName);
+                && !MyPrefs.itemListAllowDuplicateListNames.getBoolean()) //                return "Category \"" + description.getText() + "\" already exists";
+        //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
+        //            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", ItemList.ITEM_LIST, itemListName);
+        {
             errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists, and more than one {0} with same name is not allowed. Please set a different name.", ItemList.ITEM_LIST, itemListName);
+        }
 
         if (errorMsg != null) {
             Dialog.show("Error", errorMsg, "OK", null);
             return false;
-        } else return true;
+        } else {
+            return true;
+        }
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {
@@ -204,6 +207,12 @@ public class ScreenItemListProperties extends MyForm {
         if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "LabelFixed");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+        }
+        if (Config.TEST) {
+            if (!itemList.getSystemName().isEmpty()) {
+                Label systemNameLabel = new Label(itemList.getSystemName());
+                content.add(layoutN(Item.SYSTEM_NAME, systemNameLabel, "**", true));
+            }
         }
 
 //        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));

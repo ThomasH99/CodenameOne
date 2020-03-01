@@ -266,7 +266,7 @@ public class ScreenLogin extends MyForm {
         forgottenPassword.setHidden(true);
         backToSignupSignIn.setHidden(true);
 
-        backToSignupSignIn.setCommand(Command.create("Back", Icons.iconBackToPrevFormToolbarStyle(), (e2) -> {
+        backToSignupSignIn.setCommand(Command.createMaterial("Back", Icons.iconBackToPreviousScreen, (e2) -> {
             signUp.setHidden(false);
             login.setHidden(false);
 
@@ -279,7 +279,7 @@ public class ScreenLogin extends MyForm {
             animateHierarchy(ANIMATION_TIME_DEFAULT);
         }));
 
-        signUp.setCommand(Command.create("Sign up", Icons.iconPersonNew, (e2) -> {
+        signUp.setCommand(Command.createMaterial("Sign up", Icons.iconPersonNew, (e2) -> {
             signUp.setHidden(true);
             login.setHidden(true);
 
@@ -293,7 +293,7 @@ public class ScreenLogin extends MyForm {
             email.startEditingAsync();
         }));
 
-        login.setCommand(Command.create("Log in", Icons.iconPerson, (ev) -> { //Start/login**
+        login.setCommand(Command.createMaterial("Log in", Icons.iconPerson, (ev) -> { //Start/login**
             signUp.setHidden(true);
             login.setHidden(true);
 
@@ -309,7 +309,7 @@ public class ScreenLogin extends MyForm {
 //            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
 
-        createAccount.setCommand(Command.create("Create account", Icons.iconPersonNew, (e2) -> {
+        createAccount.setCommand(Command.createMaterial("Create account", Icons.iconPersonNew, (e2) -> {
             String errorMsg;
             String cleanEmail = cleanEmail(email.getText());
             if ((errorMsg = createAccount(cleanEmail)) == null) {
@@ -323,7 +323,7 @@ public class ScreenLogin extends MyForm {
         }));
 
 //        connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
-        connect.setCommand(Command.create("Log in", Icons.iconPerson, (ev) -> { //Start/login**
+        connect.setCommand(Command.createMaterial("Log in", Icons.iconPerson, (ev) -> { //Start/login**
             String errorMsg;
             String cleanEmail = cleanEmail(email.getText());
             if ((errorMsg = loginUser(cleanEmail, null, password.getText())) == null) {

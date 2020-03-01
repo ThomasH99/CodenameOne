@@ -22,21 +22,15 @@ import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
-import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.GridLayout;
-import com.codename1.ui.layouts.Layout;
-import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
-import com.codename1.ui.util.UITimer;
 import com.todocatalyst.todocatalyst.TimerInstance.GetNextItemStatus;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import static com.todocatalyst.todocatalyst.MyForm.showDialogUpdateActualTime;
 
 /**
  *
@@ -134,6 +128,7 @@ class TimerStack {
     private static TimerStack INSTANCE = null;
     final static String TIMER_REPLAY = "StartTimer-";
     final static String SMALL_TIMER_TEXT_AREA_TO_START_EDITING = "SmallTimerTextArea";
+    final static String SMALL_TIMER_CONTAINER_ID = "$$SmallTimerContainer";
 
     final static Object TIMER_LOCK = new Object(); //lock operations on Timer such as updating/saving instances or refreshing Timers from Server
 
@@ -2346,7 +2341,7 @@ class TimerStack {
         }
     }
 
-    private void updateTimedItemToOngoing(long timerStartedOn) {
+    private void updateTimedItemToOngoing(Date timerStartedOn) {
         Item timedItem = getCurrentlyTimedItemN();
         if (timedItem.getStatus() == ItemStatus.CREATED) { //DON'T update if ONGOING/CANCELLED/WAITING/DONE
 
@@ -2358,6 +2353,66 @@ class TimerStack {
             }
             DAO.getInstance().saveNew(timedItem, true); //ongoing value
         }
+    }
+
+    /**
+     * create the appropriate hierarchy container for a task. Specifically: if a
+     * Category is being timed, use that as top-level followed by the subtask
+     * owner hierarchy (exluding the top-level List). If not a category, then if
+     * a list is being timed, use that as top-level, followed by the subtask
+     * owner hierarchy. If an interrupt is being timed, just show
+     * INTERRUPT/INSTANT. Otherwise, (if none of the above applies, e.g. Timer
+     * was started directly on a single task somewhere), extract both subtask
+     * owner
+     *
+     * @param itemList
+     * @param timedItem
+     * @return
+     */
+    private static Container makeTaskHierarchyContainer(ItemList itemList, Item timedItem) {
+        //find and show hierarchy context for the item (List to which it belongs, and if a subtask, the (hierarchical) project context
+        Container contentPane = new Container(BoxLayout.y());
+        String listName = null; //"TEMP - Name of the list";
+
+        if (itemList != null) {
+            listName = itemList instanceof Category ? "Category: " : "List: " + itemList.getText(); //source is an ItemList 
+        } else if (timedItem.isInteruptOrInstantTask()) {
+            listName = timedItem.getTaskInterrupted() == null ? "INSTANT TASK" : "INTERRUPT TASK";
+        } else {//else: listName remains null, e.g. if only a single task is timed
+            ItemList topLevelList = timedItem.getOwnerTopLevelList();
+            if (topLevelList != null) {
+                listName = "List: " + topLevelList.getText();
+            }
+        }
+
+        String subtaskProjectHierarchyStr = timedItem.getOwnerHierarchyAsString();
+
+        if (listName == null) { //if no list, nor interrupt task, use project hierarchy as top-level context
+            listName = subtaskProjectHierarchyStr;
+            subtaskProjectHierarchyStr = null;
+        }
+
+        if (subtaskProjectHierarchyStr != null) {
+            SpanLabel itemHierarchyContainer = new SpanLabel("Project: " + subtaskProjectHierarchyStr, "BigTimerListTitle");
+            itemHierarchyContainer.setHidden(!MyPrefs.getBoolean((MyPrefs.timerAlwaysExpandListHierarchy))); //initial state of visibility
+//                Button buttonShowItemHierarchy = new Button(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle);
+            Button buttonShowItemHierarchy = new Button(itemHierarchyContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess);
+            buttonShowItemHierarchy.addActionListener((e) -> {
+                itemHierarchyContainer.setHidden(!itemHierarchyContainer.isHidden()); //inverse visibility
+//                    buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
+                buttonShowItemHierarchy.setMaterialIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess); //switch icon
+                buttonShowItemHierarchy.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+            });
+
+            contentPane.add(MyBorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName)))
+                    .add(MyBorderLayout.EAST, buttonShowItemHierarchy).add(MyBorderLayout.SOUTH, itemHierarchyContainer));
+
+            return contentPane;
+        } else if (listName != null) {
+            contentPane.add(MyBorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName))));
+            return contentPane;
+        } //else: no context to show, show nothing
+        return null;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2524,6 +2579,7 @@ class TimerStack {
         Button editItemButton;
         MyDurationPicker hiddenElapsedTimePicker = new MyDurationPicker();
         hiddenElapsedTimePicker.setHidden(true); //hiddenElapsedTimePicker must be added to a Form, but we don't want to show it, only activate it via a longpress on the timer button
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        MyButtonLongPress timerStartStopButton = new MyButtonLongPress() {
 //            int maxWidthSoFar = 0;
 //
@@ -2535,6 +2591,7 @@ class TimerStack {
 //                return newDimension;
 //            }
 //        };
+//</editor-fold>
         MyButtonLongPress timerStartStopButton = new MyButtonLongPress();
 
 //        };
@@ -2681,7 +2738,7 @@ class TimerStack {
 //                    timedItem.setStartedOnDate(MyDate.currentTimeMillis() - MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS);
 //                DAO.getInstance().saveInBackground(timedItem); //ongoing value
                 long timerStartedOn = MyDate.currentTimeMillis() - MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS;
-                model.updateTimedItemToOngoing(timerStartedOn);
+                model.updateTimedItemToOngoing(new Date(timerStartedOn));
 //                refreshFormOnTimerUpdate(); //refresh screen to show Ongoing + it's possible impact on the mother project
                 status.repaint(); //update UI
 //                parseIdMap2.put("SET_ITEM_STARTED_ON_DATE",
@@ -3172,40 +3229,46 @@ class TimerStack {
             AutoSaveTimer commentSaveTimer = new AutoSaveTimer(myForm, comment, timedItem, () -> timedItem.setComment(comment.getText()));
 
             //find and show hierarchy context for the item (List to which it belongs, and if a subtask, the (hierarchical) project context
-            String listName = null; //"TEMP - Name of the list";
+            if (false) {
+                String listName = null; //"TEMP - Name of the list";
+                if (itemList != null) {
+                    listName = itemList instanceof Category ? "Category: " : "List: " + itemList.getText(); //source is an ItemList 
+                } else if (timedItem.isInteruptOrInstantTask()) {
+                    listName = timedItem.getTaskInterrupted() == null ? "INSTANT TASK" : "INTERRUPT TASK";
+                } //else: listName remains null, e.g. if only a single task is timed
 
-            if (itemList != null) {
-                listName = itemList instanceof Category ? "Category: " : "List: " + itemList.getText(); //source is an ItemList 
-            } else if (timedItem.isInteruptOrInstantTask()) {
-                listName = timedItem.getTaskInterrupted() == null ? "INSTANT TASK" : "INTERRUPT TASK";
-            } //else: listName remains null, e.g. if only a single task is timed
+                String hierarchyStr = timedItem.getOwnerHierarchyAsString();
 
-            String hierarchyStr = timedItem.getOwnerHierarchyAsString();
+                if (listName == null) { //if no list, nor interrupt task, use project hierarchy as top-level context
+                    listName = hierarchyStr;
+                    hierarchyStr = null;
+                }
 
-            if (listName == null) { //if no list, nor interrupt task, use project hierarchy as top-level context
-                listName = hierarchyStr;
-                hierarchyStr = null;
+                if (hierarchyStr != null) {
+                    SpanLabel itemHierarchyContainer = new SpanLabel("Project: " + hierarchyStr, "BigTimerListTitle");
+                    itemHierarchyContainer.setHidden(!MyPrefs.getBoolean((MyPrefs.timerAlwaysExpandListHierarchy))); //initial state of visibility
+//                Button buttonShowItemHierarchy = new Button(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle);
+                    Button buttonShowItemHierarchy = new Button(itemHierarchyContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess);
+                    buttonShowItemHierarchy.addActionListener((e) -> {
+                        itemHierarchyContainer.setHidden(!itemHierarchyContainer.isHidden()); //inverse visibility
+//                    buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
+                        buttonShowItemHierarchy.setMaterialIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess); //switch icon
+                        buttonShowItemHierarchy.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+                    });
+
+                    contentPane.add(MyBorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName)))
+                            .add(MyBorderLayout.EAST, buttonShowItemHierarchy).add(MyBorderLayout.SOUTH, itemHierarchyContainer));
+
+                } else if (listName != null) {
+                    contentPane.add(MyBorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName))));
+                } //else: no context to show, show nothing
+            } else {
+                Container hierarchyCont = makeTaskHierarchyContainer(itemList, timedItem);
+                if (hierarchyCont != null) {
+                    contentPane.add(hierarchyCont);
+                }
             }
 
-            if (hierarchyStr != null) {
-                SpanLabel itemHierarchyContainer = new SpanLabel("Project: " + hierarchyStr, "BigTimerListTitle");
-                itemHierarchyContainer.setHidden(!MyPrefs.getBoolean((MyPrefs.timerAlwaysExpandListHierarchy))); //initial state of visibility
-//                Button buttonShowItemHierarchy = new Button(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle);
-                Button buttonShowItemHierarchy = new Button(itemHierarchyContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess);
-                buttonShowItemHierarchy.addActionListener((e) -> {
-                    itemHierarchyContainer.setHidden(!itemHierarchyContainer.isHidden()); //inverse visibility
-//                    buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
-                    buttonShowItemHierarchy.setMaterialIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess); //switch icon
-                    buttonShowItemHierarchy.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
-                });
-
-                contentPane.add(MyBorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName)))
-                        .add(MyBorderLayout.EAST, buttonShowItemHierarchy).add(MyBorderLayout.SOUTH, itemHierarchyContainer));
-
-            } else if (listName != null) {
-                contentPane.add(MyBorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName))));
-            } //else: no context to show, show nothing
-//        }
 //
 //        if (fullScreenTimer) {
             //TODO!!! do NOT use item.isInteruptTask() since we may later continue working on a task that was originally created as an interrupt but after that is just treated as a normal task
@@ -3269,7 +3332,7 @@ class TimerStack {
 //        description.addDataChangedListener((chgType, index) -> {
 //            descriptionSaveTimer.schedule(5000, false, myForm); ////reschedule a save on each change, will save after 5 seconds // final  int TEXT_AUTOSAVE_TIMEOUT = 5000; //TODO: make this a setting?
 //        });
-        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, description, timedItem, () -> timedItem.setText(description.getText()));
+        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, description, timedItem, () -> timedItem.setText(description.getText())); //normal AutoSaveTimer appear not used
 
 //            MyForm.initField(Item.PARSE_STATUS, status, () -> timedItem.getStatus(), (t) -> timedItem.setStatus((ItemStatus) t),
 //                    () -> status.getStatus(), (t) -> status.setStatus((ItemStatus) t), previousValues, parseIdMap2);
@@ -3297,13 +3360,14 @@ class TimerStack {
 //                        remainingEffort.setTime((int) timedItem.getRemainingEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
                         effort.setDuration((int) timedItem.getRemainingForProjectTaskItselfFromParse()); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
 
-                        if (false) { //SINCE newActual is the item's edited Actual, not updated with elapsed time before editing the item, it should not be possible to become less than 
+//<editor-fold defaultstate="collapsed" desc="comment">
+                        if (false) { //SINCE newActual is the item's edited Actual, not updated with elapsed time before editing the item, it should not be possible to become less than
                             //update actual and elapsed to match new value of actual, editedActual==newElapsed+item.newActual (principle: if possible, keep elapsed the same and reduce item.actual (unless edited actual is smaller then elapsed, then reduce that as well)
                             long newActual = timedItem.getActualForProjectTaskItself();
 //                        if (newActual != oldActual) { //test to avoid unnecessary saving (again) of timedItem if actual does not need to be updated
 //                        TimerInstance timerInst = getInstance().getCurrentTimerInstanceN();
                             TimerInstance timerInst = model.getCurrentTimerInstanceN();
-                            if (newActual < timerInst.getElapsedTime()) { //new edited value is smaller than already elapsed time, so reduce elapsed to new value, and set item.Actual to 0 
+                            if (newActual < timerInst.getElapsedTime()) { //new edited value is smaller than already elapsed time, so reduce elapsed to new value, and set item.Actual to 0
 //                            timerInst.setElapsedTime(newActual);
                                 timerInst.updateElapsedTime(newActual);
                                 timedItem.setActual(0, false);
@@ -3314,7 +3378,7 @@ class TimerStack {
                                 timedItem.setActual(newActual - timerInst.getElapsedTime(), false); //update item.actual to edited value minus the elapsed time
                             }
                         }
-
+//</editor-fold>
                         DAO.getInstance().saveNew(timedItem, true); //save edited values
 //                        }
 
@@ -3322,7 +3386,10 @@ class TimerStack {
 //                ScreenTimer6.this.revalidate();
 //                    ((MyForm) contentPane.getComponentForm()).revalidate();
 //                    ((MyForm) form).revalidate();
-                        ((MyForm) myForm).revalidateWithAnimationSafety();
+                        if (false) {
+                            ((MyForm) myForm).revalidateWithAnimationSafety();
+                        }
+                        ((MyForm) myForm).refreshAfterEdit();
                     }, false, null); //previousValues: pass locally edited value to ScreenItem
                     screenItem.show();
                 }
@@ -3356,7 +3423,7 @@ class TimerStack {
                     elapsedTimeButton.setEnabled(false); //disable while running
                 }
                 if (false) {
-                    timerStartStopButton.setIcon(Icons.iconTimerPauseLabelStyle);
+                    timerStartStopButton.setMaterialIcon(Icons.iconTimerPause);
                 }
 //                    timerStartStopButton.repaint(); //this is enough to update the value on the screen
 //                    timerStartStopButton.getParent().revalidate();//this is enough to update the value on the screen
@@ -3403,7 +3470,7 @@ class TimerStack {
         }
 
         if (false) {
-            timerStartStopButton.setIcon(timerInstance.isRunning() ? Icons.iconTimerPauseLabelStyle : Icons.iconTimerStartLabelStyle);
+            timerStartStopButton.setMaterialIcon(timerInstance.isRunning() ? Icons.iconTimerPause : Icons.iconTimerStart);
         }
 
         if (fullScreenTimer) { //smallContainer
@@ -3538,24 +3605,37 @@ class TimerStack {
             Button exitButton = new Button(cmdSaveAndExitTimerScreen); //"Exit"),
             exitButton.setUIID("BigTimerExit");
             exitButton.setTextPosition(textPos);
-            Button setWaitingButton = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"), 
-            setWaitingButton.setUIID("BigTimerWaiting");
-            setWaitingButton.setTextPosition(textPos);
+
+            Button setWaitingButton = null;
+            if (!timedItem.isDone() && !timedItem.isWaiting()) {
+                setWaitingButton = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"), 
+                setWaitingButton.setUIID("BigTimerWaiting");
+                setWaitingButton.setTextPosition(textPos);
+            }
+
             Button nextButton = null;
             if (nextComingItem != null && cmdStopTimerAndGotoNextTaskOrExit != null) {
                 nextButton = new Button(cmdStopTimerAndGotoNextTaskOrExit); //"Stop", "Next", 
                 nextButton.setUIID("BigTimerNext");
                 nextButton.setTextPosition(textPos);
             }
+
             Button completedButton = null;
-            completedButton = new Button(cmdSetCompletedAndGotoNextTaskOrExit);
-            completedButton.setUIID("BigTimerCompleted");
-            completedButton.setTextPosition(textPos);
-            contentPane.add(GridLayout.encloseIn(1, completedButton));
-            if (nextButton != null) {
+            if (!timedItem.isDone()) {
+                completedButton = new Button(cmdSetCompletedAndGotoNextTaskOrExit);
+                completedButton.setUIID("BigTimerCompleted");
+                completedButton.setTextPosition(textPos);
+                contentPane.add(GridLayout.encloseIn(1, completedButton));
+            }
+
+            if (setWaitingButton != null && nextButton != null) {
                 contentPane.add(GridLayout.encloseIn(3, exitButton, setWaitingButton, nextButton));
-            } else {
+            } else if (setWaitingButton != null) {
                 contentPane.add(GridLayout.encloseIn(2, exitButton, setWaitingButton));
+            } else if (nextButton != null) {
+                contentPane.add(GridLayout.encloseIn(2, exitButton, nextButton));
+            } else {
+                contentPane.add(GridLayout.encloseIn(1, exitButton));
             }
 //                        nextTaskCont.add(gotoNextTaskButtonWithItemText);
             if (gotoNextTaskButtonWithItemText != null) {
@@ -3724,6 +3804,7 @@ class TimerStack {
 //                        BoxLayout.encloseXNoGrow(timerContainer, nextTask, fullScreenTimerButton),
 //                        BoxLayout.encloseXNoGrow(timerContainer,  fullScreenTimerButton),
 //</editor-fold>
+            swipeable.setPropertyValue(SMALL_TIMER_CONTAINER_ID, true);
             return swipeable;
         }
 //        return contentPane;

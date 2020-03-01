@@ -66,7 +66,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
         this(myForm, category, (CategoryList) category.getOwner(), insertBeforeElement);
     }
 
-    private InlineInsertNewCategoryContainer(MyForm form, Category category2, CategoryList categoryList, boolean insertBeforeElement) {
+    public InlineInsertNewCategoryContainer(MyForm form, Category category2, CategoryList categoryList, boolean insertBeforeElement) {
         this.myForm = form;
         this.category = category2;
         ASSERT.that(categoryList != null, "why itemOrItemListForNewTasks2==null here?");
@@ -91,9 +91,9 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
 //                    myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                     myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                 }
-                closeInsertNewContainer(true);
 //                this.categoryList.addToList(newCategory);
                 insertNewCategoryAndSaveChanges(newCategory);
+                closeInsertNewContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
                 myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });

@@ -263,7 +263,20 @@ public class MyPrefs {
             = new PrefEntry("**", "alarmTimeOfDayWhenToUpdateAlarmsInMinutes", 10, "How many days ahead are alarmsminutes should an alarm snooze"); //10 = 10 minutes after midnight
 
     static PrefEntry alarmShowDueTimeAtEndOfNotificationText
-            = new PrefEntry("Include " + Item.DUE_DATE + " in notifications", "alarmShowDueTimeAtEndOfNotificationText", true, "Include " + Item.DUE_DATE + " in alarm notifications");
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.DUE_DATE ), "alarmShowDueTimeAtEndOfNotificationText", true, 
+                    "**");
+    static PrefEntry alarmShowAlarmTimeAtEndOfNotificationText
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.ALARM_DATE ), "alarmShowAlarmTimeAtEndOfNotificationText", true, 
+                    "**");
+    static PrefEntry alarmShowWaitingTimeAtEndOfNotificationText
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAIT_UNTIL_DATE ), "alarmShowWaitingTimeAtEndOfNotificationText", true, 
+                    "**");
+    static PrefEntry alarmShowWaitingAlarmTimeAtEndOfNotificationText
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAITING_ALARM_DATE ), "alarmShowWaitingAlarmTimeAtEndOfNotificationText", true, 
+                    "**");
+    static PrefEntry alarmShowSnoozeUntilTimeAtEndOfNotificationText
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAITING_ALARM_DATE ), "alarmShowSnoozeUntilTimeAtEndOfNotificationText", true, 
+                    "**");
 
     static PrefEntry alarmDaysAheadToFetchFutureAlarms
             = new PrefEntry("**", "alarmDaysAheadToFetchFutureAlarms", 30, "**"); //10 = 10 minutes after midnight
@@ -402,8 +415,8 @@ public class MyPrefs {
     static PrefEntry itemKeepRemainingEstimateStringInTaskText
             = new PrefEntry("Keep remaining time in task text", "itemKeepRemainingEstimateStringInTaskText", false, "**");
 
-    static PrefEntry itemProjectPropertiesDerivedFromSubtasks
-            = new PrefEntry("Project properties like [STARTED_ON] shows values from subtasks", "itemProjectPropertiesDerivedFromSubtasks", true, "**");
+//    static PrefEntry itemProjectPropertiesDerivedFromSubtasks
+//            = new PrefEntry("Project properties like [STARTED_ON] shows values from subtasks", "itemProjectPropertiesDerivedFromSubtasks", true, "**");
 
     static PrefEntry workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime
             = new PrefEntry(Format.f("Prioritize {0} from Categories", Item.WORTIME), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime", true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
@@ -444,12 +457,16 @@ public class MyPrefs {
     //ITEMLIST
     static PrefEntry useDefaultFilterInItemListsWhenNoneDefined
             = new PrefEntry("By default, hide Done and Cancelled tasks in lists", "useDefaultFilterInItemListsWhenNoneDefined", true, "**");
+    static PrefEntry listDefaultHeaderForUndefinedValue
+            = new PrefEntry("By default, hide Done and Cancelled tasks in lists", "listDefaultHeaderForUndefinedValue", "No value", "**");
 
     //LOOK AND FEEL
     static PrefEntry themeNameWithoutBackslash
             = new PrefEntry("**", "themeNameWithoutBackslash", "theme", "name of the graphical theme");
     static PrefEntry titleAutoSize
-            = new PrefEntry("Reduce Screen title font size for long texts", "titleAutoSize", true, "name of the graphical theme");
+            = new PrefEntry("Reduce Screen title font size for long texts", "titleAutoSize", true, "**");
+    static PrefEntry scrollToolbarOffScreenOnScrollingDown
+            = new PrefEntry("Hide the toolbar at top of the screen when scrolling a screen down", "scrollToolbarOffScreenOnScrollingDown", true, "**");
 
     //OTHER / SYSTEM-LEVEL
     static PrefEntry enableCancelInAllScreens
@@ -561,6 +578,8 @@ public class MyPrefs {
             "listOfItemListsShowWorkTime", true, "**"); //"e.g. 1h10/23h12/[4h00]
     static PrefEntry listOfItemListsShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects",
             "listOfItemListsShowTotalNumberOfLeafTasks", true, "**");
+    static PrefEntry hideStickyHeadersForSortedLists = new PrefEntry("Do not show group headers for sorted lists",
+            "showStickyHeadersForSortedLists", true, "**"); //show as 'flat' lists
 
     //GLOBAL
     //localization

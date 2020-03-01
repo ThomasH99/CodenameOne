@@ -83,7 +83,7 @@ public class ScreenCategoryProperties extends MyForm {
         String errorMsg = null;
 //        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
         categoryName = MyUtil.removeTrailingPrecedingSpacesNewLinesEtc(categoryName);
-        if (categoryName.isEmpty())
+        if (categoryName.isEmpty()&& category.getObjectIdP() != null)
             errorMsg = Format.f("{0 category_or_list} name cannot be empty", Category.CATEGORY);
         else if (CategoryList.getInstance().findCategoryWithName(categoryName) != null
                 && CategoryList.getInstance().findCategoryWithName(categoryName) != category)
@@ -148,6 +148,7 @@ public class ScreenCategoryProperties extends MyForm {
 //        toolbar.addCommandToLeftBar(backCmd);
 //</editor-fold>
 //        toolbar.setBackCommand(backCommand = makeDoneUpdateWithParseIdMapCommand());
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {

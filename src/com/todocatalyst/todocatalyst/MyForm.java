@@ -108,6 +108,7 @@ public class MyForm extends Form {
     SwipeableContainer openSwipeContainer = null; //stores the currently open SwipeContainer for this screen
     final static int ANIMATION_TIME_DEFAULT = 300; //in milliseconds
     final static int ANIMATION_TIME_FAST = 150; //in milliseconds
+    private Container smallTimer = null;
 
     public CheckIfDataIsComplete getCheckIfSaveOnExit() {
         return checkDataIsCompleteBeforeExit;
@@ -249,7 +250,7 @@ public class MyForm extends Form {
     static final String SCREEN_STATISTICS = "Achievements"; //"Statistics", "History"
     static final String SETTINGS_SCREEN_TITLE = "Settings for "; //"Statistics", "History"
 
-    enum ScreenType {
+    public enum ScreenType {
         NOT_INIT("Not initialized"), ALARMS(ScreenListOfAlarms.screenTitle), LISTS(SCREEN_LISTS_TITLE), ALL_TASKS(SCREEN_ALL_TASKS_TITLE), TODAY(SCREEN_TODAY_TITLE), INBOX(SCREEN_INBOX_TITLE),
         PROJECTS(SCREEN_PROJECTS_TITLE), TEMPLATES(SCREEN_TEMPLATES_TITLE),
         COMPLETION_LOG(SCREEN_COMPLETION_LOG_TITLE), CREATION_LOG(SCREEN_CREATION_LOG_TITLE),
@@ -439,6 +440,10 @@ public class MyForm extends Form {
 //        getProperties(); //get existing (previously saved) properties from Parse
 //</editor-fold>
         setMyShowAlarmsReplayCmd(makeAlarmsReplayCmd());
+        setSafeArea(true); //protect scrollbar at bottom of screen from swipe commands
+        if (Config.TEST) { //TODO!!!! Not sure this is a good idea since it makes the menu and Back button disappear --> maybe 
+            getToolbar().setScrollOffUponContentPane(MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean()); //see https://github.com/codenameone/CodenameOne/issues/2295
+        }
     }
 
     @Override
@@ -510,9 +515,9 @@ public class MyForm extends Form {
     protected void setTitleAnimation(Container scrollableComponent) {
         //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One:
         if (false) {
-        ComponentAnimation title2 = getToolbar().getTitleComponent().createStyleAnimation("TitleSmall", 200);
-        getAnimationManager().onTitleScrollAnimation(scrollableComponent, title2);
-    }
+            ComponentAnimation title2 = getToolbar().getTitleComponent().createStyleAnimation("TitleSmall", 200);
+            getAnimationManager().onTitleScrollAnimation(scrollableComponent, title2);
+        }
     }
 
     protected void setKeepPos(KeepInSameScreenPosition keepPos) {
@@ -561,21 +566,21 @@ public class MyForm extends Form {
     public Container getContainerForSmallTimer() {
         Container containerForSmallTimer = null;
         Form form = this;
-        if ((form instanceof ScreenCategoryPicker || form instanceof ScreenListOfAlarms
+        if ((form instanceof ScreenCategoryPicker //|| form instanceof ScreenListOfAlarms
                 || form instanceof ScreenLogin || form instanceof ScreenObjectPicker
                 || form instanceof ScreenRepair || form instanceof ScreenTimer6)) {
             return null;
         } else {
             Container formContentPane = form.getContentPane();
             Layout contentPaneLayout = formContentPane.getLayout();
-            if (contentPaneLayout instanceof MyBorderLayout) {
+            if (contentPaneLayout instanceof BorderLayout) {
 //                timerContainer = getContentPaneSouth(form);
-                Component southComponent = ((MyBorderLayout) contentPaneLayout).getSouth();
+                Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
                 if (southComponent instanceof Container) {
                     containerForSmallTimer = (Container) southComponent;
                 } else if (southComponent == null) {
                     Container newCont = new Container(BoxLayout.y());
-                    formContentPane.add(MyBorderLayout.SOUTH, newCont);
+                    formContentPane.add(BorderLayout.SOUTH, newCont);
                     containerForSmallTimer = newCont;
                 }
             } //else: nothing, only BorderLayout can currently show a smallTimer in the south container
@@ -583,37 +588,79 @@ public class MyForm extends Form {
         return containerForSmallTimer;
     }
 
-    public Container getSmallTimerCont() {
-        Container cont = getContainerForSmallTimer();
-        if (cont == null) {
-            return null;
-        } else {
-            if (cont.getComponentCount() == 0) {
-                return null;
-            } else if (cont.getComponentCount() == 1) {
-                return (Container) cont.getComponentAt(0);
-            } else {
-                if (Config.PROD_LOG) {
-                    ASSERT.that(false, "more than one component in containerForSmallTimer");
-                }
-            }
-        }
-        return null;
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Container getSmallTimerCont(Container cont) {
+//        if (cont == null) {
+//            return null;
+//        } else {
+//            if (Boolean.TRUE.equals(cont.getClientProperty(TimerStack.SMALL_TIMER_CONTAINER_ID))) {
+//                return cont;
+//            } else {
+//                for (Component c : cont.getChildrenAsList(true)) {
+//                    if (Boolean.TRUE.equals(c.getClientProperty(TimerStack.SMALL_TIMER_CONTAINER_ID))) {
+//                        return (Container) c;
+//                    } else if (c instanceof Container) {
+//                        Container tc = getSmallTimerCont((Container) c);
+//                        if (tc != null) {
+//                            return (Container) tc;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
+    
+//    public Container getSmallTimerCont() {
+//        return getSmallTimerCont(getContainerForSmallTimer());
+//    }
+    
+//    public Container getSmallTimerContOLD() {
+//        Container cont = getContainerForSmallTimer();
+//        if (cont == null) {
+//            return null;
+//        } else {
+//            if (cont.getComponentCount() == 0) {
+//                return null;
+//            } else if (cont.getComponentCount() == 1) {
+//                return (Container) cont.getComponentAt(0);
+//            } else {
+//                if (Config.PROD_LOG) {
+//                    ASSERT.that(false, "more than one component in containerForSmallTimer");
+//                }
+//            }
+//        }
+//        return null;
+//    }
+//</editor-fold>
 
     public boolean removeSmallTimerCont() {
-        Container smallTimerCont = getSmallTimerCont();
-        if (smallTimerCont != null) {
-            smallTimerCont.remove();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Container smallTimerCont = getSmallTimerCont();
+//        if (smallTimerCont != null) {
+//            smallTimerCont.remove();
+//            return true;
+//        }
+//        return false;
+//</editor-fold>
+        if (smallTimer != null) {
+            smallTimer.remove();
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     public boolean addSmallTimerCont(Container smallTimer) {
+        removeSmallTimerCont(); //remove previous in case
+        this.smallTimer = smallTimer;
         Container smallTimerCont = getContainerForSmallTimer();
         if (smallTimerCont != null) {
-            smallTimerCont.add(smallTimer);
+            if (smallTimerCont.getLayout() instanceof BorderLayout) {
+                smallTimerCont.add(BorderLayout.SOUTH, smallTimer);
+            } else {
+                smallTimerCont.add(smallTimer);
+            }
             return true;
         }
         return false;
@@ -869,7 +916,7 @@ public class MyForm extends Form {
         }
 //        Map<Object, Runnable> parseIdMap2 = new HashMap<Object, Runnable>();
         Dialog dia = new Dialog();
-        dia.setTitle("Set Actual effort");
+        dia.setTitle(Format.f("Set {0 Actual effort}", Item.EFFORT_ACTUAL));
         dia.setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         dia.setCommandsAsButtons(true);
         dia.setAutoDispose(true); //should be default according to javadoc, but doesn't autodispose on [OK]
@@ -877,22 +924,28 @@ public class MyForm extends Form {
         Container cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         dia.add(cont);
 
+        cont.add(new SpanLabel(Format.f("Enter how much {0 actual effort} for this task?", Item.EFFORT_ACTUAL)));
+
         //TODO!!!! if marking a project, with undone subtasks, Done, then also show sum of subtask actuals to know how much time was spend on them
         MyDurationPicker actualPicker = new MyDurationPicker(item.getActualForProjectTaskItself(), "0:00");
         actualPicker.addActionListener((e) -> {
-            item.setActual(actualPicker.getDuration(), true);
+            item.setActual(actualPicker.getDuration(), false); //false, since this dialog is ONLY called when setting a task status, so no reason
             dia.dispose(); //dispose of dialog on Done on picker
         });
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        }, (l) -> {
 ////            item.setActualEffort(d*MyDate.MINUTE_IN_MILLISECONDS);
 //            item.setActualEffort(l);
 //        });
-        cont.add(new Label(Item.EFFORT_ACTUAL)).add(actualPicker)
-                //                .add(new SpanLabel("How much time was spend on this task?"));
-                .add(new SpanLabel("Click to set how much time was spend on this task"));
+//                new Label(Item.EFFORT_ACTUAL)).add(actualPicker).
+//                .add(new SpanLabel("How much time was spend on this task?"));
+//                .add(new SpanLabel("Click to set how much time was spend on this task"));
 
 //        cont.addComponent(new Button(Command.create("OK", null, (e) -> {
-        cont.addComponent(new Button(Command.create("Cancel", null, (e) -> {
+//</editor-fold>
+//        cont.addComponent(new Button(Command.create("Cancel", null, (e) -> {
+        cont.add(actualPicker);
+        cont.addComponent(new Button(Command.create("Skip", null, (e) -> {
 //            putEditedValues2(parseIdMap2);
             actualPicker.stopEditing(null); //close picker
             dia.dispose(); //close dialog
@@ -902,7 +955,7 @@ public class MyForm extends Form {
 
     static Dialog showDialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
         Dialog dia = new Dialog();
-        dia.setTitle("Update " + Item.EFFORT_REMAINING + "?");
+        dia.setTitle(Format.f("Update {0 remaining effort}", Item.EFFORT_REMAINING));
         dia.setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         dia.setCommandsAsButtons(true);
         dia.setAutoDispose(true); //should be default according to javadoc, but doesn't autodispose on [OK]
@@ -2158,7 +2211,8 @@ public class MyForm extends Form {
 
     public MyReplayCommand makeEditFilterSortCommand(ItemAndListCommonInterface itemListOrItem) {
         return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconFilterSettings, (e) -> {
-            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDef() == null ? new FilterSortDef()
+            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDef() == null
+                    ? new FilterSortDef()
                     : (itemListOrItem.getFilterSortDef().equals(FilterSortDef.getDefaultFilter())
                     ? new FilterSortDef(itemListOrItem.getFilterSortDef()) : itemListOrItem.getFilterSortDef()); //need this construct due to use in lambda below
 //            if ( filterSortDef.equals(FilterSortDef.getDefaultFilter()))
@@ -2166,7 +2220,7 @@ public class MyForm extends Form {
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenFilter(filterSortDef, MyForm.this, () -> {
                 if (!filterSortDef.equals(itemListOrItem.getFilterSortDef())) { //if filter edited
-                    DAO.getInstance().saveNew(filterSortDef,false); //now done in DAO?
+                    DAO.getInstance().saveNew(filterSortDef, false); //now done in DAO?
                     itemListOrItem.setFilterSortDef(filterSortDef);
                     DAO.getInstance().saveNew((ParseObject) itemListOrItem, true);
                     //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
@@ -3644,12 +3698,14 @@ public class MyForm extends Form {
      *
      * @param refElement
      * @param ownerList
+     * @param typeElement just used to indicate the type of element to create
+     * since we don't have an actual object to work from
      * @param category
      * @param insertBeforeRefElement
      * @return
      */
-    private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface typeElement, ItemAndListCommonInterface refElement, ItemAndListCommonInterface ownerList,
-            Category category, boolean insertBeforeRefElement) {//, boolean insertAsSubtask) {
+    private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface typeElement, ItemAndListCommonInterface refElement,
+            ItemAndListCommonInterface ownerList, Category category, boolean insertBeforeRefElement) {//, boolean insertAsSubtask) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        return createInsertContainer(refElement, list, insertBeforeRefElement, null);
 //    }
@@ -3682,14 +3738,14 @@ public class MyForm extends Form {
 
         } else if (refElement instanceof Category || typeElement instanceof Category) {
 //            return wrapInPinchableContainer(new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, insertBeforeRefElement));
-            insertContainer = new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, insertBeforeRefElement);
+            insertContainer = new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, (CategoryList) ownerList, insertBeforeRefElement);
         } else if (refElement instanceof ItemList || typeElement instanceof ItemList) {
 //            return wrapInPinchableContainer(new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement));
-            insertContainer = new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement);
+            insertContainer = new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, (ItemListList) ownerList, insertBeforeRefElement);
         } else if (refElement instanceof WorkSlot || typeElement instanceof WorkSlot) {
 //            WorkSlotList workSlotList = ((WorkSlot) refElement).getWorkSlotListN();
 //            insertContainer = new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, workSlotList, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
-            insertContainer = new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
+            insertContainer = new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, ownerList, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
         } else {
             ASSERT.that(false, () -> "error2 in createInsertContainer: refElt=" + refElement + "; list=" + ownerList + "; insertBefore=" + insertBeforeRefElement);
         }
