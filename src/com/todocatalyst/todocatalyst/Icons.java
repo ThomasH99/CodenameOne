@@ -191,6 +191,8 @@ public class Icons {
     final static char iconInvertSelection = FontImage.MATERIAL_FLIP; //TODO: find better symbol (with unchecked boxes)
 
     final static char iconCompletedDate = FontImage.MATERIAL_DONE; //TODO: find better symbol (with unchecked boxes)
+    
+    final static char iconRepeatOverview = FontImage.MATERIAL_FILTER; //or: DYNAMIC_FEED
 
     final static char iconSelectedLabelStyleMaterial = FontImage.MATERIAL_CHECK_BOX; //3mm
 //    final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED, labelStyle, 2);

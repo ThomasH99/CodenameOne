@@ -575,7 +575,7 @@ public class MyTree2 extends ContainerScrollY {
                     Object expanded = subNodeCont.getClientProperty(KEY_EXPANDED);
                     if (expanded != null && expanded.equals("true")) {
                         Object nodeElement = subNodeCont.getClientProperty(KEY_OBJECT);
-                        if (nodeElement != null && expandedObjects.contains(nodeElement)) {
+                        if (nodeElement != null && expandedObjects!=null && expandedObjects.contains(nodeElement)) {
                             expandedObjects.remove(nodeElement);
                         } else {
                             assert false : "if KEY_EXPANDED==true, there should be a KEY_OBJECT";

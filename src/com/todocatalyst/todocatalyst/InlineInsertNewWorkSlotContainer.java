@@ -222,8 +222,12 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 //        workSlotList.add(newWorkSlot); //no need to insert sorted, workSlotLists are sorted by workSlot.startDate
         workSlotListOwner.addWorkSlot(newWorkSlot); //no need to insert sorted, workSlotLists are sorted by workSlot.startDate
 //        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) refWorkSlot);
-        DAO.getInstance().saveNew(newWorkSlot, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP()));
-        DAO.getInstance().saveNew((ParseObject) workSlotListOwner, true);
+//        DAO.getInstance().saveNew(newWorkSlot, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP()));
+//        DAO.getInstance().saveNew((ParseObject) workSlotListOwner, true);
+        DAO.getInstance().saveNew(newWorkSlot);
+        DAO.getInstance().saveNew((ParseObject) workSlotListOwner);
+        DAO.getInstance().saveNewExecuteUpdate();
+         myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container

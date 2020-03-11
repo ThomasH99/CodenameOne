@@ -195,9 +195,10 @@ public class ReplayLog {
                 } else {
 //                        +Display.getInstance().getCurrent() instanceof MyForm?((MyForm)Display.getInstance().getCurrent()).SCREEN_TITLE:"<not a MyForm>"Display.getInstance().getCurrent().getTitle());
 //                    in screen" + Display.getInstance().getCurrent().getTitle()
-                    ASSERT.that(false, "ERROR  ReplayCommand: \"" + cmdUIID + "\" not defined, "
-                            + (Display.getInstance().getCurrent() != null ? " screen " + ((MyForm) Display.getInstance().getCurrent()).getUniqueFormId() + ", " : "")
-                            + " ScreenCmds=" + screenCommands + ", ReplayLog=" + this);
+                    ASSERT.that(false, "ERROR  ReplayCommand: \"" + cmdUIID + "\" not defined/FILTERED?, idx="+currentIndex
+                            + (Display.getInstance().getCurrent() != null ? " SCREEN=" + ((MyForm) Display.getInstance().getCurrent()).getUniqueFormId() + ", " : "")
+                            + "\nReplayLog=[" + this+"]"
+                            + "\nScreenCmds=[" + screenCommands +"]");
                 }
             }
         } else {

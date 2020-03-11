@@ -876,7 +876,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return (getRepeatRule() != null ? "*" : "") + "WS:" + MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS, true)
                 //                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
                 + (getObjectIdP() == null ? " [NoObjId]" : (" [" + getObjectIdP() + "]"))
-                + (" Owner:" + (getOwner() != null ? (getOwner().getText() + "/" + getOwner().getObjectIdP()) : "None"));
+                + (" Owner:" + (getOwner() != null ? (getOwner().getText() + "/" + getOwner().getObjectIdP()) : "None")
+                +(getRepeatRule()!=null?"RepRul["+getRepeatRule().getObjectIdP()+"]":""));
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

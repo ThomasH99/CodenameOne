@@ -141,7 +141,8 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 //                expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP());
                     expandedObjects.add(getUniqueStr(element));
                     save();
-                },true);
+//                },true);
+                },false);
                 //objId will be effectively added, and expandedObjects saved, to expanded once the element has been saved
             } else {
                 result = expandedObjects.add(uniqueStr); //a hashset so no need to check if already added

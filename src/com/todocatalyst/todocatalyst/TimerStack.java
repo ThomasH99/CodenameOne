@@ -1047,7 +1047,9 @@ class TimerStack {
                     alreadyRunningTimerInstance.setWasRunningWhenInterrupted(true, true); //pause and save!
                     if (interruptOrInstantTask) {
                         newTimedItemOrProject.setTaskInterrupted(alreadyTimedItem); //only set if timer was actually running, otherwise does not qualify as an interrupt but only as an InstantTask
-                        DAO.getInstance().saveNew(true, newTimedItemOrProject);
+//                        DAO.getInstance().saveNew(true, newTimedItemOrProject);
+                        DAO.getInstance().saveNew( newTimedItemOrProject);
+                        DAO.getInstance().saveNewExecuteUpdate();
                     }
 //                    MyForm.showToastBar("Already running Timer paused for \"" + previousTimerInstance.getTimedItemN().getText() + "\", will continue after this "
                     MyForm.showToastBar("Timer paused for \"" + alreadyTimedItem.getText()
@@ -2351,7 +2353,9 @@ class TimerStack {
             {
                 timedItem.setStartedOnDate(timerStartedOn);
             }
-            DAO.getInstance().saveNew(timedItem, true); //ongoing value
+//            DAO.getInstance().saveNew(timedItem, true); //ongoing value
+            DAO.getInstance().saveNew(timedItem); //ongoing value
+            DAO.getInstance().saveNewExecuteUpdate();
         }
     }
 
@@ -2996,7 +3000,9 @@ class TimerStack {
 //                model.gotoNext(timerInstance, timedItem, ItemStatus.DONE);
 //                model.updateTimedTaskSetStatusAndGotoNext(ItemStatus.DONE);
                 getInstance().getCurrentlyTimedItemN().setStatus(ItemStatus.DONE); //updating the timed item will automatically update the Timer
-                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
+//                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
+                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN());
+                DAO.getInstance().saveNewExecuteUpdate();
                 getInstance().refreshOrShowUIOnTimerChange();
             }
         };
@@ -3035,7 +3041,9 @@ class TimerStack {
 //                model.gotoNext(timerInstance, timedItem, ItemStatus.WAITING);
 //                model.updateTimedTaskSetStatusAndGotoNext(ItemStatus.WAITING);
                 getInstance().getCurrentlyTimedItemN().setStatus(ItemStatus.WAITING); //updating the timed item will automatically update the Timer
-                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
+//                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
+                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN());
+                DAO.getInstance().saveNewExecuteUpdate();
                 getInstance().refreshOrShowUIOnTimerChange();
             }
         };
@@ -3072,7 +3080,9 @@ class TimerStack {
 //                model.gotoNext(timerInstance, timedItem, ItemStatus.WAITING);
 //                model.updateTimedTaskSetStatusAndGotoNext(ItemStatus.CANCELLED);
                 getInstance().getCurrentlyTimedItemN().setStatus(ItemStatus.CANCELLED); //updating the timed item will automatically update the Timer
-                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
+//                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
+                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN());
+                DAO.getInstance().saveNewExecuteUpdate();
                 getInstance().refreshOrShowUIOnTimerChange();
             }
         };
@@ -3111,7 +3121,9 @@ class TimerStack {
 //                model.gotoNext(timerInstance, timedItem, ItemStatus.WAITING);
 //                model.updateTimedTaskSetStatusAndGotoNext(ItemStatus.ONGOING);
                 getInstance().getCurrentlyTimedItemN().setStatus(ItemStatus.ONGOING); //updating the timed item will automatically update the Timer
-                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
+//                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN(), true);
+                DAO.getInstance().saveNew(getInstance().getCurrentlyTimedItemN());
+                DAO.getInstance().saveNewExecuteUpdate();
                 getInstance().refreshOrShowUIOnTimerChange();
             }
         };
@@ -3213,7 +3225,8 @@ class TimerStack {
             comment.setSingleLineTextArea(false);
             comment.addActionListener((e) -> {
                 timedItem.setComment(comment.getText());
-                DAO.getInstance().saveNew(timedItem, true);
+                DAO.getInstance().saveNew(timedItem);
+                DAO.getInstance().saveNewExecuteUpdate();
             });
 
 //            UITimer commentSaveTimer = new UITimer(() -> {
@@ -3317,11 +3330,15 @@ class TimerStack {
 
         description.addActionListener((e) -> {
             timedItem.setText(description.getText());
-            DAO.getInstance().saveNew(timedItem, true);
+//            DAO.getInstance().saveNew(timedItem, true);
+            DAO.getInstance().saveNew(timedItem);
+            DAO.getInstance().saveNewExecuteUpdate();
         });
         description.setDoneListener((e) -> {
             timedItem.setText(description.getText());
-            DAO.getInstance().saveNew(timedItem, true);
+//            DAO.getInstance().saveNew(timedItem, true);
+            DAO.getInstance().saveNew(timedItem);
+            DAO.getInstance().saveNewExecuteUpdate();
         });
 //        UITimer descriptionSaveTimer = new UITimer(() -> {
 //            if (description.isEditing()) {
@@ -3379,7 +3396,9 @@ class TimerStack {
                             }
                         }
 //</editor-fold>
-                        DAO.getInstance().saveNew(timedItem, true); //save edited values
+//                        DAO.getInstance().saveNew(timedItem, true); //save edited values
+                        DAO.getInstance().saveNew(timedItem); //save edited values
+                        DAO.getInstance().saveNewExecuteUpdate();
 //                        }
 
                         refreshTotalActualEffort.actionPerformed(null); //refresh screen
@@ -3497,7 +3516,9 @@ class TimerStack {
                     effort.setDuration(estimate.getDuration());
                     effort.repaint();
                 }
-                DAO.getInstance().saveNew(timedItem, true);
+//                DAO.getInstance().saveNew(timedItem, true);
+                DAO.getInstance().saveNew(timedItem);
+                DAO.getInstance().saveNewExecuteUpdate();
 //                effortEstimateBeingAutoupdated=false;
             });
 
@@ -3511,7 +3532,9 @@ class TimerStack {
                     estimate.setDuration(effort.getDuration());
                     estimate.repaint();
                 }
-                DAO.getInstance().saveNew(timedItem, true);
+//                DAO.getInstance().saveNew(timedItem, true);
+                DAO.getInstance().saveNew(timedItem);
+                DAO.getInstance().saveNewExecuteUpdate();
 //                remainingEstimateBeingAutoupdated=false;
             });
 

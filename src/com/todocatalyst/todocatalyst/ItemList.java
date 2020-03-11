@@ -102,7 +102,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         super(PARSE_CLASS_NAME);
     }
 
-    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList, boolean saveImmediatelyToParse) {
+//    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList, boolean saveImmediatelyToParse) {
+    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
         super(CLASS_NAME);
         setText(listName);
         setList(list);
@@ -110,11 +111,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             setFilterSortDef(filterSortDef, true);
         }
         setNoSave(temporaryNoSaveList);
-        if (!temporaryNoSaveList && saveImmediatelyToParse) {
-            DAO.getInstance().saveNew((ParseObject) this, true);
-        }
+//        if (!temporaryNoSaveList && saveImmediatelyToParse) {
+//            DAO.getInstance().saveNew((ParseObject) this, true);
+//        }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public ItemList(String listName, boolean temporaryNoSaveList, boolean saveImmediatelyToParse) {
 //        super(CLASS_NAME);
 //        setText(listName);
@@ -123,21 +125,25 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            DAO.getInstance().saveInBackground((ParseObject) this);
 //        }
 //    }
-    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
-        this(listName, list, filterSortDef, temporaryNoSaveList, false);
-//        setText(listName);
-//        setList(list);
-//        setFilterSortDef(filterSortDef);
-//        setNoSave(temporaryNoSaveList);
-    }
+//    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
+//    public ItemList(String listName, List<E> list, FilterSortDef filterSortDef, boolean temporaryNoSaveList) {
+////        this(listName, list, filterSortDef, temporaryNoSaveList, false);
+//        this(listName, list, filterSortDef, temporaryNoSaveList);
+////        setText(listName);
+////        setList(list);
+////        setFilterSortDef(filterSortDef);
+////        setNoSave(temporaryNoSaveList);
+//    }
+//</editor-fold>
 
     public ItemList(String listName, boolean temporaryNoSaveList) {
-        this(listName, null, null, temporaryNoSaveList, false);
+//        this(listName, null, null, temporaryNoSaveList, false);
+        this(listName, null, null, temporaryNoSaveList);
     }
 
-    public ItemList(boolean saveImmediatelyToParse, String listName) {
-        this(listName, null, null, false, saveImmediatelyToParse);
-    }
+//    public ItemList(boolean saveImmediatelyToParse, String listName) {
+//        this(listName, null, null, false, saveImmediatelyToParse);
+//    }
 
     public ItemList(String listName, List<E> list) {
         this(listName, list, null, false);

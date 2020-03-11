@@ -393,7 +393,7 @@ TextFieldXXX  {
 
 TextField { 
     cn1-derive: ListOfItemsTextBase;
-    font-family :  "native:MainLight"; /*"native:MainRegular";*/
+    /*->font-family :  "native:MainLight"; /*"native:MainRegular";*/
     /*margin: 1mm;*/
     padding: 2mm;
     /*border: 1pt solid lightgray;  cn1-pill-border; /*cn1-round-border;*/
@@ -536,7 +536,7 @@ ScreenItemValue {/*used for field labels*/
 ScreenItemValueInherited {
     cn1-derive: ScreenItemValue;
     /*color: darkgray;*/
-    color: #999;/*red;*/[Overdue]
+    color: #999;/*red;*/
 }
 /*ScreenItemValue {
     cn1-derive: LabelField;
@@ -732,7 +732,8 @@ BigTimerTotalActual {
 BigTimerTimer {
     /*font-family :  "native:MainBold";*/
     /* font-family :  "System-Monospace"; doesn't seem to be monospace on iOS, but OK on simulator'*/
-    font-family :  "largeBoldMonospaceFont";
+    /*font-family :  "largeBoldMonospaceFont";*/
+    font-family :  "native:MainBold";
     font-family :  monospace;
 
     font-size: 200%;
@@ -918,7 +919,7 @@ MainContentPane {
 
 MainMenuCommand {
     cn1-derive: Label;
-    font-family :  "native:MainLight";
+    /*->font-family :  "native:MainLight";*/
     font-size: 120%;
     text-align: left;
     color: black;
@@ -968,7 +969,8 @@ ListOfItemsTextCont { /*style for task container (WrapButton) in lists*/
 
 ListOfItemsTextBase { /*style for task text in lists*/
     cn1-derive: Label;/**/
-    font-family :  "native:MainRegular"; /*"native:MainLight";*/
+    /*->font-family :  "native:MainRegular"; /*"native:MainLight";*/
+    font-family :  "native:MainBold"; /*"native:MainLight";
     /* color:black;*/
     /*font-size: 90%; /*100%;*/
     text-align: left;
@@ -1475,6 +1477,7 @@ InlineInsertItemAsSubtask {
     background: yellow;
     color:red;
 }
+
 /* WORKSLOT */
 WorkSlotContainer {
     cn1-derive: ItemContainer;

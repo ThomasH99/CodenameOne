@@ -59,6 +59,7 @@ public class CreateList extends AbstractTest {
         assertLabel("14/04/2019");
         assertLabel("");
         assertLabel("3rdDefst6D");
+        assertLabel("3rdDefst6D");
         assertLabel("");
         assertEqual(getToolbarCommands().length, 5);
         executeToolbarCommandAtOffset(0);

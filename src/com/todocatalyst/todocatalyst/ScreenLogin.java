@@ -5,6 +5,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
+import com.codename1.messaging.Message;
 import com.codename1.nui.NTextField;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
@@ -84,7 +85,7 @@ public class ScreenLogin extends MyForm {
         if (refreshDataInBackground) {
             thread.run((success) -> {
 //                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true)) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
-                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), 
+                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),
                         MyPrefs.reloadChangedDataInBackground.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
                     success.onSucess(null);
                 }
@@ -109,7 +110,7 @@ public class ScreenLogin extends MyForm {
 //            Dialog ip = new InfiniteProgress().showInfiniteBlocking(); //DONE in DAO.cacheLoadDataChangedOnServer
             //TODO!!!! show waiting symbol "loading your tasks..."
 //            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
-            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), 
+            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),
                     MyPrefs.reloadChangedDataInBackground.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            ip.dispose();
         }
@@ -230,9 +231,12 @@ public class ScreenLogin extends MyForm {
 
 //        TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
 //        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
-        TextComponentPassword password = new TextComponentPassword(); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
-        password.constraint(TextArea.PASSWORD);
-        if (false) password.setUIID("TextField");
+//        TextComponentPassword password = new TextComponentPassword(); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+//        password.constraint(TextArea.PASSWORD);
+        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+        if (false) {
+            password.setUIID("TextField");
+        }
 //        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 
 //        BorderLayout b1 = new BorderLayout();
@@ -975,17 +979,28 @@ public class ScreenLogin extends MyForm {
         if (errorMsg != null) {
             return errorMsg;
         }
-
-        String password = PasswordGenerator.getInstance().generate(12);
-        if (validEmail.equals("thomas.hjelm@email.com"))
+        String password;
+        if (Config.TEST_STORE_PASSWORD_FOR_USER) {
+            password = PasswordGenerator.getInstance().generate("",6,true,true,true,false); //avoid punctuation during testing
+        } else {
+            password = PasswordGenerator.getInstance().generate(12);
+        }
+        if (validEmail.equals("thomas.hjelm@email.com")) {
             password = "ItsThomas";
+        }
         try {
             ParseUser parseUser = ParseUser.create(validEmail, password);
+            if (Config.TEST_STORE_PASSWORD_FOR_USER) {
+                parseUser.put("visiblePassword", password); //will this save the password (or rather, will the below signUp()?)?
+            }
             parseUser.setEmail(validEmail);
 //            setDefaultACL(parseUser); //NB cannot set ACL for user with a null id
             parseUser.signUp(); //perform sign up / account creation
             setDefaultACL(parseUser); //NB cannot set ACL for user with a null id
             saveCurrentUserSessionToStorage();
+//            Message msg = new Message();
+            Display.getInstance().sendMessage(new String[]{validEmail}, "Your TodoCatalyst account login info ("+validEmail+")",
+                    new Message("\n\nTodoCatalyst login/email: "+validEmail+"\n\nYour auto-generated password (please change in TodoCatalyst app): "+password));
             //No cache/memory setup needed for new account
             return null;
         } catch (ParseException ex) {
@@ -1010,10 +1025,10 @@ public class ScreenLogin extends MyForm {
 //        boolean passwordDefined = (password == null || password.length() == 0);
         String errorMsg;
 
-        if(Config.TEST&&validEmail.equals("*")) {
-            validEmail="thomas.hjelm@email.com";
-            password="ItsThomas";
-        } 
+        if (Config.TEST && validEmail.equals("*")) {
+            validEmail = "thomas.hjelm@email.com";
+            password = "ItsThomas";
+        }
         if ((errorMsg = validPassword(password)) != null) {
             return errorMsg;
         }
@@ -1093,7 +1108,9 @@ public class ScreenLogin extends MyForm {
         if (currentUser != null) {
             try {
                 currentUser.logout();
-                if (false) getLastUserSessionFromStorage();
+                if (false) {
+                    getLastUserSessionFromStorage();
+                }
                 deleteLastUserSessionFromStorage();
                 return null;
             } catch (ParseException ex) {

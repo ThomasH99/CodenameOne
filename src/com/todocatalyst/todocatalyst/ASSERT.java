@@ -33,7 +33,7 @@ public class ASSERT {
         if (!trueAssertion) {
             try {
 //                Log.l("ASSERTION not true:"+assertion);
-                throw new Exception("ASSERTION FAILED " + assertion);
+               throw new Exception("ASSERTION FAILED " + assertion);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

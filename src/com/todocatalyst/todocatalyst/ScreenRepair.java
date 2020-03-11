@@ -871,11 +871,15 @@ public class ScreenRepair extends MyForm {
                             Date alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 14);
                             Item item = new Item("TestAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
                             item.setAlarmDate(alarm);
-                            DAO.getInstance().saveNew(item, true);
+//                            DAO.getInstance().saveNew(item, true);
+                            DAO.getInstance().saveNew(item);
+                            DAO.getInstance().saveNewExecuteUpdate();
                             alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 12);
                             item = new Item("TestWaitingAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
                             item.setWaitingAlarmDate(alarm);
-                            DAO.getInstance().saveNew(item, true);
+//                            DAO.getInstance().saveNew(item, true);
+                            DAO.getInstance().saveNew(item);
+                            DAO.getInstance().saveNewExecuteUpdate();
                         }
                         switch (3) {
                             case 1:

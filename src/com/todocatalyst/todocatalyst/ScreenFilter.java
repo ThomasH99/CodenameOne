@@ -94,7 +94,7 @@ public class ScreenFilter extends MyForm {
 //        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
         toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 
-        if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
+        if (true||MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
 

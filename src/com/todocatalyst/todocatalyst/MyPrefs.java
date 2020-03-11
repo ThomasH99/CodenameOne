@@ -483,7 +483,10 @@ public class MyPrefs {
     //REPEATRULE
     static PrefEntry repeatMaxInterval = new PrefEntry("repeatMaxInterval**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
     static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead
-            = new PrefEntry("repeatMaxNumberFutureInstancesToGenerateAhead", "repeatMaxNumberFutureInstancesToGenerateAhead", 10, "0 disables - TODO**");
+            = new PrefEntry("Maximum number of future repeats allowed", "repeatMaxNumberFutureInstancesToGenerateAhead", 10, "**");
+//    static PrefEntry repeatMaxNumberOfRepeatsToGenerate
+//            = new PrefEntry("To avoid that too many repeats get generated and overflod the server or the app, 0 disables", "repeatMaxNumberOfRepeatsToGenerate", 20,
+//                    "more of an internal limitation for now**"); //TODO: what happens if the max is reached? Will the algorithms still work?
     static PrefEntry repeatMaxNumberOfRepeatsAllowed
             = new PrefEntry("Max number of repeats enabled in picker", "repeatMaxNumberOfRepeatsAllowed", 100, "**");
     static PrefEntry repeatMaxNumberFutureDaysToGenerateAhead = new PrefEntry("repeatMaxNumberFutureDaysToGenerateAhead**", "repeatMaxNumberFutureDaysToGenerateAhead", 31, "**");
@@ -497,9 +500,6 @@ public class MyPrefs {
                     true, "When changing a repeat rule, reuse any task instances that already exist, this will keep any edits to such instances");
     static PrefEntry repeatHidePreviousTasksDetails
             = new PrefEntry("When show previously generated repeat instances, expand to show their details", "repeatHidePreviousTasksDetails", false, "When editing an existing repeat rule, expand the list of existing tasks");
-    static PrefEntry repeatMaxNumberOfRepeatsToGenerate
-            = new PrefEntry("To avoid that too many repeats get generated and overflod the server or the app, 0 disables", "repeatMaxNumberOfRepeatsToGenerate", 20,
-                    "more of an internal limitation for now**"); //TODO: what happens if the max is reached? Will the algorithms still work?
     static PrefEntry repeatCancelNotDeleteSuperflousInstancesWithActualRecorded
             = new PrefEntry("When changing a repeat rule, if any repeat instances have already had work time recorded, "
                     + "then don't delete them, but just Cancel to keep the work time for statistics", "repeatCancelNotDeleteSuperflousInstancesWithActualRecorded", true,
@@ -510,10 +510,12 @@ public class MyPrefs {
             = new PrefEntry("Show internal RepeatRule data", "repeatInsertAfterLastDueDateInstanceInsteadOfJustCompleted", true, "**");
         static PrefEntry insertNewRepeatInstancesInStartOfLists
             = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
-
     static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
             = new PrefEntry("Insert new repeat instances after the original ",
                     "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task instead of beginning/end of list"); //"at the end"
+        static PrefEntry repeatOnCompletionFromDueDateIfLaterThanCompletedDate
+            = new PrefEntry("Repeat from Completed date will repeat from Due date for tasks completed before due date", 
+                    "repeatOnCompletionFromDueDateIfLaterThanCompletedDate", true, "**"); //"at the end"
 
 
 

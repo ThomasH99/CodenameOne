@@ -769,8 +769,8 @@ public class CleanUpDataInconsistencies {
         Map<RepeatRuleParseObject, Item> itemsWithRepeatRule = new HashMap<>();
 
         for (Item item : dao.getAllItems()) {
-            if (item.getRepeatRule() != null) {
-                itemsWithRepeatRule.put(item.getRepeatRule(), item);
+            if (item.getRepeatRuleN() != null) {
+                itemsWithRepeatRule.put(item.getRepeatRuleN(), item);
             }
         }
 
@@ -863,8 +863,8 @@ public class CleanUpDataInconsistencies {
         }
 
         //Check repeat rule exists
-        if (item.getRepeatRule() != null && notOnParseServer((ParseObject) item.getRepeatRule())) {
-            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) item.getRepeatRule()).getObjectIdP(), logLevel);
+        if (item.getRepeatRuleN() != null && notOnParseServer((ParseObject) item.getRepeatRuleN())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) item.getRepeatRuleN()).getObjectIdP(), logLevel);
             if (executeCleanup) {
                 item.setRepeatRule(null); //remove reference to inexisting RepeatRule
             }
@@ -1012,8 +1012,8 @@ public class CleanUpDataInconsistencies {
         }
 
         //Check repeat rule exists
-        if (item.getRepeatRule() != null && notOnParseServer((ParseObject) item.getRepeatRule())) {
-            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) item.getRepeatRule()).getObjectIdP(), logLevel);
+        if (item.getRepeatRuleN() != null && notOnParseServer((ParseObject) item.getRepeatRuleN())) {
+            Log.p("CLEANUP: Item \"" + item.getText() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) item.getRepeatRuleN()).getObjectIdP(), logLevel);
             if (executeCleanup) {
                 item.setRepeatRule(null); //remove reference to inexisting RepeatRule
             }

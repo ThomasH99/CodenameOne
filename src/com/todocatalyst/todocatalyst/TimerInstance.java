@@ -543,7 +543,9 @@ public class TimerInstance extends ParseObject {
             if (timedItemN != null) {
                 timedItemN.setActual(timedItemN.getActualForProjectTaskItself() + getElapsedTime(), false); //false: don't auto-update startedOn time (done when status is set?!)
                 if (saveUpdatedItem) {
-                    DAO.getInstance().saveNew(timedItemN,true);
+//                    DAO.getInstance().saveNew(timedItemN,true);
+                    DAO.getInstance().saveNew(timedItemN);
+                    DAO.getInstance().saveNewExecuteUpdate();
                 }
             }
 //            timerInstance.setElapsedTime(0); //reset elapsed time since it's now been added to Item's actual & saved

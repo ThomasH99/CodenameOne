@@ -10,14 +10,17 @@ package com.todocatalyst.todocatalyst;
  * @author Thomas
  */
 public abstract class Config {
+
     /**
-     * set to true during testing. Setting false will remove test code from the app. 
+     * set to true during testing. Setting false will remove test code from the
+     * app.
      */
-    public static final boolean PRODUCTION_RELEASE = false; //f
+    public static final boolean PRODUCTION_RELEASE = false; //if true will disable all error flags
     public static final boolean PROD_LOG = true; //log to keep in production
     public static final boolean TEST_CACHE = false && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_SCROLL_Y = true && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST = true && !PRODUCTION_RELEASE; //false;
+    public static final boolean TEST_STORE_PASSWORD_FOR_USER = true && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_BACKGR = false && !PRODUCTION_RELEASE; //false;
     public static final boolean CHECK_OWNERS = false && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_DRAG_AND_DROP = true && !PRODUCTION_RELEASE; //false;
@@ -29,7 +32,7 @@ public abstract class Config {
     public static final boolean WORKTIME_TEST = false && !PRODUCTION_RELEASE; //
     public static final boolean WORKTIME_DETAILED_LOG = false && !PRODUCTION_RELEASE; //NB! these logs are very time-consuming!!
     public static final boolean ENABLELOGGING = true && !PRODUCTION_RELEASE;
-    public static final boolean PARSE_OFFLINE = true && !PRODUCTION_RELEASE;
+    public static final boolean PARSE_OFFLINE = true && !PRODUCTION_RELEASE; //used without Internet connection so disable access to remote server (use local laptop) and Analytics
     public static final boolean INLINE_WORKSHOP_TESTCASE = false && !PRODUCTION_RELEASE;
     public static final boolean REFRESH_EVEN_THOUGH_DONE_IN_BACK = false && !PRODUCTION_RELEASE; //true <=> assumes that when going back to a screen, refresh is done in back. This removes the opportunity to optimize by avoiding unnecessary refresh if going back from screens which don't alter the content and therefore don't require refresh
     public static final boolean ENABLE_ASK_USER_TO_RATE_APP = false && !PRODUCTION_RELEASE; //ask users to rate the app, requires url to appstore/android store

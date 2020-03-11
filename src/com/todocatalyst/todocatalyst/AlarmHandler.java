@@ -360,7 +360,9 @@ public class AlarmHandler {
         //save snooze time
 //        item.setSnoozeDate(snoozeExpireTime);
         item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
-        DAO.getInstance().saveNew(item, true);
+//        DAO.getInstance().saveNew(item, true);
+        DAO.getInstance().saveNew(item);
+        DAO.getInstance().saveNewExecuteUpdate();
     }
 
     public void snoozeAllExpiredAlarms(Date snoozeExpireTime) {
@@ -683,14 +685,18 @@ public class AlarmHandler {
         String notificationId;
         Item testItem = new Item("test local notification", 20, new Date(MyDate.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 48));
         testItem.setAlarmDate(new Date(MyDate.currentTimeMillis() + secondsFromNow * 1000)); //alarm in 10s from now
-        DAO.getInstance().saveNew(testItem, true);
+//        DAO.getInstance().saveNew(testItem, true);
+        DAO.getInstance().saveNew(testItem);
+        DAO.getInstance().saveNewExecuteUpdate();
     }
 
     public void simulateNotificationReceived_TEST(String taskText, Date due, Date alarm, Date waiting) {
         Item testItem = new Item(taskText, 7, due);
         testItem.setAlarmDate(alarm);
         testItem.setWaitingAlarmDate(waiting);
-        DAO.getInstance().saveNew(testItem, true);
+//        DAO.getInstance().saveNew(testItem, true);
+        DAO.getInstance().saveNew(testItem);
+        DAO.getInstance().saveNewExecuteUpdate();
     }
 
     public void simulateNotificationReceived_TEST(String taskText, Date due, int alarmInSecondsFromNow, int waitingAlarmInSecondsFromNow) {

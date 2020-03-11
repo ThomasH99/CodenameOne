@@ -441,7 +441,8 @@ public class MyForm extends Form {
 //</editor-fold>
         setMyShowAlarmsReplayCmd(makeAlarmsReplayCmd());
         setSafeArea(true); //protect scrollbar at bottom of screen from swipe commands
-        if (Config.TEST) { //TODO!!!! Not sure this is a good idea since it makes the menu and Back button disappear --> maybe 
+        if (false && Config.TEST) { //TODO!!!! Not sure this is a good idea since it makes the menu and Back button disappear --> maybe 
+            //this only works if contentPane is scrollableY (and not BorderLayout as now)
             getToolbar().setScrollOffUponContentPane(MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean()); //see https://github.com/codenameone/CodenameOne/issues/2295
         }
     }
@@ -610,11 +611,9 @@ public class MyForm extends Form {
 //        }
 //        return null;
 //    }
-    
 //    public Container getSmallTimerCont() {
 //        return getSmallTimerCont(getContainerForSmallTimer());
 //    }
-    
 //    public Container getSmallTimerContOLD() {
 //        Container cont = getContainerForSmallTimer();
 //        if (cont == null) {
@@ -633,7 +632,6 @@ public class MyForm extends Form {
 //        return null;
 //    }
 //</editor-fold>
-
     public boolean removeSmallTimerCont() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container smallTimerCont = getSmallTimerCont();
@@ -1601,6 +1599,18 @@ public class MyForm extends Form {
         }
     }
 
+    public String makeUniqueIdForExpandedObjects(ItemAndListCommonInterface elt, String defaultString) {
+        String s = "";
+        if (elt.getObjectIdP() != null) {
+            ASSERT.that(!elt.isNoSave());
+            return elt.getObjectIdP();
+        } else if (elt instanceof ItemList && ((ItemList) elt).getSystemName() != null) {
+            return ((ItemList) elt).getSystemName();
+        }
+//            else if (elt.isNoSave())
+        return defaultString;
+    }
+
 ////<editor-fold defaultstate="collapsed" desc="comment">
 //    abstract void deleteLocallyEditedValues();
     /**
@@ -1978,7 +1988,9 @@ public class MyForm extends Form {
             Item newInterruptItem = new Item();
             newInterruptItem.setRemaining(0);//remove default estimate for interrupt tasks
             newInterruptItem.setInteruptOrInstantTask(true);
-            DAO.getInstance().saveNew(newInterruptItem, true);
+//            DAO.getInstance().saveNew(newInterruptItem, true);
+            DAO.getInstance().saveNew(newInterruptItem); //TODO!!!!: don't save until exeting the Timer to allow for Cancel in Timer?!!
+            DAO.getInstance().saveNewExecuteUpdate();
 //                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItemN());
@@ -2117,7 +2129,9 @@ public class MyForm extends Form {
                     }
 //                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                     itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                    DAO.getInstance().saveNew(true, (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+//                    DAO.getInstance().saveNew(true, (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew( (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNewExecuteUpdate();
 
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
@@ -2132,19 +2146,20 @@ public class MyForm extends Form {
         return cmd;
     }
 
-    public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, char icon) {
+//    public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, char icon) {
+    public Command makeCommandNewItemSaveToItemList(ItemAndListCommonInterface itemListOrg, String cmdUniqueID, String cmdText, char icon) {
 
-        Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
-            Item item = new Item();
+        Command cmd = MyReplayCommand.createKeep(cmdUniqueID, cmdText, icon, (e) -> {
+            Item newItem = new Item();
             //first insert owner / category into Item before editing
             if (itemListOrg instanceof Category) {
-                item.setOwner(Inbox.getInstance());
-                item.addCategoryToItem((Category) itemListOrg, false); //don't add to category until saving, MyPrefs.insertNewCategoriesForItemsInStartOfIList.getBoolean());
+                newItem.setOwner(Inbox.getInstance());
+                newItem.addCategoryToItem((Category) itemListOrg, false); //don't add to category until saving, MyPrefs.insertNewCategoriesForItemsInStartOfIList.getBoolean());
             } else {
-                item.setOwner(itemListOrg);
+                newItem.setOwner(itemListOrg); //also updates inherited values!! (but ow are they set when owner is a new project not yet saved?!
             }
             setKeepPos(new KeepInSameScreenPosition());
-            new ScreenItem2(item, (MyForm) getComponentForm(), () -> {
+            new ScreenItem2(newItem, (MyForm) getComponentForm(), () -> {
 //                if (true || item.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
                 //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
                 //only save if data (don't save if no relevant data)
@@ -2154,12 +2169,23 @@ public class MyForm extends Form {
 //                }
 //                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                 if (itemListOrg instanceof Category) {
-                    ((Category) itemListOrg).addItemToCategory(item, null, false, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-                    Inbox.getInstance().addToList(item, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-                    DAO.getInstance().saveNew(true, item, Inbox.getInstance(), itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    ((Category) itemListOrg).addItemToCategory(newItem, null, false, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+                    Inbox.getInstance().addToList(newItem, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+//                    DAO.getInstance().saveNew(true, newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew( newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNewExecuteUpdate();
+                } else if (itemListOrg instanceof ItemList) {
+                    itemListOrg.addToList(newItem, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+//                    DAO.getInstance().saveNew(true, newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew( newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNewExecuteUpdate();
+                } else if (itemListOrg instanceof Item) {
+                    itemListOrg.addToList(newItem, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+//                    DAO.getInstance().saveNew(true, newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew( newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNewExecuteUpdate();
                 } else {
-                    itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                    DAO.getInstance().saveNew(true, item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    ASSERT.that(false);
                 }
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
                 refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
@@ -2172,6 +2198,10 @@ public class MyForm extends Form {
             }, false, null).show(); //false=optionTemplateEditMode
         });
         return cmd;
+    }
+
+    public Command makeCommandNewItemSaveToItemList(ItemAndListCommonInterface itemListOrg, String cmdText, char icon) {
+        return makeCommandNewItemSaveToItemList(itemListOrg, "CreateNewItem", cmdText, icon);
     }
 
     public Command makeCommandNewItemSaveToItemListORG(ItemList itemListOrg, String cmdText, char icon) {
@@ -2190,7 +2220,9 @@ public class MyForm extends Form {
                     }
 //                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                     itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                    DAO.getInstance().saveNew(true, (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+//                    DAO.getInstance().saveNew(true, (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew( (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNewExecuteUpdate();
 
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
@@ -2222,7 +2254,9 @@ public class MyForm extends Form {
                 if (!filterSortDef.equals(itemListOrItem.getFilterSortDef())) { //if filter edited
                     DAO.getInstance().saveNew(filterSortDef, false); //now done in DAO?
                     itemListOrItem.setFilterSortDef(filterSortDef);
-                    DAO.getInstance().saveNew((ParseObject) itemListOrItem, true);
+//                    DAO.getInstance().saveNew((ParseObject) itemListOrItem, true);
+                    DAO.getInstance().saveNew((ParseObject) itemListOrItem);
+                    DAO.getInstance().saveNewExecuteUpdate();
                     //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
                     refreshAfterEdit(); //TODO optimize the application of a filter? 
                 }
@@ -3294,6 +3328,11 @@ public class MyForm extends Form {
     interface GetBool {
 
         boolean getVal();
+    }
+
+    interface SetBool {
+
+        void setVal(boolean value);
     }
 
     /* the one used by most field in ScreenItem: */

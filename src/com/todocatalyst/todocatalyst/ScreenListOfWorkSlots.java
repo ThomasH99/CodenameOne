@@ -255,7 +255,9 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                    workSlotList.add(newWorkSlot);
 //                    workSlotListOwner.setWorkSlotList(workSlotList);
                         workSlotListOwner.addWorkSlot(newWorkSlot);
-                        DAO.getInstance().saveNew(true, newWorkSlot, (ParseObject) workSlotListOwner);
+//                        DAO.getInstance().saveNew(true, newWorkSlot, (ParseObject) workSlotListOwner);
+                        DAO.getInstance().saveNew( newWorkSlot, (ParseObject) workSlotListOwner);
+                        DAO.getInstance().saveNewExecuteUpdate();
 
                         refreshAfterEdit();
                     }
@@ -364,7 +366,9 @@ public class ScreenListOfWorkSlots extends MyForm {
             new ScreenWorkSlot(workSlot, workSlot.getOwner(), myForm, () -> {
                 //TODO!!! add same check as when creating a new WorkSlot (if both StartDate and Duration deleted, delete the workslot)??
 //                            workSlot.setList(itemList.getList());
-                DAO.getInstance().saveNew(workSlot, true);
+//                DAO.getInstance().saveNew(workSlot, true);
+                DAO.getInstance().saveNew(workSlot);
+                DAO.getInstance().saveNewExecuteUpdate();
 //                    refreshAfterEdit();
 //                refreshOnItemEdits.launchAction();
                 if (false) {

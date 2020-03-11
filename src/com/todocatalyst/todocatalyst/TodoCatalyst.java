@@ -485,9 +485,8 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         });
 //</editor-fold>
 
-        MyAnalyticsService.init("UA-133276111-1", "www.todocatalyst.com");
-        MyAnalyticsService.setAppsMode(true);
-
+//        MyAnalyticsService.init("UA-133276111-1", "www.todocatalyst.com");
+//        MyAnalyticsService.setAppsMode(true);
         //THEME
         if (MyPrefs.themeNameWithoutBackslash.getString().length() > 0) {
             theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
@@ -609,6 +608,8 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Log.p("LOCALE = " + locale);
 
 //        if (Config.PARSE_OFFLINE && !getPlatformName().equals("ios") && !getPlatformName().equals("and")) { //never run in local mode on a device !!seems to return "ios" with ios skin on simulator??
+        MyAnalyticsService.init("UA-133276111-1", "www.todocatalyst.com");
+        MyAnalyticsService.setAppsMode(true);
         if (Config.PARSE_OFFLINE && Display.getInstance().isSimulator()) { //never run in local mode on a device
             Parse.initialize(
                     "http://localhost:1337/parse",
@@ -621,6 +622,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                     "TYR54TdOmVfIGSKIl3aEmpcKMPNrbg7T9zN6QciT",
                     "SqFUD7hbLleCOPtDm0RYJWsqI3syHN31NuOiCrRv");
             Log.p("using server https://parseapi.back4app.com (ONLINE)");
+
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -949,7 +951,9 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             ItemList itemList = new ItemList();
             itemList.addItem(item);
             itemList.addToList(item);
-            DAO.getInstance().saveNew(true, item, itemList);
+//            DAO.getInstance().saveNew(true, item, itemList);
+            DAO.getInstance().saveNew( item, itemList);
+            DAO.getInstance().saveNewExecuteUpdate();
         }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -180,8 +180,12 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 //</editor-fold>
         itemOrItemListForNewItemLists.addToList(newItemList, refItemList, !insertBeforeRefElement); //add after item
         ASSERT.that(myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT)!=null);
-        DAO.getInstance().saveNew((ParseObject)newItemList, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP()));
-        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists,true);
+//        DAO.getInstance().saveNew((ParseObject)newItemList, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP()));
+//        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists,true);
+        DAO.getInstance().saveNew((ParseObject)newItemList);
+        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists);
+        DAO.getInstance().saveNewExecuteUpdate();
+         myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container

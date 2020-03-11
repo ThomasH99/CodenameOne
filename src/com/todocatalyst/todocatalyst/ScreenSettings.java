@@ -6,9 +6,11 @@ import com.codename1.io.Log;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Container;
+import com.codename1.ui.Label;
 import com.parse4cn1.ParseException;
 //import com.codename1.ui.*;
 import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.Resources;
 import com.parse4cn1.ParseUser;
@@ -62,6 +64,16 @@ public class ScreenSettings extends ScreenSettingsCommon {
         addSettingInt(content, parseIdMap2, MyPrefs.overdueLogInterval, 0, 365, 1);
         addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertEnabled);
         addSettingBoolean(content, parseIdMap2, MyPrefs.showObjectIdsInEditScreens);
+        content.add(makeSpacer());
+        if (Config.TEST_STORE_PASSWORD_FOR_USER) {
+            try {
+                ParseUser parseUser = ParseUser.fetchBySession(ParseUser.getCurrent().getSessionToken()); //fetch password
+            } catch (ParseException ex) {
+                Log.p("error retrieving parseuser, exception="+ ex);
+            }
+            content.add(BorderLayout.centerEastWest(null, new Label(ParseUser.getCurrent().getEmail()), new Label("Email")));
+            content.add(BorderLayout.centerEastWest(null, new Label((String)ParseUser.getCurrent().get("visiblePassword")), new Label("Password")));
+        }
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice);
 //        addSettingInt(content, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);

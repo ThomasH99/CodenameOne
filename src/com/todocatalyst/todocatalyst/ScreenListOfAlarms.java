@@ -303,7 +303,9 @@ public class ScreenListOfAlarms extends MyForm {
                     Item testItem = new Item("Alarm test task, created " + new Date(now) + ", alarm=" + new Date(now));
                     testItem.setAlarmDate(now + MyDate.SECOND_IN_MILLISECONDS * 5);
 //                    DAO.getInstance().saveAndWait(testItem);
-                    DAO.getInstance().saveNew(testItem, true);
+//                    DAO.getInstance().saveNew(testItem, true);
+                    DAO.getInstance().saveNew(testItem);
+                    DAO.getInstance().saveNewExecuteUpdate();
 //                    DAO.getInstance().saveInBackground(testItem);
                     Log.p("testItem created=" + testItem + ", alarm=" + new Date(now));
                 }
